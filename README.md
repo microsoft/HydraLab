@@ -65,7 +65,7 @@ There are 2 runnable spring boot projects.
 
 For project network_agent, run with "**--spring.profiles.active=release**" if you want to register to the public center. This will go with the application-release.yml configuration and choose the endpoint there.
 
-[Current Device Center Frontpage](https://hydradevicenetwork.azurewebsites.net/portal/index.html#/)
+[The example Hydra Lab network front page hosted by Microsoft MaX team (AAD login required)](https://hydradevicenetwork.azurewebsites.net/portal/index.html#/)
 
 # Basics
 
