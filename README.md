@@ -4,6 +4,10 @@ Build your own cloud testing infrastructure.
 
 ![Logo](images/banner.png)
 
+## What is Hydra Lab and what can it do?
+
+The Hydra Lab is the open-source mobile app cloud testing framework that we built from scratch since mid-2021, to empower every mobile dev team to easily set up a cloud test lab utilizing the devices in hand. 
+
 Hydra Lab enables dev team to quickly build a self-manageable and intelligent cloud testing infrastructure. With the help of Hydra Lab, you can:
 
 - Either: Build a new cloud testing network with Hydra Lab released packages.
@@ -11,11 +15,7 @@ Hydra Lab enables dev team to quickly build a self-manageable and intelligent cl
 
 Hydra Lab support automated test cases based on Appium(Java) for Android/iOS/Windows/Web(Browser), or Android Espresso.
 
-[[_TOC_]]
-
-## What is Hydra Lab and what can it do?
-
-The Hydra Lab is the open-source mobile app cloud testing framework that we built from scratch since mid-2021, to empower every mobile dev team to easily set up a cloud test lab utilizing the devices in hand. And more specifically, with the help of this cloud testing infrastructure, the dev team can gain the ability to:
+And more specifically, with the help of this cloud testing infrastructure, the dev team can gain the ability to:
 - Check the status & manage the connected devices.
 - Upload test app binaries/packages, and then specify and deploy a test task.
 - Query test results and view visuals and videos of the test run.
@@ -29,7 +29,7 @@ In short, any dev team can leverage this and quickly (within 1 week) set up a te
 
 # Getting Started
 
-### For Developer:
+### For Contributor:
 
 The project leverages the open source solution: [spring-dotenv](https://github.com/paulschwarz/spring-dotenv) to access and simulate environment var, so the env.* properties will be read from either your machine ENV or .env file under the resource path.
 
