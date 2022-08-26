@@ -1,12 +1,12 @@
-# Microsoft Hydra Lab
+# Hydra Lab
 
 Build your own cloud testing infrastructure.
 
-![Logo](images/banner.png)
+![Logo](docs/images/banner-made-easy.png)
 
 ## What is Hydra Lab and what can it do?
 
-The Hydra Lab is the open-source mobile app cloud testing framework that we built from scratch since mid-2021, to empower every mobile dev team to easily set up a cloud test lab utilizing the devices in hand. 
+Hydra Lab is a framework that can help you easily build an intelligent cloud testing platform utilizing the devices in hand.
 
 Hydra Lab enables dev team to quickly build a self-manageable and intelligent cloud testing infrastructure. With the help of Hydra Lab, you can:
 
@@ -25,7 +25,7 @@ In short, any dev team can leverage this and quickly (within 1 week) set up a te
 
 ## Technical Architecture and Core Capabilities
 
-![Tech Architecture](images/technical_architecture.png)
+![Tech Architecture](docs/images/technical_architecture.png)
 
 # Getting Started
 
