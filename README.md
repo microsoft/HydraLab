@@ -59,6 +59,7 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 |Android| &#10004; | &#10004; |
 |iOS|&#10004; | x | x |
 |Windows|&#10004; | x | 
+|Web (Browser)|&#10004; | x | 
 
 ### For Hydra Lab User:
 
