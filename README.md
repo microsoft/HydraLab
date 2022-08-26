@@ -1,11 +1,10 @@
-
 ![Logo](docs/images/banner-made-easy.png)
-<h1 align="center">Microsoft Hydra Lab</h1>
+<h1 align="center">Hydra Lab</h1>
 <p align="center">Build your own cloud testing infrastructure</p>
 
 <div align="center">
 
-![Azure DevOps builds](https://img.shields.io/azure-devops/build/dlwteam/1d9f8420-ce91-477b-8815-8e9a7e5bb9b3/703)
+![Azure DevOps build status](https://img.shields.io/azure-devops/build/dlwteam/1d9f8420-ce91-477b-8815-8e9a7e5bb9b3/703)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 </div>
@@ -13,10 +12,10 @@
 ---
 
 - [What is Hydra Lab and what can it do?](#what-is)
-- [Get Started](#get-started)   
-    - [Dependency](#dependency)
-    - [For Contributor](#for-contributor)  
-    - [For Agent User](#for-agent)
+- [Get Started](#get-started)
+    - [Supported Platform / Framework](#supported)
+    - [For Hydra Lab User](#for-user)
+    - [For Contributor](#for-contributor)
 - [Update Notes](#update)
 - [Contribute](#contribute)
 - [References](#references)  
@@ -38,62 +37,56 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 
 ![Tech Architecture](docs/images/technical_architecture.png)
 
-
 ## Get Started
+
 <span id="get-started"></span>
 
-### Dependency
-<span id="dependency"></span>
+### Supported Platform / Framework
 
-```
+<span id="supported"></span>
 
-```
+#### Supported platform for Hydra Lab agent:
+
+|Hydra Lab agent|
+|---- |
+| Windows | 
+| Mac OSX  |
+
+#### Supported platform and framework for test devices:
+
+|  | Appium | Espresso | 
+| ---- |---- |---- |
+|Android| &#10004; | &#10004; |
+|iOS|&#10004; | x | x |
+|Windows|&#10004; | x | 
+
+### For Hydra Lab User:
+
+<span id="for-user"></span>
+
+- [Develop and Package a Test Project](https://github.com/microsoft/HydraLab/wiki/1.-Get-Started:-Develop-and-Package-a-Test-Project)
+- [Run a Test Task in Hydra Lab](https://github.com/microsoft/HydraLab/wiki/2.-Get-Started:-Run-a-Test-Task-in-Hydra-Lab)
+- [How to Deploy an Agent](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent)
+- [How to Develop Appium Test Project](https://github.com/microsoft/HydraLab/wiki/4.-How-to-Develop-Appium-Test-Project)
 
 ### For Contributor:
+
 <span id="for-contributor"></span>
 
-The project leverages the open source solution: [spring-dotenv](https://github.com/paulschwarz/spring-dotenv) to access and simulate environment var, so the env.* properties will be read from either your machine ENV or .env file under the resource path.
-
-Contact Shaopeng Bu to access default test env values.
-
-Put the .env file to the following places:
-- network_agent/src/main/resources/.env
-- network_center/src/main/resources/.env
-
-```bash
-npm install
-npm run pub
-```
-
-There are 2 runnable spring boot projects.
-
-For project network_agent, run with "**--spring.profiles.active=release**" if you want to register to the public center. This will go with the application-release.yml configuration and choose the endpoint there.
-
-[The example Hydra Lab network front page hosted by Microsoft MaX team (AAD login required)](https://hydradevicenetwork.azurewebsites.net/portal/index.html#/)
-
-### For Agent User:
-<span id="for-agent"></span>
-
-
-1. Register in the device registry center to get an agent id and agent secret: [Current Device Center Frontpage](https://hydradevicenetwork.azurewebsites.net/portal/index.html#/).
-2. Set up a blob storage for your agent and configure it in the right position.
-3. Download the build artifact and run it with the following args:
-```
---app.registry.server=***
---app.registry.id=***
---app.registry.secret=***
---app.blob.connection=***
-```
+- [How to Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/5.-How-to-Contribute-to-Hydra-Lab)
+- [The example Hydra Lab network front page hosted by Microsoft MaX team (AAD login required)](https://hydradevicenetwork.azurewebsites.net/portal/index.html#/)
 
 ## Update Notes
+
 <span id="update"></span>
 
 [Update Notes](https://github.com/microsoft/HydraLab/wiki/8.-Update-Notes)
 
 ## Contribute
+
 <span id="contibute"></span>
 
-See [How to Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/5.-How-to-Contribute-to-Hydra-Lab)
+See [How to Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/5.-How-to-Contribute-to-Hydra-Lab).
 
 Thanks to all the people who contribute.
 
