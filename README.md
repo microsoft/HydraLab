@@ -4,9 +4,10 @@
 
 <div align="center">
 
-![Azure DevOps build status](https://img.shields.io/azure-devops/build/dlwteam/1d9f8420-ce91-477b-8815-8e9a7e5bb9b3/703)
+[![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/hydra/DeviceNetworkCI?branchName=refs%2Fpull%2F32963%2Fmerge)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=703&branchName=refs%2Fpull%2F32963%2Fmerge)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
+![License](https://img.shields.io/badge/license-MIT-green)
 </div>
 
 ---
@@ -83,16 +84,20 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 <span id="contribute"></span>
 ## Contribute
 
-See [How to Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/5.-How-to-Contribute-to-Hydra-Lab).
+We are happy to hear your ideas for the future of Hydra Lab. Check the [GitHub Issues](https://github.com/microsoft/Hydra-Lab/issues) and see if others have submitted similar issue. You can upvote existing issue or submit a new suggestion. Remember that all community interactions must abide by the [Code of Conduct](https://github.com/microsoft/Hydra-Lab/blob/main/CODE_OF_CONDUCT.md).
 
-Thanks to all the people who contribute.
+The Hydra Lab team encourages community feedback and contributions. Thank you for your interest in making Hydra Lab better!
+
+![contribute](https://img.shields.io/badge/contributors-7-brightgreen)
+
+![Contributors](docs/images/contributor.png)
 
 <span id="contact"></span>
 ## Contact Us
 
-
-If you have questions about Hydra Lab, or you would like to reach out to us about an issue you're having, you can reach us as follows:
-- Feel free to dive in! [Open an issue](https://github.com/microsoft/HydraLab/issues) or submit PRs.
+Feel free to dive in! If you have questions about Hydra Lab, or you would like to reach out to us about an issue you're having, you can reach us as follows:
+- [Open an issue](https://github.com/microsoft/HydraLab/issues) or submit PRs.
+- Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com)
 
 <span id="references"></span>
 ## References
@@ -102,4 +107,4 @@ If you have questions about Hydra Lab, or you would like to reach out to us abou
 <span id="license"></span>
 ## License
 
-MIT
+The entire codebase is under [MIT license](https://github.com/microsoft/HydraLab/blob/main/LICENSE).
