@@ -97,7 +97,7 @@ The Hydra Lab team encourages community feedback and contributions. Thank you fo
 
 Feel free to dive in! If you have questions about Hydra Lab, or you would like to reach out to us about an issue you're having, you can reach us as follows:
 - [Open an issue](https://github.com/microsoft/HydraLab/issues) or submit PRs.
-- Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com)
+- Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
 
 <span id="references"></span>
 ## References
