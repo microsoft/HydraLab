@@ -13,7 +13,7 @@
 
 - [What is Hydra Lab and what can it do?](#what-is)
 - [Get Started](#get-started)
-    - [Supported Platform / Framework](#supported)
+    - [Environment](#environment)
     - [For Hydra Lab User](#for-user)
     - [For Contributor](#for-contributor)
 - [Update Notes](#update)
@@ -22,9 +22,8 @@
 - [License](#license)
 
 
-## What is Hydra Lab and what can it do?
-
 <span id="what-is"></span>
+## What is Hydra Lab and what can it do?
 
 Hydra Lab is a framework that can help you easily build an intelligent cloud testing platform utilizing the devices in hand.
 
@@ -37,13 +36,11 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 
 ![Tech Architecture](docs/images/technical_architecture.png)
 
+<span id="get-started"></span>
 ## Get Started
 
-<span id="get-started"></span>
-
-### Supported Platform / Framework
-
-<span id="supported"></span>
+<span id="environment"></span>
+### Environment
 
 #### Supported platform for Hydra Lab agent:
 
@@ -61,46 +58,48 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 |Windows|&#10004; | x | 
 |Web (Browser)|&#10004; | x | 
 
-### For Hydra Lab User:
+#### Install required packages
+[Set Up PC Environment](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent#1-set-up-pc-environment)
 
 <span id="for-user"></span>
+### For Hydra Lab User:
 
 - [Develop and Package a Test Project](https://github.com/microsoft/HydraLab/wiki/1.-Get-Started:-Develop-and-Package-a-Test-Project)
 - [Run a Test Task in Hydra Lab](https://github.com/microsoft/HydraLab/wiki/2.-Get-Started:-Run-a-Test-Task-in-Hydra-Lab)
 - [How to Deploy an Agent](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent)
 - [How to Develop Appium Test Project](https://github.com/microsoft/HydraLab/wiki/4.-How-to-Develop-Appium-Test-Project)
 
-### For Contributor:
-
 <span id="for-contributor"></span>
+### For Contributor:
 
 - [How to Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/5.-How-to-Contribute-to-Hydra-Lab)
 - [The example Hydra Lab network front page hosted by Microsoft MaX team (AAD login required)](https://hydradevicenetwork.azurewebsites.net/portal/index.html#/)
 
-## Update Notes
-
 <span id="update"></span>
+## Update Notes
 
 [Update Notes](https://github.com/microsoft/HydraLab/wiki/8.-Update-Notes)
 
+<span id="contribute"></span>
 ## Contribute
-
-<span id="contibute"></span>
 
 See [How to Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/5.-How-to-Contribute-to-Hydra-Lab).
 
 Thanks to all the people who contribute.
 
-## Contact Us
 <span id="contact"></span>
+## Contact Us
 
-If you have questions about ChakraCore, or you would like to reach out to us about an issue you're having, you can reach us as follows:
+
+If you have questions about Hydra Lab, or you would like to reach out to us about an issue you're having, you can reach us as follows:
 - Feel free to dive in! [Open an issue](https://github.com/microsoft/HydraLab/issues) or submit PRs.
 
-## References
 <span id="references"></span>
+## References
+
 [Secure a Java web app using the Spring Boot Starter for Azure Active Directory](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory)
 
-## License
 <span id="license"></span>
+## License
+
 MIT
