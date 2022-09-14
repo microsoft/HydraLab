@@ -1,0 +1,29 @@
+I"÷<h1 id="hydra-lab">Hydra Lab</h1>
+
+<p>The Hydra Lab is the open-source mobile app cloud testing framework that we built from scratch since mid 2021 to empower every dev team to easily set up a cloud testing infrastructure utilizing the devices in hand.</p>
+
+<p><a href="https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=703&amp;branchName=refs%2Fpull%2F32963%2Fmerge"><img src="https://dlwteam.visualstudio.com/Next/_apis/build/status/hydra/DeviceNetworkCI?branchName=refs%2Fpull%2F32963%2Fmerge" alt="Build Status" /></a>
+<img src="https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue" alt="Spring Boot" />
+<img src="https://img.shields.io/badge/Appium-v8.0.0-yellow" alt="Appium" />
+<img src="https://img.shields.io/github/stars/microsoft/HydraLab?style=social" alt="GitHub Repo stars" /></p>
+
+<h2 id="what-is-hydra-lab">What is Hydra Lab?</h2>
+
+<p>Hydra Lab is a framework that can help you easily build an intelligent cloud testing platform utilizing the devices in hand.</p>
+
+<p>Hydra Lab enables dev team to quickly build a self-manageable and intelligent cloud testing infrastructure. With the help of Hydra Lab, you can:</p>
+
+<h2 id="what-can-hydra-lab-do">what can Hydra Lab do?</h2>
+
+<ul>
+  <li>Either: Build a new cloud testing network with Hydra Lab released packages.</li>
+  <li>Or: Onboard your test device to an existing network with low-cost and small effort.
+<img src="img/technical_architecture.png" alt="technical_architecture" height="60%" width="60%" /></li>
+</ul>
+
+<p>For more details, see <a href="https://github.com/microsoft/HydraLab/wiki">Introduction: What is Hydra Lab?</a></p>
+
+<h2 id="documentation">Documentation</h2>
+
+<p>For full instructions, please see the <a href="https://github.com/microsoft/HydraLab/wiki">Documentation</a></p>
+:ET

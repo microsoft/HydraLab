@@ -1,0 +1,12 @@
+title: Bulma Clean Theme Series
+description: This post is part of a series all about Bulma Clean Theme.
+sections:
+  - label: Getting Started
+    items:
+      - title: Why use a static site generator
+      - title: Getting started with Bulma Clean Theme for Jekyll
+  - label: Advanced Features
+    items:
+      - title: Introducing some new layouts to Bulma Clean Theme
+      - title: Creating a docs site with Bulma Clean Theme
+      - title: Creating a post series

@@ -1,0 +1,98 @@
+---
+layout: default
+---
+
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org/",
+    "@type": "Recipe",
+    "name": "{{ page.title }}",
+    "image": [
+        "{{ page.image }}"
+    ],
+    "author": {
+        "@type": "Person",
+        "name": "{{ page.author }}"
+    },
+    "datePublished": "{{ page.date }}",
+    "description": "{{ page.description }}",
+    "prepTime": "{{ page.prep_time }}",
+    "cookTime": "{{ page.cook_time }}",
+    "totalTime": "{{ page.total_time }}",
+    "keywords": "{{ page.keywords }}",
+    "recipeYield": "{{ page.recipe_yield }}",
+    "recipeCategory": "{{ page.recipe_category }}",
+    "recipeCuisine": "{{ page.recipe_cuisine }}",
+    {% if page.calories %}
+    "nutrition": {
+        "@type": "NutritionInformation",
+        "calories": "{{ page.calories }}"
+    },
+    {% endif %}
+    "recipeIngredient":
+        {{ page.ingredients | jsonify }},
+    "recipeInstructions": [
+        {% for step in page.method %}
+        {
+            "@type": "HowToStep",
+            "text": "{{ step }}"
+        {% if forloop.last == true %}
+        }
+        {% else %}
+        },
+        {% endif %}
+        {% endfor %}
+    ]
+}
+</script>
+
+<div class="columns is-multiline">
+    <div class="column is-4">
+        <div class="box has-text-centered">
+            <strong>Serves:</strong> {{ page.recipe_yield }}
+        </div>
+    </div>
+    <div class="column is-4">
+        <div class="box has-text-centered">
+            <strong>Prep time:</strong> {{ page.prep_time | date: "%k hours %M minutes" }}
+        </div>
+    </div>
+    <div class="column is-4">
+        <div class="box has-text-centered">
+            <strong>Cook time:</strong> {{ page.cook_time | date: "%k hours %M minutes" }}
+        </div>
+    </div>
+    <div class="column is-4">
+        <div class="box">
+            <p class="title is-4">Ingredients</p>
+            <div class="content">
+                <ul>
+                    {% for ingredient in page.ingredients %}
+                    <li>{{ ingredient }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="column is-8">
+        <p class="title is-4">Method</p>
+        <div class="content">
+            <ol>
+                {% for step in page.method %}
+                    <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+            <div class="tags">
+                {% assign tags = page.keywords | split: "," %}
+                {% for tag in tags %}
+                    {% include tag.html tag=tag %}
+                {% endfor %}
+            </div>
+            
+            <p>Published: {{ page.date | date: "%b %-d, %Y" }} by {{ page.author }}</p>
+        </div>
+        <div class="content">
+            {{ content }}
+        </div>
+    </div>
+</div>

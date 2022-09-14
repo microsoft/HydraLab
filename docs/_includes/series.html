@@ -1,0 +1,32 @@
+{% assign series = site.data.[page.series] %}
+{% assign posts = site.posts %}
+
+<p class="title is-5 is-spaced">{{ series.title }}</p>
+
+{% if series.description %}
+    <p>{{ series.description }}</p>
+{% endif %}
+
+{% for section in series.sections %}
+
+{% if section.label %}
+    <p class="title is-6">{{ section.label }}</p>
+{% endif %}
+
+<ul class="block-list is-small is-outlined">
+    {% for item in section.items %}
+        {% assign post = posts | where: "title", item.title %}
+
+        {% if page.url == post[0].url %}
+            <li class="is-highlighted is-dark">
+                <p>{{ item.title }}</p>
+            </li>
+        {% else %}
+            <li>
+                <a href="{{ site.baseurl }}{{ post[0].url }}" class="is-flex" >{{ item.title }}</a>
+            </li>
+        {% endif %}
+
+    {% endfor %}
+</ul>
+{% endfor %}

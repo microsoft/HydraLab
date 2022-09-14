@@ -1,0 +1,32 @@
+I"K<h2 id="use-the-gem-with-jekyll">Use the Gem with Jekyll</h2>
+
+<p><strong>This theme requires Jekyll 3.9 to be compatible with GitHub Pages.</strong></p>
+
+<p>Add this line to your Jekyll site’s <code class="language-plaintext highlighter-rouge">Gemfile</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gem</span> <span class="s2">"bulma-clean-theme"</span>
+</code></pre></div></div>
+
+<p>And add this line to your Jekyll site’s <code class="language-plaintext highlighter-rouge">_config.yml</code>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">theme</span><span class="pi">:</span> <span class="s">bulma-clean-theme</span>
+</code></pre></div></div>
+
+<p>And then execute:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ bundle
+</code></pre></div></div>
+
+<p>Or install it yourself as:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ gem install bulma-clean-theme
+</code></pre></div></div>
+
+<h2 id="github-pages">GitHub Pages</h2>
+
+<p>If you are deploying to GitHub pages, then you can also install the <a href="https://github.com/github/pages-gem">GitHub Pages gem</a> and use <code class="language-plaintext highlighter-rouge">remote_theme</code> instead of <code class="language-plaintext highlighter-rouge">theme</code> in your <code class="language-plaintext highlighter-rouge">_config.yml</code>.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># With GitHub Pages Gem</span>
+<span class="na">remote_theme</span><span class="pi">:</span> <span class="s">chrisrhymes/bulma-clean-theme</span>
+</code></pre></div></div>
+:ET

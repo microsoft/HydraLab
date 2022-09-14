@@ -1,0 +1,59 @@
+I"�<h3 id="environment">Environment</h3>
+
+<h4 id="supported-platform-for-hydra-lab-agent">Supported platform for Hydra Lab agent:</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Hydra Lab agent</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Windows</td>
+    </tr>
+    <tr>
+      <td>Mac OSX</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="supported-platform-and-framework-for-test-devices">Supported platform and framework for test devices:</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>Appium</th>
+      <th>Espresso</th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Android</td>
+      <td>✔</td>
+      <td>✔</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>iOS</td>
+      <td>✔</td>
+      <td>x</td>
+      <td>x</td>
+    </tr>
+    <tr>
+      <td>Windows</td>
+      <td>✔</td>
+      <td>x</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Web (Browser)</td>
+      <td>✔</td>
+      <td>x</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+:ET

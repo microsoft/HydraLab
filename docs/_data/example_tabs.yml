@@ -1,0 +1,16 @@
+alignment: is-left
+style: is-boxed
+size: is-large
+items:
+  - name: Tabs
+    link: /docs/page-components/tabs/
+    icon: fa-smile-wink
+  - name: Tab 2
+    link: #
+    icon: fa-angle-double-right
+  - name: Tab 3
+    link: #
+    icon: fa-ellipsis-v
+  - name: Tab 4
+    link: #
+    icon: fa-bars
