@@ -6,7 +6,7 @@ email: your-email@domain.com
 description: >
   Intelligent Cloud Testing Made Easy
 baseurl: ""
-url: "hydra_lab_support@microsoft.com"
+url: "https://microsoft.github.io/HydraLab/"
 permalink: pretty
 #favicon: /path/to/favicon.png
 gh_sponsor: chrisrhymes
