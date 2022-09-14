@@ -1,0 +1,49 @@
+I"<p>Photo by <a href="https://stocksnap.io/author/36317">Janko Ferlic</a> from <a href="https://stocksnap.io">StockSnap</a></p>
+
+<h2 id="recipe-page-instructions">Recipe Page Instructions</h2>
+
+<p>This is an example recipe page, generated from page’s front matter. You can make a single page using this layout, or you can use it in your blog by specifying the layout as recipe instead of post.</p>
+
+<p>You probably want to hide the sidebar, so the recipe takes up the whole page width. If you add any additional content to the page it will appear below the recipe details.</p>
+
+<p>Create a list in the front matter for the ingredients, then the method steps and it will automatically be added to the page.</p>
+
+<p>The front matter will also be added to the page as schema data that is used by search engines. Please see the below example for all of the schema options available.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">layout</span><span class="pi">:</span> <span class="s">recipe</span>
+<span class="na">title</span><span class="pi">:</span> <span class="s">An Example Recipe Page</span>
+<span class="na">subtitle</span><span class="pi">:</span> <span class="s">Tastes great and easy to cook</span>
+<span class="na">author</span><span class="pi">:</span> <span class="s">CS Rhymes</span>
+<span class="na">date</span><span class="pi">:</span> <span class="s">2021-03-02</span>
+<span class="na">show_sidebar</span><span class="pi">:</span> <span class="no">false</span>
+<span class="na">image</span><span class="pi">:</span> <span class="s">/bulma-clan-theme/img/recipe-example.jpg</span>
+<span class="na">hero_image</span><span class="pi">:</span> <span class="s">/bulma-clean-theme/img/recipe-example.jpg</span>
+<span class="na">ingredients</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">1tsp vegetable oil</span>
+    <span class="pi">-</span> <span class="s">2 Carrots, finely diced</span>
+    <span class="pi">-</span> <span class="s">1 Onion, finely dices</span>
+    <span class="pi">-</span> <span class="s">1 Celery stick, finely diced</span>
+    <span class="pi">-</span> <span class="s">2 Cloves of Garlic, crushed</span>
+    <span class="pi">-</span> <span class="s">400g lean Minced Beef</span>
+    <span class="pi">-</span> <span class="s">400g tin of Chopped Tomatoes</span>
+    <span class="pi">-</span> <span class="s">2tbsp Tomato Puree</span>
+    <span class="pi">-</span> <span class="s">300ml Beef Stock</span>
+    <span class="pi">-</span> <span class="s">1tsp Worcestershire Sauce</span>
+    <span class="pi">-</span> <span class="s">2tsp Italian Herbs</span>
+    <span class="pi">-</span> <span class="s">Salt and Pepper</span>
+<span class="na">method</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">Heat the vegetable oil in a large pan on a medium heat, then add the carrots, onion and celery and cook for five to ten minutes to soften, stirring occasionally</span>
+    <span class="pi">-</span> <span class="s">Add the crushed garlic and cook for 2 more minutes, stiffing occasionally</span>
+    <span class="pi">-</span> <span class="s">Add the minced beef to the pan, breaking it up with a wooden spoon and cook until browned off</span>
+    <span class="pi">-</span> <span class="s">Add the chopped tomatoes, tomato puree, beef stock, worcestershire sauce and italian herbs and stir. Add a pinch of salt and pepper then stir through</span>
+    <span class="pi">-</span> <span class="s">Bring to a gentle simmer and cook for 30 minutes</span>
+<span class="na">prep_time</span><span class="pi">:</span> <span class="s">PT0H10M</span>
+<span class="na">cook_time</span><span class="pi">:</span> <span class="s">PT1H</span>
+<span class="na">total_time</span><span class="pi">:</span> <span class="s">PT1H10M</span>
+<span class="na">keywords</span><span class="pi">:</span> <span class="s">recipe,cooking</span>
+<span class="na">recipe_yield</span><span class="pi">:</span> <span class="m">4</span>
+<span class="na">recipe_category</span><span class="pi">:</span> <span class="s">Main course</span>
+<span class="na">recipe_cuisine</span><span class="pi">:</span> <span class="s">Italian</span>
+<span class="na">calories</span><span class="pi">:</span> <span class="s">500 calories</span>
+</code></pre></div></div>
+:ET

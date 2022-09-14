@@ -1,0 +1,17 @@
+<div x-data="{visible: true}" markdown="0">
+    <div class="notification {{ include.status | default: 'is-warning' }}" x-show.transition.duration.300ms="visible">
+        {% if include.dismissable %}
+            <button class="delete" x-on:click="visible = false"></button>
+        {% endif %}
+        <article class="media">
+            {% if include.icon != 'false' %}
+                <div class="media-left">
+                    <span class="icon"><i class="{{ include.icon | default: 'fas fa-exclamation-circle' }} fa-lg"></i></span>
+                </div>
+            {% endif %}
+            <div class="media-content">
+                <div class="content">{{ include.message | markdownify }}</div>
+            </div>
+        </article>
+    </div>
+</div>

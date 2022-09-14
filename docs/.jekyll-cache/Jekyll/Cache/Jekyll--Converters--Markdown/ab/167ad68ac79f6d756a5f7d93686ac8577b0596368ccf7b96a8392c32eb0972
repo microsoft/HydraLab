@@ -1,0 +1,48 @@
+I".<h2 id="general-configuration">General Configuration</h2>
+
+<p>Much of a Jekyll’s configuration is held in the <code class="language-plaintext highlighter-rouge">_config.yml</code> file in the project root.</p>
+
+<p>For information on general Jekyll configuration, please check out the <a href="https://jekyllrb.com/docs/configuration/">Jekyll docs</a>.</p>
+
+<p>Below are some specific options that you might want to set in your <code class="language-plaintext highlighter-rouge">_config.yml</code> when using Bulma Clean Theme.</p>
+
+<h2 id="lang">Lang</h2>
+
+<p>The html lang attribute is set to <code class="language-plaintext highlighter-rouge">en</code> by default but you can override this in the _config.yml file <code class="language-plaintext highlighter-rouge">lang: en</code></p>
+
+<h2 id="direction">Direction</h2>
+<p>The html <em>dir</em> attribute is set to <code class="language-plaintext highlighter-rouge">ltr</code> by default. It can be overridden in the _config.yml file like <code class="language-plaintext highlighter-rouge">direction: rtl</code>.</p>
+
+<h2 id="google-analytics">Google Analytics</h2>
+
+<p>To enable Google Analytics add <code class="language-plaintext highlighter-rouge">google_analytics: UA-xxxxxxxx</code> to your <code class="language-plaintext highlighter-rouge">_config.yml</code> replacing the UA-xxxxxxxx with your Google Analytics property.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">google_analytics</span><span class="pi">:</span> <span class="s">UA-xxxxxxxx</span>
+</code></pre></div></div>
+
+<h2 id="github-sponsor">GitHub Sponsor</h2>
+
+<p>If you have a GitHub sponsors account set up, you can add your username to <code class="language-plaintext highlighter-rouge">gh_sponsor</code> in the <code class="language-plaintext highlighter-rouge">_config.yml</code> file and it will display a link to your profile on the right of the navbar.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">gh_sponsor</span><span class="pi">:</span> <span class="s">chrisrhymes</span>
+</code></pre></div></div>
+
+<p>Further information on Sponsors feature available in the <a href="/bulma-clean-theme/docs/sponsors/">Sponsors docs page</a>.</p>
+
+<h2 id="disqus">Disqus</h2>
+
+<p>Disqus comments are available for posts. To be able to use them, you need to set your disqus shortname in <code class="language-plaintext highlighter-rouge">_config.yml</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>disqus.shortname=&lt;example-com.disqus.com&gt;  
+</code></pre></div></div>
+
+<p>Need help finding your Disqus Shortname?  <a href="https://help.disqus.com/en/articles/1717111-what-s-a-shortname">See this helpful post by Disqus on the matter.</a></p>
+
+<p>Then you need to set your Jekyll environment to production:</p>
+
+<p><code class="language-plaintext highlighter-rouge">JEKYLL_ENV=production bundle exec jekyll build</code>.</p>
+
+<p>Post comments are enabled by default if disqus is enabled. If you want to disable comments on a specific post, set the following in the post’s front matter:</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>comments: false
+</code></pre></div></div>
+:ET

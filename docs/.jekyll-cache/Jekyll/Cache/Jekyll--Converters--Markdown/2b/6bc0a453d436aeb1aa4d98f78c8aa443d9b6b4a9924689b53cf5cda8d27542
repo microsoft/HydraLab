@@ -1,0 +1,10 @@
+I"<h2 id="what-is-the-sidebar">What is the sidebar</h2>
+
+<p>The sidebar is a column on the right of the page. It contains links, with excerpts, to the latest posts.</p>
+
+<p>It uses the <code class="language-plaintext highlighter-rouge">_includes/latest-posts.html</code> file, so if you would like the sidebar to contain different content, then you need to override this file.</p>
+
+<h2 id="sidebar-visibility">Sidebar Visibility</h2>
+
+<p>If you want to show the sidebar with latest posts then set <code class="language-plaintext highlighter-rouge">show_sidebar: true</code> in the page’s frontmatter, or in the <a href="https://jekyllrb.com/docs/configuration/front-matter-defaults/">defaults</a> in your site’s <code class="language-plaintext highlighter-rouge">_config.yml</code>.</p>
+:ET

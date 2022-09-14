@@ -1,0 +1,12 @@
+style: is-light
+items:
+  - title: Easy to Deploy
+    subtitle: Every organization can deploy their own automated test lab with some configs. All the dependencies can be install automatically via a simple script. Also, plugins for CI/CD pipeline are provided.
+    icon: fa-bolt
+  - title: Distributed Device Community
+    subtitle: Every team owns their devices and registers them as agent to the Center. The devices can be private or shared. All the users can run test on the shared devices.
+    icon: fa-cogs
+  - title: Multi-Test Framework Support
+    subtitle: Espresso and Appium are integrated. Everyone can run test on Android, iOS devices and Windows PC in Hydra Lab.
+    icon: fa-first-order
+    icon_brand: true

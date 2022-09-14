@@ -1,0 +1,6 @@
+- name: Home
+  link: /
+- name: Doc
+  link: /docs/
+- name: Community
+- name: Privacy Policy

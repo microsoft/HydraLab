@@ -1,0 +1,8 @@
+I"e<h2 id="interactivity">Interactivity</h2>
+
+<p>The theme uses <a href="https://github.com/alpinejs/alpine">Alpine.js</a> for its interactive components, such as mobile navbar and notifications. If you want to add a new component through a pull request, then please use Alpine.js.</p>
+
+<h2 id="adding-scripts">Adding Scripts</h2>
+
+<p>There are two files within the includes directory called <code class="language-plaintext highlighter-rouge">head-scripts.html</code> and <code class="language-plaintext highlighter-rouge">footer-scripts.html</code>. These are empty files by default but allow you to add any additional JavaScript to your site, such as the script for AddThis share buttons, in the <code class="language-plaintext highlighter-rouge">&lt;head&gt;</code> or after the <code class="language-plaintext highlighter-rouge">&lt;footer&gt;</code> of the page.</p>
+:ET
