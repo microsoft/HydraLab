@@ -5,7 +5,7 @@ tagline: Intelligent Cloud Testing Made Easy
 email: your-email@domain.com
 description: >
   Intelligent Cloud Testing Made Easy
-baseurl: "/hydra-lab-pages"
+baseurl: ""
 url: "hydra_lab_support@microsoft.com"
 permalink: pretty
 #favicon: /path/to/favicon.png
