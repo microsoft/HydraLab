@@ -1,4 +1,4 @@
-I"÷<h1 id="hydra-lab">Hydra Lab</h1>
+I"ø<h1 id="hydra-lab">Hydra Lab</h1>
 
 <p>The Hydra Lab is the open-source mobile app cloud testing framework that we built from scratch since mid 2021 to empower every dev team to easily set up a cloud testing infrastructure utilizing the devices in hand.</p>
 
@@ -18,7 +18,7 @@
 <ul>
   <li>Either: Build a new cloud testing network with Hydra Lab released packages.</li>
   <li>Or: Onboard your test device to an existing network with low-cost and small effort.
-<img src="img/technical_architecture.png" alt="technical_architecture" height="60%" width="60%" /></li>
+<img src="/img/technical_architecture.png" alt="technical_architecture" height="60%" width="60%" /></li>
 </ul>
 
 <p>For more details, see <a href="https://github.com/microsoft/HydraLab/wiki">Introduction: What is Hydra Lab?</a></p>
