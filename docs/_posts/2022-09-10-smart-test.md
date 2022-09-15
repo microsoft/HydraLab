@@ -3,7 +3,7 @@ layout: post
 title: Smart Test
 description: Smart Test description
 date: 2022-9-10 09:00:07
-image: img/SmartTest.jpeg
+image: /img/SmartTest.jpeg
 hero_darken: true
 ---
 
