@@ -1,0 +1,41 @@
+# Node.js
+# Build a general Node.js application with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/vsts/pipelines/languages/javascript
+parameters:
+  name: ''
+  pool: ''
+  xvfb: false
+  target: ''
+  buildScript: 'npx electron-builder build --publish always'
+jobs:
+  - job: ${{parameters.name}}
+    pool: ${{parameters.pool}}
+    variables:
+      PYTHON_ENV: 'python'
+      TARGET: ${{ parameters.target }}
+      E2E_TIMEOUT: 600000
+      CI: true
+      CSC_IDENTITY_AUTO_DISCOVERY: true
+      USE_HARD_LINKS: 'false'
+    steps:
+    - checkout: self
+      submodules: true
+      persistCredentials: true
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'
+    - script: npm ci
+      displayName: Install dependencies
+    - script: |
+        git clone https://github.com/appium/appium-desktop.git
+        npm run copy-en-i18n ./appium-desktop
+      displayName: Copy EN translations from server
+    - script: npm run build
+      displayName: Build
+    - script: ${{ parameters.buildScript }}
+      displayName: Bundle
+      env:
+        GH_TOKEN: $(GH_TOKEN)
+        CSC_LINK: $(CSC_LINK)
+        CSC_KEY_PASSWORD: $(CSC_KEY_PASSWORD)

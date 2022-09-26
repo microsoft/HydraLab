@@ -1,0 +1,109 @@
+.container {
+  width: 100%;
+  height: 100%;
+  background-color: #222;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.bar {
+  width: 100%;
+  height: 50px;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #009a00;
+}
+
+.bar-running {
+}
+
+.bar-stopped {
+  border-bottom-color: #a0a0a0;
+}
+
+.bar-stopping {
+  border-bottom-color: orange;
+}
+
+.bar img {
+  height: 30px;
+  position: relative;
+  top: 2px;
+}
+
+.status {
+  color: #eee;
+  font-size: 1.2em;
+  position: relative;
+  top: 4px;
+}
+
+.stopped {
+  color: #a0a0a0;
+}
+
+.running {
+  color: #009a00;
+}
+
+.stopping {
+  color: orange;
+}
+
+.status i {
+  margin-right: 10px;
+}
+
+
+.serverButton {
+  color: #a0a0a0 !important;
+  background-image: none !important;
+  background-color: #252525 !important;
+  border-color: #a0a0a0 !important;
+}
+
+.term {
+  white-space: pre-wrap;
+  width: 100%;
+  flex: 1;
+  color: #ccc;
+  padding: 8px;
+  user-select: text;
+  -webkit-user-select: text;
+  overflow: scroll;
+  font-family: "Inconsolata", "Lucida console", Monaco, monospace;
+}
+
+.term::-webkit-scrollbar {
+  width: 14px;
+  background: transparent;
+}
+
+.term::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.term-stopped {
+  color: #999;
+}
+
+.term div, .term span {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.term i {
+  margin-right: 8px;
+  font-size: 0.9em;
+  display: inline-block;
+  width: 10px;
+}
+
+.button-container button {
+  padding: 8px;
+  margin-right: 8px;
+  height: auto;
+}
