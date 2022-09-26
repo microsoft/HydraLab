@@ -1,0 +1,232 @@
+{
+    "id": "faa2220b-3a71-4022-873e-d5b7b188eb53",
+    "name": "HydraLabDeployTest",
+    "friendlyName": "Deploy Test to HydraLab",
+    "description": "Deploy Test to HydraLab",    
+    "author": "Microsoft MMX ES and Test Dev",
+    "category": "Utility",
+    "visibility": [
+        "Build",
+        "Release"
+    ],
+    "demands": [
+        "npm"
+    ],
+    "version": {
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 12
+
+    },
+    "instanceNameFormat": "Deploy Tests of ${pkgName} to HydraLab",
+    "inputs": [
+        {
+            "name": "serviceEndpoint",
+            "aliases": [
+                "serviceConnection"
+            ],
+            "type": "connectedService:hydra-lab",
+            "label": "Service connection",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Hydra Lab service connection that is configured with your account credentials."
+        },
+        {
+            "name": "runningType",
+            "type": "pickList",
+            "label": "Type of Test",
+            "defaultValue": "INSTRUMENTATION",
+            "required": true,
+            "helpMarkDown": "Please select the type of test to run.",
+            "options": {
+                "INSTRUMENTATION": "INSTRUMENTATION",
+                "APPIUM": "APPIUM",
+                "SMART": "SMART TEST",
+                "MONKEY": "MONKEY TEST",
+                "APPIUM_MONKEY": "APPIUM MONKEY TEST"
+            }
+        },
+        {
+            "name": "frameworkType",
+            "type": "pickList",
+            "label": "Framework Type",
+            "defaultValue": "JUnit4",
+            "required": true,
+            "helpMarkDown": "Please select the type of framework.",
+            "options": {
+                "JUnit4": "JUnit4",
+                "JUnit5": "JUnit5"
+            },
+            "visibleRule": "runningType = APPIUM"
+        },
+        {
+            "name": "pkgPath",
+            "type": "filePath",
+            "label": "Application Package Path",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Path to Application under Test."
+        },
+        {
+            "name": "buildFlavor",
+            "type": "string",
+            "label": "Build Flavor",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Build Flavor"
+        },
+        {
+            "name": "testPkgPath",
+            "type": "filePath",
+            "label": "Test Package Path",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Path to Test Application.",
+            "visibleRule": "runningType = INSTRUMENTATION || runningType = APPIUM"
+        },
+        {
+            "name": "pkgName",
+            "type": "string",
+            "label": "Package Name",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "The unique package identifier (e.g. com.foo.myapp) of your application."
+        },
+        {
+            "name": "testPkgName",
+            "type": "string",
+            "label": "Test Package Name",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "The unique package identifier (e.g. com.foo.myapp) of your test app.",
+            "visibleRule": "runningType = INSTRUMENTATION"
+        },
+        {
+            "name": "testSuiteClass",
+            "type": "string",
+            "label": "Test Suite Class Name",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "The test suite class name of your test app.",
+            "visibleRule": "runningType = INSTRUMENTATION || runningType = APPIUM"
+        },
+        {
+            "name": "maxStepCount",
+            "type": "string",
+            "label": "Max Step Count",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "The max Step of Smart Test.",
+            "visibleRule": "runningType = SMART"
+        },
+        {
+            "name": "deviceTestCount",
+            "type": "string",
+            "label": "Device Test Count",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "The device test count.",
+            "visibleRule": "runningType = SMART"
+        },
+        {
+            "name": "deviceIdentifier",
+            "type": "string",
+            "label": "Device Identifier",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "The Device Identifier."
+        },
+        {
+            "name": "groupTestType",
+            "type": "pickList",
+            "label": "Group Test Type",
+            "defaultValue": "SINGLE",
+            "required": true,
+            "helpMarkDown": "Flag used for specifying whether the test is on a device or a group of devices.",
+            "options": {
+                "SINGLE": "A Single Device",
+                "REST": "Rest Devices in the Group",
+                "ALL": "All Devices in the Group"
+            },
+            "visibleRule": "deviceIdentifier StartsWith G."
+        },
+        {
+            "name": "timeoutSec",
+            "type": "string",
+            "label": "Timeout Sec",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Timeout Sec."
+        },
+        {
+            "name": "instrumentationArgs",
+            "type": "string",
+            "label": "Instrumentation Args",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Arg1=Value1, Arg2=Value2."
+        },
+        {
+            "name": "runningInfo",
+            "type": "pickList",
+            "label": "Way to Obtain Information",
+            "defaultValue": "auto",
+            "required": true,
+            "helpMarkDown": "Please select the way to obtain information.",
+            "options": {
+                "auto": "Automatic Acquisition",
+                "manually": "Set Manually"
+            }
+        },
+        {
+            "name": "pipelineLink",
+            "type": "string",
+            "label": "Pipeline Link",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The Pipeline Link.",
+            "visibleRule": "runningInfo = manually"
+        },
+        {
+            "name": "commitId",
+            "type": "string",
+            "label": "Commit Id",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The latest version control change of the triggering repo that is included in this build.",
+            "visibleRule": "runningInfo = manually"
+        },
+        {
+            "name": "commitCount",
+            "type": "string",
+            "label": "Commit Count",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Commit Count",
+            "visibleRule": "runningInfo = manually"
+        },
+        {
+            "name": "commitMsg",
+            "type": "string",
+            "label": "Commit Message",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Commit Message",
+            "visibleRule": "runningInfo = manually"
+        },
+        {
+            "name": "reportAudience",
+            "type": "string",
+            "label": "Report Audience",
+            "defaultValue": "TestLabOwner",
+            "required": false,
+            "helpMarkDown": "The Report Audience.",
+            "visibleRule": "runningInfo = manually"
+        }
+    ],
+    "execution": {
+        "Node10": {
+            "target": "hydra-lab-deploy-test.js"
+        }
+    }
+}
