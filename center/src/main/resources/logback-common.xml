@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- %m输出的信息,%p日志级别,%t线程名,%d日期,%c类的全名,%i索引【从数字0开始递增】,,, -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d %p (%logger{5} - %file:%line\)[%t] - %m%n</pattern>
@@ -16,7 +15,6 @@
             <!-- http://logback.qos.ch/codes.html#sat_missing_integer_token The %i conversion token is mandatory for size and time based archiving.
             In case the %i token is missing, SizeAndTimeBasedFNATP attached to RollingFileAppender will detect the omission and will not start. -->
             <fileNamePattern>./log/%d/test_lab.%d.%i.log</fileNamePattern>
-            <!-- 每产生一个日志文件，该日志文件的保存期限为30天 -->
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
@@ -32,11 +30,7 @@
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>./access_log/test_lab_current.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- http://logback.qos.ch/manual/appenders.html fileNamePattern -->
-            <!-- http://logback.qos.ch/codes.html#sat_missing_integer_token The %i conversion token is mandatory for size and time based archiving.
-            In case the %i token is missing, SizeAndTimeBasedFNATP attached to RollingFileAppender will detect the omission and will not start. -->
             <fileNamePattern>./access_log/%d/test_lab.%d.%i.log</fileNamePattern>
-            <!-- 每产生一个日志文件，该日志文件的保存期限为30天 -->
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
@@ -54,7 +48,7 @@
     <root level="warn" additivity="false">
         <appender-ref ref="syslog"/>
     </root>
-    <!-- 级别依次为【从高到低】：FATAL > ERROR > WARN > INFO > DEBUG > TRACE  -->
+    <!-- FATAL > ERROR > WARN > INFO > DEBUG > TRACE  -->
     <logger name="com.microsoft" level="debug" additivity="false">
         <appender-ref ref="syslog"/>
         <appender-ref ref="STDOUT"/>
