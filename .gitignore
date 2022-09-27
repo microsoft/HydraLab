@@ -62,3 +62,4 @@ application-local.yml
 # values defined in claspath yaml.
 /application.yml
 /application-*.yml
+

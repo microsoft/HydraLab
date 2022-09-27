@@ -1,0 +1,62 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.0'
+    id 'java'
+    id 'org.springframework.boot'
+}
+group = 'com.microsoft.hydralab'
+version = hydraLabVersion
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+bootJar {
+    // Specify the out jar file name so that the dockerfile could copy it
+    // without concerning the name change caused by version change.
+    archiveName "center.jar"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'org.mockito:mockito-core:3.12.4'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
+    testCompile 'me.paulschwarz:spring-dotenv:2.3.0'
+
+    compile project(":common")
+    compile project(":taps_to_cases:T2C_Runner")
+
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootWebVersion)
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: springBootWebVersion)
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springBootWebVersion)
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootWebVersion)
+
+    compile(group: 'org.springframework.security.oauth.boot', name: 'spring-security-oauth2-autoconfigure', version: springBootWebVersion)
+
+    compile group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.6.Final'
+
+    compile group: 'org.apache.commons', name: 'commons-pool2', version: '2.7.0'
+
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '7.4.0.jre8'
+//    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
+
+    compile group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.2.2.RELEASE'
+
+    compile('io.springfox:springfox-swagger2:3.0.0')
+    compile('io.springfox:springfox-swagger-ui:3.0.0')
+    compile('io.springfox:springfox-boot-starter:3.0.0')
+
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.1'
+    compile group: 'org.yaml', name: 'snakeyaml', version: '1.25'
+
+    compile 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
+
+    compile 'org.xerial:sqlite-jdbc:3.36.0.2'
+    compile 'com.github.gwenn:sqlite-dialect:0.1.2'
+
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+}

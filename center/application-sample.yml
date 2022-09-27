@@ -1,0 +1,14 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          azure-client:
+            client-id: ${MICROSOFT_PROVIDER_CLIENT_ID}
+            client-secret: ${MICROSOFT_PROVIDER_AUTHENTICATION_SECRET}
+
+app:
+  default-user: ${DEFAULT_USER}
+  blob:
+    connection: ${BLOB_CONNECTION_STR}
+    CDNUrl: ${CDN_URL}
