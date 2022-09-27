@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) OSREC Technologies (https://osrec.co.uk)
+ * ------------------------------------------------------
+ * This CSS library was funded by the Bx team at OSREC 
+ * Technologies and is free for non-commercial use.
+ * 
+ * Commercial use requires a license. You can purchase an
+ * unlimited license from https://osrec.co.uk/ for a small fee.
+ * This helps fund further development and keeps the library 
+ * up to date with new devices.
+ *  
+ * Check out the Bx team's work @ https://usebx.com
+ * 
+ * */
+
+.deviceContainer 
+{ display: inline-block; }
+
+.deviceContainer .content { overflow: hidden; }
+
+/* Colors */
+
+.white .caseBorder			{background: linear-gradient(#ddd 0%, #ccc 100%)}
+.white .case				{background: linear-gradient(#eee 0%, #f5f5f5 100%)}
+.white .screen				{background: rgba(0,0,0,0); box-shadow: inset 0px 0px 5px 1px rgba(0,0,0,0.15);}
+.white .reflection			{background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 51% )}
+.white .camera 				{background: radial-gradient(#ddd 0%, #999 80%)}
+.white .speaker 			{background: linear-gradient(#ddd 0%, #999 80%)}
+.white .homeButtonBorder	{background: #bbb}
+.white .homeButton			{background: radial-gradient(#ddd 0%, #fff 80%)}
+
+.black .caseBorder			{background: linear-gradient(#555 0%, #999 100%)}
+.black .case				{background: linear-gradient(#111 0%, #333 100%)}
+.black .screen				{background: rgba(0,0,0,0); box-shadow: inset 0px 0px 5px 1px rgba(0,0,0,0.25);}
+.black .reflection			{background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 51% ) }
+.black .camera 				{background: radial-gradient(#555 0%, #777 80%)}
+.black .speaker				{background: linear-gradient(#555 0%, #777 80%)}
+.black .homeButtonBorder	{background: #888}
+.black .homeButton			{background: radial-gradient(#555 0%, #333 80%)}
