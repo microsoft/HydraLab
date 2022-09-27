@@ -1,0 +1,8 @@
+rootProject.name = 'Hydra-Lab'
+include 'common'
+include 'agent'
+include 'center'
+include 'sdk'
+include 'gradle_plugin'
+include ':taps_to_cases:T2C_Runner'
+

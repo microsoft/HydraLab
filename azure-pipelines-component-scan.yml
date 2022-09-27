@@ -1,0 +1,94 @@
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- none
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  version: '$(Build.BuildId)'
+  # Agent VM image name
+  vmImageName: 'windows-latest'
+  Codeql.Enabled: true
+
+stages:
+- stage: Component_Scan
+  displayName: Component Scan for All Languages
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: CodeQL3000Init@0
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'
+    - task: Npm@1
+      inputs:
+        command: 'install'
+        workingDir: 'react'
+    - task: Npm@1
+      inputs:
+        command: 'custom'
+        workingDir: 'react'
+        customCommand: 'run pub'
+    - task: PowerShell@2
+      displayName: Set center/agent version
+      inputs:
+        targetType: 'inline'
+        script: |
+          $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+          $hydraVersion = (((((Get-Content "common.gradle") -match "hydraLabVersion = '[0-9.]+'") -replace 'hydraLabVersion = ', '') -replace "'", "") -replace " ","")
+          (Get-Content agent/src/main/resources/version.properties) -Replace 'AGENT_VERSION', "$hydraVersion.$(Build.BuildId)"| Set-Content agent/src/main/resources/version.properties
+          (Get-Content center/src/main/resources/version.properties) -Replace 'CENTER_VERSION', "$hydraVersion.$(Build.BuildId)"| Set-Content center/src/main/resources/version.properties
+        workingDirectory: '$(Build.Repository.LocalPath)'
+    - task: Gradle@2
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'center:bootJar'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        sonarQubeRunAnalysis: false
+        spotBugsAnalysis: false
+    - task: Gradle@2
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'agent:bootJar'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        sonarQubeRunAnalysis: false
+        spotBugsAnalysis: false
+    - task: DeleteFiles@1
+      inputs:
+        SourceFolder: react/node_modules
+        Contents: '*'
+        RemoveSourceFolder: true
+    - task: CodeQL3000Finalize@0
+    # Security Essential
+    # - task: CodeInspector@2
+    #   displayName: Run code inspector
+    #   inputs:
+    #     ProductId: '606a5e0d-64b0-4237-9dca-eac200438452'
+    - task: CredScan@3
+      displayName: Run CredScan
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
+    # https://strikecommunity.azurewebsites.net/articles/8216/how-to-enable-build-break-on-credscan-detections.html  
+      displayName: 'Create CredScan Security Analysis Report'
+      inputs:
+        GdnExportTsvFile: true
+        GdnExportHtmlFile: true
+        GdnExportAllTools: false
+        GdnExportGdnToolCredScan: true
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish CredScan Security Analysis Report'
+      inputs:
+        targetPath: '$(Agent.BuildDirectory)\.gdn\a'
+        artifact: 'SecurityReport'
+        publishLocation: 'pipeline'

@@ -21,3 +21,48 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# IDEA and Gradle temp config files
+.idea
+*.iml
+.gradle
+
+# Java build folders
+build
+bin
+target
+out
+gen
+
+# Project generated files/folders
+storage
+access_log
+*.sqlite
+log
+
+# MacOS
+.DS_Store
+
+# Python compiled output
+*.pyc
+
+# node libraries
+node_modules
+
+# VS extenstions
+*.vsix
+vs_extension/Tasks/HydraLabDeployTest/hydra-lab-deploy-test.js
+
+# Taps to cases json files for test cases.
+taps_to_cases/T2C_Runner/src/test/jsonFiles
+
+# Credential and local env specified files
+local.properties
+application-local.yml
+
+# We won't store the application YAML file in the root path, ignore this file here so that folks could use it to debug.
+# According to https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config
+# the following files will be loaded as "Application properties outside of your packaged jar (application.properties and YAML variants)", will override the
+# values defined in claspath yaml.
+/application.yml
+/application-*.yml
