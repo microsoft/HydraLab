@@ -1,0 +1,58 @@
+plugins {
+    id 'groovy' // Groovy Language
+    id 'java-library'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+    id "com.gradle.plugin-publish" version "1.0.0-rc-2"
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    google()
+}
+
+ext {
+    //Main configuration values
+    gradlePluginVersion = '3.5.4'
+
+    // Network dependencies
+    okHttpVersion = "4.8.0"
+
+    networkDependencies = [
+            okHttp: "com.squareup.okhttp3:okhttp:${okHttpVersion}"
+    ]
+}
+
+dependencies {
+    implementation "org.apache.commons:commons-lang3:3.4"
+    implementation gradleApi()
+    implementation "com.android.tools.build:gradle:${gradlePluginVersion}"
+    implementation "com.google.code.gson:gson:2.8.5"
+    implementation 'org.ow2.asm:asm:7.0'
+    implementation 'org.ow2.asm:asm-util:7.0'
+    implementation networkDependencies.okHttp
+}
+
+// plugin publishing related
+version = '1.0.25'
+group = 'com.microsoft.hydralab'
+// alter group to this when publish to local, in order to distinguish local version and gradle plugin portal version
+//group = 'com.microsoft.hydralab.local'
+
+gradlePlugin {
+    plugins {
+        clientUtilsPlugin {
+            id = 'com.microsoft.hydralab.client-util'
+            implementationClass = 'com.microsoft.hydralab.ClientUtilsPlugin'
+            displayName = 'Hydra Lab Client Plugin'
+            description = 'This is the Client Util for Hydra Lab'
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://github.com/microsoft/HydraLab/tree/main/gradle_plugin'
+    vcsUrl = 'https://github.com/microsoft/HydraLab.git'
+    tags = ['Microsoft']
+}
