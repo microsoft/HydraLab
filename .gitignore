@@ -51,10 +51,6 @@ node_modules
 
 # VS extenstions
 *.vsix
-vs_extension/Tasks/HydraLabDeployTest/hydra-lab-deploy-test.js
-
-# Taps to cases json files for test cases.
-taps_to_cases/T2C_Runner/src/test/jsonFiles
 
 # Credential and local env specified files
 local.properties
