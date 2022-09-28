@@ -21,6 +21,7 @@ dependencies {
     // implementation 'com.sikulix:sikulixapi:2.0.5'
     implementation 'io.appium:java-client:8.0.0'
     implementation 'org.seleniumhq.selenium:selenium-support:4.0.0'
+    implementation 'org.seleniumhq.selenium:selenium-edge-driver:4.1.4'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 
     testImplementation 'junit:junit:4.12'

@@ -48,33 +48,40 @@ public class BaseDriverController {
     public void swipe(String direction) {
     }
 
-    public void longClick(Integer duration,WebElement element){
+    public void longClick(Integer duration, WebElement element) {
     }
-    public void dragAndDrop(WebElement element, Integer xVec, Integer yVec){
+
+    public void dragAndDrop(WebElement element, Integer xVec, Integer yVec) {
+    }
+
+    public void navigateTo(String url) {
     }
 
     //Only the following attributes are supported: [checkable, checked, {class,className}, clickable,
     //{content-desc,contentDescription}, enabled, focusable, focused, {long-clickable,longClickable},
     //package, password, {resource-id,resourceId}, scrollable, selection-start, selection-end, selected,
     //{text,name}, bounds, displayed, contentSize]
-    public void assertElementAttribute(WebElement webElement, String attribute, String expectedValue){
+    public void assertElementAttribute(WebElement webElement, String attribute, String expectedValue) {
         String tagName = webElement.getAttribute(attribute);
-        assert tagName != null : "Can't get this attribute: "+attribute;
+        assert tagName != null : "Can't get this attribute: " + attribute;
         assert tagName.equals(expectedValue) : "Doesn't match expectedVal: "
-                +"expectedVal: "+expectedValue+"; "+"resultVal: "+tagName;
-        System.out.println("Matched!"+"Value: "+tagName);
-
+                + "expectedVal: " + expectedValue + "; " + "resultVal: " + tagName;
+        System.out.println("Matched!" + "Value: " + tagName);
     }
-    public String getInfo(WebElement webElement, String attribute){
+
+    public String getInfo(WebElement webElement, String attribute) {
         String result = webElement.getAttribute(attribute);
-        assert result != null : "Can't get this attribute: "+attribute;
+        assert result != null : "Can't get this attribute: " + attribute;
         return result;
+    }
+
+    public void switchToUrl(String url) {
     }
 
     public WebElement findElementByAccessibilityId(String accessibilityId) {
         WebElement elementFound = null;
         try {
-            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(5))
+            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
                     .until(new ExpectedCondition<WebElement>() {
                         @Override
                         public WebElement apply(WebDriver input) {
@@ -91,7 +98,7 @@ public class BaseDriverController {
     public WebElement findElementByXPath(String xpath) {
         WebElement elementFound = null;
         try {
-            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(5))
+            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
                     .until(driver -> driver.findElement(AppiumBy.xpath(xpath)));
         } catch (Exception e) {
             logger.info("Can not find element by XPath: " + xpath);
@@ -102,7 +109,7 @@ public class BaseDriverController {
     public WebElement findElementByName(String name) {
         WebElement elementFound = null;
         try {
-            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(5))
+            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
                     .until(driver -> driver.findElement(AppiumBy.name(name)));
         } catch (Exception e) {
             logger.info("Can not find element by name: " + name);
