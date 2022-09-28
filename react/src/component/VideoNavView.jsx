@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import 'bootstrap/dist/css/bootstrap.css'
 import React from 'react'
 import Table from '@material-ui/core/Table';

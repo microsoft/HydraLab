@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import {createMuiTheme, makeStyles} from '@material-ui/core/styles';
@@ -7,26 +10,21 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
-// import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import DeviceAgentsView from '@/component/DeviceAgentsView'
 import GroupManageView from '@/component/GroupManageView'
 import SearchView from '@/component/SearchView'
-import StabilityView from '@/component/StabilityView'
 import RunnerView from '@/component/RunnerView'
 import TestTaskView from '@/component/TasksView'
 import AuthView from '@/component/AuthView'
 import HeaderView from "@/component/HeaderView";
 import {HashRouter as Router, Link, Route, Switch, useParams} from "react-router-dom";
-
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {ThemeProvider} from '@material-ui/styles';
-// import AppBar from '@mui/material/AppBar';
 import Container from '@mui/material/Container';
-import Icon from "@mui/material/Icon";
 import axios from "@/axios";
 import TestJsonView from './TestJsonView';
 
