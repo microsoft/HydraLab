@@ -205,20 +205,23 @@ public class HydraLabClientUtils {
             JsonObject responseContent = addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
             int resultCode = responseContent.get("code").getAsInt();
 
-            int waitingRetry = 20;
+            int waitingRetry = 10;
             while (resultCode != 200 && waitingRetry > 0) {
-                printlnf("##[warning]Attachment " + attachmentInfo.filePath + " uploading failed, remaining retry times: " + waitingRetry + "\nCode: " + resultCode + ", message: " + responseContent.get("message").getAsString());
+                printlnf("##[warning]Attachment %s uploading failed, remaining retry times: %d\nCode: %d, message: %s", attachmentInfo.filePath, waitingRetry, resultCode, responseContent.get("message").getAsString());
                 responseContent = addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
                 resultCode = responseContent.get("code").getAsInt();
                 waitingRetry--;
             }
             assertTrue(resultCode == 200, "Attachment " + attachmentInfo.filePath + " uploading failed, test exits with exception:\n", responseContent.get("message").getAsString());
+            printlnf("##[command]Attachment %s uploaded successfully", attachmentInfo.filePath);
         }
 
         String accessKey = generateAccessKey(apiConfig, deviceIdentifier);
-
         if (StringUtils.isEmpty(accessKey)) {
             printlnf("##[warning]Access key is empty.");
+        }
+        else {
+            printlnf("##[command]Access key obtained.");
         }
 
         JsonObject responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, reportAudience, runTimeoutSec, instrumentationArgs, extraArgs);
