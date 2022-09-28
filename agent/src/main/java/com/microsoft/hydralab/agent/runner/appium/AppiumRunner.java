@@ -120,13 +120,12 @@ public class AppiumRunner extends TestRunner {
             /** xml report: parse listener */
             reportLogger.info("Start init listener");
             AppiumListener listener = new AppiumListener(deviceManager, deviceInfo, deviceTestTask, testTask.getPkgName(), reportLogger);
-            AntXmlRunListener xmlListener = new AntXmlRunListener(deviceTestResultFolder);
 
             /** run the test */
             reportLogger.info("Start appium test with junit4");
             listener.startRecording(testTask.getTimeOutSecond());
             checkTestTaskCancel(testTask);
-            startJunit(appiumJarFile, appiumCommand, listener, xmlListener, reportLogger);
+            startJunit(appiumJarFile, appiumCommand, listener, reportLogger);
             checkTestTaskCancel(testTask);
             gifFile = listener.getGifFile();
         }
@@ -136,11 +135,10 @@ public class AppiumRunner extends TestRunner {
         return gifFile;
     }
 
-    public boolean startJunit(File appiumJarFile, String appiumCommand, AppiumListener listener, AntXmlRunListener xmlListener, Logger logger) {
+    public boolean startJunit(File appiumJarFile, String appiumCommand, AppiumListener listener, Logger logger) {
         JUnitCore junit = new JUnitCore();
         junit.addListener(new TextListener(System.out));
         junit.addListener(listener);
-        junit.addListener(xmlListener);
         URL url = null;
         try {
             url = new URL("file:" + appiumJarFile);
