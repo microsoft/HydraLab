@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 package com.microsoft.hydralab.agent.service;
 
 import com.microsoft.hydralab.common.util.Const;

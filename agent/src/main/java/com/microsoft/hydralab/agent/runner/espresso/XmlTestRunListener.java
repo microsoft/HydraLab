@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
 package com.microsoft.hydralab.agent.runner.espresso;
 
 import com.android.ddmlib.Log;

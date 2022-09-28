@@ -1,12 +1,3 @@
-/*
-+--------------------------------------------------------------------------
-|   device_lab [#RELEASE_VERSION#]
-|   ========================================
-|   Copyright (c) 2014, 2019 microsoft.shbu. All Rights Reserved
-|   http://www.microsoft.shbu.com
-|
-+---------------------------------------------------------------------------
-*/
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.config;
