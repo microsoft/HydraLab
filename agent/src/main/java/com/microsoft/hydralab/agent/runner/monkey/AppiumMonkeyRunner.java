@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 package com.microsoft.hydralab.agent.runner.monkey;
 
 import cn.hutool.core.img.ImgUtil;

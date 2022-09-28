@@ -2,9 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.util;
 
-import java.net.InetAddress;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 
 public class MachineInfoUtils {
