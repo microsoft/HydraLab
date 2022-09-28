@@ -1,0 +1,16 @@
+app:
+  # register to Hydra Lab Center
+  registry:
+    # The server hostname:port of Hydra Lab Center. If nginx enabled, switch to port of nginx
+    server: {SERVER_HOSTNAME_PORT}
+    # The Agent info registered in Hydra Lab Center
+    id: {YOUR_REGISTERED_AGENT_ID}
+    secret: {YOUR_REGISTERED_AGENT_SECRET}
+    # TODO Maybe we can save this effort, user can provide name in the center portal and we can get the name from center.
+    name: {YOUR_AGENT_NAME}
+    # Agent Type {1 : 1*WINDOWS + n*ANDROIDS , 2 : 1*WINDOWS+1*ANDROID , 3 : iOS}
+    agent-type: {YOUR_AGENT_TYPE_INDEX}
+  # config Azure Blob
+  blob:
+    connection: {YOUR_AZURE_BLOB_CONNECTION_STRING}
+    CDNUrl: {YOUR_AZURE_BLOB_CDN_URL_HOSTNAME}

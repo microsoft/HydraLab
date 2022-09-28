@@ -1,0 +1,62 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.0'
+    id 'java'
+    id 'org.springframework.boot'
+    id 'com.kncept.junit.reporter' version '2.1.0'
+}
+
+group = 'com.microsoft.hydralab'
+version = hydraLabVersion
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+bootJar {
+    // Specify the out jar file name so that the dockerfile could copy it
+    // without concerning the name change caused by version change.
+    archiveName "agent.jar"
+}
+
+task copyRequirementsFile(type: Copy, group: 'docker',
+        description: 'Copy the smart test python runtime requirement file to build folder to support docker image build.') {
+    from "$rootDir/smart_test/core/requirements.txt"
+    into "$rootDir/agent/build/"
+}
+
+// TODO Comment this first, so that with the absense of smart test module, there won't be any build break.
+// bootJar.dependsOn("copyRequirementsFile")
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'org.mockito:mockito-core:3.12.4'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
+    testCompile 'me.paulschwarz:spring-dotenv:2.3.0'
+
+    compile project(":common")
+
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootWebVersion)
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springBootWebVersion)
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootWebVersion)
+
+    // It will be useful when test jar write data to DB
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '7.4.0.jre8'
+
+    compile group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.6.Final'
+
+    compile group: 'org.apache.commons', name: 'commons-pool2', version: '2.7.0'
+
+    compile 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
+
+    compile 'org.xerial:sqlite-jdbc:3.36.0.2'
+    compile 'com.github.gwenn:sqlite-dialect:0.1.2'
+
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+    implementation group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.5.2'
+
+}
