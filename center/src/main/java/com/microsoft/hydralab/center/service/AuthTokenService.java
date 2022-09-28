@@ -2,14 +2,14 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.center.service;
 
-import com.microsoft.hydralab.common.entity.center.AuthToken;
 import com.microsoft.hydralab.center.repository.AuthTokenRepository;
+import com.microsoft.hydralab.common.entity.center.AuthToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,5 +60,9 @@ public class AuthTokenService {
             SecurityContextHolder.getContext().setAuthentication(authObj);
             return true;
         } else return false;
+    }
+
+    public void loadDefaultUser(HttpSession session) {
+        securityUserService.addDefaultUserSession(session);
     }
 }

@@ -33,8 +33,6 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
 
     @Value("${spring.security.oauth2.enabled}")
     boolean enabledAuth;
-    @Value("${app.default-user}")
-    String defaultUser;
     @Resource
     AuthUtil authUtil;
     @Resource
@@ -52,6 +50,7 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
             return false;
         }
         if (!enabledAuth) {
+            authTokenService.loadDefaultUser(request.getSession());
             return true;
         }
 

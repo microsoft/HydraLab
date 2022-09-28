@@ -3,10 +3,11 @@
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.center.util.AuthUtil;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.center.*;
+import com.microsoft.hydralab.common.util.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -44,6 +45,8 @@ public class SecurityUserService {
     SessionManageService sessionManageService;
     @Resource
     SessionRegistry sessionRegistry;
+    @Value("${app.default-user}")
+    String defaultUser;
 
     public Authentication loadUserAuthentication(String mailAddress, String accessToken) {
         SysUser user = sysUserService.queryUserByMailAddress(mailAddress);
@@ -64,6 +67,25 @@ public class SecurityUserService {
         // load accessToken when request comes from portal
         if (StringUtils.isEmpty(user.getAccessToken())) {
             user.setAccessToken(accessToken);
+        }
+
+        // load bound relation and teamAdmin identity
+        loadTeamAndAdmin(user);
+        // load ROLE/PERMISSION as authorities of a user, used for different scopes of permission checking.
+        loadGrantedAuthority(user);
+
+        return user;
+    }
+
+    public Authentication loadDefaultUserAuthentication() {
+        SysUser user = sysUserService.queryUserByMailAddress(defaultUser);
+        if (user == null) {
+            // load user entity for first-time login USER with Default TEAM and ROLE
+            SysRole defaultRole = sysRoleService.getOrCreateDefaultRole(Const.DefaultRole.USER, 100);
+            SysTeam defaultTeam = sysTeamService.getOrCreateDefaultTeam(Const.DefaultTeam.DEFAULT_TEAM_NAME);
+
+            user = sysUserService.createUserWithDefaultRole(defaultUser, defaultUser, defaultRole.getRoleId());
+            userTeamManagementService.addUserTeamRelation(defaultTeam.getTeamId(), user, false);
         }
 
         // load bound relation and teamAdmin identity
@@ -99,6 +121,14 @@ public class SecurityUserService {
         SecurityContextHolder.getContext().setAuthentication(authObj);
         // only register session in front-end requests to avoid repeatable add-delete action of session storage for API requests
         sessionRegistry.registerNewSession(session.getId(), mailAddress);
+    }
+
+    public void addDefaultUserSession(HttpSession session) {
+        sessionManageService.putUserSession(defaultUser, session);
+        Authentication authObj = loadDefaultUserAuthentication();
+        SecurityContextHolder.getContext().setAuthentication(authObj);
+        // only register session in front-end requests to avoid repeatable add-delete action of session storage for API requests
+        sessionRegistry.registerNewSession(session.getId(), defaultUser);
     }
 
     public void reloadUserAuthentication(String mailAddress, String updateContent) {
