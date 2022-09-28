@@ -1,14 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import React, {PureComponent} from 'react'
-import {
-    Link
-} from "react-router-dom";
+import Link from "react-router-dom";
 import cssObj from '@/css/style.scss'
 import 'bootstrap/dist/css/bootstrap.css'
 import _ from 'lodash';
 import {AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ReferenceLine} from 'recharts';
 import moment from 'moment';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
-import ls from "local-storage";
 import Button from "@mui/material/Button";
 import axios from "@/axios";
 
