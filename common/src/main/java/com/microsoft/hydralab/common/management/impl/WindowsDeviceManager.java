@@ -4,16 +4,16 @@ package com.microsoft.hydralab.common.management.impl;
 
 import cn.hutool.core.img.ImgUtil;
 import com.android.ddmlib.TimeoutException;
-import com.microsoft.hydralab.t2c.runner.*;
-import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
-import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
-import com.microsoft.hydralab.t2c.runner.controller.WindowsDriverController;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
-import io.appium.java_client.service.local.AppiumDriverLocalService;
+import com.microsoft.hydralab.t2c.runner.*;
+import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
+import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
+import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
+import com.microsoft.hydralab.t2c.runner.controller.WindowsDriverController;
 import io.appium.java_client.windows.WindowsDriver;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -30,8 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class WindowsDeviceManager extends AndroidDeviceManager {
-    private WindowsDriver windowsDriver;
-    private AppiumDriverLocalService service;
 
     @Override
     public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
@@ -174,6 +172,19 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
 
                     reportLogger.info("Successfully init a Windows driver: " + testWindowsApp);
                 }
+                if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
+                    appiumServerManager.getEdgeDriver(reportLogger);
+                    if (driverInfo.getInitURL() != null) {
+                        appiumServerManager.getEdgeDriver(reportLogger).get(driverInfo.getInitURL());
+                    }
+                    // Waiting for loading url
+                    safeSleep(5000);
+                    driverControllerMap.put(driverInfo.getId(), new EdgeDriverController(
+                            appiumServerManager.getWindowsEdgeDriver(reportLogger),
+                            appiumServerManager.getEdgeDriver(reportLogger),
+                            reportLogger));
+                    reportLogger.info("Successfully init a Edge driver");
+                }
             }
 
             ArrayList<ActionInfo> caseList = testInfo.getCases();
@@ -190,9 +201,9 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
             appiumServerManager.quitAndroidDriver(deviceInfo, reportLogger);
             if (testWindowsApp.length() > 0) {
                 appiumServerManager.quitWindowsAppDriver(testWindowsApp, reportLogger);
-            } else {
-                appiumServerManager.quitWindowsRootDriver(reportLogger);
             }
+            appiumServerManager.quitEdgeDriver(reportLogger);
+            appiumServerManager.quitWindowsEdgeDriver(reportLogger);
             reportLogger.info("Finish T2C Test");
         }
 

@@ -11,7 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class T2CAppiumUtils {
-    static HashMap<String,String> keyToInfoMap = new HashMap<>();
+    static HashMap<String, String> keyToInfoMap = new HashMap<>();
+
     public static WebElement findElement(BaseDriverController driver, BaseElementInfo element) {
         WebElement elementFinded = null;
         if (element == null) return null;
@@ -28,9 +29,9 @@ public class T2CAppiumUtils {
             elementFinded = driver.findElementByXPath(keyToVal.get("xpath"));
             if (elementFinded != null) return elementFinded;
         }
-        try{
-        assert elementFinded != null : "Can not find element.\n" + element.getElementInfo();
-        }catch (Throwable e){
+        try {
+            assert elementFinded != null : "Can not find element.\n" + element.getElementInfo();
+        } catch (Throwable e) {
             e.printStackTrace();
         }
         return elementFinded;
@@ -38,33 +39,33 @@ public class T2CAppiumUtils {
 
     public static void doAction(BaseDriverController driver, ActionInfo actionInfo) {
         boolean isOption = actionInfo.isOption();
-        if(isOption){
+        if (isOption) {
             try {
                 chooseActionType(driver, actionInfo);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }else {
+        } else {
             chooseActionType(driver, actionInfo);
         }
     }
 
     public static void chooseActionType(BaseDriverController driver, ActionInfo actionInfo) {
-            String ActionType = actionInfo.getActionType();
-            BaseElementInfo element = actionInfo.getTestElement();
-            WebElement webElement = findElement(driver, element);
-            Map<String, Object> arguments = actionInfo.getArguments();
+        String ActionType = actionInfo.getActionType();
+        BaseElementInfo element = actionInfo.getTestElement();
+        WebElement webElement = findElement(driver, element);
+        Map<String, Object> arguments = actionInfo.getArguments();
 
-        switch (ActionType){
+        switch (ActionType) {
             case "click":
                 driver.click(webElement);
                 break;
             case "input":
                 String content = (String) arguments.get("content");
-                if(arguments.containsKey("id")){
+                if (arguments.containsKey("id")) {
                     String id = (String) arguments.get("id");
                     driver.input(webElement, keyToInfoMap.get(id));
-                }else{
+                } else {
                     driver.input(webElement, content);
                 }
                 break;
@@ -96,15 +97,15 @@ public class T2CAppiumUtils {
                 break;
             case "longClick":
                 Integer duration = (Integer) arguments.get("duration");
-                driver.longClick(duration,webElement);
+                driver.longClick(duration, webElement);
                 break;
             case "assert":
                 String attribute = (String) arguments.get("attribute");
                 String expectedValue = (String) arguments.get("expectedValue");
-                driver.assertElementAttribute(webElement,attribute,expectedValue);
+                driver.assertElementAttribute(webElement, attribute, expectedValue);
                 break;
             case "sleep":
-                Integer timeout =(Integer) arguments.get("duration");
+                Integer timeout = (Integer) arguments.get("duration");
                 try {
                     Thread.sleep(timeout);
                 } catch (InterruptedException e) {
@@ -114,19 +115,23 @@ public class T2CAppiumUtils {
             case "getInfo":
                 attribute = (String) arguments.get("attribute");
                 String id = (String) arguments.get("id");
-                String info = driver.getInfo(webElement,attribute);
-                keyToInfoMap.put(id,info);
+                String info = driver.getInfo(webElement, attribute);
+                keyToInfoMap.put(id, info);
                 break;
             case "dragAndDrop":
                 xVector = (Integer) arguments.get("xVector");
                 yVector = (Integer) arguments.get("yVector");
-                driver.dragAndDrop(webElement,xVector,yVector);
+                driver.dragAndDrop(webElement, xVector, yVector);
+                break;
+            case "switchToUrl":
+                String url = (String) arguments.get("url");
+                driver.switchToUrl(url);
                 break;
             default:
                 throw new IllegalStateException("action fail" +
                         "" +
                         "" +
-                        "ed. actionId:" + actionInfo.getId()+ "/t" + "actionType:" + actionInfo.getActionType());
+                        "ed. actionId:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
 
         }
     }

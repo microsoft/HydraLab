@@ -60,7 +60,7 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
         }
         phoneVideoFile = new File(baseFolder.getAbsolutePath(), Const.ScreenRecoderConfig.PHONE_FILE_NAME);
 
-        if (!PCVideoFile.exists() || !phoneVideoFile.exists()) {
+        if (PCVideoFile == null || !PCVideoFile.exists() || !phoneVideoFile.exists()) {
             return false;
         }
         // Merge two videos side-by-side if exist

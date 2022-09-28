@@ -39,6 +39,7 @@ public class AppiumServerManager {
     public static final String EDGE_DRIVER_ZIP = "edgedriver_win64.zip";
     public static final String EDGE_DRIVER_EXE = "msedgedriver.exe";
     public static final String EDGE_DRIVER_VERSION_TXT = "msedgedriverversion.txt";
+    public static final String EDGE_PROCESS_NAME = "msedge";
     public static final String WINDOWS_HANDLE_BY_APP_FAMILY_ID_SCRIPT_NAME = "WindowsAppIdToHandle.ps1";
     private final Map<String, IOSDriver> iOSDrivers = new ConcurrentHashMap<>();
     private final Map<String, AndroidDriver> androidDrivers = new ConcurrentHashMap<>();
@@ -52,6 +53,7 @@ public class AppiumServerManager {
     private String edgeDriverVersionFile;
     private WindowsDriver windowsRootDriver;
     private EdgeDriver edgeDriver;
+    private WindowsDriver winEdgeDriver;
 
     public AppiumServerManager() {
         setWorkspacePath("./");
@@ -187,6 +189,7 @@ public class AppiumServerManager {
         try {
             caps = new DesiredCapabilities();
             caps.setCapability("platformName", "Windows");
+            caps.setCapability("deviceName", "WindowsPC");
             caps.setCapability("app", appFamilyName + "!App");
             caps.setCapability("newCommandTimeout", 4000);
             try {
@@ -203,6 +206,7 @@ public class AppiumServerManager {
             }
             System.out.println("HexAppTopLevelWindowByKeyWord: " + hexAppTopLevelWindowByKeyWord);
             caps.setCapability("platformName", "Windows");
+            caps.setCapability("deviceName", "WindowsPC");
             caps.setCapability("appTopLevelWindow", hexAppTopLevelWindowByKeyWord);
             caps.setCapability("newCommandTimeout", 4000);
             try {
@@ -237,6 +241,20 @@ public class AppiumServerManager {
         }
     }
 
+    @Nonnull
+    private String getHexAppTopLevelWindowByProcessName(String processName, Logger logger) {
+        String processInfo = ShellUtils.execLocalCommandWithResult(ShellUtils.POWER_SHELL_PATH + " -Command " + "\"(Get-Process | where {$_.mainWindowTitle -and $_.mainWindowHandle -ne 0 -and $_.Name -eq '" + processName + "'} | Select mainWindowHandle).mainWindowHandle\"", logger);
+        logger.info(processName + " processInfo: " + processInfo);
+        if (processInfo != null && processInfo.length() > 0) {
+            String handlerIdStr = processInfo.trim().split(" ")[0];
+            logger.info(processName + " handlerIdStr: " + handlerIdStr);
+            int handlerIdInt = Integer.parseInt(handlerIdStr);
+            return Integer.toHexString(handlerIdInt);
+        } else {
+            return "";
+        }
+    }
+
     public WindowsDriver getWindowsRootDriver(Logger logger) {
         startAppiumServer();
 
@@ -244,6 +262,7 @@ public class AppiumServerManager {
             DesiredCapabilities caps = new DesiredCapabilities();
             caps.setCapability("platformName", "Windows");
             caps.setCapability("app", "Root");
+            caps.setCapability("deviceName", "WindowsPC");
             caps.setCapability("newCommandTimeout", 4000);
             try {
                 windowsRootDriver = new WindowsDriver(new URL(String.format("http://%s:%d/wd/hub", appiumServerHost, appiumServerPort)), caps);
@@ -260,6 +279,28 @@ public class AppiumServerManager {
         edgeDriverZipPath = new File(workspacePath, EDGE_DRIVER_ZIP).getAbsolutePath();
         edgeDriverName = new File(workspacePath, EDGE_DRIVER_EXE).getAbsolutePath();
         edgeDriverVersionFile = new File(workspacePath, EDGE_DRIVER_VERSION_TXT).getAbsolutePath();
+    }
+
+
+    public WindowsDriver getWindowsEdgeDriver(Logger logger) {
+        startAppiumServer();
+
+        if (winEdgeDriver == null) {
+            String hexAppTopLevelWindow = getHexAppTopLevelWindowByProcessName(EDGE_PROCESS_NAME, logger);
+            logger.info("Edge hexAppTopLevelWindow: " + hexAppTopLevelWindow);
+            DesiredCapabilities caps = new DesiredCapabilities();
+            caps.setCapability("platformName", "Windows");
+            caps.setCapability("deviceName", "WindowsPC");
+            caps.setCapability("appTopLevelWindow", hexAppTopLevelWindow);
+            caps.setCapability("newCommandTimeout", 4000);
+            try {
+                winEdgeDriver = new WindowsDriver(new URL(String.format("http://%s:%d/wd/hub", appiumServerHost, appiumServerPort)), caps);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return winEdgeDriver;
     }
 
     public EdgeDriver getEdgeDriver(Logger logger) {
@@ -319,7 +360,6 @@ public class AppiumServerManager {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            ;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -338,7 +378,6 @@ public class AppiumServerManager {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        ;
     }
 
 
@@ -380,6 +419,7 @@ public class AppiumServerManager {
         if (windowsRootDriver != null) {
             try {
                 windowsRootDriver.quit();
+                windowsRootDriver = null;
                 logger.info("Quited the driver for Windows. ");
             } catch (Exception e) {
                 logger.info("Error happened when quiting driver for Windows. ");
@@ -408,9 +448,23 @@ public class AppiumServerManager {
         if (edgeDriver != null) {
             try {
                 edgeDriver.quit();
+                edgeDriver = null;
                 logger.info("Quited the driver for edge.");
             } catch (Exception e) {
                 logger.info("Error happened when quiting driver for edge.");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void quitWindowsEdgeDriver(Logger logger) {
+        if (winEdgeDriver != null) {
+            try {
+                winEdgeDriver.quit();
+                winEdgeDriver = null;
+                logger.info("Quite the driver for win edge.");
+            } catch (Exception e) {
+                logger.info("Error happened when quiting driver for windows edge.");
                 e.printStackTrace();
             }
         }

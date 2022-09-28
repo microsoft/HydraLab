@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.t2c.runner.elements.AndroidElementInfo;
+import com.microsoft.hydralab.t2c.runner.elements.EdgeElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import org.slf4j.Logger;
 
@@ -62,6 +63,7 @@ public class T2CJsonParser {
         ActionInfo actionInfo = null;
         AndroidElementInfo androidElement = null;
         WindowsElementInfo windowsElement = null;
+        EdgeElementInfo edgeElement = null;
 
         for (Iterator iterator = caseJsonArray.iterator(); iterator.hasNext(); ) {
             JSONObject caseJsonObject = (JSONObject) iterator.next();
@@ -87,12 +89,16 @@ public class T2CJsonParser {
                     windowsElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), WindowsElementInfo.class);
                     actionInfo = new ActionInfo(id, windowsElement, actionType, arguments, driverId, isOption);
                 }
+                if (driveIdToTypeMap.get(driverId).equals("browser")) {
+                    edgeElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), EdgeElementInfo.class);
+                    actionInfo = new ActionInfo(id, edgeElement, actionType, arguments, driverId, isOption);
+                }
             }else {
                 actionInfo = new ActionInfo(id, null, actionType, arguments, driverId, isOption);
             }
             caseList.add(actionInfo);
             Comparator<ActionInfo> comparator = (o1, o2) -> {
-                if (Objects.equals(o1.getId(), o2.getId())) throw new RuntimeException("Same Id Found In The Action Info");
+                if (Objects.equals(o1.getId(), o2.getId())) throw new RuntimeException("Same Index Found In The Action Info");
                 if (o1.getId() > o2.getId()) return 1;
                 else return -1;
             };
