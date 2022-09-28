@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) OSREC Technologies (https://osrec.co.uk)
+ * ------------------------------------------------------
+ * This CSS library was funded by the Bx team at OSREC 
+ * Technologies and is free for non-commercial use.
+ * 
+ * Commercial use requires a license. You can purchase an
+ * unlimited license from https://osrec.co.uk/ for a small fee.
+ * This helps fund further development and keeps the library 
+ * up to date with new devices.
+ *  
+ * Check out the Bx team's work @ https://usebx.com
+ * 
+ * */
+
+/* Android tablet portrait */
+
+.androidTablet.portrait 
+{ position: relative; display: inline-block; transform: scale3d(0.8,0.8,1); transform-origin: 50% 50%; width: 100%; padding: calc(4/3*50%) 0;}	
+
+.androidTablet.portrait .content
+{ position: absolute; z-index: 5; width: 100%; height: 100%; top: 0px; }
+
+.androidTablet.portrait .reflection
+{ width: 109%; height: 110%; position: absolute; top: -9.5%; left: -4.5%; z-index: 7; border-radius: 5%/4%; }
+
+.androidTablet.portrait .caseBorder
+{ width: 110%; height: 120%; position: absolute; top: -10%; left: -5%; z-index: 0; border-radius: 5%/4%; }
+
+.androidTablet.portrait .case	
+{ width: 110%; height: 120%; position: absolute; top: -10%; left: -5%; z-index: 1; border-radius: 5%/4%; transform-origin: center; transform: scale3d(0.995, 0.995, 1); }
+
+.androidTablet.portrait .screen
+{ width: 100%; height: 100%; position: absolute; top: 0%; left: 0%; z-index: 6; }
+
+.androidTablet.portrait .camera 
+{ width: 2%; height: calc(3/4*2%); position: absolute; top: -6%; left: 49%; z-index: 3; border-radius: 50%; }
+
+.androidTablet.portrait .homeButtonBorder
+{ width: 20%; height: 4%; position: absolute; bottom: -6.5%; left: 40%; z-index: 3; border-radius: 999px; }
+
+.androidTablet.portrait .homeButton
+{ width: 20%; height: 4%; position: absolute; bottom: -6.5%; left: 40%; z-index: 4; border-radius: 999px; transform-origin: center; transform: scale3d(0.95, 0.95, 1); }
+
+/* Android tablet landscape */
+
+.androidTablet.landscape 
+{ position: relative; display: inline-block;  transform: scale3d(0.8,0.8,1); transform-origin: 50% 50%; width: 100%; padding: calc(12/19*50%) 0;}	
+
+.androidTablet.landscape .content
+{ position: absolute; z-index: 5; width: 100%; height: 100%; top: 0px; }
+
+.androidTablet.landscape .reflection
+{ height: 109%; width: 110%; position: absolute; left: -9.5%; top: -4.5%; z-index: 7; border-radius: 4%/5%; }
+
+.androidTablet.landscape .caseBorder
+{ height: 110%; width: 110%; position: absolute; left: -5%; top: -5%; z-index: 0; border-radius: 4%/5%; }
+
+.androidTablet.landscape .case	
+{ height: 110%; width: 110%; position: absolute; left: -5%; top: -5%; z-index: 1; border-radius: 4%/5%; transform-origin: center; transform: scale3d(0.995, 0.995, 1); }
+
+.androidTablet.landscape .screen
+{ height: 100%; width: 100%; position: absolute; left: 0%; top: 0%; z-index: 6; }
+
+.androidTablet.landscape .camera 
+{ height: 2%; width: calc(3/4*2%); position: absolute; left: -3%; top: 49%; z-index: 3; border-radius: 50%; }
+
+.androidTablet.landscape .homeButtonBorder
+{ height: 20%; width: 4%; position: absolute; right: -6.5%; top: 40%; z-index: 3; border-radius: 999px; }
+
+.androidTablet.landscape .homeButton
+{ height: 20%; width: 4%; position: absolute; right: -6.5%; top: 40%; z-index: 4; border-radius: 999px; transform-origin: center; transform: scale3d(0.95, 0.95, 1); }
+

@@ -1,0 +1,52 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+.title {
+    color: blue;
+    font-size: 30px;
+    font-style: italic;
+}
+
+:global(.just) {
+    color: blueviolet;
+}
+
+.device_screenshot {
+    object-fit: fill;
+    width: 100%;
+    aspect-ratio: 4/3;
+}
+
+.iphone_mobile_screenshot {
+    width: 100%;
+    aspect-ratio: 9/19.5;
+}
+
+
+.mobile_screenshot {
+    width: 100%;
+    aspect-ratio: 9/18;
+}
+
+.tablet_screenshot {
+    width: 100%;
+    aspect-ratio: 19/12;
+}
+
+
+.footer {
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #f5f5f5;
+}
+
+.selectable {
+    -moz-user-select: text;
+    -webkit-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+.bb {
+    border-bottom: 1px solid gray;
+}
