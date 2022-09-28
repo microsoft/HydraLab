@@ -12,7 +12,7 @@ Hydra Lab is targeted to resolve these hot issues in UI test automation, and str
 - Achieve a consolidated engineering experience for test automation integration with enhanced test result visualization and debuggability.
 Eventually, we hope with the help of Hydra Lab the dev team can easily build a cloud-based app testing framework or CI workflow and concentrate more on the development work.
 
-![Picture1](images/Picture1.png)
+![Picture1](images/hydra_lab_architecture.png)
 
 Hydra lab comprises of 5 modules: the management center, the web UI application, device agent and test device, and Azure DevOps Plugin.
 
@@ -46,7 +46,7 @@ Hydra lab comprises of 5 modules: the management center, the web UI application,
 # Usage
 ## Deploy Test to Hydra Lab
 
-![Snipaste_2022-05-26_10-30-45](images/Snipaste_2022-05-26_10-30-45.png)
+![Snipaste_2022-05-26_10-30-45](images/instructions.png)
 
 | Param name | Explanation | Required | Comment |
 |--|--|--|--|  

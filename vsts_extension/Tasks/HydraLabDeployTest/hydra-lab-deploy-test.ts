@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import tl = require('azure-pipelines-task-lib/task')
 import * as path from 'path';
 import * as fs from 'fs';
@@ -162,20 +165,6 @@ async function run() {
             } 
         }
         console.log('##[section]instrumentationArgs: %s', JSON.stringify(instrumentationArgs));
-
-        // let extraArgs: object[] = [{}];
-        // const extraArgsInput: string[] | undefined = tl.getDelimitedInput('extraArgs', ',', false);
-        // if (extraArgsInput && extraArgsInput.length > 0) {
-        //     for (const extraArg of extraArgsInput) {
-        //         const extraArgSplit: string[] = extraArg.split('=');
-        //         if (extraArgSplit.length === 2) {
-        //             extraArgs.push(JSON.parse(`{"${extraArgSplit[0]}": "${extraArgSplit[1]}"}`))
-        //         } else {
-        //             throw new Error('Illegal Extra Args');
-        //         }
-        //     } 
-        // }
-        // console.log('##[section]extraArgs: %s', JSON.stringify(extraArgs));
 
         let runningInfo: string | undefined = tl.getInput('runningInfo', false);
         if (!runningInfo) {
