@@ -1,0 +1,78 @@
+/*
+ * Copyright (c) OSREC Technologies (https://osrec.co.uk)
+ * ------------------------------------------------------
+ * This CSS library was funded by the Bx team at OSREC 
+ * Technologies and is free for non-commercial use.
+ * 
+ * Commercial use requires a license. You can purchase an
+ * unlimited license from https://osrec.co.uk/ for a small fee.
+ * This helps fund further development and keeps the library 
+ * up to date with new devices.
+ *  
+ * Check out the Bx team's work @ https://usebx.com
+ * 
+ * */
+
+/* Android phone portrait */
+
+.androidPhone.portrait 
+{ position: relative; display: inline-block; transform: scale3d(0.8333,0.8333,1); transform-origin: 50% 50%; width: 100%; padding: calc(18/9*50%) 0;}	
+
+.androidPhone.portrait .content
+{ position: absolute; z-index: 5; width: 100%; height: 100%; top: 0px; border-radius: 5%/4%;}
+
+.androidPhone.portrait .reflection
+{ width: 107%; height: 120%; position: absolute; top: -10%; left: -3%; z-index: 7; border-radius: 15%/5%; }
+
+.androidPhone.portrait .caseBorder
+{ width: 107%; height: 120%; position: absolute; top: -10%; left: -3.5%; z-index: 0; border-radius: 15%/5%; }
+
+.androidPhone.portrait .case	
+{ width: 106%; height: 109%; position: absolute; top: -5%; left: -3%; z-index: 1; border-radius: 15%/5%; transform-origin: center; transform: scale3d(0.995, 0.995, 1); }
+
+.androidPhone.portrait .screen
+{ width: 100%; height: 100%; position: absolute; top: 0%; left: 0%; z-index: 6; }
+
+.androidPhone.portrait .camera 
+{ width: 2%; height: calc(9/16*2%); position: absolute; top: 1%; left: 25%; z-index: 3; border-radius: 50%; }
+
+.androidPhone.portrait .speaker 
+{ width: 30%; height: calc(9/16*2%); position: absolute; top: -6%; left: 35%; z-index: 3; border-radius: 999px; }
+
+.androidPhone.portrait .homeButtonBorder
+{ width: 25%; height: 5%; position: absolute; bottom: -7%; left: 37.5%; z-index: 3; border-radius: 999px; }
+
+.androidPhone.portrait .homeButton
+{ width: 25%; height: 5%; position: absolute; bottom: -7%; left: 37.5%; z-index: 4; border-radius: 999px; transform-origin: center; transform: scale3d(0.90, 0.80, 1); }
+
+/* Android phone landscape */
+
+.androidPhone.landscape 
+{ position: relative; display: inline-block; transform: scale3d(0.8333,0.8333,1); transform-origin: 50% 50%; width: 100%; padding: calc(9/16*50%) 0;}	
+
+.androidPhone.landscape .content
+{ position: absolute; z-index: 5; height: 100%; width: 100%; top: 0px; }
+
+.androidPhone.landscape .reflection
+{ height: 107%; width: 120%; position: absolute; left: -10%; top: -3%; z-index: 7; border-radius: 5%/15%; }
+
+.androidPhone.landscape .caseBorder
+{ height: 107%; width: 120%; position: absolute; left: -10%; top: -3.5%; z-index: 0; border-radius: 5%/15%; }
+
+.androidPhone.landscape .case	
+{ height: 107%; width: 120%; position: absolute; left: -10%; top: -3.5%; z-index: 1; border-radius: 5%/15%; transform-origin: center; transform: scale3d(0.995, 0.995, 1); }
+
+.androidPhone.landscape .screen
+{ height: 100%; width: 100%; position: absolute; left: 0%; top: 0%; z-index: 6; }
+
+.androidPhone.landscape .camera 
+{ height: 2%; width: calc(9/16*2%); position: absolute; left: -6%; top: 25%; z-index: 3; border-radius: 50%; }
+
+.androidPhone.landscape .speaker 
+{ height: 30%; width: calc(9/16*2%); position: absolute; left: -6%; top: 35%; z-index: 3; border-radius: 999px; }
+
+.androidPhone.landscape .homeButtonBorder
+{ height: 25%; width: 5%; position: absolute; right: -7%; top: 37.5%; z-index: 3; border-radius: 999px; }
+
+.androidPhone.landscape .homeButton
+{ height: 25%; width: 5%; position: absolute; right: -7%; top: 37.5%; z-index: 4; border-radius: 999px; transform-origin: center; transform: scale3d(0.80, 0.90, 1); }

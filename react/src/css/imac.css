@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) OSREC Technologies (https://osrec.co.uk)
+ * ------------------------------------------------------
+ * This CSS library was funded by the Bx team at OSREC 
+ * Technologies and is free for non-commercial use.
+ * 
+ * Commercial use requires a license. You can purchase an
+ * unlimited license from https://osrec.co.uk/ for a small fee.
+ * This helps fund further development and keeps the library 
+ * up to date with new devices.
+ *  
+ * Check out the Bx team's work @ https://usebx.com
+ * 
+ * */
+
+/* iMac */
+
+.imac
+{ position: relative; display: inline-block; transform: scale3d(0.613,0.613,1); transform-origin: 50% 15%; width: 100%; padding: calc(9/16*50%) 0;}	
+
+.imac .content
+{ position: absolute; z-index: 5; height: 100%; width: 100%; overflow: hidden; top: 0px; }
+
+.imac .reflection
+{ height: 115%; width: 110%; position: absolute; left: -5%; top: -7.5%; z-index: 8; border-radius: 4%/5%; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 51%, rgba(255,255,255,0) 85%, rgba(255,255,255,0.3) 90%, rgba(255,255,255,0.1) 100% );  border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; }
+
+.imac .caseBorder
+{ height: 140%; width: 110%; position: absolute; left: -5%; top: -7.5%; z-index: 1; border-radius: 4%/5%; background: linear-gradient(#ddd 0%, #eee 100%); box-shadow: inset 0 0 10px 0 rgba(0,0,0,0.1);  }
+
+.imac .case	
+{ height: 115%; width: 110%; position: absolute; left: -5%; top: -7.5%; z-index: 2; border-radius: 4%/5%; transform-origin: center; background: linear-gradient(#111 0%, #333 100%); border-bottom-right-radius: 0px; border-bottom-left-radius: 0px;  }
+
+.imac .screen
+{ height: 100%; width: 100%; position: absolute; left: 0%; top: 0%; z-index: 7; overflow: hidden; }
+
+.imac .stand 
+{ height: 20%; width: 30%; position: absolute; left: 35%; bottom: -50%; z-index: 0; background: linear-gradient(#ccc 0%, #eee 80%, #fff 90%, #f9f9f9 100%); }
+
+.imac .base 
+{ height: 3%; width: 40%; position: absolute; left: 30%; bottom: -50%; z-index: 0; background: linear-gradient(#f9f9f9 0%, #eee 80%, #aaa 100% ); border-radius: 15%/30%; }
