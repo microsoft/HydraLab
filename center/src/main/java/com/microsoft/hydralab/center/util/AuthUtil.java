@@ -171,8 +171,8 @@ public class AuthUtil {
             HttpEntity<LinkedMultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
 
             ResponseEntity<String> results = restTemplateHttps.exchange(tokenUrl, HttpMethod.POST, entity, String.class);
-            String bodyStr = results.getBody();// CodeQL [java/unsafe-deserialization] results has been set as String
-            JSONObject json = JSONObject.parseObject(bodyStr);
+            String bodyStr = results.getBody();
+            JSONObject json = JSONObject.parseObject(bodyStr);// CodeQL [java/unsafe-deserialization] results has been set as String
             accessToken = json.getString("access_token");
 
         } catch (Exception e) {
