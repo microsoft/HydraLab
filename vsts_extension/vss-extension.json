@@ -1,0 +1,78 @@
+{
+    "manifestVersion": 1,
+    "id": "hydra-lab",
+    "name": "Hydra Lab",
+    "version": "1.0.12",
+    "publisher": "",
+    "public": true,
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],    
+    "description": "Hydra Lab Azure Devops Extension - Allow you to automate deploy tests to Hydra Lab platform from your CI/CD environment.",
+    "categories": [
+        "Azure Pipelines"
+    ],
+    "icons": {
+        "default": "images/hydra_lab_logo.png"        
+    },
+    "content": {
+        "details": {
+            "path": "overview.md"
+        }
+    },
+    "files": [
+        {
+            "path": "Tasks/HydraLabDeployTest"
+        },
+        {
+            "path": "images",
+            "addressable": true
+        }
+    ],
+    "contributions": [
+        {
+            "id": "deploy-tests-to-hydra-lab",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "Tasks/HydraLabDeployTest"
+            }
+        },
+        {
+            "id": "hydra-lab-service-endpoint",
+            "description": "HydraLabAuthenticationEndpoint",
+            "type": "ms.vss-endpoint.service-endpoint-type",
+            "targets": [
+                "ms.vss-endpoint.endpoint-types"
+            ],
+            "properties": {
+                "name": "hydra-lab",
+                "displayName": "Hydra Lab",
+                "url": "https://",
+                "inputDescriptors": [],
+                "authenticationSchemes": [
+                    {
+                        "type": "ms.vss-endpoint.endpoint-auth-scheme-token",
+                        "inputDescriptors": [
+                            {
+                                "id": "authToken",
+                                "name": "Auth Token",
+                                "description": "Enter the auth token from the Hydra Lab Console.",
+                                "inputMode": "textbox",
+                                "isConfidential": true,
+                                "validation": {
+                                    "isRequired": true,
+                                    "dataType": "string"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
