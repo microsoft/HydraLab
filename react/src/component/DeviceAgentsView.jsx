@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import React from 'react'
 import 'bootstrap/dist/css/bootstrap.css'
 import axios from '@/axios'

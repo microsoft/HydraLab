@@ -1,5 +1,7 @@
-import React from 'react'
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
+import React from 'react'
 import 'bootstrap/dist/css/bootstrap.css'
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';

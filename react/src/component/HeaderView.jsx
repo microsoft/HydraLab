@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import BaseView from "@/component/BaseView";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";

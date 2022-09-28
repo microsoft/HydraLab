@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import React from 'react'
 import axios from '@/axios'
 import Table from '@material-ui/core/Table';
@@ -16,7 +19,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import TextField from "@mui/material/TextField";
 import DialogActions from "@mui/material/DialogActions";
-import DialogContentText from "@mui/material/DialogContentText";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import LoadingButton from '@mui/lab/LoadingButton';
