@@ -9,12 +9,6 @@ resources:
 - repo: self
 
 variables:
-  # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '92d33b90-1673-4b64-8ebb-85de2dfb6b6c'
-  imageRepository: 'devicenetwork'
-  containerRegistry: 'launcher.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/center/Dockerfile'
-  tag: '$(Build.BuildId)'
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
