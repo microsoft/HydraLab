@@ -1,0 +1,80 @@
+plugins {
+    id 'java'
+    id 'com.kncept.junit.reporter' version '2.1.0'
+}
+group = 'com.microsoft.hydralab'
+version = '0.9.5'
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+def env = System.getProperty("env") ?: "dev"
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/resources", "src/main/env_config/$env"]
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+dependencies {
+    compile 'kxml2:kxml2:2.3.0'
+    compile 'com.android.tools.ddms:ddmlib:27.0.2'
+    compile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
+
+    compile project(":sdk")
+    compile project(":taps_to_cases:T2C_Runner")
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootWebVersion)
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springBootWebVersion)
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+    compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
+    compile 'com.vladmihalcea:hibernate-types-52:2.3.4'
+    compile group: 'org.python', name: 'jython-standalone', version: '2.7.0'
+    compileOnly 'org.hibernate:hibernate-core:5.4.18.Final'
+    compileOnly group: 'com.alibaba', name: 'fastjson', version: '1.2.72'
+
+    implementation 'io.appium:java-client:8.0.0'
+    implementation 'org.seleniumhq.selenium:selenium-java:4.1.4'
+    implementation 'org.apache.httpcomponents:httpcore:4.4.9'
+
+    compile 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    compile 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    compile group: 'org.junit.platform', name: 'junit-platform-suite-engine', version: '1.8.1'
+    compile 'org.junit.platform:junit-platform-launcher:1.8.1'
+
+    // prometheus + micrometer
+    compile 'io.micrometer:micrometer-registry-prometheus:1.9.0'
+    compile 'io.micrometer:micrometer-core:1.9.0'
+    compile 'io.prometheus:simpleclient_pushgateway:0.16.0'
+    implementation 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile group: 'com.alibaba', name: 'fastjson', version: '1.2.75'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
+    compile 'org.slf4j:slf4j-api:1.7.30'
+    compile 'ch.qos.logback:logback-classic:1.2.3'
+    compile 'cn.hutool:hutool-all:5.7.13'
+    compile 'com.squareup.okhttp3:okhttp:4.9.3'
+    compile 'com.google.guava:guava:30.1.1-jre'
+    compile group: 'io.netty', name: 'netty-tcnative', version: '2.0.51.Final'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.1'
+    // https://docs.microsoft.com/en-us/graph/sdks/sdk-installation?context=graph%2Fapi%2F1.0&view=graph-rest-1.0
+    compile 'com.microsoft.graph:microsoft-graph:5.4.0'
+    compile 'com.azure:azure-identity:1.3.6'
+    //blob storage
+    compile 'com.azure:azure-storage-blob:12.14.0'
+    //Apk analysis
+    compile group: 'net.dongliu', name: 'apk-parser', version: '2.5.3'
+    //Ipa Parse
+    compile group: 'com.googlecode.plist', name: 'dd-plist', version: '1.3'
+}
+

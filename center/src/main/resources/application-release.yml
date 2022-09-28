@@ -1,0 +1,38 @@
+spring:
+  security:
+    oauth2:
+      enabled: true
+      client:
+        provider:
+          azure-ad:
+            authorization-uri: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+            token-uri: https://login.microsoftonline.com/common/oauth2/v2.0/token
+            jwk-set-uri: https://login.microsoftonline.com/common/discovery/v2.0/keys
+        registration:
+          azure-client:
+            provider: azure-ad
+            client-id: ${MICROSOFT_PROVIDER_CLIENT_ID}
+            client-secret: ${MICROSOFT_PROVIDER_AUTHENTICATION_SECRET}
+            authorization-grant-type: authorization_code
+            redirect-uri: ${MICROSOFT_RERIRECT_URL}
+            ignore-uri: '/api/auth,/agent/connect'
+            scope: 'https://graph.microsoft.com/User.Read'
+  datasource:
+    url: ${DB_URL}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: ${DB_NAME}
+    password: ${DB_PASS}
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServer2012Dialect
+    show-sql: false
+    hibernate:
+      dialect: org.hibernate.dialect.SQLServer2012Dialect
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 400
+          batch_versioned_data: true
