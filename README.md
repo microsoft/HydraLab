@@ -1,7 +1,5 @@
-![Logo](docs/images/banner-made-easy.png)
 <h1 align="center">Hydra Lab</h1>
 <p align="center">Build your own cloud testing infrastructure</p>
-
 <div align="center">
 
 [![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/hydra/DeviceNetworkCI?branchName=refs%2Fpull%2F32963%2Fmerge)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=703&branchName=refs%2Fpull%2F32963%2Fmerge)
@@ -11,6 +9,9 @@
 </div>
 
 ---
+
+![Logo](docs/images/banner-made-easy.png)
+![Products](docs/images/caps_products.png)
 
 - [What is Hydra Lab and what can it do?](#what-is)
 - [Get Started](#get-started)
@@ -88,9 +89,8 @@ We are happy to hear your ideas for the future of Hydra Lab. Check the [GitHub I
 
 The Hydra Lab team encourages community feedback and contributions. Thank you for your interest in making Hydra Lab better!
 
-![contribute](https://img.shields.io/badge/contributors-7-brightgreen)
-
-![Contributors](docs/images/contributor.png)
+<!--TODO: Generate an image of contributors to keep our README.md in sync. The image can be generated after the status of repo is public.  -->
+<!--TODO: For more details, please refer: https://contrib.rocks/preview?repo=microsoft%2Fjust  -->
 
 <span id="contact"></span>
 ## Contact Us
@@ -102,7 +102,9 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 <span id="references"></span>
 ## References
 
-[Secure a Java web app using the Spring Boot Starter for Azure Active Directory](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory)
+- [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
+- [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
+- [Google Android Tools Ddmlib：A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
 
 <span id="license"></span>
 ## License
