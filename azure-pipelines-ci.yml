@@ -13,7 +13,7 @@ variables:
   version: '$(Build.BuildId)'
   # Agent VM image name
   vmImageName: 'windows-latest'
-  Codeql.Enabled: true
+  fullBuild: ${ne(variables['Build.Reason'], 'PullRequest')}
 
 stages:
 - stage: Build
@@ -66,16 +66,31 @@ stages:
         spotBugsAnalysis: false
     - task: CopyFiles@2
       inputs:
+        SourceFolder: 'center/'
+        Contents: 'Dockerfile'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
+      condition: and(succeeded(), eq(${{ fullBuild }}, true))
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: 'center/deploy_startup/'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
+      condition: and(succeeded(), eq(${{ fullBuild }}, true))
+    - task: CopyFiles@2
+      inputs:
         SourceFolder: 'center/build/libs/'
         Contents: '*.jar'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
+      condition: and(succeeded(), eq(${{ fullBuild }}, true))
     - task: CopyFiles@2
       inputs:
         SourceFolder: 'agent/build/libs/'
         Contents: '*.jar'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
+      condition: and(succeeded(), eq(${{ fullBuild }}, true))
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'DeviceNetworkJar'
+        ArtifactName: 'HydraLabRelease'
         publishLocation: 'Container'
+      condition: and(succeeded(), eq(${{ fullBuild }}, true))
