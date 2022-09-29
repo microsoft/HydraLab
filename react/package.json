@@ -43,6 +43,7 @@
     "@mui/material": "^5.4.4",
     "axios": "^0.21.4",
     "bootstrap": "^4.5.3",
+    "copy-to-clipboard": "^3.3.2",
     "file-loader": "^6.2.0",
     "jquery": "^3.5.1",
     "local-storage": "^2.0.0",
