@@ -47,6 +47,7 @@ stages:
           (Get-Content center/src/main/resources/version.properties) -Replace 'CENTER_VERSION', "$hydraVersion.$(Build.BuildId)"| Set-Content center/src/main/resources/version.properties
         workingDirectory: '$(Build.Repository.LocalPath)'
     - task: Gradle@2
+      displayName: Build center
       inputs:
         gradleWrapperFile: 'gradlew'
         tasks: 'center:bootJar'
@@ -56,6 +57,7 @@ stages:
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
     - task: Gradle@2
+      displayName: Build agent
       inputs:
         gradleWrapperFile: 'gradlew'
         tasks: 'agent:bootJar'
@@ -65,24 +67,28 @@ stages:
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
     - task: CopyFiles@2
+      displayName: Copy deploy center files
       inputs:
         SourceFolder: 'center/'
         Contents: 'Dockerfile'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
       condition: and(succeeded(), eq(variables.fullBuild, true))
     - task: CopyFiles@2
+      displayName: Copy deploy center files 2
       inputs:
         SourceFolder: 'center/deploy_startup/'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
       condition: and(succeeded(), eq(variables.fullBuild, true))
     - task: CopyFiles@2
+      displayName: Copy center jar
       inputs:
         SourceFolder: 'center/build/libs/'
         Contents: '*.jar'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
       condition: and(succeeded(), eq(variables.fullBuild, true))
     - task: CopyFiles@2
+      displayName: Copy agent jar
       inputs:
         SourceFolder: 'agent/build/libs/'
         Contents: '*.jar'
