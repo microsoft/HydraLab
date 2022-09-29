@@ -193,4 +193,38 @@ public class UserTeamController {
 
         return Result.ok(userTeamManagementService.queryTeamsByUser(requestor.getMailAddress()));
     }
+
+    /**
+     * Authenticated USER:
+     * 1) USERs with ROLE SUPER_ADMIN/ADMIN can switch all USER's default TEAM info
+     * 2) USERs can switch their own default TEAM info
+     */
+    @PostMapping(value = {"/api/userTeam/switchDefaultTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<SysUser> switchDefaultTeam(@CurrentSecurityContext SysUser requestor,
+                                             @RequestParam("mailAddress") String mailAddress,
+                                             @RequestParam("teamId") String teamId,
+                                             @RequestParam("teamName") String teamName) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+        SysUser user = sysUserService.queryUserByMailAddress(mailAddress);
+        if (user == null) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "USER id is wrong.");
+        }
+        SysTeam team = sysTeamService.queryTeamById(teamId);
+        if (team == null || !team.getTeamName().equals(teamName)) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "TEAM doesn't exist, or TEAM id doesn't match TEAM name.");
+        }
+
+        if (sysUserService.checkUserAdmin(requestor) || mailAddress.equals(requestor.getMailAddress())) {
+            if (!userTeamManagementService.checkUserTeamRelation(mailAddress, teamId)) {
+                return Result.error(HttpStatus.BAD_REQUEST.value(), "USER isn't under the TEAM, cannot switch the default TEAM to it.");
+            }
+        }
+        else {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized to operate on this USER");
+        }
+
+        return Result.ok(sysUserService.switchUserDefaultTeam(user, teamId, teamName));
+    }
 }
