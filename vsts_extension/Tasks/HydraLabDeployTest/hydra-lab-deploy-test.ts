@@ -91,7 +91,7 @@ async function run() {
         let attachments: any = undefined;
         if (attachmentsInput && attachmentsInput.length > 0) {
             try {
-                attachments = JSON.parse(attachmentsInput.replace(/\s+/g,''))
+                attachments = JSON.parse(attachmentsInput)
             }
             catch {
                 console.log('##[section]AttachmentsInfo Input: %s', attachmentsInput);
