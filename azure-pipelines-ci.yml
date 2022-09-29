@@ -69,28 +69,28 @@ stages:
         SourceFolder: 'center/'
         Contents: 'Dockerfile'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
-      condition: and(succeeded(), eq(${fullBuild}, true))
+      condition: and(succeeded(), eq($(fullBuild), true))
     - task: CopyFiles@2
       inputs:
         SourceFolder: 'center/deploy_startup/'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
-      condition: and(succeeded(), eq(${fullBuild}, true))
+      condition: and(succeeded(), eq($(fullBuild), true))
     - task: CopyFiles@2
       inputs:
         SourceFolder: 'center/build/libs/'
         Contents: '*.jar'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
-      condition: and(succeeded(), eq(${fullBuild}, true))
+      condition: and(succeeded(), eq($(fullBuild), true))
     - task: CopyFiles@2
       inputs:
         SourceFolder: 'agent/build/libs/'
         Contents: '*.jar'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
-      condition: and(succeeded(), eq(${fullBuild}, true))
+      condition: and(succeeded(), eq($(fullBuild), true))
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'HydraLabRelease'
         publishLocation: 'Container'
-      condition: and(succeeded(), eq(${fullBuild}, true))
+      condition: and(succeeded(), eq($(fullBuild), true))
