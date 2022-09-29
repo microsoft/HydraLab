@@ -2,7 +2,7 @@
 <p align="center">Build your own cloud testing infrastructure</p>
 <div align="center">
 
-[![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/hydra/DeviceNetworkCI?branchName=refs%2Fpull%2F32963%2Fmerge)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=703&branchName=refs%2Fpull%2F32963%2Fmerge)
+[![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/HydraLab-CI?branchName=main)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=743&branchName=main)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -66,8 +66,8 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 <span id="for-user"></span>
 ### For Hydra Lab User:
 
-- [Develop and Package a Test Project](https://github.com/microsoft/HydraLab/wiki/1.-Get-Started:-Develop-and-Package-a-Test-Project)
-- [Run a Test Task in Hydra Lab](https://github.com/microsoft/HydraLab/wiki/2.-Get-Started:-Run-a-Test-Task-in-Hydra-Lab)
+- [Develop and Package a Test Project](https://github.com/microsoft/HydraLab/wiki/1.-Get-Started-%E2%80%94-Develop-and-Package-a-Test-Project)
+- [Run a Test Task in Hydra Lab](https://github.com/microsoft/HydraLab/wiki/2.-Get-Started-%E2%80%94-Run-a-Test-Task-in-Hydra-Lab)
 - [How to Deploy an Agent](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent)
 - [How to Develop Appium Test Project](https://github.com/microsoft/HydraLab/wiki/4.-How-to-Develop-Appium-Test-Project)
 
