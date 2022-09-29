@@ -142,6 +142,9 @@ public class TestTaskService {
             String deviceIdentifier = testTaskSpec.deviceIdentifier;
             if (deviceIdentifier.startsWith(Const.DeviceGroup.groupPre)) {
                 DeviceGroup deviceGroup = deviceGroupService.getGroupByName(deviceIdentifier);
+                if (deviceGroup == null) {
+                    return false;
+                }
                 if (testTaskSpec.teamId.equals(deviceGroup.getTeamId())) {
                     return true;
                 }
@@ -152,6 +155,9 @@ public class TestTaskService {
                 return true;
             } else {
                 DeviceInfo device = deviceAgentManagementService.getDevice(deviceIdentifier);
+                if (device == null) {
+                    return false;
+                }
                 AgentUser agent = agentManageService.getAgent(device.getAgentId());
                 if (agent == null) {
                     return false;
