@@ -33,7 +33,7 @@ public class PkgUtil {
                     res = analysisIpaFile(file);
                 }
                 break;
-            case AGENT_PACKAGE:
+            case AGENT_PAC KAGE:
                 String version = getAgentVersionFromJarFile(file);
                 Assert.notNull(version, "Agent Package File Error! Can't get Version Info");
                 res.put(AgentUpdateTask.TaskConst.PARAM_VERSION, version);
