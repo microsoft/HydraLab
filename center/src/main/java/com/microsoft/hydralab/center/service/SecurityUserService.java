@@ -70,6 +70,7 @@ public class SecurityUserService {
 
             user = sysUserService.createUserWithDefaultRole(displayName, mailAddress, defaultRole.getRoleId());
             user.setDefaultTeamId(defaultTeam.getTeamId());
+            user.setDefaultTeamName(defaultTeam.getTeamName());
             userTeamManagementService.addUserTeamRelation(defaultTeam.getTeamId(), user, false);
         }
 
