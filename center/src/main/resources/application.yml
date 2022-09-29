@@ -60,6 +60,7 @@ logging:
 
 app:
   access-token-limit: 2
+  # Mail Address Format
   default-user: ${DEFAULT_USER:@null}
   blob:
     connection: ${BLOB_CONNECTION_STR}

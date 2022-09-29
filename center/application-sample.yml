@@ -8,6 +8,7 @@ spring:
             client-secret: ${MICROSOFT_PROVIDER_AUTHENTICATION_SECRET}
 
 app:
+  # Mail Address Format
   default-user: ${DEFAULT_USER}
   blob:
     connection: ${BLOB_CONNECTION_STR}
