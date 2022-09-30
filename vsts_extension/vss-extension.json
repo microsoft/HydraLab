@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "hydra-lab",
     "name": "Hydra Lab",
-    "version": "1.0.12",
+    "version": "2.0.0",
     "publisher": "",
     "public": true,
     "targets": [
@@ -57,16 +57,23 @@
                 "authenticationSchemes": [
                     {
                         "type": "ms.vss-endpoint.endpoint-auth-scheme-token",
+                        "headers": [
+                            {
+                                "name": "Authorization",
+                                "value": "{{endpoint.apitoken}}"
+                            }
+                        ],        
                         "inputDescriptors": [
                             {
-                                "id": "authToken",
+                                "id": "apitoken",
                                 "name": "Auth Token",
-                                "description": "Enter the auth token from the Hydra Lab Console.",
+                                "description": "Enter the authentication token generated from the Hydra Lab console.",
                                 "inputMode": "textbox",
                                 "isConfidential": true,
                                 "validation": {
                                     "isRequired": true,
-                                    "dataType": "string"
+                                    "dataType": "string",
+                                    "maxLength": 100
                                 }
                             }
                         ]

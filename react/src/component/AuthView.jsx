@@ -33,6 +33,7 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import copy from 'copy-to-clipboard';
 
 
 /**
@@ -496,7 +497,7 @@ export default class AuthView extends BaseView {
     }
 
     copyContent(groupToken) {
-        navigator.clipboard.writeText(groupToken)
+        copy(groupToken)
         this.setState({
             snackbarIsShown: true,
             snackbarSeverity: "success",
