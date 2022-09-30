@@ -6,6 +6,7 @@ import com.microsoft.hydralab.center.service.*;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -201,19 +202,27 @@ public class UserTeamController {
      */
     @PostMapping(value = {"/api/userTeam/switchDefaultTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<SysUser> switchDefaultTeam(@CurrentSecurityContext SysUser requestor,
-                                             @RequestParam("mailAddress") String mailAddress,
-                                             @RequestParam("teamId") String teamId,
-                                             @RequestParam("teamName") String teamName) {
+                                             @RequestParam(value = "mailAddress", required = false) String mailAddress,
+                                             @RequestParam("teamId") String teamId) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        SysUser user = sysUserService.queryUserByMailAddress(mailAddress);
-        if (user == null) {
-            return Result.error(HttpStatus.BAD_REQUEST.value(), "USER id is wrong.");
-        }
+
         SysTeam team = sysTeamService.queryTeamById(teamId);
-        if (team == null || !team.getTeamName().equals(teamName)) {
-            return Result.error(HttpStatus.BAD_REQUEST.value(), "TEAM doesn't exist, or TEAM id doesn't match TEAM name.");
+        if (team == null) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "TEAM id is wrong.");
+        }
+        SysUser user;
+        if (StringUtils.isEmpty(mailAddress)) {
+            // [All USERs] request for self default TEAM update
+            mailAddress = requestor.getMailAddress();
+            user = requestor;
+        } else {
+            // [Admin only] request for others' default TEAM update
+            user = sysUserService.queryUserByMailAddress(mailAddress);
+            if (user == null) {
+                return Result.error(HttpStatus.BAD_REQUEST.value(), "USER id is wrong.");
+            }
         }
 
         if (sysUserService.checkUserAdmin(requestor) || mailAddress.equals(requestor.getMailAddress())) {
@@ -225,6 +234,6 @@ public class UserTeamController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized to operate on this USER");
         }
 
-        return Result.ok(sysUserService.switchUserDefaultTeam(user, teamId, teamName));
+        return Result.ok(sysUserService.switchUserDefaultTeam(user, teamId, team.getTeamName()));
     }
 }
