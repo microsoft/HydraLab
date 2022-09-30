@@ -86,6 +86,12 @@ public class SecurityUserService {
         return user;
     }
 
+    private void loadDefaultTeam(SysUser user) {
+        SysUser dbUser = sysUserService.queryUserByMailAddress(user.getMailAddress());
+        user.setDefaultTeamId(dbUser.getDefaultTeamId());
+        user.setDefaultTeamName(dbUser.getDefaultTeamName());
+    }
+
     private void loadTeamAndAdmin(SysUser user) {
         List<UserTeamRelation> relations = userTeamManagementService.queryTeamRelationsByMailAddress(user.getMailAddress());
         Map<String, Boolean> userTeamAdminMap = new HashMap<>();
@@ -134,6 +140,9 @@ public class SecurityUserService {
                 SysUser authUser = (SysUser) authentication;
 
                 switch (updateContent) {
+                    case Const.AUTH_COMPONENT.DEFAULT_TEAM:
+                        loadDefaultTeam(authUser);
+                        break;
                     case Const.AUTH_COMPONENT.TEAM:
                         loadTeamAndAdmin(authUser);
                         break;

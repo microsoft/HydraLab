@@ -233,7 +233,8 @@ public class UserTeamController {
         else {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized to operate on this USER");
         }
-
-        return Result.ok(sysUserService.switchUserDefaultTeam(user, teamId, team.getTeamName()));
+        sysUserService.switchUserDefaultTeam(user, teamId, team.getTeamName());
+        securityUserService.reloadUserAuthentication(user.getMailAddress(), Const.AUTH_COMPONENT.DEFAULT_TEAM);
+        return Result.ok(user);
     }
 }
