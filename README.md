@@ -20,7 +20,8 @@
     - [For Contributor](#for-contributor)
 - [Update Notes](#update)
 - [Contribute](#contribute)
-- [References](#references)  
+- [References](#references)
+- [Trademarks](#trademarks)  
 - [License](#license)
 
 
@@ -105,6 +106,11 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 - [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
 - [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
 - [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
+
+<span id="trademarks"></span>
+## Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft’s Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
 
 <span id="license"></span>
 ## License
