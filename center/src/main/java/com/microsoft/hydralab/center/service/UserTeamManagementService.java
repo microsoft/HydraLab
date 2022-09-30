@@ -136,6 +136,16 @@ public class UserTeamManagementService {
         return teamAdmins != null && teamAdmins.contains(mailAddress);
     }
 
+    public boolean checkUserTeamRelation(String mailAddress, String teamId) {
+        List<SysUser> users = queryUsersByTeam(teamId);
+        for (SysUser user : users) {
+            if (user.getMailAddress().equals(mailAddress)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean checkRequestorTeamRelation(SysUser requestor, String teamId) {
         return requestor.getTeamAdminMap().get(teamId) != null;
     }

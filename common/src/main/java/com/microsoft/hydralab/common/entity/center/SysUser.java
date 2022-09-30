@@ -24,6 +24,10 @@ public class SysUser implements Authentication {
     private String mailAddress;
     @Column(name = "role_id")
     private String roleId;
+    @Column(name = "default_team_id")
+    private String defaultTeamId;
+    @Column(name = "default_team_name")
+    private String defaultTeamName;
 
     // store TEAM info that the USER is in, k-v: teamId -> isTeamAdmin
     @Transient

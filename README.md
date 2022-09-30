@@ -1,16 +1,17 @@
-![Logo](docs/images/banner-made-easy.png)
 <h1 align="center">Hydra Lab</h1>
 <p align="center">Build your own cloud testing infrastructure</p>
-
 <div align="center">
 
-[![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/hydra/DeviceNetworkCI?branchName=refs%2Fpull%2F32963%2Fmerge)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=703&branchName=refs%2Fpull%2F32963%2Fmerge)
+[![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/HydraLab-CI?branchName=main)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=743&branchName=main)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
 </div>
 
 ---
+
+![Logo](docs/images/banner-made-easy.png)
+![Products](docs/images/caps_products.png)
 
 - [What is Hydra Lab and what can it do?](#what-is)
 - [Get Started](#get-started)
@@ -19,7 +20,8 @@
     - [For Contributor](#for-contributor)
 - [Update Notes](#update)
 - [Contribute](#contribute)
-- [References](#references)  
+- [References](#references)
+- [Trademarks](#trademarks)  
 - [License](#license)
 
 
@@ -65,8 +67,8 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 <span id="for-user"></span>
 ### For Hydra Lab User:
 
-- [Develop and Package a Test Project](https://github.com/microsoft/HydraLab/wiki/1.-Get-Started:-Develop-and-Package-a-Test-Project)
-- [Run a Test Task in Hydra Lab](https://github.com/microsoft/HydraLab/wiki/2.-Get-Started:-Run-a-Test-Task-in-Hydra-Lab)
+- [Develop and Package a Test Project](https://github.com/microsoft/HydraLab/wiki/1.-Get-Started-%E2%80%94-Develop-and-Package-a-Test-Project)
+- [Run a Test Task in Hydra Lab](https://github.com/microsoft/HydraLab/wiki/2.-Get-Started-%E2%80%94-Run-a-Test-Task-in-Hydra-Lab)
 - [How to Deploy an Agent](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent)
 - [How to Develop Appium Test Project](https://github.com/microsoft/HydraLab/wiki/4.-How-to-Develop-Appium-Test-Project)
 
@@ -88,9 +90,8 @@ We are happy to hear your ideas for the future of Hydra Lab. Check the [GitHub I
 
 The Hydra Lab team encourages community feedback and contributions. Thank you for your interest in making Hydra Lab better!
 
-![contribute](https://img.shields.io/badge/contributors-7-brightgreen)
-
-![Contributors](docs/images/contributor.png)
+<!--TODO: Generate an image of contributors to keep our README.md in sync. The image can be generated after the status of repo is public.  -->
+<!--TODO: For more details, please refer: https://contrib.rocks/preview?repo=microsoft%2Fjust  -->
 
 <span id="contact"></span>
 ## Contact Us
@@ -102,7 +103,14 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 <span id="references"></span>
 ## References
 
-[Secure a Java web app using the Spring Boot Starter for Azure Active Directory](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory)
+- [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
+- [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
+- [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
+
+<span id="trademarks"></span>
+## Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft’s Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
 
 <span id="license"></span>
 ## License
