@@ -141,6 +141,8 @@ class TasksView extends BaseView {
         const selectedParams = this.state.selectedParams
         const thisEleObj = this
 
+        let tableBodyHeight = 900
+
         // const headItems = ['Time', 'Suite', 'Devices', 'Test Type', 'Success/Total', 'Trigger Type']
         // const headItems = ['Devices', 'Test Type', 'Success/Total', 'Trigger Type']
         if (tasks) {
@@ -152,6 +154,10 @@ class TasksView extends BaseView {
                 runningTasks.forEach((rt) => {
                     rows.unshift(thisEleObj.getTaskRow(rt, true))
                 })
+            }
+
+            if (rows.length * 90 < tableBodyHeight) {
+                tableBodyHeight = rows.length * 90
             }
 
             heads.push(
@@ -308,7 +314,7 @@ class TasksView extends BaseView {
         return <div>
             <Typography variant="h4" className="m-2">
                 Test Task History</Typography>
-            <TableContainer style={{ margin: "auto", overflowY: 'initial', height: '1000px' }}>
+            <TableContainer style={{ margin: "auto", overflowY: 'initial', height: `${tableBodyHeight + 100}px` }}>
                 <Table stickyHeader size="medium">
                     <TableHead>
                         <TableRow>
@@ -327,7 +333,7 @@ class TasksView extends BaseView {
                             </TableCell>
                         </TableRow>
                     </TableBody>
-                    <TableBody align="center" style={{ height: '900px' }}>
+                    <TableBody align="center" style={{ height: `${tableBodyHeight}px` }}>
                         {rows}
                     </TableBody>
                 </Table>
