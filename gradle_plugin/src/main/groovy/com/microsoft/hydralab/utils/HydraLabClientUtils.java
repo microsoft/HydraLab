@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
 package com.microsoft.hydralab.utils;
 
 import com.google.gson.*;
@@ -478,11 +476,13 @@ public class HydraLabClientUtils {
         MediaType contentType = MediaType.get("application/vnd.android.package-archive");
         MultipartBody.Builder multipartBodyBuilder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("teamName", apiConfig.teamName)
                 .addFormDataPart("commitId", commitId)
                 .addFormDataPart("commitCount", commitCount)
                 .addFormDataPart("commitMessage", commitMsg)
                 .addFormDataPart("appFile", app.getName(), RequestBody.create(contentType, app));
+        if (!StringUtils.isEmpty(apiConfig.teamName)) {
+            multipartBodyBuilder.addFormDataPart("teamName", apiConfig.teamName);
+        }
         if (testApp != null) {
             multipartBodyBuilder.addFormDataPart("testAppFile", testApp.getName(), RequestBody.create(contentType, testApp));
         }
@@ -732,8 +732,7 @@ public class HydraLabClientUtils {
         public int deviceTestCount = -1;
         public boolean needUninstall = true;
         public boolean needClearData = true;
-        // todo: changed to optional variable with no default value later, when backend API is updated (set within API with default value then).
-        public String teamName = "Default";
+        public String teamName = "";
 
         public static HydraLabAPIConfig defaultAPI() {
             return new HydraLabAPIConfig();

@@ -52,6 +52,16 @@ public class SysUserService {
         return sysUserRepository.findAll();
     }
 
+    public SysUser switchUserDefaultTeam(SysUser user, String defaultTeamId, String defaultTeamName) {
+        if (user.getDefaultTeamId().equals(defaultTeamId)) {
+            return user;
+        }
+
+        user.setDefaultTeamId(defaultTeamId);
+        user.setDefaultTeamName(defaultTeamName);
+        return updateUser(user);
+    }
+
     public SysUser switchUserRole(SysUser user, String roleId) {
         if (user.getRoleId().equals(roleId)) {
             return user;

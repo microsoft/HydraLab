@@ -15,6 +15,7 @@ import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.entity.common.BlobFileInfo.ParserKey;
 import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.PkgUtil.FILE_SUFFIX;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -59,8 +60,7 @@ public class PackageSetController {
      */
     @PostMapping(value = {"/api/package/add"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result add(@CurrentSecurityContext SysUser requestor,
-                      // todo: required = false when default TEAM is enabled
-                      @RequestParam(value = "teamName") String teamName,
+                      @RequestParam(value = "teamName", required = false) String teamName,
                       @RequestParam(value = "commitId", required = false) String commitId,
                       @RequestParam(value = "commitCount", defaultValue = "-1") String commitCount,
                       @RequestParam(value = "commitMessage", defaultValue = "") String commitMessage,
@@ -70,9 +70,9 @@ public class PackageSetController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-//        if (StringUtils.isEmpty(teamName)){
-//            // todo: use user's default Team for package uploading
-//        }
+        if (StringUtils.isEmpty(teamName)){
+            teamName = requestor.getDefaultTeamName();
+        }
         SysTeam team = sysTeamService.queryTeamByName(teamName);
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
@@ -83,7 +83,7 @@ public class PackageSetController {
         if (appFile.isEmpty()) {
             return Result.error(HttpStatus.FORBIDDEN.value(), "apk file empty");
         }
-        if (!LogUtils.isLegalStr(commitId, Const.RegexString.COMMON_STR, false)) {
+        if (!LogUtils.isLegalStr(commitId, Const.RegexString.COMMON_STR, true)) {
             commitId = "commitId";
         }
         if (!LogUtils.isLegalStr(buildType, Const.RegexString.COMMON_STR, false)) {
@@ -229,19 +229,18 @@ public class PackageSetController {
      */
     @PostMapping(value = {"/api/package/uploadJson"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result uploadTestJson(@CurrentSecurityContext SysUser requestor,
-                                 // todo: required = false when default TEAM is enabled
-                                 @RequestParam(value = "teamName") String teamName,
+                                 @RequestParam(value = "teamName", required = false) String teamName,
                                  @RequestParam(value = "packageName") String packageName,
                                  @RequestParam(value = "caseName") String caseName,
                                  @RequestParam(value = "testJsonFile") MultipartFile testJsonFile) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-//        if (StringUtils.isEmpty(teamId)){
-//            // todo: use user's default Team for uploadTestJson
-//        }
         if (!LogUtils.isLegalStr(packageName, Const.RegexString.PACKAGE_NAME, false)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "The packagename is illegal");
+        }
+        if (StringUtils.isEmpty(teamName)){
+            teamName = requestor.getDefaultTeamName();
         }
         SysTeam team = sysTeamService.queryTeamByName(teamName);
         if (team == null) {
@@ -322,7 +321,7 @@ public class PackageSetController {
 
         return Result.ok(testJsonInfoList);
     }
-    
+
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping("/api/package/queryAgentPackage")
     public Result queryAgentPackage() {
