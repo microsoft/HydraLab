@@ -13,10 +13,9 @@
         "npm"
     ],
     "version": {
-        "Major": 1,
+        "Major": 2,
         "Minor": 0,
-        "Patch": 12
-
+        "Patch": 0
     },
     "instanceNameFormat": "Deploy Tests of ${pkgName} to HydraLab",
     "inputs": [
@@ -32,6 +31,14 @@
             "helpMarkDown": "Hydra Lab service connection that is configured with your account credentials."
         },
         {
+            "name": "teamName",
+            "type": "string",
+            "label": "Team Name",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Team Name"
+        },
+        {
             "name": "runningType",
             "type": "pickList",
             "label": "Type of Test",
@@ -41,9 +48,11 @@
             "options": {
                 "INSTRUMENTATION": "INSTRUMENTATION",
                 "APPIUM": "APPIUM",
+                "APPIUM_CROSS": "APPIUM E2E TEST",
                 "SMART": "SMART TEST",
                 "MONKEY": "MONKEY TEST",
-                "APPIUM_MONKEY": "APPIUM MONKEY TEST"
+                "APPIUM_MONKEY": "APPIUM MONKEY TEST",
+                "T2C_JSON": "TAP TO CASES TEST"
             }
         },
         {
@@ -57,7 +66,7 @@
                 "JUnit4": "JUnit4",
                 "JUnit5": "JUnit5"
             },
-            "visibleRule": "runningType = APPIUM"
+            "visibleRule": "runningType = APPIUM || runningType = APPIUM_CROSS"
         },
         {
             "name": "pkgPath",
@@ -82,7 +91,7 @@
             "defaultValue": "",
             "required": true,
             "helpMarkDown": "Path to Test Application.",
-            "visibleRule": "runningType = INSTRUMENTATION || runningType = APPIUM"
+            "visibleRule": "runningType = INSTRUMENTATION || runningType = APPIUM || runningType = APPIUM_CROSS || runningType = T2C_JSON"
         },
         {
             "name": "pkgName",
@@ -108,16 +117,24 @@
             "defaultValue": "",
             "required": true,
             "helpMarkDown": "The test suite class name of your test app.",
-            "visibleRule": "runningType = INSTRUMENTATION || runningType = APPIUM"
+            "visibleRule": "runningType = INSTRUMENTATION || runningType = APPIUM || runningType = APPIUM_CROSS"
+        },
+        {
+            "name": "attachmentsInfo",
+            "type": "multiLine",
+            "label": "Attachments Info",
+            "defaultValue": "[\n{\n\t\"fileName\": \"\", \n\t\"filePath\": \"\",\n\t\"fileType\": \"\",\n\t\"loadType\": \"\",\n\t\"loadDir\": \"\"\n},\n...\n]",
+            "required": false,
+            "helpMarkDown": "Attachments Info."
         },
         {
             "name": "maxStepCount",
             "type": "string",
             "label": "Max Step Count",
-            "defaultValue": "",
-            "required": true,
-            "helpMarkDown": "The max Step of Smart Test.",
-            "visibleRule": "runningType = SMART"
+            "defaultValue": "100",
+            "required": false,
+            "helpMarkDown": "The max Step of Smart Test or Appium Monkey Test.",
+            "visibleRule": "runningType = SMART || runningType = APPIUM_MONKEY"
         },
         {
             "name": "deviceTestCount",
@@ -159,12 +176,30 @@
             "helpMarkDown": "Timeout Sec."
         },
         {
+            "name": "needUninstall",
+            "type": "boolean",
+            "label": "Need Uninstall",
+            "defaultValue": true,
+            "required": true,
+            "helpMarkDown": "Need Uninstall.",
+            "visibleRule": "runningType = APPIUM_CROSS || runningType = T2C_JSON"
+        },
+        {
+            "name": "needClearData",
+            "type": "boolean",
+            "label": "Need Clear Data",
+            "defaultValue": false,
+            "required": true,
+            "helpMarkDown": "Need Clear Data.",
+            "visibleRule": "runningType = APPIUM_CROSS || runningType = T2C_JSON"
+        },
+        {
             "name": "instrumentationArgs",
             "type": "string",
             "label": "Instrumentation Args",
             "defaultValue": "",
             "required": false,
-            "helpMarkDown": "Arg1=Value1, Arg2=Value2."
+            "helpMarkDown": "Example: Arg1=Value1, Value2; Arg2=Value3"
         },
         {
             "name": "runningInfo",
