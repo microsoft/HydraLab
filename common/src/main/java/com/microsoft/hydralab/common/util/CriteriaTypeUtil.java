@@ -54,7 +54,7 @@ public class CriteriaTypeUtil<T> {
 
         switch (op) {
             case OpType.Equal:
-                predicate = criteriaBuilder.equal(root.get(key), value);
+                predicate = criteriaBuilder.equal(root.get(key).as(String.class), value);
                 break;
             case OpType.GreaterThan:
                 Assert.isTrue(!StringUtils.isEmpty(value), "When querying with gt, the value of criteriaType can't be empty!");
