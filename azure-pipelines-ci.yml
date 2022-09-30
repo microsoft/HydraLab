@@ -13,7 +13,7 @@ variables:
   version: '$(Build.BuildId)'
   # Agent VM image name
   vmImageName: 'windows-latest'
-  fullBuild: $[ne(variables['Build.Reason'], 'PullRequest')]
+  fullBuild: $[eq(variables['Build.Reason'], 'PullRequest')]
 
 stages:
 - stage: Build
