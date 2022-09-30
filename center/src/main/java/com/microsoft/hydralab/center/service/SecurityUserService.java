@@ -47,20 +47,30 @@ public class SecurityUserService {
     SessionRegistry sessionRegistry;
     @Value("${app.default-user}")
     String defaultUser;
+    @Value("${spring.security.oauth2.enabled}")
+    boolean enabledAuth;
 
     public Authentication loadUserAuthentication(String mailAddress, String accessToken) {
         SysUser user = sysUserService.queryUserByMailAddress(mailAddress);
+
         if (user == null) {
-            if (StringUtils.isEmpty(accessToken)) {
-                return null;
+            String displayName;
+            if (enabledAuth) {
+                if (StringUtils.isEmpty(accessToken)) {
+                    return null;
+                }
+                displayName = authUtil.getLoginUserDisplayName(accessToken);
+            } else {
+                displayName = defaultUser;
             }
 
             // load user entity for first-time login USER with Default TEAM and ROLE
             SysRole defaultRole = sysRoleService.getOrCreateDefaultRole(Const.DefaultRole.USER, 100);
             SysTeam defaultTeam = sysTeamService.getOrCreateDefaultTeam(Const.DefaultTeam.DEFAULT_TEAM_NAME);
-            String displayName = authUtil.getLoginUserDisplayName(accessToken);
 
             user = sysUserService.createUserWithDefaultRole(displayName, mailAddress, defaultRole.getRoleId());
+            user.setDefaultTeamId(defaultTeam.getTeamId());
+            user.setDefaultTeamName(defaultTeam.getTeamName());
             userTeamManagementService.addUserTeamRelation(defaultTeam.getTeamId(), user, false);
         }
 
@@ -68,7 +78,6 @@ public class SecurityUserService {
         if (StringUtils.isEmpty(user.getAccessToken())) {
             user.setAccessToken(accessToken);
         }
-
         // load bound relation and teamAdmin identity
         loadTeamAndAdmin(user);
         // load ROLE/PERMISSION as authorities of a user, used for different scopes of permission checking.
@@ -77,23 +86,10 @@ public class SecurityUserService {
         return user;
     }
 
-    public Authentication loadDefaultUserAuthentication() {
-        SysUser user = sysUserService.queryUserByMailAddress(defaultUser);
-        if (user == null) {
-            // load user entity for first-time login USER with Default TEAM and ROLE
-            SysRole defaultRole = sysRoleService.getOrCreateDefaultRole(Const.DefaultRole.USER, 100);
-            SysTeam defaultTeam = sysTeamService.getOrCreateDefaultTeam(Const.DefaultTeam.DEFAULT_TEAM_NAME);
-
-            user = sysUserService.createUserWithDefaultRole(defaultUser, defaultUser, defaultRole.getRoleId());
-            userTeamManagementService.addUserTeamRelation(defaultTeam.getTeamId(), user, false);
-        }
-
-        // load bound relation and teamAdmin identity
-        loadTeamAndAdmin(user);
-        // load ROLE/PERMISSION as authorities of a user, used for different scopes of permission checking.
-        loadGrantedAuthority(user);
-
-        return user;
+    private void loadDefaultTeam(SysUser user) {
+        SysUser dbUser = sysUserService.queryUserByMailAddress(user.getMailAddress());
+        user.setDefaultTeamId(dbUser.getDefaultTeamId());
+        user.setDefaultTeamName(dbUser.getDefaultTeamName());
     }
 
     private void loadTeamAndAdmin(SysUser user) {
@@ -125,7 +121,7 @@ public class SecurityUserService {
 
     public void addDefaultUserSession(HttpSession session) {
         sessionManageService.putUserSession(defaultUser, session);
-        Authentication authObj = loadDefaultUserAuthentication();
+        Authentication authObj = loadUserAuthentication(defaultUser, null);
         SecurityContextHolder.getContext().setAuthentication(authObj);
         // only register session in front-end requests to avoid repeatable add-delete action of session storage for API requests
         sessionRegistry.registerNewSession(session.getId(), defaultUser);
@@ -144,6 +140,9 @@ public class SecurityUserService {
                 SysUser authUser = (SysUser) authentication;
 
                 switch (updateContent) {
+                    case Const.AUTH_COMPONENT.DEFAULT_TEAM:
+                        loadDefaultTeam(authUser);
+                        break;
                     case Const.AUTH_COMPONENT.TEAM:
                         loadTeamAndAdmin(authUser);
                         break;

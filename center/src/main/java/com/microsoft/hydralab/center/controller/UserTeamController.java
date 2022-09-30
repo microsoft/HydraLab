@@ -6,6 +6,7 @@ import com.microsoft.hydralab.center.service.*;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -192,5 +193,48 @@ public class UserTeamController {
         }
 
         return Result.ok(userTeamManagementService.queryTeamsByUser(requestor.getMailAddress()));
+    }
+
+    /**
+     * Authenticated USER:
+     * 1) USERs with ROLE SUPER_ADMIN/ADMIN can switch all USER's default TEAM info
+     * 2) USERs can switch their own default TEAM info
+     */
+    @PostMapping(value = {"/api/userTeam/switchDefaultTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<SysUser> switchDefaultTeam(@CurrentSecurityContext SysUser requestor,
+                                             @RequestParam(value = "mailAddress", required = false) String mailAddress,
+                                             @RequestParam("teamId") String teamId) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+
+        SysTeam team = sysTeamService.queryTeamById(teamId);
+        if (team == null) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "TEAM id is wrong.");
+        }
+        SysUser user;
+        if (StringUtils.isEmpty(mailAddress)) {
+            // [All USERs] request for self default TEAM update
+            mailAddress = requestor.getMailAddress();
+            user = requestor;
+        } else {
+            // [Admin only] request for others' default TEAM update
+            user = sysUserService.queryUserByMailAddress(mailAddress);
+            if (user == null) {
+                return Result.error(HttpStatus.BAD_REQUEST.value(), "USER id is wrong.");
+            }
+        }
+
+        if (sysUserService.checkUserAdmin(requestor) || mailAddress.equals(requestor.getMailAddress())) {
+            if (!userTeamManagementService.checkUserTeamRelation(mailAddress, teamId)) {
+                return Result.error(HttpStatus.BAD_REQUEST.value(), "USER isn't under the TEAM, cannot switch the default TEAM to it.");
+            }
+        }
+        else {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized to operate on this USER");
+        }
+        sysUserService.switchUserDefaultTeam(user, teamId, team.getTeamName());
+        securityUserService.reloadUserAuthentication(user.getMailAddress(), Const.AUTH_COMPONENT.DEFAULT_TEAM);
+        return Result.ok(user);
     }
 }
