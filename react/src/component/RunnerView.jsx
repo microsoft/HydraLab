@@ -37,6 +37,7 @@ import Tooltip from '@mui/material/Tooltip';
 import BaseView from "@/component/BaseView";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import {FormHelperText} from "@mui/material";
+import { DialogContentText } from '@material-ui/core';
 
 /**
  * Palette
@@ -87,11 +88,13 @@ export default class RunnerView extends BaseView {
 
         attachmentsDiaglogISshow: false,
         addAttachmentIsShow: false,
+        attachmentDeleteDialogIsShow: false,
         attachmentUploading: false,
         fileType: "COMMON",
         loadType: "COPY",
         loadDir: "",
         uploadAttachmentFile: null,
+        toBeDeletedAttachmentId: null,
 
         runTestType: "APPIUM",
         testSuiteClass: "",
@@ -172,7 +175,7 @@ export default class RunnerView extends BaseView {
                             <a href={t.blobUrl}> Download URL </a>
                         </TableCell>
                         <TableCell id={t.fileId}>
-                            <IconButton id={t.fileId} onClick={this.deleteAttachment}>
+                            <IconButton id={t.fileId} onClick={this.showDeleteDialog}>
                                 <span id={t.fileId} className="material-icons-outlined">delete</span>
                             </IconButton>
                         </TableCell>
@@ -371,20 +374,21 @@ export default class RunnerView extends BaseView {
                             </TableBody>
                         </Table>
                     </TableContainer>
-                    <Stack className='m-3' direction="row" spacing={1}
-                        justifyContent="flex-end">
-                        <LoadingButton
-                            variant="contained"
-                            className="pl-4 pr-4"
-                            loading={attachmentUploading}
-                            loadingPosition="end"
-                            onClick={() => this.handleStatus("addAttachmentIsShow", true)}
-                            endIcon={<span
-                                className="material-icons-outlined">file_upload</span>}>
-                            Add attachments
-                        </LoadingButton>
-                    </Stack>
                 </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => this.handleStatus("attachmentsDiaglogISshow", false)}>Cancel</Button>
+                    <LoadingButton
+                        variant="contained"
+                        className="pl-4 pr-4"
+                        loading={attachmentUploading}
+                        loadingPosition="end"
+                        onClick={() => this.handleStatus("addAttachmentIsShow", true)}
+                        endIcon={<span
+                            className="material-icons-outlined">file_upload</span>}>
+                        Add attachments
+                    </LoadingButton>
+                </DialogActions>
             </Dialog>
             <Dialog open={addAttachmentIsShow}
                 fullWidth={true}
@@ -446,20 +450,37 @@ export default class RunnerView extends BaseView {
                             variant="standard"
                             value={loadDir}
                         />
-                        <br />
-                        <Stack className='m-3' direction="row" spacing={2}
-                            justifyContent="flex-end">
-                            <LoadingButton
-                                variant="contained"
-                                loadingPosition="end"
-                                onClick={() => this.uploadAttachment()}
-                                endIcon={<span
-                                    className="material-icons-outlined">file_upload</span>}>
-                                Add attachments
-                            </LoadingButton>
-                        </Stack>
                     </Box>
                 </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => this.handleStatus("addAttachmentIsShow", false)}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        onClick={() => this.uploadAttachment()}
+                        endIcon={<span className="material-icons-outlined">file_upload</span>}>
+                        Add attachments
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={this.state.attachmentDeleteDialogIsShow}
+                onClose={() => this.handleStatus("attachmentDeleteDialogIsShow", false)}
+            >
+                <DialogTitle> Delete this attachment? </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Please confirm if you want to delete this attachment, this operation is irreversible
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => this.handleStatus("attachmentDeleteDialogIsShow", false)}>
+                        Cancel
+                    </Button>
+                    <Button onClick={() => this.deleteAttachment()}>
+                        Confirm
+                    </Button>
+                </DialogActions>
             </Dialog>
 
             <Snackbar
@@ -962,12 +983,18 @@ export default class RunnerView extends BaseView {
         })
     }
 
-    deleteAttachment = (element) => {
+    showDeleteDialog = (element) => {
         console.log("fileId = " + element.target.id)
+        this.setState({
+            toBeDeletedAttachmentId: element.target.id,
+            attachmentDeleteDialogIsShow: true,
+        })
+    }
 
+    deleteAttachment = () => {
         const formData = new FormData()
         formData.append("fileSetId", this.state.currentAppId)
-        formData.append("fileId", element.target.id)
+        formData.append("fileId", this.state.toBeDeletedAttachmentId)
 
         axios.post('/api/package/removeAttachment', formData, {
             headers: { 'content-type': 'application/json' }
@@ -986,6 +1013,7 @@ export default class RunnerView extends BaseView {
             this.snackBarFail(error)
         })
         this.setState({
+            attachmentDeleteDialogIsShow: false,
         })
     }
 
