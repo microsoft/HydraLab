@@ -12,6 +12,14 @@ import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 import axios from "@/axios";
 import React from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
 
 export default class HeaderView extends BaseView {
 
@@ -20,18 +28,25 @@ export default class HeaderView extends BaseView {
         avatarOpen: false,
         helpOpen: false,
         portalVersion: "",
+
+        changeDefaultTeamIsShown: false,
+        selectedTeamId: null
     }
 
     render() {
-        const settings = [this.state.userName, 'Logout'];
+        const settings = [
+            { text: this.state.userName, dialog: null },
+            { text: `Current Default Team: ${this.state.defaultTeam ? this.state.defaultTeam.teamName : 'Loading'}`, dialog: 'changeDefaultTeamIsShown' },
+            { text: 'Logout', dialog: null }
+        ];
         const helpSettings = [
             { text: 'Feedback', href: 'https://forms.office.com/r/0wnc2Sk0tp' },
             { text: 'Wiki', href: 'https://github.com/microsoft/HydraLab/wiki' },
             { text: 'About', href: 'https://microsoft.github.io/HydraLab/' }
         ];
+        const {teamList, changeDefaultTeamIsShown} = this.state
 
-        return (
-            <Stack direction="row" spacing={2} sx={{flexGrow: 1}}
+        return <Stack direction="row" spacing={2} sx={{flexGrow: 1}}
                    justifyContent="flex-start">
                 <Stack direction="column" justifyContent="center"
                        alignItems="flex-start" spacing={2}>
@@ -97,13 +112,44 @@ export default class HeaderView extends BaseView {
                         onClose={() => this.handleStatus("avatarOpen", false)}
                     >
                         {settings.map((setting) => (
-                            <MenuItem key={setting}>
-                                <Typography textAlign="center">{setting}</Typography>
+                            <MenuItem key={setting.text} onClick={() => this.handleStatus(setting.dialog, true)}>
+                                <Typography textAlign="center">{setting.text}</Typography>
                             </MenuItem>
                         ))}
                     </Menu>
                 </Box>
-            </Stack>);
+                <Dialog open={changeDefaultTeamIsShown}
+                        fullWidth={true}
+                        onClose={() => this.handleStatus("changeDefaultTeamIsShown", false)}>
+                    <DialogTitle>Change Default Team</DialogTitle>
+                    <DialogContent>
+                        <FormControl required variant="standard" fullWidth={true}>
+                            <InputLabel id="agent-team-select-label" >Team</InputLabel>
+                            <Select
+                                labelId="agent-team-select-label"
+                                id="agent-team-select"
+                                label="Team"
+                                size="small"
+                                value={teamList ? this.state.selectedTeamId : 'None_Team'}
+                                onChange={(select) => this.handleStatus('selectedTeamId', select.target.value)}
+                            >
+                                {teamList ? null : <MenuItem value={'None_Team'}>No team available</MenuItem>}
+                                {teamList ? teamList.map((team, index) => (
+                                    <MenuItem value={team.teamId} key={team.teamId}>{team.teamName}</MenuItem>
+                                )) : null}
+                            </Select>
+                        </FormControl> <br/>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => this.handleStatus("changeDefaultTeamIsShown", false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={() => this.changeDefaultTeam()}>
+                            Save
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+        </Stack>
     }
 
     getLoginInfo = () => {
@@ -130,7 +176,35 @@ export default class HeaderView extends BaseView {
         }
     }
 
+    changeDefaultTeam() {
+        const formParams = new URLSearchParams()
+        formParams.append("teamId", this.state.selectedTeamId)
+
+        axios.post('/api/userTeam/switchDefaultTeam', formParams, {
+            headers: {'content-type': 'application/x-www-form-urlencoded'}
+        }).then(res => {
+            if (res.data.code === 200) {
+                this.setState({
+                    snackbarSeverity: "success",
+                    snackbarMessage: "Default team successfully updated",
+                    snackbarIsShown: true,
+                    selectedTeamId: null
+                })
+            } else {
+                this.snackBarFail(res)
+            }
+        }).catch((error) => {
+            this.snackBarError(error)
+        })
+
+        this.setState({
+            changeDefaultTeamIsShown: false,
+        })
+    }
+
     componentDidMount() {
         this.getLoginInfo()
+        this.refreshTeamList()
+        this.getUserTeamInfo()
     }
 }
