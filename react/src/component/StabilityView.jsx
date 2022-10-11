@@ -262,7 +262,7 @@ export default class StabilityView extends BaseView {
             hideSkeleton: false
         })
         axios.get('/api/test/case/unit/list').then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 const units = res.data.content;
                 console.log(units)
                 this.setState({

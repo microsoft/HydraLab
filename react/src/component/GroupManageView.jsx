@@ -375,7 +375,7 @@ export default class GroupManageView extends BaseView {
         }
 
         axios.get('/api/deviceGroup/create/', {params} ).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Group successfully created",
@@ -398,7 +398,7 @@ export default class GroupManageView extends BaseView {
     deleteGroup = () => {
         this.handleStatus("groupDeleteDialogIsShown", false);
         axios.get('/api/deviceGroup/delete/?groupName=' + this.state.toBeDeletedGroupName).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarIsShown: true,
                     snackbarSeverity: "success",
@@ -430,7 +430,7 @@ export default class GroupManageView extends BaseView {
         axios.post('/api/deviceGroup/addRelation/', formParams, {
             headers: {'content-type': 'application/x-www-form-urlencoded'}
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     addDeviceDialog: false,
                     deviceAccessKey: null,
@@ -463,7 +463,7 @@ export default class GroupManageView extends BaseView {
         axios.post('/api/deviceGroup/deleteRelation/', formParams, {
             headers: {'content-type': 'application/x-www-form-urlencoded'}
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Device successfully deleted",
@@ -481,7 +481,7 @@ export default class GroupManageView extends BaseView {
     verifyChange = (groupName, isPrivate) => {
         axios.get('/api/deviceGroup/' + (isPrivate ? 'disableVerify' : 'enableVerify') + '/?groupName=' + groupName)
             .then(res => {
-                if (res.data.code === 200) {
+                if (res.data && res.data.code === 200) {
                     this.setState({
                         snackbarIsShown: true,
                         snackbarSeverity: "success",
@@ -499,7 +499,7 @@ export default class GroupManageView extends BaseView {
     genericToken = (groupName) => {
         axios.get('/api/deviceGroup/generate?deviceIdentifier=' + groupName)
             .then(res => {
-                if (res.data.code === 200) {
+                if (res.data && res.data.code === 200) {
                     this.setState({
                         groupToken: res.data.content.key
                     })
@@ -517,7 +517,7 @@ export default class GroupManageView extends BaseView {
             hideSkeleton: false
         })
         axios.get('/api/deviceGroup/queryGroups').then(res => {
-                if (res.data.code === 200) {
+                if (res.data && res.data.code === 200) {
                     const groups = res.data.content;
                     console.log(groups)
                     this.setState({
@@ -540,7 +540,7 @@ export default class GroupManageView extends BaseView {
 
     refreshDevices = (groupName) => {
         axios.get('/api/deviceGroup/queryDeviceList/?groupName=' + groupName).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 const devices = res.data.content;
                 console.log(devices)
                 this.setState({

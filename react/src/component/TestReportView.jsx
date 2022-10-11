@@ -483,7 +483,7 @@ export default class TestReportView extends React.Component {
         console.log(postBody)
 
         axios.post(`/api/test/task/list`, postBody).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 const tasks = res.data.content.content;
                 console.log(res.data)
                 this.setState({

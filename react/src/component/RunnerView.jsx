@@ -37,6 +37,7 @@ import Tooltip from '@mui/material/Tooltip';
 import BaseView from "@/component/BaseView";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import {FormHelperText} from "@mui/material";
+import { DialogContentText } from '@material-ui/core';
 
 /**
  * Palette
@@ -76,6 +77,7 @@ export default class RunnerView extends BaseView {
         uploadTestDesc: null,
 
         currentAppId: "",
+        currentAppInfo: null,
         currentAppInstallerType: "",
         currentAppPackageName: "",
         currentTestPackageName: "",
@@ -83,6 +85,16 @@ export default class RunnerView extends BaseView {
         running: false,
         runTestDialogIsShown: false,
         activeStep: 0,
+
+        attachmentsDiaglogISshow: false,
+        addAttachmentIsShow: false,
+        attachmentDeleteDialogIsShow: false,
+        attachmentUploading: false,
+        fileType: "COMMON",
+        loadType: "COPY",
+        loadDir: "",
+        uploadAttachmentFile: null,
+        toBeDeletedAttachmentId: null,
 
         runTestType: "APPIUM",
         testSuiteClass: "",
@@ -103,6 +115,8 @@ export default class RunnerView extends BaseView {
         const { uploadDialogIsShown, uploading } = this.state
 
         const { runTestDialogIsShown, running } = this.state
+        const { attachmentsDiaglogISshow, addAttachmentIsShow, attachmentUploading } = this.state
+        const { fileType, loadType, loadDir } = this.state
 
         const {teamList} = this.state
 
@@ -112,7 +126,10 @@ export default class RunnerView extends BaseView {
         const appSetList = this.state.appSetList
         const rows = []
         const heads = []
-        const headItems = ['', 'App name', 'Package name', 'Version', 'Build Description']
+        const headItems = ['', 'App name', 'Package name', 'Version', 'Build Description', 'Attachments']
+        const attachmentsRows = []
+        const attachmentsHeads = []
+        const attachmentsHeadItems = ['File Name', 'Actions', 'File Type', ' LoadType', 'Load Dir']
 
         if (appSetList) {
             appSetList.forEach((appSet) => {
@@ -134,11 +151,49 @@ export default class RunnerView extends BaseView {
                     <TableCell id={appSet.id} align="center" style={{ wordBreak: "break-all" }}>
                         {appSet.commitMessage}
                     </TableCell>
+                    <TableCell id={appSet.id} align="center">
+                        <IconButton id={appSet.id} onClick={() => { this.handleStatus("attachmentsDiaglogISshow", true) }}>
+                            <span id={appSet.id} className="material-icons-outlined">info</span>
+                        </IconButton>
+                    </TableCell>
                 </StyledTableRow>)
             })
         }
 
         headItems.forEach((k) => heads.push(<StyledTableCell key={k} align="center">
+            {k}
+        </StyledTableCell>))
+
+        if (this.state.currentAppInfo && this.state.currentAppInfo.attachments) {
+            this.state.currentAppInfo.attachments.forEach((t) => {
+                if (t.fileType !== "APP" && t.fileType !== "TEST_APP") {
+                    attachmentsRows.push(<StyledTableRow key={t.fileId} id={t.fileId} hover>
+                        <TableCell id={t.fileId} align="center">
+                            {t.fileName}
+                        </TableCell>
+                        <TableCell id={t.fileId} align="center">
+                            <IconButton id={t.fileId} onClick={this.showDeleteDialog}>
+                                <span id={t.fileId} className="material-icons-outlined">delete</span>
+                            </IconButton>
+                            <IconButton id={t.fileId} href={t.blobUrl}>
+                                <span id={t.fileId} className="material-icons-outlined">download</span>
+                            </IconButton>
+                        </TableCell>
+                        <TableCell id={t.fileId} align="center">
+                            {t.fileType}
+                        </TableCell>
+                        <TableCell id={t.fileId} align="center">
+                            {t.loadType}
+                        </TableCell>
+                        <TableCell id={t.fileId} align="center">
+                            {t.loadDir}
+                        </TableCell>
+                    </StyledTableRow>)
+                }
+            })
+        }
+
+        attachmentsHeadItems.forEach((k) => attachmentsHeads.push(<StyledTableCell key={k} align="center">
             {k}
         </StyledTableCell>))
 
@@ -311,6 +366,133 @@ export default class RunnerView extends BaseView {
                     </React.Fragment>
                 </DialogContent>
             </Dialog>
+            <Dialog open={attachmentsDiaglogISshow}
+                fullWidth={true} maxWidth='lg'
+                onClose={() => this.handleStatus("attachmentsDiaglogISshow", false)}>
+                <DialogTitle>Attachments</DialogTitle>
+                <DialogContent>
+                    <TableContainer style={{ margin: "auto" }}>
+                        <Table size="medium">
+                            <TableHead>
+                                <TableRow>
+                                    {attachmentsHeads}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {attachmentsRows}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => this.handleStatus("attachmentsDiaglogISshow", false)}>Cancel</Button>
+                    <LoadingButton
+                        variant="contained"
+                        className="pl-4 pr-4"
+                        loading={attachmentUploading}
+                        loadingPosition="end"
+                        onClick={() => this.handleStatus("addAttachmentIsShow", true)}
+                        endIcon={<span
+                            className="material-icons-outlined">file_upload</span>}>
+                        Add attachments
+                    </LoadingButton>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={addAttachmentIsShow}
+                fullWidth={true}
+                onClose={() => this.handleStatus("addAttachmentIsShow", false)}>
+                <DialogTitle>Add Attachments</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', pt: 3 }}>
+                        <FormControl required fullWidth={true}>
+                            <Button
+                                component="label"
+                                variant="outlined"
+                                startIcon={<UploadFileIcon />}>
+                                {this.state.uploadAttachmentFile ? this.state.uploadAttachmentFile.name : 'Attachment file'}
+                                <input id="uploadAttachmentFile"
+                                    type="file"
+                                    accept=".*"
+                                    hidden
+                                    onChange={this.handleFileUpload}
+                                />
+                            </Button>
+                        </FormControl> <br />
+                        <FormControl required fullWidth>
+                            <InputLabel>File type</InputLabel>
+                            <Select
+                                margin="dense"
+                                value={fileType}
+                                fullWidth
+                                size="small"
+                                name="fileType"
+                                onChange={this.handleValueChange}>
+                                <MenuItem value={"WINAPP"} >Windows app</MenuItem>
+                                <MenuItem value={"COMMON"} >Common</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <br />
+                        <FormControl fullWidth>
+                            <InputLabel>Load type</InputLabel>
+                            <Select
+                                disabled={fileType !== 'COMMON'}
+                                margin="dense"
+                                value={loadType}
+                                fullWidth
+                                size="small"
+                                name="loadType"
+                                onChange={this.handleValueChange}>
+                                <MenuItem value={"COPY"} >Copy</MenuItem>
+                                <MenuItem value={"UNZIP"} >Unzip</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <FormControl variant="standard" fullWidth>
+                            <TextField
+                                autoFocus
+                                disabled={fileType !== 'COMMON'}
+                                margin="dense"
+                                name="loadDir"
+                                type="text"
+                                label="Load Dir"
+                                fullWidth
+                                onChange={this.handleValueChange}
+                                value={loadDir}
+                            />
+                        </FormControl>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => this.handleStatus("addAttachmentIsShow", false)}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        onClick={() => this.uploadAttachment()}
+                        endIcon={<span className="material-icons-outlined">file_upload</span>}>
+                        Add attachments
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={this.state.attachmentDeleteDialogIsShow}
+                onClose={() => this.handleStatus("attachmentDeleteDialogIsShow", false)}
+            >
+                <DialogTitle> Delete this attachment? </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Please confirm if you want to delete this attachment, this operation is irreversible
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => this.handleStatus("attachmentDeleteDialogIsShow", false)}>
+                        Cancel
+                    </Button>
+                    <Button onClick={() => this.deleteAttachment()}>
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <Snackbar
                 anchorOrigin={{
                     vertical: 'top',
@@ -612,7 +794,6 @@ export default class RunnerView extends BaseView {
     handleRunTestSelected = (element) => {
         console.log(element.target)
         const currentId = element.target.id
-        const currentAppInfo = this.state.appSetList.find(x => x.id === currentId)
         axios.get('/api/package/' + currentId).then(res => {
             console.log(res.data)
             let currentRunTestType = this.state.runTestType
@@ -639,6 +820,7 @@ export default class RunnerView extends BaseView {
             this.setState({
                 currentAppId: currentId,
                 currentAppInstallerType: currentTestPackageType,
+                currentAppInfo: currentAppInfo,
                 currentAppPackageName: currentAppInfo.packageName,
                 currentTestPackageName: testPkgName,
                 runTestType: currentRunTestType,
@@ -675,7 +857,7 @@ export default class RunnerView extends BaseView {
                 'content-type': 'multipart/form-data; ',
             }
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Package successfully uploaded",
@@ -743,7 +925,7 @@ export default class RunnerView extends BaseView {
         axios.post('/api/test/task/run/', formParams, {
             headers: { 'content-type': 'application/json' }
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Test cases successfully run",
@@ -766,6 +948,87 @@ export default class RunnerView extends BaseView {
             running: true,
             runTestDialogIsShown: false,
             activeStep: 0,
+        })
+    }
+
+    uploadAttachment = () => {
+        const formData = new FormData()
+        formData.append("fileSetId", this.state.currentAppId)
+        formData.append("fileType", this.state.fileType)
+        formData.append("loadType", this.state.loadType)
+        formData.append("loadDir", this.state.loadDir)
+        formData.append("attachment", this.state.uploadAttachmentFile)
+
+        if (this.state.fileType === "COMMON" && this.state.loadDir === "") {
+            this.snackBarError("Load Dir should not be empty")
+            return false
+        }
+
+        axios.post('/api/package/addAttachment/', formData, {
+            headers: {
+                Accept: 'application/json',
+                'content-type': 'multipart/form-data; ',
+            }
+        }).then(res => {
+            if (res.data && res.data.code === 200) {
+                this.setState({
+                    snackbarSeverity: "success",
+                    snackbarMessage: "Attachment successfully uploaded",
+                    snackbarIsShown: true,
+                    attachmentUploading: false
+                })
+                this.refreshCurrentAppInfo()
+            } else {
+                this.snackBarFail(res)
+                this.setState({
+                    attachmentUploading: false
+                })
+            }
+        }).catch((error) => {
+            this.snackBarError(error)
+            this.setState({
+                attachmentUploading: false
+            })
+        });
+        this.setState({
+            addAttachmentIsShow: false,
+            attachmentUploading: true,
+            uploadAttachmentFile: null,
+            loadDir: "",
+        })
+    }
+
+    showDeleteDialog = (element) => {
+        console.log("fileId = " + element.target.id)
+        this.setState({
+            toBeDeletedAttachmentId: element.target.id,
+            attachmentDeleteDialogIsShow: true,
+        })
+    }
+
+    deleteAttachment = () => {
+        const formData = new FormData()
+        formData.append("fileSetId", this.state.currentAppId)
+        formData.append("fileId", this.state.toBeDeletedAttachmentId)
+
+        axios.post('/api/package/removeAttachment', formData, {
+            headers: { 'content-type': 'application/json' }
+        }).then(res => {
+            if (res.data && res.data.code === 200) {
+                this.setState({
+                    snackbarSeverity: "success",
+                    snackbarMessage: "Attachment successfully deleted",
+                    snackbarIsShown: true,
+                })
+                this.refreshCurrentAppInfo()
+            } else {
+                this.snackBarFail(res)
+            }
+        }).catch((error) => {
+            this.snackBarFail(error)
+        })
+        this.setState({
+            attachmentDeleteDialogIsShow: false,
         })
     }
 
@@ -796,6 +1059,16 @@ export default class RunnerView extends BaseView {
             this.setState({
                 appSetList: pageData.content,
                 hideSkeleton: true
+            })
+        })
+    }
+
+    refreshCurrentAppInfo() {
+        axios.get('/api/package/' + this.state.currentAppId).then(res => {
+            console.log(res.data)
+            const pageData = res.data.content;
+            this.setState({
+                currentAppInfo: pageData,
             })
         })
     }

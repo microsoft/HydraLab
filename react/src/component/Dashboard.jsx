@@ -140,7 +140,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         axios.get('/api/center/info').then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 setCenterVersion(res.data.content.version)
             } else {
                 this.snackBarFail(res)
