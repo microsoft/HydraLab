@@ -447,18 +447,19 @@ export default class RunnerView extends BaseView {
                                 <MenuItem value={"UNZIP"} >Unzip</MenuItem>
                             </Select>
                         </FormControl>
-                        <TextField
-                            autoFocus
-                            disabled={fileType !== 'COMMON'}
-                            margin="dense"
-                            name="loadDir"
-                            type="text"
-                            label="Load Dir"
-                            fullWidth
-                            onChange={this.handleValueChange}
-                            variant="standard"
-                            value={loadDir}
-                        />
+                        <FormControl variant="standard" fullWidth>
+                            <TextField
+                                autoFocus
+                                disabled={fileType !== 'COMMON'}
+                                margin="dense"
+                                name="loadDir"
+                                type="text"
+                                label="Load Dir"
+                                fullWidth
+                                onChange={this.handleValueChange}
+                                value={loadDir}
+                            />
+                        </FormControl>
                     </Box>
                 </DialogContent>
                 <DialogActions>
