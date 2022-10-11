@@ -205,7 +205,7 @@ public class UserTeamController {
                                              @RequestParam(value = "mailAddress", required = false) String mailAddress,
                                              @RequestParam("teamId") String teamId) {
         if (requestor == null) {
-            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
         }
 
         SysTeam team = sysTeamService.queryTeamById(teamId);
@@ -229,12 +229,43 @@ public class UserTeamController {
             if (!userTeamManagementService.checkUserTeamRelation(mailAddress, teamId)) {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "USER isn't under the TEAM, cannot switch the default TEAM to it.");
             }
-        }
-        else {
+        } else {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized to operate on this USER");
         }
         sysUserService.switchUserDefaultTeam(user, teamId, team.getTeamName());
         securityUserService.reloadUserAuthentication(user.getMailAddress(), Const.AUTH_COMPONENT.DEFAULT_TEAM);
         return Result.ok(user);
     }
+
+    /**
+     * Authenticated USER:
+     * 1) USERs with ROLE SUPER_ADMIN/ADMIN can query all USER's default TEAM info
+     * 2) USERs can query their own default TEAM info
+     */
+    @PostMapping(value = {"/api/userTeam/queryDefaultTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<SysTeam> queryDefaultTeam(@CurrentSecurityContext SysUser requestor,
+                                            @RequestParam(value = "mailAddress", required = false) String mailAddress) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
+        }
+
+        SysUser user;
+        if (StringUtils.isEmpty(mailAddress)) {
+            // [All USERs] request for self default TEAM update
+            user = requestor;
+        } else {
+            // [Admin only] request for others' default TEAM update
+            if (!sysUserService.checkUserAdmin(requestor)) {
+                return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized to query info of this USER");
+            }
+
+            user = sysUserService.queryUserByMailAddress(mailAddress);
+            if (user == null) {
+                return Result.error(HttpStatus.BAD_REQUEST.value(), "USER id is wrong.");
+            }
+        }
+
+        return Result.ok(sysTeamService.queryTeamById(user.getDefaultTeamId()));
+    }
+
 }
