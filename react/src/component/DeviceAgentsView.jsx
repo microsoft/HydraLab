@@ -175,7 +175,7 @@ export default class DeviceAgentsView extends BaseView {
             agents: null,
         })
         axios.get('/api/device/list').then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 console.log(res.data)
                 const agents = res.data.content
                 const collapseStatus = {}
@@ -202,7 +202,7 @@ export default class DeviceAgentsView extends BaseView {
 
     getLatestAgentVersion = () => {
         axios.get('/api/center/info').then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 if (res.data.content && res.data.content.agentPkg) {
                     this.setState({
                         latestAgentVersion: res.data.content.agentPkg.fileParser.version,
@@ -219,7 +219,7 @@ export default class DeviceAgentsView extends BaseView {
 
     getUpdateStatus(agentId) {
         axios.get('/api/agent/getUpdateInfo/' + agentId).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 let messages = res.data.content.updateMsgs
                 console.log(messages)
                 if (messages.at(-1) !== null) {
@@ -244,7 +244,7 @@ export default class DeviceAgentsView extends BaseView {
         axios.post('/api/agent/updateAgent/', formParams, {
             headers: { 'content-type': 'application/x-www-form-urlencoded' }
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 agent.agentStatus = "UPDATING"
                 this.setState({
                     snackbarSeverity: "success",

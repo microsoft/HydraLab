@@ -562,7 +562,7 @@ class TasksView extends BaseView {
         }
         axios.get('/api/test/task/' + task.id).then(res => {
             console.log(res.data)
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     displayReportTaskId: task.id,
                     testDetailInfo: res.data.content,
@@ -588,7 +588,7 @@ class TasksView extends BaseView {
             loading: true
         })
         axios.get('/api/test/task/cancel/' + task.id).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 console.log(res.data)
                 this.setState({
                     loading: false
@@ -615,7 +615,7 @@ class TasksView extends BaseView {
 
         axios.get('/api/test/task/' + task.id).then(res => {
             console.log(res.data)
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     showBackDrop: false,
                     loading: false,
@@ -708,7 +708,7 @@ class TasksView extends BaseView {
         console.log(postBody)
 
         axios.post(`/api/test/task/list`, postBody).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 const tasks = res.data.content.content;
                 const pageCount = res.data.content.totalPages;
                 console.log(res.data)
@@ -733,7 +733,7 @@ class TasksView extends BaseView {
 
         if (this.state.page === 1) {
             axios.get('/api/test/task/running').then(res => {
-                if (res.data.code === 200) {
+                if (res.data && res.data.code === 200) {
                     if (res.data.content) {
                         this.setState({
                             runningTasks: res.data.content,
@@ -945,7 +945,7 @@ class TasksView extends BaseView {
         axios.post('/api/test/task/run/', formParams, {
             headers: { 'content-type': 'application/json' }
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Test cases successfully run",

@@ -14,10 +14,16 @@ export default class BaseView extends React.Component {
     }
 
     snackBarFail = (res) => {
+        let message = res + ""
+        if (res.data && res.data.message) {
+            message = res.data.message
+        } else if (res.response && res.response.data && res.response.data.message) {
+            message = res.response.data.message
+        }
         this.setState({
             snackbarIsShown: true,
             snackbarSeverity: "error",
-            snackbarMessage: res + "",
+            snackbarMessage: message + "",
         })
     }
 
@@ -67,7 +73,7 @@ export default class BaseView extends React.Component {
         })
         axios.get('/api/userTeam/listSelfTeam').then(res => {
             console.log(res.data)
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     teamList: res.data.content,
                 })
