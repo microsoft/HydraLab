@@ -10,6 +10,7 @@ export default class BaseView extends React.Component {
         snackbarSeverity: null,
         snackbarMessage: null,
         teamList: null,
+        defaultTeam: null
     }
 
     snackBarFail = (res) => {
@@ -44,10 +45,12 @@ export default class BaseView extends React.Component {
     }
 
     handleStatus = (target, state) => {
-        this.setState({
-            [target]: state
-        })
-        console.log(target + " => " + JSON.stringify(state))
+        if (target !== null) {
+            this.setState({
+                [target]: state
+            })
+            console.log(target + " => " + JSON.stringify(state))
+        }
     }
 
     handleValueChange = (event) => {
@@ -79,4 +82,23 @@ export default class BaseView extends React.Component {
             }
         }).catch(this.snackBarError)
     }
+
+    getUserTeamInfo() {
+        this.setState({
+            defaultTeam: null,
+        })
+        axios.post('/api/userTeam/queryDefaultTeam').then(res => {
+            console.log(res.data)
+            if (res.data.code === 200) {
+                this.setState({
+                    defaultTeam: res.data.content,
+                })
+            } else {
+                this.snackBarFail(res)
+            }
+        }).catch(this.snackBarError)
+
+        console.log(this.state.defaultTeam)
+    }
+
 }
