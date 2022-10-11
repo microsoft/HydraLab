@@ -68,7 +68,7 @@ export default class HeaderView extends BaseView {
                         onClose={() => this.handleStatus("helpOpen", false)}
                     >
                         {helpSettings.map((setting) => (
-                            <MenuItem key={setting}>
+                            <MenuItem key={setting.text}>
                                 <Typography textAlign="center">
                                     <a target="_blank" href={setting.href} rel="noopener noreferrer">{setting.text}</a>
                                 </Typography>
@@ -108,7 +108,7 @@ export default class HeaderView extends BaseView {
 
     getLoginInfo = () => {
         axios.get('/api/auth/getUser').then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 const userInfo = res.data.content;
                 console.log(userInfo)
                 this.setState({

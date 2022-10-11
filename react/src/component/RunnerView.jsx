@@ -129,7 +129,7 @@ export default class RunnerView extends BaseView {
         const headItems = ['', 'App name', 'Package name', 'Version', 'Build Description', 'Attachments']
         const attachmentsRows = []
         const attachmentsHeads = []
-        const attachmentsHeadItems = ['File Name', 'File Path', 'Action']
+        const attachmentsHeadItems = ['File Name', 'Actions', 'File Type', ' LoadType', 'Load Dir']
 
         if (appSetList) {
             appSetList.forEach((appSet) => {
@@ -168,16 +168,25 @@ export default class RunnerView extends BaseView {
             this.state.currentAppInfo.attachments.forEach((t) => {
                 if (t.fileType !== "APP" && t.fileType !== "TEST_APP") {
                     attachmentsRows.push(<StyledTableRow key={t.fileId} id={t.fileId} hover>
-                        <TableCell id={t.fileName} align="center">
+                        <TableCell id={t.fileId} align="center">
                             {t.fileName}
                         </TableCell>
-                        <TableCell id={t.blobUrl} align="center">
-                            <a href={t.blobUrl}> Download URL </a>
-                        </TableCell>
-                        <TableCell id={t.fileId}>
+                        <TableCell id={t.fileId} align="center">
                             <IconButton id={t.fileId} onClick={this.showDeleteDialog}>
                                 <span id={t.fileId} className="material-icons-outlined">delete</span>
                             </IconButton>
+                            <IconButton id={t.fileId} href={t.blobUrl}>
+                                <span id={t.fileId} className="material-icons-outlined">download</span>
+                            </IconButton>
+                        </TableCell>
+                        <TableCell id={t.fileId} align="center">
+                            {t.fileType}
+                        </TableCell>
+                        <TableCell id={t.fileId} align="center">
+                            {t.loadType}
+                        </TableCell>
+                        <TableCell id={t.fileId} align="center">
+                            {t.loadDir}
                         </TableCell>
                     </StyledTableRow>)
                 }
@@ -358,7 +367,7 @@ export default class RunnerView extends BaseView {
                 </DialogContent>
             </Dialog>
             <Dialog open={attachmentsDiaglogISshow}
-                fullWidth={true}
+                fullWidth={true} maxWidth='lg'
                 onClose={() => this.handleStatus("attachmentsDiaglogISshow", false)}>
                 <DialogTitle>Attachments</DialogTitle>
                 <DialogContent>
@@ -847,7 +856,7 @@ export default class RunnerView extends BaseView {
                 'content-type': 'multipart/form-data; ',
             }
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Package successfully uploaded",
@@ -915,7 +924,7 @@ export default class RunnerView extends BaseView {
         axios.post('/api/test/task/run/', formParams, {
             headers: { 'content-type': 'application/json' }
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Test cases successfully run",
@@ -949,13 +958,18 @@ export default class RunnerView extends BaseView {
         formData.append("loadDir", this.state.loadDir)
         formData.append("attachment", this.state.uploadAttachmentFile)
 
+        if (this.state.fileType === "COMMON" && this.state.loadDir === "") {
+            this.snackBarError("Load Dir should not be empty")
+            return false
+        }
+
         axios.post('/api/package/addAttachment/', formData, {
             headers: {
                 Accept: 'application/json',
                 'content-type': 'multipart/form-data; ',
             }
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Attachment successfully uploaded",
@@ -999,7 +1013,7 @@ export default class RunnerView extends BaseView {
         axios.post('/api/package/removeAttachment', formData, {
             headers: { 'content-type': 'application/json' }
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Attachment successfully deleted",

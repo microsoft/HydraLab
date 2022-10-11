@@ -177,7 +177,7 @@ export default class SearchView extends BaseView {
                     querying: false
                 })
             } else if (requestPath === "task") {
-                if (res.data.code === 200) {
+                if (res.data && res.data.code === 200) {
                     const details = res.data.content;
                     this.setState({
                         infoDisplay: <center><TestReportView testTask={details} /></center>,
@@ -188,7 +188,7 @@ export default class SearchView extends BaseView {
                 }
             } else {
                 axios.get('/api/test/task/device/' + details.deviceTestResultId,).then(res => {
-                    if (res.data.code === 200) {
+                    if (res.data && res.data.code === 200) {
 
 
                         const vList = [res.data.content.videoBlobUrl]

@@ -411,7 +411,7 @@ export default class AuthView extends BaseView {
         axios.post('/api/agent/create/', formParams, {
             headers: {'content-type': 'application/x-www-form-urlencoded'}
         }).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Agent successfully created",
@@ -438,7 +438,7 @@ export default class AuthView extends BaseView {
         // console.log(`Delete Agent ${this.state.toBeDeletedAgentId}`)
         this.handleStatus("agentDeleteDialogIsShown", false);
         axios.get('/api/auth/deleteAgent/' + this.state.toBeDeletedAgentId).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Agent deleted!",
@@ -456,7 +456,7 @@ export default class AuthView extends BaseView {
 
     addToken() {
         axios.get('/api/auth/create').then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Token created!",
@@ -480,7 +480,7 @@ export default class AuthView extends BaseView {
         // console.log(`Delete ${this.state.toBeDeletedTokenId}`)
         this.handleStatus("tokenDeleteDialogIsShown", false)
         axios.get('/api/auth/deleteToken/' + this.state.toBeDeletedTokenId).then(res => {
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     snackbarSeverity: "success",
                     snackbarMessage: "Token deleted!",
@@ -539,7 +539,7 @@ export default class AuthView extends BaseView {
         this.handleStatus('currentAgent', { 'id': agentId, "secret": 'Loading...' })
         axios.get(`/api/agent/${agentId}`).then(res => {
             console.log(res.data)
-            if (res.data.code === 200) {
+            if (res.data && res.data.code === 200) {
                 this.setState({
                     currentAgent: res.data.content,
                 })
