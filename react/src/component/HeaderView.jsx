@@ -36,7 +36,7 @@ export default class HeaderView extends BaseView {
     render() {
         const settings = [
             { text: this.state.userName, dialog: null },
-            { text: `Current Default Team: ${this.state.defaultTeam ? this.state.defaultTeam.teamName : 'Loading'}`, dialog: 'changeDefaultTeamIsShown' },
+            { text: `Default Team: ${this.state.defaultTeam ? this.state.defaultTeam.teamName : 'Loading'}`, dialog: 'changeDefaultTeamIsShown' },
             { text: 'Logout', dialog: null }
         ];
         const helpSettings = [
@@ -121,9 +121,10 @@ export default class HeaderView extends BaseView {
                 <Dialog open={changeDefaultTeamIsShown}
                         fullWidth={true}
                         onClose={() => this.handleStatus("changeDefaultTeamIsShown", false)}>
-                    <DialogTitle>Change Default Team</DialogTitle>
+                    <DialogTitle>Default Team</DialogTitle>
                     <DialogContent>
-                        <FormControl required variant="standard" fullWidth={true}>
+                        <br/>
+                        <FormControl required fullWidth={true}>
                             <InputLabel id="agent-team-select-label" >Team</InputLabel>
                             <Select
                                 labelId="agent-team-select-label"
