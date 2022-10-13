@@ -39,4 +39,5 @@ public class TestTaskSpec {
     public List<String> neededPermissions;
     public String teamId;
     public String teamName;
+    public String testRunnerName;
 }
