@@ -105,6 +105,7 @@ export default class RunnerView extends BaseView {
         testTimeOutSec: "",
         instrumentationArgs: "",
         frameworkType: "JUnit4",
+        testRunnerName: "androidx.test.runner.AndroidJUnitRunner",
 
         teamList: null,
         selectedTeamName: null
@@ -667,6 +668,18 @@ export default class RunnerView extends BaseView {
                         value={this.state.testSuiteClass}
                         onChange={this.handleValueChange}
                     />
+                    <TextField
+                        disabled={runTestType !== "INSTRUMENTATION"}
+                        required={runTestType === "INSTRUMENTATION"}
+                        margin="dense"
+                        name="testRunnerName"
+                        type="text"
+                        label="Espresso Runner Name"
+                        fullWidth
+                        variant="standard"
+                        value={this.state.testRunnerName}
+                        onChange={this.handleValueChange}
+                    />
                     <br />
                     <FormControl fullWidth>
                         <InputLabel>Test Framework</InputLabel>
@@ -919,7 +932,8 @@ export default class RunnerView extends BaseView {
             deviceTestCount: this.state.deviceTestCount,
             testTimeOutSec: this.state.testTimeOutSec,
             instrumentationArgs: argsObj,
-            frameworkType: this.state.frameworkType
+            frameworkType: this.state.frameworkType,
+            testRunnerName: this.state.testRunnerName
         }
 
         axios.post('/api/test/task/run/', formParams, {

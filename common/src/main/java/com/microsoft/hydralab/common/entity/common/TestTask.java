@@ -28,6 +28,8 @@ public class TestTask {
     @Transient
     private static final transient String defaultAct = "com.android.launcher3.DefaultLauncherApp";
     @Transient
+    private static final transient String defaultRunner = "androidx.test.runner.AndroidJUnitRunner";
+    @Transient
     private List<String> neededPermissions;
     @Transient
     public transient File appFile;
@@ -90,6 +92,8 @@ public class TestTask {
     @Column(name = "team_id")
     private String teamId;
     private String teamName;
+    @Transient
+    private transient String testRunnerName = defaultRunner;
 
     public TestTask() {
     }
@@ -128,6 +132,9 @@ public class TestTask {
         testTask.setFrameworkType(testTaskSpec.frameworkType);
         testTask.setTeamId(testTaskSpec.teamId);
         testTask.setTeamName(testTaskSpec.teamName);
+        if (StringUtils.isNotBlank(testTaskSpec.testRunnerName)) {
+            testTask.setTestRunnerName(testTaskSpec.testRunnerName);
+        }
         return testTask;
     }
 
@@ -156,6 +163,7 @@ public class TestTask {
         testTaskSpec.pipelineLink = testTask.getPipelineLink();
         testTaskSpec.teamId = testTask.getTeamId();
         testTaskSpec.teamName = testTask.getTeamName();
+        testTaskSpec.testRunnerName = testTask.getTestRunnerName();
         return testTaskSpec;
     }
 
