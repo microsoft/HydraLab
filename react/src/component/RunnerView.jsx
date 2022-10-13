@@ -674,7 +674,7 @@ export default class RunnerView extends BaseView {
                         margin="dense"
                         name="testRunnerName"
                         type="text"
-                        label="Test Suite Class"
+                        label="Espresso Runner Name"
                         fullWidth
                         variant="standard"
                         value={this.state.testRunnerName}
