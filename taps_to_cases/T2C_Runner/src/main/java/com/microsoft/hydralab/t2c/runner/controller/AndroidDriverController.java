@@ -101,23 +101,15 @@ public class AndroidDriverController extends BaseDriverController {
     }
 
     @Override
-    public void dragAndDrop(WebElement element, Integer xVec, Integer yVec) {
-        Point location = element.getLocation();
-        Dimension dimension = element.getSize();
-        Integer x = location.getX();
-        Integer y = location.getY();
-        Integer width = dimension.getWidth();
-        Integer height = dimension.getHeight();
-        Integer centerX = x + width / 2;
-        Integer centerY = y + height / 2;
+    public void dragAndDropWithPosition(int fromX, int fromY, int toX, int toY) {
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence dragNDrop = new Sequence(finger, 1);
         dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(0),
-                PointerInput.Origin.viewport(), centerX, centerY));
+                PointerInput.Origin.viewport(), fromX, fromY));
         dragNDrop.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(),centerX,centerY));
+        dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(),fromX,fromY));
         dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(700),
-                PointerInput.Origin.viewport(), centerX + xVec, centerY + yVec));
+                PointerInput.Origin.viewport(), toX, toY));
         dragNDrop.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         androidDriver.perform(Arrays.asList(dragNDrop));
     }
