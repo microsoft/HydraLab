@@ -118,11 +118,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                def buildFlavorValue = "UNKNOWN"
-                if (project.hasProperty('buildFlavor')) {
-                    buildFlavorValue = project.buildFlavor
-                }
-                def reportDir = new File(project.buildDir, "outputs/androidTest-results/connected/flavors/${buildFlavorValue}")
+                def reportDir = new File(project.buildDir, "testResult")
                 if (!reportDir.exists()) reportDir.mkdirs()
 
                 def argsMap = null
