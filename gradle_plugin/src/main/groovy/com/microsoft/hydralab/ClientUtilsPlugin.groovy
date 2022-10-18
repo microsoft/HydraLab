@@ -118,11 +118,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                def buildFlavorValue = "UNKNOWN"
-                if (project.hasProperty('buildFlavor')) {
-                    buildFlavorValue = project.buildFlavor
-                }
-                def reportDir = new File(project.buildDir, "outputs/androidTest-results/connected/flavors/${buildFlavorValue}")
+                def reportDir = new File(project.buildDir, "testResult")
                 if (!reportDir.exists()) reportDir.mkdirs()
 
                 def argsMap = null
@@ -186,6 +182,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('teamName')) {
                     apiConfig.teamName = project.teamName
                 }
+                if (project.hasProperty('testRunnerName')) {
+                    apiConfig.testRunnerName = project.testRunnerName
+                }
                 // optional for APPIUM_CROSS, T2C_JSON
                 if (project.hasProperty('needUninstall')) {
                     apiConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
@@ -198,15 +197,11 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('deviceIdentifier')) {
                     deviceIdentifierArg = project.deviceIdentifier
                 }
-                def reportAudienceArg = null
-                if (project.hasProperty('reportAudience')) {
-                    reportAudienceArg = project.reportAudience
-                }
 
                 HydraLabClientUtils.runTestOnDeviceWithApp(
                         runningType, appPath, testAppPath, attachmentConfigPath,
                         project.hasProperty('testSuiteName') ? project.testSuiteName : "",
-                        deviceIdentifierArg, reportAudienceArg, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(project.runTimeOutSeconds),
+                        deviceIdentifierArg, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(project.runTimeOutSeconds),
                         reportDir.absolutePath, argsMap, extraArgsMap,
                         apiConfig
                 )

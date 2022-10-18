@@ -62,7 +62,6 @@ public class HydraLabClientUtils {
                                               String attachmentConfigPath,
                                               String testSuiteName,
                                               @Nullable String deviceIdentifier,
-                                              @Nullable String reportAudience,
                                               int queueTimeoutSec,
                                               int runTimeoutSec,
                                               String reportFolderPath,
@@ -71,10 +70,10 @@ public class HydraLabClientUtils {
                                               HydraLabAPIConfig apiConfig) {
         String output = String.format("##[section]All args: runningType: %s, appPath: %s, deviceIdentifier: %s" +
                         "\n##[section]\tqueueTimeOutSeconds: %d, runTimeOutSeconds: %d, attachmentConfigPath: %s, argsMap: %s, extraArgsMap: %s" +
-                        "\n##[section]\treportAudience: %s, apiConfig: %s",
+                        "\n##[section]\tapiConfig: %s",
                 runningType, appPath, deviceIdentifier, queueTimeoutSec, runTimeoutSec, attachmentConfigPath,
                 instrumentationArgs == null ? "" : instrumentationArgs.toString(), extraArgs == null ? "" : extraArgs.toString(),
-                reportAudience, apiConfig.toString());
+                apiConfig.toString());
         switch (runningType) {
             case "INSTRUMENTATION":
             case "APPIUM":
@@ -94,7 +93,7 @@ public class HydraLabClientUtils {
 
         sMarkedFail = false;
         try {
-            runTestInner(runningType, appPath, testAppPath, attachmentConfigPath, testSuiteName, deviceIdentifier, reportAudience,
+            runTestInner(runningType, appPath, testAppPath, attachmentConfigPath, testSuiteName, deviceIdentifier,
                     queueTimeoutSec, runTimeoutSec, reportFolderPath, instrumentationArgs, extraArgs, apiConfig);
             markBuildSuccess();
         } catch (RuntimeException e) {
@@ -107,7 +106,6 @@ public class HydraLabClientUtils {
                                      String attachmentConfigPath,
                                      String testSuiteName,
                                      @Nullable String deviceIdentifier,
-                                     @Nullable String reportAudience,
                                      int queueTimeoutSec,
                                      int runTimeoutSec,
                                      String reportFolderPath,
@@ -222,13 +220,13 @@ public class HydraLabClientUtils {
             printlnf("##[command]Access key obtained.");
         }
 
-        JsonObject responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, reportAudience, runTimeoutSec, instrumentationArgs, extraArgs);
+        JsonObject responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
         int resultCode = responseContent.get("code").getAsInt();
 
         // retry
         int waitingRetry = 20;
         while (resultCode != 200 && waitingRetry > 0) {
-            responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, reportAudience, runTimeoutSec, instrumentationArgs, extraArgs);
+            responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
             resultCode = responseContent.get("code").getAsInt();
             waitingRetry--;
         }
@@ -381,7 +379,7 @@ public class HydraLabClientUtils {
         printlnf(testReportUrl);
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
 
-        File summaryMd = new File(reportFolderPath, "TestLabSummary.md");
+        File summaryMd = new File(reportFolderPath.replace("testResult", "summary"), "TestLabSummary.md");
         try (FileOutputStream fos = new FileOutputStream(summaryMd)) {
             IOUtils.write(mdBuilder.toString(), fos, StandardCharsets.UTF_8);
             printlnf("##vso[task.uploadsummary]%s", summaryMd.getAbsolutePath());
@@ -568,7 +566,7 @@ public class HydraLabClientUtils {
     }
 
     private static JsonObject triggerTestRun(String runningType, HydraLabAPIConfig apiConfig, String fileSetId, String testSuiteName,
-                                             String deviceIdentifier, @Nullable String accessKey, @Nullable String reportAudience, int runTimeoutSec, Map<String, String> instrumentationArgs, Map<String, String> extraArgs) {
+                                             String deviceIdentifier, @Nullable String accessKey, int runTimeoutSec, Map<String, String> instrumentationArgs, Map<String, String> extraArgs) {
         checkCenterAlive(apiConfig);
 
         JsonObject jsonElement = new JsonObject();
@@ -586,12 +584,10 @@ public class HydraLabClientUtils {
         jsonElement.addProperty("deviceTestCount", apiConfig.deviceTestCount);
         jsonElement.addProperty("needUninstall", apiConfig.needUninstall);
         jsonElement.addProperty("needClearData", apiConfig.needClearData);
+        jsonElement.addProperty("testRunnerName", apiConfig.testRunnerName);
 
         if (accessKey != null) {
             jsonElement.addProperty("accessKey", accessKey);
-        }
-        if (reportAudience != null) {
-            jsonElement.addProperty("reportAudience", reportAudience);
         }
         if (instrumentationArgs != null) {
             jsonElement.add("instrumentationArgs", GSON.toJsonTree(instrumentationArgs).getAsJsonObject());
@@ -733,6 +729,7 @@ public class HydraLabClientUtils {
         public boolean needUninstall = true;
         public boolean needClearData = true;
         public String teamName = "";
+        public String testRunnerName = "androidx.test.runner.AndroidJUnitRunner";
 
         public static HydraLabAPIConfig defaultAPI() {
             return new HydraLabAPIConfig();
