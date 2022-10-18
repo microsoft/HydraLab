@@ -95,7 +95,7 @@ stages:
         TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
       condition: and(succeeded(), eq(variables.fullBuild, 'true'))
     - task: PowerShell@2
-      displayName: Add Relase Tag
+      displayName: Add Release Tag
       inputs:
         targetType: 'inline'
         script: |
