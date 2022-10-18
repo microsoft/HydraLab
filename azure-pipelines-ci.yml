@@ -94,6 +94,14 @@ stages:
         Contents: '*.jar'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
       condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+    - task: PowerShell@2
+      displayName: Add Release Tag
+      inputs:
+        targetType: 'inline'
+        script: |
+          Write-Host "##vso[build.addbuildtag]Release"
+        workingDirectory: '$(Build.Repository.LocalPath)'
+      condition: and(succeeded(), eq(variables.fullBuild, 'true'), contains(variables['Build.SourceBranch'], 'Release/'))
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
