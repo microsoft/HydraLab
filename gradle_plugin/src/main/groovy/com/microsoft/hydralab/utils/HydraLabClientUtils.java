@@ -510,14 +510,21 @@ public class HydraLabClientUtils {
     private static JsonObject addAttachment(HydraLabAPIConfig apiConfig, String testFileSetId, AttachmentInfo attachmentConfig, File attachment) {
         checkCenterAlive(apiConfig);
 
-        MediaType contentType = MediaType.get("application/vnd.android.package-archive");
+        // default text file type: text/plain
+        // default binary file type: application/octet-stream
+        // todo: check if file is readable, set corresponding type
+        MediaType contentType = MediaType.get("application/octet-stream");
         MultipartBody.Builder multipartBodyBuilder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("fileSetId", testFileSetId)
                 .addFormDataPart("fileType", attachmentConfig.fileType)
-                .addFormDataPart("loadType", attachmentConfig.loadType)
-                .addFormDataPart("loadDir", attachmentConfig.loadDir)
                 .addFormDataPart("attachment", attachmentConfig.fileName, RequestBody.create(contentType, attachment));
+        if (StringUtils.isNotEmpty(attachmentConfig.loadType)) {
+            multipartBodyBuilder.addFormDataPart("loadType", attachmentConfig.loadType);
+        }
+        if (StringUtils.isNotEmpty(attachmentConfig.loadDir)) {
+            multipartBodyBuilder.addFormDataPart("loadDir", attachmentConfig.loadDir);
+        }
 
         Request req = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + apiConfig.authToken)
