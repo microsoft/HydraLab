@@ -15,7 +15,8 @@ public class AgentDeviceGroup {
     private String agentRole;
     private String agentStatus = Status.HEALTHY;
     private String agentMessage;
-    private String agentVersion;
+    private String agentVersionName;
+    private String agentVersionCode;
     private String teamId;
     private String teamName;
     private String userName;
@@ -35,7 +36,8 @@ public class AgentDeviceGroup {
         userName = agentUser.mailAddress;
         hostname = agentUser.hostname;
         ip = agentUser.ip;
-        agentVersion = agentUser.version;
+        agentVersionName = agentUser.versionName;
+        agentVersionCode = agentUser.versionCode;
     }
 
     public interface Status {

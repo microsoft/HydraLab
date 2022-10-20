@@ -40,7 +40,9 @@ public class AgentWebSocketClientService implements TestRunningCallback {
     AgentUpdateService agentUpdateService;
     AgentUser agentUser;
     @Value("${agent.version}")
-    private String version;
+    private String versionName;
+    @Value("${agent.versionCode}")
+    private String versionCode;
     private SendMessageCallback sendMessageCallback;
 
     public void onMessage(Message message) {
@@ -139,7 +141,8 @@ public class AgentWebSocketClientService implements TestRunningCallback {
         } catch (UnknownHostException ignore) {
         }
         agentUser.setOs(System.getProperties().getProperty("os.name"));
-        agentUser.setVersion(version);
+        agentUser.setVersionName(versionName);
+        agentUser.setVersionCode(versionCode);
         agentUser.setDeviceType(agentTypeValue);
         responseAuth.setBody(agentUser);
         responseAuth.setPath(message.getPath());
