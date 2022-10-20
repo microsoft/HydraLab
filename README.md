@@ -101,6 +101,15 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 - Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
 
 <span id="references"></span>
+
+## Microsoft Give Sponsors
+
+Thank you for your contribution to Microsoft employee giving program in the name of Hydra Lab:
+
+@...
+
+![Microsoft Give](docs/images/Give_WebBanner-2-1204x500.png)
+
 ## References
 
 - [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
