@@ -13,8 +13,10 @@ public class AgentUpdateTask {
     private String agentId;
     private String agentName;
     private String updateStatus;
-    private String originVersion;
-    private String targetVersion;
+    private String originVersionName;
+    private String targetVersionName;
+    private String originVersionCode;
+    private String targetVersionCode;
     private BlobFileInfo packageInfo;
     private List<UpdateMsg> updateMsgs = new ArrayList<>();
 
@@ -24,9 +26,11 @@ public class AgentUpdateTask {
         String STATUS_FAIL = "FAIL";
         String STATUS_SUCCESS = "SUCCESS";
         String STATUS_NONE = "NONE";
-        String PARAM_VERSION = "version";
+        String PARAM_VERSION_NAME = "versionName";
+        String PARAM_VERSION_CODE = "versionCode";
         String PROPERTY_PATH = "BOOT-INF/classes/version.properties";
-        String PROPERTY_VERSION = "agent.version";
+        String PROPERTY_VERSION_NAME = "agent.version";
+        String PROPERTY_VERSION_CODE = "agent.versionCode";
 
     }
 

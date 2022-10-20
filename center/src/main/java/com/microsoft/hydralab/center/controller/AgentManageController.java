@@ -42,7 +42,9 @@ public class AgentManageController {
     @Resource
     private UserTeamManagementService userTeamManagementService;
     @Value("${center.version}")
-    private String version;
+    private String versionName;
+    @Value("${center.versionCode}")
+    private String versionCode;
 
     /**
      * Authenticated USER: all
@@ -200,7 +202,8 @@ public class AgentManageController {
     @GetMapping("/api/center/info")
     public Result getCenterInfo() {
         JSONObject data = new JSONObject();
-        data.put("version", version);
+        data.put("versionName", versionName);
+        data.put("versionCode", versionCode);
         data.put("agentPkg", attachmentService.getLatestAgentPackage());
         return Result.ok(data);
     }
