@@ -135,7 +135,7 @@ public class DeviceAgentManagementService {
                     String agentMessage = "Agent Reconnected After Updating.Version is " + agentUser.getVersionName();
                     if (agentUser.getVersionName() == null || !agentUser.getVersionName().equals(tempTask.getTargetVersionName())) {
                         tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_FAIL);
-                        updateMag = new AgentUpdateTask.UpdateMsg(false, agentMessage, agentUser.toString());
+                        updateMag = new AgentUpdateTask.UpdateMsg(false, agentMessage, agentUser.getId());
                     } else {
                         tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_SUCCESS);
                         updateMag = new AgentUpdateTask.UpdateMsg(true, agentMessage, "");
