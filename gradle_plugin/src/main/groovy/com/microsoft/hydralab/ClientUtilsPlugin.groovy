@@ -82,9 +82,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         break
                 }
 
-                var appPath = ""
+                def appPath = ""
                 if (project.hasProperty('appPath')) {
-                    var appFile = project.file(project.appPath)
+                    def appFile = project.file(project.appPath)
                     println("Param appPath: ${project.appPath}")
                     if (!appFile.exists()) {
                         def exceptionMsg = "${project.appPath} file not exist!"
@@ -94,9 +94,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                var testAppPath = ""
+                def testAppPath = ""
                 if (project.hasProperty('testAppPath')) {
-                    var testAppFile = project.file(project.testAppPath)
+                    def testAppFile = project.file(project.testAppPath)
                     println("Param testAppPath: ${project.testAppPath}")
                     if (!testAppFile.exists()) {
                         def exceptionMsg = "${project.testAppPath} file not exist!"
@@ -106,9 +106,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                var attachmentConfigPath = ""
+                def attachmentConfigPath = ""
                 if (project.hasProperty('attachmentConfigPath')) {
-                    var attachmentConfigFile = project.file(project.attachmentConfigPath)
+                    def attachmentConfigFile = project.file(project.attachmentConfigPath)
                     println("Param attachmentConfigPath: ${project.attachmentConfigPath}")
                     if (!attachmentConfigFile.exists()) {
                         def exceptionMsg = "${project.attachmentConfigPath} file not exist!"
