@@ -3,12 +3,12 @@
 package com.microsoft.hydralab.agent.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.agent.runner.TestRunningCallback;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
-import com.microsoft.hydralab.agent.runner.TestRunningCallback;
+import com.microsoft.hydralab.common.util.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -137,7 +137,8 @@ public class AgentWebSocketClientService implements TestRunningCallback {
         try {
             InetAddress localHost = InetAddress.getLocalHost();
             agentUser.setHostname(localHost.getHostName());
-            agentUser.setIp(localHost.getHostAddress());
+            // localHost.getHostAddress()
+            agentUser.setIp("127.0.0.1");
         } catch (UnknownHostException ignore) {
         }
         agentUser.setOs(System.getProperties().getProperty("os.name"));

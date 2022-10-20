@@ -4,6 +4,9 @@ package com.microsoft.hydralab.agent.runner.monkey;
 
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
+import com.microsoft.hydralab.agent.runner.RunningControlService;
+import com.microsoft.hydralab.agent.runner.TestRunner;
+import com.microsoft.hydralab.agent.runner.TestRunningCallback;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
@@ -11,11 +14,9 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.agent.runner.RunningControlService;
-import com.microsoft.hydralab.agent.runner.TestRunner;
-import com.microsoft.hydralab.agent.runner.TestRunningCallback;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.LogUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -189,11 +190,7 @@ public class AdbMonkeyRunner extends TestRunner {
             String command = String.format(commFormat, pkgName, maxStepCount);
             if (logger != null) {
                 // make sure pass is not printed
-                if (command.contains("pwd") || command.contains("pass") || command.contains("credential") || command.contains("auth") || command.contains("token")) {
-                    logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), command.replaceAll("pwd|pass|credential|auth|token\\s+\\w+", "credentials *****"));
-                } else {
-                    logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), command);
-                }
+                logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), LogUtils.scrubSensitiveArgs(command));
             }
             adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, new MultiLineNoCancelLoggingReceiver(logger), -1);
             checkTime = System.currentTimeMillis() - recordingStartTimeMillis;
