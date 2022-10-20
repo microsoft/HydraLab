@@ -4,14 +4,15 @@ package com.microsoft.hydralab.agent.runner.espresso;
 
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.testrunner.InstrumentationResultParser;
-import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
-import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.agent.runner.RunningControlService;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestRunningCallback;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.LogUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -126,11 +127,7 @@ public class EspressoRunner extends TestRunner {
             String command = String.format(commFormat, suiteName, testPkgName, testRunnerName);
             if (logger != null) {
                 // make sure pass is not printed
-                if (command.contains("pwd") || command.contains("pass") || command.contains("credential") || command.contains("auth") || command.contains("token")) {
-                    logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), command.replaceAll("pwd|pass|credential|auth|token\\s+\\w+", "credentials *****"));
-                } else {
-                    logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), command);
-                }
+                logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), LogUtils.scrubSensitiveArgs(command));
             }
             adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, receiver, testTimeOutSec);
             return Const.TaskResult.success;
