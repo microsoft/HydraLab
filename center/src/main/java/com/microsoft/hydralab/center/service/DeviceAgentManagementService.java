@@ -6,20 +6,16 @@ import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.android.ddmlib.IDevice;
-import com.microsoft.hydralab.t2c.runner.DriverInfo;
-import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
-import com.microsoft.hydralab.t2c.runner.TestInfo;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
-import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.SerializeUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.*;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
-import com.microsoft.hydralab.common.util.AttachmentService;
-import com.microsoft.hydralab.common.util.DownloadUtils;
-import com.microsoft.hydralab.common.util.GlobalConstant;
+import com.microsoft.hydralab.common.util.*;
+import com.microsoft.hydralab.t2c.runner.DriverInfo;
+import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
+import com.microsoft.hydralab.t2c.runner.TestInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -136,8 +132,8 @@ public class DeviceAgentManagementService {
                     log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
 
                     AgentUpdateTask.UpdateMsg updateMag = null;
-                    String agentMessage = "Agent Reconnected After Updating.Version is " + agentUser.getVersion();
-                    if (agentUser.getVersion() == null || !agentUser.getVersion().equals(tempTask.getTargetVersion())) {
+                    String agentMessage = "Agent Reconnected After Updating.Version is " + agentUser.getVersionName();
+                    if (agentUser.getVersionName() == null || !agentUser.getVersionName().equals(tempTask.getTargetVersionName())) {
                         tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_FAIL);
                         updateMag = new AgentUpdateTask.UpdateMsg(false, agentMessage, agentUser.toString());
                     } else {
@@ -523,7 +519,8 @@ public class DeviceAgentManagementService {
         user.setDeviceType(agentUser.getDeviceType());
         user.setHostname(agentUser.getHostname());
         user.setIp(agentUser.getIp());
-        user.setVersion(agentUser.getVersion());
+        user.setVersionName(agentUser.getVersionName());
+        user.setVersionCode(agentUser.getVersionCode());
         user.setSecret(null);
         return user;
     }
@@ -607,9 +604,13 @@ public class DeviceAgentManagementService {
         Set<String> keys = agentDeviceGroups.keySet();
         for (String key : keys) {
             AgentDeviceGroup agent = agentDeviceGroups.get(key);
-            if (agent.getAgentDeviceType() != AgentUser.DeviceType.WINDOWS) continue;
+            if (agent.getAgentDeviceType() != AgentUser.DeviceType.WINDOWS) {
+                continue;
+            }
             List<DeviceInfo> devices = agent.getDevices();
-            if (devices.size() != 1 || !devices.get(0).isAlive()) continue;
+            if (devices.size() != 1 || !devices.get(0).isAlive()) {
+                continue;
+            }
             res.add(agent);
         }
         return new ArrayList<>(res);
@@ -895,8 +896,10 @@ public class DeviceAgentManagementService {
         updateTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_UPDATING);
         updateTask.setAgentId(agentUser.getId());
         updateTask.setAgentName(agentUser.getName());
-        updateTask.setOriginVersion(agentUser.getVersion());
-        updateTask.setTargetVersion(packageInfo.getFileParser().getString(AgentUpdateTask.TaskConst.PARAM_VERSION));
+        updateTask.setOriginVersionName(agentUser.getVersionName());
+        updateTask.setOriginVersionCode(agentUser.getVersionCode());
+        updateTask.setTargetVersionName(packageInfo.getFileParser().getString(AgentUpdateTask.TaskConst.PARAM_VERSION_NAME));
+        updateTask.setTargetVersionCode(packageInfo.getFileParser().getString(AgentUpdateTask.TaskConst.PARAM_VERSION_CODE));
         updateTask.setPackageInfo(packageInfo);
 
         Message message = new Message();

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, {PureComponent} from 'react'
-import Link from "react-router-dom";
+import { Link } from "react-router-dom";
 import cssObj from '@/css/style.scss'
 import 'bootstrap/dist/css/bootstrap.css'
 import _ from 'lodash';

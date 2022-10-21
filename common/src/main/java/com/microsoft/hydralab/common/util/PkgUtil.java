@@ -7,7 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSString;
 import com.dd.plist.PropertyListParser;
-import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
+import com.microsoft.hydralab.common.entity.common.AgentUpdateTask.TaskConst;
 import com.microsoft.hydralab.common.entity.common.BlobFileInfo.ParserKey;
 import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
 import net.dongliu.apk.parser.ApkFile;
@@ -34,9 +34,7 @@ public class PkgUtil {
                 }
                 break;
             case AGENT_PACKAGE:
-                String version = getAgentVersionFromJarFile(file);
-                Assert.notNull(version, "Agent Package File Error! Can't get Version Info");
-                res.put(AgentUpdateTask.TaskConst.PARAM_VERSION, version);
+                res = getAgentVersionFromJarFile(file);
                 break;
             default:
                 break;
@@ -46,18 +44,20 @@ public class PkgUtil {
         return res;
     }
 
-    private static String getAgentVersionFromJarFile(File file) {
-        String version = null;
+    private static JSONObject getAgentVersionFromJarFile(File file) {
+        JSONObject res = new JSONObject();
         InputStream propertyStream = null;
         File zipFile = null;
+
         try {
             zipFile = convertToZipFile(file, FILE_SUFFIX.JAR_FILE);
             Assert.notNull(zipFile, "Convert .jar file to .zip file failed.");
-            propertyStream = ZipUtil.get(new ZipFile(zipFile), AgentUpdateTask.TaskConst.PROPERTY_PATH);
+            propertyStream = ZipUtil.get(new ZipFile(zipFile), TaskConst.PROPERTY_PATH);
             Properties prop = new Properties();
             prop.load(propertyStream);
 
-            version = prop.getProperty(AgentUpdateTask.TaskConst.PROPERTY_VERSION);
+            res.put(TaskConst.PARAM_VERSION_NAME, prop.getProperty(TaskConst.PROPERTY_VERSION_NAME));
+            res.put(TaskConst.PARAM_VERSION_CODE, prop.getProperty(TaskConst.PROPERTY_VERSION_CODE));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -72,7 +72,7 @@ public class PkgUtil {
                 zipFile.delete();
             }
         }
-        return version;
+        return res;
     }
 
     public static JSONObject analysisApkFile(File file) {
