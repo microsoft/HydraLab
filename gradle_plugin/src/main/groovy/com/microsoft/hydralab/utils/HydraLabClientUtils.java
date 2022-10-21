@@ -380,6 +380,11 @@ public class HydraLabClientUtils {
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
 
         File summaryMd = new File(reportFolderPath.replace("testResult", "summary"), "TestLabSummary.md");
+        File summaryParent = summaryMd.getParentFile();
+        if (summaryParent != null && !summaryParent.exists()) {
+            summaryParent.mkdirs();
+        }
+
         try (FileOutputStream fos = new FileOutputStream(summaryMd)) {
             IOUtils.write(mdBuilder.toString(), fos, StandardCharsets.UTF_8);
             printlnf("##vso[task.uploadsummary]%s", summaryMd.getAbsolutePath());
