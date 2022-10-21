@@ -105,11 +105,11 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 <span id="ms-give"></span>
 ## Microsoft Give Sponsors
 
-Thank you for your contribution to Microsoft employee giving program in the name of Hydra Lab:
+Thank you for your contribution to [Microsoft employee giving program](https://aka.ms/msgive) in the name of Hydra Lab:
 
 @...
 
-![Microsoft Give](docs/images/Give_WebBanner-2-1204x500.png)
+![Microsoft Give](docs/images/Give_WebBanner.png)
 
 <span id="references"></span>
 ## References
