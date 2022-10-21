@@ -20,6 +20,8 @@
     - [For Contributor](#for-contributor)
 - [Update Notes](#update)
 - [Contribute](#contribute)
+- [Contact Us](#contact)
+- [Microsoft Give Sponsors](#ms-give)
 - [References](#references)
 - [Trademarks](#trademarks)  
 - [License](#license)
@@ -100,8 +102,7 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 - [Open an issue](https://github.com/microsoft/HydraLab/issues) or submit PRs.
 - Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
 
-<span id="references"></span>
-
+<span id="ms-give"></span>
 ## Microsoft Give Sponsors
 
 Thank you for your contribution to Microsoft employee giving program in the name of Hydra Lab:
@@ -110,6 +111,7 @@ Thank you for your contribution to Microsoft employee giving program in the name
 
 ![Microsoft Give](docs/images/Give_WebBanner-2-1204x500.png)
 
+<span id="references"></span>
 ## References
 
 - [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
