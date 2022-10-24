@@ -32,6 +32,8 @@ const drawerWidth = 240;
 
 const grafanaWeb = "/grafana/dashboards"
 
+let ls = require('local-storage');
+
 const useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
@@ -142,6 +144,16 @@ export default function Dashboard() {
         axios.get('/api/center/info').then(res => {
             if (res.data && res.data.code === 200) {
                 setCenterVersion(res.data.content.versionName)
+            } else {
+                this.snackBarFail(res)
+            }
+        }).catch((error) => {
+            this.snackBarError(error)
+        })
+
+        axios.get('/api/package/getSAS').then(res => {
+            if (res.data && res.data.code === 200) {
+                ls.set("BlobSignature", res.data.content.signature);
             } else {
                 this.snackBarFail(res)
             }
