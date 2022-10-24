@@ -13,8 +13,8 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
-import org.slf4j.Logger;
 import org.openqa.selenium.remote.RemoteWebElement;
+import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.Arrays;

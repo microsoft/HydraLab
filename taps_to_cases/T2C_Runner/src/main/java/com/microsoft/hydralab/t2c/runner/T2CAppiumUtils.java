@@ -15,7 +15,6 @@ import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import org.openqa.selenium.WebElement;
 
-import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
