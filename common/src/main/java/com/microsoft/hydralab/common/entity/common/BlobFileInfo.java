@@ -27,6 +27,7 @@ public class BlobFileInfo {
     private String fileName;
     private String blobUrl;
     private String blobPath;
+    private String blobContainer;
     private long fileLen;
     private String md5;
     private String loadDir;

@@ -2,15 +2,16 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.service;
 
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.agent.config.AppOptions;
+import com.microsoft.hydralab.agent.runner.TestThreadPool;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.agent.runner.TestThreadPool;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DownloadUtils;
+import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,23 +30,14 @@ public class AgentUpdateService {
     AgentWebSocketClientService agentWebSocketClientService;
     @Resource
     private AppOptions appOptions;
+    @Resource
+    BlobStorageClient blobStorageClient;
 
     public void updateAgentPackage(AgentUpdateTask updateTask) {
         Runnable run = () -> {
             sendMessageToCenter(true, "Download package file.", "");
-            try {
-                String downloadUrl = updateTask.getPackageInfo().getBlobUrl();
-                String CDNUrl = updateTask.getPackageInfo().getCDNUrl();
-                if (StringUtils.isNotEmpty(CDNUrl)) {
-                    String originDomain = downloadUrl.split("//")[1].split("/")[0];
-                    downloadUrl = downloadUrl.replace(originDomain, CDNUrl);
-                }
-                DownloadUtils.downloadFileFromUrl(downloadUrl, updateTask.getPackageInfo().getFileName(), appOptions.getLocation());
-            } catch (IOException e) {
-                e.printStackTrace();
-                sendMessageToCenter(false, "Download Package Error!", e.getMessage());
-                return;
-            }
+            File downloadToFile = new File(appOptions.getLocation(), updateTask.getPackageInfo().getFileName());
+            blobStorageClient.downloadFileFromBlob(downloadToFile, updateTask.getPackageInfo().getBlobContainer(), updateTask.getPackageInfo().getBlobPath());
             sendMessageToCenter(true, "Download Package Success!", "");
 
             sendMessageToCenter(true, "Init command Arr and check restart script exists or not.", "");

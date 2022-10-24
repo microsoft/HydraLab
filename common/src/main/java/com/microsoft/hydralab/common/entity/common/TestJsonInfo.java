@@ -20,6 +20,7 @@ public class TestJsonInfo {
     private String caseName;
     private String blobPath;
     private String blobUrl;
+    private String blobContainer;
     private boolean isLatest;
     @Column(name = "team_id")
     private String teamId;
