@@ -67,7 +67,6 @@ public class T2CAppiumUtils {
                 if (arguments.containsKey("id")) {
                     String id = (String) arguments.get("id");
                     content = keyToInfoMap.get(id);
-                    driver.input(webElement, keyToInfoMap.get(id));
                 } else {
                     content = (String) arguments.get("content");
                 }
