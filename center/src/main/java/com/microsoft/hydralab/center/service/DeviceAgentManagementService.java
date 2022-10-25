@@ -13,6 +13,7 @@ import com.microsoft.hydralab.common.entity.center.*;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
 import com.microsoft.hydralab.common.util.*;
+import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
 import com.microsoft.hydralab.t2c.runner.TestInfo;
@@ -73,6 +74,8 @@ public class DeviceAgentManagementService {
     AttachmentService attachmentService;
     @Resource
     AgentManageService agentManageService;
+    @Resource
+    BlobStorageClient blobStorageClient;
 
     @Value("${app.access-token-limit}")
     int accessLimit;
@@ -643,12 +646,7 @@ public class DeviceAgentManagementService {
         File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
         TestInfo testInfo;
         try {
-            try {
-                DownloadUtils.downloadFileFromUrl(testAppFileInfo.getBlobUrl(), testApkFile.getName(), testApkFile.getParent());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            blobStorageClient.downloadFileFromBlob(testApkFile, testAppFileInfo.getBlobContainer(), testAppFileInfo.getBlobPath());
             T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
             String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
             testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);

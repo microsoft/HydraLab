@@ -36,7 +36,7 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from '@mui/material/Tooltip';
 import BaseView from "@/component/BaseView";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import {FormHelperText} from "@mui/material";
+import { FormHelperText } from "@mui/material";
 import { DialogContentText } from '@material-ui/core';
 
 /**
@@ -119,7 +119,7 @@ export default class RunnerView extends BaseView {
         const { attachmentsDiaglogISshow, addAttachmentIsShow, attachmentUploading } = this.state
         const { fileType, loadType, loadDir } = this.state
 
-        const {teamList} = this.state
+        const { teamList } = this.state
 
         const activeStep = this.state.activeStep
         const steps = ['Running type', 'Choose device', 'Task configuration']
@@ -176,7 +176,7 @@ export default class RunnerView extends BaseView {
                             <IconButton id={t.fileId} onClick={this.showDeleteDialog}>
                                 <span id={t.fileId} className="material-icons-outlined">delete</span>
                             </IconButton>
-                            <IconButton id={t.fileId} href={t.blobUrl}>
+                            <IconButton id={t.fileId} href={t.blobUrl + '?' + require('local-storage').get('BlobSignature')}>
                                 <span id={t.fileId} className="material-icons-outlined">download</span>
                             </IconButton>
                         </TableCell>
@@ -259,14 +259,14 @@ export default class RunnerView extends BaseView {
                         >
                             {this.state.uploadAppInstallerFile ? this.state.uploadAppInstallerFile.name : 'APK/IPA file'}
                             <input id="uploadAppInstallerFile"
-                                   type="file"
-                                   accept=".apk,.ipa"
-                                   hidden
-                                   onChange={this.handleFileUpload}
+                                type="file"
+                                accept=".apk,.ipa"
+                                hidden
+                                onChange={this.handleFileUpload}
                             />
                         </Button>
                         <FormHelperText> </FormHelperText>
-                    </FormControl> <br/>
+                    </FormControl> <br />
                     <FormControl required fullWidth={true}>
                         <Button
                             component="label"
@@ -275,14 +275,14 @@ export default class RunnerView extends BaseView {
                         >
                             {this.state.uploadTestPackageFile ? this.state.uploadTestPackageFile.name : 'Test APK/JAR/JSON file'}
                             <input id="uploadTestPackageFile"
-                                   type="file"
-                                   accept=".apk,.jar,.json"
-                                   hidden
-                                   onChange={this.handleFileUpload}
+                                type="file"
+                                accept=".apk,.jar,.json"
+                                hidden
+                                onChange={this.handleFileUpload}
                             />
                         </Button>
                         <FormHelperText> </FormHelperText>
-                    </FormControl> <br/>
+                    </FormControl> <br />
                     <FormControl required fullWidth={true}>
                         <InputLabel id="agent-team-select-label" >Team</InputLabel>
                         <Select
@@ -299,7 +299,7 @@ export default class RunnerView extends BaseView {
                             )) : null}
                         </Select>
                         <FormHelperText> </FormHelperText>
-                    </FormControl> <br/>
+                    </FormControl> <br />
                     <FormControl variant="standard" fullWidth={true}>
                         <TextField
                             name="uploadTestDesc"
@@ -310,7 +310,7 @@ export default class RunnerView extends BaseView {
                             fullWidth
                             rows={4}
                         />
-                    </FormControl> <br/>
+                    </FormControl> <br />
                 </DialogContent>
                 <DialogActions>
                     <Button

@@ -103,7 +103,7 @@ export default class DeviceDetailView extends React.Component {
         </table>
     }
 
-    getProperPhoneCase(item){
+    getProperPhoneCase(item) {
         return item.brand === "Apple" ? this.getApplePhoneCase(item) : item.model == 'Surface Duo' ? this.getSurfaceDuoCase(item) : this.getAndroidPhoneCase(item)
     }
 
@@ -126,7 +126,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="base" />
                 <div className="content">
                     <img className={cssObj.device_screenshot}
-                        src={item.pcScreenshotImageUrl + '?rand=' + Math.random()}
+                        src={item.pcScreenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
                         alt={"Computer"} />
                 </div>
             </div>
@@ -139,7 +139,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="case" />
                 <div className="content">
                     <img className={cssObj.tablet_screenshot}
-                        src={item.screenshotImageUrl + '?rand=' + Math.random()}
+                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
                         alt="Surface Duo" />
                 </div>
             </div>
@@ -153,7 +153,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="camera" />
                 <div className="content">
                     <img className={cssObj.mobile_screenshot}
-                        src={item.screenshotImageUrl + '?rand=' + Math.random()}
+                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
                         alt="Android Phone" />
                 </div>
             </div>
@@ -168,7 +168,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="speaker" />
                 <div className="content">
                     <img className={cssObj.iphone_mobile_screenshot}
-                        src={item.screenshotImageUrl + '?rand=' + Math.random()}
+                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
                         alt="iPhone" />
                 </div>
             </div>

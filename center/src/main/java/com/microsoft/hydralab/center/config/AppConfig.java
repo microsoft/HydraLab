@@ -21,6 +21,12 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 public class AppConfig {
     @Value("${app.blob.connection}")
     String blobConnectionString;
+    @Value("${app.blob.SASExpiryTimeFont}")
+    long SASExpiryTimeFont;
+    @Value("${app.blob.SASExpiryTimeAgent}")
+    long SASExpiryTimeAgent;
+    @Value("${app.blob.SASExpiryUpdate}")
+    long SASExpiryUpdate;
 
     @Bean
     @ConditionalOnClass({JSON.class})
@@ -40,7 +46,7 @@ public class AppConfig {
 
     @Bean
     public BlobStorageClient blobStorageClient() {
-        return new BlobStorageClient(blobConnectionString);
+        return new BlobStorageClient(blobConnectionString, SASExpiryTimeFont, SASExpiryTimeAgent, SASExpiryUpdate);
     }
 
     @Bean

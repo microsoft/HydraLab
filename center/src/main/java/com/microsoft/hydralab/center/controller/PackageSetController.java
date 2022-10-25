@@ -4,10 +4,7 @@ package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.center.service.SysTeamService;
-import com.microsoft.hydralab.center.service.SysUserService;
-import com.microsoft.hydralab.center.service.TestFileSetService;
-import com.microsoft.hydralab.center.service.UserTeamManagementService;
+import com.microsoft.hydralab.center.service.*;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.entity.center.SysUser;
@@ -15,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.entity.common.BlobFileInfo.ParserKey;
 import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.PkgUtil.FILE_SUFFIX;
+import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +50,8 @@ public class PackageSetController {
     private SysUserService sysUserService;
     @Resource
     private UserTeamManagementService userTeamManagementService;
+    @Resource
+    private BlobStorageService blobStorageService;
 
     /**
      * Authenticated USER:
@@ -415,5 +415,13 @@ public class PackageSetController {
         testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET));
         testFileSetService.saveFileSetToMem(testFileSet);
         return Result.ok(testFileSet);
+    }
+
+    @GetMapping("/api/package/getSAS")
+    public Result<SASData> generateReadSAS(@CurrentSecurityContext SysUser requestor) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+        return Result.ok(blobStorageService.GenerateReadSAS(requestor.getMailAddress()));
     }
 }
