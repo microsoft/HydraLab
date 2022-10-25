@@ -42,7 +42,7 @@ export default class DeviceAgentsView extends BaseView {
                                 {agent.agentName}: {agent.devices.length}
                             </th>
                             <th style={{ backgroundColor: folderHeadBgColor, color: 'white' }}>
-                                {agent.agentVersionCode > this.state.latestAgentVersion ?
+                                {Number(agent.agentVersionCode) > Number(this.state.latestAgentVersion) ?
                                     <Tooltip
                                         title={
                                             <Stack>
