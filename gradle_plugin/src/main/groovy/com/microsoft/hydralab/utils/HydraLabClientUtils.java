@@ -349,9 +349,9 @@ public class HydraLabClientUtils {
                 if (!file.exists()) {
                     file.mkdirs();
                 }
-
+                String signature = getBlobSAS(apiConfig);
                 for (BlobFileInfo fileInfo : deviceTestResult.attachments) {
-                    String attachmentUrl = fileInfo.blobUrl;
+                    String attachmentUrl = fileInfo.blobUrl + "?" + signature;
                     String attachmentFileName = fileInfo.fileName;
 
                     printlnf("Start downloading attachment for device %s, device name: %s, file name: %s, link: %s", deviceTestResult.deviceSerialNumber, deviceTestResult.deviceName, attachmentFileName, attachmentUrl);
@@ -470,6 +470,28 @@ public class HydraLabClientUtils {
             printlnf("Center is alive, continue on requesting API...");
         } catch (Exception e) {
             throw new RuntimeException("check center alive fail: " + e.getMessage(), e);
+        }
+    }
+
+    private static String getBlobSAS(HydraLabAPIConfig apiConfig) {
+        Request req = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
+                .url(apiConfig.getBlobSASUrl())
+                .build();
+        OkHttpClient clientToUse = client;
+        try (Response response = clientToUse.newCall(req).execute()) {
+            assertTrue(response.isSuccessful(), "Get Blob SAS", response);
+            ResponseBody body = response.body();
+
+            assertNotNull(body, response + ": Blob SAS");
+            JsonObject jsonObject = GSON.fromJson(body.string(), JsonObject.class);
+
+            int resultCode = jsonObject.get("code").getAsInt();
+            assertTrue(resultCode == 200, "Server returned code: " + resultCode, jsonObject);
+
+            return jsonObject.getAsJsonObject("content").get("signature").getAsString();
+        } catch (Exception e) {
+            throw new RuntimeException("Get Blob SAS fail: " + e.getMessage(), e);
         }
     }
 
@@ -723,6 +745,7 @@ public class HydraLabClientUtils {
         public boolean onlyAuthPost = true;
         public String checkCenterVersionAPIPath = "/api/center/info";
         public String checkCenterAliveAPIPath = "/api/center/isAlive";
+        public String getBlobSAS = "/api/package/getSAS";
         public String uploadAPKAPIPath = "/api/package/add";
         public String addAttachmentAPIPath = "/api/package/addAttachment";
         public String generateAccessKeyAPIPath = "/api/deviceGroup/generate?deviceIdentifier=%s";
@@ -745,6 +768,10 @@ public class HydraLabClientUtils {
 
         public static HydraLabAPIConfig defaultAPI() {
             return new HydraLabAPIConfig();
+        }
+
+        public String getBlobSASUrl() {
+            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, getBlobSAS);
         }
 
         public String checkCenterAliveUrl() {
