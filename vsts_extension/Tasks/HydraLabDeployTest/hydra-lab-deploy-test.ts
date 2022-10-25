@@ -22,7 +22,8 @@ async function run() {
             'runTestAPIPath': "/api/test/task/run/",
             'testStatusAPIPath': "/api/test/task/",
             'testPortalTaskInfoPath': "/portal/index.html?redirectUrl=/info/task/",
-            'testPortalTaskDeviceVideoPath': "/portal/index.html?redirectUrl=/info/videos/"
+            'testPortalTaskDeviceVideoPath': "/portal/index.html?redirectUrl=/info/videos/",
+            'getBlobSAS': "/api/package/getSAS/"
         };
 
         Object.assign(HydraLabAPIConfig, { 'Path': Path });
@@ -339,13 +340,15 @@ async function run() {
                 console.log('##[section]Report Subfolder created successfully!'); 
             });
 
+            let signature: any = getBlobSAS(HydraLabAPIConfig);
+
             for (let attachmentIndex in runningTest.deviceTestResults[index].attachments) {
                 let attachmentUrl: string = runningTest.deviceTestResults[index].attachments[attachmentIndex].blobUrl;
                 let attachmentFileName: string = runningTest.deviceTestResults[index].attachments[attachmentIndex].fileName;
                 let attachmentPath: string = path.join(reportFolderPath, deviceSerialNumber, attachmentFileName);
 
                 console.log("Start downloading attachment for device: %s, device name: %s, filename: %s, link: %s", deviceSerialNumber, runningTest.deviceTestResults[index].deviceName, attachmentFileName, attachmentUrl);
-                await downloadToFile(attachmentUrl, attachmentPath);
+                await downloadToFile(attachmentUrl, attachmentPath, signature.signature);
                 console.log("Finish downloading attachment for device %s", deviceSerialNumber);
             }
         }
@@ -518,6 +521,18 @@ async function getTestStatus(HydraLabAPIConfig: any, testTaskId: string): Promis
     return responseContent
 }
 
+async function getBlobSAS(HydraLabAPIConfig: any): Promise<object> {    
+    let requestParameters = {
+        method: "get",
+        url: HydraLabAPIConfig.serviceEndpointUrl + HydraLabAPIConfig.Path.getBlobSAS,
+        headers: { "Authorization": `Bearer ${HydraLabAPIConfig['authToken']}` }
+    }
+
+    let responseContent: any =  await requestHydraLabAfterCheckCenterAlive(HydraLabAPIConfig, 'GetBlobSAS', requestParameters);
+
+    return responseContent
+}
+
 function getRequiredInput(name: string): string {
     let variable: string | undefined = tl.getInput(name, true);
 
@@ -594,12 +609,12 @@ async function requestHydraLabAfterCheckCenterAlive(HydraLabAPIConfig: any, APIN
     return responseContent;
 }
 
-async function downloadToFile(url: string, fileName: string) {
+async function downloadToFile(url: string, fileName: string, signature: string) {
     const axios = require('axios').default;
 
     await axios({
         method: 'get',
-        url: url,
+        url: `${url}?${signature}`,
         responseType: 'stream'
     })
     .then(async function (response: any) {
