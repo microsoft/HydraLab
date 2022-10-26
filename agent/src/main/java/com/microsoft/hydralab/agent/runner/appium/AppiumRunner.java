@@ -2,16 +2,17 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.runner.appium;
 
+import com.microsoft.hydralab.agent.runner.RunningControlService;
+import com.microsoft.hydralab.agent.runner.TestRunner;
+import com.microsoft.hydralab.agent.runner.TestRunningCallback;
 import com.microsoft.hydralab.appium.AppiumParam;
 import com.microsoft.hydralab.appium.ThreadParam;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.agent.runner.RunningControlService;
-import com.microsoft.hydralab.agent.runner.TestRunner;
-import com.microsoft.hydralab.agent.runner.TestRunningCallback;
 import com.microsoft.hydralab.common.util.IOSUtils;
+import com.microsoft.hydralab.common.util.LogUtils;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -103,7 +104,7 @@ public class AppiumRunner extends TestRunner {
         }
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
         ThreadParam.init(appiumParam, instrumentationArgs);
-        reportLogger.info("ThreadParam init success, AppiumParam is " + appiumParam.toString() + ", args is " + instrumentationArgs.toString());
+        reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
         File gifFile = null;
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");

@@ -63,3 +63,4 @@ application-local.yml
 /application.yml
 /application-*.yml
 
+/local_debug

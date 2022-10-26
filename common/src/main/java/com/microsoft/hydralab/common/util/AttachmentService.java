@@ -73,6 +73,7 @@ public class AttachmentService {
         blobFileInfo.setCreateTime(new Date());
         blobFileInfo.setUpdateTime(new Date());
         blobFileInfo.setBlobUrl(saveFileToBlob(file, entityType.blobConstant, blobFileInfo.getBlobPath(), logger));
+        blobFileInfo.setBlobContainer(entityType.blobConstant);
         blobFileInfo.setCDNUrl(cdnUrl);
         blobFileInfoRepository.save(blobFileInfo);
         return blobFileInfo;
@@ -80,7 +81,7 @@ public class AttachmentService {
 
     public TestJsonInfo addTestJsonFile(TestJsonInfo testJsonInfo, File file, EntityFileRelation.EntityType entityType, Logger logger) {
         testJsonInfo.setBlobUrl(saveFileToBlob(file, entityType.blobConstant, testJsonInfo.getBlobPath(), logger));
-
+        testJsonInfo.setBlobContainer(entityType.blobConstant);
         List<TestJsonInfo> oldJsonInfoList = testJsonInfoRepository.findByIsLatestAndPackageNameAndCaseName(true, testJsonInfo.getPackageName(), testJsonInfo.getCaseName());
         if (oldJsonInfoList != null) {
             for (TestJsonInfo json : oldJsonInfoList) {
@@ -130,7 +131,9 @@ public class AttachmentService {
     }
 
     public boolean compareFileInfo(BlobFileInfo newFileInfo, BlobFileInfo oldFileInfo) {
-        if (newFileInfo.getFileName().equals(oldFileInfo.getFileName())
+        if (newFileInfo.getLoadType() == null && oldFileInfo.getLoadType() == null) {
+            return true;
+        } else if (newFileInfo.getFileName().equals(oldFileInfo.getFileName())
                 && newFileInfo.getLoadType().equals(oldFileInfo.getLoadType())
                 && newFileInfo.getLoadDir().equals(oldFileInfo.getLoadDir())) {
             return true;
@@ -142,6 +145,7 @@ public class AttachmentService {
         int days = (int) ((new Date().getTime() - oldFileInfo.getUpdateTime().getTime()) / 1000 / 60 / 60 / 24);
         if (days >= fileLimitDay) {
             oldFileInfo.setBlobUrl(saveFileToBlob(file, entityType.blobConstant, oldFileInfo.getBlobPath(), logger));
+            oldFileInfo.setBlobContainer(entityType.blobConstant);
             oldFileInfo.setCDNUrl(cdnUrl);
             oldFileInfo.setUpdateTime(new Date());
             blobFileInfoRepository.save(oldFileInfo);

@@ -42,13 +42,13 @@ export default class DeviceAgentsView extends BaseView {
                                 {agent.agentName}: {agent.devices.length}
                             </th>
                             <th style={{ backgroundColor: folderHeadBgColor, color: 'white' }}>
-                                {this.state.latestAgentVersion === agent.agentVersion ?
+                                {Number(agent.agentVersionCode) > Number(this.state.latestAgentVersion) ?
                                     <Tooltip
                                         title={
                                             <Stack>
-                                                {agent.agentOS}<br />
-                                                {agent.hostname}<br />
-                                                {agent.agentVersion}
+                                                Host:{agent.hostname}<br />
+                                                Version:{agent.agentVersionName}<br />
+                                                OS:{agent.agentOS}
                                             </Stack>}
                                         style={{ padding: "0" }}>
                                         <IconButton>
@@ -205,7 +205,7 @@ export default class DeviceAgentsView extends BaseView {
             if (res.data && res.data.code === 200) {
                 if (res.data.content && res.data.content.agentPkg) {
                     this.setState({
-                        latestAgentVersion: res.data.content.agentPkg.fileParser.version,
+                        latestAgentVersion: res.data.content.agentPkg.fileParser.versionCode,
                         fileId: res.data.content.agentPkg.fileId
                     })
                 }

@@ -19,7 +19,8 @@ public class AgentUser {
     String hostname;
     String ip;
     String os;
-    String version;
+    String versionName;
+    String versionCode;
     int deviceType;
     int capabilities;
     int status;

@@ -82,9 +82,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         break
                 }
 
-                var appPath = ""
+                def appPath = ""
                 if (project.hasProperty('appPath')) {
-                    var appFile = project.file(project.appPath)
+                    def appFile = project.file(project.appPath)
                     println("Param appPath: ${project.appPath}")
                     if (!appFile.exists()) {
                         def exceptionMsg = "${project.appPath} file not exist!"
@@ -94,9 +94,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                var testAppPath = ""
+                def testAppPath = ""
                 if (project.hasProperty('testAppPath')) {
-                    var testAppFile = project.file(project.testAppPath)
+                    def testAppFile = project.file(project.testAppPath)
                     println("Param testAppPath: ${project.testAppPath}")
                     if (!testAppFile.exists()) {
                         def exceptionMsg = "${project.testAppPath} file not exist!"
@@ -106,9 +106,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                var attachmentConfigPath = ""
+                def attachmentConfigPath = ""
                 if (project.hasProperty('attachmentConfigPath')) {
-                    var attachmentConfigFile = project.file(project.attachmentConfigPath)
+                    def attachmentConfigFile = project.file(project.attachmentConfigPath)
                     println("Param attachmentConfigPath: ${project.attachmentConfigPath}")
                     if (!attachmentConfigFile.exists()) {
                         def exceptionMsg = "${project.attachmentConfigPath} file not exist!"
@@ -118,11 +118,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                def buildFlavorValue = "UNKNOWN"
-                if (project.hasProperty('buildFlavor')) {
-                    buildFlavorValue = project.buildFlavor
-                }
-                def reportDir = new File(project.buildDir, "outputs/androidTest-results/connected/flavors/${buildFlavorValue}")
+                def reportDir = new File(project.buildDir, "testResult")
                 if (!reportDir.exists()) reportDir.mkdirs()
 
                 def argsMap = null
@@ -186,6 +182,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('teamName')) {
                     apiConfig.teamName = project.teamName
                 }
+                if (project.hasProperty('testRunnerName')) {
+                    apiConfig.testRunnerName = project.testRunnerName
+                }
                 // optional for APPIUM_CROSS, T2C_JSON
                 if (project.hasProperty('needUninstall')) {
                     apiConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
@@ -198,15 +197,11 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('deviceIdentifier')) {
                     deviceIdentifierArg = project.deviceIdentifier
                 }
-                def reportAudienceArg = null
-                if (project.hasProperty('reportAudience')) {
-                    reportAudienceArg = project.reportAudience
-                }
 
                 HydraLabClientUtils.runTestOnDeviceWithApp(
                         runningType, appPath, testAppPath, attachmentConfigPath,
                         project.hasProperty('testSuiteName') ? project.testSuiteName : "",
-                        deviceIdentifierArg, reportAudienceArg, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(project.runTimeOutSeconds),
+                        deviceIdentifierArg, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(project.runTimeOutSeconds),
                         reportDir.absolutePath, argsMap, extraArgsMap,
                         apiConfig
                 )

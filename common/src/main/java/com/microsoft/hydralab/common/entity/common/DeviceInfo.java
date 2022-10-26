@@ -97,7 +97,7 @@ public class DeviceInfo extends MobileDevice {
     }
 
     public boolean isAlive() {
-        return DeviceInfo.TESTING.equals(status) || DeviceInfo.ONLINE.equals(status);
+        return DeviceInfo.TESTING.equals(status) || DeviceInfo.ONLINE.equals(status) || DeviceInfo.UNSTABLE.equals(status);
     }
 
     public boolean isTesting() {

@@ -62,7 +62,6 @@ public class HydraLabClientUtils {
                                               String attachmentConfigPath,
                                               String testSuiteName,
                                               @Nullable String deviceIdentifier,
-                                              @Nullable String reportAudience,
                                               int queueTimeoutSec,
                                               int runTimeoutSec,
                                               String reportFolderPath,
@@ -71,10 +70,10 @@ public class HydraLabClientUtils {
                                               HydraLabAPIConfig apiConfig) {
         String output = String.format("##[section]All args: runningType: %s, appPath: %s, deviceIdentifier: %s" +
                         "\n##[section]\tqueueTimeOutSeconds: %d, runTimeOutSeconds: %d, attachmentConfigPath: %s, argsMap: %s, extraArgsMap: %s" +
-                        "\n##[section]\treportAudience: %s, apiConfig: %s",
+                        "\n##[section]\tapiConfig: %s",
                 runningType, appPath, deviceIdentifier, queueTimeoutSec, runTimeoutSec, attachmentConfigPath,
                 instrumentationArgs == null ? "" : instrumentationArgs.toString(), extraArgs == null ? "" : extraArgs.toString(),
-                reportAudience, apiConfig.toString());
+                apiConfig.toString());
         switch (runningType) {
             case "INSTRUMENTATION":
             case "APPIUM":
@@ -94,7 +93,7 @@ public class HydraLabClientUtils {
 
         sMarkedFail = false;
         try {
-            runTestInner(runningType, appPath, testAppPath, attachmentConfigPath, testSuiteName, deviceIdentifier, reportAudience,
+            runTestInner(runningType, appPath, testAppPath, attachmentConfigPath, testSuiteName, deviceIdentifier,
                     queueTimeoutSec, runTimeoutSec, reportFolderPath, instrumentationArgs, extraArgs, apiConfig);
             markBuildSuccess();
         } catch (RuntimeException e) {
@@ -107,7 +106,6 @@ public class HydraLabClientUtils {
                                      String attachmentConfigPath,
                                      String testSuiteName,
                                      @Nullable String deviceIdentifier,
-                                     @Nullable String reportAudience,
                                      int queueTimeoutSec,
                                      int runTimeoutSec,
                                      String reportFolderPath,
@@ -222,13 +220,13 @@ public class HydraLabClientUtils {
             printlnf("##[command]Access key obtained.");
         }
 
-        JsonObject responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, reportAudience, runTimeoutSec, instrumentationArgs, extraArgs);
+        JsonObject responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
         int resultCode = responseContent.get("code").getAsInt();
 
         // retry
         int waitingRetry = 20;
         while (resultCode != 200 && waitingRetry > 0) {
-            responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, reportAudience, runTimeoutSec, instrumentationArgs, extraArgs);
+            responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
             resultCode = responseContent.get("code").getAsInt();
             waitingRetry--;
         }
@@ -351,9 +349,9 @@ public class HydraLabClientUtils {
                 if (!file.exists()) {
                     file.mkdirs();
                 }
-
+                String signature = getBlobSAS(apiConfig);
                 for (BlobFileInfo fileInfo : deviceTestResult.attachments) {
-                    String attachmentUrl = fileInfo.blobUrl;
+                    String attachmentUrl = fileInfo.blobUrl + "?" + signature;
                     String attachmentFileName = fileInfo.fileName;
 
                     printlnf("Start downloading attachment for device %s, device name: %s, file name: %s, link: %s", deviceTestResult.deviceSerialNumber, deviceTestResult.deviceName, attachmentFileName, attachmentUrl);
@@ -381,7 +379,12 @@ public class HydraLabClientUtils {
         printlnf(testReportUrl);
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
 
-        File summaryMd = new File(reportFolderPath, "TestLabSummary.md");
+        File summaryMd = new File(reportFolderPath.replace("testResult", "summary"), "TestLabSummary.md");
+        File summaryParent = summaryMd.getParentFile();
+        if (summaryParent != null && !summaryParent.exists()) {
+            summaryParent.mkdirs();
+        }
+
         try (FileOutputStream fos = new FileOutputStream(summaryMd)) {
             IOUtils.write(mdBuilder.toString(), fos, StandardCharsets.UTF_8);
             printlnf("##vso[task.uploadsummary]%s", summaryMd.getAbsolutePath());
@@ -470,6 +473,28 @@ public class HydraLabClientUtils {
         }
     }
 
+    private static String getBlobSAS(HydraLabAPIConfig apiConfig) {
+        Request req = new Request.Builder()
+                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
+                .url(apiConfig.getBlobSASUrl())
+                .build();
+        OkHttpClient clientToUse = client;
+        try (Response response = clientToUse.newCall(req).execute()) {
+            assertTrue(response.isSuccessful(), "Get Blob SAS", response);
+            ResponseBody body = response.body();
+
+            assertNotNull(body, response + ": Blob SAS");
+            JsonObject jsonObject = GSON.fromJson(body.string(), JsonObject.class);
+
+            int resultCode = jsonObject.get("code").getAsInt();
+            assertTrue(resultCode == 200, "Server returned code: " + resultCode, jsonObject);
+
+            return jsonObject.getAsJsonObject("content").get("signature").getAsString();
+        } catch (Exception e) {
+            throw new RuntimeException("Get Blob SAS fail: " + e.getMessage(), e);
+        }
+    }
+
     private static String uploadApp(HydraLabAPIConfig apiConfig, String commitId, String commitCount, String commitMsg, File app, File testApp) {
         checkCenterAlive(apiConfig);
 
@@ -512,14 +537,21 @@ public class HydraLabClientUtils {
     private static JsonObject addAttachment(HydraLabAPIConfig apiConfig, String testFileSetId, AttachmentInfo attachmentConfig, File attachment) {
         checkCenterAlive(apiConfig);
 
-        MediaType contentType = MediaType.get("application/vnd.android.package-archive");
+        // default text file type: text/plain
+        // default binary file type: application/octet-stream
+        // todo: check if file is readable, set corresponding type
+        MediaType contentType = MediaType.get("application/octet-stream");
         MultipartBody.Builder multipartBodyBuilder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("fileSetId", testFileSetId)
                 .addFormDataPart("fileType", attachmentConfig.fileType)
-                .addFormDataPart("loadType", attachmentConfig.loadType)
-                .addFormDataPart("loadDir", attachmentConfig.loadDir)
                 .addFormDataPart("attachment", attachmentConfig.fileName, RequestBody.create(contentType, attachment));
+        if (StringUtils.isNotEmpty(attachmentConfig.loadType)) {
+            multipartBodyBuilder.addFormDataPart("loadType", attachmentConfig.loadType);
+        }
+        if (StringUtils.isNotEmpty(attachmentConfig.loadDir)) {
+            multipartBodyBuilder.addFormDataPart("loadDir", attachmentConfig.loadDir);
+        }
 
         Request req = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + apiConfig.authToken)
@@ -568,7 +600,7 @@ public class HydraLabClientUtils {
     }
 
     private static JsonObject triggerTestRun(String runningType, HydraLabAPIConfig apiConfig, String fileSetId, String testSuiteName,
-                                             String deviceIdentifier, @Nullable String accessKey, @Nullable String reportAudience, int runTimeoutSec, Map<String, String> instrumentationArgs, Map<String, String> extraArgs) {
+                                             String deviceIdentifier, @Nullable String accessKey, int runTimeoutSec, Map<String, String> instrumentationArgs, Map<String, String> extraArgs) {
         checkCenterAlive(apiConfig);
 
         JsonObject jsonElement = new JsonObject();
@@ -586,12 +618,10 @@ public class HydraLabClientUtils {
         jsonElement.addProperty("deviceTestCount", apiConfig.deviceTestCount);
         jsonElement.addProperty("needUninstall", apiConfig.needUninstall);
         jsonElement.addProperty("needClearData", apiConfig.needClearData);
+        jsonElement.addProperty("testRunnerName", apiConfig.testRunnerName);
 
         if (accessKey != null) {
             jsonElement.addProperty("accessKey", accessKey);
-        }
-        if (reportAudience != null) {
-            jsonElement.addProperty("reportAudience", reportAudience);
         }
         if (instrumentationArgs != null) {
             jsonElement.add("instrumentationArgs", GSON.toJsonTree(instrumentationArgs).getAsJsonObject());
@@ -715,6 +745,7 @@ public class HydraLabClientUtils {
         public boolean onlyAuthPost = true;
         public String checkCenterVersionAPIPath = "/api/center/info";
         public String checkCenterAliveAPIPath = "/api/center/isAlive";
+        public String getBlobSAS = "/api/package/getSAS";
         public String uploadAPKAPIPath = "/api/package/add";
         public String addAttachmentAPIPath = "/api/package/addAttachment";
         public String generateAccessKeyAPIPath = "/api/deviceGroup/generate?deviceIdentifier=%s";
@@ -733,9 +764,14 @@ public class HydraLabClientUtils {
         public boolean needUninstall = true;
         public boolean needClearData = true;
         public String teamName = "";
+        public String testRunnerName = "androidx.test.runner.AndroidJUnitRunner";
 
         public static HydraLabAPIConfig defaultAPI() {
             return new HydraLabAPIConfig();
+        }
+
+        public String getBlobSASUrl() {
+            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, getBlobSAS);
         }
 
         public String checkCenterAliveUrl() {
@@ -897,6 +933,8 @@ public class HydraLabClientUtils {
         PASSWORD("[&,;\"\'\\s]+(password|pwd)[=:\"\\s]*(\\w*)"),
         GENERAL_PASSWORD("\\w*(password|pwd)[=:\\\"\\s]*(\\w*)"),
         PASSWORD_CONFIRMATION("(password[_\\s-]*confirmation)[=:\"\\s]*(\\w*)"),
+        EMAIL("[&,;\"\'\\s]+(mail)[=:\"\\s]*(\\w*)"),
+        GENERAL_EMAIL("\\w*(mail)[=:\\\"\\s]*(\\w*)"),
         API_KEY("(api[_\\s-]*key)[=:\"\\s]*(\\w*)"),
         RESET_PASSWORD_TOKEN("(reset[_\\s-]*password[_\\s-]*token)[=:\"\\s]*(\\w*)"),
         UPLOAD_TOKEN("(upload[_\\s-]*token)[=:\"\\s]*(\\w*)"),

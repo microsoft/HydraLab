@@ -191,7 +191,7 @@ export default class SearchView extends BaseView {
                     if (res.data && res.data.code === 200) {
 
 
-                        const vList = [res.data.content.videoBlobUrl]
+                        const vList = [res.data.content.videoBlobUrl + '?' + ls.get('BlobSignature')]
                         const info = res.data.content.videoTimeTagArr
                         const properties = []
 
