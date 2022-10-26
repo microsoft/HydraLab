@@ -107,7 +107,7 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 
 Thank you for your contribution to [Microsoft employee giving program](https://aka.ms/msgive) in the name of Hydra Lab:
 
-[@Germey(崔庆才)](https://github.com/Germey)
+[@Germey(崔庆才)](https://github.com/Germey) [@White(刘子凡)](https://github.com/jkfhklh)
 
 ![Microsoft Give](docs/images/Give_WebBanner.png)
 
