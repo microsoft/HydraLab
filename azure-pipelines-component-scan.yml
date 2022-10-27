@@ -37,16 +37,6 @@ stages:
         command: 'custom'
         workingDir: 'react'
         customCommand: 'run pub'
-    - task: PowerShell@2
-      displayName: Set center/agent version
-      inputs:
-        targetType: 'inline'
-        script: |
-          $PSDefaultParameterValues['*:Encoding'] = 'utf8'
-          $hydraVersion = (((((Get-Content "common.gradle") -match "hydraLabVersion = '[0-9.]+'") -replace 'hydraLabVersion = ', '') -replace "'", "") -replace " ","")
-          (Get-Content agent/src/main/resources/version.properties) -Replace 'AGENT_VERSION', "$hydraVersion.$(Build.BuildId)"| Set-Content agent/src/main/resources/version.properties
-          (Get-Content center/src/main/resources/version.properties) -Replace 'CENTER_VERSION', "$hydraVersion.$(Build.BuildId)"| Set-Content center/src/main/resources/version.properties
-        workingDirectory: '$(Build.Repository.LocalPath)'
     - task: Gradle@2
       inputs:
         gradleWrapperFile: 'gradlew'
