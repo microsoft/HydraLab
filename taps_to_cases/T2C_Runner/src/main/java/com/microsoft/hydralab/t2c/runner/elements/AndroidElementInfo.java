@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.t2c.runner.elements;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -33,7 +34,36 @@ public class AndroidElementInfo extends BaseElementInfo {
     private Integer centerX;
 
     private Integer centerY;
+    public static AndroidElementInfo getAndroidElementFromJson(JSONObject elementInfo) {
+        String index = elementInfo.getString("index");
+        String packageName = elementInfo.getString("package");
+        String className = elementInfo.getString("class");
+        String text = elementInfo.getString("text");
+        String content_desc = elementInfo.getString("content-desc");
+        String checkable = elementInfo.getString("checkable");
+        String checked = elementInfo.getString("clickable");
+        String clickable = elementInfo.getString("clickable");
+        String enabled = elementInfo.getString("checked");
+        String focusable = elementInfo.getString("focusable");
+        String focused = elementInfo.getString("focused");
+        String long_clickable = elementInfo.getString("long-clickable");
+        String password = elementInfo.getString("password");
+        String scrollable = elementInfo.getString("scrollable");
+        String selected = elementInfo.getString("selected");
+        String bounds = elementInfo.getString("bounds");
+        String displayed = elementInfo.getString("display");
+        String xpath = elementInfo.getString("xpath");
+        Integer top = elementInfo.getInteger("top");
+        Integer left = elementInfo.getInteger("left");
+        Integer width = elementInfo.getInteger("width");
+        Integer height = elementInfo.getInteger("height");
+        Integer centerX = elementInfo.getInteger("centerX");
+        Integer centerY = elementInfo.getInteger("centerY");
 
+        return new AndroidElementInfo(index, packageName, className, text,
+                content_desc, checkable, checked, clickable, enabled, focusable, focused, long_clickable,
+                password, scrollable, selected, bounds, displayed, xpath, top, left, width, height, centerX, centerY);
+    }
     public AndroidElementInfo(String index, String packageName, String className, String text, String content_desc, String checkable,
                               String checked, String clickable, String enabled, String focusable, String focused, String long_clickable,
                               String password, String scrollable, String selected, String bounds, String displayed, String xpath,

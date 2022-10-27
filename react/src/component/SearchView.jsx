@@ -23,7 +23,7 @@ import BaseView from "@/component/BaseView";
 export default class SearchView extends BaseView {
     state = {
         infoDisplay: <center>
-            <div/>
+            <div />
         </center>,
         infoId: this.props.infoId ? this.props.infoId : "",
         requestPath: this.props.infoType ? this.props.infoType : "case",
@@ -31,7 +31,7 @@ export default class SearchView extends BaseView {
     }
 
     render() {
-        const {snackbarIsShown, snackbarSeverity, snackbarMessage} = this.state
+        const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
 
         const dV = this.props.infoType ? this.props.infoType : "case"
         return <div>
@@ -39,31 +39,31 @@ export default class SearchView extends BaseView {
                 <FormControl component="fieldset" style={{ width: '720px' }}>
                     <Typography variant="h4" className="mt-2 mb-2">Search type</Typography>
                     <RadioGroup row aria-label="position" name="position" defaultValue={dV}
-                                onChange={this.searchTypeChange}>
+                        onChange={this.searchTypeChange}>
                         <FormControlLabel
                             value="case"
-                            control={<Radio color="primary"/>}
+                            control={<Radio color="primary" />}
                             label="Test Case"
-                            labelPlacement="end"/>
+                            labelPlacement="end" />
                         <FormControlLabel
                             value="crash"
-                            control={<Radio color="primary"/>}
-                            label="Crash"/>
+                            control={<Radio color="primary" />}
+                            label="Crash" />
                         <FormControlLabel
                             value="videos"
-                            control={<Radio color="primary"/>}
-                            label="Videos"/>
+                            control={<Radio color="primary" />}
+                            label="Videos" />
                         <FormControlLabel
                             value="task"
-                            control={<Radio color="primary"/>}
-                            label="Test task report"/>
+                            control={<Radio color="primary" />}
+                            label="Test task report" />
                     </RadioGroup>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <TextField fullWidth
-                                   type="text" label="Enter info id" aria-label="Enter info id"
-                                   aria-describedby="basic-addon2" value={this.state.infoId}
-                                   onChange={this.infoIdChanged}
-                                   onKeyDown={(e) => this.onkeydown(e)}/>
+                            type="text" label="Enter info id" aria-label="Enter info id"
+                            aria-describedby="basic-addon2" value={this.state.infoId}
+                            onChange={this.infoIdChanged}
+                            onKeyDown={(e) => this.onkeydown(e)} />
                         <div className="input-group-append">
                             <LoadingButton
                                 variant="contained"
@@ -81,11 +81,11 @@ export default class SearchView extends BaseView {
             </div>
             <div hidden={!this.state.querying}>
                 <Skeleton variant="text" className="w-100 p-3"
-                          height={100}/>
+                    height={100} />
                 <Skeleton variant="text" className="w-100 p-3"
-                          height={100}/>
+                    height={100} />
                 <Skeleton variant="text" className="w-100 p-3"
-                          height={100}/>
+                    height={100} />
             </div>
             <Snackbar
                 anchorOrigin={{
@@ -97,12 +97,12 @@ export default class SearchView extends BaseView {
                 onClose={() => this.handleStatus("snackbarIsShown", false)}>
                 <Alert
                     severity={snackbarSeverity}
-                    sx={{width: '100%'}}
+                    sx={{ width: '100%' }}
                     onClose={() => this.handleStatus("snackbarIsShown", false)}>
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
-            <div className="mt-2"/>
+            <div className="mt-2" />
             {this.state.infoDisplay}
         </div>
     }
@@ -148,32 +148,34 @@ export default class SearchView extends BaseView {
         const requestPath = this.state.requestPath
         console.log(requestPath)
 
-        axios.get('/api/test/' + requestPath + '/' + this.state.infoId, ).then(res => {
+        axios.get('/api/test/' + requestPath + '/' + this.state.infoId,).then(res => {
             const details = res.data.content
-
             if (requestPath === "videos") {
+                for (let i = 0; i < details.videos.length; i++) {
+                    details.videos[i] = details.videos[i] + '?' + require('local-storage').get('BlobSignature');
+                }
                 const vList = details.videos
                 const info = details.videoInfo
                 this.setState({
-                    infoDisplay: <VideoNavView videoInfo={info} videos={vList}/>,
+                    infoDisplay: <VideoNavView videoInfo={info} videos={vList} />,
                     querying: false
                 })
             } else if (requestPath === "crash") {
                 const properties = []
-                properties.push({k: "LogHTML", v: details})
+                properties.push({ k: "LogHTML", v: details })
                 this.setState({
                     infoDisplay: <center><AdaptivePropertyTable properties={properties}
-                                                                title='Test Case Details'
-                                                                propertyValueProcessor={(key, value) => {
-                                                                    if (key.toLowerCase().includes('stack')) {
-                                                                        return <pre>{value.toString()}</pre>
-                                                                    }
-                                                                    if (key.toLowerCase().includes("html")) {
-                                                                        return <pre><div
-                                                                            dangerouslySetInnerHTML={{__html: value.toString()}}/></pre>
-                                                                    }
-                                                                    return null
-                                                                }}/></center>,
+                        title='Test Case Details'
+                        propertyValueProcessor={(key, value) => {
+                            if (key.toLowerCase().includes('stack')) {
+                                return <pre>{value.toString()}</pre>
+                            }
+                            if (key.toLowerCase().includes("html")) {
+                                return <pre><div
+                                    dangerouslySetInnerHTML={{ __html: value.toString() }} /></pre>
+                            }
+                            return null
+                        }} /></center>,
                     querying: false
                 })
             } else if (requestPath === "task") {
@@ -191,7 +193,7 @@ export default class SearchView extends BaseView {
                     if (res.data && res.data.code === 200) {
 
 
-                        const vList = [res.data.content.videoBlobUrl + '?' + ls.get('BlobSignature')]
+                        const vList = [res.data.content.videoBlobUrl + '?' + require('local-storage').get('BlobSignature')]
                         const info = res.data.content.videoTimeTagArr
                         const properties = []
 
@@ -199,28 +201,28 @@ export default class SearchView extends BaseView {
                             if (k === "stream") {
                                 continue
                             }
-                            properties.push({k: k, v: details[k]})
+                            properties.push({ k: k, v: details[k] })
                         }
                         this.setState({
-                            infoDisplay: <center><VideoNavView videoInfo={info} videos={vList}/>
+                            infoDisplay: <center><VideoNavView videoInfo={info} videos={vList} />
                                 <AdaptivePropertyTable properties={properties}
-                                                       title='Test Case Details'
-                                                       propertyValueProcessor={(key, value) => {
-                                                           if (key.toLowerCase().includes('stack')) {
-                                                               return <pre>{value.toString()}</pre>
-                                                           }
-                                                           if (key.toLowerCase().includes("html")) {
-                                                               return <pre><div
-                                                                   dangerouslySetInnerHTML={{__html: value.toString()}}/></pre>
-                                                           }
-                                                           if (key === "deviceTestResultId" || key === "id" || key === "relEndTimeInVideo"
-                                                               || key === "startTimeMillis" || key === "numtests"
-                                                               || key === "testIndex" || key === "testTaskId" || key === "statusCode"
-                                                               || key === "relStartTimeInVideo" || key === "endTimeMillis") {
-                                                               return "SKIP"
-                                                           }
-                                                           return null
-                                                       }}/>
+                                    title='Test Case Details'
+                                    propertyValueProcessor={(key, value) => {
+                                        if (key.toLowerCase().includes('stack')) {
+                                            return <pre>{value.toString()}</pre>
+                                        }
+                                        if (key.toLowerCase().includes("html")) {
+                                            return <pre><div
+                                                dangerouslySetInnerHTML={{ __html: value.toString() }} /></pre>
+                                        }
+                                        if (key === "deviceTestResultId" || key === "id" || key === "relEndTimeInVideo"
+                                            || key === "startTimeMillis" || key === "numtests"
+                                            || key === "testIndex" || key === "testTaskId" || key === "statusCode"
+                                            || key === "relStartTimeInVideo" || key === "endTimeMillis") {
+                                            return "SKIP"
+                                        }
+                                        return null
+                                    }} />
                             </center>,
                             querying: false
                         })
