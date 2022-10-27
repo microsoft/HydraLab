@@ -12,7 +12,7 @@ variables:
   # Container registry service connection established during pipeline creation
   version: '$(Build.BuildId)'
   # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+  vmImageName: 'windows-latest'
   fullBuild: $[ne(variables['Build.Reason'], 'PullRequest')]
 
 stages:
