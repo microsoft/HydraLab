@@ -230,8 +230,10 @@ async function run() {
 
         const fileSetId: any = await uploadAPP(HydraLabAPIConfig, teamName, commitId, commitCount, commitMsg, buildFlavor, apkPath, testApkPath);
         console.log(`##[section]Uploaded APK set id: ${fileSetId}`)
-
-        await uploadAttachments(HydraLabAPIConfig, fileSetId, attachments)
+        
+        if (Array.isArray(attachments) && attachments.length) {
+            await uploadAttachments(HydraLabAPIConfig, fileSetId, attachments)
+        }
         
         let accessKey = undefined
         try {
@@ -340,7 +342,7 @@ async function run() {
                 console.log('##[section]Report Subfolder created successfully!'); 
             });
 
-            let signature: any = getBlobSAS(HydraLabAPIConfig);
+            let signature: any = await getBlobSAS(HydraLabAPIConfig);
 
             for (let attachmentIndex in runningTest.deviceTestResults[index].attachments) {
                 let attachmentUrl: string = runningTest.deviceTestResults[index].attachments[attachmentIndex].blobUrl;
@@ -602,7 +604,7 @@ async function requestHydraLabAfterCheckCenterAlive(HydraLabAPIConfig: any, APIN
 
     let centerInfo = await requestHydraLab('GetCenterInfo', checkCenterRequestParameters);
 
-    console.log(`##[section][${APIName}] Center Version: ${centerInfo.version}`)
+    console.log(`##[section][${APIName}] Center Version: ${centerInfo.versionName}`)
 
     let responseContent: any =  await requestHydraLab(APIName, requestParameters);
 
