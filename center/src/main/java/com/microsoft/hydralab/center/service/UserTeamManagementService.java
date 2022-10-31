@@ -127,9 +127,16 @@ public class UserTeamManagementService {
         return new ArrayList<>(teams);
     }
 
-    public boolean checkUserExistenceWithTeam(String teamId) {
+    public boolean checkUserExistenceWithTeam(SysUser requestor, String teamId) {
         List<SysUser> users = queryUsersByTeam(teamId);
-        return !CollectionUtils.isEmpty(users);
+        if (CollectionUtils.isEmpty(users)) {
+            return false;
+        }
+        if (users.size() == 1 && users.get(0).getMailAddress().equals(requestor.getMailAddress())) {
+            return false;
+        }
+ 
+        return true;
     }
 
     public boolean checkTeamAdmin(String teamId, String mailAddress) {
