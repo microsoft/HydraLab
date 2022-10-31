@@ -135,7 +135,7 @@ public class UserTeamManagementService {
         if (users.size() == 1 && users.get(0).getMailAddress().equals(requestor.getMailAddress())) {
             return false;
         }
-
+ 
         return true;
     }
 
