@@ -8,6 +8,11 @@ version = '0.9.5'
 sourceCompatibility = 11
 targetCompatibility = 11
 
+repositories {
+    mavenCentral()
+    google()
+}
+
 def env = System.getProperty("env") ?: "dev"
 
 sourceSets {

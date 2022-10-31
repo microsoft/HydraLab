@@ -9,6 +9,11 @@ version = hydraLabVersion
 sourceCompatibility = 11
 targetCompatibility = 11
 
+repositories {
+    mavenCentral()
+    google()
+}
+
 bootJar {
     // Specify the out jar file name so that the dockerfile could copy it
     // without concerning the name change caused by version change.
