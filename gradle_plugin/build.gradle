@@ -16,9 +16,6 @@ repositories {
 }
 
 ext {
-    //Main configuration values
-    gradlePluginVersion = '3.5.4'
-
     // Network dependencies
     okHttpVersion = "4.8.0"
 
@@ -30,7 +27,7 @@ ext {
 dependencies {
     implementation "org.apache.commons:commons-lang3:3.4"
     implementation gradleApi()
-    implementation "com.android.tools.build:gradle:${gradlePluginVersion}"
+    implementation "commons-io:commons-io:2.11.0"
     implementation "com.google.code.gson:gson:2.8.5"
     implementation 'org.ow2.asm:asm:7.0'
     implementation 'org.ow2.asm:asm-util:7.0'
@@ -38,7 +35,7 @@ dependencies {
 }
 
 // plugin publishing related
-version = '1.0.33'
+version = '1.0.34'
 group = 'com.microsoft.hydralab'
 // alter group to this when publish to local, in order to distinguish local version and gradle plugin portal version
 //group = 'com.microsoft.hydralab.local'
