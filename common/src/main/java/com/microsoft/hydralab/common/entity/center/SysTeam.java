@@ -20,5 +20,5 @@ public class SysTeam {
     private Date createTime;
     private Date updateTime;
     @Transient
-    private boolean manageable;
+    private boolean manageable = false;
 }
