@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.kncept.junit.reporter' version '2.1.0'
 }
 group = 'com.microsoft.hydralab'
 version = '0.9.5'
