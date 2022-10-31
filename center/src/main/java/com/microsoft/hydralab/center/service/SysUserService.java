@@ -18,12 +18,13 @@ public class SysUserService {
     @Resource
     SysUserRepository sysUserRepository;
 
-    public SysUser createUserWithDefaultRole(String userName, String mailAddress, String defaultRoleId) {
+    public SysUser createUserWithDefaultRole(String userName, String mailAddress, String defaultRoleId, String defaultRoleName) {
         SysUser sysUser = new SysUser();
         sysUser.setUserName(userName);
         sysUser.setMailAddress(mailAddress);
-        // default to be ROLE: user
+        // default to be ROLE: USER
         sysUser.setRoleId(defaultRoleId);
+        sysUser.setRoleName(defaultRoleName);
 
         return sysUserRepository.save(sysUser);
     }
@@ -62,12 +63,14 @@ public class SysUserService {
         return updateUser(user);
     }
 
-    public SysUser switchUserRole(SysUser user, String roleId) {
+    public SysUser switchUserRole(SysUser user, String roleId, String roleName) {
         if (user.getRoleId().equals(roleId)) {
             return user;
         }
 
         user.setRoleId(roleId);
+        user.setRoleName(roleName);
+
         return updateUser(user);
     }
 

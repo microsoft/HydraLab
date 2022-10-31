@@ -61,6 +61,7 @@ public class UserTeamManagementService {
             SysRole teamAdminRole = sysRoleService.queryRoleByName(Const.DefaultRole.TEAM_ADMIN);
             if (sysRoleService.isAuthLevelSuperior(teamAdminRole, originalRole)) {
                 user.setRoleId(teamAdminRole.getRoleId());
+                user.setRoleName(teamAdminRole.getRoleName());
                 sysUserService.updateUser(user);
             }
         }

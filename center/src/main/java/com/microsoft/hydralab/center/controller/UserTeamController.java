@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping
@@ -192,7 +193,24 @@ public class UserTeamController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
 
-        return Result.ok(userTeamManagementService.queryTeamsByUser(requestor.getMailAddress()));
+        List<SysTeam> teamList = userTeamManagementService.queryTeamsByUser(requestor.getMailAddress());
+        if (sysUserService.checkUserAdmin(requestor)) {
+            teamList.forEach(team -> team.setManageable(true));
+        } else if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN)) {
+            requestor.getTeamAdminMap().entrySet().stream().filter(Map.Entry::getValue).forEach(
+                isTeamAdmin -> {
+                    String adminTeamId = isTeamAdmin.getKey();
+                    for (SysTeam team: teamList) {
+                        if (team.getTeamId().equals(adminTeamId)){
+                            team.setManageable(true);
+                            break;
+                        }
+                    }
+                }
+            );
+        }
+
+        return Result.ok(teamList);
     }
 
     /**

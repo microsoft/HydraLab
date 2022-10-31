@@ -138,9 +138,7 @@ public class AuthController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
-        JSONObject user = new JSONObject();
-        user.put("userName", requestor.getMailAddress());
-        return Result.ok(user);
+        return Result.ok(requestor);
     }
 
     /**

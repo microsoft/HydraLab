@@ -4,10 +4,7 @@ package com.microsoft.hydralab.common.entity.center;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
@@ -22,4 +19,6 @@ public class SysTeam {
     private String teamName;
     private Date createTime;
     private Date updateTime;
+    @Transient
+    private boolean manageable;
 }
