@@ -193,21 +193,25 @@ public class UserTeamController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
 
-        List<SysTeam> teamList = userTeamManagementService.queryTeamsByUser(requestor.getMailAddress());
+        List<SysTeam> teamList;
         if (sysUserService.checkUserAdmin(requestor)) {
+            teamList = sysTeamService.queryTeams();
             teamList.forEach(team -> team.setManageable(true));
-        } else if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN)) {
-            requestor.getTeamAdminMap().entrySet().stream().filter(Map.Entry::getValue).forEach(
-                isTeamAdmin -> {
-                    String adminTeamId = isTeamAdmin.getKey();
-                    for (SysTeam team: teamList) {
-                        if (team.getTeamId().equals(adminTeamId)){
-                            team.setManageable(true);
-                            break;
+        } else {
+            teamList = userTeamManagementService.queryTeamsByUser(requestor.getMailAddress());
+            if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN)) {
+                requestor.getTeamAdminMap().entrySet().stream().filter(Map.Entry::getValue).forEach(
+                        isTeamAdmin -> {
+                            String adminTeamId = isTeamAdmin.getKey();
+                            for (SysTeam team : teamList) {
+                                if (team.getTeamId().equals(adminTeamId)) {
+                                    team.setManageable(true);
+                                    break;
+                                }
+                            }
                         }
-                    }
-                }
-            );
+                );
+            }
         }
 
         return Result.ok(teamList);
