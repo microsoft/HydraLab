@@ -24,6 +24,8 @@ public class SysUser implements Authentication {
     private String mailAddress;
     @Column(name = "role_id")
     private String roleId;
+    @Column(name = "role_name")
+    private String roleName;
     @Column(name = "default_team_id")
     private String defaultTeamId;
     @Column(name = "default_team_name")
