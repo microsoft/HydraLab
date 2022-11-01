@@ -161,24 +161,18 @@ public class AuthUtil {
             headers.add("Content-Type", "application/x-www-form-urlencoded");
 
             LinkedMultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-
             body.add("client_id", clientId);
             body.add("code", code);
             body.add("redirect_uri", redirectUri);
             body.add("grant_type", "authorization_code");
             body.add("client_secret", clientSecret);
-
             HttpEntity<LinkedMultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-
-            ResponseEntity<String> results = restTemplateHttps.exchange(tokenUrl, HttpMethod.POST, entity, String.class);
-            String bodyStr = results.getBody();
-            JSONObject json = JSONObject.parseObject(bodyStr.toString());// CodeQL [java/unsafe-deserialization] results has been set as String
-            accessToken = json.getString("access_token");
-
+            
+            ResponseEntity<JSONObject> json = restTemplateHttps.exchange(tokenUrl, HttpMethod.POST, entity, JSONObject.class);
+            accessToken = json.getBody().getString("access_token");
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return accessToken;
     }
 
