@@ -172,7 +172,7 @@ public class AuthUtil {
 
             ResponseEntity<String> results = restTemplateHttps.exchange(tokenUrl, HttpMethod.POST, entity, String.class);
             String bodyStr = results.getBody();
-            JSONObject json = new JSONObject(bodyStr.toString());// CodeQL [java/unsafe-deserialization] results has been set as String
+            JSONObject json = JSONObject.parseObject(bodyStr.toString());// CodeQL [java/unsafe-deserialization] results has been set as String
             accessToken = json.getString("access_token");
 
         } catch (Exception e) {
