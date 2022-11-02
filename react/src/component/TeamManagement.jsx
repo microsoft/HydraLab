@@ -71,7 +71,7 @@ export default class TeamManagement extends BaseView {
         selectedTeamId: null,
         selectedTeamManageable: false,
 
-        teamList: null,
+        authorizedTeamList: null,
         teamName: null,
 
     }
@@ -83,17 +83,18 @@ export default class TeamManagement extends BaseView {
         const teamHeads = []
         const teamRows = []
 
-        const { userInfo, teamList } = this.state
+        const { userInfo, authorizedTeamList } = this.state
 
         let admin = false;
 
         if (userInfo) {
-            admin = (userInfo.roleName === 'ADMIN' || userInfo.roleName === 'SUPER_ADMIN')
+            // admin = (userInfo.roleName === 'ADMIN' || userInfo.roleName === 'SUPER_ADMIN')
+            admin = true
         }
 
-        if (teamList) {
-            teamList.sort((a, b) => a.createTime > b.createTime ? 1 : -1)
-            teamList.forEach((t) => {
+        if (authorizedTeamList) {
+            authorizedTeamList.sort((a, b) => a.createTime > b.createTime ? 1 : -1)
+            authorizedTeamList.forEach((t) => {
                 teamRows.push(<StyledTableRow key={t.teamId} id={t.teamId} hover>
                     <TableCell id={t.teamId} align="center">
                         {t.teamName}
@@ -242,7 +243,7 @@ export default class TeamManagement extends BaseView {
                     snackbarMessage: "Team successfully created",
                     snackbarIsShown: true,
                 })
-                this.refreshTeamList()
+                this.refreshAuthorizedTeamList()
             } else {
                 this.snackBarFail(res)
             }
@@ -275,7 +276,7 @@ export default class TeamManagement extends BaseView {
                     snackbarIsShown: true,
                     toBeDeletedTeamId: null
                 })
-                this.refreshTeamList()
+                this.refreshAuthorizedTeamList()
             } else {
                 this.snackBarFail(res)
             }
@@ -293,9 +294,26 @@ export default class TeamManagement extends BaseView {
         })
     }
 
+    refreshAuthorizedTeamList() {
+        this.setState({
+            authorizedTeamList: null,
+        })
+        axios.get('/api/userTeam/listAuthorizedTeam').then(res => {
+            console.log(res.data)
+            if (res.data && res.data.code === 200) {
+                this.setState({
+                    authorizedTeamList: res.data.content,
+                })
+            } else {
+                this.snackBarFail(res)
+            }
+        }).catch(this.snackBarError)
+    }
+
+
     componentDidMount() {
         this.getUserInfo()
-        this.refreshTeamList()
+        this.refreshAuthorizedTeamList()
     }
 
     componentWillUnmount() {
