@@ -215,6 +215,8 @@ public class PackageSetController {
             File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
             BlobFileInfo blobFileInfo = new BlobFileInfo(savedPkg, fileRelativePath, BlobFileInfo.FileType.AGENT_PACKAGE);
             return Result.ok(attachmentService.addFileInfo(blobFileInfo, savedPkg, EntityFileRelation.EntityType.AGENT_PACKAGE, logger));
+        } catch (HydraLabRuntimeException e) {
+            return Result.error(e.getCode(), e);
         } catch (Exception e) {
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
         }
@@ -268,6 +270,8 @@ public class PackageSetController {
             testJsonInfo.setBlobPath(blobPath);
 
             return Result.ok(attachmentService.addTestJsonFile(testJsonInfo, savedJson, EntityFileRelation.EntityType.TEST_JSON, logger));
+        } catch (HydraLabRuntimeException e) {
+            return Result.error(e.getCode(), e);
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
