@@ -191,8 +191,8 @@ public class UserTeamController {
     /**
      * Authenticated USER: all
      */
-    @GetMapping(value = {"/api/userTeam/listSelfTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<SysTeam>> getSelfTeamList(@CurrentSecurityContext SysUser requestor) {
+    @GetMapping(value = {"/api/userTeam/listAuthorizedTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<List<SysTeam>> getAuthorizedTeam(@CurrentSecurityContext SysUser requestor) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
@@ -219,6 +219,18 @@ public class UserTeamController {
         }
 
         return Result.ok(teamList);
+    }
+
+    /**
+     * Authenticated USER: all
+     */
+    @GetMapping(value = {"/api/userTeam/listSelfTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<List<SysTeam>> getSelfTeamList(@CurrentSecurityContext SysUser requestor) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+
+        return Result.ok(userTeamManagementService.queryTeamsByUser(requestor.getMailAddress()));
     }
 
     /**
