@@ -44,7 +44,8 @@ public class FileUtil {
 
         String extension = FilenameUtils.getExtension(originalFilename);
         extension = extension.replaceAll(" ", "").replaceAll("\\.", "").replaceAll("/", "");
-        String fileName = FilenameUtils.getName(originalFilename).replaceAll(" ", "").replaceAll("\\.", "").replaceAll("/", "");
+        String fileName = FilenameUtils.getName(originalFilename);
+        fileName = fileName.replaceAll(" ", "").replaceAll("\\.", "").replaceAll("/", "");
         if (StringUtils.isEmpty(extension) || StringUtils.isEmpty(fileName)) {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Illegal file name!");
         }
