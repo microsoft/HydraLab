@@ -1,6 +1,3 @@
-cd /opt/grafana-9.0.1/conf/
-sed -i -e "s|env:MAIL_ADDRESS|${MAIL_ADDRESS}|g" -e "s|env:MAIL_PASS|${MAIL_PASS}|g" ./custom.ini
-sed -i -e "s|env:HYDRA_LAB_HOST|${HYDRA_LAB_HOST}|g" ./defaults.ini
 cd /opt/grafana-9.0.1/bin/
 nohup ./grafana-server &
 

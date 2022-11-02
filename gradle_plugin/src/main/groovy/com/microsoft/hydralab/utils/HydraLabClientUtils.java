@@ -67,12 +67,13 @@ public class HydraLabClientUtils {
                                               String reportFolderPath,
                                               Map<String, String> instrumentationArgs,
                                               Map<String, String> extraArgs,
+                                              String tag,
                                               HydraLabAPIConfig apiConfig) {
         String output = String.format("##[section]All args: runningType: %s, appPath: %s, deviceIdentifier: %s" +
-                        "\n##[section]\tqueueTimeOutSeconds: %d, runTimeOutSeconds: %d, attachmentConfigPath: %s, argsMap: %s, extraArgsMap: %s" +
+                        "\n##[section]\tqueueTimeOutSeconds: %d, runTimeOutSeconds: %d, argsMap: %s, extraArgsMap: %s" +
                         "\n##[section]\tapiConfig: %s",
-                runningType, appPath, deviceIdentifier, queueTimeoutSec, runTimeoutSec, attachmentConfigPath,
-                instrumentationArgs == null ? "" : instrumentationArgs.toString(), extraArgs == null ? "" : extraArgs.toString(),
+                runningType, appPath, deviceIdentifier,
+                queueTimeoutSec, runTimeoutSec, instrumentationArgs == null ? "" : instrumentationArgs.toString(), extraArgs == null ? "" : extraArgs.toString(),
                 apiConfig.toString());
         switch (runningType) {
             case "INSTRUMENTATION":
@@ -89,12 +90,19 @@ public class HydraLabClientUtils {
             default:
                 break;
         }
+        if (StringUtils.isNotEmpty(attachmentConfigPath)) {
+            output = output + String.format("\n##[section]\tattachmentConfigPath: %s", attachmentConfigPath);
+        }
+        if (StringUtils.isNotEmpty(tag)) {
+            output = output + String.format("\n##[section]\ttag: %s", tag);
+        }
+
         printlnf(maskCred(output));
 
         sMarkedFail = false;
         try {
             runTestInner(runningType, appPath, testAppPath, attachmentConfigPath, testSuiteName, deviceIdentifier,
-                    queueTimeoutSec, runTimeoutSec, reportFolderPath, instrumentationArgs, extraArgs, apiConfig);
+                    queueTimeoutSec, runTimeoutSec, reportFolderPath, instrumentationArgs, extraArgs, tag, apiConfig);
             markBuildSuccess();
         } catch (RuntimeException e) {
             markBuildFail();
@@ -111,6 +119,7 @@ public class HydraLabClientUtils {
                                      String reportFolderPath,
                                      Map<String, String> instrumentationArgs,
                                      Map<String, String> extraArgs,
+                                     String tag,
                                      HydraLabAPIConfig apiConfig) {
         // Collect git info
         File commandDir = new File(".");
@@ -326,8 +335,21 @@ public class HydraLabClientUtils {
         printlnf("##vso[task.setprogress value=90;]Almost Done with testing");
         printlnf("##[section]Start going through device test results, Test overall info: %s", runningTest);
 
+        // add (test type + timestamp) in folder name to distinguish different test results when using the same device
         ZonedDateTime utc = ZonedDateTime.now(ZoneOffset.UTC);
-        String deviceFolderPrefix = runningType + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss")) + "-";
+        String testFolder;
+        if (StringUtils.isEmpty(tag)){
+            testFolder = runningType + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
+        }
+        else {
+            testFolder = runningType + "-" + tag + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
+        }
+
+        File file = new File(reportFolderPath, testFolder);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        String testFolderPath = file.getAbsolutePath();
 
         for (DeviceTestResult deviceTestResult : runningTest.deviceTestResults) {
             printlnf(">>>>>>\n Device %s, failed cases count: %d, total cases: %d", deviceTestResult.deviceSerialNumber, deviceTestResult.failCount, deviceTestResult.totalCount);
@@ -341,14 +363,14 @@ public class HydraLabClientUtils {
                 markBuildFail();
             }
 
+            String deviceFileFolder = deviceTestResult.deviceSerialNumber;
+            file = new File(testFolderPath, deviceFileFolder);
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            String deviceFileFolderPath = file.getAbsolutePath();
+
             if (deviceTestResult.attachments.size() != 0) {
-                // add (test type + timestamp) in folder name to distinguish different test results when using the same device
-                String distinctFolderName = deviceFolderPrefix + deviceTestResult.deviceSerialNumber;
-                String fileDirectoryPath = reportFolderPath + File.separator + distinctFolderName;
-                File file = new File(fileDirectoryPath);
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
                 String signature = getBlobSAS(apiConfig);
                 for (BlobFileInfo fileInfo : deviceTestResult.attachments) {
                     String attachmentUrl = fileInfo.blobUrl + "?" + signature;
@@ -356,7 +378,7 @@ public class HydraLabClientUtils {
 
                     printlnf("Start downloading attachment for device %s, device name: %s, file name: %s, link: %s", deviceTestResult.deviceSerialNumber, deviceTestResult.deviceName, attachmentFileName, attachmentUrl);
 
-                    file = new File(fileDirectoryPath, attachmentFileName);
+                    file = new File(deviceFileFolderPath, attachmentFileName);
                     downloadToFile(attachmentUrl, file);
 
                     printlnf("Finish downloading attachment %s for device %s", attachmentFileName, deviceTestResult.deviceSerialNumber);
@@ -371,19 +393,7 @@ public class HydraLabClientUtils {
             mdBuilder.append(String.format(Locale.US, "- On device %s (SN: %s), total case count: %d, failed: %d **[Video Link](%s)**\n", deviceTestResult.deviceName, deviceTestResult.deviceSerialNumber, deviceTestResult.totalCount, deviceTestResult.failCount, deviceTestVideoUrl));
         }
 
-        printlnf("Attachment folder path: %s", reportFolderPath);
-        printlnf("##vso[artifact.upload artifactname=testResult;]%s", reportFolderPath);
-
-        printlnf("##[section]All done, overall failed cases count: %d, total count: %d, devices count: %d", runningTest.totalFailCount, runningTest.totalTestCount, runningTest.testDevicesCount);
-        printlnf("##[section]Test task report link:");
-        printlnf(testReportUrl);
-        printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
-
-        File summaryMd = new File(reportFolderPath.replace("testResult", "summary"), "TestLabSummary.md");
-        File summaryParent = summaryMd.getParentFile();
-        if (summaryParent != null && !summaryParent.exists()) {
-            summaryParent.mkdirs();
-        }
+        File summaryMd = new File(testFolderPath, "TestLabSummary.md");
 
         try (FileOutputStream fos = new FileOutputStream(summaryMd)) {
             IOUtils.write(mdBuilder.toString(), fos, StandardCharsets.UTF_8);
@@ -392,6 +402,14 @@ public class HydraLabClientUtils {
             // no need to rethrow
             e.printStackTrace();
         }
+
+        printlnf("Attachment folder path: %s", reportFolderPath);
+        printlnf("##vso[artifact.upload artifactname=testResult;]%s", reportFolderPath);
+
+        printlnf("##[section]All done, overall failed cases count: %d, total count: %d, devices count: %d", runningTest.totalFailCount, runningTest.totalTestCount, runningTest.testDevicesCount);
+        printlnf("##[section]Test task report link:");
+        printlnf(testReportUrl);
+        printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
 
         returnFinalTestState();
     }

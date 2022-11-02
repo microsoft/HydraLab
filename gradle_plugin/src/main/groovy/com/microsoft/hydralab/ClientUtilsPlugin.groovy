@@ -28,6 +28,10 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('runningType')) {
                     runningType = project.runningType
                 }
+                def deviceIdentifierArg = null
+                if (project.hasProperty('deviceIdentifier')) {
+                    deviceIdentifierArg = project.deviceIdentifier
+                }
                 def queueTimeOutSeconds = project.runTimeOutSeconds
                 if (project.hasProperty('queueTimeOutSeconds')) {
                     queueTimeOutSeconds = project.queueTimeOutSeconds
@@ -117,6 +121,10 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         attachmentConfigPath = attachmentConfigFile.absolutePath
                     }
                 }
+                def tag = null
+                if (project.hasProperty('tag')) {
+                    tag = project.tag
+                }
 
                 def reportDir = new File(project.buildDir, "testResult")
                 if (!reportDir.exists()) reportDir.mkdirs()
@@ -193,16 +201,11 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     apiConfig.needClearData = Boolean.parseBoolean(project.needClearData)
                 }
 
-                def deviceIdentifierArg = null
-                if (project.hasProperty('deviceIdentifier')) {
-                    deviceIdentifierArg = project.deviceIdentifier
-                }
-
                 HydraLabClientUtils.runTestOnDeviceWithApp(
                         runningType, appPath, testAppPath, attachmentConfigPath,
                         project.hasProperty('testSuiteName') ? project.testSuiteName : "",
                         deviceIdentifierArg, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(project.runTimeOutSeconds),
-                        reportDir.absolutePath, argsMap, extraArgsMap,
+                        reportDir.absolutePath, argsMap, extraArgsMap, tag,
                         apiConfig
                 )
             }

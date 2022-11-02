@@ -33,22 +33,22 @@ RUN cd /opt/ && \
     rm pushgateway-1.4.3.linux-amd64.tar.gz && \
     rm grafana-enterprise-9.0.1.linux-amd64.tar.gz
 
-COPY ${STARTUP_FOLDER_PATH}/pushgateway_data_clean.sh /opt/
+COPY ${STARTUP_FOLDER_PATH}/pushgatewayDataClean.sh /opt/
 COPY ${STARTUP_FOLDER_PATH}/prometheus.yml /opt/prometheus-2.36.2.linux-amd64/
 COPY ${STARTUP_FOLDER_PATH}/custom.ini /opt/grafana-9.0.1/conf/
 COPY ${STARTUP_FOLDER_PATH}/defaults.ini /opt/grafana-9.0.1/conf/
 COPY ${STARTUP_FOLDER_PATH}/alert_notification.html /opt/grafana-9.0.1/public/emails/ng_alert_notification.html
 COPY ${STARTUP_FOLDER_PATH}/nginx.conf /etc/nginx/
-COPY ${STARTUP_FOLDER_PATH}/restart_monitor_service.sh restart_monitor_service.sh
-COPY ${STARTUP_FOLDER_PATH}/split_log.sh split_log.sh
+COPY ${STARTUP_FOLDER_PATH}/restartMonitorService.sh restartMonitorService.sh
+COPY ${STARTUP_FOLDER_PATH}/splitLog.sh splitLog.sh
 COPY ${STARTUP_FOLDER_PATH}/start.sh start.sh
 
 # Add config of scheduled cleaning pushgateway outdated data, run script every 1 minute
-RUN echo '*/1 * * * *  ( sh /opt/pushgateway_data_clean.sh & ) ' >> /etc/crontab \
+RUN echo '*/1 * * * *  ( sh /opt/pushgatewayDataClean.sh & ) ' >> /etc/crontab \
 # Add restart logic by triggering shell script every 1 minute
-    && echo '*/1 * * * *  ( sh /restart_monitor_service.sh >> /opt/mount_data/logs/restart_service/restart_monitor_service.log ) ' >> /etc/crontab \
+    && echo '*/1 * * * *  ( sh /restartMonitorService.sh >> /opt/mount_data/logs/restart_service/restart_monitor_service.log ) ' >> /etc/crontab \
     # Add log spliting logic by triggering shell script every day
-    && echo '0 0 * * *  ( sh /split_log.sh ) ' >> /etc/crontab \
+    && echo '0 0 * * *  ( sh /splitLog.sh ) ' >> /etc/crontab \
     && crontab -u root /etc/crontab
 
 # Open port 2222 for SSH access, 80 for default app service

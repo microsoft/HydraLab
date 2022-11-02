@@ -2,15 +2,13 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.runner;
 
-import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.agent.config.AppOptions;
+import com.microsoft.hydralab.agent.service.TestDataService;
+import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.RunningControl;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.agent.service.TestDataService;
 import com.microsoft.hydralab.common.util.*;
-import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +30,13 @@ public abstract class TestRunner {
     @Resource
     FileLoadUtil fileLoadUtil;
     @Resource
-    AppOptions appOptions;
-    @Resource
     RunningControlService runningControlService;
     @Resource
     AttachmentService attachmentService;
     @Resource(name = "WebSocketClient")
     private TestRunningCallback webSocketCallback;
+    @Resource
+    XmlBuilder xmlBuilder;
 
     protected abstract RunningControlService.DeviceTask getDeviceTask(TestTask testTask, TestRunningCallback testRunningCallback);
 
@@ -90,7 +88,6 @@ public abstract class TestRunner {
                     webSocketCallback.onDeviceOffline(testTask);
                 }
                 log.warn("device disconnected, test task {} will be re-queue, no data will be saved", testTask.getId());
-                return;
             }
 
         };
@@ -188,7 +185,7 @@ public abstract class TestRunner {
         // this key will be used to recover device status when lost the connection between agent and master
         deviceInfo.addCurrentTask(testTask);
 
-        /** set up device */
+        /* set up device */
         reportLogger.info("Start setup device");
         deviceManager.testDeviceSetup(deviceInfo, reportLogger);
         deviceManager.wakeUpDevice(deviceInfo, reportLogger);
@@ -227,6 +224,12 @@ public abstract class TestRunner {
     protected void afterTest(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, TestRunningCallback testRunningCallback, Logger reportLogger) {
         if (testRunningCallback != null) {
             try {
+                String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, deviceTestTask);
+                deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+            } catch (Exception e) {
+                reportLogger.error("Error in buildTestResultXml", e);
+            }
+            try {
                 testRunningCallback.onOneDeviceComplete(testTask, deviceInfo, reportLogger, deviceTestTask);
             } catch (Exception e) {
                 reportLogger.error("Error in onOneDeviceComplete", e);
@@ -234,7 +237,7 @@ public abstract class TestRunner {
         }
         deviceManager.testDeviceUnset(deviceInfo, reportLogger);
         reportLogger.info("Finally: restore state");
-        /** Close/finish resource */
+        /* Close/finish resource */
         if (reportLogger != null) {
             reportLogger.info("Start Close/finish resource");
             LogUtils.releaseLogger(reportLogger);

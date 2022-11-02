@@ -4,6 +4,8 @@ package com.microsoft.hydralab.t2c.runner.controller;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.nativekey.AndroidKey;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -51,7 +53,42 @@ public class BaseDriverController {
     public void longClick(Integer duration, WebElement element) {
     }
 
-    public void dragAndDrop(WebElement element, Integer xVec, Integer yVec) {
+    public void dragAndDrop(WebElement element, int xVec, int yVec) {
+        Point location = element.getLocation();
+        Dimension dimension = element.getSize();
+        int x = location.getX();
+        int y = location.getY();
+        int width = dimension.getWidth();
+        int height = dimension.getHeight();
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
+        dragAndDropWithPosition(centerX, centerY, centerX + xVec, centerY + yVec);
+    }
+
+    public void dragAndDrop(WebElement fromElement, WebElement toElement) {
+        Point fromLocation = fromElement.getLocation();
+        Dimension fromDimension = fromElement.getSize();
+        int fromX = fromLocation.getX();
+        int fromY = fromLocation.getY();
+        int fromWidth = fromDimension.getWidth();
+        int fromHeight = fromDimension.getHeight();
+        int fromCenterX = fromX + fromWidth / 2;
+        int fromCenterY = fromY + fromHeight / 2;
+
+        Point toLocation = toElement.getLocation();
+        Dimension toDimension = toElement.getSize();
+        int toX = toLocation.getX();
+        int toY = toLocation.getY();
+        int toWidth = toDimension.getWidth();
+        int toHeight = toDimension.getHeight();
+        int toCenterX = toX + toWidth / 2;
+        int toCenterY = toY + toHeight / 2;
+
+        dragAndDropWithPosition(fromCenterX, fromCenterY, toCenterX, toCenterY);
+    }
+
+    public void dragAndDropWithPosition(int fromX, int fromY, int toX, int toY) {
+
     }
 
     public void navigateTo(String url) {
@@ -116,5 +153,4 @@ public class BaseDriverController {
         }
         return elementFound;
     }
-
 }

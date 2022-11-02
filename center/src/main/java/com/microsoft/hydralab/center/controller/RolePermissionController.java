@@ -135,7 +135,7 @@ public class RolePermissionController {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Role id is wrong.");
         }
 
-        sysUserService.switchUserRole(sysUser, roleId);
+        sysUserService.switchUserRole(sysUser, sysRole.getRoleId(), sysRole.getRoleName());
         securityUserService.reloadUserAuthentication(sysUser.getMailAddress(), Const.AUTH_COMPONENT.ROLE);
         return Result.ok(sysUser);
     }
