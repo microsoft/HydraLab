@@ -160,7 +160,8 @@ export default class TeamManagement extends BaseView {
                         label="Team Name"
                         type="text"
                         fullWidth
-                        variant="standard"
+                        variant="outlined"
+                        size="small"
                         onChange={this.handleValueChange}
                     /> <br/>
                 </DialogContent>

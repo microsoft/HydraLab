@@ -23,6 +23,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Stack from "@mui/material/Stack";
 import Skeleton from '@mui/material/Skeleton';
 import BaseView from "@/component/BaseView";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
 
 
 /**
@@ -64,6 +66,7 @@ export default class TeamUserManagement extends BaseView {
 
         userAddDialogIsShown: false,
         toBeAddedUserId: null,
+        toBeAddedUserRole: false,
 
         userRemoveDialogIsShown: false,
         toBeRemovedUserId: null,
@@ -136,7 +139,7 @@ export default class TeamUserManagement extends BaseView {
             <Dialog open={this.state.userAddDialogIsShown}
                     fullWidth={true}
                     onClose={() => this.handleStatus("userAddDialogIsShown", false)}>
-                <DialogTitle>Create Team</DialogTitle>
+                <DialogTitle>Add Member</DialogTitle>
                 <DialogContent>
                     <TextField
                         margin="dense"
@@ -144,9 +147,14 @@ export default class TeamUserManagement extends BaseView {
                         label="User Id"
                         type="text"
                         fullWidth
-                        variant="standard"
+                        variant="outlined"
+                        size="small"
                         onChange={this.handleValueChange}
                     /> <br/>
+                    <FormControlLabel
+                        label="Team Manager"
+                        control={<Checkbox checked={this.state.toBeAddedUserRole} onChange={(event) => {this.setState({toBeAddedUserRole: event.target.checked});}} />}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => this.handleStatus("userAddDialogIsShown", false)}>
@@ -161,7 +169,7 @@ export default class TeamUserManagement extends BaseView {
                 open={this.state.userRemoveDialogIsShown}
                 onClose={() => this.handleStatus("userRemoveDialogIsShown", false)}
             >
-                <DialogTitle> Delete this team? </DialogTitle>
+                <DialogTitle> Remove this member? </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
                         Please confirm if you want to remove this member.
@@ -187,7 +195,7 @@ export default class TeamUserManagement extends BaseView {
         const formParams = new URLSearchParams()
         formParams.append("userId", this.state.toBeAddedUserId)
         formParams.append("teamId", this.state.teamId)
-        formParams.append("isTeamAdmin", "false")
+        formParams.append("isTeamAdmin", this.state.toBeAddedUserRole)
 
         axios.post('/api/userTeam/addRelation', formParams, {
             headers: {'content-type': 'application/x-www-form-urlencoded'}
