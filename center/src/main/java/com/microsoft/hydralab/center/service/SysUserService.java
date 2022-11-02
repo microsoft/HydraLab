@@ -86,7 +86,7 @@ public class SysUserService {
 
     public boolean checkUserAdmin(Authentication auth) {
         for (GrantedAuthority authority : auth.getAuthorities()) {
-            if (authority.getAuthority().equals(Const.DefaultRole.SUPER_ADMIN) || authority.getAuthority().equals(Const.DefaultRole.SUPER_ADMIN)) {
+            if (authority.getAuthority().equals(Const.DefaultRole.SUPER_ADMIN) || authority.getAuthority().equals(Const.DefaultRole.ADMIN)) {
                 return true;
             }
         }
