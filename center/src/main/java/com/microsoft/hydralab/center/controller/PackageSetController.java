@@ -12,7 +12,6 @@ import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.entity.common.BlobFileInfo.ParserKey;
 import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.PkgUtil.FILE_SUFFIX;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -371,11 +370,11 @@ public class PackageSetController {
             default:
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "Error fileType");
         }
-
-        String newFileName = attachment.getOriginalFilename().replaceAll(" ", "");
-        String fileRelativePath = FileUtil.getPathForToday();
-        String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
         try {
+            String newFileName = FileUtil.getLegalFileName(attachment.getOriginalFilename());
+            String fileRelativePath = FileUtil.getPathForToday();
+            String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
+
             File savedAttachment = attachmentService.verifyAndSaveFile(attachment, parentDir, false, newFileName, limitFileTypes);
             BlobFileInfo blobFileInfo = new BlobFileInfo(savedAttachment, fileRelativePath, fileType, loadType, loadDir);
             attachmentService.addAttachment(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET, blobFileInfo, savedAttachment, logger);
