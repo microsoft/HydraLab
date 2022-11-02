@@ -747,7 +747,7 @@ public class HydraLabClientUtils {
     }
 
     public static String getCommitMessage(File workingDirFile, String commitId) throws IOException {
-        Process process = Runtime.getRuntime().exec("git log --pretty=format:%s " + commitId + " -1", null, workingDirFile.getAbsoluteFile());
+        Process process = Runtime.getRuntime().exec(new String[]{"git log --pretty=format:%s ", commitId, " -1"}, null, workingDirFile.getAbsoluteFile());
         try (InputStream inputStream = process.getInputStream()) {
             return IOUtils.toString(inputStream, StandardCharsets.UTF_8).trim();
         } finally {
