@@ -264,10 +264,10 @@ public class AttachmentService {
         }
 
         if (StringUtils.isEmpty(newFileName)) {
-            newFileName = FileUtil.getLegalFileName(newFileName);
             newFileName = filename.replace(fileSuffix, "") + "_" + System.currentTimeMillis() % 10000 + "_" + fileSuffix;
         }
 
+        newFileName = FileUtil.getLegalFileName(newFileName);
         File file = new File(parentDir, newFileName);// CodeQL [java/path-injection] False Positive: Has verified the string by regular expression
         InputStream inputStream = originFile.getInputStream();
         if (isBase64) {
