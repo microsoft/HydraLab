@@ -43,7 +43,7 @@ public class TestFileSetService {
         if (testFileSet != null) {
             return testFileSet;
         }
-        testFileSet = testFileSetRepository.findById(fileSetId).get();
+        testFileSet = testFileSetRepository.findById(fileSetId).orElse(null);
         if (testFileSet != null) {
             testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET));
             saveFileSetToMem(testFileSet);
