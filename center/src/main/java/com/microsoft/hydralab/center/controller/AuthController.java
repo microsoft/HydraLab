@@ -2,15 +2,14 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.center.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.center.service.AuthTokenService;
 import com.microsoft.hydralab.center.service.SecurityUserService;
 import com.microsoft.hydralab.center.util.AuthUtil;
 import com.microsoft.hydralab.center.util.SecretGenerator;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.AuthToken;
 import com.microsoft.hydralab.common.entity.center.SysUser;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;

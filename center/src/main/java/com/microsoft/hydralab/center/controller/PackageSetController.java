@@ -12,7 +12,6 @@ import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.entity.common.BlobFileInfo.ParserKey;
 import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.PkgUtil.FILE_SUFFIX;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,6 +215,8 @@ public class PackageSetController {
             File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
             BlobFileInfo blobFileInfo = new BlobFileInfo(savedPkg, fileRelativePath, BlobFileInfo.FileType.AGENT_PACKAGE);
             return Result.ok(attachmentService.addFileInfo(blobFileInfo, savedPkg, EntityFileRelation.EntityType.AGENT_PACKAGE, logger));
+        } catch (HydraLabRuntimeException e) {
+            return Result.error(e.getCode(), e);
         } catch (Exception e) {
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
         }
@@ -269,6 +270,8 @@ public class PackageSetController {
             testJsonInfo.setBlobPath(blobPath);
 
             return Result.ok(attachmentService.addTestJsonFile(testJsonInfo, savedJson, EntityFileRelation.EntityType.TEST_JSON, logger));
+        } catch (HydraLabRuntimeException e) {
+            return Result.error(e.getCode(), e);
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
@@ -371,11 +374,11 @@ public class PackageSetController {
             default:
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "Error fileType");
         }
-
-        String newFileName = attachment.getOriginalFilename().replaceAll(" ", "");
-        String fileRelativePath = FileUtil.getPathForToday();
-        String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
         try {
+            String newFileName = FileUtil.getLegalFileName(attachment.getOriginalFilename());
+            String fileRelativePath = FileUtil.getPathForToday();
+            String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
+
             File savedAttachment = attachmentService.verifyAndSaveFile(attachment, parentDir, false, newFileName, limitFileTypes);
             BlobFileInfo blobFileInfo = new BlobFileInfo(savedAttachment, fileRelativePath, fileType, loadType, loadDir);
             attachmentService.addAttachment(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET, blobFileInfo, savedAttachment, logger);
