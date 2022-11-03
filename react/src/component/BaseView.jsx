@@ -9,6 +9,7 @@ export default class BaseView extends React.Component {
         snackbarIsShown: false,
         snackbarSeverity: null,
         snackbarMessage: null,
+        userInfo: null,
         teamList: null,
         defaultTeam: null
     }
@@ -66,6 +67,23 @@ export default class BaseView extends React.Component {
         })
         console.log(event.target.files[0].name)
     }
+
+    getUserInfo = () => {
+        axios.get('/api/auth/getUser').then(res => {
+            if (res.data && res.data.code === 200) {
+                console.log(res.data.content)
+                this.setState({
+                    userInfo: res.data.content
+                })
+            } else {
+                this.snackBarFail(res)
+            }
+        }).catch((error) => {
+            this.snackBarError(error)
+        })
+        console.log(this.state.userInfo)
+    }
+
 
     refreshTeamList() {
         this.setState({
