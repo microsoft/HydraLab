@@ -99,7 +99,7 @@ public interface Const {
         String COMMON_STR = "\\w*";
         // HTTP url  e.g. /api/auth
         String URL = "(/[A-Za-z0-9_.-]*)*";
-        String MAIL_ADDRESS = "[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$";
+        String MAIL_ADDRESS = "\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
 
         //File path
         String LINUX_PATH = "^\\/([^\\/]+\\/?)*$";
