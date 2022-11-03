@@ -88,8 +88,7 @@ export default class TeamManagement extends BaseView {
         let admin = false;
 
         if (userInfo) {
-            // admin = (userInfo.roleName === 'ADMIN' || userInfo.roleName === 'SUPER_ADMIN')
-            admin = true
+            admin = (userInfo.roleName === 'ADMIN' || userInfo.roleName === 'SUPER_ADMIN')
         }
 
         if (authorizedTeamList) {
