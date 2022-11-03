@@ -118,6 +118,31 @@ public class UserTeamManagementService {
         return new ArrayList<>(users);
     }
 
+    public List<SysUser> queryTeamUsersWithRole(SysUser requestor, String teamId) {
+        List<SysUser> allUsers = queryUsersByTeam(teamId);
+        if (sysUserService.checkUserAdmin(requestor)) {
+            allUsers.forEach(user -> user.setManageable(true));
+        } else {
+            SysTeam team = sysTeamService.queryTeamById(teamId);
+            if (checkRequestorTeamAdmin(requestor, teamId)) {
+                allUsers.forEach(user -> user.setManageable(true));
+            } else {
+                if (Const.DefaultTeam.DEFAULT_TEAM_NAME.equals(team.getTeamName())) {
+                    allUsers = null;
+                } else {
+                    for (SysUser user : allUsers) {
+                        if (user.getMailAddress().equals(requestor.getMailAddress())) {
+                            user.setManageable(true);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return allUsers;
+    }
+
     public List<SysTeam> queryTeamsByUser(String mailAddress) {
         Set<SysTeam> teams = userTeamListMap.get(mailAddress);
         if (teams == null) {
@@ -135,7 +160,7 @@ public class UserTeamManagementService {
         if (users.size() == 1 && users.get(0).getMailAddress().equals(requestor.getMailAddress())) {
             return false;
         }
- 
+
         return true;
     }
 

@@ -38,6 +38,8 @@ public class SysUser implements Authentication {
     private transient List<GrantedAuthority> authorities = new ArrayList<>();
     @Transient
     private transient String accessToken;
+    @Transient
+    private boolean manageable = false;
 
     public void setAuthorities(List<GrantedAuthority> permissions) {
         this.authorities = permissions;

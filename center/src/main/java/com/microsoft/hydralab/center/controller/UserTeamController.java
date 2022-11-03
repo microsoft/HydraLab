@@ -107,7 +107,7 @@ public class UserTeamController {
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','TEAM_ADMIN')")
     @PostMapping(value = {"/api/userTeam/addRelation"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<UserTeamRelation> addUserTeamRelation(@CurrentSecurityContext SysUser requestor,
-                                                        @RequestParam("userId") String userId,
+                                                        @RequestParam("mailAddress") String mailAddress,
                                                         @RequestParam("teamId") String teamId,
                                                         @RequestParam("isTeamAdmin") boolean isTeamAdmin) {
         if (requestor == null) {
@@ -120,9 +120,9 @@ public class UserTeamController {
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team id is wrong.");
         }
-        SysUser user = sysUserService.queryUserById(userId);
+        SysUser user = sysUserService.queryUserByMailAddress(mailAddress);
         if (user == null) {
-            return Result.error(HttpStatus.BAD_REQUEST.value(), "User id is wrong.");
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "Mail address is wrong.");
         }
         UserTeamRelation relation = userTeamManagementService.queryRelation(user.getMailAddress(), teamId);
         if (relation != null) {
@@ -170,21 +170,20 @@ public class UserTeamController {
 
     /**
      * Authenticated USER:
-     * 1) users with ROLE SUPER_ADMIN/ADMIN
-     * 2) TEAM admin of the queried TEAM
+     * 1) USERs can see all team members in their teams except Default team
+     * 2) Only admin/super_admin can see Default team member
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','TEAM_ADMIN')")
     @PostMapping(value = {"/api/userTeam/queryUsers"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<List<SysUser>> queryUsersByTeam(@CurrentSecurityContext SysUser requestor,
                                                   @RequestParam("teamId") String teamId) {
         if (requestor == null) {
-            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
         }
-        if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+        if (!userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized for another team");
         }
 
-        List<SysUser> userList = userTeamManagementService.queryUsersByTeam(teamId);
+        List<SysUser> userList = userTeamManagementService.queryTeamUsersWithRole(requestor, teamId);
         return Result.ok(userList);
     }
 
@@ -204,17 +203,12 @@ public class UserTeamController {
         } else {
             teamList = userTeamManagementService.queryTeamsByUser(requestor.getMailAddress());
             if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN)) {
-                requestor.getTeamAdminMap().entrySet().stream().filter(Map.Entry::getValue).forEach(
-                        isTeamAdmin -> {
-                            String adminTeamId = isTeamAdmin.getKey();
-                            for (SysTeam team : teamList) {
-                                if (team.getTeamId().equals(adminTeamId)) {
-                                    team.setManageable(true);
-                                    break;
-                                }
-                            }
-                        }
-                );
+                Map<String, Boolean> teamAdminMap = requestor.getTeamAdminMap();
+                for (SysTeam team : teamList) {
+                    if (teamAdminMap.get(team.getTeamId())) {
+                        team.setManageable(true);
+                    }
+                }
             }
         }
 
