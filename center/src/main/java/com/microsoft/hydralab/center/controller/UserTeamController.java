@@ -183,7 +183,7 @@ public class UserTeamController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized for another team");
         }
 
-        List<SysUser> userList = userTeamManagementService.queryTeamUsersWithRole(requestor, teamId);
+        List<SysUser> userList = userTeamManagementService.queryTeamUsersWithTeamAdmin(teamId);
         return Result.ok(userList);
     }
 
