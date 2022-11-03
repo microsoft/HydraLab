@@ -65,7 +65,7 @@ export default class TeamUserManagement extends BaseView {
         userList: null,
 
         userAddDialogIsShown: false,
-        toBeAddedUserId: null,
+        toBeAddedUserMailAddress: null,
         toBeAddedUserRole: false,
 
         userRemoveDialogIsShown: false,
@@ -82,17 +82,24 @@ export default class TeamUserManagement extends BaseView {
         const { manageable, userList } = this.state
 
         if (userList) {
-            userList.sort((a, b) => a.name > b.name ? 1 : -1)
+            userList.sort((a, b) => {
+                if ((a.teamAdmin && b.teamAdmin) || (!a.teamAdmin && !b.teamAdmin)) {
+                    return a.name > b.name ? 1 : -1
+                }
+                else {
+                    return a.teamAdmin ? -1 : 1
+                }
+            })
             userList.forEach((t) => {
                 userRows.push(<StyledTableRow key={t.userId} id={t.userId} hover>
                     <TableCell id={t.userId} align="center">
                         {t.name}
                     </TableCell>
                     <TableCell id={t.userId} align="center">
-                        Member
+                        {t.teamAdmin ? "Manager" : "Member"}
                     </TableCell>
                     <TableCell id={t.userId} align="center">
-                        <IconButton onClick={() => this.openRemoveUserDialog(t.userId)} disabled={!manageable}>
+                        <IconButton onClick={() => this.openRemoveUserDialog(t.userId)} disabled={!manageable && this.state.userInfo && this.state.userInfo.userId === t.userId}>
                             <span className="material-icons-outlined">delete</span>
                         </IconButton>
                     </TableCell>
@@ -143,8 +150,8 @@ export default class TeamUserManagement extends BaseView {
                 <DialogContent>
                     <TextField
                         margin="dense"
-                        name="toBeAddedUserId"
-                        label="User Id"
+                        name="toBeAddedUserMailAddress"
+                        label="User Mail Address"
                         type="text"
                         fullWidth
                         variant="outlined"
@@ -193,7 +200,7 @@ export default class TeamUserManagement extends BaseView {
         })
 
         const formParams = new URLSearchParams()
-        formParams.append("userId", this.state.toBeAddedUserId)
+        formParams.append("mailAddress", this.state.toBeAddedUserMailAddress)
         formParams.append("teamId", this.state.teamId)
         formParams.append("isTeamAdmin", this.state.toBeAddedUserRole)
 
@@ -205,7 +212,7 @@ export default class TeamUserManagement extends BaseView {
                     snackbarSeverity: "success",
                     snackbarMessage: "Member Added!",
                     snackbarIsShown: true,
-                    toBeAddedUserId: null
+                    toBeAddedUserMailAddress: null
                 })
                 this.getTeamMemberInfo()
             } else {
@@ -249,6 +256,7 @@ export default class TeamUserManagement extends BaseView {
             this.snackBarError(error)
         })
     }
+
     getTeamMemberInfo(teamId) {
         this.setState({
             hideSkeleton: false
@@ -275,6 +283,7 @@ export default class TeamUserManagement extends BaseView {
     }
 
     componentDidMount() {
+        this.getUserInfo()
         this.getTeamMemberInfo()
     }
 

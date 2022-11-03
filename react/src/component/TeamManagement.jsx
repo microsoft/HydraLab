@@ -102,7 +102,7 @@ export default class TeamManagement extends BaseView {
                         {moment(t.createTime).format('yyyy-MM-DD HH:mm:ss')}
                     </TableCell>
                     <TableCell id={t.teamId} align="center">
-                        <IconButton onClick={() => this.showTeamInfo(t.teamId, t.manageable)}>
+                        <IconButton onClick={() => this.showTeamInfo(t.teamId, t.manageable)} disabled={t.teamName === 'Default' && !t.manageable}>
                             <span className="material-icons-outlined">info</span>
                         </IconButton>
                         <IconButton onClick={() => this.openDeleteTeamDialog(t.teamId)} disabled={t.teamName === 'Default' || !t.manageable}>
