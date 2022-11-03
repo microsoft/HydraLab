@@ -99,14 +99,14 @@ public interface Const {
         String COMMON_STR = "\\w*";
         // HTTP url  e.g. /api/auth
         String URL = "(/[A-Za-z0-9_.-]*)*";
-        String MAIL_ADDRESS = "[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$";
+        String MAIL_ADDRESS = "\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
 
         //File path
-        String LINUX_PATH = "^\\/([^\\/]+\\/?)*$";
+        String LINUX_PATH = "^\\/([\\w]\\/?)+$";
         String WINDOWS_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
 
         //Package name
-        String PACKAGE_NAME = "[a-zA-Z]+[0-9a-zA-Z_]*(\\.[a-zA-Z]+[0-9a-zA-Z_]*)*";
+        String PACKAGE_NAME = "\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
     }
 
     interface PermissionType {
