@@ -6,7 +6,10 @@ import cn.hutool.core.io.StreamProgress;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.http.HttpUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -32,6 +35,21 @@ public class FileUtil {
     public static String getPathForToday() {
         Date date = new Date();
         return format.format(date);
+    }
+
+    public static String getLegalFileName(String originalFilename) {
+        if (originalFilename == null) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Illegal file name!");
+        }
+        originalFilename = originalFilename.replaceAll(" ", "");
+        String extension = FilenameUtils.getExtension(originalFilename);
+        extension = extension.replaceAll("\\.", "").replaceAll("/", "");
+        String fileName = FilenameUtils.getName(originalFilename);
+        fileName = fileName.replaceAll("\\.", "").replaceAll("/", "");
+        if (StringUtils.isEmpty(extension) || StringUtils.isEmpty(fileName)) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Illegal file name!");
+        }
+        return fileName + "." + extension;
     }
 
     public static void deleteFileRecursively(File file) {

@@ -43,17 +43,21 @@ public class UserTeamController {
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(value = {"/api/team/delete"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result deleteTeam(@RequestParam("teamId") String teamId) {
+    public Result deleteTeam(@CurrentSecurityContext SysUser requestor, @RequestParam("teamId") String teamId) {
         SysTeam sysTeam = sysTeamService.queryTeamById(teamId);
         if (sysTeam == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
-        if (userTeamManagementService.checkUserExistenceWithTeam(sysTeam.getTeamId())) {
-            return Result.error(HttpStatus.FORBIDDEN.value(), "There are still users under this TEAM, operation is forbidden.");
+        if (Const.DefaultTeam.DEFAULT_TEAM_NAME.equals(sysTeam.getTeamName())) {
+            return Result.error(HttpStatus.FORBIDDEN.value(), "Cannot delete default team as it's for public use.");
+        }
+        // if the only user in TEAM is the requestor ADMIN & TEAM_ADMIN, make it deletable
+        if (userTeamManagementService.checkUserExistenceWithTeam(requestor, sysTeam.getTeamId())) {
+            return Result.error(HttpStatus.FORBIDDEN.value(), "There are still users under this team, operation is forbidden.");
         }
 
         sysTeamService.deleteTeam(sysTeam);
-        return Result.ok("Delete Team success!");
+        return Result.ok("Delete team success!");
     }
 
     /**
@@ -187,30 +191,46 @@ public class UserTeamController {
     /**
      * Authenticated USER: all
      */
+    @GetMapping(value = {"/api/userTeam/listAuthorizedTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<List<SysTeam>> getAuthorizedTeam(@CurrentSecurityContext SysUser requestor) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+
+        List<SysTeam> teamList;
+        if (sysUserService.checkUserAdmin(requestor)) {
+            teamList = sysTeamService.queryTeams();
+            teamList.forEach(team -> team.setManageable(true));
+        } else {
+            teamList = userTeamManagementService.queryTeamsByUser(requestor.getMailAddress());
+            if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN)) {
+                requestor.getTeamAdminMap().entrySet().stream().filter(Map.Entry::getValue).forEach(
+                        isTeamAdmin -> {
+                            String adminTeamId = isTeamAdmin.getKey();
+                            for (SysTeam team : teamList) {
+                                if (team.getTeamId().equals(adminTeamId)) {
+                                    team.setManageable(true);
+                                    break;
+                                }
+                            }
+                        }
+                );
+            }
+        }
+
+        return Result.ok(teamList);
+    }
+
+    /**
+     * Authenticated USER: all
+     */
     @GetMapping(value = {"/api/userTeam/listSelfTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<List<SysTeam>> getSelfTeamList(@CurrentSecurityContext SysUser requestor) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
 
-        List<SysTeam> teamList = userTeamManagementService.queryTeamsByUser(requestor.getMailAddress());
-        if (sysUserService.checkUserAdmin(requestor)) {
-            teamList.forEach(team -> team.setManageable(true));
-        } else if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN)) {
-            requestor.getTeamAdminMap().entrySet().stream().filter(Map.Entry::getValue).forEach(
-                isTeamAdmin -> {
-                    String adminTeamId = isTeamAdmin.getKey();
-                    for (SysTeam team: teamList) {
-                        if (team.getTeamId().equals(adminTeamId)){
-                            team.setManageable(true);
-                            break;
-                        }
-                    }
-                }
-            );
-        }
-
-        return Result.ok(teamList);
+        return Result.ok(userTeamManagementService.queryTeamsByUser(requestor.getMailAddress()));
     }
 
     /**
