@@ -121,14 +121,16 @@ public class UserTeamManagementService {
     public List<SysUser> queryTeamUsersWithTeamAdmin(String teamId) {
         List<SysUser> allUsers = queryUsersByTeam(teamId);
         Set<String> teamAdminSet = teamAdminListMap.get(teamId);
-        allUsers.forEach(user -> {
-            if (teamAdminSet.contains(user.getMailAddress())) {
-                user.setTeamAdmin(true);
-            }
-            else {
-                user.setTeamAdmin(false);
-            }
-        });
+        if (!CollectionUtils.isEmpty(teamAdminSet)) {
+            allUsers.forEach(user -> {
+                if (teamAdminSet.contains(user.getMailAddress())) {
+                    user.setTeamAdmin(true);
+                }
+                else {
+                    user.setTeamAdmin(false);
+                }
+            });
+        }
 
         return allUsers;
     }
