@@ -118,6 +118,21 @@ public class UserTeamManagementService {
         return new ArrayList<>(users);
     }
 
+    public List<SysUser> queryTeamUsersWithTeamAdmin(String teamId) {
+        List<SysUser> allUsers = queryUsersByTeam(teamId);
+        Set<String> teamAdminSet = teamAdminListMap.get(teamId);
+        allUsers.forEach(user -> {
+            if (teamAdminSet.contains(user.getMailAddress())) {
+                user.setTeamAdmin(true);
+            }
+            else {
+                user.setTeamAdmin(false);
+            }
+        });
+
+        return allUsers;
+    }
+
     public List<SysTeam> queryTeamsByUser(String mailAddress) {
         Set<SysTeam> teams = userTeamListMap.get(mailAddress);
         if (teams == null) {
@@ -135,7 +150,7 @@ public class UserTeamManagementService {
         if (users.size() == 1 && users.get(0).getMailAddress().equals(requestor.getMailAddress())) {
             return false;
         }
- 
+
         return true;
     }
 
