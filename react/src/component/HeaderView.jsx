@@ -24,7 +24,6 @@ import Button from "@mui/material/Button";
 export default class HeaderView extends BaseView {
 
     state = {
-        userName: null,
         avatarOpen: false,
         helpOpen: false,
         portalVersion: "",
@@ -35,8 +34,8 @@ export default class HeaderView extends BaseView {
 
     render() {
         const settings = [
-            { text: this.state.userName, dialog: null },
-            { text: `Default Team: ${this.state.defaultTeam ? this.state.defaultTeam.teamName : 'Loading'}`, dialog: 'changeDefaultTeamIsShown' },
+            { text: this.state.userInfo ? this.state.userInfo.userName : 'Loading', dialog: null },
+            { text: `Default Team: ${this.state.userInfo && this.state.userInfo.defaultTeamName ? this.state.userInfo.defaultTeamName : 'Loading'}`, dialog: 'changeDefaultTeamIsShown' },
             { text: 'Logout', dialog: null }
         ];
         const helpSettings = [
@@ -93,7 +92,7 @@ export default class HeaderView extends BaseView {
                     <Tooltip title={"Open user menu"}>
                         <IconButton onClick={() => this.handleStatus("avatarOpen", true)}
                                     sx={{p: 0}}>
-                            <Avatar alt={this.state.userName} src={"/api/auth/getUserPhoto"}/>
+                            <Avatar alt={this.state.userInfo ? this.state.userInfo.userName : 'Loading'} src={"/api/auth/getUserPhoto"}/>
                         </IconButton>
                     </Tooltip>
                     <Menu
@@ -131,12 +130,12 @@ export default class HeaderView extends BaseView {
                                 id="agent-team-select"
                                 label="Team"
                                 size="small"
-                                value={teamList && this.state.defaultTeam ? this.state.defaultTeam.teamId : 'None_Team'}
+                                value={(teamList && this.state.selectedTeamId) ? this.state.selectedTeamId : 'None_Team'}
                                 onChange={(select) => this.handleStatus('selectedTeamId', select.target.value)}
                             >
                                 {teamList ? null : <MenuItem value={'None_Team'}>No team available</MenuItem>}
                                 {teamList ? teamList.map((team, index) => (
-                                    <MenuItem value={team.teamId} key={team.teamId} disabled={(this.state.defaultTeam !== null) && (team.teamId === this.state.defaultTeam.teamId)}>{team.teamName}</MenuItem>
+                                    <MenuItem value={team.teamId} key={team.teamId} disabled={this.state.userInfo && (team.teamId === this.state.userInfo.defaultTeamId)}>{team.teamName}</MenuItem>
                                 )) : null}
                             </Select>
                         </FormControl> <br/>
@@ -151,22 +150,6 @@ export default class HeaderView extends BaseView {
                     </DialogActions>
                 </Dialog>
         </Stack>
-    }
-
-    getLoginInfo = () => {
-        axios.get('/api/auth/getUser').then(res => {
-            if (res.data && res.data.code === 200) {
-                const userInfo = res.data.content;
-                console.log(userInfo)
-                this.setState({
-                    userName: userInfo.userName
-                })
-            } else {
-                this.snackBarFail(res)
-            }
-        }).catch((error) => {
-            this.snackBarError(error)
-        })
     }
 
     portalCheck() {
@@ -204,8 +187,7 @@ export default class HeaderView extends BaseView {
     }
 
     componentDidMount() {
-        this.getLoginInfo()
+        this.getUserInfo()
         this.refreshTeamList()
-        this.getUserTeamInfo()
     }
 }

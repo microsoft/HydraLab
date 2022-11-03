@@ -27,6 +27,7 @@ import {ThemeProvider} from '@material-ui/styles';
 import Container from '@mui/material/Container';
 import axios from "@/axios";
 import TestJsonView from './TestJsonView';
+import TeamManagement from "@/component/TeamManagement";
 
 const drawerWidth = 240;
 
@@ -239,6 +240,12 @@ export default function Dashboard() {
                                 </ListItemIcon>
                                 <ListItemText primary="T2C Test Runner" />
                             </ListItem>
+                            <ListItem component={Link} to={'/team'} button>
+                                <ListItemIcon>
+                                    <span className="material-icons-outlined">people</span>
+                                </ListItemIcon>
+                                <ListItemText primary="Team Management" />
+                            </ListItem>
                             <ListItem component="a" href='https://microsoft.github.io/HydraLab/' target="_blank"
                                       rel="noopener noreferrer" button>
                                 <ListItemIcon>
@@ -248,7 +255,7 @@ export default function Dashboard() {
                             </ListItem>
                             <ListItem
                                 style={{
-                                    height: "calc(100vh - 560px)",
+                                    height: "calc(100vh - 600px)",
                                     pointerEvents: "none"
                                 }}>
                             </ListItem>
@@ -298,6 +305,9 @@ export default function Dashboard() {
                                             </Route>
                                             <Route exact path="/json">
                                                 <TestJsonView theme={theme} />
+                                            </Route>
+                                            <Route exact path="/team">
+                                                <TeamManagement />
                                             </Route>
                                             <Route path="/info/:type/:id" children={<Child/>}/>
                                         </Switch>
