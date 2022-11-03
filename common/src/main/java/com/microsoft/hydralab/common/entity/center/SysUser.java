@@ -38,6 +38,9 @@ public class SysUser implements Authentication {
     private transient List<GrantedAuthority> authorities = new ArrayList<>();
     @Transient
     private transient String accessToken;
+    // flag used for frontend only, to set identity of team member (ADMIN/USER)
+    @Transient
+    private boolean teamAdmin = false;
 
     public void setAuthorities(List<GrantedAuthority> permissions) {
         this.authorities = permissions;
