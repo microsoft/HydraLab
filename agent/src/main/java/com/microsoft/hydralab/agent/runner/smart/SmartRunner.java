@@ -201,6 +201,7 @@ public class SmartRunner extends TestRunner {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingSmartTest.setSuccess(true);
         }
+        ongoingSmartTest.setEndTimeMillis(System.currentTimeMillis());
         logger.info(ongoingSmartTest.getTitle() + ".end");
         deviceInfo.setRunningTestName(null);
         deviceTestTask.addNewTestUnit(ongoingSmartTest);

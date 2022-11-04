@@ -29,10 +29,10 @@ public class AndroidTestUnit {
     protected int numtests;
     protected int statusCode;
 
-    protected Long startTimeMillis;
-    protected Long endTimeMillis;
-    protected Long relStartTimeInVideo;
-    protected Long relEndTimeInVideo;
+    protected long startTimeMillis;
+    protected long endTimeMillis;
+    protected long relStartTimeInVideo;
+    protected long relEndTimeInVideo;
 
     protected String testedClass;
     protected String ownerEmail;
@@ -112,29 +112,17 @@ public class AndroidTestUnit {
 
     @Transient
     public String getDisplaySpentTime() {
-        if (endTimeMillis == null) {
-            return null;
-        }
-        if (startTimeMillis == null) {
-            return null;
-        }
         float second = (endTimeMillis - startTimeMillis) / 1000f;
         return String.format("%.2fs", second);
     }
 
     @Transient
     public String getDisplayRelStartTimeInVideo() {
-        if (relStartTimeInVideo == null) {
-            return null;
-        }
         return DateUtil.mmssFormat.format(new Date(relStartTimeInVideo));
     }
 
     @Transient
     public String getDisplayRelEndTimeInVideo() {
-        if (relEndTimeInVideo == null) {
-            return null;
-        }
         return DateUtil.mmssFormat.format(new Date(relEndTimeInVideo));
     }
 

@@ -65,7 +65,7 @@ public class XmlBuilder {
         testSuite.setAttribute(ATTR_NAME, testTask.getTestSuite());
         testSuite.setAttribute(ATTR_TESTS, String.valueOf(deviceTestTask.getTotalCount()));
         testSuite.setAttribute(ATTR_FAILURES, String.valueOf(deviceTestTask.getFailCount()));
-        testSuite.setAttribute(ATTR_TIME, Double.toString((double) (deviceTestTask.getTestEndTimeMillis() - deviceTestTask.getTestStartTimeMillis()) / 1000.f));
+        testSuite.setAttribute(ATTR_TIME, deviceTestTask.getDisplayTotalTime());
         testSuite.setAttribute(TIMESTAMP, DateUtil.appCenterFormat2.format(new Date(deviceTestTask.getTestStartTimeMillis())));
         testSuite.setAttribute(HOSTNAME, InetAddress.getLocalHost().getHostName());
         if (deviceTestTask.getTestUnitList() != null) {
@@ -84,7 +84,7 @@ public class XmlBuilder {
         Element testCase = document.createElement(TESTCASE);
         testCase.setAttribute(ATTR_NAME, unitTest.getTestName());
         testCase.setAttribute(ATTR_CLASSNAME, unitTest.getTestedClass());
-        testCase.setAttribute(ATTR_TIME, Double.toString((double) (unitTest.getEndTimeMillis() - unitTest.getStartTimeMillis()) / 1000.f));
+        testCase.setAttribute(ATTR_TIME, unitTest.getDisplaySpentTime());
         if (!unitTest.isSuccess()) {
             Element failure = document.createElement(FAILURE);
             failure.setTextContent(unitTest.getStack());
