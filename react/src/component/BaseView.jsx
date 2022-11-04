@@ -3,6 +3,38 @@
 
 import React from "react";
 import axios from "@/axios";
+import {withStyles} from "@material-ui/core/styles";
+import TableCell from "@material-ui/core/TableCell";
+import TableRow from "@material-ui/core/TableRow";
+import {createTheme} from "@mui/material/styles";
+
+/**
+ * Palette
+ * https://material-ui.com/customization/palette/
+ */
+export const StyledTableCell = withStyles((theme) => ({
+    head: {
+        backgroundColor: theme.palette.primary.dark,
+        color: theme.palette.common.white,
+    },
+    body: {
+        fontSize: 14,
+    },
+}))(TableCell);
+
+export const StyledTableRow = withStyles((theme) => ({
+    root: {
+        '&:nth-of-type(odd)': {
+            backgroundColor: theme.palette.action.selected,
+        },
+    },
+}))(TableRow);
+
+export const darkTheme = createTheme({
+    palette: {
+        mode: 'dark',
+    },
+});
 
 export default class BaseView extends React.Component {
     state = {
@@ -10,8 +42,7 @@ export default class BaseView extends React.Component {
         snackbarSeverity: null,
         snackbarMessage: null,
         userInfo: null,
-        teamList: null,
-        defaultTeam: null
+        teamList: null
     }
 
     snackBarFail = (res) => {
@@ -69,54 +100,48 @@ export default class BaseView extends React.Component {
     }
 
     getUserInfo = () => {
-        axios.get('/api/auth/getUser').then(res => {
-            if (res.data && res.data.code === 200) {
-                console.log(res.data.content)
-                this.setState({
-                    userInfo: res.data.content
-                })
-            } else {
-                this.snackBarFail(res)
-            }
-        }).catch((error) => {
-            this.snackBarError(error)
-        })
-        console.log(this.state.userInfo)
+        this.axiosGet('/api/auth/getUser', (content) => { this.setState({ userInfo: content }) })
     }
-
 
     refreshTeamList() {
-        this.setState({
-            teamList: null,
-        })
-        axios.get('/api/userTeam/listSelfTeam').then(res => {
-            console.log(res.data)
+        this.axiosGet('/api/userTeam/listSelfTeam', (content) => { this.setState({ teamList: content }) })
+    }
+
+    axiosGet(url, handleResponse) {
+        axios.get(url).then(res => {
             if (res.data && res.data.code === 200) {
-                this.setState({
-                    teamList: res.data.content,
-                })
+                handleResponse(res.data.content)
             } else {
                 this.snackBarFail(res)
             }
-        }).catch(this.snackBarError)
+        }).catch((error) => { this.snackBarError(error) })
     }
 
-    getUserTeamInfo() {
-        this.setState({
-            defaultTeam: null,
-        })
-        axios.post('/api/userTeam/queryDefaultTeam').then(res => {
-            console.log(res.data)
-            if (res.data.code === 200) {
-                this.setState({
-                    defaultTeam: res.data.content,
-                })
-            } else {
-                this.snackBarFail(res)
-            }
-        }).catch(this.snackBarError)
-
-        console.log(this.state.defaultTeam)
+    axiosPost(url, handleResponse, postBody, formParams, formData, headers) {
+        if (postBody) {
+            axios.post(url, postBody).then(res => {
+                if (res.data && res.data.code === 200) {
+                    handleResponse(res.data.content)
+                } else {
+                    this.snackBarFail(res)
+                }
+            }).catch((error) => { this.snackBarError(error) })
+        } else if (formParams && headers) {
+            axios.post(url, formParams, { headers: headers }).then(res => {
+                if (res.data && res.data.code === 200) {
+                    handleResponse(res.data.content)
+                } else {
+                    this.snackBarFail(res)
+                }
+            }).catch((error) => { this.snackBarError(error) })
+        } else if (formData && headers) {
+            axios.post(url, formData, { headers: headers }).then(res => {
+                if (res.data && res.data.code === 200) {
+                    handleResponse(res.data.content)
+                } else {
+                    this.snackBarFail(res)
+                }
+            }).catch((error) => { this.snackBarError(error) })
+        }
     }
-
 }
