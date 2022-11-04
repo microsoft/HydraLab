@@ -33,7 +33,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 
 import Button from "@mui/material/Button";
 import { Backdrop, CircularProgress } from "@mui/material";
-import BaseView from "@/component/BaseView";
+import BaseView, {StyledTableCell, StyledTableRow, darkTheme} from "@/component/BaseView";
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import { withRouter } from 'react-router-dom';
@@ -41,34 +41,6 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from "@mui/material/TextField";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-
-/**
- * Palette
- * https://material-ui.com/customization/palette/
- */
-const StyledTableCell = withStyles((theme) => ({
-    head: {
-        backgroundColor: theme.palette.primary.dark,
-        color: theme.palette.common.white,
-    },
-    body: {
-        fontSize: 14,
-    },
-}))(TableCell);
-
-const StyledTableRow = withStyles((theme) => ({
-    root: {
-        '&:nth-of-type(odd)': {
-            backgroundColor: theme.palette.action.selected,
-        },
-    },
-}))(TableRow);
-
-const darkTheme = createTheme({
-    palette: {
-        mode: 'dark',
-    },
-});
 
 const pieCOLORS = ['#00C49F', '#FF8042', '#808080'];
 const taskRowHeight = 35
@@ -92,8 +64,6 @@ let params = {
     TriggerType: ["PullRequest", "IndividualCI", "API"]
 };
 
-
-
 let defaultSelectedParams = {
     time: "Last 24 Hours",
     suite: '',
@@ -105,33 +75,36 @@ let defaultSelectedParams = {
 let ls = require('local-storage');
 
 class TasksView extends BaseView {
+    constructor(props) {
+        super(props);
+        this.state = {
+            tasks: null,
+            testDetailInfo: null,
 
-    state = {
-        tasks: null,
-        testDetailInfo: null,
+            displayReportTaskId: null,
+            runningTasks: null,
+            loading: false,
+            showingType: allTag,
+            showingTestType: allTag,
+            allTypes: null,
+            allTestTypes: null,
 
-        displayReportTaskId: null,
-        runningTasks: null,
-        loading: false,
-        showingType: allTag,
-        showingTestType: allTag,
-        allTypes: null,
-        allTestTypes: null,
+            hideSkeleton: false,
+            showBackDrop: false,
 
-        hideSkeleton: false,
-        showBackDrop: false,
+            rerunTestDialogIsShown: false,
 
-        rerunTestDialogIsShown: false,
+            openTestDetail: false,
+            pageCount: 20,
+            page: this.props.page ? this.props.page : 1,
 
-        openTestDetail: false,
-        pageCount: 20,
-        page: this.props.page ? this.props.page : 1,
+            testTimeOutSec: null,
+            instrumentationArgs: null,
 
-        testTimeOutSec: null,
-        instrumentationArgs: null,
-
-        selectedParams: ls.get('selectedParams') ? ls.get('selectedParams') : defaultSelectedParams
-    };
+            selectedParams: ls.get('selectedParams') ? ls.get('selectedParams') : defaultSelectedParams,
+        };
+        this.lastClick= null;
+    }
 
     render() {
         let tasks = this.state.tasks;
@@ -186,7 +159,7 @@ class TasksView extends BaseView {
                 <StyledTableCell key={'Suite'} align="center">
                     <ThemeProvider theme={darkTheme}>
                         <FormControl className="ml-0" fullWidth={true}>
-                            <TextField label="Suite" size="small" defaultValue={this.state.selectedParams.suite} onChange={this.selectSuiteChange} />
+                            <TextField label="Suite" size="small" defaultValue={this.state.selectedParams.suite} onBlur={this.selectSuiteChange} />
                         </FormControl>
                     </ThemeProvider>
                 </StyledTableCell>
@@ -205,6 +178,7 @@ class TasksView extends BaseView {
                                 multiple
                                 value={selectedParams.TestType}
                                 onChange={this.selectTestTypeChange}
+                                onClose={() => { this.queryTask() }}
                                 renderValue={(selected) => {
                                     if (selected.length === 0) {
                                         return 'Placeholder';
@@ -218,7 +192,7 @@ class TasksView extends BaseView {
                                 }}
                             >
                                 {params.TestType.map((type, index) => (
-                                    <MenuItem key={type} value={type} disabled={selectedParams.TestType.indexOf(type) > -1 && selectedParams.TestType.length === 1}>
+                                    <MenuItem key={type} value={type} onClick={ () => { this.lastClick = type } }>
                                         <Checkbox checked={selectedParams.TestType.indexOf(type) > -1} />
                                         <ListItemText primary={TestType[type]} />
                                     </MenuItem>
@@ -267,7 +241,7 @@ class TasksView extends BaseView {
             heads.push(
                 <StyledTableCell key={'Trigger_Type'} align="center">
                     <ThemeProvider theme={darkTheme}>
-                        <FormControl className="ml-0" fullWidth={true}>
+                        <FormControl className="ml-0" fullWidth={true} style={{minWidth: 120}}>
                             <InputLabel id="trigger-type-select-label" >Trigger Type</InputLabel>
                             <Select
                                 labelId="trigger-type-select-label"
@@ -277,6 +251,7 @@ class TasksView extends BaseView {
                                 multiple
                                 value={selectedParams.TriggerType}
                                 onChange={this.selectTriggerTypeChange}
+                                onClose={() => { this.queryTask() }}
                                 renderValue={(selected) => {
                                     if (selected.length === 0) {
                                         return 'Placeholder';
@@ -291,7 +266,7 @@ class TasksView extends BaseView {
 
                             >
                                 {params.TriggerType.map((type, index) => (
-                                    <MenuItem key={type} value={type} disabled={selectedParams.TriggerType.indexOf(type) > -1 && selectedParams.TriggerType.length === 1}>
+                                    <MenuItem key={type} value={type} onClick={ () => { this.lastClick = type } }>
                                         <Checkbox checked={selectedParams.TriggerType.indexOf(type) > -1} />
                                         <ListItemText primary={type} />
                                     </MenuItem>
@@ -412,27 +387,35 @@ class TasksView extends BaseView {
         console.log(event.target.value)
         let newSelectedParams = this.state.selectedParams
         newSelectedParams.suite = element.target.value
-        this.setState({
-            selectedParams: newSelectedParams
-        })
+        this.setState({ selectedParams: newSelectedParams })
         ls.set('selectedParams', this.state.selectedParams)
         this.queryTask()
     }
 
     selectTestTypeChange = (element) => {
-        console.log(element.target.value)
+        console.log(2)
         let value = element.target.value
         let newSelectedParams = this.state.selectedParams
-        newSelectedParams.TestType = typeof value === 'string' ? value.split(',') : value
-        this.setState({
-            selectedParams: newSelectedParams
-        })
+
+        if (!Array.isArray(value)) {
+            value = value.split(',')
+        }
+
+        let newSelectedTestType = params.TestType.filter((element) => value.indexOf(element) === -1)
+
+        if (value.length === params.TestType.length - 1 && value.length > 1 && this.lastClick && newSelectedTestType.indexOf(this.lastClick) !== -1) {
+            newSelectedParams.TestType = newSelectedTestType
+        } else if (value.length === 0) {
+            newSelectedParams.TestType = params.TestType
+        } else {
+            newSelectedParams.TestType = value
+        }
+
+        this.setState({ selectedParams: newSelectedParams })
         ls.set('selectedParams', this.state.selectedParams)
-        this.queryTask()
     }
 
     selectResultChange = (element) => {
-        console.log(element.target)
         let value = element.target.value
         let newSelectedParams = this.state.selectedParams
         newSelectedParams.Result = typeof value === 'string' ? value.split(',') : value
@@ -444,15 +427,30 @@ class TasksView extends BaseView {
     }
 
     selectTriggerTypeChange = (element) => {
-        console.log(element.target)
+        console.log(2)
+
         let value = element.target.value
         let newSelectedParams = this.state.selectedParams
-        newSelectedParams.TriggerType = typeof value === 'string' ? value.split(',') : value
-        this.setState({
-            selectedParams: newSelectedParams
-        })
+
+        if (!Array.isArray(value)) {
+            value = value.split(',')
+        }
+
+        console.log(this.lastClick)
+        console.log(value)
+
+        let newSelectedTriggerType = params.TriggerType.filter((element) => value.indexOf(element) === -1)
+
+        if (value.length === params.TriggerType.length - 1 && value.length > 1 && this.lastClick && newSelectedTriggerType.indexOf(this.lastClick) !== -1) {
+            newSelectedParams.TriggerType = newSelectedTriggerType
+        } else if (value.length === 0) {
+            newSelectedParams.TriggerType = params.TriggerType
+        } else {
+            newSelectedParams.TriggerType = value
+        }
+
+        this.setState({ selectedParams: newSelectedParams })
         ls.set('selectedParams', this.state.selectedParams)
-        this.queryTask()
     }
 
     getTaskRow(task, isRunning) {
@@ -641,7 +639,7 @@ class TasksView extends BaseView {
             {
                 "key": "runningType",
                 "op": "in",
-                "value": this.state.selectedParams.TestType
+                "value": this.state.selectedParams.TestType.length > 0 ? this.state.selectedParams.TestType : params.TestType
             },
             {
                 "key": "type",
@@ -705,22 +703,14 @@ class TasksView extends BaseView {
             'queryParams': queryParams
         }
 
-        console.log(postBody)
+        this.axiosPost(`/api/test/task/list`, (content) => {
+            this.setState({
+                tasks: content.content,
+                hideSkeleton: true,
+                pageCount: content.totalPages
+            })
 
-        axios.post(`/api/test/task/list`, postBody).then(res => {
-            if (res.data && res.data.code === 200) {
-                const tasks = res.data.content.content;
-                const pageCount = res.data.content.totalPages;
-                console.log(res.data)
-                this.setState({
-                    tasks: tasks,
-                    hideSkeleton: true,
-                    pageCount: pageCount
-                })
-            } else {
-                this.snackBarFail(res)
-            }
-        }).catch(this.snackBarError)
+        }, postBody, null, null, null)
     }
 
     componentDidMount() {
