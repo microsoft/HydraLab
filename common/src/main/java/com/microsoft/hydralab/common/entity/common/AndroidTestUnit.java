@@ -112,29 +112,17 @@ public class AndroidTestUnit {
 
     @Transient
     public String getDisplaySpentTime() {
-        if (endTimeMillis == null) {
-            return null;
-        }
-        if (startTimeMillis == null) {
-            return null;
-        }
         float second = (endTimeMillis - startTimeMillis) / 1000f;
         return String.format("%.2fs", second);
     }
 
     @Transient
     public String getDisplayRelStartTimeInVideo() {
-        if (relStartTimeInVideo == null) {
-            return null;
-        }
         return DateUtil.mmssFormat.format(new Date(relStartTimeInVideo));
     }
 
     @Transient
     public String getDisplayRelEndTimeInVideo() {
-        if (relEndTimeInVideo == null) {
-            return null;
-        }
         return DateUtil.mmssFormat.format(new Date(relEndTimeInVideo));
     }
 
