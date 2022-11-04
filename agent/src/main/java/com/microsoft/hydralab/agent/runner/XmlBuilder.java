@@ -84,11 +84,7 @@ public class XmlBuilder {
         Element testCase = document.createElement(TESTCASE);
         testCase.setAttribute(ATTR_NAME, unitTest.getTestName());
         testCase.setAttribute(ATTR_CLASSNAME, unitTest.getTestedClass());
-        double testTime = -1;
-        if (unitTest.getEndTimeMillis() != null && unitTest.getStartTimeMillis() != null) {
-            testTime = (double) (unitTest.getEndTimeMillis() - unitTest.getStartTimeMillis()) / 1000.f;
-        }
-        testCase.setAttribute(ATTR_TIME, Double.toString(testTime));
+        testCase.setAttribute(ATTR_TIME, Double.toString((double) (unitTest.getEndTimeMillis() - unitTest.getStartTimeMillis()) / 1000.f));
         if (!unitTest.isSuccess()) {
             Element failure = document.createElement(FAILURE);
             failure.setTextContent(unitTest.getStack());

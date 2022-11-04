@@ -29,10 +29,10 @@ public class AndroidTestUnit {
     protected int numtests;
     protected int statusCode;
 
-    protected Long startTimeMillis;
-    protected Long endTimeMillis;
-    protected Long relStartTimeInVideo;
-    protected Long relEndTimeInVideo;
+    protected long startTimeMillis;
+    protected long endTimeMillis;
+    protected long relStartTimeInVideo;
+    protected long relEndTimeInVideo;
 
     protected String testedClass;
     protected String ownerEmail;
