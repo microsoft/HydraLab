@@ -228,9 +228,6 @@ public class Junit5Listener extends SummaryGeneratingListener {
             logEnter("testEnded", testIdentifier.getDisplayName());
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTestUnit.setSuccess(true);
-
-            ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
-            ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
         } else {
 
             Throwable throwable;
@@ -246,6 +243,8 @@ public class Junit5Listener extends SummaryGeneratingListener {
             deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
             deviceTestResult.oneMoreFailure();
         }
+        ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
+        ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
         deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
     }
 

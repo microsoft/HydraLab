@@ -4,13 +4,13 @@ package com.microsoft.hydralab.agent.runner.t2c;
 
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
+import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,6 +78,7 @@ public class T2CRunner extends AppiumRunner {
 
         // Run Test
         try {
+            deviceTestTask.setTestStartTimeMillis(System.currentTimeMillis());
             deviceManager.runAppiumT2CTest(deviceInfo, jsonFile, reportLogger);
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTest.setSuccess(true);
@@ -91,7 +92,7 @@ public class T2CRunner extends AppiumRunner {
             deviceTestTask.addNewTimeTagBeforeLast(ongoingTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
             deviceTestTask.oneMoreFailure();
         }
-
+        ongoingTest.setEndTimeMillis(System.currentTimeMillis());
         deviceScreenRecorder.finishRecording();
         logCollector.stopAndAnalyse();
         // Test finish
@@ -100,7 +101,7 @@ public class T2CRunner extends AppiumRunner {
         deviceInfo.setRunningTestName(null);
         deviceTestTask.addNewTestUnit(ongoingTest);
         deviceTestTask.addNewTimeTag(ongoingTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
-
+        deviceTestTask.onTestEnded();
         return gifFile;
     }
 
