@@ -4,12 +4,12 @@ package com.microsoft.hydralab.agent.runner.monkey;
 
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
+import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -70,7 +70,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
                 ioException.printStackTrace();
             }
         }), reportLogger);
-
+        deviceTestTask.setTestStartTimeMillis(System.currentTimeMillis());
         deviceManager.runAppiumMonkey(deviceInfo, pkgName, testTask.getMaxStepCount(), reportLogger);
 
         deviceScreenRecorder.finishRecording();
@@ -94,11 +94,11 @@ public class AppiumMonkeyRunner extends AppiumRunner {
 
         // Test finish
         reportLogger.info(ongoingMonkeyTest.getTitle() + ".end");
-
+        ongoingMonkeyTest.setEndTimeMillis(System.currentTimeMillis());
         deviceInfo.setRunningTestName(null);
         deviceTestTask.addNewTestUnit(ongoingMonkeyTest);
         deviceTestTask.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
-
+        deviceTestTask.onTestEnded();
         return gifFile;
     }
 }
