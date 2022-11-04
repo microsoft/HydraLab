@@ -208,7 +208,7 @@ public class AdbMonkeyRunner extends TestRunner {
         }
 
         logger.info(ongoingMonkeyTest.getTitle() + ".end");
-
+        ongoingMonkeyTest.setEndTimeMillis(System.currentTimeMillis());
         deviceInfo.setRunningTestName(null);
         deviceTestTask.addNewTestUnit(ongoingMonkeyTest);
         deviceTestTask.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
