@@ -40,7 +40,7 @@ public class CriteriaTypeUtil<T> {
         return predicates;
     }
 
-    private Predicate analysisCriteria(Root<T> root, CriteriaBuilder criteriaBuilder, CriteriaType criteriaType) {
+    private Predicate analysisCriteria(Root root, CriteriaBuilder criteriaBuilder, CriteriaType criteriaType) {
 
         Predicate predicate = null;
         String key = criteriaType.getKey();
