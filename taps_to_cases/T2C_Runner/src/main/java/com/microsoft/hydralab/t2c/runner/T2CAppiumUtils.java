@@ -37,7 +37,7 @@ public class T2CAppiumUtils {
             elementFinded = driver.findElementByXPath(keyToVal.get("xpath"));
             if (elementFinded != null) return elementFinded;
         }
-        throw new IllegalArgumentException("Element can not be found in current UI.");
+        throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
     }
 
     public static void doAction(BaseDriverController driver, ActionInfo actionInfo) {
