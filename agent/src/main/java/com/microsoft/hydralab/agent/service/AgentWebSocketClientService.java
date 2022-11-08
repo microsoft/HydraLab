@@ -53,6 +53,9 @@ public class AgentWebSocketClientService implements TestRunningCallback {
             case Const.Path.AUTH:
                 provideAuthInfo(message);
                 return;
+            case Const.Path.HEART_BEAT:
+                //todo get SAS of blob ...
+                return;
             case Const.Path.DEVICE_UPDATE:
                 if (!(message.getBody() instanceof JSONObject)) {
                     break;

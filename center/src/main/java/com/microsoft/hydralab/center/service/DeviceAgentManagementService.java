@@ -97,8 +97,14 @@ public class DeviceAgentManagementService {
         }
 
         for (AgentSessionInfo value : agentSessionMap.values()) {
-            requestList(value.session);
+            heartBeat(value.session);
         }
+    }
+
+    private void heartBeat(Session session){
+        Message message = new Message();
+        message.setPath(Const.Path.HEART_BEAT);
+        sendMessageToSession(session, message);
     }
 
     private void requestAuth(Session session) {
