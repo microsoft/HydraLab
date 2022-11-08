@@ -103,7 +103,7 @@ public class DeviceAgentManagementService {
         }
     }
 
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "*/30 * * * * *")
     public void heartBeat() {
         for (AgentSessionInfo value : agentSessionMap.values()) {
             Message message = new Message();
