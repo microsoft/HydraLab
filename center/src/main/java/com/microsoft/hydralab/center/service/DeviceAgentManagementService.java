@@ -927,6 +927,14 @@ public class DeviceAgentManagementService {
         }
     }
 
+    public int getAgentNum(){
+        return agentSessionMap.size();
+    }
+
+    public int getAliveDeviceNum(){
+        return (int) deviceListMap.values().stream().filter(DeviceInfo::isAlive).count();
+    }
+
     static class AgentSessionInfo {
         Session session;
         AgentUser agentUser;

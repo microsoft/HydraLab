@@ -3,6 +3,8 @@
 package com.microsoft.hydralab.center.config;
 
 
+import com.microsoft.hydralab.center.service.DeviceAgentManagementService;
+import com.microsoft.hydralab.center.util.MetricUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.ApplicationArguments;
@@ -12,6 +14,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 
 @Order(2)
@@ -21,11 +24,21 @@ import javax.servlet.ServletContext;
 public class ContextStartup implements ApplicationRunner, ServletContextAware {
 
     private ServletContext servletContext;
+    @Resource
+    MetricUtil metricUtil;
+    @Resource
+    DeviceAgentManagementService deviceAgentManagementService;
 
     @Override
     public void run(ApplicationArguments applicationArguments) {
+        initMetricCollect(deviceAgentManagementService);
         log.info("initialization ...");
         log.info("OK, completed");
+    }
+
+    private void initMetricCollect(DeviceAgentManagementService deviceAgentManagementService) {
+        metricUtil.registerOnlineAgent(deviceAgentManagementService);
+        metricUtil.registerOnlineDevice(deviceAgentManagementService);
     }
 
     @Override

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.center.util;
 
+import com.microsoft.hydralab.center.service.DeviceAgentManagementService;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.util.GlobalConstant;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -19,6 +20,22 @@ public class MetricUtil {
     MeterRegistry meterRegistry;
     //save agent status <AgentUser ID, live status>
     private final HashMap<String, String> agentAliveStatusMap = new HashMap<>();
+
+    public void registerOnlineAgent(DeviceAgentManagementService deviceAgentManagementService) {
+        meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_ONLINE_AGENT_NUM,
+                Tags.empty(),
+                deviceAgentManagementService,
+                this::getOnlineAgentNum);
+        log.info("Metric of agent online number has been registered.");
+    }
+
+    public void registerOnlineDevice(DeviceAgentManagementService deviceAgentManagementService) {
+        meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_ONLINE_DEVICE_NUM,
+                Tags.empty(),
+                deviceAgentManagementService,
+                this::getAliveDeviceNum);
+        log.info("Metric of device online number has been registered.");
+    }
 
     public void registerAgentAliveStatusMetric(AgentUser agentUser) {
         if (agentAliveStatusMap.containsKey(agentUser.getId())) {
@@ -42,6 +59,14 @@ public class MetricUtil {
     public int getAgentAliveStatus(String agentUserId) {
         String agentStatus = agentAliveStatusMap.getOrDefault(agentUserId, GlobalConstant.AgentLiveStatus.OFFLINE.getStatus());
         return GlobalConstant.AgentLiveStatus.OFFLINE.getStatus().equals(agentStatus) ? 1 : 0;
+    }
+
+    private int getOnlineAgentNum(DeviceAgentManagementService deviceAgentManagementService) {
+        return deviceAgentManagementService.getAgentNum();
+    }
+
+    private int getAliveDeviceNum(DeviceAgentManagementService deviceAgentManagementService) {
+        return deviceAgentManagementService.getAliveDeviceNum();
     }
 
 
