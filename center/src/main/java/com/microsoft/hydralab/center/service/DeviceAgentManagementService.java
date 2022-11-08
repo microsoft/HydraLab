@@ -12,7 +12,10 @@ import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.*;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
-import com.microsoft.hydralab.common.util.*;
+import com.microsoft.hydralab.common.util.AttachmentService;
+import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.GlobalConstant;
+import com.microsoft.hydralab.common.util.SerializeUtil;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
@@ -87,7 +90,6 @@ public class DeviceAgentManagementService {
         requestAuth(session);
     }
 
-    @Scheduled(cron = "*/30 * * * * *")
     public void requestAllAgentDeviceListUpdate() {
         synchronized (this) {
             if (System.currentTimeMillis() - lastTimeRequest < TimeUnit.SECONDS.toMillis(5)) {
@@ -97,14 +99,17 @@ public class DeviceAgentManagementService {
         }
 
         for (AgentSessionInfo value : agentSessionMap.values()) {
-            heartBeat(value.session);
+            requestList(value.session);
         }
     }
 
-    private void heartBeat(Session session){
-        Message message = new Message();
-        message.setPath(Const.Path.HEART_BEAT);
-        sendMessageToSession(session, message);
+    @Scheduled(cron = "*/10 * * * * *")
+    public void heartBeat() {
+        for (AgentSessionInfo value : agentSessionMap.values()) {
+            Message message = new Message();
+            message.setPath(Const.Path.HEART_BEAT);
+            sendMessageToSession(value.session, message);
+        }
     }
 
     private void requestAuth(Session session) {
