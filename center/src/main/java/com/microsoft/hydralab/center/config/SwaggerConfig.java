@@ -41,7 +41,7 @@ public class SwaggerConfig {
                 .apiInfo(apiInfo)
                 .host(String.format("%s:%s", InetAddress.getLocalHost().getHostName(), port))
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.microsoft.devices.network.center.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.microsoft.hydralab.center.controller"))
                 .paths(PathSelectors.any())
                 .build();
     }
