@@ -28,7 +28,7 @@ public class MetricUtil {
         updateAgentAliveStatus(agentUser.getId(), GlobalConstant.AgentLiveStatus.ONLINE.getStatus());
 
         meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_WEBSOCKET_DISCONNECT_SIGNAL,
-                Tags.empty().and("computerName", agentUser.getHostname(), "agentName", agentUser.getName()),
+                Tags.empty().and("computerName", agentUser.getHostname(), "agentName", agentUser.getName(), "teamName", agentUser.getTeamName()),
                 agentUser.getId(),
                 this::getAgentAliveStatus);
         log.info("Status metric of agent {} has been registered.", agentUser.getName());
