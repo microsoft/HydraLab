@@ -77,10 +77,10 @@ public class UserTeamManagementService {
             return;
         }
         if (teamList != null) {
-            teamList.remove(sysTeamService.queryTeamById(relation.getTeamId()));
+            teamList.removeIf(team -> team.getTeamId().equals(relation.getTeamId()));
         }
         if (userList != null) {
-            userList.remove(sysUserService.queryUserByMailAddress(relation.getMailAddress()));
+            userList.removeIf(user -> user.getMailAddress().equals(relation.getMailAddress()));
         }
 
         if (relation.isTeamAdmin()) {
