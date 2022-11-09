@@ -61,11 +61,11 @@ public class MetricUtil {
         return GlobalConstant.AgentLiveStatus.OFFLINE.getStatus().equals(agentStatus) ? 1 : 0;
     }
 
-    private int getOnlineAgentNum(DeviceAgentManagementService deviceAgentManagementService) {
+    public int getOnlineAgentNum(DeviceAgentManagementService deviceAgentManagementService) {
         return deviceAgentManagementService.getAgentNum();
     }
 
-    private int getAliveDeviceNum(DeviceAgentManagementService deviceAgentManagementService) {
+    public int getAliveDeviceNum(DeviceAgentManagementService deviceAgentManagementService) {
         return deviceAgentManagementService.getAliveDeviceNum();
     }
 

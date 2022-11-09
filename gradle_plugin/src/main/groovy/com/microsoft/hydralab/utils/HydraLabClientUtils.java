@@ -412,6 +412,9 @@ public class HydraLabClientUtils {
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
 
         returnFinalTestState();
+
+        // // todo: exit code
+        // System.exit (n);
     }
 
     private static void markBuildFail() {
