@@ -179,7 +179,7 @@ public class UserTeamController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
         }
-        if (!userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized for another team");
         }
 
