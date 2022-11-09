@@ -34,6 +34,9 @@ public class ContextStartup implements ApplicationRunner, ServletContextAware {
         initMetricCollect(deviceAgentManagementService);
         log.info("initialization ...");
         log.info("OK, completed");
+
+        // todo: test, remove it in PR
+        metricUtil.getGrafanaOnlineAgentNumber();
     }
 
     private void initMetricCollect(DeviceAgentManagementService deviceAgentManagementService) {

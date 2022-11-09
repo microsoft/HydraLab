@@ -29,7 +29,7 @@ public class MetricUtil {
     public void registerAgentDiskUsageRatio(AppOptions appOptions) {
         meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_DISK_USAGE_RATIO,
                 // todo: add teamName
-                Tags.empty().and("disk", appOptions.getLocation().substring(0, 2), "teamName", ),
+//                Tags.empty().and("disk", appOptions.getLocation().substring(0, 2), "teamName", ),
                 appOptions.getLocation(),
                 this::getPCDiskUsageRatio);
         log.info("Metric of disk usage ratio has been registered.");
@@ -38,7 +38,7 @@ public class MetricUtil {
     public void registerAgentReconnectRetryTimes(AgentWebSocketClient agentWebSocketClient) {
         meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_WEBSOCKET_RECONNECT_RETRY_TIMES,
                 // todo: add teamName
-                Tags.empty().and("teamName", ),
+//                Tags.empty().and("teamName", ),
                 agentWebSocketClient,
                 this::getReconnectRetryTimes);
         log.info("Metric of agent reconnect retry times has been registered.");
@@ -47,7 +47,7 @@ public class MetricUtil {
     public void registerAgentRunningTestTaskNum(DeviceStabilityMonitor deviceStabilityMonitor) {
         meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_RUNNING_TEST_NUM,
                 // todo: add teamName
-                Tags.empty().and("teamName", ),
+//                Tags.empty().and("teamName", ),
                 deviceStabilityMonitor,
                 this::runningTestTaskNum);
         log.info("Metric of agent running test task number has been registered.");
