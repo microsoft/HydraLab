@@ -193,4 +193,10 @@ public class UserTeamManagementService {
 
         return criteriaTypes;
     }
+
+    public void deleteTeam(SysTeam team) {
+        List<UserTeamRelation> relations = userTeamRelationRepository.findAllByTeamId(team.getTeamId());
+        relations.forEach(this::deleteUserTeamRelation);
+        sysTeamService.deleteTeam(team);
+    }
 }
