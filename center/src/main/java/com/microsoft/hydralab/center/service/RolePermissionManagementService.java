@@ -29,7 +29,10 @@ public class RolePermissionManagementService {
         List<RolePermissionRelation> relationList = rolePermissionRelationRepository.findAll();
         relationList.forEach(relation -> {
             Set<SysPermission> permissionList = rolePermissionListMap.computeIfAbsent(relation.getRoleId(), k -> new HashSet<>());
-            permissionList.add(sysPermissionService.queryPermissionById(relation.getPermissionId()));
+            SysPermission permission = sysPermissionService.queryPermissionById(relation.getPermissionId());
+            if (permission != null) {
+                permissionList.add(permission);
+            }
         });
     }
 
