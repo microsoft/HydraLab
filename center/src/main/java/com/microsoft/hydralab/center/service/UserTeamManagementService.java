@@ -38,9 +38,15 @@ public class UserTeamManagementService {
         List<UserTeamRelation> relationList = userTeamRelationRepository.findAll();
         relationList.forEach(relation -> {
             Set<SysTeam> teamList = userTeamListMap.computeIfAbsent(relation.getMailAddress(), k -> new HashSet<>());
-            teamList.add(sysTeamService.queryTeamById(relation.getTeamId()));
+            SysTeam team = sysTeamService.queryTeamById(relation.getTeamId());
+            if (team != null) {
+                teamList.add(team);
+            }
             Set<SysUser> userList = teamUserListMap.computeIfAbsent(relation.getTeamId(), k -> new HashSet<>());
-            userList.add(sysUserService.queryUserByMailAddress(relation.getMailAddress()));
+            SysUser user = sysUserService.queryUserByMailAddress(relation.getMailAddress());
+            if (user != null) {
+                userList.add(user);
+            }
             if (relation.isTeamAdmin()) {
                 Set<String> teamAdmins = teamAdminListMap.computeIfAbsent(relation.getTeamId(), k -> new HashSet<>());
                 teamAdmins.add(relation.getMailAddress());
@@ -192,5 +198,11 @@ public class UserTeamManagementService {
         }
 
         return criteriaTypes;
+    }
+
+    public void deleteTeam(SysTeam team) {
+        List<UserTeamRelation> relations = userTeamRelationRepository.findAllByTeamId(team.getTeamId());
+        relations.forEach(this::deleteUserTeamRelation);
+        sysTeamService.deleteTeam(team);
     }
 }
