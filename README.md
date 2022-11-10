@@ -11,7 +11,6 @@
 ---
 
 ![Logo](docs/images/banner-made-easy.png)
-![Products](docs/images/caps_products.png)
 
 - [What is Hydra Lab and what can it do?](#what-is)
 - [Get Started](#get-started)
@@ -36,6 +35,25 @@ Hydra Lab enables dev team to quickly build a self-manageable and intelligent cl
 
 - Either: Build a new cloud testing network with Hydra Lab released packages.
 - Or: Onboard your test device to an existing network with low-cost and small effort.
+
+Capabilities of Hydra Lab include but not limit to:
+- Espresso test
+- Appium test on different platforms:
+  - Windows
+  - iOS
+  - Android
+  - Browser
+  - Cross platform
+- Smart test with AI
+- Monkey test
+
+Tests have been onboard for many products:
+- Microsoft Phone Link
+- Microsoft Link to Windows
+- Microsoft Launcher
+- Microsoft Outlook
+- Microsoft Edge
+- Microsoft Yammer
 
 For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
 
