@@ -209,6 +209,12 @@ public class DeviceStabilityMonitor {
                 deviceInfo,
                 this::getDeviceAliveSignal);
         classLogger.info("Metric of agent device alive signal for device {} has been registered.", deviceInfo.getSerialNum());
+        // Metric: device adb command timeout signal
+        meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_TEST_DEVICE_ADB_TIMEOUT_SIGNAL,
+                Tags.empty().and("device SN", deviceInfo.getSerialNum()),
+                deviceInfo,
+                this::getDeviceADBTimeoutSignal);
+        classLogger.info("Metric of agent device ADB command timeout signal for device {} has been registered.", deviceInfo.getSerialNum());
     }
 
     private int getDeviceOfflineSignal(DeviceInfo deviceInfo) {
@@ -225,6 +231,10 @@ public class DeviceStabilityMonitor {
 
     private int getDeviceAliveSignal(DeviceInfo deviceInfo) {
         return deviceInfo.isAlive() ? 1 : 0;
+    }
+
+    private int getDeviceADBTimeoutSignal(DeviceInfo deviceInfo) {
+        return deviceInfo.isAdbTimeout() ? 1 : 0;
     }
 
     // todo: dynamically set cron interval to sync with prometheus scrape time
