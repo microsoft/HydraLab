@@ -62,6 +62,11 @@ public class T2CAppiumUtils {
             case "click":
                 driver.click(webElement);
                 break;
+            case "tap":
+                int x = (Integer) arguments.get("x");
+                int y = (Integer) arguments.get("y");
+                driver.tap(x, y);
+                break;
             case "input":
                 String content;
                 if (arguments.containsKey("id")) {
