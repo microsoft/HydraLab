@@ -17,6 +17,7 @@ public class ActionInfo {
     private boolean isOption;
 
 
+    // Action
     public ActionInfo(Integer id, @Nullable BaseElementInfo testElement, String actionType, Map<String, Object> arguments,
                       String driverId, boolean isOption) {
         this.id = id;
