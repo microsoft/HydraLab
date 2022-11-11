@@ -64,7 +64,7 @@ public class UserTeamManagementService {
             teamAdmins.add(user.getMailAddress());
 
             SysRole originalRole = sysRoleService.queryRoleById(user.getRoleId());
-            SysRole teamAdminRole = sysRoleService.queryRoleByName(Const.DefaultRole.TEAM_ADMIN);
+            SysRole teamAdminRole = sysRoleService.getOrCreateDefaultRole(Const.DefaultRole.TEAM_ADMIN, 10);
             if (sysRoleService.isAuthLevelSuperior(teamAdminRole, originalRole)) {
                 user.setRoleId(teamAdminRole.getRoleId());
                 user.setRoleName(teamAdminRole.getRoleName());
