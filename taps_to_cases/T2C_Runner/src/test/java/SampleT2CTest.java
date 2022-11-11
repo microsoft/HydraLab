@@ -29,7 +29,7 @@ public class SampleT2CTest {
     public T2CJsonParser t2CJsonParser;
     private TestInfo testInfo;
     private Logger logger;
-    String filePath = "src/test/jsonFiles/testFile_android_dragAndDrop.json";
+    String filePath = "src/test/resources/DemoJson.json";
     AppiumDriverLocalService service;
 
 

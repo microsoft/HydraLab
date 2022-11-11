@@ -58,3 +58,8 @@ dependencies {
     implementation group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.5.2'
 
 }
+test {
+    filter {
+        setExcludePatterns('com.microsoft.hydralab.agent.test.*')
+    }
+}
