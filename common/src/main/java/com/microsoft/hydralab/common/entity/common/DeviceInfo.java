@@ -14,12 +14,12 @@ import java.util.*;
 @Setter
 @ToString
 public class DeviceInfo extends MobileDevice {
-    public transient static final String ONLINE = DeviceManager.MobileDeviceState.ONLINE.toString();
-    public transient static final String OFFLINE = DeviceManager.MobileDeviceState.OFFLINE.toString();
+    public static final String ONLINE = DeviceManager.MobileDeviceState.ONLINE.toString();
+    public static final String OFFLINE = DeviceManager.MobileDeviceState.OFFLINE.toString();
     // modified only in Center, sync with Agent
-    public transient static final String TESTING = DeviceManager.MobileDeviceState.TESTING.toString();
+    public static final String TESTING = DeviceManager.MobileDeviceState.TESTING.toString();
     // modified only in Agent, sync with Center
-    public transient static final String UNSTABLE = DeviceManager.MobileDeviceState.UNSTABLE.toString();
+    public static final String UNSTABLE = DeviceManager.MobileDeviceState.UNSTABLE.toString();
     private final transient Map<Thread, String> currentCommand = new HashMap<>();
     private final transient Map<Thread, Process> currentProcess = new HashMap<>();
     private final transient Map<Thread, TestTask> currentTask = new HashMap<>();
@@ -41,6 +41,7 @@ public class DeviceInfo extends MobileDevice {
     private long screenshotUpdateTimeMilli;
     private transient File screenshotImageFile;
     private transient File pcScreenshotImageFile;
+    private transient boolean adbTimeout = false;
 
     public void setStatus(String status) {
         this.status = status;
@@ -133,5 +134,4 @@ public class DeviceInfo extends MobileDevice {
             temp.interrupt();
         }
     }
-
 }
