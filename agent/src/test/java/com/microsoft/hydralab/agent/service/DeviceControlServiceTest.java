@@ -3,6 +3,7 @@ package com.microsoft.hydralab.agent.service;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
 import org.junit.Assert;
@@ -33,7 +34,8 @@ public class DeviceControlServiceTest extends BaseTest {
     @Test
     public void runTestTask() {
         TestTaskSpec taskSpec = new TestTaskSpec();
-        deviceControlService.runTestTask(taskSpec);
+        taskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
+        TestTask testTask = deviceControlService.runTestTask(taskSpec);
     }
 
     @Test
