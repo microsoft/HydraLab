@@ -76,8 +76,3 @@ dependencies {
     //Ipa Parse
     compile group: 'com.googlecode.plist', name: 'dd-plist', version: '1.3'
 }
-
-test {
-    finalizedBy jacocoTestReport
-}
-

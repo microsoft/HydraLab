@@ -2,8 +2,8 @@ package com.microsoft.hydralab.common.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.common.Message;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
@@ -19,14 +19,14 @@ public class SerializeUtilTest {
         message.setPath(Const.Path.TEST_TASK_UPDATE);
         message.setBody(data);
         byte[] byteMsg = SerializeUtil.messageToByteArr(message);
-        Assert.assertNotNull("Transfer to Byte error!", byteMsg);
+        Assertions.assertNotNull(byteMsg, "Transfer to Byte error!");
 
         Message messageCopy = SerializeUtil.byteArrToMessage(byteMsg);
-        Assert.assertTrue("Transfer to message error!", message.getPath().equals(messageCopy.getPath()));
+        Assertions.assertTrue(message.getPath().equals(messageCopy.getPath()), "Transfer to message error!");
 
         JSONObject dataCopy = (JSONObject) messageCopy.getBody();
-        Assert.assertTrue("Transfer to message error!",
-                data.getString(Const.AgentConfig.task_id_param).equals(dataCopy.getString(Const.AgentConfig.task_id_param)));
+        Assertions.assertTrue(data.getString(Const.AgentConfig.task_id_param).equals(dataCopy.getString(Const.AgentConfig.task_id_param)),
+                "Transfer to message error!");
     }
 
 }

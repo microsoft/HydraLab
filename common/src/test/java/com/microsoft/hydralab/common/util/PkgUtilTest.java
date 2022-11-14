@@ -5,8 +5,8 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.microsoft.hydralab.common.entity.common.BlobFileInfo;
 import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
 import net.dongliu.apk.parser.ApkFile;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ public class PkgUtilTest {
         JSONObject res = PkgUtil.analysisFile(recordFile, EntityFileRelation.EntityType.APP_FILE_SET);
 
         logger.info(res.toString(SerializerFeature.PrettyFormat));
-        Assert.assertTrue("Analysis apk error!", "com.microsoft.hydralab.android.client".equals(res.getString(BlobFileInfo.ParserKey.PkgName)));
+        Assertions.assertTrue("com.microsoft.hydralab.android.client".equals(res.getString(BlobFileInfo.ParserKey.PkgName)), "Analysis apk error!");
 
         try (ApkFile apkFile = new ApkFile(recordFile)) {
             List<String> usesPermissions = apkFile.getApkMeta().getUsesPermissions();
@@ -39,6 +39,6 @@ public class PkgUtilTest {
         JSONObject res = PkgUtil.analysisFile(recordFile, EntityFileRelation.EntityType.APP_FILE_SET);
 
         logger.info(res.toString(SerializerFeature.PrettyFormat));
-        Assert.assertTrue("Analysis ipa error!", "com.microsoft.es.uitestsample".equals(res.getString(BlobFileInfo.ParserKey.PkgName)));
+        Assertions.assertTrue("com.microsoft.es.uitestsample".equals(res.getString(BlobFileInfo.ParserKey.PkgName)), "Analysis ipa error!");
     }
 }

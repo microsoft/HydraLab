@@ -8,12 +8,17 @@ jacoco {
 subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
-    tasks.withType(Test) {
-        jacoco {
-            destinationFile = file("$rootProject.buildDir/jacoco/test.exec")
-        }
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     }
-
+    test {
+        useJUnitPlatform()
+        finalizedBy jacocoTestReport
+    }
+    jacocoTestReport {
+        dependsOn(test)
+    }
 }
 buildscript {
     repositories {
@@ -43,12 +48,23 @@ allprojects {
             // Official document for lint options: https://docs.oracle.com/javase/7/docs/technotes/tools/solaris/javac.html#xlintwarnings
             options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-Xlint:fallthrough" << "-Xlint:static" << "-Xlint:try" << "-Xlint:varargs" << "-Xlint:finally"
         }
-        tasks.withType(JacocoReport){
-            reports {
-                html.enabled = true
-                xml.enabled = true
-                csv.enabled = false
-            }
-        }
+    }
+}
+
+task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
+    description = 'Generates an aggregate report from all subprojects'
+    dependsOn(subprojects.test)
+
+    def projects = ['center', 'common', 'agent', 'sdk', 'gradle_plugin', 'T2C_Runner']
+    def jacocoProjects = subprojects.findAll { projects.contains(it.getName()) }
+
+    additionalSourceDirs.from = files(jacocoProjects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories.from = files(jacocoProjects.sourceSets.main.allSource.srcDirs)
+    classDirectories.from = files(jacocoProjects.sourceSets.main.output)
+    executionData.from = files(jacocoProjects.jacocoTestReport.executionData)
+
+    reports {
+        html.enabled true
+        xml.enabled true
     }
 }

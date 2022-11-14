@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 import com.microsoft.hydralab.t2c.runner.*;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
@@ -9,8 +10,9 @@ import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.windows.WindowsDriver;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
@@ -21,7 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-
+@Disabled
 public class SampleT2CTest {
 
     public AndroidDriver driver;
@@ -89,7 +91,7 @@ public class SampleT2CTest {
         }
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         if (driver != null) {
             driver.quit();
