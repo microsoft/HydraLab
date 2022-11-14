@@ -32,7 +32,6 @@ public class ADBOperateUtil {
     private File mAdbPath;
     private String adbServerHost = DdmPreferences.DEFAULT_ADBHOST_VALUE;
     private AndroidDebugBridge mAndroidDebugBridge;
-
     public void init(AndroidDebugBridge.IDeviceChangeListener mListener) throws IOException {
         mAndroidHome = System.getenv("ANDROID_HOME");
         Assert.notNull(mAndroidHome, "ANDROID_HOME env var must be set and pointing to the home path of Android SDK.");
@@ -114,7 +113,9 @@ public class ADBOperateUtil {
         localLogger.info(">> adb -s {} shell {}", device.getSerialNumber(), comm);
         try {
             device.executeShellCommand(comm, receiver);
+            deviceInfo.setAdbTimeout(false);
         } catch (TimeoutException te) {
+            deviceInfo.setAdbTimeout(true);
             // todo: add email alert for TimeoutException
             localLogger.error("TimeoutException in execOnDevice: " + te.getMessage(), te);
         } catch (ShellCommandUnresponsiveException scue) {
