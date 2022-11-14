@@ -1,6 +1,3 @@
-plugins {
-    id 'java'
-}
 group = 'com.microsoft.hydralab'
 version = '0.9.5'
 
