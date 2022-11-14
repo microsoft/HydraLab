@@ -24,25 +24,6 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: Gradle@3
-      displayName: Run JUnit Test
-      inputs:
-        gradleWrapperFile: 'gradlew'
-        tasks: 'test jacocoRootReport'
-        publishJUnitResults: true
-        testResultsFiles: '**/TEST-*.xml'
-        #codeCoverageToolOption: 'JaCoCo'
-        #codeCoverageClassFilesDirectories: 'build/classes/java/main'
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false
-    - task: PublishCodeCoverageResults@1
-      displayName: Publich Code Coverage
-      inputs:
-        codeCoverageTool: 'JaCoCo'
-        summaryFileLocation: 'build/reports/jacoco/jacocoRootReport/*.xml'
-        reportDirectory: 'build/reports/jacoco/jacocoRootReport/html'
     - task: NodeTool@0
       inputs:
         versionSpec: '14.x'
@@ -71,6 +52,25 @@ stages:
           (Get-Content center/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content center/src/main/resources/version.properties
         workingDirectory: '$(Build.Repository.LocalPath)'
       condition: and(succeeded(), eq(variables.fullBuild, 'true'), contains(variables['Build.SourceBranch'], 'Release/'))
+    - task: Gradle@3
+        displayName: Run JUnit Test
+        inputs:
+          gradleWrapperFile: 'gradlew'
+          tasks: 'test jacocoRootReport'
+          publishJUnitResults: true
+          testResultsFiles: '**/TEST-*.xml'
+          #codeCoverageToolOption: 'JaCoCo'
+          #codeCoverageClassFilesDirectories: 'build/classes/java/main'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          sonarQubeRunAnalysis: false
+          spotBugsAnalysis: false
+          - task: PublishCodeCoverageResults@1
+            displayName: Publich Code Coverage
+            inputs:
+              codeCoverageTool: 'JaCoCo'
+              summaryFileLocation: 'build/reports/jacoco/jacocoRootReport/*.xml'
+              reportDirectory: 'build/reports/jacoco/jacocoRootReport/html'
     - task: Gradle@2
       displayName: Build center
       inputs:
