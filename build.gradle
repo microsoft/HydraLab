@@ -6,9 +6,14 @@ jacoco {
     reportsDir = file('build/reports/jacoco')
 }
 subprojects {
-    apply {
-        plugin("jacoco")
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+    tasks.withType(Test) {
+        jacoco {
+            destinationFile = file("$rootProject.buildDir/jacoco/test.exec")
+        }
     }
+
 }
 buildscript {
     repositories {
@@ -40,9 +45,30 @@ allprojects {
         }
         tasks.withType(JacocoReport){
             reports {
+                html.enabled = true
                 xml.enabled = true
-                csv.enabled = true
+                csv.enabled = false
             }
         }
+    }
+}
+task jacocoRootReport(type: JacocoReport) {
+    dependsOn = subprojects.test
+    additionalSourceDirs.from = files(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories.from = files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories.from = files(subprojects.jacocoTestReport.classDirectories)
+    executionData.from = files(subprojects.jacocoTestReport.executionData)
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = false
+    }
+    onlyIf = {
+        true
+    }
+    doFirst {
+        executionData.from = files(executionData.findAll {
+            it.exists()
+        })
     }
 }

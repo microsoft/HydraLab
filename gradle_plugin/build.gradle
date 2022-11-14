@@ -31,6 +31,7 @@ dependencies {
     implementation 'org.ow2.asm:asm:7.0'
     implementation 'org.ow2.asm:asm-util:7.0'
     implementation networkDependencies.okHttp
+    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
 // plugin publishing related
@@ -54,4 +55,7 @@ pluginBundle {
     website = 'https://github.com/microsoft/HydraLab/tree/main/gradle_plugin'
     vcsUrl = 'https://github.com/microsoft/HydraLab.git'
     tags = ['Microsoft']
+}
+test{
+    finalizedBy jacocoTestReport
 }
