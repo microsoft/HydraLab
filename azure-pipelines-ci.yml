@@ -32,7 +32,7 @@ stages:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
         codeCoverageToolOption: 'JaCoCo'
-        codeCoverageClassFilesDirectories: 'build/classes/java/main/'
+        codeCoverageClassFilesDirectories: 'build/classes/java/main'
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
         sonarQubeRunAnalysis: false
