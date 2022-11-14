@@ -37,4 +37,5 @@ test {
     filter {
         setExcludePatterns('*.SampleT2CTest*')
     }
+    finalizedBy jacocoTestReport
 }

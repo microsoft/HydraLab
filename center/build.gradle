@@ -64,4 +64,5 @@ test {
     filter {
         setExcludePatterns('com.microsoft.hydralab.center.test.*')
     }
+    finalizedBy jacocoTestReport
 }

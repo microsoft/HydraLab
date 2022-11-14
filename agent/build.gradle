@@ -62,4 +62,5 @@ test {
     filter {
         setExcludePatterns('com.microsoft.hydralab.agent.test.*')
     }
+    finalizedBy jacocoTestReport
 }
