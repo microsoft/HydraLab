@@ -14,10 +14,6 @@ subprojects {
     }
     test {
         useJUnitPlatform()
-        finalizedBy jacocoTestReport
-    }
-    jacocoTestReport {
-        dependsOn(test)
     }
 }
 buildscript {
