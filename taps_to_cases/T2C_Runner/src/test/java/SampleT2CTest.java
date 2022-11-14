@@ -62,16 +62,17 @@ public class SampleT2CTest {
             caps.setCapability("newCommandTimeout", 4000);
             caps.setCapability("clearDeviceLogonStart", true);
             caps.setCapability("noReset", true);
-            if (driverInfo.getPlatform().equals("android")) {
+            if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
                 caps.setCapability("automationName", "uiautomator2");
                 AndroidDriver androidDriver = new AndroidDriver(service.getUrl(), caps);
-                if (driverInfo.getLauncherApp().length() != 0) {
-                    androidDriver.activateApp(driverInfo.getLauncherApp());
+                AndroidDriverController androidDriverController = new AndroidDriverController(androidDriver, logger);
+                driverControllerMap.put(driverInfo.getId(), androidDriverController);
+                if (driverInfo.getLauncherApp() != null && driverInfo.getLauncherApp().length() > 0) {
+                    androidDriverController.activateApp(driverInfo.getLauncherApp());
                 }
-                driverControllerMap.put(driverInfo.getId(), new AndroidDriverController(androidDriver, logger));
             }
-            if (driverInfo.getPlatform().equals("windows")) {
-                if (driverInfo.getLauncherApp().length() != 0) {
+            if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
+                if (driverInfo.getLauncherApp() != null && driverInfo.getLauncherApp().length() > 0) {
                     caps.setCapability("app", driverInfo.getLauncherApp() + "!app");
                 }
                 WindowsDriver windowsDriver = new WindowsDriver(service.getUrl(), caps);
