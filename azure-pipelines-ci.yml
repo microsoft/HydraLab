@@ -27,6 +27,19 @@ stages:
     - task: NodeTool@0
       inputs:
         versionSpec: '14.x'
+    - task: Gradle@3
+      displayName: Run JUnit Test
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'test'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+        codeCoverageToolOption: 'JaCoCo'
+        codeCoverageClassFilesDirectories: 'build/classes/main/'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        sonarQubeRunAnalysis: false
+        spotBugsAnalysis: false
     - task: Npm@1
       inputs:
         command: 'install'
@@ -52,19 +65,6 @@ stages:
           (Get-Content center/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content center/src/main/resources/version.properties
         workingDirectory: '$(Build.Repository.LocalPath)'
       condition: and(succeeded(), eq(variables.fullBuild, 'true'), contains(variables['Build.SourceBranch'], 'Release/'))
-    - task: Gradle@3
-      displayName: Run JUnit Test
-      inputs:
-        gradleWrapperFile: 'gradlew'
-        tasks: 'test'
-        publishJUnitResults: true
-        testResultsFiles: '**/TEST-*.xml'
-        codeCoverageToolOption: 'JaCoCo'
-        codeCoverageClassFilesDirectories: 'build/classes/main/'
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false
     - task: Gradle@2
       displayName: Build center
       inputs:
