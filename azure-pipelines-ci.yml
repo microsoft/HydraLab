@@ -24,9 +24,6 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '14.x'
     - task: Gradle@3
       displayName: Run JUnit Test
       inputs:
@@ -35,11 +32,14 @@ stages:
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
         codeCoverageToolOption: 'JaCoCo'
-        codeCoverageClassFilesDirectories: 'build/classes/main/'
+        codeCoverageClassFilesDirectories: 'build/classes/java/main/'
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'
     - task: Npm@1
       inputs:
         command: 'install'
