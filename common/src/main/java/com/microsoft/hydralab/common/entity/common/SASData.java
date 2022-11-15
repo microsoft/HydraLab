@@ -14,6 +14,7 @@ import java.util.Date;
 
 @Data
 public class SASData {
+    private String endpoint;
     private String signature;
     private OffsetDateTime expiredTime;
 }

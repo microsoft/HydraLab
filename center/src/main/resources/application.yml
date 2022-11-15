@@ -59,6 +59,7 @@ logging:
     org.hibernate.SQL: INFO
 
 app:
+  batteryStrategy: ${BATTERY_STRATEGY:Economic}
   access-token-limit: 2
   # Mail Address Format
   default-user: ${DEFAULT_USER:@null}

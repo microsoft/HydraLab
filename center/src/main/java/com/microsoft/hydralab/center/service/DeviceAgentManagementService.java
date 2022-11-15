@@ -79,9 +79,13 @@ public class DeviceAgentManagementService {
     AgentManageService agentManageService;
     @Resource
     BlobStorageClient blobStorageClient;
+    @Resource
+    BlobStorageService blobStorageService;
 
     @Value("${app.access-token-limit}")
     int accessLimit;
+    @Value("${app.batteryStrategy}")
+    private String batteryStrategy;
     private long lastTimeRequest;
 
     public void onOpen(Session session) {
@@ -103,13 +107,23 @@ public class DeviceAgentManagementService {
         }
     }
 
-    @Scheduled(cron = "*/30 * * * * *")
-    public void heartBeat() {
+    @Scheduled(cron = "*/10 * * * * *")
+    public void heartBeatAll() {
         for (AgentSessionInfo value : agentSessionMap.values()) {
-            Message message = new Message();
-            message.setPath(Const.Path.HEART_BEAT);
-            sendMessageToSession(value.session, message);
+            heartBeat(value.session, value.agentUser);
         }
+    }
+
+    private void heartBeat(Session session, AgentUser agentUser) {
+        agentUser.setBatteryStrategy(AgentUser.BatteryStrategy.valueOf(batteryStrategy));
+        HeartBeatData data = new HeartBeatData();
+        data.setBlobSAS(blobStorageService.GenerateWriteSAS(agentUser.getId()));
+        data.setAgentUser(agentUser);
+
+        Message message = new Message();
+        message.setPath(Const.Path.HEART_BEAT);
+        message.setBody(data);
+        sendMessageToSession(session, message);
     }
 
     private void requestAuth(Session session) {
@@ -157,7 +171,7 @@ public class DeviceAgentManagementService {
 
                     tempTask.getUpdateMsgs().add(updateMag);
                 }
-                requestList(session);
+                heartBeat(session, agentUser);
             }
         } else {
             handleQualifiedAgentMessage(message, savedSession);
@@ -243,6 +257,9 @@ public class DeviceAgentManagementService {
                         testTaskService.runTask();
                     }
                 }
+                break;
+            case Const.Path.HEART_BEAT:
+                heartBeat(savedSession.session, savedSession.agentUser);
                 break;
             default:
                 break;

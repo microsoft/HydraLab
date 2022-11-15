@@ -22,6 +22,7 @@ import com.microsoft.hydralab.common.entity.common.SASData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.time.Instant;
@@ -30,20 +31,17 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 public class BlobStorageClient {
-    private final BlobServiceClient blobServiceClient;
-    private static boolean isAuthedBySAS = false;
+    private static boolean initTag = false;
+    private static boolean isAuthedBySAS = true;
+    private BlobServiceClient blobServiceClient;
     Logger classLogger = LoggerFactory.getLogger(BlobStorageClient.class);
     private long SASExpiryTimeFont;
     private long SASExpiryTimeAgent;
     private long SASExpiryUpdate;
+    private SASData sasDataInUse = null;
+    private SASData sasDataForUpdate = null;
 
     public BlobStorageClient() {
-        blobServiceClient = new BlobServiceClientBuilder().buildClient();
-    }
-
-    public BlobStorageClient(String connectionStr) {
-        blobServiceClient = new BlobServiceClientBuilder().connectionString(connectionStr).buildClient();
-        initContainer();
     }
 
     public BlobStorageClient(String connectionStr, long SASExpiryTimeFont, long SASExpiryTimeAgent, long SASExpiryUpdate) {
@@ -52,12 +50,31 @@ public class BlobStorageClient {
         this.SASExpiryUpdate = SASExpiryUpdate;
         blobServiceClient = new BlobServiceClientBuilder().connectionString(connectionStr).buildClient();
         initContainer();
+        initTag = true;
+        isAuthedBySAS = false;
     }
 
-    public BlobStorageClient(String endpoint, String credential) {
-        isAuthedBySAS = true;
-        AzureSasCredential azureSasCredential = new AzureSasCredential(credential);
-        blobServiceClient = new BlobServiceClientBuilder().endpoint(endpoint).credential(azureSasCredential).buildClient();
+    public void setSASData(SASData sasData) {
+        if (!initTag && sasDataInUse == null) {
+            buildClientBySAS(sasData);
+            initContainer();
+            initTag = true;
+        } else if (!StringUtils.isEmpty(sasData.getSignature()) && !sasDataInUse.getSignature().equals(sasData.getSignature())) {
+            sasDataForUpdate = sasData;
+        }
+    }
+
+    private void buildClientBySAS(SASData sasData) {
+        AzureSasCredential azureSasCredential = new AzureSasCredential(sasData.getSignature());
+        blobServiceClient = new BlobServiceClientBuilder().endpoint(sasData.getEndpoint()).credential(azureSasCredential).buildClient();
+        sasDataInUse = sasData;
+    }
+
+    private void checkBlobStorageClient() {
+        if (isAuthedBySAS && sasDataForUpdate != null) {
+            buildClientBySAS(sasDataForUpdate);
+            sasDataForUpdate = null;
+        }
     }
 
     private void initContainer() {
@@ -88,6 +105,7 @@ public class BlobStorageClient {
 
         sasData.setSignature(blobServiceClient.generateAccountSas(sasSignatureValues));
         sasData.setExpiredTime(expiryTime);
+        sasData.setEndpoint(blobServiceClient.getAccountUrl());
 
         return sasData;
     }
@@ -106,6 +124,7 @@ public class BlobStorageClient {
      * @return
      */
     public String uploadBlobFromFile(File uploadFile, String containerName, String blobFilePath, Logger logger) {
+        checkBlobStorageClient();
         if (logger == null) {
             logger = classLogger;
         }
@@ -134,6 +153,7 @@ public class BlobStorageClient {
      * @return
      */
     public BlobProperties downloadFileFromBlob(File downloadToFile, String containerName, String blobFilePath) {
+        checkBlobStorageClient();
         File saveDir = downloadToFile.getParentFile();
         if (!saveDir.exists()) {
             cn.hutool.core.lang.Assert.isTrue(saveDir.mkdirs(), "mkdirs fail in downloadFileFromUrl");

@@ -5,6 +5,7 @@ package com.microsoft.hydralab.agent.scheduled;
 import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.agent.service.DeviceControlService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
+import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.FileUtil;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ public class ScheduledDeviceControlTasks {
     @Scheduled(cron = "0 */2 * * * *")
     public void heartBeating() {
         try {
-            deviceControlService.heartBeat();
+            deviceControlService.provideDeviceList(AgentUser.BatteryStrategy.Economic);
         } catch (Exception e) {
             e.printStackTrace();
         }
