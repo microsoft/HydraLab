@@ -35,8 +35,6 @@ public class BlobStorageClient {
     private static boolean isAuthedBySAS = true;
     private BlobServiceClient blobServiceClient;
     Logger classLogger = LoggerFactory.getLogger(BlobStorageClient.class);
-    private long SASExpiryTimeFont;
-    private long SASExpiryTimeAgent;
     private long SASExpiryUpdate;
     private SASData sasDataInUse = null;
     private SASData sasDataForUpdate = null;
@@ -45,9 +43,9 @@ public class BlobStorageClient {
     }
 
     public BlobStorageClient(String connectionStr, long SASExpiryTimeFont, long SASExpiryTimeAgent, long SASExpiryUpdate) {
-        this.SASExpiryTimeFont = SASExpiryTimeFont;
-        this.SASExpiryTimeAgent = SASExpiryTimeAgent;
         this.SASExpiryUpdate = SASExpiryUpdate;
+        SASData.SASPermission.Read.setExpiryTime(SASExpiryTimeFont);
+        SASData.SASPermission.Write.setExpiryTime(SASExpiryTimeAgent);
         blobServiceClient = new BlobServiceClientBuilder().connectionString(connectionStr).buildClient();
         initContainer();
         initTag = true;
@@ -91,14 +89,14 @@ public class BlobStorageClient {
         }
     }
 
-    public SASData generateSAS(String serviceStr, String resourceStr, String permissionStr) {
+    public SASData generateSAS(SASData.SASPermission sasPermission) {
         Assert.isTrue(!isAuthedBySAS, "The client was init by SAS and can't generate SAS!");
 
         SASData sasData = new SASData();
-        AccountSasService services = AccountSasService.parse(serviceStr);
-        AccountSasResourceType resourceTypes = AccountSasResourceType.parse(resourceStr);
-        AccountSasPermission permissions = AccountSasPermission.parse(permissionStr);
-        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(SASExpiryTimeFont, ChronoUnit.MINUTES), ZoneId.systemDefault());
+        AccountSasService services = AccountSasService.parse(sasPermission.serviceStr);
+        AccountSasResourceType resourceTypes = AccountSasResourceType.parse(sasPermission.resourceStr);
+        AccountSasPermission permissions = AccountSasPermission.parse(sasPermission.permissionStr);
+        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, ChronoUnit.MINUTES), ZoneId.systemDefault());
 
         AccountSasSignatureValues sasSignatureValues = new AccountSasSignatureValues(expiryTime, permissions,
                 services, resourceTypes);
@@ -106,7 +104,7 @@ public class BlobStorageClient {
         sasData.setSignature(blobServiceClient.generateAccountSas(sasSignatureValues));
         sasData.setExpiredTime(expiryTime);
         sasData.setEndpoint(blobServiceClient.getAccountUrl());
-
+        sasData.setSasPermission(sasPermission);
         return sasData;
     }
 
@@ -119,8 +117,9 @@ public class BlobStorageClient {
      * Upload a file to the blob container. If the file already exists, overwrite it.
      *
      * @param uploadFile
-     * @param blobFilePath
      * @param containerName
+     * @param blobFilePath
+     * @param logger
      * @return
      */
     public String uploadBlobFromFile(File uploadFile, String containerName, String blobFilePath, Logger logger) {

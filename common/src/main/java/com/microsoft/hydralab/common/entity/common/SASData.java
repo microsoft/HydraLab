@@ -5,7 +5,6 @@ package com.microsoft.hydralab.common.entity.common;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
-import java.util.Date;
 
 /**
  * @author zhoule
@@ -17,4 +16,26 @@ public class SASData {
     private String endpoint;
     private String signature;
     private OffsetDateTime expiredTime;
+    private SASPermission sasPermission;
+
+    public enum SASPermission {
+        /**
+         * Define permission
+         */
+        Write("b", "o", "war"),
+        Read("b", "o", "r");
+
+        public final String serviceStr, resourceStr, permissionStr;
+        public long expiryTime;
+
+        SASPermission(String serviceStr, String resourceStr, String permissionStr) {
+            this.serviceStr = serviceStr;
+            this.resourceStr = resourceStr;
+            this.permissionStr = permissionStr;
+        }
+
+        public void setExpiryTime(long expiryTime) {
+            this.expiryTime = expiryTime;
+        }
+    }
 }

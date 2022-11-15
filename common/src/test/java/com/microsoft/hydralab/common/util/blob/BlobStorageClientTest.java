@@ -33,7 +33,7 @@ class BlobStorageClientTest {
     @Test
     void generateSAS() {
         try {
-            blobStorageClient.generateSAS("b", "o", "r");
+            blobStorageClient.generateSAS(SASData.SASPermission.Read);
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof IllegalArgumentException);
         }
