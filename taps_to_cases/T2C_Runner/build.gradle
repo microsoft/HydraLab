@@ -23,5 +23,5 @@ dependencies {
     testImplementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
     // testImplementation group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.4.0.jre16'
     testImplementation 'org.seleniumhq.selenium:selenium-support:4.0.0'
-    compile 'org.slf4j:slf4j-simple:2.0.3'
+    compile 'ch.qos.logback:logback-classic:1.2.3'
 }
