@@ -111,8 +111,9 @@ public class AppConfiguration {
 
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
-        if (deviceManager instanceof AndroidDeviceManager)
+        if (deviceManager instanceof AndroidDeviceManager) {
             ((AndroidDeviceManager) deviceManager).setADBOperateUtil(adbOperateUtil);
+        }
         if (StringUtils.isNotBlank(adbServerHost)) {
             logger.info("Setting the adb server hostname to {}", adbServerHost);
             adbOperateUtil.setAdbServerHost(adbServerHost);

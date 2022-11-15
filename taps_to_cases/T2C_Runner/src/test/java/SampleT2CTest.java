@@ -10,8 +10,9 @@ import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.windows.WindowsDriver;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-
+@Disabled
 public class SampleT2CTest {
 
     public AndroidDriver driver;
@@ -30,7 +31,7 @@ public class SampleT2CTest {
     public T2CJsonParser t2CJsonParser;
     private TestInfo testInfo;
     private Logger logger;
-    String filePath = "src/test/jsonFiles/testFile_android_dragAndDrop.json";
+    String filePath = "src/test/resources/DemoJson.json";
     AppiumDriverLocalService service;
 
 
@@ -91,7 +92,7 @@ public class SampleT2CTest {
         }
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         if (driver != null) {
             driver.quit();

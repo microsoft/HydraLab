@@ -1,5 +1,4 @@
 plugins {
-    id 'java'
     id 'org.springframework.boot'
 }
 
@@ -29,7 +28,6 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile 'org.mockito:mockito-core:3.12.4'
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
     testCompile 'me.paulschwarz:spring-dotenv:2.3.0'
