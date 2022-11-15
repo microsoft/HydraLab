@@ -16,6 +16,8 @@ public class SASData {
     private String endpoint;
     private String signature;
     private OffsetDateTime expiredTime;
+    private int fileLimitDay;
+    private String cdnUrl;
     private SASPermission sasPermission;
 
     public enum SASPermission {

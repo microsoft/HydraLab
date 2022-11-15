@@ -17,6 +17,7 @@ import com.azure.storage.common.sas.AccountSasResourceType;
 import com.azure.storage.common.sas.AccountSasService;
 import com.azure.storage.common.sas.AccountSasSignatureValues;
 import com.google.common.net.MediaType;
+import com.microsoft.hydralab.common.entity.center.BlobProperty;
 import com.microsoft.hydralab.common.entity.common.EntityFileRelation.EntityType;
 import com.microsoft.hydralab.common.entity.common.SASData;
 import org.slf4j.Logger;
@@ -31,32 +32,32 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 public class BlobStorageClient {
-    private static boolean initTag = false;
     private static boolean isAuthedBySAS = true;
     private BlobServiceClient blobServiceClient;
     Logger classLogger = LoggerFactory.getLogger(BlobStorageClient.class);
     private long SASExpiryUpdate;
     private SASData sasDataInUse = null;
     private SASData sasDataForUpdate = null;
+    public int fileLimitDay;
+    public String cdnUrl;
 
     public BlobStorageClient() {
     }
 
-    public BlobStorageClient(String connectionStr, long SASExpiryTimeFont, long SASExpiryTimeAgent, long SASExpiryUpdate) {
-        this.SASExpiryUpdate = SASExpiryUpdate;
-        SASData.SASPermission.Read.setExpiryTime(SASExpiryTimeFont);
-        SASData.SASPermission.Write.setExpiryTime(SASExpiryTimeAgent);
-        blobServiceClient = new BlobServiceClientBuilder().connectionString(connectionStr).buildClient();
+    public BlobStorageClient(BlobProperty blobProperty) {
+        this.SASExpiryUpdate = blobProperty.getSASExpiryUpdate();
+        SASData.SASPermission.Read.setExpiryTime(blobProperty.getSASExpiryTimeFont());
+        SASData.SASPermission.Write.setExpiryTime(blobProperty.getSASExpiryTimeAgent());
+        blobServiceClient = new BlobServiceClientBuilder().connectionString(blobProperty.getConnection()).buildClient();
+        fileLimitDay = blobProperty.getFileLimitDay();
+        cdnUrl = blobProperty.getCDNUrl();
         initContainer();
-        initTag = true;
         isAuthedBySAS = false;
     }
 
     public void setSASData(SASData sasData) {
-        if (!initTag && sasDataInUse == null) {
+        if (sasDataInUse == null) {
             buildClientBySAS(sasData);
-            initContainer();
-            initTag = true;
         } else if (!StringUtils.isEmpty(sasData.getSignature()) && !sasDataInUse.getSignature().equals(sasData.getSignature())) {
             sasDataForUpdate = sasData;
         }
@@ -65,6 +66,9 @@ public class BlobStorageClient {
     private void buildClientBySAS(SASData sasData) {
         AzureSasCredential azureSasCredential = new AzureSasCredential(sasData.getSignature());
         blobServiceClient = new BlobServiceClientBuilder().endpoint(sasData.getEndpoint()).credential(azureSasCredential).buildClient();
+        fileLimitDay = sasData.getFileLimitDay();
+        cdnUrl = sasData.getCdnUrl();
+        initContainer();
         sasDataInUse = sasData;
     }
 
@@ -105,6 +109,8 @@ public class BlobStorageClient {
         sasData.setExpiredTime(expiryTime);
         sasData.setEndpoint(blobServiceClient.getAccountUrl());
         sasData.setSasPermission(sasPermission);
+        sasData.setFileLimitDay(fileLimitDay);
+        sasData.setCdnUrl(cdnUrl);
         return sasData;
     }
 
