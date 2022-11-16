@@ -858,7 +858,8 @@ export default class RunnerView extends BaseView {
     }
 
     uploadApk = () => {
-        if (!this.state.selectedTeamId || !this.state.uploadAppInstallerFile) {
+        if (!this.state.selectedTeamName || !this.state.uploadAppInstallerFile) {
+            console.log(this.state)
             this.snackBarMsg("Please upload APK/IPA file and select a team")
             return
         }
