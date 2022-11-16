@@ -152,14 +152,11 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
 
         // Check device requirements
-        int androidCount = 0, windowsCount = 0, edgeCount = 0;
+        int androidCount = 0, edgeCount = 0;
 
         for (DriverInfo driverInfo : testInfo.getDrivers()) {
             if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
                 androidCount++;
-            }
-            if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
-                windowsCount++;
             }
             if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
                 edgeCount++;
@@ -170,7 +167,6 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         }
         // TODO: upgrade to check the available device count on the agent
         Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
-        Assert.isTrue(windowsCount <= 1, "No enough Windows device to run this test.");
         Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
 
         try {
