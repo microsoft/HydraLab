@@ -183,7 +183,7 @@ export default class HeaderView extends BaseView {
 
     changeDefaultTeam() {
         if (!this.state.selectedTeamId) {
-            this.snackBarMsg("Default team successfully failed")
+            this.snackBarMsg("Failed")
         } else {
             const formParams = new URLSearchParams()
             formParams.append("teamId", this.state.selectedTeamId)
