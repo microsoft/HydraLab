@@ -21,6 +21,8 @@ import Select from "@mui/material/Select";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import {Badge, styled} from "@mui/material";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
@@ -44,6 +46,8 @@ export default class HeaderView extends BaseView {
     }
 
     render() {
+        const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
+
         const settings = [
             { text: this.state.userInfo ? this.state.userInfo.userName : 'Loading', dialog: null },
             { text: `Default Team: ${this.state.userInfo && this.state.userInfo.defaultTeamName ? this.state.userInfo.defaultTeamName : 'Loading'}`, dialog: 'changeDefaultTeamIsShown' },
@@ -170,6 +174,21 @@ export default class HeaderView extends BaseView {
                         </Button>
                     </DialogActions>
                 </Dialog>
+            <Snackbar
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center'
+                }}
+                open={snackbarIsShown}
+                autoHideDuration={3000}
+                onClose={() => this.handleStatus("snackbarIsShown", false)}>
+                <Alert
+                    onClose={() => this.handleStatus("snackbarIsShown", false)}
+                    severity={snackbarSeverity}
+                    sx={{width: '100%'}}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Stack>
     }
 
@@ -183,7 +202,7 @@ export default class HeaderView extends BaseView {
 
     changeDefaultTeam() {
         if (!this.state.selectedTeamId) {
-            this.snackBarMsg("Failed")
+            this.snackBarMsg("Please select a team different from the current default team")
         } else {
             const formParams = new URLSearchParams()
             formParams.append("teamId", this.state.selectedTeamId)
@@ -204,11 +223,10 @@ export default class HeaderView extends BaseView {
             }).catch((error) => {
                 this.snackBarError(error)
             })
+            this.setState({
+                changeDefaultTeamIsShown: false,
+            })
         }
-
-        this.setState({
-            changeDefaultTeamIsShown: false,
-        })
     }
 
     componentDidMount() {
