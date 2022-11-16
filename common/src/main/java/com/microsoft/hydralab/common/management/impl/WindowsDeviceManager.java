@@ -154,8 +154,12 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
             // Prepare drivers
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
                 if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
-                    driverControllerMap.put(driverInfo.getId(),
-                            new AndroidDriverController(appiumServerManager.getAndroidDriver(deviceInfo, reportLogger), reportLogger));
+                    AndroidDriverController androidDriverController = new AndroidDriverController(
+                            appiumServerManager.getAndroidDriver(deviceInfo, reportLogger), reportLogger);
+                    driverControllerMap.put(driverInfo.getId(), androidDriverController);
+                    if (!StringUtils.isEmpty(driverInfo.getLauncherApp())) {
+                        androidDriverController.activateApp(driverInfo.getLauncherApp());
+                    }
                     reportLogger.info("Successfully init an Android driver: " + deviceInfo.getSerialNum());
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
@@ -174,7 +178,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
                     appiumServerManager.getEdgeDriver(reportLogger);
-                    if (driverInfo.getInitURL() != null) {
+                    if (!StringUtils.isEmpty(driverInfo.getInitURL())) {
                         appiumServerManager.getEdgeDriver(reportLogger).get(driverInfo.getInitURL());
                     }
                     // Waiting for loading url

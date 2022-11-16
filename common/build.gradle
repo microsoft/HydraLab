@@ -1,6 +1,3 @@
-plugins {
-    id 'java'
-}
 group = 'com.microsoft.hydralab'
 version = '0.9.5'
 
@@ -76,4 +73,3 @@ dependencies {
     //Ipa Parse
     compile group: 'com.googlecode.plist', name: 'dd-plist', version: '1.3'
 }
-

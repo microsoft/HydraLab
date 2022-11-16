@@ -38,9 +38,15 @@ public class UserTeamManagementService {
         List<UserTeamRelation> relationList = userTeamRelationRepository.findAll();
         relationList.forEach(relation -> {
             Set<SysTeam> teamList = userTeamListMap.computeIfAbsent(relation.getMailAddress(), k -> new HashSet<>());
-            teamList.add(sysTeamService.queryTeamById(relation.getTeamId()));
+            SysTeam team = sysTeamService.queryTeamById(relation.getTeamId());
+            if (team != null) {
+                teamList.add(team);
+            }
             Set<SysUser> userList = teamUserListMap.computeIfAbsent(relation.getTeamId(), k -> new HashSet<>());
-            userList.add(sysUserService.queryUserByMailAddress(relation.getMailAddress()));
+            SysUser user = sysUserService.queryUserByMailAddress(relation.getMailAddress());
+            if (user != null) {
+                userList.add(user);
+            }
             if (relation.isTeamAdmin()) {
                 Set<String> teamAdmins = teamAdminListMap.computeIfAbsent(relation.getTeamId(), k -> new HashSet<>());
                 teamAdmins.add(relation.getMailAddress());
@@ -58,7 +64,7 @@ public class UserTeamManagementService {
             teamAdmins.add(user.getMailAddress());
 
             SysRole originalRole = sysRoleService.queryRoleById(user.getRoleId());
-            SysRole teamAdminRole = sysRoleService.queryRoleByName(Const.DefaultRole.TEAM_ADMIN);
+            SysRole teamAdminRole = sysRoleService.getOrCreateDefaultRole(Const.DefaultRole.TEAM_ADMIN, 10);
             if (sysRoleService.isAuthLevelSuperior(teamAdminRole, originalRole)) {
                 user.setRoleId(teamAdminRole.getRoleId());
                 user.setRoleName(teamAdminRole.getRoleName());
@@ -77,10 +83,10 @@ public class UserTeamManagementService {
             return;
         }
         if (teamList != null) {
-            teamList.remove(sysTeamService.queryTeamById(relation.getTeamId()));
+            teamList.removeIf(team -> team.getTeamId().equals(relation.getTeamId()));
         }
         if (userList != null) {
-            userList.remove(sysUserService.queryUserByMailAddress(relation.getMailAddress()));
+            userList.removeIf(user -> user.getMailAddress().equals(relation.getMailAddress()));
         }
 
         if (relation.isTeamAdmin()) {
@@ -192,5 +198,11 @@ public class UserTeamManagementService {
         }
 
         return criteriaTypes;
+    }
+
+    public void deleteTeam(SysTeam team) {
+        List<UserTeamRelation> relations = userTeamRelationRepository.findAllByTeamId(team.getTeamId());
+        relations.forEach(this::deleteUserTeamRelation);
+        sysTeamService.deleteTeam(team);
     }
 }

@@ -27,6 +27,9 @@ public class BaseDriverController {
         element.click();
     }
 
+    public void tap(int x, int y) {
+    }
+
     public void input(WebElement element, String content) {
         element.sendKeys(content);
     }

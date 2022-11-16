@@ -1,0 +1,31 @@
+{
+  "drivers": [
+    {
+      "id": "windows",
+      "platform": "windows",
+      "init": {
+        "launcherApp": "Microsoft.YourPhone_8wekyb3d8bbwe"
+      }
+    },
+    {
+      "id": "13211FDD400183",
+      "platform": "android",
+      "init": {
+        "launcherApp": "com.microsoft.appmanager"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "index": 0,
+      "driverId": "13211FDD400183",
+      "action": {
+        "actionType": "activateApp",
+        "arguments": {
+          "appPackageName": "com.microsoft.appmanager"
+        }
+      },
+      "isOption": false
+    }
+  ]
+}

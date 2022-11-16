@@ -11,7 +11,6 @@
 ---
 
 ![Logo](docs/images/banner-made-easy.png)
-![Products](docs/images/caps_products.png)
 
 - [What is Hydra Lab and what can it do?](#what-is)
 - [Get Started](#get-started)
@@ -36,6 +35,25 @@ Hydra Lab enables dev team to quickly build a self-manageable and intelligent cl
 
 - Either: Build a new cloud testing network with Hydra Lab released packages.
 - Or: Onboard your test device to an existing network with low-cost and small effort.
+
+Capabilities of Hydra Lab include but not limit to:
+- Espresso test
+- Appium test on different platforms:
+  - Windows
+  - iOS
+  - Android
+  - Browser
+  - Cross platform
+- Smart test with AI
+- Monkey test
+
+Tests have been onboard for many products:
+- Microsoft Phone Link
+- Microsoft Link to Windows
+- Microsoft Launcher
+- Microsoft Outlook
+- Microsoft Edge
+- Microsoft Yammer
 
 For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
 
@@ -107,7 +125,7 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 
 Thank you for your contribution to [Microsoft employee giving program](https://aka.ms/msgive) in the name of Hydra Lab:
 
-[@Germey(崔庆才)](https://github.com/Germey), [@SpongeOnline(王创)](https://github.com/SpongeOnline), [@ellie-mac(陈佳佩)](https://github.com/ellie-mac), [@Yawn(刘俊钦)](https://github.com/Aqinqin48), [@White(刘子凡)](https://github.com/jkfhklh)
+[@Germey(崔庆才)](https://github.com/Germey), [@SpongeOnline(王创)](https://github.com/SpongeOnline), [@ellie-mac(陈佳佩)](https://github.com/ellie-mac), [@Yawn(刘俊钦)](https://github.com/Aqinqin48), [@White(刘子凡)](https://github.com/jkfhklh), [@597(姜志鹏)](https://github.com/JZP1996)
 
 ![Microsoft Give](docs/images/Give_WebBanner.png)
 

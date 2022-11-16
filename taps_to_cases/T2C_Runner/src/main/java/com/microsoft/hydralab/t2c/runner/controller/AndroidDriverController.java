@@ -20,7 +20,7 @@ import java.time.Duration;
 import java.util.Arrays;
 
 public class AndroidDriverController extends BaseDriverController {
-    private AndroidDriver androidDriver;
+    private final AndroidDriver androidDriver;
 
     public AndroidDriverController(AndroidDriver androidDriver, Logger logger) {
         super(androidDriver, logger);
@@ -94,9 +94,20 @@ public class AndroidDriverController extends BaseDriverController {
     }
 
     @Override
+    public void tap(int x, int y) {
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence tap = new Sequence(finger, 1);
+        tap.addAction(finger.createPointerMove(Duration.ofMillis(0),
+                PointerInput.Origin.viewport(), x, y));
+        tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        androidDriver.perform(Arrays.asList(tap));
+    }
+
+    @Override
     public void longClick(Integer duration, WebElement element) {
         ((JavascriptExecutor) androidDriver).executeScript("mobile: longClickGesture", ImmutableMap.of(
-                "elementId", ((RemoteWebElement) element).getId(),"duration",duration
+                "elementId", ((RemoteWebElement) element).getId(), "duration", duration
         ));
     }
 
@@ -107,7 +118,7 @@ public class AndroidDriverController extends BaseDriverController {
         dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(0),
                 PointerInput.Origin.viewport(), fromX, fromY));
         dragNDrop.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(),fromX,fromY));
+        dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(500), PointerInput.Origin.viewport(), fromX, fromY));
         dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(700),
                 PointerInput.Origin.viewport(), toX, toY));
         dragNDrop.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));

@@ -16,7 +16,7 @@ Eventually, we hope with the help of Hydra Lab the dev team can easily build a c
 
 Hydra lab comprises of 5 modules: the management center, the web UI application, device agent and test device, and Azure DevOps Plugin.
 
-1. Management Center: It’s the backend service of Hydra Lab. It is now deployed in Azure as a HTTPS service. 
+1. Management Center: It’s the backend service of Hydra Lab.
     - To access this center securely, authorization and authentication is required.
 
     - Smart test model allows apps to do automated tests with the help of AI. 
