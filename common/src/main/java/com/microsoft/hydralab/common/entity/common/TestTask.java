@@ -37,6 +37,8 @@ public class TestTask {
     @Transient
     public transient File testAppFile;
     @Transient
+    public transient List<File> testJsonFileList = new ArrayList<>();
+    @Transient
     public Set<String> agentIds = new HashSet<>();
     @Id
     private String id = UUID.randomUUID().toString();
@@ -181,6 +183,10 @@ public class TestTask {
 
     public synchronized void addTestedDeviceResult(DeviceTestTask deviceTestResult) {
         deviceTestResults.add(deviceTestResult);
+    }
+
+    public synchronized void addTestJsonFile(File jsonFile) {
+        testJsonFileList.add(jsonFile);
     }
 
     public void switchDefaultActivity() {

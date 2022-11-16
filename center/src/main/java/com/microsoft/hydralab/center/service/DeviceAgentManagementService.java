@@ -653,34 +653,39 @@ public class DeviceAgentManagementService {
         // TODO: upgrade to assign task to agent and check the available device count on the agent
         JSONObject result = new JSONObject();
         BlobFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), BlobFileInfo.FileType.TEST_APP_FILE);
-        Assert.notNull(testAppFileInfo, "The testFileSet don't contain a test file!");
-        File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
-        TestInfo testInfo;
-        try {
-            blobStorageClient.downloadFileFromBlob(testApkFile, testAppFileInfo.getBlobContainer(), testAppFileInfo.getBlobPath());
-            T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
-            String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
-            testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
-        } finally {
-            testApkFile.delete();
-        }
-        Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
+        if (testAppFileInfo != null) {
+            File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
+            TestInfo testInfo;
+            try {
+                blobStorageClient.downloadFileFromBlob(testApkFile, testAppFileInfo.getBlobContainer(), testAppFileInfo.getBlobPath());
+                T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
+                String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
+                testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
+            } finally {
+                testApkFile.delete();
+            }
+            Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
 
-        int androidCount = 0, windowsCount = 0;
+            int androidCount = 0, windowsCount = 0, edgeCount = 0;
 
-        for (DriverInfo driverInfo : testInfo.getDrivers()) {
-            if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
-                androidCount++;
+            for (DriverInfo driverInfo : testInfo.getDrivers()) {
+                if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
+                    androidCount++;
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
+                    windowsCount++;
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
+                    edgeCount++;
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
+                    throw new RuntimeException("No iOS device connected to this agent");
+                }
             }
-            if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
-                windowsCount++;
-            }
-            if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
-                throw new RuntimeException("No iOS device connected to this agent");
-            }
+            Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
+            Assert.isTrue(windowsCount <= 1, "No enough Windows device to run this test.");
+            Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
         }
-        Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
-        Assert.isTrue(windowsCount <= 1, "No enough Windows device to run this test.");
 
         // Todo: leveraged current E2E agent, need to update to agent level test
         AgentDeviceGroup agentDeviceGroup = agentDeviceGroups.get(testTaskSpec.deviceIdentifier);

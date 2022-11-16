@@ -32,6 +32,7 @@ public abstract class TestRunner {
     @Resource
     RunningControlService runningControlService;
     @Resource
+    protected
     AttachmentService attachmentService;
     @Resource(name = "WebSocketClient")
     private TestRunningCallback webSocketCallback;

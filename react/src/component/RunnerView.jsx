@@ -431,6 +431,7 @@ export default class RunnerView extends BaseView {
                                 onChange={this.handleValueChange}>
                                 <MenuItem value={"WINAPP"} >Windows app</MenuItem>
                                 <MenuItem value={"COMMON"} >Common</MenuItem>
+                                <MenuItem value={"T2C_JSON"} >T2C JSON</MenuItem>
                             </Select>
                         </FormControl>
                         <br />
@@ -653,7 +654,7 @@ export default class RunnerView extends BaseView {
                             <MenuItem value={"MONKEY"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Monkey</MenuItem>
                             <MenuItem value={"APPIUM_MONKEY"} disabled={this.state.currentAppInstallerType !== 'ipa'}>Appium Monkey</MenuItem>
                             <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Appium E2E</MenuItem>
-                            <MenuItem value={"T2C_JSON"} disabled={this.state.runTestType !== 'T2C_JSON'}>JSON-Described Test</MenuItem>
+                            <MenuItem value={"T2C_JSON"}>JSON-Described Test</MenuItem>
                         </Select>
                     </FormControl>
                     <TextField

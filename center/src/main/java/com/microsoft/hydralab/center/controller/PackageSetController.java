@@ -228,7 +228,8 @@ public class PackageSetController {
      * 1) users with ROLE SUPER_ADMIN/ADMIN,
      * 2) members of the TEAM that TestJsonInfo is in
      */
-    @PostMapping(value = {"/api/package/uploadJson"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Deprecated
+    // @PostMapping(value = {"/api/package/uploadJson"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result uploadTestJson(@CurrentSecurityContext SysUser requestor,
                                  @RequestParam(value = "teamName", required = false) String teamName,
                                  @RequestParam(value = "packageName") String packageName,
@@ -284,7 +285,8 @@ public class PackageSetController {
      * 1) For users with ROLE SUPER_ADMIN/ADMIN, return all data.
      * 2) For the rest users, return data that the JSON info is in the user's TEAMs
      */
-    @GetMapping("/api/package/testJsonList")
+    @Deprecated
+    // @GetMapping("/api/package/testJsonList")
     public Result<List<TestJsonInfo>> testJsonList(@CurrentSecurityContext SysUser requestor) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
@@ -309,7 +311,8 @@ public class PackageSetController {
      * 1) users with ROLE SUPER_ADMIN/ADMIN,
      * 2) members of the TEAM that TestJsonInfo is in
      */
-    @GetMapping("/api/package/testJsonHistory/{packageName}/{caseName}")
+    @Deprecated
+    // @GetMapping("/api/package/testJsonHistory/{packageName}/{caseName}")
     public Result<List<TestJsonInfo>> testJsonHistory(@CurrentSecurityContext SysUser requestor, @PathVariable("packageName") String packageName, @PathVariable("caseName") String caseName) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
@@ -370,6 +373,9 @@ public class PackageSetController {
                 if (BlobFileInfo.LoadType.UNZIP.equals(loadType)) {
                     limitFileTypes = new String[]{FILE_SUFFIX.ZIP_FILE};
                 }
+                break;
+            case BlobFileInfo.FileType.T2C_JSON_FILE:
+                limitFileTypes = new String[]{FILE_SUFFIX.JSON_FILE};
                 break;
             default:
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "Error fileType");
