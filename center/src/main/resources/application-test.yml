@@ -50,7 +50,7 @@ app:
     connection: ''
     fileLimitDay: 6
     CDNUrl: ${CDN_URL:@null}
-    SASExpiryTimeFont: ${BLOB_SAS_EXPIRY_FONT:120}
+    SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
     SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
     SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
 

@@ -59,6 +59,7 @@ logging:
     org.hibernate.SQL: INFO
 
 app:
+  batteryStrategy: ${BATTERY_STRATEGY:Economic}
   access-token-limit: 2
   # Mail Address Format
   default-user: ${DEFAULT_USER:@null}
@@ -66,7 +67,7 @@ app:
     connection: ${BLOB_CONNECTION_STR}
     fileLimitDay: 6
     CDNUrl: ${CDN_URL:@null}
-    SASExpiryTimeFont: ${BLOB_SAS_EXPIRY_FONT:120}
+    SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
     SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
     SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
 

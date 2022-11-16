@@ -29,16 +29,6 @@ public class ScheduledDeviceControlTasks {
     @Resource
     AgentWebSocketClient agentWebSocketClient;
 
-    //keep connection /2min
-    @Scheduled(cron = "0 */2 * * * *")
-    public void heartBeating() {
-        try {
-            deviceControlService.heartBeat();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     //check connection /5s
     @Scheduled(cron = "*/5 * * * * *")
     public void scheduledCheckWebSocketConnection() {

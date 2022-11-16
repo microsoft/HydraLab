@@ -2,6 +2,11 @@ spring:
   security:
     oauth2:
       client:
+        provider:
+          azure-ad:
+            authorization-uri: https://login.microsoftonline.com/${MICROSOFT_PROVIDER_TENANT_ID}/oauth2/v2.0/authorize
+            token-uri: https://login.microsoftonline.com/${MICROSOFT_PROVIDER_TENANT_ID}/oauth2/v2.0/token
+            jwk-set-uri: https://login.microsoftonline.com/${MICROSOFT_PROVIDER_TENANT_ID}/discovery/v2.0/keys
         registration:
           azure-client:
             client-id: ${MICROSOFT_PROVIDER_CLIENT_ID}
