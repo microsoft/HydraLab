@@ -46,7 +46,7 @@ public class BlobStorageClient {
 
     public BlobStorageClient(BlobProperty blobProperty) {
         this.SASExpiryUpdate = blobProperty.getSASExpiryUpdate();
-        SASData.SASPermission.Read.setExpiryTime(blobProperty.getSASExpiryTimeFont());
+        SASData.SASPermission.Read.setExpiryTime(blobProperty.getSASExpiryTimeFront());
         SASData.SASPermission.Write.setExpiryTime(blobProperty.getSASExpiryTimeAgent());
         blobServiceClient = new BlobServiceClientBuilder().connectionString(blobProperty.getConnection()).buildClient();
         fileLimitDay = blobProperty.getFileLimitDay();

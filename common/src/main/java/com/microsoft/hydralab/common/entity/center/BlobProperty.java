@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BlobProperty {
     private String connection;
-    private long SASExpiryTimeFont;
+    private long SASExpiryTimeFront;
     private long SASExpiryTimeAgent;
     private long SASExpiryUpdate;
     private int fileLimitDay;
