@@ -1,0 +1,74 @@
+server:
+  port: 9886
+  compression:
+    enabled: true
+    min-response-size: 102400
+spring:
+  application:
+    name: device-network-center
+  output:
+    ansi:
+      enabled: always
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+      max-request-size: 2048MB
+  datasource:
+    url: jdbc:sqlite:hydra_lab_center_db.sqlite
+    username: sqlite
+    password: 98765432
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
+    show-sql: false
+    hibernate:
+      dialect: org.sqlite.hibernate.dialect.SQLiteDialect
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 400
+          batch_versioned_data: true
+  security:
+    oauth2:
+      enabled: false
+
+# log file split
+logging:
+  config: classpath:logback-common.xml
+  level:
+    org.hibernate.SQL: INFO
+
+app:
+  access-token-limit: 2
+  # Mail Address Format
+  default-user: 'test@test.com'
+  blob:
+    connection: ''
+    fileLimitDay: 6
+    CDNUrl: ${CDN_URL:@null}
+    SASExpiryTimeFont: ${BLOB_SAS_EXPIRY_FONT:120}
+    SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
+    SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+      health:
+        show-details: always
+      metrics:
+        tags:
+          application: ${spring.application.name}
+  metrics:
+    export:
+      prometheus:
+        pushgateway:
+          enabled: ${PUSHGATEWAY_ENABLED:false}
+          base-url: http://localhost:9091
+          job: ${spring.application.name}
+          push-rate: 10s

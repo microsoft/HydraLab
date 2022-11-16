@@ -58,10 +58,12 @@ public class SysTeamService {
         }
 
         sysTeam.setUpdateTime(new Date());
-        teamListMap.put(sysTeam.getTeamId(), sysTeam);
         updateTeamRelatedEntity(sysTeam.getTeamId(), sysTeam.getTeamName());
+        SysTeam team = sysTeamRepository.save(sysTeam);
 
-        return sysTeamRepository.save(sysTeam);
+        teamListMap.put(sysTeam.getTeamId(), sysTeam);
+
+        return team;
     }
 
     /**
@@ -128,9 +130,8 @@ public class SysTeamService {
     }
 
     public void deleteTeam(SysTeam team) {
-        teamListMap.remove(team.getTeamId());
         sysTeamRepository.deleteById(team.getTeamId());
-        userTeamRelationRepository.deleteAllByTeamId(team.getTeamId());
+        teamListMap.remove(team.getTeamId());
     }
 
     public SysTeam getOrCreateDefaultTeam(String defaultTeamName) {

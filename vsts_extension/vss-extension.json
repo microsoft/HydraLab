@@ -22,6 +22,10 @@
             "path": "overview.md"
         }
     },
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/microsoft/HydraLab"
+    },
     "files": [
         {
             "path": "Tasks/HydraLabDeployTest"

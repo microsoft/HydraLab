@@ -17,5 +17,4 @@ public interface UserTeamRelationRepository extends JpaRepository<UserTeamRelati
     List<UserTeamRelation> findAllByMailAddressAndIsTeamAdmin(String mailAddress, boolean isTeamAdmin);
     List<UserTeamRelation> findAllByMailAddress(String mailAddress);
     List<UserTeamRelation> findAllByTeamId(String teamId);
-    void deleteAllByTeamId(String roleId);
 }

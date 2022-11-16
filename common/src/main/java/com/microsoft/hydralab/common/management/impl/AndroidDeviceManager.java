@@ -183,6 +183,7 @@ public class AndroidDeviceManager extends DeviceManager {
     @Override
     public void wakeUpDevice(DeviceInfo deviceInfo, Logger logger) {
         sendKeyEvent(deviceInfo, KEYCODE_WAKEUP, logger);
+        sendKeyEvent(deviceInfo, KEYCODE_MENU, logger);
     }
 
     @Override
