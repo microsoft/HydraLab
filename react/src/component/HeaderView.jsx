@@ -155,7 +155,7 @@ export default class HeaderView extends BaseView {
                                 id="agent-team-select"
                                 label="Team"
                                 size="small"
-                                value={teamList ? (this.state.selectedTeamId ? this.state.selectedTeamId : this.state.userInfo.defaultTeamId) : 'None_Team'}
+                                value={teamList ? this.state.selectedTeamId : 'None_Team'}
                                 onChange={(select) => this.handleStatus('selectedTeamId', select.target.value)}
                             >
                                 {teamList ? null : <MenuItem value={'None_Team'}>No team available</MenuItem>}
@@ -201,7 +201,7 @@ export default class HeaderView extends BaseView {
     }
 
     changeDefaultTeam() {
-        if (!this.state.selectedTeamId) {
+        if (!this.state.selectedTeamId || (this.state.userInfo && this.state.selectedTeamId === this.state.userInfo.defaultTeamId)) {
             this.snackBarMsg("Please select a team different from the current default team")
         } else {
             const formParams = new URLSearchParams()

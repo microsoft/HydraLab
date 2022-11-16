@@ -365,6 +365,11 @@ export default class GroupManageView extends BaseView {
     }
 
     createGroup = () => {
+        if (!this.state.selectedTeamId) {
+            this.snackBarMsg("Please select a team")
+            return
+        }
+
         this.setState({
             createGroupDialog: false
         })
@@ -555,6 +560,7 @@ export default class GroupManageView extends BaseView {
     }
 
     componentDidMount() {
+        this.getUserInfo();
         this.refreshGroups()
         this.refreshTeamList()
     }
