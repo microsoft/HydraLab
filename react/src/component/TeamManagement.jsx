@@ -27,7 +27,6 @@ import Skeleton from '@mui/material/Skeleton';
 import BaseView from "@/component/BaseView";
 import moment from 'moment';
 import TeamUserManagement from "@/component/TeamUserManagement";
-import {Badge, styled} from "@mui/material";
 
 
 /**
@@ -60,14 +59,6 @@ const StyledTableRow = withStyles((theme) => ({
     },
 }))(TableRow);
 
-const StyledBadge = styled(Badge)(({ theme }) => ({
-    '& .MuiBadge-badge': {
-        right: 0,
-        top: 60,
-        border: `2px solid ${theme.palette.background.paper}`,
-        padding: '0 4px',
-    },
-}));
 
 export default class TeamManagement extends BaseView {
     state = {
@@ -133,18 +124,9 @@ export default class TeamManagement extends BaseView {
                     <TableHead>
                         <TableRow>
                             <TableCell colSpan="2">
-                                <Badge
-                                    anchorOrigin={{
-                                        vertical: 'top',
-                                        horizontal: 'right',
-                                    }}
-                                    badgeContent={this.state.userInfo && this.state.userInfo.roleName !== 'USER'? 'Admin' : 'User'}
-                                    color={this.state.userInfo && this.state.userInfo.roleName !== 'USER'? "secondary" : "primary"}
-                                >
-                                    <Typography variant="h4" className="mt-2 mb-2">
-                                        {`Team Management`}
-                                    </Typography>
-                                </Badge>
+                                <Typography variant="h4" className="mt-2 mb-2">
+                                    {`Team Management`}
+                                </Typography>
                             </TableCell>
                             <TableCell colSpan="1">
                                 <Stack direction="row" spacing={2}

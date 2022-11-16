@@ -20,6 +20,17 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
+import {Badge, styled} from "@mui/material";
+
+const StyledBadge = styled(Badge)(({ theme }) => ({
+    '& .MuiBadge-badge': {
+        right: 10,
+        top: 20,
+        border: `2px solid ${theme.palette.background.paper}`,
+        padding: '0 4px',
+    },
+}));
+
 
 export default class HeaderView extends BaseView {
 
@@ -90,10 +101,16 @@ export default class HeaderView extends BaseView {
                         ))}
                     </Menu>
                     <Tooltip title={"Open user menu"}>
-                        <IconButton onClick={() => this.handleStatus("avatarOpen", true)}
-                                    sx={{p: 0}}>
-                            <Avatar alt={this.state.userInfo ? this.state.userInfo.userName : 'Loading'} src={"/api/auth/getUserPhoto"}/>
-                        </IconButton>
+                        <StyledBadge
+                            badgeContent={'Admin'}
+                            color={"secondary"}
+                            invisible={!this.state.userInfo || this.state.userInfo.roleName === 'USER'}
+                        >
+                            <IconButton onClick={() => this.handleStatus("avatarOpen", true)}
+                                        sx={{p: 0}}>
+                                <Avatar alt={this.state.userInfo ? this.state.userInfo.userName : 'Loading'} src={"/api/auth/getUserPhoto"}/>
+                            </IconButton>
+                        </StyledBadge>
                     </Tooltip>
                     <Menu
                         sx={{mt: '45px'}}
