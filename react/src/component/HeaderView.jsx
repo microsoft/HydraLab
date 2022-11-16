@@ -111,7 +111,11 @@ export default class HeaderView extends BaseView {
                         onClose={() => this.handleStatus("avatarOpen", false)}
                     >
                         {settings.map((setting) => (
-                            <MenuItem key={setting.text} onClick={() => this.handleStatus(setting.dialog, true)}>
+                            <MenuItem key={setting.text} onClick={() => {
+                                this.handleStatus(setting.dialog, true)
+                                this.getUserInfo()
+                                this.refreshTeamList()
+                            }}>
                                 <Typography textAlign="center">{setting.text}</Typography>
                             </MenuItem>
                         ))}
@@ -130,7 +134,7 @@ export default class HeaderView extends BaseView {
                                 id="agent-team-select"
                                 label="Team"
                                 size="small"
-                                value={(teamList && this.state.selectedTeamId) ? this.state.selectedTeamId : 'None_Team'}
+                                value={teamList ? (this.state.selectedTeamId ? this.state.selectedTeamId : this.state.userInfo.defaultTeamId) : 'None_Team'}
                                 onChange={(select) => this.handleStatus('selectedTeamId', select.target.value)}
                             >
                                 {teamList ? null : <MenuItem value={'None_Team'}>No team available</MenuItem>}
@@ -161,25 +165,29 @@ export default class HeaderView extends BaseView {
     }
 
     changeDefaultTeam() {
-        const formParams = new URLSearchParams()
-        formParams.append("teamId", this.state.selectedTeamId)
+        if (!this.state.selectedTeamId) {
+            this.snackBarMsg("Default team successfully failed")
+        } else {
+            const formParams = new URLSearchParams()
+            formParams.append("teamId", this.state.selectedTeamId)
 
-        axios.post('/api/userTeam/switchDefaultTeam', formParams, {
-            headers: {'content-type': 'application/x-www-form-urlencoded'}
-        }).then(res => {
-            if (res.data.code === 200) {
-                this.setState({
-                    snackbarSeverity: "success",
-                    snackbarMessage: "Default team successfully updated",
-                    snackbarIsShown: true,
-                    selectedTeamId: null
-                })
-            } else {
-                this.snackBarFail(res)
-            }
-        }).catch((error) => {
-            this.snackBarError(error)
-        })
+            axios.post('/api/userTeam/switchDefaultTeam', formParams, {
+                headers: {'content-type': 'application/x-www-form-urlencoded'}
+            }).then(res => {
+                if (res.data.code === 200) {
+                    this.setState({
+                        snackbarSeverity: "success",
+                        snackbarMessage: "Default team successfully updated",
+                        snackbarIsShown: true,
+                        selectedTeamId: null
+                    })
+                } else {
+                    this.snackBarFail(res)
+                }
+            }).catch((error) => {
+                this.snackBarError(error)
+            })
+        }
 
         this.setState({
             changeDefaultTeamIsShown: false,
