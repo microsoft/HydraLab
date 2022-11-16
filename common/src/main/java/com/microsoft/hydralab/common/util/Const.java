@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.util;
 public interface Const {
     interface Path {
         String AUTH = "/auth";
+        String HEART_BEAT = "/heartBeat";
         String DEVICE_LIST = "/api/device/list";
         String DEVICE_UPDATE = "/api/device/update";
         String DEVICE_STATUS = "/api/device/status";

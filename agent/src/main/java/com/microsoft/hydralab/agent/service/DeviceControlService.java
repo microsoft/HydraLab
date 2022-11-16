@@ -63,7 +63,7 @@ public class DeviceControlService {
     }
 
     public void heartBeat(){
-        captureAllScreensSync();
+        //captureAllScreensSync();
         Set<DeviceInfo> allConnectedDevices = deviceManager.getActiveDeviceList(log);
         ArrayList<DeviceInfo> deviceInfos = new ArrayList<>(allConnectedDevices);
         deviceInfos.sort(Comparator.comparing(d -> d.getName() + d.getSerialNum()));

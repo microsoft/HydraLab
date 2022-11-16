@@ -28,6 +28,7 @@ public interface GlobalConstant {
     String PROMETHEUS_METRIC_TEST_DEVICE_OFFLINE_SIGNAL = "agent_device_offline_signal";
     String PROMETHEUS_METRIC_TEST_DEVICE_RUNNING_TEST_SIGNAL= "agent_device_running_test_signal";
     String PROMETHEUS_METRIC_TEST_DEVICE_ALIVE_SIGNAL= "agent_device_alive_signal";
+    String PROMETHEUS_METRIC_TEST_DEVICE_ADB_TIMEOUT_SIGNAL= "agent_device_adb_cmd_timeout_signal";
     String PROMETHEUS_METRIC_WEBSOCKET_DISCONNECT_SIGNAL = "agent_ws_disconnect_signal";
     String PROMETHEUS_METRIC_ONLINE_AGENT_NUM = "agent_online_agent_num";
     String PROMETHEUS_METRIC_ONLINE_DEVICE_NUM = "agent_online_device_num";
