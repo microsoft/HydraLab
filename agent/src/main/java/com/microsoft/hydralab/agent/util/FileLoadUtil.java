@@ -65,6 +65,10 @@ public class FileLoadUtil {
                     Assert.isTrue(testAppFile != null && testAppFile.exists(), "Download test app file failed!");
                     testTask.setTestAppFile(testAppFile);
                     break;
+                case BlobFileInfo.FileType.T2C_JSON_FILE:
+                    File testJsonFile = downloadFromBlob(attachment);
+                    Assert.isTrue(testJsonFile != null && testJsonFile.exists(), "Download test json file failed!");
+                    testTask.addTestJsonFile(testJsonFile);
                 default:
                     break;
             }

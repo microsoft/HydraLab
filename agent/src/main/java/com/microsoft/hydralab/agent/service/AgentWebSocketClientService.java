@@ -4,11 +4,11 @@ package com.microsoft.hydralab.agent.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.runner.TestRunningCallback;
-import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,10 +18,6 @@ import org.springframework.util.Assert;
 import javax.annotation.Resource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service("WebSocketClient")
 @Slf4j
@@ -38,6 +34,8 @@ public class AgentWebSocketClientService implements TestRunningCallback {
     DeviceControlService deviceControlService;
     @Resource
     AgentUpdateService agentUpdateService;
+    @Resource
+    BlobStorageClient blobStorageClient;
     AgentUser agentUser;
     @Value("${agent.version}")
     private String versionName;
@@ -54,7 +52,13 @@ public class AgentWebSocketClientService implements TestRunningCallback {
                 provideAuthInfo(message);
                 return;
             case Const.Path.HEART_BEAT:
-                //todo get SAS of blob ...
+                if (!(message.getBody() instanceof HeartBeatData)) {
+                    break;
+                }
+                HeartBeatData heartBeatData = (HeartBeatData) message.getBody();
+                agentUser.setBatteryStrategy(heartBeatData.getAgentUser().getBatteryStrategy());
+                blobStorageClient.setSASData(heartBeatData.getBlobSAS());
+                deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
                 return;
             case Const.Path.DEVICE_UPDATE:
                 if (!(message.getBody() instanceof JSONObject)) {
@@ -76,15 +80,13 @@ public class AgentWebSocketClientService implements TestRunningCallback {
                 agentUpdateService.updateAgentPackage(taskInfo);
                 break;
             case Const.Path.DEVICE_LIST:
-                Set<DeviceInfo> allConnectedDevice = deviceControlService.getAllConnectedDevice();
-                deviceControlService.captureAllScreensSync();
-                ArrayList<DeviceInfo> deviceInfos = new ArrayList<>(allConnectedDevice);
-                deviceInfos.sort(Comparator.comparing(d -> d.getName() + d.getSerialNum()));
-                response = new Message();
-                response.setPath(message.getPath());
-                response.setSessionId(message.getSessionId());
-                response.setBody(deviceInfos);
-                log.info("/api/device/list device SN: {}", deviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
+                if (agentUser.getBatteryStrategy() == null) {
+                    response = new Message();
+                    response.setPath(Const.Path.HEART_BEAT);
+                    response.setSessionId(message.getSessionId());
+                } else {
+                    deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
+                }
                 break;
             case Const.Path.TEST_TASK_CANCEL:
                 if (!(message.getBody() instanceof JSONObject)) {
@@ -118,6 +120,8 @@ public class AgentWebSocketClientService implements TestRunningCallback {
                     log.error(e.getMessage(), e);
                     response = Message.error(message, 500, e.getMessage() + e.getClass().getName());
                 }
+                break;
+            default:
                 break;
         }
         if (response == null) {

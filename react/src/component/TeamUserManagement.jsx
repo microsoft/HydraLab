@@ -25,6 +25,8 @@ import Skeleton from '@mui/material/Skeleton';
 import BaseView from "@/component/BaseView";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 
 /**
@@ -75,6 +77,8 @@ export default class TeamUserManagement extends BaseView {
     }
 
     render() {
+        const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
+
         const userHeadItems = ['User Name', 'Role', 'Operation']
         const userHeads = []
         const userRows = []
@@ -191,6 +195,21 @@ export default class TeamUserManagement extends BaseView {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center'
+                }}
+                open={snackbarIsShown}
+                autoHideDuration={3000}
+                onClose={() => this.handleStatus("snackbarIsShown", false)}>
+                <Alert
+                    onClose={() => this.handleStatus("snackbarIsShown", false)}
+                    severity={snackbarSeverity}
+                    sx={{width: '100%'}}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     }
 

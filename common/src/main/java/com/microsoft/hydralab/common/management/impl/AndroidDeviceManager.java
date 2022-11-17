@@ -8,7 +8,7 @@ import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.RawImage;
-import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -19,6 +19,7 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
@@ -386,14 +387,7 @@ public class AndroidDeviceManager extends DeviceManager {
             imageRelPath = getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
             deviceInfo.setImageRelPath(imageRelPath);
         }
-        synchronized (deviceInfo.getLock()) {
-            long now = System.currentTimeMillis();
-            if (now - deviceInfo.getScreenshotUpdateTimeMilli() < TimeUnit.SECONDS.toMillis(Const.AgentConfig.photo_update_sec)) {
-                classLogger.warn("skip screen shot for too short interval {}", deviceInfo.getName());
-                return null;
-            }
-            deviceInfo.setScreenshotUpdateTimeMilli(now);
-        }
+        deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
         sendKeyEvent(deviceInfo, KEYCODE_WAKEUP, logger);
         screenCapture(deviceInfo, screenshotImageFile.getAbsolutePath(), null);
         String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);

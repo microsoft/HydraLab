@@ -41,8 +41,12 @@ export default class BaseView extends React.Component {
         snackbarIsShown: false,
         snackbarSeverity: null,
         snackbarMessage: null,
+
         userInfo: null,
-        teamList: null
+        teamList: null,
+
+        selectedTeamId: null,
+        selectedTeamName: null,
     }
 
     snackBarFail = (res) => {
@@ -69,6 +73,7 @@ export default class BaseView extends React.Component {
     }
 
     snackBarMsg = (msg) => {
+        console.log(msg)
         this.setState({
             snackbarIsShown: true,
             snackbarSeverity: "error",
@@ -100,7 +105,12 @@ export default class BaseView extends React.Component {
     }
 
     getUserInfo = () => {
-        this.axiosGet('/api/auth/getUser', (content) => { this.setState({ userInfo: content }) })
+        this.axiosGet('/api/auth/getUser', (content) => { this.setState({
+            userInfo: content,
+            selectedTeamId: content.defaultTeamId,
+            selectedTeamName: content.defaultTeamName,
+        }) })
+
     }
 
     refreshTeamList() {

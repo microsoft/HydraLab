@@ -234,12 +234,12 @@ export default function Dashboard() {
                                 </ListItemIcon>
                                 <ListItemText primary="Dashboard"/>
                             </ListItem>
-                            <ListItem component={Link} to={'/json'} button>
+                            {/* <ListItem component={Link} to={'/json'} button>
                                 <ListItemIcon>
                                     <span className="material-icons-outlined">pending_actions</span>
                                 </ListItemIcon>
                                 <ListItemText primary="T2C Test Runner" />
-                            </ListItem>
+                            </ListItem> */}
                             <ListItem component={Link} to={'/team'} button>
                                 <ListItemIcon>
                                     <span className="material-icons-outlined">people</span>
@@ -303,9 +303,9 @@ export default function Dashboard() {
                                             <Route exact path="/auth">
                                                 <AuthView/>
                                             </Route>
-                                            <Route exact path="/json">
+                                            {/* <Route exact path="/json">
                                                 <TestJsonView theme={theme} />
-                                            </Route>
+                                            </Route> */}
                                             <Route exact path="/team">
                                                 <TeamManagement />
                                             </Route>

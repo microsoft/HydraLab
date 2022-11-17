@@ -49,11 +49,6 @@ app:
     name: ${AGENT_NAME:default}
     # Agent Type {1 : 1*WINDOWS + n*ANDROIDS , 2 : 1*WINDOWS+1*ANDROID , 3 : iOS}
     agent-type: ${AGENT_TYPE:1}
-  # config Azure Blob
-  blob:
-    connection: ${BLOB_CONNECTION_STR:@null}
-    fileLimitDay: 6
-    CDNUrl: ${CDN_URL:}
   # Device Stability Monitor Configuration
   device:
     state-change:

@@ -1,5 +1,34 @@
 apply from: "common.gradle"
-
+apply plugin: "io.freefair.lombok"
+apply plugin: "jacoco"
+jacoco {
+    toolVersion = "0.8.8"
+    reportsDir = file('build/reports/jacoco')
+}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    }
+    test {
+        useJUnitPlatform()
+    }
+/*
+    gradle.projectsEvaluated {
+        tasks.withType(JacocoCoverageVerification) {
+            violationRules {
+                rule {
+                    limit {
+                        minimum = 0.5
+                    }
+                }
+            }
+        }
+    }
+*/
+}
 buildscript {
     repositories {
         mavenLocal()
@@ -30,4 +59,21 @@ allprojects {
         }
     }
 }
-apply plugin: "io.freefair.lombok"
+
+task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
+    description = 'Generates an aggregate report from all subprojects'
+    dependsOn(subprojects.test)
+
+    def projects = ['center', 'common', 'agent', 'sdk', 'gradle_plugin', 'T2C_Runner']
+    def jacocoProjects = subprojects.findAll { projects.contains(it.getName()) }
+
+    additionalSourceDirs.from = files(jacocoProjects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories.from = files(jacocoProjects.sourceSets.main.allSource.srcDirs)
+    classDirectories.from = files(jacocoProjects.sourceSets.main.output)
+    executionData.from = files(jacocoProjects.jacocoTestReport.executionData)
+
+    reports {
+        html.enabled true
+        xml.enabled true
+    }
+}

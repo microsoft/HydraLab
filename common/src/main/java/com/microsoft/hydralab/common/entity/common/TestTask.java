@@ -37,6 +37,8 @@ public class TestTask {
     @Transient
     public transient File testAppFile;
     @Transient
+    public transient List<File> testJsonFileList = new ArrayList<>();
+    @Transient
     public Set<String> agentIds = new HashSet<>();
     @Id
     private String id = UUID.randomUUID().toString();
@@ -183,6 +185,10 @@ public class TestTask {
         deviceTestResults.add(deviceTestResult);
     }
 
+    public synchronized void addTestJsonFile(File jsonFile) {
+        testJsonFileList.add(jsonFile);
+    }
+
     public void switchDefaultActivity() {
         if (currentDefaultActivity.equals(defaultAct)) {
             currentDefaultActivity = defaultAct2;
@@ -286,6 +292,16 @@ public class TestTask {
         String APPIUM_MONKEY_TEST = "APPIUM_MONKEY";
         String T2C_JSON_TEST = "T2C_JSON";
     }
+
+    public static Map<String, String> TestRunnerMap = new HashMap<>() {{
+        put(TestRunningType.INSTRUMENTATION, "espressoRunner");
+        put(TestRunningType.APPIUM, "appiumRunner");
+        put(TestRunningType.APPIUM_CROSS, "appiumCrossRunner");
+        put(TestRunningType.SMART_TEST, "smartRunner");
+        put(TestRunningType.MONKEY_TEST, "adbMonkeyRunner");
+        put(TestRunningType.APPIUM_MONKEY_TEST, "appiumMonkeyRunner");
+        put(TestRunningType.T2C_JSON_TEST, "t2cRunner");
+    }};
 
     public interface TestFrameworkType {
         String JUNIT4 = "JUnit4";

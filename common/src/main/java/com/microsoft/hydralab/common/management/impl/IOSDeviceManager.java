@@ -5,8 +5,7 @@ package com.microsoft.hydralab.common.management.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.util.AgentConstant;
-import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
@@ -15,6 +14,8 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForMac;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForWindows;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.util.AgentConstant;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
@@ -106,15 +107,8 @@ public class IOSDeviceManager extends DeviceManager {
             imageRelPath = getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
             deviceInfo.setImageRelPath(imageRelPath);
         }
-        long now = System.currentTimeMillis();
-        if (now - deviceInfo.getScreenshotUpdateTimeMilli() < TimeUnit.SECONDS.toMillis(Const.AgentConfig.photo_update_sec)) {
-            classLogger.warn("skip screen shot for too short interval {}", deviceInfo.getName());
-            return null;
-        }
-
         IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), screenshotImageFile.getAbsolutePath(), classLogger);
-
-        deviceInfo.setScreenshotUpdateTimeMilli(now);
+        deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
         String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);
         if (StringUtils.isBlank(blobUrl)) {
             classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
