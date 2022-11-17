@@ -16,7 +16,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,10 +38,7 @@ public class AttachmentService {
     EntityFileRelationRepository entityFileRelationRepository;
     @Resource
     BlobStorageClient blobStorageClient;
-    @Value("${app.blob.fileLimitDay}")
-    int fileLimitDay;
-    @Value("${app.blob.CDNUrl}")
-    String cdnUrl;
+
 
     public BlobFileInfo addAttachment(String entityId, EntityFileRelation.EntityType entityType, BlobFileInfo blobFileInfo, File file, Logger logger) {
         boolean flag = false;
@@ -74,7 +70,7 @@ public class AttachmentService {
         blobFileInfo.setUpdateTime(new Date());
         blobFileInfo.setBlobUrl(saveFileToBlob(file, entityType.blobConstant, blobFileInfo.getBlobPath(), logger));
         blobFileInfo.setBlobContainer(entityType.blobConstant);
-        blobFileInfo.setCDNUrl(cdnUrl);
+        blobFileInfo.setCDNUrl(blobStorageClient.cdnUrl);
         blobFileInfoRepository.save(blobFileInfo);
         return blobFileInfo;
     }
@@ -143,10 +139,10 @@ public class AttachmentService {
 
     public BlobFileInfo updateFileInfo(BlobFileInfo oldFileInfo, File file, EntityFileRelation.EntityType entityType, Logger logger) {
         int days = (int) ((new Date().getTime() - oldFileInfo.getUpdateTime().getTime()) / 1000 / 60 / 60 / 24);
-        if (days >= fileLimitDay) {
+        if (days >= blobStorageClient.fileLimitDay) {
             oldFileInfo.setBlobUrl(saveFileToBlob(file, entityType.blobConstant, oldFileInfo.getBlobPath(), logger));
             oldFileInfo.setBlobContainer(entityType.blobConstant);
-            oldFileInfo.setCDNUrl(cdnUrl);
+            oldFileInfo.setCDNUrl(blobStorageClient.cdnUrl);
             oldFileInfo.setUpdateTime(new Date());
             blobFileInfoRepository.save(oldFileInfo);
         }

@@ -27,7 +27,7 @@ public class BlobStorageService {
         SASData sasData = SASMap.get(uniqueId);
 
         if (sasData == null || blobStorageClient.isSASExpired(sasData)) {
-            sasData = blobStorageClient.generateSAS("b", "o", "r");
+            sasData = blobStorageClient.generateSAS(SASData.SASPermission.Read);
             SASMap.put(uniqueId, sasData);
         }
 
@@ -39,7 +39,7 @@ public class BlobStorageService {
         SASData sasData = SASMap.get(uniqueId);
 
         if (sasData == null || blobStorageClient.isSASExpired(sasData)) {
-            sasData = blobStorageClient.generateSAS("b", "o", "war");
+            sasData = blobStorageClient.generateSAS(SASData.SASPermission.Write);
             SASMap.put(uniqueId, sasData);
         }
 

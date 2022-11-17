@@ -4,6 +4,7 @@ package com.microsoft.hydralab.common.management;
 
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.TimeoutException;
+import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -25,6 +26,7 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.android.ddmlib.IDevice.DeviceState;
 
@@ -144,6 +146,23 @@ public abstract class DeviceManager {
     public abstract Set<DeviceInfo> getActiveDeviceList(@Nullable Logger logger);
 
     public abstract File getScreenShot(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) throws Exception;
+
+    public File getScreenShotWithStrategy(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger, @NotNull AgentUser.BatteryStrategy batteryStrategy) throws Exception {
+        File screenshotImageFile = deviceInfo.getScreenshotImageFile();
+        if (screenshotImageFile == null) {
+            return getScreenShot(deviceInfo, logger);
+        } else if (batteryStrategy.wakeUpInterval > 0) {
+            synchronized (deviceInfo.getLock()) {
+                long now = System.currentTimeMillis();
+                if (now - deviceInfo.getScreenshotUpdateTimeMilli() < TimeUnit.SECONDS.toMillis(batteryStrategy.wakeUpInterval)) {
+                    classLogger.warn("skip screen shot for too short interval {}", deviceInfo.getName());
+                    return screenshotImageFile;
+                }
+                getScreenShot(deviceInfo, logger);
+            }
+        }
+        return screenshotImageFile;
+    }
 
     public abstract void resetDeviceByTestId(@NotNull String testId, @Nullable Logger logger);
 

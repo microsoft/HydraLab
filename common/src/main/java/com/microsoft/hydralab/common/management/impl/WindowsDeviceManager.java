@@ -33,10 +33,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
 
     @Override
     public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
-        File deviceFile = super.getScreenShot(deviceInfo, logger);
-        if (deviceFile == null) {
-            return null;
-        }
+        super.getScreenShot(deviceInfo, logger);
         File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
         if (pcScreenShotImageFile == null) {
             pcScreenShotImageFile = new File(screenshotDir, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
@@ -58,27 +55,9 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
     }
 
     public File getPairScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
-        File deviceFile = super.getScreenShot(deviceInfo, logger);
-        if (deviceFile == null) {
-            return null;
-        }
+        getScreenShot(deviceInfo, logger);
+        File deviceFile = deviceInfo.getScreenshotImageFile();
         File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
-        if (pcScreenShotImageFile == null) {
-            pcScreenShotImageFile = new File(screenshotDir, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
-            String pcImageRelPath = pcScreenShotImageFile.getAbsolutePath().replace(new File(getDeviceStoragePath()).getAbsolutePath(), "");
-            pcImageRelPath = getDeviceFolderUrlPrefix() + pcImageRelPath.replace(File.separator, "/");
-            deviceInfo.setPcImageRelPath(pcImageRelPath);
-        }
-        try {
-            screenCapture(pcScreenShotImageFile.getAbsolutePath());
-        } catch (IOException e) {
-            classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
-        }
-        String blobUrl = blobStorageClient.uploadBlobFromFile(pcScreenShotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + pcScreenShotImageFile.getName(), null);
-        if (StringUtils.isBlank(blobUrl)) {
-            classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
-        }
-        deviceInfo.setPcScreenshotImageUrl(blobUrl);
         return joinImages(pcScreenShotImageFile, deviceFile, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "comb" + ".jpg");
     }
 
