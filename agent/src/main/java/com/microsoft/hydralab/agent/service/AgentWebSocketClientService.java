@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -102,10 +103,13 @@ public class AgentWebSocketClientService implements TestRunningCallback {
                     if (testTaskSpec.instrumentationArgs != null) {
                         log.info("instrumentationArgs: {}", testTaskSpec.instrumentationArgs);
                     }
-                    log.info("RunTestTask:, testSpec {}", testTaskSpec);
+                    log.info("TestTaskSpec: {}", testTaskSpec);
 
-                    if (testTaskSpec.runningType == null || "".equals(testTaskSpec.runningType)) {
+                    if (StringUtils.isEmpty(testTaskSpec.runningType)) {
                         testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
+                    }
+                    if (StringUtils.isEmpty(testTaskSpec.testScope)) {
+                        testTaskSpec.testScope = TestTask.TestScope.CLASS;
                     }
                     TestTask testTask = deviceControlService.runTestTask(testTaskSpec);
                     if (testTask == null) {
