@@ -129,6 +129,25 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
 
         String testWindowsApp = "";
         Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
+
+        // Check device requirements
+        int androidCount = 0, edgeCount = 0;
+
+        for (DriverInfo driverInfo : testInfo.getDrivers()) {
+            if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
+                androidCount++;
+            }
+            if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
+                edgeCount++;
+            }
+            if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
+                throw new RuntimeException("No iOS device connected to this agent");
+            }
+        }
+        // TODO: upgrade to check the available device count on the agent
+        Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
+        Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
+
         try {
             // Prepare drivers
             for (DriverInfo driverInfo : testInfo.getDrivers()) {

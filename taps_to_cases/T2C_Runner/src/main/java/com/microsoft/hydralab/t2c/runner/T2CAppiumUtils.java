@@ -134,10 +134,7 @@ public class T2CAppiumUtils {
                 driver.assertElementAttribute(webElement, attribute, expectedValue);
                 break;
             case "sleep":
-                Integer timeout = (Integer) arguments.get("duration");
-                if (timeout == null) {
-                    throw new IllegalArgumentException("Duration is not defined. Please add argument 'timeout' in the json. actionId: " + actionInfo.getId());
-                }
+                long timeout = Long.parseLong((String) arguments.get("duration"));
                 try {
                     Thread.sleep(timeout);
                 } catch (InterruptedException e) {
