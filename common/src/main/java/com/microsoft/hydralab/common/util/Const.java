@@ -126,7 +126,7 @@ public interface Const {
         String DEFAULT_TEAM_NAME = "Default";
     }
 
-    interface AUTH_COMPONENT {
+    interface AuthComponent {
         String DEFAULT_TEAM = "DEFAULT_TEAM";
         String TEAM = "TEAM";
         String ROLE = "ROLE";

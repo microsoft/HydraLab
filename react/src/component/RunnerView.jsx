@@ -631,12 +631,13 @@ export default class RunnerView extends BaseView {
                     <TextField
                         autoFocus
                         margin="dense"
-                        name="packageNameTest"
+                        name="currentTestPackageName"
                         type="text"
                         label="Test Package Name"
                         fullWidth
                         variant="standard"
                         value={this.state.currentTestPackageName}
+                        onChange={this.handleValueChange}
                     /><br />
                     <FormControl fullWidth>
                         <InputLabel>Test type</InputLabel>

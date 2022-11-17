@@ -92,7 +92,6 @@ public class TestTask {
     @Column(name = "team_id")
     private String teamId;
     private String teamName;
-    @Transient
     private transient String testRunnerName = defaultRunner;
 
     public TestTask() {
