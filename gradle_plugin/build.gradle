@@ -34,7 +34,7 @@ dependencies {
 }
 
 // plugin publishing related
-version = '1.0.35'
+version = '1.0.36'
 group = 'com.microsoft.hydralab'
 // alter group to this when publish to local, in order to distinguish local version and gradle plugin portal version
 //group = 'com.microsoft.hydralab.local'
