@@ -637,6 +637,7 @@ public class HydraLabClientUtils {
         jsonElement.addProperty("needUninstall", apiConfig.needUninstall);
         jsonElement.addProperty("needClearData", apiConfig.needClearData);
         jsonElement.addProperty("testRunnerName", apiConfig.testRunnerName);
+        jsonElement.addProperty("testScope", apiConfig.testScope);
 
         if (accessKey != null) {
             jsonElement.addProperty("accessKey", accessKey);
@@ -783,6 +784,7 @@ public class HydraLabClientUtils {
         public boolean needClearData = true;
         public String teamName = "";
         public String testRunnerName = "androidx.test.runner.AndroidJUnitRunner";
+        public String testScope = TestScope.CLASS;
 
         public static HydraLabAPIConfig defaultAPI() {
             return new HydraLabAPIConfig();
@@ -944,6 +946,12 @@ public class HydraLabClientUtils {
             String CPOY = "COPY";
             String UNZIP = "UNZIP";
         }
+    }
+
+    public interface TestScope {
+        String TEST_APP = "TEST_APP";
+        String PACKAGE = "PACKAGE";
+        String CLASS = "CLASS";
     }
 
     public enum MaskSensitiveData {
