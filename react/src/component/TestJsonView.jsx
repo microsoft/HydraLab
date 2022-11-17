@@ -381,6 +381,7 @@ export default class TestJsonView extends BaseView {
     }
 
     componentDidMount() {
+        this.getUserInfo();
         this.refreshJsonList();
         this.refreshTeamList()
     }

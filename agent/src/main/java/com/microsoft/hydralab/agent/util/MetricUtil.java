@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 
-@Service
 @Data
 @Slf4j
 public class MetricUtil {

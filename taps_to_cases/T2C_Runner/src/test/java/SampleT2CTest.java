@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 import com.microsoft.hydralab.t2c.runner.*;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
@@ -9,8 +10,9 @@ import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.windows.WindowsDriver;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
@@ -21,7 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-
+@Disabled
 public class SampleT2CTest {
 
     public AndroidDriver driver;
@@ -29,7 +31,7 @@ public class SampleT2CTest {
     public T2CJsonParser t2CJsonParser;
     private TestInfo testInfo;
     private Logger logger;
-    String filePath = "src/test/jsonFiles/testFile_android_dragAndDrop.json";
+    String filePath = "src/test/resources/DemoJson.json";
     AppiumDriverLocalService service;
 
 
@@ -60,16 +62,17 @@ public class SampleT2CTest {
             caps.setCapability("newCommandTimeout", 4000);
             caps.setCapability("clearDeviceLogonStart", true);
             caps.setCapability("noReset", true);
-            if (driverInfo.getPlatform().equals("android")) {
+            if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
                 caps.setCapability("automationName", "uiautomator2");
                 AndroidDriver androidDriver = new AndroidDriver(service.getUrl(), caps);
-                if (driverInfo.getLauncherApp().length() != 0) {
-                    androidDriver.activateApp(driverInfo.getLauncherApp());
+                AndroidDriverController androidDriverController = new AndroidDriverController(androidDriver, logger);
+                driverControllerMap.put(driverInfo.getId(), androidDriverController);
+                if (driverInfo.getLauncherApp() != null && driverInfo.getLauncherApp().length() > 0) {
+                    androidDriverController.activateApp(driverInfo.getLauncherApp());
                 }
-                driverControllerMap.put(driverInfo.getId(), new AndroidDriverController(androidDriver, logger));
             }
-            if (driverInfo.getPlatform().equals("windows")) {
-                if (driverInfo.getLauncherApp().length() != 0) {
+            if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
+                if (driverInfo.getLauncherApp() != null && driverInfo.getLauncherApp().length() > 0) {
                     caps.setCapability("app", driverInfo.getLauncherApp() + "!app");
                 }
                 WindowsDriver windowsDriver = new WindowsDriver(service.getUrl(), caps);
@@ -89,7 +92,7 @@ public class SampleT2CTest {
         }
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         if (driver != null) {
             driver.quit();

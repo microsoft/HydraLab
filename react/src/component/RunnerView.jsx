@@ -431,6 +431,7 @@ export default class RunnerView extends BaseView {
                                 onChange={this.handleValueChange}>
                                 <MenuItem value={"WINAPP"} >Windows app</MenuItem>
                                 <MenuItem value={"COMMON"} >Common</MenuItem>
+                                <MenuItem value={"T2C_JSON"} >T2C JSON</MenuItem>
                             </Select>
                         </FormControl>
                         <br />
@@ -654,7 +655,7 @@ export default class RunnerView extends BaseView {
                             <MenuItem value={"MONKEY"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Monkey</MenuItem>
                             <MenuItem value={"APPIUM_MONKEY"} disabled={this.state.currentAppInstallerType !== 'ipa'}>Appium Monkey</MenuItem>
                             <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Appium E2E</MenuItem>
-                            <MenuItem value={"T2C_JSON"} disabled={this.state.runTestType !== 'T2C_JSON'}>JSON-Described Test</MenuItem>
+                            <MenuItem value={"T2C_JSON"}>JSON-Described Test</MenuItem>
                         </Select>
                     </FormControl>
                     <TextField
@@ -859,6 +860,10 @@ export default class RunnerView extends BaseView {
     }
 
     uploadApk = () => {
+        if (!this.state.selectedTeamName || !this.state.uploadAppInstallerFile) {
+            this.snackBarMsg("Please upload APK/IPA file and select a team")
+            return
+        }
         const formData = new FormData()
         formData.append("teamName", this.state.selectedTeamName)
         formData.append("appFile", this.state.uploadAppInstallerFile)
@@ -1089,6 +1094,7 @@ export default class RunnerView extends BaseView {
     }
 
     componentDidMount() {
+        this.getUserInfo()
         this.refreshPackageList()
         this.refreshRunnableList()
         this.refreshTeamList()

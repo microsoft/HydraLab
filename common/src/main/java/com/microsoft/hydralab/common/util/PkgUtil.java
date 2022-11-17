@@ -39,8 +39,6 @@ public class PkgUtil {
             default:
                 break;
         }
-
-
         return res;
     }
 
@@ -75,7 +73,7 @@ public class PkgUtil {
         return res;
     }
 
-    public static JSONObject analysisApkFile(File file) {
+    private static JSONObject analysisApkFile(File file) {
         JSONObject res = new JSONObject();
         try (ApkFile apkFile = new ApkFile(file)) {
             ApkMeta apkMeta = apkFile.getApkMeta();
@@ -94,7 +92,7 @@ public class PkgUtil {
         return res;
     }
 
-    public static JSONObject analysisIpaFile(File ipa) {
+    private static JSONObject analysisIpaFile(File ipa) {
         JSONObject res = new JSONObject();
         try {
             String name, pkgName, version;
