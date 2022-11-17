@@ -10,7 +10,3 @@ app:
     name: {YOUR_AGENT_NAME}
     # Agent Type {1 : 1*WINDOWS + n*ANDROIDS , 2 : 1*WINDOWS+1*ANDROID , 3 : iOS}
     agent-type: {YOUR_AGENT_TYPE_INDEX}
-  # config Azure Blob
-  blob:
-    connection: {YOUR_AZURE_BLOB_CONNECTION_STRING}
-    CDNUrl: {YOUR_AZURE_BLOB_CDN_URL_HOSTNAME}

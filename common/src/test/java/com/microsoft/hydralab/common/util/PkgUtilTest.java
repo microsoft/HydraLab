@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.microsoft.hydralab.common.entity.common.BlobFileInfo;
 import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
+import com.microsoft.hydralab.common.test.BaseTest;
 import net.dongliu.apk.parser.ApkFile;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,8 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class PkgUtilTest {
-    Logger logger = LoggerFactory.getLogger(PkgUtilTest.class);
+public class PkgUtilTest extends BaseTest {
 
     @Test
     public void analysisApkFile() throws IOException {
