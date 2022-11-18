@@ -193,6 +193,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('testRunnerName')) {
                     apiConfig.testRunnerName = project.testRunnerName
                 }
+                if (project.hasProperty('testScope')) {
+                    apiConfig.testScope = project.testScope
+                }
                 // optional for APPIUM_CROSS, T2C_JSON
                 if (project.hasProperty('needUninstall')) {
                     apiConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
