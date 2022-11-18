@@ -729,7 +729,7 @@ public class HydraLabClientUtils {
         return content;
     }
 
-    private static String getCommitCount(File commandDir, String startCommit) throws IOException {
+    public static String getCommitCount(File commandDir, String startCommit) throws IOException {
         Process process = Runtime.getRuntime().exec(String.format("git rev-list --first-parent --right-only --count %s..HEAD", startCommit), null, commandDir.getAbsoluteFile());
         try (InputStream inputStream = process.getInputStream()) {
             return IOUtils.toString(inputStream, StandardCharsets.UTF_8).trim();
