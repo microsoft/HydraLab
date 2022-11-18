@@ -15,21 +15,20 @@ public class HydraLabClientUtilsTest {
 
     @Test
     public void getLatestCommitInfo() {
-        String commitId;
-        String commitCount;
-        String commitMsg;
+        String commitId = null;
+        String commitCount = null;
+        String commitMsg = null;
         File commandDir = new File(".");
         try {
             commitId = HydraLabClientUtils.getLatestCommitHash(commandDir);
-            Assertions.assertNotNull(commitId, "Get commit id error");
-
             commitCount = HydraLabClientUtils.getCommitCount(commandDir, commitId);
-            Assertions.assertNotNull(commitCount, "Get commit count error");
-
             commitMsg = HydraLabClientUtils.getCommitMessage(commandDir, commitId);
-            Assertions.assertNotNull(commitMsg, "Get commit message error");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        Assertions.assertNotNull(commitId, "Get commit id error");
+        Assertions.assertNotNull(commitCount, "Get commit count error");
+        Assertions.assertNotNull(commitMsg, "Get commit message error");
     }
 }
