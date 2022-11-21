@@ -38,7 +38,6 @@ public class DeviceGroupService {
         deviceGroup.setTeamName(teamName);
         deviceGroup.setGroupName(Const.DeviceGroup.groupPre + groupName);
         deviceGroup.setGroupDisplayName(groupName);
-        deviceGroup.setOwner(owner);
         deviceGroup.setGroupType(Const.DeviceGroup.userGroup);
         return deviceGroupRepository.save(deviceGroup);
     }
@@ -110,11 +109,6 @@ public class DeviceGroupService {
 
         // ROLE = SUPER_ADMIN / ADMIN
         if (sysUserService.checkUserAdmin(requestor)) {
-            return true;
-        }
-
-        // group owner
-        if (deviceGroup.getOwner().equals(requestor.getMailAddress())) {
             return true;
         }
 

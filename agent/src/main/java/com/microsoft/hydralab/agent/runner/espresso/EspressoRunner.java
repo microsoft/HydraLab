@@ -68,7 +68,7 @@ public class EspressoRunner extends TestRunner {
             reportLogger.info("Start instrumenting the test");
             checkTestTaskCancel(testTask);
             listener.startRecording(testTask.getTimeOutSecond());
-            String result = startInstrument(deviceInfo, testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(), reportLogger, instrumentationResultParser, testTask.getTimeOutSecond(), testTask.getInstrumentationArgs());
+            String result = startInstrument(deviceInfo, testTask.getTestScope(), testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(), reportLogger, instrumentationResultParser, testTask.getTimeOutSecond(), testTask.getInstrumentationArgs());
             if (Const.TaskResult.error_device_offline.equals(result)) {
                 testRunningCallback.onDeviceOffline(testTask);
                 return;
@@ -103,7 +103,7 @@ public class EspressoRunner extends TestRunner {
         }
     }
 
-    public String startInstrument(DeviceInfo deviceInfo, String suiteName, String testPkgName, String testRunnerName, Logger logger, IShellOutputReceiver receiver,
+    public String startInstrument(DeviceInfo deviceInfo, String scope, String suiteName, String testPkgName, String testRunnerName, Logger logger, IShellOutputReceiver receiver,
                                   int testTimeOutSec, Map<String, String> instrumentationArgs) {
         if (deviceInfo == null) {
             throw new RuntimeException("No such device: " + deviceInfo);
@@ -118,13 +118,29 @@ public class EspressoRunner extends TestRunner {
         }
         String commFormat;
         if (StringUtils.isBlank(argString.toString())) {
-            commFormat = "am instrument -w -r -e debug false -e class %s %s/%s";
+            commFormat = "am instrument -w -r -e debug false";
         } else {
-            commFormat = "am instrument -w -r" + argString + " -e debug false -e class %s %s/%s";
+            commFormat = "am instrument -w -r" + argString + " -e debug false";
         }
 
         try {
-            String command = String.format(commFormat, suiteName, testPkgName, testRunnerName);
+            String command;
+            switch (scope) {
+                case TestTask.TestScope.TEST_APP:
+                    commFormat += " %s/%s";
+                    command = String.format(commFormat, testPkgName, testRunnerName);
+                    break;
+                case TestTask.TestScope.PACKAGE:
+                    commFormat += " -e package %s %s/%s";
+                    command = String.format(commFormat, suiteName, testPkgName, testRunnerName);
+                    break;
+                // Const.TestScope.CLASS
+                default:
+                    commFormat += " -e class %s %s/%s";
+                    command = String.format(commFormat, suiteName, testPkgName, testRunnerName);
+                    break;
+            }
+
             if (logger != null) {
                 // make sure pass is not printed
                 logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), LogUtils.scrubSensitiveArgs(command));

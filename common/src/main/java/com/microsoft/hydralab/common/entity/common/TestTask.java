@@ -24,11 +24,11 @@ public class TestTask {
     public static final String MICROSOFT_LAUNCHER_PACKAGE_NAME_KEY_PART = "microsoft.launcher";
     static final Pattern pIdMatch = Pattern.compile("\\d{3,7}");
     @Transient
-    private static final transient String defaultAct2 = "com.microsoft.launcher.Launcher";
+    private static final String defaultAct2 = "com.microsoft.launcher.Launcher";
     @Transient
-    private static final transient String defaultAct = "com.android.launcher3.DefaultLauncherApp";
+    private static final String defaultAct = "com.android.launcher3.DefaultLauncherApp";
     @Transient
-    private static final transient String defaultRunner = "androidx.test.runner.AndroidJUnitRunner";
+    private static final String defaultRunner = "androidx.test.runner.AndroidJUnitRunner";
     @Transient
     private List<String> neededPermissions;
     @Transient
@@ -46,7 +46,6 @@ public class TestTask {
     private int totalTestCount;
     private int totalFailCount;
     private String testTaskReportPath;
-    private String testSuite;
     private String testCommitId;
     private String testCommitMsg;
     private String testErrorMsg;
@@ -94,8 +93,11 @@ public class TestTask {
     @Column(name = "team_id")
     private String teamId;
     private String teamName;
-    @Transient
     private transient String testRunnerName = defaultRunner;
+    private String testScope;
+    // todo: change this to a more general name for all scopes of ESPRESSO tests.
+    private String testSuite;
+
 
     public TestTask() {
     }
@@ -137,6 +139,8 @@ public class TestTask {
         if (StringUtils.isNotBlank(testTaskSpec.testRunnerName)) {
             testTask.setTestRunnerName(testTaskSpec.testRunnerName);
         }
+        testTask.setTestScope(testTaskSpec.testScope);
+
         return testTask;
     }
 
@@ -166,6 +170,8 @@ public class TestTask {
         testTaskSpec.teamId = testTask.getTeamId();
         testTaskSpec.teamName = testTask.getTeamName();
         testTaskSpec.testRunnerName = testTask.getTestRunnerName();
+        testTaskSpec.testScope = testTask.getTestScope();
+
         return testTaskSpec;
     }
 
@@ -306,5 +312,11 @@ public class TestTask {
     public interface TestFrameworkType {
         String JUNIT4 = "JUnit4";
         String JUNIT5 = "JUnit5";
+    }
+
+    public interface TestScope {
+        String TEST_APP = "TEST_APP";
+        String PACKAGE = "PACKAGE";
+        String CLASS = "CLASS";
     }
 }
