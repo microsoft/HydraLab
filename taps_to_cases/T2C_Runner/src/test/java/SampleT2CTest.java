@@ -47,7 +47,6 @@ public class SampleT2CTest {
                     .withArgument(GeneralServerFlag.LOG_LEVEL, "error")
                     .withArgument(GeneralServerFlag.ALLOW_INSECURE, "adb_shell"));
             service.start();
-            throw new Exception("1212");
         } catch (Exception e) {
             service = null;
             logger.info("Start Appium service failed will skip case!");
