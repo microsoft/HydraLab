@@ -1,0 +1,73 @@
+@startuml test_runners_classes
+abstract class TestRunner {
+    #getDeviceTask(...)
+    #chooseDevices(TestTaskSpec)
+    +setupTestDir(TestTask)
+    +runTest(TestTaskSpec)
+    +initDevice(...)
+    #afterTest(...)
+}
+interface TestRunningCallback
+
+AppiumRunner --|> TestRunner
+EspressoRunner --|> TestRunner
+AdbMonkeyRunner --|> TestRunner
+T2CRunner --|> TestRunner
+SmartRunner --|> TestRunner
+
+TestRunner --> TestRunningCallback
+
+AppiumCrossRunner --|> AppiumRunner
+@enduml
+
+@startuml running_sequence
+AgentWebSocketClientService -> DeviceControlService :runTestTask
+activate DeviceControlService
+
+DeviceControlService -> TestRunner: runTest
+activate TestRunner
+
+TestRunner -> TestRunner: chooseDevices
+TestRunner -> TestTask: convertToTestTask(static)
+TestRunner -> RunningControlService: runForAllDeviceAsync
+activate RunningControlService
+
+RunningControlService --> TestThreadPool.Executor: execute
+activate TestThreadPool.Executor
+
+RunningControlService -> TestRunner
+deactivate RunningControlService
+
+TestRunner -> DeviceControlService
+deactivate TestRunner
+
+DeviceControlService -> AgentWebSocketClientService
+deactivate DeviceControlService
+
+
+TestThreadPool.Executor -> DeviceTask: doTask
+activate DeviceTask
+
+DeviceTask -> RunnerImpl : runTestImpl
+activate RunnerImpl #FFBBFF
+note right: each runner implements this logic
+RunnerImpl -> DeviceTask
+deactivate RunnerImpl
+
+
+DeviceTask -> TestThreadPool.Executor
+deactivate DeviceTask
+
+TestThreadPool.Executor -> TaskCompletion: onComplete
+activate TaskCompletion
+
+TaskCompletion -> TestRunningCallback: onAllComplete
+activate TestRunningCallback
+
+TestRunningCallback -> TaskCompletion
+deactivate TestRunningCallback
+
+TaskCompletion -> TestThreadPool.Executor
+deactivate TaskCompletion
+
+@enduml
