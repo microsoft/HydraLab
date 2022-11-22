@@ -28,7 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-@Service
+@Service("smartRunner")
 public class SmartRunner extends TestRunner {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     @Resource

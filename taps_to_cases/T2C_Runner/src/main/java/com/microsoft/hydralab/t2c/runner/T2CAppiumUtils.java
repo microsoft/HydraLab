@@ -63,9 +63,12 @@ public class T2CAppiumUtils {
                 driver.click(webElement);
                 break;
             case "tap":
+                //wait 3s before and after the tap action
+                safeSleep(3000);
                 int x = (Integer) arguments.get("x");
                 int y = (Integer) arguments.get("y");
                 driver.tap(x, y);
+                safeSleep(3000);
                 break;
             case "input":
                 String content;
@@ -135,11 +138,7 @@ public class T2CAppiumUtils {
                 break;
             case "sleep":
                 long timeout = Long.parseLong((String) arguments.get("duration"));
-                try {
-                    Thread.sleep(timeout);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                safeSleep(timeout);
                 break;
             case "getInfo":
                 String attributeKey = (String) arguments.get("attribute");
@@ -186,6 +185,14 @@ public class T2CAppiumUtils {
                         "" +
                         "ed. actionId:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
 
+        }
+    }
+
+    private static void safeSleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

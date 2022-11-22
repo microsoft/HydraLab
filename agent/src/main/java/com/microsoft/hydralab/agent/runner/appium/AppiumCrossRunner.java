@@ -13,7 +13,7 @@ import org.springframework.util.Assert;
 
 import java.util.Set;
 
-@Service
+@Service("appiumCrossRunner")
 public class AppiumCrossRunner extends AppiumRunner {
     @Value("${app.registry.name}")
     String agentName;
