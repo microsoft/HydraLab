@@ -70,7 +70,7 @@ public class BlobFileInfo {
         String AGENT_PACKAGE = "PACKAGE";
         String APP_FILE = "APP";
         String TEST_APP_FILE = "TEST_APP";
-
+        String T2C_JSON_FILE = "T2C_JSON";
 
     }
 

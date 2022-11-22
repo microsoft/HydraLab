@@ -35,7 +35,7 @@ public class T2CJsonParser {
         return new TestInfo(driverList, caseList);
     }
 
-    public ArrayList<DriverInfo> getDriverList(JSONArray driverJsonArray) {
+    private ArrayList<DriverInfo> getDriverList(JSONArray driverJsonArray) {
         ArrayList<DriverInfo> driverList = new ArrayList<>();
         for (Iterator iterator = driverJsonArray.iterator(); iterator.hasNext(); ) {
             JSONObject driverJsonObject = (JSONObject) iterator.next();
@@ -58,7 +58,7 @@ public class T2CJsonParser {
         return driverList;
     }
 
-    public ArrayList<ActionInfo> getActionList(JSONArray caseJsonArray) {
+    private ArrayList<ActionInfo> getActionList(JSONArray caseJsonArray) {
         ArrayList<ActionInfo> caseList = new ArrayList<>();
         ActionInfo actionInfo = null;
         AndroidElementInfo androidElement = null;
@@ -98,9 +98,14 @@ public class T2CJsonParser {
             }
             caseList.add(actionInfo);
             Comparator<ActionInfo> comparator = (o1, o2) -> {
-                if (Objects.equals(o1.getId(), o2.getId())) throw new RuntimeException("Same Index Found In The Action Info");
-                if (o1.getId() > o2.getId()) return 1;
-                else return -1;
+                if (Objects.equals(o1.getId(), o2.getId())) {
+                    throw new RuntimeException("Same Index Found In The Action Info");
+                }
+                if (o1.getId() > o2.getId()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
             };
 
             caseList.sort(comparator);

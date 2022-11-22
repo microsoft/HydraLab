@@ -136,7 +136,7 @@ public class RolePermissionController {
         }
 
         sysUserService.switchUserRole(sysUser, sysRole.getRoleId(), sysRole.getRoleName());
-        securityUserService.reloadUserAuthentication(sysUser.getMailAddress(), Const.AUTH_COMPONENT.ROLE);
+        securityUserService.reloadUserAuthentication(sysUser.getMailAddress(), Const.AuthComponent.ROLE);
         return Result.ok(sysUser);
     }
 

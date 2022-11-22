@@ -59,6 +59,7 @@ const StyledTableRow = withStyles((theme) => ({
     },
 }))(TableRow);
 
+
 export default class TeamManagement extends BaseView {
     state = {
         hideSkeleton: true,
@@ -124,7 +125,8 @@ export default class TeamManagement extends BaseView {
                         <TableRow>
                             <TableCell colSpan="2">
                                 <Typography variant="h4" className="mt-2 mb-2">
-                                    {`Team Management (${this.state.userInfo ? this.state.userInfo.roleName : 'User'})`} </Typography>
+                                    {`Team Management`}
+                                </Typography>
                             </TableCell>
                             <TableCell colSpan="1">
                                 <Stack direction="row" spacing={2}

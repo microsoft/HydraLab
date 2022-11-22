@@ -97,6 +97,7 @@ export default class RunnerView extends BaseView {
         toBeDeletedAttachmentId: null,
 
         runTestType: "APPIUM",
+        testScope: "CLASS",
         testSuiteClass: "",
         currentRunnable: "",
         groupTestType: "SINGLE",
@@ -431,6 +432,7 @@ export default class RunnerView extends BaseView {
                                 onChange={this.handleValueChange}>
                                 <MenuItem value={"WINAPP"} >Windows app</MenuItem>
                                 <MenuItem value={"COMMON"} >Common</MenuItem>
+                                <MenuItem value={"T2C_JSON"} >T2C JSON</MenuItem>
                             </Select>
                         </FormControl>
                         <br />
@@ -516,7 +518,7 @@ export default class RunnerView extends BaseView {
         const groupTestTypes = ["SINGLE", "REST", "ALL"]
 
         const { deviceList, groupList, agentList } = this.state
-        const { runTestType, groupTestType } = this.state
+        const { runTestType, groupTestType, testScope } = this.state
 
 
         const runnableRows = []
@@ -631,12 +633,13 @@ export default class RunnerView extends BaseView {
                     <TextField
                         autoFocus
                         margin="dense"
-                        name="packageNameTest"
+                        name="currentTestPackageName"
                         type="text"
                         label="Test Package Name"
                         fullWidth
                         variant="standard"
                         value={this.state.currentTestPackageName}
+                        onChange={this.handleValueChange}
                     /><br />
                     <FormControl fullWidth>
                         <InputLabel>Test type</InputLabel>
@@ -653,11 +656,27 @@ export default class RunnerView extends BaseView {
                             <MenuItem value={"MONKEY"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Monkey</MenuItem>
                             <MenuItem value={"APPIUM_MONKEY"} disabled={this.state.currentAppInstallerType !== 'ipa'}>Appium Monkey</MenuItem>
                             <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Appium E2E</MenuItem>
-                            <MenuItem value={"T2C_JSON"} disabled={this.state.runTestType !== 'T2C_JSON'}>JSON-Described Test</MenuItem>
+                            <MenuItem value={"T2C_JSON"}>JSON-Described Test</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <br />
+                    <FormControl fullWidth>
+                        <InputLabel>Espresso test scope</InputLabel>
+                        <Select
+                            disabled={this.state.runTestType !== 'INSTRUMENTATION'}
+                            margin="dense"
+                            value={testScope}
+                            fullWidth
+                            size="small"
+                            name="testScope"
+                            onChange={this.handleValueChange}>
+                            <MenuItem value={"TEST_APP"} disabled={this.state.runTestType !== 'INSTRUMENTATION'}>Test app</MenuItem>
+                            <MenuItem value={"PACKAGE"} disabled={this.state.runTestType !== 'INSTRUMENTATION'}>Package</MenuItem>
+                            <MenuItem value={"CLASS"} disabled={this.state.runTestType !== 'INSTRUMENTATION'}>Class</MenuItem>
                         </Select>
                     </FormControl>
                     <TextField
-                        disabled={runTestType !== "INSTRUMENTATION" && runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS"}
+                        disabled={(runTestType !== "INSTRUMENTATION" && runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS") || (runTestType === "INSTRUMENTATION" && testScope === "TEST_APP")}
                         required={runTestType === "INSTRUMENTATION" || runTestType === "APPIUM" || runTestType === "APPIUM_CROSS"}
                         margin="dense"
                         name="testSuiteClass"
@@ -858,6 +877,10 @@ export default class RunnerView extends BaseView {
     }
 
     uploadApk = () => {
+        if (!this.state.selectedTeamName || !this.state.uploadAppInstallerFile) {
+            this.snackBarMsg("Please upload APK/IPA file and select a team")
+            return
+        }
         const formData = new FormData()
         formData.append("teamName", this.state.selectedTeamName)
         formData.append("appFile", this.state.uploadAppInstallerFile)
@@ -925,6 +948,7 @@ export default class RunnerView extends BaseView {
             pkgName: this.state.currentAppPackageName,
             testPkgName: this.state.currentTestPackageName,
             runningType: this.state.runTestType,
+            testScope: this.state.testScope,
             testSuiteClass: this.state.testSuiteClass,
             deviceIdentifier: this.state.currentRunnable,
             groupTestType: this.state.groupTestType,
@@ -1088,6 +1112,7 @@ export default class RunnerView extends BaseView {
     }
 
     componentDidMount() {
+        this.getUserInfo()
         this.refreshPackageList()
         this.refreshRunnableList()
         this.refreshTeamList()

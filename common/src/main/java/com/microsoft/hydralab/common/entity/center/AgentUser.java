@@ -28,20 +28,28 @@ public class AgentUser {
     @Column(name = "team_id")
     String teamId;
     String teamName;
+    @Transient
+    BatteryStrategy batteryStrategy;
 
     public interface DeviceType {
         int ANDROID = 1;
         int WINDOWS = 2;
     }
 
-    public interface Status {
-        int DISABLED = 0;
-        int ENABLED = 1;
-    }
+    public enum BatteryStrategy {
+        /**
+         * Strategy Name
+         */
+        Economic(-1, -1),
+        Normal(120, 120),
+        Aggressive(30, 30);
 
-    public interface Role {
-        String USER = "USER";
-        String AGENT = "AGENT";
-        String ADMIN = "ADMIN";
+        public final int wakeUpInterval;
+        public final int screenShotInterval;
+
+        BatteryStrategy(int wakeUpInterval, int screenShotInterval) {
+            this.wakeUpInterval = wakeUpInterval;
+            this.screenShotInterval = screenShotInterval;
+        }
     }
 }

@@ -6,8 +6,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.microsoft.hydralab.common.entity.center.BlobProperty;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,15 +19,6 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 @Configuration
 @ComponentScan(basePackages = {"com.microsoft.hydralab"})
 public class AppConfig {
-    @Value("${app.blob.connection}")
-    String blobConnectionString;
-    @Value("${app.blob.SASExpiryTimeFont}")
-    long SASExpiryTimeFont;
-    @Value("${app.blob.SASExpiryTimeAgent}")
-    long SASExpiryTimeAgent;
-    @Value("${app.blob.SASExpiryUpdate}")
-    long SASExpiryUpdate;
-
     @Bean
     @ConditionalOnClass({JSON.class})
     public FastJsonHttpMessageConverter fastJsonHttpMessageConverter() {
@@ -45,8 +36,8 @@ public class AppConfig {
     }
 
     @Bean
-    public BlobStorageClient blobStorageClient() {
-        return new BlobStorageClient(blobConnectionString, SASExpiryTimeFont, SASExpiryTimeAgent, SASExpiryUpdate);
+    public BlobStorageClient blobStorageClient(BlobProperty blobProperty) {
+        return new BlobStorageClient(blobProperty);
     }
 
     @Bean

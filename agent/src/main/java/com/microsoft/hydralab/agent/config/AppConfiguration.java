@@ -7,19 +7,19 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
-import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.management.DeviceStabilityMonitor;
+import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
+import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
+import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
+import com.microsoft.hydralab.agent.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.AgentType;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
-import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
-import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
-import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
-import com.microsoft.hydralab.agent.util.MetricUtil;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.micrometer.core.instrument.MeterRegistry;
 import okhttp3.OkHttpClient;
@@ -57,8 +57,6 @@ public class AppConfiguration {
     private String activeProfile;
     @Value("${app.registry.server}")
     private String registryServer;
-    @Value("${app.blob.connection}")
-    private String blobConnection;
     @Value("${app.device.state-change.count-threshold}")
     private int deviceStateChangeThreshold;
     @Value("${app.device.state-change.window-time}")
@@ -111,8 +109,9 @@ public class AppConfiguration {
 
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
-        if (deviceManager instanceof AndroidDeviceManager)
+        if (deviceManager instanceof AndroidDeviceManager) {
             ((AndroidDeviceManager) deviceManager).setADBOperateUtil(adbOperateUtil);
+        }
         if (StringUtils.isNotBlank(adbServerHost)) {
             logger.info("Setting the adb server hostname to {}", adbServerHost);
             adbOperateUtil.setAdbServerHost(adbServerHost);
@@ -172,7 +171,7 @@ public class AppConfiguration {
 
     @Bean
     public BlobStorageClient blobStorageClient() {
-        return new BlobStorageClient(blobConnection);
+        return new BlobStorageClient();
     }
 
     @Bean

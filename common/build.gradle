@@ -1,6 +1,3 @@
-plugins {
-    id 'java'
-}
 group = 'com.microsoft.hydralab'
 version = '0.9.5'
 
@@ -62,7 +59,7 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.2.3'
     compile 'cn.hutool:hutool-all:5.7.13'
     compile 'com.squareup.okhttp3:okhttp:4.9.3'
-    compile 'com.google.guava:guava:30.1.1-jre'
+    compile 'com.google.guava:guava:31.1-jre'
     compile group: 'io.netty', name: 'netty-tcnative', version: '2.0.51.Final'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.1'
@@ -77,3 +74,6 @@ dependencies {
     compile group: 'com.googlecode.plist', name: 'dd-plist', version: '1.3'
 }
 
+repositories {
+    mavenCentral()
+}

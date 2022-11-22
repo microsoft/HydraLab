@@ -13,7 +13,6 @@ import java.util.Set;
 @ToString
 public class TestTaskSpec {
     public String testTaskId;
-    public String testSuiteClass;
     public String deviceIdentifier;
     public String groupTestType;
     public String groupDevices;
@@ -40,4 +39,6 @@ public class TestTaskSpec {
     public String teamId;
     public String teamName;
     public String testRunnerName;
+    public String testScope;
+    public String testSuiteClass;
 }

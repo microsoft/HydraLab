@@ -44,7 +44,7 @@ public class FileUtil {
         originalFilename = originalFilename.replaceAll(" ", "");
         String extension = FilenameUtils.getExtension(originalFilename);
         extension = extension.replaceAll("\\.", "").replaceAll("/", "");
-        String fileName = FilenameUtils.getName(originalFilename);
+        String fileName = FilenameUtils.getBaseName(originalFilename);
         fileName = fileName.replaceAll("\\.", "").replaceAll("/", "");
         if (StringUtils.isEmpty(extension) || StringUtils.isEmpty(fileName)) {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Illegal file name!");
@@ -174,8 +174,9 @@ public class FileUtil {
     }
 
     public static boolean isLegalFolderPath(String folderPath) {
-        if (folderPath.endsWith("/"))
+        if (folderPath.endsWith("/")) {
             folderPath = folderPath.substring(0, folderPath.length() - 1);
+        }
         String pattern = "^((?! )(?![^\\\\/]*\\s+[\\\\/])[\\w -]+[\\\\/])*(?! )(?![^.]*\\s+\\.)[\\w -]+$";
         return Pattern.matches(pattern, folderPath);
     }
