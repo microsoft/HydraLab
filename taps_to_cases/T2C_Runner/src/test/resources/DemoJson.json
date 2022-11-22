@@ -26,6 +26,18 @@
         }
       },
       "isOption": false
-    }
+    },
+    {
+      "index": 1,
+      "elementInfo": { },
+      "driverId": "13211FDD400183",
+      "action": {
+        "actionType": "input",
+        "arguments": {
+          "content": "helloworld"
+        }
+      },
+      "isOption": false
+     }
   ]
 }
