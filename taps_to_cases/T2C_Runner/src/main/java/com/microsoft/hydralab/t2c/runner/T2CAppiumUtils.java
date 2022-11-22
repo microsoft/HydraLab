@@ -57,15 +57,17 @@ public class T2CAppiumUtils {
         BaseElementInfo element = actionInfo.getTestElement();
         WebElement webElement = findElement(driver, element);
         Map<String, Object> arguments = actionInfo.getArguments();
-
         switch (ActionType) {
             case "click":
                 driver.click(webElement);
                 break;
             case "tap":
+                //wait 3s before and after the tap action
+                safeSleep(3000);
                 int x = (Integer) arguments.get("x");
                 int y = (Integer) arguments.get("y");
                 driver.tap(x, y);
+                safeSleep(3000);
                 break;
             case "input":
                 String content;
@@ -78,7 +80,11 @@ public class T2CAppiumUtils {
                 if (content == null) {
                     throw new IllegalArgumentException("Trying to input a null String. actionId: " + actionInfo.getId());
                 }
-                driver.input(webElement, content);
+                if (webElement == null) {
+                    driver.sendKeys(content);
+                } else {
+                    driver.input(webElement, content);
+                }
                 break;
             case "clear":
                 driver.clear(webElement);
@@ -139,11 +145,7 @@ public class T2CAppiumUtils {
             case "sleep":
                 Object timeoutObj = arguments.get("duration");
                 long timeout = timeoutObj instanceof Long ? (Long) timeoutObj : Long.parseLong((String) arguments.get("duration"));
-                try {
-                    Thread.sleep(timeout);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                safeSleep(timeout);
                 break;
             case "getInfo":
                 String attributeKey = (String) arguments.get("attribute");
@@ -192,6 +194,14 @@ public class T2CAppiumUtils {
                         "" +
                         "ed. actionId:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
 
+        }
+    }
+
+    private static void safeSleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }
