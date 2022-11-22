@@ -20,6 +20,7 @@ import java.util.Map;
 
 public class T2CAppiumUtils {
     static HashMap<String, String> keyToInfoMap = new HashMap<>();
+    private static boolean isSelfTesting = false;
 
     public static WebElement findElement(BaseDriverController driver, BaseElementInfo element) {
         WebElement elementFinded = null;
@@ -57,17 +58,19 @@ public class T2CAppiumUtils {
         BaseElementInfo element = actionInfo.getTestElement();
         WebElement webElement = findElement(driver, element);
         Map<String, Object> arguments = actionInfo.getArguments();
+        // Safe wait if no element required before this action to ensure the UI is ready
+        if (webElement == null && !isSelfTesting) {
+            safeSleep(3000);
+        }
         switch (ActionType) {
             case "click":
                 driver.click(webElement);
                 break;
             case "tap":
                 //wait 3s before and after the tap action
-                safeSleep(3000);
                 int x = (Integer) arguments.get("x");
                 int y = (Integer) arguments.get("y");
                 driver.tap(x, y);
-                safeSleep(3000);
                 break;
             case "input":
                 String content;
@@ -144,7 +147,7 @@ public class T2CAppiumUtils {
                 break;
             case "sleep":
                 Object timeoutObj = arguments.get("duration");
-                long timeout = timeoutObj instanceof Long ? (Long) timeoutObj : Long.parseLong((String) arguments.get("duration"));
+                long timeout = timeoutObj instanceof Integer ? (Integer) timeoutObj : Long.parseLong((String) arguments.get("duration"));
                 safeSleep(timeout);
                 break;
             case "getInfo":
@@ -195,6 +198,10 @@ public class T2CAppiumUtils {
                         "ed. actionId:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
 
         }
+        // Safe wait if no element required after doing this action to ensure the action is finished
+        if (webElement == null && !isSelfTesting) {
+            safeSleep(3000);
+        }
     }
 
     private static void safeSleep(long millis) {
@@ -203,5 +210,9 @@ public class T2CAppiumUtils {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void setSelfTesting(boolean isTesting) {
+        isSelfTesting = isTesting;
     }
 }

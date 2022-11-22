@@ -25,7 +25,6 @@ public class AndroidDriverController extends BaseDriverController {
     public AndroidDriverController(AndroidDriver androidDriver, Logger logger) {
         super(androidDriver, logger);
         this.androidDriver = androidDriver;
-        androidDriver.getKeyboard().sendKeys();
     }
 
     @Override

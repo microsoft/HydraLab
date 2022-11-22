@@ -29,7 +29,7 @@ public class MockDriverT2CTest {
         logger = LoggerFactory.getLogger(MockDriverT2CTest.class);
         t2CJsonParser = new T2CJsonParser(logger);
         testInfo = t2CJsonParser.parseJsonFile(filePath);
-
+        T2CAppiumUtils.setSelfTesting(true);
         getDriversMap(testInfo.getDrivers());
 
     }

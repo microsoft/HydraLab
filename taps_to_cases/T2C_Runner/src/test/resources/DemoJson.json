@@ -424,7 +424,7 @@
       "action": {
         "actionType": "sleep",
         "arguments": {
-          "duration": "1000"
+          "duration": 1000
         }
       },
       "isOption": false
