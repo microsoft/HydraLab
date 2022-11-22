@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 public class AndroidDriverController extends BaseDriverController {
     private final AndroidDriver androidDriver;
@@ -37,11 +36,6 @@ public class AndroidDriverController extends BaseDriverController {
         } else {
             throw new RuntimeException("the app is not installed");
         }
-    }
-
-    @Override
-    public void sendKeys(String content) {
-        androidDriver.getKeyboard().sendKeys(content);
     }
 
     @Override

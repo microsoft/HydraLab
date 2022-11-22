@@ -25,11 +25,6 @@ public class EdgeDriverController extends BaseDriverController {
     }
 
     @Override
-    public void sendKeys(String content) {
-        edgeDriver.getKeyboard().sendKeys(content);
-    }
-
-    @Override
     public void tap(int x, int y) {
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence tap = new Sequence(finger, 1);
