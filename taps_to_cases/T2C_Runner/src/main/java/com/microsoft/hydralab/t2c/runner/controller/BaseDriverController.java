@@ -47,7 +47,7 @@ public class BaseDriverController {
     public void pressKey(AndroidKey key) {
     }
 
-    public void scroll(WebElement webElement, Integer xVector, Integer yVector) {
+    public void scroll(WebElement webElement, int xVector, int yVector) {
     }
 
     public void swipe(String direction) {

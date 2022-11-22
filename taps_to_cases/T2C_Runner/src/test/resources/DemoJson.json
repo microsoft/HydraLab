@@ -4,21 +4,265 @@
       "id": "windows",
       "platform": "windows",
       "init": {
-        "launcherApp": "Microsoft.YourPhone_8wekyb3d8bbwe"
       }
     },
     {
-      "id": "13211FDD400183",
+      "id": "10086",
       "platform": "android",
       "init": {
-        "launcherApp": "com.microsoft.appmanager"
       }
     }
   ],
   "cases": [
     {
       "index": 0,
-      "driverId": "13211FDD400183",
+      "elementInfo": {
+        "index": "3",
+        "package": "com.android.vending",
+        "class": "android.widget.Button",
+        "text": "Sign in",
+        "resource-id": "com.android.vending:id/0_resource_name_obfuscated",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[510,1930][930,2056]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.LinearLayout/android.widget.Button"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 1,
+      "elementInfo": {
+        "index": "0",
+        "package": "com.google.android.gms",
+        "class": "android.widget.EditText",
+        "text": "",
+        "resource-id": "identifierId",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[91,773][1354,962]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.webkit.WebView/android.webkit.WebView/android.view.View/android.view.View/android.view.View[2]/android.view.View/android.view.View[1]/android.view.View/android.widget.EditText"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "input",
+        "arguments": {
+          "content": "test@gmail.com",
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 2,
+      "elementInfo": {
+        "index": "0",
+        "package": "com.google.android.gms",
+        "class": "android.widget.Button",
+        "text": "Next",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[1062,1769][1370,1937]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.webkit.WebView/android.webkit.WebView/android.view.View/android.view.View/android.view.View[3]/android.view.View/android.widget.Button"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 3,
+      "elementInfo": {
+        "index": "0",
+        "package": "com.google.android.gms",
+        "class": "android.widget.EditText",
+        "text": "",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "true",
+        "long-clickable": "false",
+        "password": "true",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[91,836][1354,1022]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.webkit.WebView/android.webkit.WebView/android.view.View/android.view.View/android.view.View[2]/android.view.View/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.widget.EditText"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "input",
+        "arguments": {
+          "content": "test"
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 4,
+      "elementInfo": {
+        "index": "0",
+        "package": "com.google.android.gms",
+        "class": "android.widget.Button",
+        "text": "Next",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[1062,1769][1370,1937]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.webkit.WebView/android.webkit.WebView/android.view.View/android.view.View/android.view.View[3]/android.view.View/android.widget.Button"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 5,
+      "elementInfo": {
+        "index": "0",
+        "package": "com.google.android.gms",
+        "class": "android.widget.Button",
+        "text": "I agree",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[1029,1767][1361,1897]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.webkit.WebView/android.webkit.WebView/android.view.View/android.view.View[1]/android.view.View[3]/android.view.View/android.widget.Button"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 6,
+      "elementInfo": {
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 7,
+      "elementInfo": {
+        "index": "0",
+        "package": "com.android.vending",
+        "class": "android.widget.ImageView",
+        "text": "",
+        "resource-id": "com.android.vending:id/0_resource_name_obfuscated",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[1167,119][1321,273]",
+        "displayed": "true",
+        "xpath": "//android.widget.FrameLayout[@content-desc=\"Signed in as wenbin ms gdsliutest@gmail.com\nAccount and settings.\"]/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.ImageView"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 8,
+      "elementInfo": {
+        "index": "2",
+        "package": "com.android.vending",
+        "class": "android.widget.TextView",
+        "text": "gdsliutest@gmail.com",
+        "resource-id": "com.android.vending:id/0_resource_name_obfuscated",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[294,642][736,699]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.ScrollView/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.view.ViewGroup/android.widget.TextView[2]"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "assert",
+        "arguments": {
+          "attribute": "text",
+          "expectedValue": "test@gmail.com"
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 9,
+      "driverId": "10086",
       "action": {
         "actionType": "activateApp",
         "arguments": {
@@ -26,6 +270,580 @@
         }
       },
       "isOption": false
+    },
+
+
+    {
+      "index": 10,
+      "elementInfo": {
+        "index": "1",
+        "package": "com.microsoft.appmanager",
+        "class": "android.widget.Button",
+        "text": "Link your phone and PC",
+        "resource-id": "com.microsoft.appmanager:id/link_pc_continue_button",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[28,2300][1412,2460]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.ScrollView/android.widget.LinearLayout/android.widget.Button[1]"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 11,
+      "elementInfo": {
+        "index": "0",
+        "package": "com.microsoft.appmanager",
+        "class": "android.widget.Button",
+        "text": "Continue",
+        "resource-id": "com.microsoft.appmanager:id/continue_with_qrc_button",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[28,2299][1412,2459]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.widget.ScrollView/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.Button"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 12,
+      "elementInfo": {
+        "index": "0",
+        "package": "com.android.permissioncontroller",
+        "class": "android.widget.Button",
+        "text": "WHILE USING THE APP",
+        "resource-id": "com.android.permissioncontroller:id/permission_allow_foreground_only_button",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[177,1376][1263,1572]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.ScrollView/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.LinearLayout[2]/android.widget.Button[1]"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": true
+    },
+    {
+      "index": 13,
+      "elementInfo": {
+        "index": "1",
+        "package": "com.microsoft.appmanager",
+        "class": "android.widget.Button",
+        "text": "Try another way",
+        "resource-id": "com.microsoft.appmanager:id/try_another_way_button",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "true",
+        "enabled": "true",
+        "focusable": "true",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[112,2606][1328,2760]",
+        "displayed": "true",
+        "xpath": "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout/android.view.ViewGroup/android.widget.ScrollView/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.Button"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 14,
+      "elementInfo": {
+        "index": "1",
+        "package": "com.microsoft.appmanager",
+        "class": "android.widget.TextView",
+        "text": "Sign in with Microsoft",
+        "checkable": "false",
+        "checked": "false",
+        "clickable": "false",
+        "enabled": "true",
+        "focusable": "false",
+        "focused": "false",
+        "long-clickable": "false",
+        "password": "false",
+        "scrollable": "false",
+        "selected": "false",
+        "bounds": "[491,2342][1033,2418]",
+        "displayed": "true",
+        "xpath": "//android.widget.Button[@content-desc=\"Sign in with your Microsoft account\"]/android.widget.LinearLayout/android.widget.TextView"
+      },
+      "driverId": "10086",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOption": false
+    },
+    {
+      "index": 15,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "sleep",
+        "arguments": {
+          "duration": "1000"
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 16,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 439,
+          "y": 535
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 17,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "sleep",
+        "arguments": {
+          "duration": "1000"
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 18,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 798,
+          "y": 2094
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 19,
+      "elementInfo": {  },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1372,
+          "y": 2090
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 20,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1352,
+          "y": 2086
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 21,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 642,
+          "y": 2094
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 22,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 363,
+          "y": 2094
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 23,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 275,
+          "y": 2310
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 24,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 646,
+          "y": 2074
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 25,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 953,
+          "y": 2086
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 26,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 287,
+          "y": 2318
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 27,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 363,
+          "y": 2094
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 28,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 507,
+          "y": 2082
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 29,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 578,
+          "y": 2286
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 30,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1217,
+          "y": 2082
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 31,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 495,
+          "y": 2094
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 32,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1372,
+          "y": 2082
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 33,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 507,
+          "y": 2090
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 34,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1209,
+          "y": 2086
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 35,
+      "elementInfo": {},
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 431,
+          "y": 2302
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 36,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 287,
+          "y": 2728
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 37,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1217,
+          "y": 2098
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 38,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 913,
+          "y": 2094
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 39,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 650,
+          "y": 2082
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 40,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1292,
+          "y": 2302
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 41,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1221,
+          "y": 2070
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 42,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1217,
+          "y": 2082
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 43,
+      "elementInfo": {  },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1145,
+          "y": 2290
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 44,
+      "elementInfo": {  },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1145,
+          "y": 2748
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 45,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 586,
+          "y": 2525
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 46,
+      "elementInfo": {  },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1217,
+          "y": 2074
+        }
+      },
+      "isOption": false
+    },
+    {
+      "index": 47,
+      "elementInfo": { },
+      "driverId": "10086",
+      "action": {
+        "actionType": "tap",
+        "arguments": {
+          "x": 1157,
+          "y": 2517
+        }
+      },
+      "isOption": false
     }
+
   ]
 }

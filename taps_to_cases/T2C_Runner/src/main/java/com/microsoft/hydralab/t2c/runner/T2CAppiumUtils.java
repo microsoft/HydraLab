@@ -104,12 +104,14 @@ public class T2CAppiumUtils {
                 driver.pressKey(AndroidKey.HOME);
                 break;
             case "move":
-                Integer xVector = (Integer) arguments.get("xVector");
-                Integer yVector = (Integer) arguments.get("yVector");
+                Object xVector = arguments.get("xVector");
+                Object yVector = arguments.get("yVector");
                 if (xVector == null || yVector == null) {
                     throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' and 'yVector' in the json. actionId: " + actionInfo.getId());
                 }
-                driver.scroll(webElement, xVector, yVector);
+                int xVectorInt = xVector instanceof Integer ? (Integer) xVector : Integer.getInteger((String) xVector);
+                int yVectorInt = yVector instanceof Integer ? (Integer) yVector : Integer.getInteger((String) yVector);
+                driver.scroll(webElement, xVectorInt, yVectorInt);
                 break;
             case "swipe":
                 String direction = (String) arguments.get("direction");
@@ -119,10 +121,11 @@ public class T2CAppiumUtils {
                 driver.swipe(direction);
                 break;
             case "longClick":
-                Integer duration = (Integer) arguments.get("duration");
-                if (duration == null) {
+                Object durationObj = arguments.get("duration");
+                if (durationObj == null) {
                     throw new IllegalArgumentException("Duration is not defined. Please add argument 'duration' in the json. actionId: " + actionInfo.getId());
                 }
+                int duration = durationObj instanceof Integer ? (Integer) durationObj : Integer.getInteger((String) durationObj);
                 driver.longClick(duration, webElement);
                 break;
             case "assert":
@@ -134,7 +137,8 @@ public class T2CAppiumUtils {
                 driver.assertElementAttribute(webElement, attribute, expectedValue);
                 break;
             case "sleep":
-                long timeout = Long.parseLong((String) arguments.get("duration"));
+                Object timeoutObj = arguments.get("duration");
+                long timeout = timeoutObj instanceof Long ? (Long) timeoutObj : Long.parseLong((String) arguments.get("duration"));
                 try {
                     Thread.sleep(timeout);
                 } catch (InterruptedException e) {
@@ -151,11 +155,13 @@ public class T2CAppiumUtils {
                 keyToInfoMap.put(id, info);
                 break;
             case "dragAndDrop":
-                xVector = (Integer) arguments.get("xVector");
-                yVector = (Integer) arguments.get("yVector");
+                Object xVectorDnd = arguments.get("xVector");
+                Object yVectorDnd = arguments.get("yVector");
                 String toElementStr = (String) arguments.get("toElement");
-                if (xVector != null && yVector != null) {
-                    driver.dragAndDrop(webElement, xVector, yVector);
+                if (xVectorDnd != null && yVectorDnd != null) {
+                    int xVectorIntDnd = xVectorDnd instanceof Integer ? (Integer) xVectorDnd : Integer.getInteger((String) xVectorDnd);
+                    int yVectorIntDnd = yVectorDnd instanceof Integer ? (Integer) yVectorDnd : Integer.getInteger((String) yVectorDnd);
+                    driver.dragAndDrop(webElement, xVectorIntDnd, yVectorIntDnd);
                 } else if (toElementStr != null) {
                     BaseElementInfo toElementInfo;
                     if (driver instanceof AndroidDriverController) {
