@@ -50,8 +50,4 @@ public class WindowsDriverController extends BaseDriverController {
         windowsDriver.perform(Arrays.asList(tap));
     }
 
-    @Override
-    public void sleep(Duration duration) {
-        windowsDriver.manage().timeouts().implicitlyWait(duration);
-    }
 }

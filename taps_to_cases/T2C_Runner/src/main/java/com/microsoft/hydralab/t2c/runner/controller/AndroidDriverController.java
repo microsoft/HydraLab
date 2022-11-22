@@ -53,7 +53,7 @@ public class AndroidDriverController extends BaseDriverController {
     }
 
     @Override
-    public void sendKeys(AndroidKey key) {
+    public void pressKey(AndroidKey key) {
         androidDriver.pressKey(new KeyEvent(key));
     }
 
@@ -129,10 +129,5 @@ public class AndroidDriverController extends BaseDriverController {
                 PointerInput.Origin.viewport(), toX, toY));
         dragNDrop.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         androidDriver.perform(Arrays.asList(dragNDrop));
-    }
-
-    @Override
-    public void sleep(Duration duration) {
-        androidDriver.manage().timeouts().implicitlyWait(duration);
     }
 }

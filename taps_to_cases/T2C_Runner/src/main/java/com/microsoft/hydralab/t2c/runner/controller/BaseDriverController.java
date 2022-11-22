@@ -52,7 +52,7 @@ public class BaseDriverController {
     public void terminateApp(String appPackageName) {
     }
 
-    public void sendKeys(AndroidKey key) {
+    public void pressKey(AndroidKey key) {
     }
 
     public void scroll(WebElement webElement, Integer xVector, Integer yVector) {
@@ -165,7 +165,4 @@ public class BaseDriverController {
         return elementFound;
     }
 
-    public void sleep(Duration duration) {
-
-    }
 }

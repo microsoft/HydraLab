@@ -39,10 +39,4 @@ public class EdgeDriverController extends BaseDriverController {
         tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         windowsDriver.perform(Arrays.asList(tap));
     }
-
-    @Override
-    public void sleep(Duration duration) {
-        edgeDriver.manage().timeouts().implicitlyWait(duration);
-        windowsDriver.manage().timeouts().implicitlyWait(duration);
-    }
 }

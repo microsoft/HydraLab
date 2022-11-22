@@ -15,7 +15,6 @@ import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import org.openqa.selenium.WebElement;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +37,6 @@ public class T2CAppiumUtils {
             elementFinded = driver.findElementByXPath(keyToVal.get("xpath"));
             if (elementFinded != null) return elementFinded;
         }
-        System.out.println("findElement: " + driver.webDriver.getPageSource());
         throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
     }
 
@@ -59,7 +57,6 @@ public class T2CAppiumUtils {
         BaseElementInfo element = actionInfo.getTestElement();
         WebElement webElement = findElement(driver, element);
         Map<String, Object> arguments = actionInfo.getArguments();
-        System.out.println(new Date() + ", do action: " + ActionType);
         switch (ActionType) {
             case "click":
                 driver.click(webElement);
@@ -104,10 +101,10 @@ public class T2CAppiumUtils {
                 driver.terminateApp(removeAppPackageName);
                 break;
             case "back":
-                driver.sendKeys(AndroidKey.BACK);
+                driver.pressKey(AndroidKey.BACK);
                 break;
             case "home":
-                driver.sendKeys(AndroidKey.HOME);
+                driver.pressKey(AndroidKey.HOME);
                 break;
             case "move":
                 Integer xVector = (Integer) arguments.get("xVector");
@@ -149,7 +146,6 @@ public class T2CAppiumUtils {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-//                driver.sleep(Duration.ofMillis(timeout));
                 break;
             case "getInfo":
                 String attributeKey = (String) arguments.get("attribute");
