@@ -25,6 +25,11 @@ public class EdgeDriverController extends BaseDriverController {
     }
 
     @Override
+    public void sendKeys(String content) {
+        edgeDriver.getKeyboard().sendKeys(content);
+    }
+
+    @Override
     public void tap(int x, int y) {
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence tap = new Sequence(finger, 1);
@@ -33,5 +38,11 @@ public class EdgeDriverController extends BaseDriverController {
         tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
         tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         windowsDriver.perform(Arrays.asList(tap));
+    }
+
+    @Override
+    public void sleep(Duration duration) {
+        edgeDriver.manage().timeouts().implicitlyWait(duration);
+        windowsDriver.manage().timeouts().implicitlyWait(duration);
     }
 }

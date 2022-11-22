@@ -27,6 +27,14 @@ public class BaseDriverController {
         element.click();
     }
 
+    /**
+     * Send content via keyboard, this will send the string directly to the current focus element
+     * @param content string you want to input with
+     */
+    public void sendKeys(String content) {
+
+    }
+
     public void tap(int x, int y) {
     }
 
@@ -44,7 +52,7 @@ public class BaseDriverController {
     public void terminateApp(String appPackageName) {
     }
 
-    public void pressKey(AndroidKey key) {
+    public void sendKeys(AndroidKey key) {
     }
 
     public void scroll(WebElement webElement, Integer xVector, Integer yVector) {
@@ -155,5 +163,9 @@ public class BaseDriverController {
             logger.info("Can not find element by name: " + name);
         }
         return elementFound;
+    }
+
+    public void sleep(Duration duration) {
+
     }
 }

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class AndroidDriverController extends BaseDriverController {
     private final AndroidDriver androidDriver;
@@ -39,6 +40,11 @@ public class AndroidDriverController extends BaseDriverController {
     }
 
     @Override
+    public void sendKeys(String content) {
+        androidDriver.getKeyboard().sendKeys(content);
+    }
+
+    @Override
     public void terminateApp(String appPackageName) {
         if (androidDriver.queryAppState(appPackageName) != ApplicationState.NOT_RUNNING &&
                 androidDriver.queryAppState(appPackageName) != ApplicationState.NOT_INSTALLED) {
@@ -47,7 +53,7 @@ public class AndroidDriverController extends BaseDriverController {
     }
 
     @Override
-    public void pressKey(AndroidKey key) {
+    public void sendKeys(AndroidKey key) {
         androidDriver.pressKey(new KeyEvent(key));
     }
 
@@ -123,5 +129,10 @@ public class AndroidDriverController extends BaseDriverController {
                 PointerInput.Origin.viewport(), toX, toY));
         dragNDrop.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         androidDriver.perform(Arrays.asList(dragNDrop));
+    }
+
+    @Override
+    public void sleep(Duration duration) {
+        androidDriver.manage().timeouts().implicitlyWait(duration);
     }
 }

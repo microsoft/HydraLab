@@ -15,6 +15,7 @@ import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import org.openqa.selenium.WebElement;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ public class T2CAppiumUtils {
             elementFinded = driver.findElementByXPath(keyToVal.get("xpath"));
             if (elementFinded != null) return elementFinded;
         }
+        System.out.println("findElement: " + driver.webDriver.getPageSource());
         throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
     }
 
@@ -57,7 +59,7 @@ public class T2CAppiumUtils {
         BaseElementInfo element = actionInfo.getTestElement();
         WebElement webElement = findElement(driver, element);
         Map<String, Object> arguments = actionInfo.getArguments();
-
+        System.out.println(new Date() + ", do action: " + ActionType);
         switch (ActionType) {
             case "click":
                 driver.click(webElement);
@@ -78,7 +80,11 @@ public class T2CAppiumUtils {
                 if (content == null) {
                     throw new IllegalArgumentException("Trying to input a null String. actionId: " + actionInfo.getId());
                 }
-                driver.input(webElement, content);
+                if (webElement == null) {
+                    driver.sendKeys(content);
+                } else {
+                    driver.input(webElement, content);
+                }
                 break;
             case "clear":
                 driver.clear(webElement);
@@ -98,10 +104,10 @@ public class T2CAppiumUtils {
                 driver.terminateApp(removeAppPackageName);
                 break;
             case "back":
-                driver.pressKey(AndroidKey.BACK);
+                driver.sendKeys(AndroidKey.BACK);
                 break;
             case "home":
-                driver.pressKey(AndroidKey.HOME);
+                driver.sendKeys(AndroidKey.HOME);
                 break;
             case "move":
                 Integer xVector = (Integer) arguments.get("xVector");
@@ -143,6 +149,7 @@ public class T2CAppiumUtils {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+//                driver.sleep(Duration.ofMillis(timeout));
                 break;
             case "getInfo":
                 String attributeKey = (String) arguments.get("attribute");

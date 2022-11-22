@@ -18,6 +18,12 @@ public class WindowsDriverController extends BaseDriverController {
         this.windowsDriver = windowsDriver;
     }
 
+
+    @Override
+    public void sendKeys(String content) {
+        windowsDriver.getKeyboard().sendKeys(content);
+    }
+
     @Override
     public void dragAndDropWithPosition(int fromX, int fromY, int toX, int toY) {
         // Using "Pen" on Windows Platform can run Drag and Drop well since Mouse is not supported in current appium version
@@ -42,5 +48,10 @@ public class WindowsDriverController extends BaseDriverController {
         tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
         tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         windowsDriver.perform(Arrays.asList(tap));
+    }
+
+    @Override
+    public void sleep(Duration duration) {
+        windowsDriver.manage().timeouts().implicitlyWait(duration);
     }
 }
