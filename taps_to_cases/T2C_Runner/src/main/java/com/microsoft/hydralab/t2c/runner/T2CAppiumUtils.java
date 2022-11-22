@@ -57,7 +57,6 @@ public class T2CAppiumUtils {
         BaseElementInfo element = actionInfo.getTestElement();
         WebElement webElement = findElement(driver, element);
         Map<String, Object> arguments = actionInfo.getArguments();
-
         switch (ActionType) {
             case "click":
                 driver.click(webElement);
@@ -78,7 +77,11 @@ public class T2CAppiumUtils {
                 if (content == null) {
                     throw new IllegalArgumentException("Trying to input a null String. actionId: " + actionInfo.getId());
                 }
-                driver.input(webElement, content);
+                if (webElement == null) {
+                    driver.sendKeys(content);
+                } else {
+                    driver.input(webElement, content);
+                }
                 break;
             case "clear":
                 driver.clear(webElement);
