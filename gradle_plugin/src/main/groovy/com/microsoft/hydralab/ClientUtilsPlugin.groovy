@@ -3,6 +3,7 @@
 package com.microsoft.hydralab
 
 import com.microsoft.hydralab.utils.HydraLabClientUtils
+import org.apache.commons.lang3.StringUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -12,78 +13,25 @@ class ClientUtilsPlugin implements Plugin<Project> {
     void apply(Project target) {
         target.task("requestHydraLabTest") {
             doFirst {
-                // try run with params:
-                // -PappPath=path/to/app -PtestAppPath=path/to/app -PbuildFlavor=flavor -PtestSuiteName=SuiteFullName -PinstrumentationArgs="a=b,c=d"
-                // to ignore a case use -PinstrumentationArgs="ignores=testA|testB"
-                if (!project.hasProperty("appPath")
-                        || !project.hasProperty("runningType")
-                        || !project.hasProperty("pkgName")
-                        || !project.hasProperty("deviceIdentifier")
-                        || !project.hasProperty("runTimeOutSeconds")
-                        || !project.hasProperty("authToken")
-                ) {
-                    throw new Exception('Required params not provided! Make sure the following params are all provided correctly: authToken, appPath, pkgName, runningType, deviceIdentifier, runTimeOutSeconds.')
-                }
                 def runningType = ""
                 if (project.hasProperty('runningType')) {
                     runningType = project.runningType
                 }
-                def deviceIdentifierArg = null
+                def deviceIdentifier = ""
                 if (project.hasProperty('deviceIdentifier')) {
-                    deviceIdentifierArg = project.deviceIdentifier
+                    deviceIdentifier = project.deviceIdentifier
                 }
-                def queueTimeOutSeconds = project.runTimeOutSeconds
+                def runTimeOutSeconds = ""
+                if (project.hasProperty('runTimeOutSeconds')) {
+                    runTimeOutSeconds = project.runTimeOutSeconds
+                }
+                def queueTimeOutSeconds = runTimeOutSeconds
                 if (project.hasProperty('queueTimeOutSeconds')) {
                     queueTimeOutSeconds = project.queueTimeOutSeconds
                 }
-                // running type specified params
-                switch(runningType) {
-                    case "INSTRUMENTATION":
-                        if (!project.hasProperty("testAppPath")) {
-                            throw new Exception('Required param testAppPath not provided!')
-                        }
-                        if (!project.hasProperty("testSuiteName")) {
-                            throw new Exception('Required param testSuiteName not provided!')
-                        }
-                        if (!project.hasProperty("testPkgName")) {
-                            throw new Exception('Required param testPkgName not provided!')
-                        }
-                        break
-                    case "APPIUM":
-                        if (!project.hasProperty("testAppPath")) {
-                            throw new Exception('Required param testAppPath not provided!')
-                        }
-                        if (!project.hasProperty("testSuiteName")) {
-                            throw new Exception('Required param testSuiteName not provided!')
-                        }
-                        break
-                    case "APPIUM_CROSS":
-                        if (!project.hasProperty("testAppPath")) {
-                            throw new Exception('Required param testAppPath not provided!')
-                        }
-                        if (!project.hasProperty("testSuiteName")) {
-                            throw new Exception('Required param testSuiteName not provided!')
-                        }
-                        break
-                    case "SMART":
-                        if (!project.hasProperty("maxStepCount")) {
-                            throw new Exception('Required param maxStepCount not provided!')
-                        }
-                        if (!project.hasProperty("deviceTestCount")) {
-                            throw new Exception('Required param deviceTestCount not provided!')
-                        }
-                        break
-                    case "T2C_JSON":
-                        if (!project.hasProperty("testAppPath")) {
-                            throw new Exception('Required param testAppPath not provided!')
-                        }
-                        break
-                    case "APPIUM_MONKEY":
-                        break
-                    case "MONKEY":
-                        break
-                    default:
-                        break
+                def testSuiteName = ""
+                if (project.hasProperty('testSuiteName')) {
+                    testSuiteName = project.testSuiteName
                 }
 
                 def appPath = ""
@@ -121,10 +69,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         attachmentConfigPath = attachmentConfigFile.absolutePath
                     }
                 }
-                def tag = null
-                if (project.hasProperty('tag')) {
-                    tag = project.tag
-                }
 
                 def reportDir = new File(project.buildDir, "testResult")
                 if (!reportDir.exists()) reportDir.mkdirs()
@@ -139,6 +83,11 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         // use | to represent comma to avoid conflicts
                         argsMap.put(kv[0], kv[1].replace("|", ","))
                     }
+                }
+
+                def tag = null
+                if (project.hasProperty('tag')) {
+                    tag = project.tag
                 }
 
                 def extraArgsMap = null
@@ -161,14 +110,12 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('hydraLabAPIHost')) {
                     apiConfig.host = project.hydraLabAPIHost
                 }
-
                 if (project.hasProperty('authToken')) {
                     apiConfig.authToken = project.authToken
                 }
                 if (project.hasProperty('onlyAuthPost')) {
                     apiConfig.onlyAuthPost = Boolean.parseBoolean(project.onlyAuthPost)
                 }
-
                 if (project.hasProperty('pkgName')) {
                     apiConfig.pkgName = project.pkgName
                 }
@@ -196,7 +143,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('testScope')) {
                     apiConfig.testScope = project.testScope
                 }
-                // optional for APPIUM_CROSS, T2C_JSON
                 if (project.hasProperty('needUninstall')) {
                     apiConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
                 }
@@ -204,10 +150,11 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     apiConfig.needClearData = Boolean.parseBoolean(project.needClearData)
                 }
 
+                requiredParamCheck(runningType, appPath, testAppPath, deviceIdentifier, runTimeOutSeconds, testSuiteName, apiConfig)
+
                 HydraLabClientUtils.runTestOnDeviceWithApp(
                         runningType, appPath, testAppPath, attachmentConfigPath,
-                        project.hasProperty('testSuiteName') ? project.testSuiteName : "",
-                        deviceIdentifierArg, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(project.runTimeOutSeconds),
+                        testSuiteName, deviceIdentifier, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(runTimeOutSeconds),
                         reportDir.absolutePath, argsMap, extraArgsMap, tag,
                         apiConfig
                 )
@@ -218,4 +165,66 @@ class ClientUtilsPlugin implements Plugin<Project> {
         }
     }
 
+    private void requiredParamCheck(String runningType, String appPath, String testAppPath, String deviceIdentifier, String runTimeOutSeconds, String testSuiteName, HydraLabClientUtils.HydraLabAPIConfig apiConfig) {
+        if (StringUtils.isBlank(runningType)
+                || StringUtils.isBlank(appPath)
+                || StringUtils.isBlank(apiConfig.pkgName)
+                || StringUtils.isBlank(deviceIdentifier)
+                || StringUtils.isBlank(runTimeOutSeconds)
+                || StringUtils.isBlank(apiConfig.authToken)
+        ) {
+            throw new Exception('Required params not provided! Make sure the following params are all provided correctly: authToken, appPath, pkgName, runningType, deviceIdentifier, runTimeOutSeconds.')
+        }
+
+        // running type specified params
+        switch (runningType) {
+            case "INSTRUMENTATION":
+                if (StringUtils.isBlank(testAppPath)) {
+                    throw new Exception('Required param testAppPath not provided!')
+                }
+                if (StringUtils.isBlank(apiConfig.testPkgName)) {
+                    throw new Exception('Required param testPkgName not provided!')
+                }
+                if (apiConfig.testScope != TestScope.PACKAGE && apiConfig.testScope != TestScope.CLASS) {
+                    break
+                }
+                if (StringUtils.isBlank(testSuiteName)) {
+                    throw new Exception('Required param testSuiteName not provided!')
+                }
+                break
+            case "APPIUM":
+                if (StringUtils.isBlank(testAppPath)) {
+                    throw new Exception('Required param testAppPath not provided!')
+                }
+                if (StringUtils.isBlank(testSuiteName)) {
+                    throw new Exception('Required param testSuiteName not provided!')
+                }
+                break
+            case "APPIUM_CROSS":
+                if (StringUtils.isBlank(testAppPath)) {
+                    throw new Exception('Required param testAppPath not provided!')
+                }
+                if (StringUtils.isBlank(testSuiteName)) {
+                    throw new Exception('Required param testSuiteName not provided!')
+                }
+                break
+            case "SMART":
+                break
+            case "T2C_JSON":
+                break
+            case "APPIUM_MONKEY":
+                break
+            case "MONKEY":
+                break
+            default:
+                break
+        }
+    }
+
+
+    interface TestScope {
+        String TEST_APP = "TEST_APP";
+        String PACKAGE = "PACKAGE";
+        String CLASS = "CLASS";
+    }
 }

@@ -784,7 +784,7 @@ public class HydraLabClientUtils {
         public boolean needClearData = true;
         public String teamName = "";
         public String testRunnerName = "androidx.test.runner.AndroidJUnitRunner";
-        public String testScope = TestScope.CLASS;
+        public String testScope = "";
 
         public static HydraLabAPIConfig defaultAPI() {
             return new HydraLabAPIConfig();
@@ -946,12 +946,6 @@ public class HydraLabClientUtils {
             String CPOY = "COPY";
             String UNZIP = "UNZIP";
         }
-    }
-
-    public interface TestScope {
-        String TEST_APP = "TEST_APP";
-        String PACKAGE = "PACKAGE";
-        String CLASS = "CLASS";
     }
 
     public enum MaskSensitiveData {

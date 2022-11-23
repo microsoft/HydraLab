@@ -15,6 +15,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.WindowsDeviceManager;
 import com.microsoft.hydralab.common.util.Const;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -137,10 +138,25 @@ public class DeviceControlService {
     }
 
     public TestTask runTestTask(TestTaskSpec testTaskSpec) {
+        if (StringUtils.isEmpty(testTaskSpec.runningType)) {
+            testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
+        }
+        determineScopeOfTestCase(testTaskSpec);
+        log.info("TestTaskSpec: {}", testTaskSpec);
+
         String beanName = TestTask.TestRunnerMap.get(testTaskSpec.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
-        TestTask testTask = runner.runTest(testTaskSpec);
-        return testTask;
+        return runner.runTest(testTaskSpec);
+    }
+
+    private void determineScopeOfTestCase(TestTaskSpec testTaskSpec) {
+        if (!StringUtils.isEmpty(testTaskSpec.testScope)) {
+            return;
+        }
+        testTaskSpec.testScope = TestTask.TestScope.CLASS;
+        if (StringUtils.isEmpty(testTaskSpec.testSuiteClass)) {
+            testTaskSpec.testScope = TestTask.TestScope.TEST_APP;
+        }
     }
 
     public DeviceManager getDeviceManager() {
