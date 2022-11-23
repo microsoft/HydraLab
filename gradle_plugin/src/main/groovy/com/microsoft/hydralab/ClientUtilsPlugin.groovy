@@ -37,7 +37,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     queueTimeOutSeconds = project.queueTimeOutSeconds
                 }
                 // running type specified params
-                switch(runningType) {
+                switch (runningType) {
                     case "INSTRUMENTATION":
                         if (!project.hasProperty("testAppPath")) {
                             throw new Exception('Required param testAppPath not provided!')
@@ -74,9 +74,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         }
                         break
                     case "T2C_JSON":
-                        if (!project.hasProperty("testAppPath")) {
-                            throw new Exception('Required param testAppPath not provided!')
-                        }
                         break
                     case "APPIUM_MONKEY":
                         break
@@ -195,7 +192,17 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 }
                 if (project.hasProperty('testScope')) {
                     apiConfig.testScope = project.testScope
+                } else {
+                    if (!project.hasProperty('testSuiteName')) {
+                        // set default testScope as TEST_APP
+                        apiConfig.testScope = "TEST_APP"
+                    }
                 }
+                def testSuiteName = ""
+                if (project.hasProperty('testSuiteName')) {
+                    testSuiteName = project.testSuiteName
+                }
+
                 // optional for APPIUM_CROSS, T2C_JSON
                 if (project.hasProperty('needUninstall')) {
                     apiConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
@@ -206,8 +213,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
 
                 HydraLabClientUtils.runTestOnDeviceWithApp(
                         runningType, appPath, testAppPath, attachmentConfigPath,
-                        project.hasProperty('testSuiteName') ? project.testSuiteName : "",
-                        deviceIdentifierArg, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(project.runTimeOutSeconds),
+                        testSuiteName, deviceIdentifierArg, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(project.runTimeOutSeconds),
                         reportDir.absolutePath, argsMap, extraArgsMap, tag,
                         apiConfig
                 )
