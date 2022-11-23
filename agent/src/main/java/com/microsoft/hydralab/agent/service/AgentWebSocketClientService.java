@@ -111,7 +111,12 @@ public class AgentWebSocketClientService implements TestRunningCallback {
                         testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
                     }
                     if (StringUtils.isEmpty(testTaskSpec.testScope)) {
-                        testTaskSpec.testScope = TestTask.TestScope.CLASS;
+                        if (StringUtils.isEmpty(testTaskSpec.testSuiteClass)) {
+                            testTaskSpec.testScope = TestTask.TestScope.TEST_APP;
+                        }
+                        else {
+                            testTaskSpec.testScope = TestTask.TestScope.CLASS;
+                        }
                     }
                     TestTask testTask = deviceControlService.runTestTask(testTaskSpec);
                     if (testTask == null) {
