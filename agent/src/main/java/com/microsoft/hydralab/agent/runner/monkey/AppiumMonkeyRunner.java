@@ -19,7 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-@Service
+@Service("appiumMonkeyRunner")
 public class AppiumMonkeyRunner extends AppiumRunner {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private LogCollector logCollector;

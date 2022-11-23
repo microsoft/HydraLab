@@ -8,6 +8,7 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -25,6 +26,14 @@ public class BaseDriverController {
 
     public void click(WebElement element) {
         element.click();
+    }
+
+    /**
+     * Send content via keyboard, this will send the string directly to the current focus element
+     * @param content string you want to input with
+     */
+    public void sendKeys(String content) {
+        new Actions(webDriver).sendKeys(content).perform();
     }
 
     public void tap(int x, int y) {
@@ -47,7 +56,7 @@ public class BaseDriverController {
     public void pressKey(AndroidKey key) {
     }
 
-    public void scroll(WebElement webElement, Integer xVector, Integer yVector) {
+    public void scroll(WebElement webElement, int xVector, int yVector) {
     }
 
     public void swipe(String direction) {
@@ -156,4 +165,5 @@ public class BaseDriverController {
         }
         return elementFound;
     }
+
 }

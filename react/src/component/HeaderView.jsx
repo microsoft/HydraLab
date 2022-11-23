@@ -27,7 +27,7 @@ import Alert from "@mui/material/Alert";
 const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
         right: 10,
-        top: 20,
+        top: 45,
         border: `2px solid ${theme.palette.background.paper}`,
         padding: '0 4px',
     },

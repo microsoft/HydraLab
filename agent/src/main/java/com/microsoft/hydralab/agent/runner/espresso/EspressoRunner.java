@@ -23,7 +23,7 @@ import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Map;
 
-@Service
+@Service("espressoRunner")
 public class EspressoRunner extends TestRunner {
     @Resource
     ADBOperateUtil adbOperateUtil;
