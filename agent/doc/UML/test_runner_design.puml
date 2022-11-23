@@ -17,6 +17,8 @@ SmartRunner --|> TestRunner
 
 TestRunner --> TestRunningCallback
 
+TestRunner *--> DeviceManager
+
 AppiumCrossRunner --|> AppiumRunner
 @enduml
 
@@ -44,6 +46,12 @@ deactivate TestRunner
 DeviceControlService -> AgentWebSocketClientService
 deactivate DeviceControlService
 
+participant DeviceTask
+note over DeviceTask #aqua
+DeviceTask
+seems
+extra.
+end note
 
 TestThreadPool.Executor -> DeviceTask: doTask
 activate DeviceTask
@@ -71,3 +79,44 @@ TaskCompletion -> TestThreadPool.Executor
 deactivate TaskCompletion
 
 @enduml
+
+@startuml test_objects
+
+entity (TestTaskSpec)
+entity (TestTask)
+entity (DeviceTestTask)
+entity (AndroidTestUnit)
+
+
+TestTaskSpec -- TestTask: is mapped to
+TestTask *--> DeviceTestTask: contain a list of
+DeviceTestTask *--> AndroidTestUnit: contain a liest of
+@enduml
+
+@startjson test_spec_detail
+{
+    "fileSetId": "006b6ec7-52f9-45c7-84ad-419fc4315134",
+    "pkgName": "com.microsoft.appmanager",
+    "runningType": "APPIUM_CROSS",
+    "testSuiteClass": "com.microsoft.appmanager.longhaultest.suites.SurfaceSmokeTestSuite",
+    "deviceIdentifier": "55d93bc7-4d1d-4749-b493-a9de063a8a66",
+    "groupTestType": "SINGLE",
+    "maxStepCount": "",
+    "deviceTestCount": "",
+    "testTimeOutSec": "",
+    "instrumentationArgs": {
+        "enableScreenRecord": false,
+        "testInterval": 5000,
+        "runtimeUpLimit": 1,
+        "recordLatency": true,
+        "recordMemory": true,
+        "databaseUsername": "teams",
+        "databasePassword": "***********",
+        "ypcVersion": "1.22112.32.0",
+        "oem": "Surface",
+        "isReset": false
+    },
+    "frameworkType": "JUnit4",
+    "testRunnerName": "androidx.test.runner.AndroidJUnitRunner"
+}
+@endjson
