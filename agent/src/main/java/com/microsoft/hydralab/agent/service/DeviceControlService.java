@@ -138,10 +138,6 @@ public class DeviceControlService {
     }
 
     public TestTask runTestTask(TestTaskSpec testTaskSpec) {
-        if (testTaskSpec.instrumentationArgs != null) {
-            log.info("instrumentationArgs: {}", testTaskSpec.instrumentationArgs);
-        }
-
         if (StringUtils.isEmpty(testTaskSpec.runningType)) {
             testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
         }
