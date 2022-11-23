@@ -255,7 +255,7 @@ export default function Dashboard() {
                             </ListItem>
                             <ListItem
                                 style={{
-                                    height: "calc(100vh - 600px)",
+                                    height: "calc(100vh - 561px)",
                                     pointerEvents: "none"
                                 }}>
                             </ListItem>

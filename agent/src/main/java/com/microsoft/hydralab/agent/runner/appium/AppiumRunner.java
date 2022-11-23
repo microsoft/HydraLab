@@ -32,7 +32,7 @@ import java.util.Map;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
-@Service
+@Service("appiumRunner")
 public class AppiumRunner extends TestRunner {
 
     @Override

@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-@Service
+@Service("t2cRunner")
 public class T2CRunner extends AppiumRunner {
 
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();

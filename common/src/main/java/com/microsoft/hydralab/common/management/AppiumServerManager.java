@@ -6,6 +6,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
+import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.remote.IOSMobileCapabilityType;
@@ -16,6 +17,8 @@ import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.windows.WindowsDriver;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.openqa.selenium.NoSuchSessionException;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.net.UrlChecker;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -99,13 +102,12 @@ public class AppiumServerManager {
     public IOSDriver getIOSDriver(DeviceInfo deviceInfo, Logger logger) {
         startAppiumServer();
 
-        IOSDriver iosDriver = null;
         String udid = deviceInfo.getSerialNum();
-        if (iOSDrivers.containsKey(udid)) {
-            IOSDriver driver = iOSDrivers.get(udid);
-            logger.info(driver.toString());
-            logger.info(driver.getStatus().toString());
-            return driver;
+        IOSDriver iosDriver = iOSDrivers.get(udid);
+        if (iosDriver != null && isDriverAlive(iosDriver)) {
+            logger.info(iosDriver.toString());
+            logger.info(iosDriver.getStatus().toString());
+            return iosDriver;
         }
 
         int wdaPort = IOSUtils.getWdaPortByUdid(udid, logger);
@@ -156,11 +158,10 @@ public class AppiumServerManager {
     public AndroidDriver getAndroidDriver(DeviceInfo deviceInfo, Logger logger) {
         startAppiumServer();
 
-        AndroidDriver androidDriver;
         String udid = deviceInfo.getSerialNum();
-        if (androidDrivers.containsKey(udid)) {
-            AndroidDriver driver = androidDrivers.get(udid);
-            return driver;
+        AndroidDriver androidDriver = androidDrivers.get(udid);
+        if (androidDriver != null && isDriverAlive(androidDriver)) {
+            return androidDriver;
         }
 
         DesiredCapabilities caps = new DesiredCapabilities();
@@ -179,10 +180,9 @@ public class AppiumServerManager {
     public WindowsDriver getWindowsAppDriver(String appFamilyName, Logger logger) {
         startAppiumServer();
 
-        WindowsDriver windowsAppDriver;
-        if (windowsAppDrivers.containsKey(appFamilyName)) {
-            WindowsDriver driver = windowsAppDrivers.get(appFamilyName);
-            return driver;
+        WindowsDriver windowsAppDriver = windowsAppDrivers.get(appFamilyName);
+        if (windowsAppDriver != null && isDriverAlive(windowsAppDriver)) {
+            return windowsAppDriver;
         }
 
         DesiredCapabilities caps;
@@ -258,7 +258,7 @@ public class AppiumServerManager {
     public WindowsDriver getWindowsRootDriver(Logger logger) {
         startAppiumServer();
 
-        if (windowsRootDriver == null) {
+        if (windowsRootDriver == null || !isDriverAlive(windowsRootDriver)) {
             DesiredCapabilities caps = new DesiredCapabilities();
             caps.setCapability("platformName", "Windows");
             caps.setCapability("app", "Root");
@@ -274,6 +274,15 @@ public class AppiumServerManager {
         return windowsRootDriver;
     }
 
+    public Boolean isDriverAlive(AppiumDriver driver) {
+        try {
+            driver.getScreenshotAs(OutputType.FILE);
+            return true;
+        } catch (NoSuchSessionException e) {
+            return false;
+        }
+    }
+
     public void setWorkspacePath(String path) {
         workspacePath = path;
         edgeDriverZipPath = new File(workspacePath, EDGE_DRIVER_ZIP).getAbsolutePath();
@@ -285,7 +294,7 @@ public class AppiumServerManager {
     public WindowsDriver getWindowsEdgeDriver(Logger logger) {
         startAppiumServer();
 
-        if (winEdgeDriver == null) {
+        if (winEdgeDriver == null || !isDriverAlive(winEdgeDriver)) {
             String hexAppTopLevelWindow = getHexAppTopLevelWindowByProcessName(EDGE_PROCESS_NAME, logger);
             logger.info("Edge hexAppTopLevelWindow: " + hexAppTopLevelWindow);
             DesiredCapabilities caps = new DesiredCapabilities();

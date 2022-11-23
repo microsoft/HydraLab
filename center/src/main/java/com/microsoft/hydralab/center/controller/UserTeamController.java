@@ -130,7 +130,7 @@ public class UserTeamController {
         }
 
         relation = userTeamManagementService.addUserTeamRelation(teamId, user, isTeamAdmin);
-        securityUserService.reloadUserAuthentication(user.getMailAddress(), Const.AUTH_COMPONENT.TEAM);
+        securityUserService.reloadUserAuthentication(user.getMailAddress(), Const.AuthComponent.TEAM);
         return Result.ok(relation);
     }
 
@@ -164,7 +164,7 @@ public class UserTeamController {
         }
 
         userTeamManagementService.deleteUserTeamRelation(relation);
-        securityUserService.reloadUserAuthentication(user.getMailAddress(), Const.AUTH_COMPONENT.TEAM);
+        securityUserService.reloadUserAuthentication(user.getMailAddress(), Const.AuthComponent.TEAM);
         return Result.ok("delete user-team relation success!");
     }
 
@@ -265,7 +265,7 @@ public class UserTeamController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized to operate on this USER");
         }
         sysUserService.switchUserDefaultTeam(user, teamId, team.getTeamName());
-        securityUserService.reloadUserAuthentication(user.getMailAddress(), Const.AUTH_COMPONENT.DEFAULT_TEAM);
+        securityUserService.reloadUserAuthentication(user.getMailAddress(), Const.AuthComponent.DEFAULT_TEAM);
         return Result.ok(user);
     }
 
