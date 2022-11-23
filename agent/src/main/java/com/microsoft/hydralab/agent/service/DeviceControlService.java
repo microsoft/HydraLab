@@ -141,12 +141,12 @@ public class DeviceControlService {
         if (testTaskSpec.instrumentationArgs != null) {
             log.info("instrumentationArgs: {}", testTaskSpec.instrumentationArgs);
         }
-        log.info("TestTaskSpec: {}", testTaskSpec);
 
         if (StringUtils.isEmpty(testTaskSpec.runningType)) {
             testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
         }
         determineScopeOfTestCase(testTaskSpec);
+        log.info("TestTaskSpec: {}", testTaskSpec);
 
         String beanName = TestTask.TestRunnerMap.get(testTaskSpec.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
