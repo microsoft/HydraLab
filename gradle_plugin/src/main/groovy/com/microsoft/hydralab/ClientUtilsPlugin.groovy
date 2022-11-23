@@ -12,9 +12,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
     void apply(Project target) {
         target.task("requestHydraLabTest") {
             doFirst {
-                // try run with params:
-                // -PappPath=path/to/app -PtestAppPath=path/to/app -PbuildFlavor=flavor -PtestSuiteName=SuiteFullName -PinstrumentationArgs="a=b,c=d"
-                // to ignore a case use -PinstrumentationArgs="ignores=testA|testB"
                 if (!project.hasProperty("appPath")
                         || !project.hasProperty("runningType")
                         || !project.hasProperty("pkgName")
