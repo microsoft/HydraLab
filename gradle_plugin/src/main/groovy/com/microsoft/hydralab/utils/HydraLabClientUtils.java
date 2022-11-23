@@ -948,12 +948,6 @@ public class HydraLabClientUtils {
         }
     }
 
-    public interface TestScope {
-        String TEST_APP = "TEST_APP";
-        String PACKAGE = "PACKAGE";
-        String CLASS = "CLASS";
-    }
-
     public enum MaskSensitiveData {
         CURRENT_PASSWORD("(current[_\\s-]*password)[=:\"\\s]*(\\w*)"),
         PASSWORD("[&,;\"\'\\s]+(password|pwd)[=:\"\\s]*(\\w*)"),
