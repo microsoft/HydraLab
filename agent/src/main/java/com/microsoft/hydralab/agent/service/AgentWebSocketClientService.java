@@ -101,24 +101,7 @@ public class AgentWebSocketClientService implements TestRunningCallback {
                     if (!(message.getBody() instanceof TestTaskSpec)) {
                         break;
                     }
-                    TestTaskSpec testTaskSpec = (TestTaskSpec) message.getBody();
-                    if (testTaskSpec.instrumentationArgs != null) {
-                        log.info("instrumentationArgs: {}", testTaskSpec.instrumentationArgs);
-                    }
-                    log.info("TestTaskSpec: {}", testTaskSpec);
-
-                    if (StringUtils.isEmpty(testTaskSpec.runningType)) {
-                        testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
-                    }
-                    if (StringUtils.isEmpty(testTaskSpec.testScope)) {
-                        if (StringUtils.isEmpty(testTaskSpec.testSuiteClass)) {
-                            testTaskSpec.testScope = TestTask.TestScope.TEST_APP;
-                        }
-                        else {
-                            testTaskSpec.testScope = TestTask.TestScope.CLASS;
-                        }
-                    }
-                    TestTask testTask = deviceControlService.runTestTask(testTaskSpec);
+                    TestTask testTask = deviceControlService.runTestTask((TestTaskSpec) message.getBody());
                     if (testTask == null) {
                         response = Message.error(message, 404, "No device meet the requirement");
                     } else {
