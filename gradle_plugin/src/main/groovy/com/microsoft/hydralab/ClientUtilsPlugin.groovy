@@ -42,9 +42,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         if (!project.hasProperty("testAppPath")) {
                             throw new Exception('Required param testAppPath not provided!')
                         }
-                        if (!project.hasProperty("testSuiteName")) {
-                            throw new Exception('Required param testSuiteName not provided!')
-                        }
                         if (!project.hasProperty("testPkgName")) {
                             throw new Exception('Required param testPkgName not provided!')
                         }
@@ -199,6 +196,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
                 def testSuiteName = ""
+                if (runningType == "INSTRUMENTATION" && apiConfig.testScope != "TEST_APP" && !project.hasProperty("testSuiteName")) {
+                    throw new Exception('Required param testSuiteName not provided!')
+                }
                 if (project.hasProperty('testSuiteName')) {
                     testSuiteName = project.testSuiteName
                 }
