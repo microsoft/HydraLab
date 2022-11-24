@@ -1,7 +1,7 @@
-package com.microsoft.hydralab.t2c.runner;// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.hydralab.t2c.runner;
 
-import com.microsoft.hydralab.t2c.runner.*;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.WindowsDriverController;
@@ -12,7 +12,6 @@ import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.windows.WindowsDriver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +83,7 @@ public class SampleT2CTest {
             }
         }
     }
+
     //This is for json Local Verification
 //    @Test
     public void jsonTest() {

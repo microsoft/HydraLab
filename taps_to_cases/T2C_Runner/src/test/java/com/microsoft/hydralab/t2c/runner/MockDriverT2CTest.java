@@ -1,5 +1,7 @@
-package com.microsoft.hydralab.t2c.runner;// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
+package com.microsoft.hydralab.t2c.runner;
 
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import io.appium.java_client.android.nativekey.AndroidKey;
