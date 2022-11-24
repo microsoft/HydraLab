@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.hydralab.t2c.runner;
 
-import com.microsoft.hydralab.t2c.runner.*;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.WindowsDriverController;
@@ -12,7 +12,6 @@ import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.windows.WindowsDriver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SampleT2CTest {
-
-    public AndroidDriver driver;
-
     public T2CJsonParser t2CJsonParser;
     private TestInfo testInfo;
     private Logger logger;
@@ -88,7 +84,8 @@ public class SampleT2CTest {
         }
     }
 
-    @Test
+    //This is for json Local Verification
+//    @Test
     public void jsonTest() {
         ArrayList<ActionInfo> caseList = testInfo.getCases();
 
@@ -103,9 +100,6 @@ public class SampleT2CTest {
 
     @AfterEach
     public void teardown() {
-        if (driver != null) {
-            driver.quit();
-        }
         if (service != null) {
             service.stop();
         }
