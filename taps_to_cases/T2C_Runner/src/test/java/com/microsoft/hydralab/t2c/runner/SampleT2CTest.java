@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+package com.microsoft.hydralab.t2c.runner;// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 import com.microsoft.hydralab.t2c.runner.*;
@@ -22,9 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SampleT2CTest {
-
-    public AndroidDriver driver;
-
     public T2CJsonParser t2CJsonParser;
     private TestInfo testInfo;
     private Logger logger;
@@ -87,8 +84,8 @@ public class SampleT2CTest {
             }
         }
     }
-
-    @Test
+    //This is for json Local Verification
+//    @Test
     public void jsonTest() {
         ArrayList<ActionInfo> caseList = testInfo.getCases();
 
@@ -103,9 +100,6 @@ public class SampleT2CTest {
 
     @AfterEach
     public void teardown() {
-        if (driver != null) {
-            driver.quit();
-        }
         if (service != null) {
             service.stop();
         }

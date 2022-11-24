@@ -20,6 +20,7 @@ import java.util.Map;
 
 public class T2CAppiumUtils {
     static HashMap<String, String> keyToInfoMap = new HashMap<>();
+    private static boolean isSelfTesting = false;
 
     public static WebElement findElement(BaseDriverController driver, BaseElementInfo element) {
         WebElement elementFinded = null;
@@ -57,17 +58,19 @@ public class T2CAppiumUtils {
         BaseElementInfo element = actionInfo.getTestElement();
         WebElement webElement = findElement(driver, element);
         Map<String, Object> arguments = actionInfo.getArguments();
+        // Safe wait if no element required before this action to ensure the UI is ready
+        if (webElement == null && !isSelfTesting) {
+            safeSleep(3000);
+        }
         switch (ActionType) {
             case "click":
                 driver.click(webElement);
                 break;
             case "tap":
                 //wait 3s before and after the tap action
-                safeSleep(3000);
                 int x = (Integer) arguments.get("x");
                 int y = (Integer) arguments.get("y");
                 driver.tap(x, y);
-                safeSleep(3000);
                 break;
             case "input":
                 String content;
@@ -110,12 +113,14 @@ public class T2CAppiumUtils {
                 driver.pressKey(AndroidKey.HOME);
                 break;
             case "move":
-                Integer xVector = (Integer) arguments.get("xVector");
-                Integer yVector = (Integer) arguments.get("yVector");
+                Object xVector = arguments.get("xVector");
+                Object yVector = arguments.get("yVector");
                 if (xVector == null || yVector == null) {
                     throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' and 'yVector' in the json. actionId: " + actionInfo.getId());
                 }
-                driver.scroll(webElement, xVector, yVector);
+                int xVectorInt = xVector instanceof Integer ? (Integer) xVector : Integer.getInteger((String) xVector);
+                int yVectorInt = yVector instanceof Integer ? (Integer) yVector : Integer.getInteger((String) yVector);
+                driver.scroll(webElement, xVectorInt, yVectorInt);
                 break;
             case "swipe":
                 String direction = (String) arguments.get("direction");
@@ -125,10 +130,11 @@ public class T2CAppiumUtils {
                 driver.swipe(direction);
                 break;
             case "longClick":
-                Integer duration = (Integer) arguments.get("duration");
-                if (duration == null) {
+                Object durationObj = arguments.get("duration");
+                if (durationObj == null) {
                     throw new IllegalArgumentException("Duration is not defined. Please add argument 'duration' in the json. actionId: " + actionInfo.getId());
                 }
+                int duration = durationObj instanceof Integer ? (Integer) durationObj : Integer.getInteger((String) durationObj);
                 driver.longClick(duration, webElement);
                 break;
             case "assert":
@@ -140,7 +146,8 @@ public class T2CAppiumUtils {
                 driver.assertElementAttribute(webElement, attribute, expectedValue);
                 break;
             case "sleep":
-                long timeout = Long.parseLong((String) arguments.get("duration"));
+                Object timeoutObj = arguments.get("duration");
+                long timeout = timeoutObj instanceof Integer ? (Integer) timeoutObj : Long.parseLong((String) arguments.get("duration"));
                 safeSleep(timeout);
                 break;
             case "getInfo":
@@ -153,11 +160,13 @@ public class T2CAppiumUtils {
                 keyToInfoMap.put(id, info);
                 break;
             case "dragAndDrop":
-                xVector = (Integer) arguments.get("xVector");
-                yVector = (Integer) arguments.get("yVector");
+                Object xVectorDnd = arguments.get("xVector");
+                Object yVectorDnd = arguments.get("yVector");
                 String toElementStr = (String) arguments.get("toElement");
-                if (xVector != null && yVector != null) {
-                    driver.dragAndDrop(webElement, xVector, yVector);
+                if (xVectorDnd != null && yVectorDnd != null) {
+                    int xVectorIntDnd = xVectorDnd instanceof Integer ? (Integer) xVectorDnd : Integer.getInteger((String) xVectorDnd);
+                    int yVectorIntDnd = yVectorDnd instanceof Integer ? (Integer) yVectorDnd : Integer.getInteger((String) yVectorDnd);
+                    driver.dragAndDrop(webElement, xVectorIntDnd, yVectorIntDnd);
                 } else if (toElementStr != null) {
                     BaseElementInfo toElementInfo;
                     if (driver instanceof AndroidDriverController) {
@@ -189,6 +198,10 @@ public class T2CAppiumUtils {
                         "ed. actionId:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
 
         }
+        // Safe wait if no element required after doing this action to ensure the action is finished
+        if (webElement == null && !isSelfTesting) {
+            safeSleep(3000);
+        }
     }
 
     private static void safeSleep(long millis) {
@@ -197,5 +210,9 @@ public class T2CAppiumUtils {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void setSelfTesting(boolean isTesting) {
+        isSelfTesting = isTesting;
     }
 }

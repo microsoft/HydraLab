@@ -52,15 +52,15 @@ public class AndroidDriverController extends BaseDriverController {
     }
 
     @Override
-    public void scroll(WebElement webElement, Integer xVector, Integer yVector) {
+    public void scroll(WebElement webElement, int xVector, int yVector) {
         Point location = webElement.getLocation();
         Dimension dimension = webElement.getSize();
-        Integer x = location.getX();
-        Integer y = location.getY();
-        Integer width = dimension.getWidth();
-        Integer height = dimension.getHeight();
-        Integer centerX = x + width / 2;
-        Integer centerY = y + height / 2;
+        int x = location.getX();
+        int y = location.getY();
+        int width = dimension.getWidth();
+        int height = dimension.getHeight();
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence dragNDrop = new Sequence(finger, 1);
         dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(0),
@@ -83,8 +83,8 @@ public class AndroidDriverController extends BaseDriverController {
             throw new RuntimeException(e);
         }
         Dimension dimension = androidDriver.manage().window().getSize();
-        Integer width = dimension.getWidth();
-        Integer height = dimension.getHeight();
+        int width = dimension.getWidth();
+        int height = dimension.getHeight();
         ((JavascriptExecutor) androidDriver).executeScript("mobile: swipeGesture", ImmutableMap.of(
                 "left", width * 0.1, "top", height * 0.1, "width", width * 0.9, "height", height * 0.9,
                 "direction", direction,
