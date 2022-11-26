@@ -26,155 +26,12 @@ public abstract class TestRunner {
     @Resource
     protected DeviceManager deviceManager;
     @Resource
-    TestDataService testDataService;
-    @Resource
-    FileLoadUtil fileLoadUtil;
-    @Resource
-    RunningControlService runningControlService;
-    @Resource
-    AttachmentService attachmentService;
-    @Resource(name = "WebSocketClient")
-    private TestRunningCallback webSocketCallback;
-    @Resource
     XmlBuilder xmlBuilder;
+    @Resource(name = "TestTaskEngineService")
+    protected TestTaskRunCallback testTaskRunCallback;
 
-    protected abstract RunningControlService.DeviceTask getDeviceTask(TestTask testTask, TestRunningCallback testRunningCallback);
+    public abstract void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger);
 
-    public TestRunningCallback initCallback() {
-        return new TestRunningCallback() {
-            @Override
-            public void onAllComplete(TestTask task) {
-                fileLoadUtil.clearAttachments(task);
-                if (task.isCanceled()) {
-                    log.warn("test task {} is canceled, no data will be saved", task.getId());
-                    return;
-                }
-
-                if (webSocketCallback != null) {
-                    webSocketCallback.onAllComplete(task);
-                }
-
-                log.info("test task {} is completed, start to save info", task.getId());
-
-                testDataService.saveTestTaskData(task, true);
-
-            }
-
-            @Override
-            public void onOneDeviceComplete(TestTask task, DeviceInfo deviceControl, Logger logger, DeviceTestTask result) {
-                log.info("onOneDeviceComplete: {}", deviceControl.getSerialNum());
-                deviceControl.finishTask();
-                File deviceTestResultFolder = result.getDeviceTestResultFolder();
-
-                File[] files = deviceTestResultFolder.listFiles();
-                List<BlobFileInfo> attachments = new ArrayList<>();
-                Assert.notNull(files, "should have result file to upload");
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        File zipFile = FileUtil.zipFile(file.getAbsolutePath(), deviceTestResultFolder + "/" + file.getName() + ".zip");
-                        attachments.add(saveFileToBlob(zipFile, deviceTestResultFolder, logger));
-                        continue;
-                    }
-                    attachments.add(saveFileToBlob(file, deviceTestResultFolder, logger));
-                }
-                result.setAttachments(attachments);
-                processAndSaveDeviceTestResultBlobUrl(result);
-            }
-
-            @Override
-            public void onDeviceOffline(TestTask testTask) {
-                testTask.setStatus(TestTask.TestStatus.CANCELED);
-                if (webSocketCallback != null) {
-                    webSocketCallback.onDeviceOffline(testTask);
-                }
-                log.warn("device disconnected, test task {} will be re-queue, no data will be saved", testTask.getId());
-            }
-
-        };
-    }
-
-    private BlobFileInfo saveFileToBlob(File file, File folder, Logger logger) {
-        BlobFileInfo blobFileInfo = new BlobFileInfo(file, "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(), BlobFileInfo.FileType.COMMON_FILE);
-        return attachmentService.addFileInfo(blobFileInfo, file, EntityFileRelation.EntityType.TEST_RESULT, logger);
-    }
-
-    protected Set<DeviceInfo> chooseDevices(TestTaskSpec testTaskSpec) {
-        String identifier = testTaskSpec.deviceIdentifier;
-        Set<DeviceInfo> allActiveConnectedDevice = deviceManager.getDeviceList(log);
-        log.info("Choosing devices from {}", allActiveConnectedDevice.size());
-
-        if (identifier.startsWith(Const.DeviceGroup.groupPre)) {
-            List<String> devices = Arrays.asList(testTaskSpec.groupDevices.split(","));
-            return allActiveConnectedDevice.stream().filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum())).collect(Collectors.toSet());
-        }
-
-        return allActiveConnectedDevice.stream().filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum())).collect(Collectors.toSet());
-
-    }
-
-    public void setupTestDir(TestTask testTask) {
-        File baseDir = new File(deviceManager.getTestBaseDir(), DateUtil.nowDirFormat.format(new Date()));
-        if (!baseDir.exists()) {
-            if (!baseDir.mkdirs()) {
-                throw new RuntimeException("mkdirs fail for: " + baseDir);
-            }
-        }
-        testTask.setTestCaseBaseDir(baseDir);
-    }
-
-    public TestTask runTest(TestTaskSpec testTaskSpec) {
-        if (StringUtils.isBlank(testTaskSpec.testSuiteClass)) {
-            testTaskSpec.testSuiteClass = testTaskSpec.pkgName;
-        }
-        Set<DeviceInfo> chosenDevices = chooseDevices(testTaskSpec);
-
-        TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
-
-        fileLoadUtil.loadAttachments(testTask);
-        setupTestDir(testTask);
-
-        TestRunningCallback runningCallback = initCallback();
-        RunningControlService.DeviceTask deviceTask = getDeviceTask(testTask, runningCallback);
-
-        deviceManager.getRunningTestTask().put(testTask.getId(), testTask);
-        RunningControl runningControl = runningControlService.runForAllDeviceAsync(chosenDevices, deviceTask, (devices) -> {
-            testTask.onFinished();
-            if (!testTask.isCanceled()) {
-                testTask.setStatus(TestTask.TestStatus.FINISHED);
-            }
-
-            if (runningCallback != null) {
-                runningCallback.onAllComplete(testTask);
-            }
-            deviceManager.getRunningTestTask().remove(testTask.getId());
-        });
-        if (runningControl == null) {
-            testTask.setTestDevicesCount(0);
-        } else {
-            testTask.setTestDevicesCount(runningControl.devices.size());
-        }
-        return testTask;
-    }
-
-
-    private void processAndSaveDeviceTestResultBlobUrl(DeviceTestTask result) {
-        Assert.isTrue(result.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
-        String deviceTestResultBlobUrl = result.getAttachments().get(0).getBlobUrl();
-        String fileName = result.getAttachments().get(0).getFileName();
-        log.info("deviceTestResultBlobUrl is {}", deviceTestResultBlobUrl);
-
-        int start = deviceTestResultBlobUrl.lastIndexOf(fileName);
-        deviceTestResultBlobUrl = deviceTestResultBlobUrl.substring(0, start);
-
-        if (deviceTestResultBlobUrl.endsWith("%2F")) {
-            deviceTestResultBlobUrl = deviceTestResultBlobUrl.substring(0, deviceTestResultBlobUrl.length() - 3);
-        } else if (deviceTestResultBlobUrl.endsWith("/")) {
-            deviceTestResultBlobUrl = deviceTestResultBlobUrl.substring(0, deviceTestResultBlobUrl.length() - 1);
-        }
-
-        log.info("After process: deviceTestResultBlobUrl is {}", deviceTestResultBlobUrl);
-        result.setDeviceTestResultFolderUrl(deviceTestResultBlobUrl);
-    }
 
     protected void checkTestTaskCancel(TestTask testTask) {
         cn.hutool.core.lang.Assert.isFalse(testTask.isCanceled(), "Task {} is canceled", testTask.getId());
@@ -221,8 +78,8 @@ public abstract class TestRunner {
         deviceManager.safeSleep(3000);
     }
 
-    protected void afterTest(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, TestRunningCallback testRunningCallback, Logger reportLogger) {
-        if (testRunningCallback != null) {
+    protected void afterTest(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, TestTaskRunCallback testTaskRunCallback, Logger reportLogger) {
+        if (testTaskRunCallback != null) {
             try {
                 String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, deviceTestTask);
                 deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
@@ -230,7 +87,7 @@ public abstract class TestRunner {
                 reportLogger.error("Error in buildTestResultXml", e);
             }
             try {
-                testRunningCallback.onOneDeviceComplete(testTask, deviceInfo, reportLogger, deviceTestTask);
+                testTaskRunCallback.onOneDeviceComplete(testTask, deviceInfo, reportLogger, deviceTestTask);
             } catch (Exception e) {
                 reportLogger.error("Error in onOneDeviceComplete", e);
             }

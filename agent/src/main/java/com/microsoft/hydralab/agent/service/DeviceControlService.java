@@ -39,8 +39,7 @@ public class DeviceControlService {
     AgentWebSocketClientService agentWebSocketClientService;
     @Resource
     RunningControlService runningControlService;
-    @Resource
-    ApplicationContext applicationContext;
+
 
     public Set<DeviceInfo> getAllConnectedDevice() {
         updateAllDeviceScope();
@@ -86,17 +85,6 @@ public class DeviceControlService {
     }
 
 
-    public boolean cancelTestTaskById(String testId) {
-        final Map<String, TestTask> runningTestTask = deviceManager.getRunningTestTask();
-        final TestTask testTask = runningTestTask.get(testId);
-        if (testTask == null || testTask.isCanceled()) {
-            return false;
-        }
-        testTask.setStatus(TestTask.TestStatus.CANCELED);
-        deviceManager.resetDeviceByTestId(testId, log);
-        return true;
-    }
-
 
     private void updateAllDeviceScope() {
         List<MobileDevice> devices = mobileDeviceRepository.findAll();
@@ -137,27 +125,7 @@ public class DeviceControlService {
         return device;
     }
 
-    public TestTask runTestTask(TestTaskSpec testTaskSpec) {
-        if (StringUtils.isEmpty(testTaskSpec.runningType)) {
-            testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
-        }
-        determineScopeOfTestCase(testTaskSpec);
-        log.info("TestTaskSpec: {}", testTaskSpec);
 
-        String beanName = TestTask.TestRunnerMap.get(testTaskSpec.runningType);
-        TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
-        return runner.runTest(testTaskSpec);
-    }
-
-    private void determineScopeOfTestCase(TestTaskSpec testTaskSpec) {
-        if (!StringUtils.isEmpty(testTaskSpec.testScope)) {
-            return;
-        }
-        testTaskSpec.testScope = TestTask.TestScope.CLASS;
-        if (StringUtils.isEmpty(testTaskSpec.testSuiteClass)) {
-            testTaskSpec.testScope = TestTask.TestScope.TEST_APP;
-        }
-    }
 
     public DeviceManager getDeviceManager() {
         return deviceManager;

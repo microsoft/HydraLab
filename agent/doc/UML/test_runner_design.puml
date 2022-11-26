@@ -12,7 +12,7 @@ interface TestRunningCallback
 AppiumRunner --|> TestRunner
 EspressoRunner --|> TestRunner
 AdbMonkeyRunner --|> TestRunner
-T2CRunner --|> TestRunner
+T2CRunner --|> AppiumRunner
 SmartRunner --|> TestRunner
 
 TestRunner --> TestRunningCallback
@@ -158,5 +158,25 @@ entity (AndroidTestUnit)
 
 TestTaskSpec -- TestTask: is mapped to
 TestTask *--> DeviceTestTask: contain a list of
-DeviceTestTask *--> AndroidTestUnit: contain a liest of
+DeviceTestTask *--> AndroidTestUnit: contain a list of
+@enduml
+
+@startuml test_objects
+
+entity (TestTaskSpec)
+entity (TestTask)
+entity (DeviceTestResult)
+entity (TestUnitResult)
+entity (AgentDeviceManager)
+entity (DeviceManager)
+entity (TestDevice)
+
+AgentDeviceManager *--> DeviceManager
+
+TestTask ... TestDevice: is running on
+
+TestTaskSpec -- TestTask: is mapped to
+TestTaskSpec -- TargetedTestDeviceList: contains a list of
+TestTask *--> DeviceTestResult: contain a list of
+DeviceTestResult *--> TestUnitResult: contain a list of
 @enduml

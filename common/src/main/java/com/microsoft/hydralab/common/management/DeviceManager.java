@@ -34,7 +34,6 @@ import static com.android.ddmlib.IDevice.DeviceState;
 public abstract class DeviceManager {
     public static final String LOGGER_PREFIX = "logger.devices.";
     static final Logger classLogger = LoggerFactory.getLogger(DeviceManager.class);
-    private final Map<String, TestTask> runningTestTask = new HashMap<>();
     protected BlobStorageClient blobStorageClient;
     protected DeviceStabilityMonitor deviceStabilityMonitor;
     protected File testBaseDir;
@@ -71,9 +70,6 @@ public abstract class DeviceManager {
         this.appiumServerManager = appiumServerManager;
     }
 
-    public Map<String, TestTask> getRunningTestTask() {
-        return runningTestTask;
-    }
 
     public BlobStorageClient getBlobStorageClient() {
         return blobStorageClient;

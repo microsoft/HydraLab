@@ -80,16 +80,6 @@ public class T2CRunner extends AppiumRunner {
     }
 
     @Override
-    protected Set<DeviceInfo> chooseDevices(TestTaskSpec testTaskSpec) {
-        Set<DeviceInfo> allActiveConnectedDevice = deviceManager.getActiveDeviceList(log);
-        log.info("Choosing devices from {}", allActiveConnectedDevice.size());
-        Assert.notNull(allActiveConnectedDevice, "No connected device!");
-        Assert.isTrue(allActiveConnectedDevice.size() == 1, "No connected device!");
-
-        return allActiveConnectedDevice;
-    }
-
-    @Override
     public DeviceTestTask initDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger logger) {
         DeviceTestTask deviceTestTask = super.initDeviceTestTask(deviceInfo, testTask, logger);
         String deviceName = System.getProperties().getProperty("os.name") + "-" + agentName + "-" + deviceInfo.getName();

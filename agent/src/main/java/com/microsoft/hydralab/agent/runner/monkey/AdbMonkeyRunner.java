@@ -6,7 +6,7 @@ import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.agent.runner.RunningControlService;
 import com.microsoft.hydralab.agent.runner.TestRunner;
-import com.microsoft.hydralab.agent.runner.TestRunningCallback;
+import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
@@ -45,15 +45,11 @@ public class AdbMonkeyRunner extends TestRunner {
 
 
     @Override
-    public RunningControlService.DeviceTask getDeviceTask(TestTask testTask, TestRunningCallback testRunningCallback) {
-
-        return (deviceInfo, logger) -> {
-            runMonkeyTest(deviceInfo, testTask, testRunningCallback, logger);
-            return true;
-        };
+    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
+        runMonkeyTest(deviceInfo, testTask, testTaskRunCallback, logger);
     }
 
-    private void runMonkeyTest(DeviceInfo deviceInfo, TestTask testTask, TestRunningCallback testRunningCallback, Logger logger) {
+    private void runMonkeyTest(DeviceInfo deviceInfo, TestTask testTask, TestTaskRunCallback testTaskRunCallback, Logger logger) {
         checkTestTaskCancel(testTask);
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
@@ -112,7 +108,7 @@ public class AdbMonkeyRunner extends TestRunner {
             }
             deviceTestTask.setErrorInProcess(errorStr);
         } finally {
-            afterTest(deviceInfo, testTask, deviceTestTask, testRunningCallback, reportLogger);
+            afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
         }
     }
 
