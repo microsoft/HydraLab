@@ -80,20 +80,7 @@ deactivate TaskCompletion
 
 @enduml
 
-@startuml test_objects
-
-entity (TestTaskSpec)
-entity (TestTask)
-entity (DeviceTestTask)
-entity (AndroidTestUnit)
-
-
-TestTaskSpec -- TestTask: is mapped to
-TestTask *--> DeviceTestTask: contain a list of
-DeviceTestTask *--> AndroidTestUnit: contain a liest of
-@enduml
-
-@startjson test_spec_detail
+@startjson
 {
     "fileSetId": "006b6ec7-52f9-45c7-84ad-419fc4315134",
     "pkgName": "com.microsoft.appmanager",
@@ -104,6 +91,32 @@ DeviceTestTask *--> AndroidTestUnit: contain a liest of
     "maxStepCount": "",
     "deviceTestCount": "",
     "testTimeOutSec": "",
+    "deviceSetupActions":[{
+            "action":"setProperty",
+            "args": ["log.tag.WelcomeScreen","Verbose"]
+        },
+        {
+            "action":"setProperty",
+            "args": ["log.tag.WelcomeScreen","Verbose"]
+        },
+        {
+            "action":"setLauncherAsDefault",
+            "args": ["com.android.launcher3.DefaultLauncherApp"]
+        }
+    ],
+    "deviceTeardownActions":[{
+            "action":"setProperty",
+            "args": ["log.tag.WelcomeScreen","Verbose"]
+        },
+        {
+            "action":"setProperty",
+            "args": ["log.tag.WelcomeScreen","Verbose"]
+        },
+        {
+            "action":"setLauncherAsDefault",
+            "args": ["com.android.launcher3.DefaultLauncherApp"]
+        }
+    ],
     "instrumentationArgs": {
         "enableScreenRecord": false,
         "testInterval": 5000,
@@ -120,3 +133,30 @@ DeviceTestTask *--> AndroidTestUnit: contain a liest of
     "testRunnerName": "androidx.test.runner.AndroidJUnitRunner"
 }
 @endjson
+
+@startuml design
+abstract class Runner
+interface TestRunnerListener {
+    onTestCaseStart()
+    onTestRunStart()
+    onTestSuiteStart()
+    onTestCaseEnd()
+    onTestRunEnd()
+    onTestSuiteEnd()
+}
+
+Runner *--> TestRunnerListener
+@enduml
+
+@startuml test_objects
+
+entity (TestTaskSpec)
+entity (TestTask)
+entity (DeviceTestTask)
+entity (AndroidTestUnit)
+
+
+TestTaskSpec -- TestTask: is mapped to
+TestTask *--> DeviceTestTask: contain a list of
+DeviceTestTask *--> AndroidTestUnit: contain a liest of
+@enduml
