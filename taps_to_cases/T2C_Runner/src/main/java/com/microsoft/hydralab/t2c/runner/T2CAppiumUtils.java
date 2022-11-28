@@ -33,12 +33,7 @@ public class T2CAppiumUtils {
             }
         }
         if (keyToVal.get("text") != null && keyToVal.get("text").length() != 0) {
-            if (driver.getDriverType() == BaseDriverController.DriverType.Android) {
-                System.out.println("android Text");
-                elementFinded = driver.findElementByXPath("//*[@text='" + keyToVal.get("text") + "']");
-            } else {
-                elementFinded = driver.findElementByName(keyToVal.get("text"));
-            }
+            elementFinded = driver.findElementByName(keyToVal.get("text"));
             if (elementFinded != null) {
                 return elementFinded;
             }
