@@ -28,7 +28,9 @@ public class T2CAppiumUtils {
         Map<String, String> keyToVal = element.getBasisSearchedBy();
         if (keyToVal.get("accessibilityId") != null && keyToVal.get("accessibilityId").length() != 0) {
             elementFinded = driver.findElementByAccessibilityId(keyToVal.get("accessibilityId"));
-            if (elementFinded != null) return elementFinded;
+            if (elementFinded != null) {
+                return elementFinded;
+            }
         }
         if (keyToVal.get("text") != null && keyToVal.get("text").length() != 0) {
             if (driver.getDriverType() == BaseDriverController.DriverType.Android) {
@@ -38,13 +40,14 @@ public class T2CAppiumUtils {
                 elementFinded = driver.findElementByName(keyToVal.get("text"));
             }
             if (elementFinded != null) {
-                System.out.println("Found Text");
                 return elementFinded;
             }
         }
         if (keyToVal.get("xpath") != null && keyToVal.get("xpath").length() != 0) {
             elementFinded = driver.findElementByXPath(keyToVal.get("xpath"));
-            if (elementFinded != null) return elementFinded;
+            if (elementFinded != null) {
+                return elementFinded;
+            }
         }
         throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
     }
