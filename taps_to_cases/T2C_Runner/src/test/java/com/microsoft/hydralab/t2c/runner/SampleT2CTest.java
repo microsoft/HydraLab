@@ -89,7 +89,7 @@ public class SampleT2CTest {
     }
 
     //This is for json Local Verification
-    @Test
+//    @Test
     public void jsonTest() {
         ArrayList<ActionInfo> caseList = testInfo.getCases();
 
