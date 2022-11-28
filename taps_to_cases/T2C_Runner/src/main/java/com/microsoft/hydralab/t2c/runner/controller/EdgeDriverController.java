@@ -34,4 +34,8 @@ public class EdgeDriverController extends BaseDriverController {
         tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         windowsDriver.perform(Arrays.asList(tap));
     }
+
+    public DriverType getDriverType() {
+        return DriverType.Edge;
+    }
 }

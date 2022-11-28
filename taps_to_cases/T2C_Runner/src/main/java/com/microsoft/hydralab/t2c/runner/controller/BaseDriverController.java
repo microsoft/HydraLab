@@ -166,4 +166,15 @@ public class BaseDriverController {
         return elementFound;
     }
 
+    public DriverType getDriverType() {
+        return DriverType.Unknown;
+    }
+
+    public enum DriverType {
+        Unknown,
+        Android,
+        iOS,
+        Edge,
+        Windows
+    }
 }

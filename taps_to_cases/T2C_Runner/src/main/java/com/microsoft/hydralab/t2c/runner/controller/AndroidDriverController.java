@@ -124,4 +124,8 @@ public class AndroidDriverController extends BaseDriverController {
         dragNDrop.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         androidDriver.perform(Arrays.asList(dragNDrop));
     }
+
+    public DriverType getDriverType() {
+        return DriverType.Android;
+    }
 }

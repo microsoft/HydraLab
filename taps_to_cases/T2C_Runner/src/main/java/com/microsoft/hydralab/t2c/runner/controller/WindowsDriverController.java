@@ -44,4 +44,7 @@ public class WindowsDriverController extends BaseDriverController {
         windowsDriver.perform(Arrays.asList(tap));
     }
 
+    public DriverType getDriverType() {
+        return DriverType.Windows;
+    }
 }
