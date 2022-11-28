@@ -36,6 +36,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
         this.baseFolder = baseFolder;
     }
 
+    @Override
     public int getPreSleepSeconds() {
         return preSleepSeconds;
     }
@@ -49,6 +50,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
 
     }
 
+    @Override
     public void startRecord(int maxTimeInSecond) {
         if (!shouldStop) {
             return;
@@ -131,6 +133,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
         recordingThread.start();
     }
 
+    @Override
     public boolean finishRecording() {
         if (shouldStop) {
             return false;

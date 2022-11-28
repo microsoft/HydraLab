@@ -73,6 +73,8 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
             return false;
         }
         try {
+            // wait 5s to record more info after testing
+            deviceManager.safeSleep(5000);
             CLASS_LOGGER.info("Stopping recording");
             synchronized (this) {
                 iosDriver.stopRecordingScreen();

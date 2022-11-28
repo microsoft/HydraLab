@@ -69,6 +69,7 @@ public class FileLoadUtil {
                     File testJsonFile = downloadFromBlob(attachment);
                     Assert.isTrue(testJsonFile != null && testJsonFile.exists(), "Download test json file failed!");
                     testTask.addTestJsonFile(testJsonFile);
+                    break;
                 default:
                     break;
             }

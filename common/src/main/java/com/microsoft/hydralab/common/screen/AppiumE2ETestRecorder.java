@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.screen;
 
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.Const;
 import io.appium.java_client.windows.WindowsDriver;
 import io.appium.java_client.windows.WindowsStartScreenRecordingOptions;
 import org.slf4j.Logger;
@@ -44,6 +44,7 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
     public boolean finishRecording() {
         File PCVideoFile = null;
         File phoneVideoFile = null;
+        super.finishRecording();
         try {
             String base64String = windowsDriver.stopRecordingScreen();
             byte[] data = Base64.getDecoder().decode(base64String);
@@ -55,9 +56,7 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
             e.printStackTrace();
             System.out.println("-------------------------------------------------------Ignore End--------------------------------------------------------------");
         }
-        if (!super.finishRecording()) {
-            return false;
-        }
+
         phoneVideoFile = new File(baseFolder.getAbsolutePath(), Const.ScreenRecoderConfig.PHONE_FILE_NAME);
 
         if (PCVideoFile == null || !PCVideoFile.exists() || !phoneVideoFile.exists()) {

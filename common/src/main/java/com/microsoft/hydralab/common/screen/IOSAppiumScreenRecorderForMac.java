@@ -48,6 +48,8 @@ public class IOSAppiumScreenRecorderForMac extends IOSAppiumScreenRecorder {
                 "yyyy-MM-dd-HH-mm-ss");
         String destPath = "";
         try {
+            // wait 5s to record more info after testing
+            deviceManager.safeSleep(5000);
             String base64String = iosDriver.stopRecordingScreen();
             byte[] data = Base64.getDecoder().decode(base64String);
             destPath = new File(recordDir, Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();
