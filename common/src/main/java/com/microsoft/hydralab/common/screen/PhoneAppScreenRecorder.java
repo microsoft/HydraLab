@@ -74,6 +74,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         FlowUtil.retryWhenFalse(3, () -> deviceManager.grantProjectionAndBatteryPermission(deviceInfo, recordPackageName, logger));
     }
 
+    @Override
     public void startRecord(int maxTimeInSecond) {
         if (started) {
             return;
@@ -99,12 +100,15 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         keepAliveThread.start();
     }
 
+    @Override
     public boolean finishRecording() {
         logger.info("finishRecording :" + started);
         if (!started) {
             return false;
         }
         boolean tag = false;
+        // wait 5s to record more info after testing
+        deviceManager.safeSleep(5000);
         stopRecordService();
         if (keepAliveThread != null) {
             if (!keepAliveThread.isInterrupted()) {
