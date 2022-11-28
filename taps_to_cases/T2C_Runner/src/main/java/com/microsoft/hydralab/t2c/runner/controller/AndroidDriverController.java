@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.t2c.runner.controller;
 
 import com.google.common.collect.ImmutableMap;
+import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import io.appium.java_client.android.nativekey.KeyEvent;
@@ -14,6 +15,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.remote.RemoteWebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 
 import java.time.Duration;
@@ -123,5 +125,17 @@ public class AndroidDriverController extends BaseDriverController {
                 PointerInput.Origin.viewport(), toX, toY));
         dragNDrop.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         androidDriver.perform(Arrays.asList(dragNDrop));
+    }
+
+    @Override
+    public WebElement findElementByName(String name) {
+        WebElement elementFound = null;
+        try {
+            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
+                    .until(driver -> driver.findElement(AppiumBy.xpath("//*[@text='" + name + "']")));
+        } catch (Exception e) {
+            logger.info("Can not find element by Name: " + name);
+        }
+        return elementFound;
     }
 }

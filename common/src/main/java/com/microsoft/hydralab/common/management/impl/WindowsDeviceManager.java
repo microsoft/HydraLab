@@ -163,7 +163,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
                 if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
                     WindowsDriver windowsDriver;
                     testWindowsApp = driverInfo.getLauncherApp();
-                    if (testWindowsApp.length() > 0) {
+                    if (testWindowsApp.length() > 0 && !testWindowsApp.equalsIgnoreCase("root")) {
                         windowsDriver = appiumServerManager.getWindowsAppDriver(testWindowsApp, reportLogger);
                     } else {
                         testWindowsApp = "Root";

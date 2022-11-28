@@ -12,12 +12,14 @@ import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.windows.WindowsDriver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class SampleT2CTest {
@@ -72,9 +74,11 @@ public class SampleT2CTest {
                 }
             }
             if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
-                if (driverInfo.getLauncherApp() != null && driverInfo.getLauncherApp().length() > 0) {
-                    caps.setCapability("app", driverInfo.getLauncherApp() + "!app");
+                String app = "Root";
+                if (driverInfo.getLauncherApp() != null && !driverInfo.getLauncherApp().equalsIgnoreCase("root") && driverInfo.getLauncherApp().length() > 0) {
+                    app = driverInfo.getLauncherApp() + "!app";
                 }
+                caps.setCapability("app", app);
                 WindowsDriver windowsDriver = null;
                 if (service != null) {
                     windowsDriver = new WindowsDriver(service.getUrl(), caps);
