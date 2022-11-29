@@ -92,6 +92,10 @@ public class MockDriverT2CTest {
             logger.info("Called " + currentMethodName());
         }
 
+        public void pressKeyCode(String keyCode) {
+            logger.info("Called " + currentMethodName());
+        }
+
         public void scroll(WebElement webElement, int xVector, int yVector) {
             logger.info("Called " + currentMethodName());
         }
