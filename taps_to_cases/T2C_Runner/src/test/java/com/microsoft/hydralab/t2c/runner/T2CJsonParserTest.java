@@ -1,5 +1,7 @@
-package com.microsoft.hydralab.t2c.runner;
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
+package com.microsoft.hydralab.t2c.runner;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

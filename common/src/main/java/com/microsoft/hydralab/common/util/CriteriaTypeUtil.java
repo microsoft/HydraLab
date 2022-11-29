@@ -32,7 +32,7 @@ public class CriteriaTypeUtil<T> {
         };
     }
 
-    public Predicate[] transferToPredicate(Root root, CriteriaBuilder criteriaBuilder, List<CriteriaType> criteriaTypes) {
+    public Predicate[] transferToPredicate(Root<T> root, CriteriaBuilder criteriaBuilder, List<CriteriaType> criteriaTypes) {
         Predicate[] predicates = new Predicate[criteriaTypes.size()];
         for (int i = 0; i < criteriaTypes.size(); i++) {
             predicates[i] = analysisCriteria(root, criteriaBuilder, criteriaTypes.get(i));

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+package com.microsoft.hydralab.t2c.runner;
 
-import com.microsoft.hydralab.t2c.runner.*;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.WindowsDriverController;
@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class SampleT2CTest {
@@ -73,9 +74,11 @@ public class SampleT2CTest {
                 }
             }
             if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
-                if (driverInfo.getLauncherApp() != null && driverInfo.getLauncherApp().length() > 0) {
-                    caps.setCapability("app", driverInfo.getLauncherApp() + "!app");
+                String app = "Root";
+                if (driverInfo.getLauncherApp() != null && !driverInfo.getLauncherApp().equalsIgnoreCase("root") && driverInfo.getLauncherApp().length() > 0) {
+                    app = driverInfo.getLauncherApp() + "!app";
                 }
+                caps.setCapability("app", app);
                 WindowsDriver windowsDriver = null;
                 if (service != null) {
                     windowsDriver = new WindowsDriver(service.getUrl(), caps);
@@ -84,6 +87,7 @@ public class SampleT2CTest {
             }
         }
     }
+
     //This is for json Local Verification
 //    @Test
     public void jsonTest() {
