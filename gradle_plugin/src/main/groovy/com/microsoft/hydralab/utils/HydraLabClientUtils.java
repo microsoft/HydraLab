@@ -56,7 +56,10 @@ public class HydraLabClientUtils {
                     }
                 }
             }).create();
-    private static boolean sMarkedFail = false;
+    private static boolean isTestRunningFailed = false;
+    private static boolean isTestResultFailed = false;
+    // Exit for runtime exception uses code 1, exit for test result failure uses code -1
+    private static final int TEST_RESULT_FAILURE_CODE = -1;
 
     public static void runTestOnDeviceWithApp(String runningType, String appPath, String testAppPath,
                                               String attachmentConfigPath,
@@ -99,13 +102,13 @@ public class HydraLabClientUtils {
 
         printlnf(maskCred(output));
 
-        sMarkedFail = false;
+        isTestRunningFailed = false;
         try {
             runTestInner(runningType, appPath, testAppPath, attachmentConfigPath, testSuiteName, deviceIdentifier,
                     queueTimeoutSec, runTimeoutSec, reportFolderPath, instrumentationArgs, extraArgs, tag, apiConfig);
-            markBuildSuccess();
+            markRunningSuccess();
         } catch (RuntimeException e) {
-            markBuildFail();
+            markRunningFail();
             throw e;
         }
     }
@@ -327,7 +330,7 @@ public class HydraLabClientUtils {
 
         if (runningTest.totalFailCount > 0) {
             printlnf("##[error]Fatal error during test, total fail count: %d", runningTest.totalFailCount);
-            markBuildFail();
+            markRunningFail();
         }
 
         int index = 0;
@@ -360,7 +363,7 @@ public class HydraLabClientUtils {
                 } else {
                     printlnf("##[error]Fatal error during test on device %s with no stack found.", deviceTestResult.deviceSerialNumber);
                 }
-                markBuildFail();
+                markTestResultFail();
             }
 
             String deviceFileFolder = deviceTestResult.deviceSerialNumber;
@@ -414,24 +417,33 @@ public class HydraLabClientUtils {
         returnFinalTestState();
     }
 
-    private static void markBuildFail() {
-        if (sMarkedFail) {
+    private static void markRunningFail() {
+        if (isTestRunningFailed) {
             return;
         }
-        printlnf("##vso[build.addbuildtag]FAIL");
-        sMarkedFail = true;
+        printlnf("##vso[build.addbuildtag]FAILURE");
+        isTestRunningFailed = true;
     }
 
-    private static void markBuildSuccess() {
-        if (sMarkedFail) {
+    private static void markRunningSuccess() {
+        if (isTestRunningFailed) {
             return;
         }
         printlnf("##vso[build.addbuildtag]SUCCESS");
     }
 
+    private static void markTestResultFail() {
+        isTestResultFailed = true;
+    }
+
     private static void returnFinalTestState() {
-        assertTrue(!sMarkedFail, "##[error]Final test state: fail.", null);
-        printlnf("Final test state: success.");
+        if (isTestResultFailed){
+            printlnf("##[error]Final test state: fail.");
+            System.exit(TEST_RESULT_FAILURE_CODE);
+        }
+        else {
+            printlnf("Final test state: success.");
+        }
     }
 
     private static void downloadToFile(String fileUrl, File file) {
