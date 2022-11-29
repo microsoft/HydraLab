@@ -56,6 +56,9 @@ public class BaseDriverController {
     public void pressKey(AndroidKey key) {
     }
 
+    public void pressKeyCode(String keyCode) {
+    }
+
     public void scroll(WebElement webElement, int xVector, int yVector) {
     }
 

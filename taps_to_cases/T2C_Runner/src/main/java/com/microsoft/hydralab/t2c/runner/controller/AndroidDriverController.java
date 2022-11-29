@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class AndroidDriverController extends BaseDriverController {
     private final AndroidDriver androidDriver;
@@ -51,6 +53,13 @@ public class AndroidDriverController extends BaseDriverController {
     @Override
     public void pressKey(AndroidKey key) {
         androidDriver.pressKey(new KeyEvent(key));
+    }
+
+    @Override
+    public void pressKeyCode(String keyCode) {
+        List<String> keyEventArgs = Arrays.asList("keyevent", keyCode);
+        Map<String, Object> keyEventCmd = ImmutableMap.of("command", "input", "args", keyEventArgs);
+        androidDriver.executeScript("mobile: shell", keyEventCmd);
     }
 
     @Override

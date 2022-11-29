@@ -54,7 +54,8 @@ public class T2CAppiumUtils {
         } catch (Exception e) {
             e.printStackTrace();
             if (!isOption) {
-                throw e;
+                int index = actionInfo.getId();
+                throw new IllegalStateException("Failed at step " + index + ": " + e.getMessage(), e);
             }
         }
     }
@@ -73,7 +74,6 @@ public class T2CAppiumUtils {
                 driver.click(webElement);
                 break;
             case "tap":
-                //wait 3s before and after the tap action
                 int x = (Integer) arguments.get("x");
                 int y = (Integer) arguments.get("y");
                 driver.tap(x, y);
@@ -117,6 +117,10 @@ public class T2CAppiumUtils {
                 break;
             case "home":
                 driver.pressKey(AndroidKey.HOME);
+                break;
+            case "pressKeyCode":
+                String keyCode = arguments.get("keyCode") + "";
+                driver.pressKeyCode(keyCode);
                 break;
             case "move":
                 Object xVector = arguments.get("xVector");
