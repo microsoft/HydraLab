@@ -40,6 +40,7 @@ public class BlobStorageClient {
     private SASData sasDataForUpdate = null;
     public int fileLimitDay;
     public String cdnUrl;
+    private boolean isConnected = false;
 
     public BlobStorageClient() {
     }
@@ -53,6 +54,7 @@ public class BlobStorageClient {
         cdnUrl = blobProperty.getCDNUrl();
         initContainer();
         isAuthedBySAS = false;
+        isConnected = true;
     }
 
     public void setSASData(SASData sasData) {
@@ -69,10 +71,11 @@ public class BlobStorageClient {
         fileLimitDay = sasData.getFileLimitDay();
         cdnUrl = sasData.getCdnUrl();
         initContainer();
+        isConnected = true;
         sasDataInUse = sasData;
     }
 
-    private void checkBlobStorageClient() {
+    private void checkBlobStorageClientUpdate() {
         if (isAuthedBySAS && sasDataForUpdate != null) {
             buildClientBySAS(sasDataForUpdate);
             sasDataForUpdate = null;
@@ -129,7 +132,10 @@ public class BlobStorageClient {
      * @return
      */
     public String uploadBlobFromFile(File uploadFile, String containerName, String blobFilePath, Logger logger) {
-        checkBlobStorageClient();
+        if (!isConnected) {
+            return null;
+        }
+        checkBlobStorageClientUpdate();
         if (logger == null) {
             logger = classLogger;
         }
