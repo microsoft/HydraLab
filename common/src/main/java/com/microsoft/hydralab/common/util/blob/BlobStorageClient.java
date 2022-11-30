@@ -164,7 +164,10 @@ public class BlobStorageClient {
      * @return
      */
     public BlobProperties downloadFileFromBlob(File downloadToFile, String containerName, String blobFilePath) {
-        checkBlobStorageClient();
+        if (!isConnected) {
+            return null;
+        }
+        checkBlobStorageClientUpdate();
         File saveDir = downloadToFile.getParentFile();
         if (!saveDir.exists()) {
             cn.hutool.core.lang.Assert.isTrue(saveDir.mkdirs(), "mkdirs fail in downloadFileFromUrl");
