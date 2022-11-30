@@ -2,23 +2,20 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.runner;
 
-import com.microsoft.hydralab.agent.service.TestDataService;
-import com.microsoft.hydralab.agent.util.FileLoadUtil;
-import com.microsoft.hydralab.common.entity.agent.RunningControl;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
-import com.microsoft.hydralab.common.entity.common.*;
+import cn.hutool.core.lang.Assert;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.util.*;
-import org.apache.commons.lang3.StringUtils;
+import com.microsoft.hydralab.common.util.DateUtil;
+import com.microsoft.hydralab.common.util.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Date;
 
 @Service
 public abstract class TestRunner {
@@ -34,7 +31,7 @@ public abstract class TestRunner {
 
 
     protected void checkTestTaskCancel(TestTask testTask) {
-        cn.hutool.core.lang.Assert.isFalse(testTask.isCanceled(), "Task {} is canceled", testTask.getId());
+        Assert.isFalse(testTask.isCanceled(), "Task {} is canceled", testTask.getId());
     }
 
     public void initDevice(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {

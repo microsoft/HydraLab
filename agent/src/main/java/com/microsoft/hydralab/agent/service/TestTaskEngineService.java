@@ -1,12 +1,12 @@
 package com.microsoft.hydralab.agent.service;
 
-import com.microsoft.hydralab.agent.runner.RunningControlService;
+import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
 import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.util.FileLoadUtil;
-import com.microsoft.hydralab.common.entity.agent.RunningControl;
+import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -40,29 +40,26 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     @Resource(name = "WebSocketClient")
     private TestTaskRunCallback webSocketCallback;
     @Resource
-    RunningControlService runningControlService;
+    DeviceTaskControlExecutor deviceTaskControlExecutor;
     @Resource
     DeviceManager deviceManager;
     private final Map<String, TestTask> runningTestTask = new HashMap<>();
 
     public TestTask runTestTask(TestTaskSpec testTaskSpec) {
-        if (StringUtils.isEmpty(testTaskSpec.runningType)) {
-            testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
-        }
-        determineScopeOfTestCase(testTaskSpec);
+        updateTaskSpecWithDefaultValues(testTaskSpec);
         log.info("TestTaskSpec: {}", testTaskSpec);
 
         String beanName = TestTask.TestRunnerMap.get(testTaskSpec.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
-        if (StringUtils.isBlank(testTaskSpec.testSuiteClass)) {
-            testTaskSpec.testSuiteClass = testTaskSpec.pkgName;
-        }
+
         Set<DeviceInfo> chosenDevices = chooseDevices(testTaskSpec, runner);
 
         TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
+
         setupTestDir(testTask);
+
         onTaskStart(testTask);
-        RunningControl runningControl = runningControlService.runForAllDeviceAsync(chosenDevices, new RunningControlService.DeviceTask() {
+        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices, new DeviceTaskControlExecutor.DeviceTask() {
             @Override
             public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
                 runner.runTestOnDevice(testTask, deviceInfo, logger);
@@ -76,12 +73,24 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
             onTaskComplete(testTask);
         });
-        if (runningControl == null) {
+
+        if (deviceTaskControl == null) {
             testTask.setTestDevicesCount(0);
         } else {
-            testTask.setTestDevicesCount(runningControl.devices.size());
+            testTask.setTestDevicesCount(deviceTaskControl.devices.size());
         }
         return testTask;
+    }
+
+    private void updateTaskSpecWithDefaultValues(TestTaskSpec testTaskSpec) {
+        determineScopeOfTestCase(testTaskSpec);
+
+        if (StringUtils.isEmpty(testTaskSpec.runningType)) {
+            testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
+        }
+        if (StringUtils.isBlank(testTaskSpec.testSuiteClass)) {
+            testTaskSpec.testSuiteClass = testTaskSpec.pkgName;
+        }
     }
 
     protected Set<DeviceInfo> chooseDevices(TestTaskSpec testTaskSpec, TestRunner runner) {
@@ -97,7 +106,9 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
         if (identifier.startsWith(Const.DeviceGroup.groupPre)) {
             List<String> devices = Arrays.asList(testTaskSpec.groupDevices.split(","));
-            return allActiveConnectedDevice.stream().filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum())).collect(Collectors.toSet());
+            return allActiveConnectedDevice.stream()
+                    .filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum()))
+                    .collect(Collectors.toSet());
         }
 
         return allActiveConnectedDevice.stream().filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum())).collect(Collectors.toSet());

@@ -15,6 +15,10 @@ public class TestTaskSpec {
     public String testTaskId;
     public String deviceIdentifier;
     public String groupTestType;
+    /**
+     * The following field is designed for agent and center communication,
+     * and it should not be exposed as an API param.
+     */
     public String groupDevices;
     public String accessKey;
     public String reportAudience;

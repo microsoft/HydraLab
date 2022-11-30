@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.runner.appium;
 
-import com.microsoft.hydralab.agent.runner.RunningControlService;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.appium.AppiumParam;

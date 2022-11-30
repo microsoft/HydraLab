@@ -4,6 +4,7 @@ import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
+import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
@@ -27,13 +28,25 @@ public class TestTaskEngineServiceTest extends BaseTest {
 
     @Test
     public void runTestTask() {
-        TestTaskSpec taskSpec = new TestTaskSpec();
-        taskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
-        String beanName = TestTask.TestRunnerMap.get(taskSpec.runningType);
+        TestTaskSpec taskSpecForGroupDevice = new TestTaskSpec();
+        taskSpecForGroupDevice.runningType = TestTask.TestRunningType.INSTRUMENTATION;
+        taskSpecForGroupDevice.deviceIdentifier = "G.UnitTest";
+        taskSpecForGroupDevice.testFileSet = new TestFileSet();
+        taskSpecForGroupDevice.groupDevices = "TestDeviceSerial1,TestDeviceSerial2";
+
+        String beanName = TestTask.TestRunnerMap.get(taskSpecForGroupDevice.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
-        baseLogger.info("Try to get bean by name: " + taskSpec);
+        baseLogger.info("Try to get bean by name: " + taskSpecForGroupDevice);
+
         Assertions.assertTrue(runner instanceof EspressoRunner, "Get runner bean error!");
-        testTaskEngineService.runTestTask(taskSpec);
+
+        testTaskEngineService.runTestTask(taskSpecForGroupDevice);
+
+        TestTaskSpec taskSpecForSingleDevice = new TestTaskSpec();
+        taskSpecForSingleDevice.runningType = TestTask.TestRunningType.INSTRUMENTATION;
+        taskSpecForSingleDevice.deviceIdentifier = "TestDeviceSerial1";
+        taskSpecForSingleDevice.testFileSet = new TestFileSet();
+        testTaskEngineService.runTestTask(taskSpecForSingleDevice);
     }
 
     @Test

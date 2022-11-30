@@ -4,7 +4,6 @@ package com.microsoft.hydralab.agent.runner.espresso;
 
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.testrunner.InstrumentationResultParser;
-import com.microsoft.hydralab.agent.runner.RunningControlService;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;

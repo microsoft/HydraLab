@@ -148,6 +148,11 @@ interface TestRunnerListener {
 Runner *--> TestRunnerListener
 @enduml
 
+@startuml loggers
+EachTestDevice *--> DeviceLogger
+EachTestTaskOnEachTargetDevice *--> TaskOnDeviceLogger
+@enduml
+
 @startuml test_objects
 
 entity (TestTaskSpec)
