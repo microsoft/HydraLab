@@ -62,10 +62,10 @@ class BlobStorageClientTest extends BaseTest {
         logger.info("Generate SAS finished: " + sasdata);
         Assertions.assertNotNull(sasdata, "Download File Failed!");
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Assertions.assertTrue(blobStorageClient.isSASExpired(sasData), "Check SAS expired fail!");
+        Assertions.assertTrue(blobStorageClient.isSASExpired(sasdata), "Check SAS expired fail!");
     }
 }
