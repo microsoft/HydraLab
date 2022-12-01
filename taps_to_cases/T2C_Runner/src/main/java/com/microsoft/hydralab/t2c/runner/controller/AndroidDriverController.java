@@ -38,7 +38,7 @@ public class AndroidDriverController extends BaseDriverController {
                 androidDriver.activateApp(appPackageName);
             }
         } else {
-            throw new RuntimeException("the app is not installed");
+            throw new RuntimeException("the app " + appPackageName + " is not installed");
         }
     }
 
