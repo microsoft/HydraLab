@@ -53,7 +53,8 @@ app:
     SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
     SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
     SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
-
+    timeUnit: ${TIME_UNIT:MINUTES}
+    
 management:
   endpoints:
     web:
