@@ -47,8 +47,8 @@ public class BlobStorageClient {
 
     public BlobStorageClient(BlobProperty blobProperty) {
         this.SASExpiryUpdate = blobProperty.getSASExpiryUpdate();
-        SASData.SASPermission.Read.setExpiryTime(blobProperty.getSASExpiryTimeFront());
-        SASData.SASPermission.Write.setExpiryTime(blobProperty.getSASExpiryTimeAgent());
+        SASData.SASPermission.Read.setExpiryTime(blobProperty.getSASExpiryTimeFront(), blobProperty.getTimeUnit());
+        SASData.SASPermission.Write.setExpiryTime(blobProperty.getSASExpiryTimeAgent(), blobProperty.getTimeUnit());
         blobServiceClient = new BlobServiceClientBuilder().connectionString(blobProperty.getConnection()).buildClient();
         fileLimitDay = blobProperty.getFileLimitDay();
         cdnUrl = blobProperty.getCDNUrl();
@@ -103,7 +103,7 @@ public class BlobStorageClient {
         AccountSasService services = AccountSasService.parse(sasPermission.serviceStr);
         AccountSasResourceType resourceTypes = AccountSasResourceType.parse(sasPermission.resourceStr);
         AccountSasPermission permissions = AccountSasPermission.parse(sasPermission.permissionStr);
-        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, ChronoUnit.MINUTES), ZoneId.systemDefault());
+        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, sasPermission.timeUnit), ZoneId.systemDefault());
 
         AccountSasSignatureValues sasSignatureValues = new AccountSasSignatureValues(expiryTime, permissions,
                 services, resourceTypes);
