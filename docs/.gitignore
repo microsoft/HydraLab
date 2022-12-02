@@ -9,4 +9,3 @@ Gemfile.lock
 package-lock.json
 .jekyll-cache
 yarm.lock
-node_modules
