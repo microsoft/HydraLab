@@ -8,7 +8,6 @@ import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.RawImage;
-import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -393,8 +392,9 @@ public class AndroidDeviceManager extends DeviceManager {
         String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);
         if (StringUtils.isBlank(blobUrl)) {
             classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
+        } else {
+            deviceInfo.setScreenshotImageUrl(blobUrl);
         }
-        deviceInfo.setScreenshotImageUrl(blobUrl);
         return screenshotImageFile;
     }
 

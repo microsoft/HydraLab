@@ -5,7 +5,6 @@ package com.microsoft.hydralab.common.management.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
@@ -32,7 +31,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.microsoft.hydralab.common.util.AgentConstant.UNKNOWN_IOS_MODEL;
@@ -112,8 +110,9 @@ public class IOSDeviceManager extends DeviceManager {
         String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);
         if (StringUtils.isBlank(blobUrl)) {
             classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
+        } else {
+            deviceInfo.setScreenshotImageUrl(blobUrl);
         }
-        deviceInfo.setScreenshotImageUrl(blobUrl);
         return screenshotImageFile;
     }
 

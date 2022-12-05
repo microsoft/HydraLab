@@ -49,8 +49,9 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         String blobUrl = blobStorageClient.uploadBlobFromFile(pcScreenShotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + pcScreenShotImageFile.getName(), null);
         if (StringUtils.isBlank(blobUrl)) {
             classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
+        } else {
+            deviceInfo.setPcScreenshotImageUrl(blobUrl);
         }
-        deviceInfo.setPcScreenshotImageUrl(blobUrl);
         return pcScreenShotImageFile;
     }
 

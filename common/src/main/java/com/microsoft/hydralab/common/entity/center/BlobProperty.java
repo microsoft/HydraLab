@@ -18,6 +18,7 @@ public class BlobProperty {
     private long SASExpiryTimeFront;
     private long SASExpiryTimeAgent;
     private long SASExpiryUpdate;
+    private String timeUnit;
     private int fileLimitDay;
     private String CDNUrl;
 }

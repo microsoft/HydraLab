@@ -40,19 +40,21 @@ public class BlobStorageClient {
     private SASData sasDataForUpdate = null;
     public int fileLimitDay;
     public String cdnUrl;
+    private boolean isConnected = false;
 
     public BlobStorageClient() {
     }
 
     public BlobStorageClient(BlobProperty blobProperty) {
         this.SASExpiryUpdate = blobProperty.getSASExpiryUpdate();
-        SASData.SASPermission.Read.setExpiryTime(blobProperty.getSASExpiryTimeFront());
-        SASData.SASPermission.Write.setExpiryTime(blobProperty.getSASExpiryTimeAgent());
+        SASData.SASPermission.Read.setExpiryTime(blobProperty.getSASExpiryTimeFront(), blobProperty.getTimeUnit());
+        SASData.SASPermission.Write.setExpiryTime(blobProperty.getSASExpiryTimeAgent(), blobProperty.getTimeUnit());
         blobServiceClient = new BlobServiceClientBuilder().connectionString(blobProperty.getConnection()).buildClient();
         fileLimitDay = blobProperty.getFileLimitDay();
         cdnUrl = blobProperty.getCDNUrl();
         initContainer();
         isAuthedBySAS = false;
+        isConnected = true;
     }
 
     public void setSASData(SASData sasData) {
@@ -69,10 +71,11 @@ public class BlobStorageClient {
         fileLimitDay = sasData.getFileLimitDay();
         cdnUrl = sasData.getCdnUrl();
         initContainer();
+        isConnected = true;
         sasDataInUse = sasData;
     }
 
-    private void checkBlobStorageClient() {
+    private void checkBlobStorageClientUpdate() {
         if (isAuthedBySAS && sasDataForUpdate != null) {
             buildClientBySAS(sasDataForUpdate);
             sasDataForUpdate = null;
@@ -100,7 +103,7 @@ public class BlobStorageClient {
         AccountSasService services = AccountSasService.parse(sasPermission.serviceStr);
         AccountSasResourceType resourceTypes = AccountSasResourceType.parse(sasPermission.resourceStr);
         AccountSasPermission permissions = AccountSasPermission.parse(sasPermission.permissionStr);
-        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, ChronoUnit.MINUTES), ZoneId.systemDefault());
+        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, sasPermission.timeUnit), ZoneId.systemDefault());
 
         AccountSasSignatureValues sasSignatureValues = new AccountSasSignatureValues(expiryTime, permissions,
                 services, resourceTypes);
@@ -129,7 +132,10 @@ public class BlobStorageClient {
      * @return
      */
     public String uploadBlobFromFile(File uploadFile, String containerName, String blobFilePath, Logger logger) {
-        checkBlobStorageClient();
+        if (!isConnected) {
+            return null;
+        }
+        checkBlobStorageClientUpdate();
         if (logger == null) {
             logger = classLogger;
         }
@@ -158,7 +164,10 @@ public class BlobStorageClient {
      * @return
      */
     public BlobProperties downloadFileFromBlob(File downloadToFile, String containerName, String blobFilePath) {
-        checkBlobStorageClient();
+        if (!isConnected) {
+            return null;
+        }
+        checkBlobStorageClientUpdate();
         File saveDir = downloadToFile.getParentFile();
         if (!saveDir.exists()) {
             cn.hutool.core.lang.Assert.isTrue(saveDir.mkdirs(), "mkdirs fail in downloadFileFromUrl");
