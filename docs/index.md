@@ -3,7 +3,7 @@ title: Hydra Lab
 subtitle: Intelligent Cloud Testing Made Easy
 layout: page
 callouts: home_callouts
-logo: https://microsoft.github.io/HydraLab/assets/images/logo.png
+logo: /HydraLab/assets/images/logo.png
 show_sidebar: true
 ---
 
