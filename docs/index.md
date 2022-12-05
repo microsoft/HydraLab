@@ -3,7 +3,7 @@ title: Hydra Lab
 subtitle: Intelligent Cloud Testing Made Easy
 layout: page
 callouts: home_callouts
-logo: {{ site.baseurl }}/assets/images/logo.png
+logo: {{ site.url }}/HydraLab/assets/images/logo.png
 show_sidebar: true
 ---
 
@@ -26,7 +26,7 @@ Hydra Lab enables dev team to quickly build a self-manageable and intelligent cl
 
 -   Either: Build a new cloud testing network with Hydra Lab released packages.
 -   Or: Onboard your test device to an existing network with low-cost and small effort.
-    ![technical_architecture]({{ site.baseurl }}/assets/images/technical_architecture.png){:height="60%" width="60%"}
+    ![technical_architecture]({{ site.url }}/HydraLab/assets/images/technical_architecture.png){:height="60%" width="60%"}
 
 For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
 
