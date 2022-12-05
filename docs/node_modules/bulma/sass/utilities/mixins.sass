@@ -25,6 +25,11 @@
   width: $dimensions
 
 =hamburger($dimensions)
+  -moz-appearance: none
+  -webkit-appearance: none
+  appearance: none
+  background: none
+  border: none
   cursor: pointer
   display: block
   height: $dimensions
@@ -90,6 +95,10 @@
   @media screen and (max-width: $device - 1px)
     @content
 
+=between($from, $until)
+  @media screen and (min-width: $from) and (max-width: $until - 1px)
+    @content
+
 =mobile
   @media screen and (max-width: $tablet - 1px)
     @content
@@ -139,6 +148,21 @@
   @if $fullhd-enabled
     @media screen and (min-width: $fullhd)
       @content
+
+=breakpoint($name)
+  $breakpoint: map-get($breakpoints, $name)
+  @if $breakpoint
+    $from: map-get($breakpoint, "from")
+    $until: map-get($breakpoint, "until")
+    @if $from and $until
+      +between($from, $until)
+        @content
+    @else if $from
+      +from($from)
+        @content
+    @else if $until
+      +until($until)
+        @content
 
 =ltr
   @if not $rtl
@@ -277,4 +301,3 @@
   position: absolute
   right: $offset
   top: $offset
-

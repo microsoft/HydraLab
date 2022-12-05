@@ -8,8 +8,8 @@ description: >
 baseurl: "https://microsoft.github.io/HydraLab"
 url: ""
 permalink: pretty
-#favicon: /path/to/favicon.png
-gh_sponsor: chrisrhymes
+#favicon: favicon.png
+gh_sponsor: hydralab
 #hide_share_buttons: true
 #theme_color: '#eeeeee'
 #fixed_navbar: top
@@ -23,7 +23,7 @@ disqus:
   # Leave shortname blank to disable comments site-wide.
   # Disable comments for any post by adding `comments: false` to that post's YAML Front Matter.
   # shortname: my_disqus_shortname
-  shortname: csrhymes
+  shortname: hydralab
 
 plugins:
   - jekyll-sitemap
@@ -37,11 +37,11 @@ exclude:
   - Gemfile
   - clean-theme.gemspec
   - Gemfile.lock
-  - node_modules
   - vendor/bundle/
   - vendor/cache/
   - vendor/gems/
   - vendor/ruby/
+  - node_modules
 
 livereload: true
 
@@ -61,15 +61,13 @@ defaults:
       path: ""
       type: "posts"
     values:
-      author: "C.S. Rhymes"
+      author: "Hydra Lab Support"
       layout: post
       image: https://via.placeholder.com/1200x800
       show_sidebar: true
 
 markdown: kramdown
 highlighter: rouge
-
-footer_menu: example_footer_menu
 
 collections:
   products:

@@ -3,8 +3,8 @@ layout: post
 title: Smart Test
 description: Smart Test description
 date: 2022-9-10 09:00:07
-image: https://microsoft.github.io/HydraLab/img/SmartTest.jpeg
+image: /assets/images/SmartTest.png
 hero_darken: true
 ---
 
-Smart Test Intro
+An intelligent test framework.
