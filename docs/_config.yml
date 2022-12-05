@@ -5,8 +5,8 @@ tagline: Intelligent Cloud Testing Made Easy
 email:  hydra_lab_support@microsoft.com
 description: >
   Intelligent Cloud Testing Made Easy
-baseurl: "/HydraLab"
-url: "https://microsoft.github.io"
+baseurl: "https://microsoft.github.io/HydraLab"
+url: ""
 permalink: pretty
 #favicon: favicon.png
 gh_sponsor: hydralab
