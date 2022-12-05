@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.entity.common;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  * @author zhoule
@@ -29,6 +30,7 @@ public class SASData {
 
         public final String serviceStr, resourceStr, permissionStr;
         public long expiryTime;
+        public ChronoUnit timeUnit;
 
         SASPermission(String serviceStr, String resourceStr, String permissionStr) {
             this.serviceStr = serviceStr;
@@ -36,8 +38,20 @@ public class SASData {
             this.permissionStr = permissionStr;
         }
 
-        public void setExpiryTime(long expiryTime) {
+        public void setExpiryTime(long expiryTime, String unit) {
             this.expiryTime = expiryTime;
+            this.timeUnit = ChronoUnit.valueOf(unit);
+        }
+
+        @Override
+        public String toString() {
+            return "SASPermission{" +
+                    "serviceStr='" + serviceStr + '\'' +
+                    ", resourceStr='" + resourceStr + '\'' +
+                    ", permissionStr='" + permissionStr + '\'' +
+                    ", expiryTime=" + expiryTime +
+                    ", timeUnit=" + timeUnit +
+                    '}';
         }
     }
 }
