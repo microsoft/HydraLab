@@ -149,7 +149,7 @@ public abstract class DeviceManager {
 
     public File getScreenShotWithStrategy(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger, @NotNull AgentUser.BatteryStrategy batteryStrategy) throws Exception {
         File screenshotImageFile = deviceInfo.getScreenshotImageFile();
-        if (screenshotImageFile == null) {
+        if (screenshotImageFile == null || StringUtils.isEmpty(deviceInfo.getScreenshotImageUrl())) {
             return getScreenShot(deviceInfo, logger);
         } else if (batteryStrategy.wakeUpInterval > 0) {
             synchronized (deviceInfo.getLock()) {
