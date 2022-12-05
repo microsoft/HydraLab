@@ -8,7 +8,7 @@ description: >
 baseurl: "https://microsoft.github.io/HydraLab"
 url: ""
 permalink: pretty
-favicon: favicon.png
+#favicon: favicon.png
 gh_sponsor: hydralab
 #hide_share_buttons: true
 #theme_color: '#eeeeee'
