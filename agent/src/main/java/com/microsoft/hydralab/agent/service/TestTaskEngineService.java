@@ -121,7 +121,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 throw new RuntimeException("mkdirs fail for: " + baseDir);
             }
         }
-        testTask.setTestCaseBaseDir(baseDir);
+        testTask.setResourceDir(baseDir);
     }
 
     private void determineScopeOfTestCase(TestTaskSpec testTaskSpec) {

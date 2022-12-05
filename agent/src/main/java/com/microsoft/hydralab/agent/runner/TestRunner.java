@@ -113,21 +113,22 @@ public abstract class TestRunner {
 
     }
 
-    public Logger initReportLogger(DeviceTestTask deviceTestTask, TestTask testTask, Logger logger) {
-        logger.info("Start setup report child logger");
+    private Logger createLoggerForDeviceTestTask(DeviceTestTask deviceTestTask, String loggerNamePrefix, Logger parentLogger) {
+        parentLogger.info("Start setup report child parentLogger");
         String dateInfo = DateUtil.fileNameDateFormat.format(new Date());
-        File instrumentLogFile = new File(deviceTestTask.getDeviceTestResultFolder(), testTask.getTestSuite() + "_" + dateInfo + ".log");
-        // make sure it's a child logger
-        String loggerName = logger.getName() + ".test." + dateInfo;
+        File instrumentLogFile = new File(deviceTestTask.getDeviceTestResultFolder(), loggerNamePrefix + "_" + dateInfo + ".log");
+        // make sure it's a child logger of the parentLogger
+        String loggerName = parentLogger.getName() + ".test." + dateInfo;
         Logger reportLogger = LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(), "%d %p -- %m%n");
+        // TODO the getTestBaseRelPathInUrl method shouldn't be in deviceManager, testBaseDir should be managed by agent
         deviceTestTask.setInstrumentReportPath(deviceManager.getTestBaseRelPathInUrl(instrumentLogFile));
 
         return reportLogger;
     }
 
-    public DeviceTestTask initDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger logger) {
+    protected DeviceTestTask initDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger logger) {
         DeviceTestTask deviceTestTask = new DeviceTestTask(deviceInfo.getSerialNum(), deviceInfo.getName(), testTask.getId());
-        File deviceTestResultFolder = new File(testTask.getTestCaseBaseDir(), deviceInfo.getSerialNum());
+        File deviceTestResultFolder = new File(testTask.getResourceDir(), deviceInfo.getSerialNum());
         logger.info("DeviceTestResultFolder {}", deviceTestResultFolder);
         if (!deviceTestResultFolder.exists()) {
             if (!deviceTestResultFolder.mkdirs()) {
@@ -135,6 +136,7 @@ public abstract class TestRunner {
             }
         }
         deviceTestTask.setDeviceTestResultFolder(deviceTestResultFolder);
+        deviceTestTask.setLogger(createLoggerForDeviceTestTask(deviceTestTask, testTask.getTestSuite(), logger));
         return deviceTestTask;
     }
 }

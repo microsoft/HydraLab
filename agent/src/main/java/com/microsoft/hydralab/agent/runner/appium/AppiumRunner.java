@@ -53,7 +53,7 @@ public class AppiumRunner extends TestRunner {
         Logger reportLogger = null;
 
         try {
-            reportLogger = initReportLogger(deviceTestTask, testTask, logger);
+            reportLogger = deviceTestTask.getLogger();
             initDevice(deviceInfo, testTask, reportLogger);
 
             File gifFile = runAndGetGif(appiumJarFile, appiumCommand, deviceInfo, testTask, deviceTestTask, deviceTestResultFolder, reportLogger);

@@ -45,7 +45,7 @@ public class EspressoRunner extends TestRunner {
         Logger reportLogger = null;
 
         try {
-            reportLogger = initReportLogger(deviceTestTask, testTask, logger);
+            reportLogger = deviceTestTask.getLogger();
             initDevice(deviceInfo, testTask, reportLogger);
 
             /** xml report: parse listener */

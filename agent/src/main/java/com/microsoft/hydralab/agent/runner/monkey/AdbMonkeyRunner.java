@@ -62,7 +62,7 @@ public class AdbMonkeyRunner extends TestRunner {
 
         pkgName = testTask.getPkgName();
         try {
-            reportLogger = initReportLogger(deviceTestTask, testTask, logger);
+            reportLogger = deviceTestTask.getLogger();
             initDevice(deviceInfo, testTask, reportLogger);
 
             /** start Record **/

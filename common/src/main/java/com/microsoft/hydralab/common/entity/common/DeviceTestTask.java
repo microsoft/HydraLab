@@ -25,14 +25,16 @@ public class DeviceTestTask {
 //    private static Pattern testResultOkLine = Pattern.compile("OK\\s+\\((\\d+)\\s+tests\\)");
     // Time: 102.233
 //    private static Pattern testResultTestSpentLine = Pattern.compile("Time:\\s+([\\d.]+)");
-    private static final Logger logger = LoggerFactory.getLogger(DeviceTestTask.class);
     @Id
     private String id = UUID.randomUUID().toString();
     @Column(name = "test_task_id")
     private String testTaskId;
     private String deviceSerialNumber;
     private String deviceName;
-
+    /**
+     * This is a relative path
+     * TODO expects a more general name, a better name could be "logFileRelPath"
+     */
     private String instrumentReportPath;
     private String logcatPath;
     private String controlLogPath;
@@ -67,6 +69,8 @@ public class DeviceTestTask {
 
     @Transient
     private List<BlobFileInfo> attachments;
+    @Transient
+    private Logger logger;
 
     public DeviceTestTask() {
     }
