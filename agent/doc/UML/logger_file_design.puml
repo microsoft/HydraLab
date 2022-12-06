@@ -1,0 +1,15 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+object DeviceLogger
+note top of DeviceLogger
+deviceLogBaseDir/device.getName()/device_control.log
+end note
+
+object DeviceTestTaskLogger
+note bottom of DeviceTestTaskLogger
+DeviceTestResultFolder/loggerNamePrefix_dateInfo.log
+end note
+
+DeviceTestTaskLogger -u-|> DeviceLogger
+@enduml

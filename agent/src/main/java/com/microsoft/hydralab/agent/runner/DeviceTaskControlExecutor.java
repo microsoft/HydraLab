@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.agent.runner;
 
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.entity.agent.RunningControl;
+import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -17,26 +17,18 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 @Service
-public class RunningControlService {
-    static final Logger log = LoggerFactory.getLogger(RunningControlService.class);
+public class DeviceTaskControlExecutor {
+    static final Logger log = LoggerFactory.getLogger(DeviceTaskControlExecutor.class);
     @Resource
     DeviceManager deviceManager;
 
     @Nullable
-    public RunningControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task, TaskCompletion taskCompletion) {
+    public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task, TaskCompletion taskCompletion) {
         //the status of device will be controlled by master, so the task will run no matter what the status saved in agent is
         return runForAllDeviceAsync(allDevices, task, taskCompletion, true, true);
     }
 
-    /**
-     * @param allDevices
-     * @param task
-     * @param taskCompletion
-     * @param logging
-     * @param forceForTesting
-     * @return
-     */
-    public RunningControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task, TaskCompletion taskCompletion, boolean logging, boolean forceForTesting) {
+    public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task, TaskCompletion taskCompletion, boolean logging, boolean forceForTesting) {
         int activeDevice = 0;
         log.warn("All device count {}", allDevices.size());
         for (DeviceInfo device : allDevices) {
@@ -95,7 +87,7 @@ public class RunningControlService {
             };
             TestThreadPool.executor.execute(run);
         }
-        return new RunningControl(count, devices);
+        return new DeviceTaskControl(count, devices);
     }
 
     public interface DeviceTask {

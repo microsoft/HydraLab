@@ -25,14 +25,16 @@ public class DeviceTestTask {
 //    private static Pattern testResultOkLine = Pattern.compile("OK\\s+\\((\\d+)\\s+tests\\)");
     // Time: 102.233
 //    private static Pattern testResultTestSpentLine = Pattern.compile("Time:\\s+([\\d.]+)");
-    private static final Logger logger = LoggerFactory.getLogger(DeviceTestTask.class);
     @Id
     private String id = UUID.randomUUID().toString();
     @Column(name = "test_task_id")
     private String testTaskId;
     private String deviceSerialNumber;
     private String deviceName;
-
+    /**
+     * This is a relative path
+     * TODO expects a more general name, a better name could be "logFileRelPath"
+     */
     private String instrumentReportPath;
     private String logcatPath;
     private String controlLogPath;
@@ -56,17 +58,18 @@ public class DeviceTestTask {
     @Transient
     private List<AndroidTestUnit> testUnitList = new ArrayList<>();
     @Transient
+    private JSONArray videoTimeTagArr = new JSONArray();
+    @Transient
+    private String videoBlobUrl;
+    @Transient
+    private List<BlobFileInfo> attachments;
+
+    @Transient
     private transient List<CommandlineAndTime> commandlineAndTimeList = new ArrayList<>();
     @Transient
     private transient File deviceTestResultFolder;
     @Transient
-    private JSONArray videoTimeTagArr = new JSONArray();
-
-    @Transient
-    private String videoBlobUrl;
-
-    @Transient
-    private List<BlobFileInfo> attachments;
+    private transient Logger logger;
 
     public DeviceTestTask() {
     }
@@ -104,10 +107,10 @@ public class DeviceTestTask {
 
     public void addNewTimeTagBeforeLast(String tag, long relTime) {
         int arrLength = videoTimeTagArr.size();
-        if(arrLength==0){
+        if (arrLength == 0) {
             addNewTimeTag(tag, relTime);
-        }else{
-            JSONObject temp = (JSONObject) videoTimeTagArr.remove(arrLength-1);
+        } else {
+            JSONObject temp = (JSONObject) videoTimeTagArr.remove(arrLength - 1);
             addNewTimeTag(tag, relTime);
             videoTimeTagArr.add(temp);
         }

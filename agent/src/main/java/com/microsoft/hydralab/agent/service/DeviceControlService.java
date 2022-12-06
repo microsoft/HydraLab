@@ -3,22 +3,17 @@
 package com.microsoft.hydralab.agent.service;
 
 import com.microsoft.hydralab.agent.repository.MobileDeviceRepository;
-import com.microsoft.hydralab.agent.runner.RunningControlService;
-import com.microsoft.hydralab.agent.runner.TestRunner;
+import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
-import com.microsoft.hydralab.common.entity.agent.RunningControl;
+import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
-import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.WindowsDeviceManager;
 import com.microsoft.hydralab.common.util.Const;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -38,9 +33,8 @@ public class DeviceControlService {
     @Resource
     AgentWebSocketClientService agentWebSocketClientService;
     @Resource
-    RunningControlService runningControlService;
-    @Resource
-    ApplicationContext applicationContext;
+    DeviceTaskControlExecutor deviceTaskControlExecutor;
+
 
     public Set<DeviceInfo> getAllConnectedDevice() {
         updateAllDeviceScope();
@@ -68,16 +62,16 @@ public class DeviceControlService {
     }
 
     private void captureDevicesScreenSync(Collection<DeviceInfo> allDevices, boolean logging, AgentUser.BatteryStrategy batteryStrategy) {
-        RunningControl runningControl = runningControlService.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
+        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
             deviceManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
             return true;
         }, null, logging, true);
 
-        if (runningControl == null) {
+        if (deviceTaskControl == null) {
             return;
         }
 
-        CountDownLatch countDownLatch = runningControl.countDownLatch;
+        CountDownLatch countDownLatch = deviceTaskControl.countDownLatch;
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
@@ -85,17 +79,6 @@ public class DeviceControlService {
         }
     }
 
-
-    public boolean cancelTestTaskById(String testId) {
-        final Map<String, TestTask> runningTestTask = deviceManager.getRunningTestTask();
-        final TestTask testTask = runningTestTask.get(testId);
-        if (testTask == null || testTask.isCanceled()) {
-            return false;
-        }
-        testTask.setStatus(TestTask.TestStatus.CANCELED);
-        deviceManager.resetDeviceByTestId(testId, log);
-        return true;
-    }
 
 
     private void updateAllDeviceScope() {
@@ -137,27 +120,7 @@ public class DeviceControlService {
         return device;
     }
 
-    public TestTask runTestTask(TestTaskSpec testTaskSpec) {
-        if (StringUtils.isEmpty(testTaskSpec.runningType)) {
-            testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
-        }
-        determineScopeOfTestCase(testTaskSpec);
-        log.info("TestTaskSpec: {}", testTaskSpec);
 
-        String beanName = TestTask.TestRunnerMap.get(testTaskSpec.runningType);
-        TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
-        return runner.runTest(testTaskSpec);
-    }
-
-    private void determineScopeOfTestCase(TestTaskSpec testTaskSpec) {
-        if (!StringUtils.isEmpty(testTaskSpec.testScope)) {
-            return;
-        }
-        testTaskSpec.testScope = TestTask.TestScope.CLASS;
-        if (StringUtils.isEmpty(testTaskSpec.testSuiteClass)) {
-            testTaskSpec.testScope = TestTask.TestScope.TEST_APP;
-        }
-    }
 
     public DeviceManager getDeviceManager() {
         return deviceManager;

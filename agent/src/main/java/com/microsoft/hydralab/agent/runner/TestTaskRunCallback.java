@@ -7,8 +7,9 @@ import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import org.slf4j.Logger;
 
-public interface TestRunningCallback {
-    void onAllComplete(TestTask testTask);
+public interface TestTaskRunCallback {
+    void onTaskStart(TestTask testTask);
+    void onTaskComplete(TestTask testTask);
 
     void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, DeviceTestTask result);
 
