@@ -5,3 +5,7 @@ _site
 Gemfile.lock
 .idea
 .DS_Store
+
+package-lock.json
+.jekyll-cache
+yarm.lock
