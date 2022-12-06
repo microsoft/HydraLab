@@ -42,10 +42,10 @@ public class MetricUtil {
         log.info("Metric of agent reconnect retry times has been registered.");
     }
 
-    public void registerAgentRunningTestTaskNum(TestTaskEngineService deviceStabilityMonitor) {
+    public void registerAgentRunningTestTaskNum(TestTaskEngineService testTaskEngineService) {
         meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_RUNNING_TEST_NUM,
                 Tags.empty(),
-                deviceStabilityMonitor,
+                testTaskEngineService,
                 this::runningTestTaskNum);
         log.info("Metric of agent running test task number has been registered.");
     }
