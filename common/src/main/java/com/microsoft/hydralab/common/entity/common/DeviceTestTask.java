@@ -58,19 +58,18 @@ public class DeviceTestTask {
     @Transient
     private List<AndroidTestUnit> testUnitList = new ArrayList<>();
     @Transient
+    private JSONArray videoTimeTagArr = new JSONArray();
+    @Transient
+    private String videoBlobUrl;
+    @Transient
+    private List<BlobFileInfo> attachments;
+
+    @Transient
     private transient List<CommandlineAndTime> commandlineAndTimeList = new ArrayList<>();
     @Transient
     private transient File deviceTestResultFolder;
     @Transient
-    private JSONArray videoTimeTagArr = new JSONArray();
-
-    @Transient
-    private String videoBlobUrl;
-
-    @Transient
-    private List<BlobFileInfo> attachments;
-    @Transient
-    private Logger logger;
+    private transient Logger logger;
 
     public DeviceTestTask() {
     }
@@ -108,10 +107,10 @@ public class DeviceTestTask {
 
     public void addNewTimeTagBeforeLast(String tag, long relTime) {
         int arrLength = videoTimeTagArr.size();
-        if(arrLength==0){
+        if (arrLength == 0) {
             addNewTimeTag(tag, relTime);
-        }else{
-            JSONObject temp = (JSONObject) videoTimeTagArr.remove(arrLength-1);
+        } else {
+            JSONObject temp = (JSONObject) videoTimeTagArr.remove(arrLength - 1);
             addNewTimeTag(tag, relTime);
             videoTimeTagArr.add(temp);
         }
