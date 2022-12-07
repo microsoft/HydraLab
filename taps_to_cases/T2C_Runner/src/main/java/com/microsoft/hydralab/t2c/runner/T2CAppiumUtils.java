@@ -13,6 +13,7 @@ import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.EdgeElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import io.appium.java_client.android.nativekey.AndroidKey;
+import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 
@@ -49,7 +50,7 @@ public class T2CAppiumUtils {
         throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
     }
 
-    public static void doAction(BaseDriverController driver, ActionInfo actionInfo, Logger logger) {
+    public static void doAction(@NotNull BaseDriverController driver, @NotNull ActionInfo actionInfo, @NotNull Logger logger) {
         boolean isOption = actionInfo.isOption();
         try {
             chooseActionType(driver, actionInfo, logger);
