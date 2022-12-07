@@ -143,7 +143,7 @@ public class AndroidDriverController extends BaseDriverController {
             elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
                     .until(driver -> driver.findElement(AppiumBy.xpath("//*[@text='" + name + "']")));
         } catch (Exception e) {
-            logger.info("Can not find element by Name: " + name);
+            logger.info("Can not find element by text: " + name);
         }
         return elementFound;
     }
