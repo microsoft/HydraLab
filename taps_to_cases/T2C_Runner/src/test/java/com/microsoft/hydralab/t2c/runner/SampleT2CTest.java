@@ -97,7 +97,7 @@ public class SampleT2CTest {
             BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
             System.out.println(actionInfo.getDriverId());
             if (driverController.webDriver != null) {
-                T2CAppiumUtils.doAction(driverController, actionInfo);
+                T2CAppiumUtils.doAction(driverController, actionInfo, logger);
             }
         }
     }
