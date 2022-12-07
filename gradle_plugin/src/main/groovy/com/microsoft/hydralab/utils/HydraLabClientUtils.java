@@ -58,8 +58,6 @@ public class HydraLabClientUtils {
             }).create();
     private static boolean isTestRunningFailed = false;
     private static boolean isTestResultFailed = false;
-    // Exit for runtime exception uses code 1, exit for test result failure uses code -1
-    private static final int TEST_RESULT_FAILURE_CODE = -1;
 
     public static void runTestOnDeviceWithApp(String runningType, String appPath, String testAppPath,
                                               String attachmentConfigPath,
@@ -414,7 +412,7 @@ public class HydraLabClientUtils {
         printlnf(testReportUrl);
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
 
-        returnFinalTestState();
+        displayFinalTestState();
     }
 
     private static void markRunningFail() {
@@ -436,10 +434,9 @@ public class HydraLabClientUtils {
         isTestResultFailed = true;
     }
 
-    private static void returnFinalTestState() {
+    private static void displayFinalTestState() {
         if (isTestResultFailed){
             printlnf("##[error]Final test state: fail.");
-            System.exit(TEST_RESULT_FAILURE_CODE);
         }
         else {
             printlnf("Final test state: success.");

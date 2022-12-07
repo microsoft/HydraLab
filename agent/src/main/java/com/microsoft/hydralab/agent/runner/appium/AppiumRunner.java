@@ -2,9 +2,8 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.runner.appium;
 
-import com.microsoft.hydralab.agent.runner.RunningControlService;
 import com.microsoft.hydralab.agent.runner.TestRunner;
-import com.microsoft.hydralab.agent.runner.TestRunningCallback;
+import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.appium.AppiumParam;
 import com.microsoft.hydralab.appium.ThreadParam;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -36,17 +35,13 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 public class AppiumRunner extends TestRunner {
 
     @Override
-    public RunningControlService.DeviceTask getDeviceTask(TestTask testTask, TestRunningCallback testRunningCallback) {
-
-        return (deviceInfo, logger) -> {
-            runAppiumTest(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testRunningCallback, logger);
-            return true;
-        };
+    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
+        runAppiumTest(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testTaskRunCallback, logger);
     }
 
     public void runAppiumTest(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo,
                               TestTask testTask,
-                              TestRunningCallback testRunningCallback, Logger logger) {
+                              TestTaskRunCallback testTaskRunCallback, Logger logger) {
         checkTestTaskCancel(testTask);
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
@@ -58,7 +53,7 @@ public class AppiumRunner extends TestRunner {
         Logger reportLogger = null;
 
         try {
-            reportLogger = initReportLogger(deviceTestTask, testTask, logger);
+            reportLogger = deviceTestTask.getLogger();
             initDevice(deviceInfo, testTask, reportLogger);
 
             File gifFile = runAndGetGif(appiumJarFile, appiumCommand, deviceInfo, testTask, deviceTestTask, deviceTestResultFolder, reportLogger);
@@ -81,14 +76,14 @@ public class AppiumRunner extends TestRunner {
         } finally {
             //clear config
             ThreadParam.clean();
-            afterTest(deviceInfo, testTask, deviceTestTask, testRunningCallback, reportLogger);
+            afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
         }
     }
 
     @Override
-    protected void afterTest(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, TestRunningCallback testRunningCallback, Logger reportLogger) {
+    protected void afterTest(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, TestTaskRunCallback testTaskRunCallback, Logger reportLogger) {
         quitAppiumDrivers(deviceInfo, testTask, reportLogger);
-        super.afterTest(deviceInfo, testTask, deviceTestTask, testRunningCallback, reportLogger);
+        super.afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
     }
 
     protected void quitAppiumDrivers(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) {
