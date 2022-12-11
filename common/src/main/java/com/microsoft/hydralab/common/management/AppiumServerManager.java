@@ -392,7 +392,7 @@ public class AppiumServerManager {
 
     public void quitIOSDriver(DeviceInfo deviceInfo, Logger logger) {
         String udid = deviceInfo.getSerialNum();
-        logger.info("Quiting the driver for device: " + udid);
+        logger.info("Quitting the driver for device: " + udid);
         IOSUtils.releaseMjpegServerPortByUdid(udid, logger);
         IOSDriver iosDriver = iOSDrivers.get(udid);
         if (iosDriver != null) {
@@ -400,7 +400,7 @@ public class AppiumServerManager {
                 iosDriver.quit();
                 logger.info("Quited the driver for device: " + udid);
             } catch (Exception e) {
-                logger.info("Error happened when quiting driver for device: " + udid);
+                logger.info("Error happened when quitting driver for device: " + udid);
                 e.printStackTrace();
             }
         }
@@ -410,14 +410,14 @@ public class AppiumServerManager {
 
     public void quitAndroidDriver(DeviceInfo deviceInfo, Logger logger) {
         String udid = deviceInfo.getSerialNum();
-        logger.info("Quiting the driver for device: " + udid);
+        logger.info("Quitting the driver for device: " + udid);
         AndroidDriver androidDriver = androidDrivers.get(udid);
         if (androidDriver != null) {
             try {
                 androidDriver.quit();
                 logger.info("Quited the driver for device: " + udid);
             } catch (Exception e) {
-                logger.info("Error happened when quiting driver for device: " + udid);
+                logger.info("Error happened when quitting driver for device: " + udid);
                 e.printStackTrace();
             }
         }
@@ -431,7 +431,7 @@ public class AppiumServerManager {
                 windowsRootDriver = null;
                 logger.info("Quited the driver for Windows. ");
             } catch (Exception e) {
-                logger.info("Error happened when quiting driver for Windows. ");
+                logger.info("Error happened when quitting driver for Windows. ");
                 e.printStackTrace();
             }
         }
@@ -439,14 +439,14 @@ public class AppiumServerManager {
 
     public void quitWindowsAppDriver(String appFamilyName, Logger logger) {
 
-        logger.info("Quiting the Windows driver for app: " + appFamilyName);
+        logger.info("Quitting the Windows driver for app: " + appFamilyName);
         WindowsDriver windowsDriver = windowsAppDrivers.get(appFamilyName);
         if (windowsDriver != null) {
             try {
                 windowsDriver.quit();
                 logger.info("Quited the Windows driver for app: " + appFamilyName);
             } catch (Exception e) {
-                logger.info("Error happened when quiting Windows driver for app: " + appFamilyName);
+                logger.info("Error happened when quitting Windows driver for app: " + appFamilyName);
                 e.printStackTrace();
             }
         }
@@ -460,7 +460,7 @@ public class AppiumServerManager {
                 edgeDriver = null;
                 logger.info("Quited the driver for edge.");
             } catch (Exception e) {
-                logger.info("Error happened when quiting driver for edge.");
+                logger.info("Error happened when quitting driver for edge.");
                 e.printStackTrace();
             }
         }
@@ -473,7 +473,7 @@ public class AppiumServerManager {
                 winEdgeDriver = null;
                 logger.info("Quite the driver for win edge.");
             } catch (Exception e) {
-                logger.info("Error happened when quiting driver for windows edge.");
+                logger.info("Error happened when quitting driver for windows edge.");
                 e.printStackTrace();
             }
         }
