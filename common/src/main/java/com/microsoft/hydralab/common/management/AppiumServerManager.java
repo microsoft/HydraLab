@@ -17,8 +17,8 @@ import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.windows.WindowsDriver;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.net.UrlChecker;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -278,7 +278,7 @@ public class AppiumServerManager {
         try {
             driver.getScreenshotAs(OutputType.FILE);
             return true;
-        } catch (NoSuchSessionException e) {
+        } catch (WebDriverException e) {
             return false;
         }
     }
