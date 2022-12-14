@@ -15,7 +15,7 @@
     "version": {
         "Major": 2,
         "Minor": 0,
-        "Patch": 6
+        "Patch": 11
     },
     "instanceNameFormat": "Deploy Tests of ${pkgName} to HydraLab",
     "inputs": [
@@ -257,6 +257,14 @@
             "required": false,
             "helpMarkDown": "The Report Audience.",
             "visibleRule": "runningInfo = manually"
+        },
+        {
+            "name": "workingDirectory",
+            "type": "string",
+            "label": "Working Directory",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "The Working Directory, default is $(System.DefaultWorkingDirectory)."
         }
     ],
     "execution": {
