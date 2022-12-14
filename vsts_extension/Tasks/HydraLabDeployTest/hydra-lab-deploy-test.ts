@@ -10,20 +10,43 @@ async function run() {
     try {
         tl.setResourcePath(path.join( __dirname, 'task.json'));
 
+        var workingDirectory: string | undefined = tl.getInput('workingDirectory');
+        if (!workingDirectory){
+            workingDirectory = tl.getVariable('SYSTEM_DEFAULTWORKINGDIRECTORY');
+        }
+        if (!workingDirectory){
+            workingDirectory = __dirname;
+        }
+
+        fs.mkdir(workingDirectory, { recursive: true }, (err) => {
+            if (err) throw err;
+            console.log('##[section]Working Directory Folder created successfully!'); 
+        });
+
+        tl.cd(workingDirectory);
+        console.log('##[section]Working Directory: %s', workingDirectory);
+
+        var build = false;
+        const systemHostType: string | undefined = tl.getVariable('SYSTEM_HOSTTYPE');
+        if (systemHostType) {
+            console.log('##[section]System.HostType: %s', systemHostType);
+            build = (systemHostType === 'build')
+        }
+
         let taskSuccess: boolean = true;
 
         const HydraLabAPIConfig: any = {};
 
         const Path: object = {
-            'getCenterInfo': "/api/center/info/",
-            'uploadAPKAPIPath': "/api/package/add/",
-            "addAttachmentAPIPath": "/api/package/addAttachment",
-            'generateDeviceGroupAccessKey': "/api/deviceGroup/generate?deviceIdentifier=",
-            'runTestAPIPath': "/api/test/task/run/",
-            'testStatusAPIPath': "/api/test/task/",
-            'testPortalTaskInfoPath': "/portal/index.html?redirectUrl=/info/task/",
-            'testPortalTaskDeviceVideoPath': "/portal/index.html?redirectUrl=/info/videos/",
-            'getBlobSAS': "/api/package/getSAS/"
+            'getCenterInfo': "api/center/info/",
+            'uploadAPKAPIPath': "api/package/add/",
+            "addAttachmentAPIPath": "api/package/addAttachment",
+            'generateDeviceGroupAccessKey': "api/deviceGroup/generate",
+            'runTestAPIPath': "api/test/task/run/",
+            'testStatusAPIPath': "api/test/task/",
+            'testPortalTaskInfoPath': "portal/index.html",
+            'testPortalTaskDeviceVideoPath': "portal/index.html?redirectUrl=/info/videos/",
+            'getBlobSAS': "api/package/getSAS/"
         };
 
         Object.assign(HydraLabAPIConfig, { 'Path': Path });
@@ -214,13 +237,7 @@ async function run() {
         console.log('##[section]commitMsg: %s', commitMsg);
         console.log('##[section]reportAudience: %s', reportAudience);
 
-        let dir: string | undefined = tl.getVariable('BUILD_ARTIFACTSTAGINGDIRECTORY');
-
-        if (!dir) {
-            dir = __dirname
-        }
-
-        const reportFolderPath: string = path.join(dir, `report`, runningType);
+        const reportFolderPath: string = path.join(workingDirectory, `report`, runningType);
         console.log('##[section]reportFolderPath: %s', reportFolderPath);
 
         fs.mkdir(reportFolderPath, { recursive: true }, (err) => {
@@ -301,13 +318,14 @@ async function run() {
             throw new Error(`No deviceTestResults! Test id ${runningTest.id}`);
         }
 
-        const testReportUrl: string = HydraLabAPIConfig.serviceEndpointUrl + HydraLabAPIConfig.Path.testPortalTaskInfoPath + runningTest.id;
+        const testReportUrl: URL = new URL(HydraLabAPIConfig.Path.testPortalTaskInfoPath, HydraLabAPIConfig.serviceEndpointUrl);
+        testReportUrl.searchParams.append('redirectUrl', path.join('/info/task/', runningTest.id));
 
         const StringBuilder = require("string-builder");
         const mdBuilder: any = new StringBuilder();
 
         mdBuilder.append("# Hydra Lab Test Result Details\n\n\n");
-        mdBuilder.appendFormat("### [Link to full report]({0})\n\n\n", testReportUrl);
+        mdBuilder.appendFormat("### [Link to full report]({0})\n\n\n", testReportUrl.toString());
         mdBuilder.appendFormat("### Statistic: total test case count: {0}, failed: {1}\n\n", runningTest.totalTestCount, runningTest.totalFailCount);
         if (runningTest.totalFailCount > 0 && runningTest.reportImagePath != null) {
             console.log("##[warning] %d cases failed during the test", runningTest.totalFailCount);
@@ -357,25 +375,26 @@ async function run() {
 
         // use the https://docs.microsoft.com/en-us/azure/devops/pipelines/scripts/logging-commands?view=azure-devops&tabs=powershell#build-commands
         // to upload the report
-        console.log("##vso[artifact.upload artifactname=testResult;]%s", path.resolve(reportFolderPath));
+        if (build){
+            console.log("##vso[artifact.upload artifactname=testResult;]%s", path.resolve(reportFolderPath));
+            console.log("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl.toString());
+
+            let TestLabSummaryPath: string = path.join(reportFolderPath, "TestLabSummary.md")
+            await fs.writeFile(TestLabSummaryPath, mdBuilder.toString(), (err) => {
+                if (err) throw err;
+                console.log("##vso[task.uploadsummary]%s", path.resolve(TestLabSummaryPath));
+            });    
+        }
 
         console.log("##[section]All done, overall failed cases count: %d, total count: %d, devices count: %d", runningTest.totalFailCount, runningTest.totalTestCount, runningTest.testDevicesCount);
         console.log("##[section]Test task report link:");
-        console.log(testReportUrl);
-        console.log("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
+        console.log(testReportUrl.toString());
 
-        let TestLabSummaryPath: string = path.join(reportFolderPath, "TestLabSummary.md")
-
-        await fs.writeFile(TestLabSummaryPath, mdBuilder.toString(), (err) => {
-            if (err) throw err;
-            console.log("##vso[task.uploadsummary]%s", path.resolve(TestLabSummaryPath));
-        });
-        
         if (taskSuccess) {
             tl.setResult(tl.TaskResult.Succeeded, 'Success');
         } else {
             tl.setResult(tl.TaskResult.Failed, 'Test Failed');
-        }   
+        }
     }
     catch (err: any) {
         console.log(err)
@@ -398,7 +417,7 @@ async function uploadAPP(HydraLabAPIConfig: any, teamName: string, commitId: str
 
     let requestParameters = {
             method: "post",
-            url: HydraLabAPIConfig.serviceEndpointUrl + HydraLabAPIConfig.Path.uploadAPKAPIPath,
+            url: (new URL(HydraLabAPIConfig.Path.uploadAPKAPIPath, HydraLabAPIConfig.serviceEndpointUrl)).toString(),
             data: form,
             maxContentLength: Infinity,
             maxBodyLength: Infinity,        
@@ -428,7 +447,7 @@ async function uploadAttachments(HydraLabAPIConfig: any, fileSetId: string, atta
 
         let requestParameters = {
             method: "post",
-            url: HydraLabAPIConfig.serviceEndpointUrl + HydraLabAPIConfig.Path.addAttachmentAPIPath,
+            url: (new URL(HydraLabAPIConfig.Path.addAttachmentAPIPath, HydraLabAPIConfig.serviceEndpointUrl)).toString(),
             data: form,
             maxContentLength: Infinity,
             maxBodyLength: Infinity,        
@@ -442,9 +461,12 @@ async function uploadAttachments(HydraLabAPIConfig: any, fileSetId: string, atta
 }
 
 async function generateDeviceGroupAccessKey(HydraLabAPIConfig: any, deviceIdentifier: string): Promise<object> {
+    var generateDeviceGroupAccessKeyUrl = new URL(HydraLabAPIConfig.Path.generateDeviceGroupAccessKey, HydraLabAPIConfig.serviceEndpointUrl)
+    generateDeviceGroupAccessKeyUrl.searchParams.append("deviceIdentifier", deviceIdentifier)
+
     let requestParameters = {
         method: "get",
-        url: HydraLabAPIConfig.serviceEndpointUrl + HydraLabAPIConfig.Path.generateDeviceGroupAccessKey + deviceIdentifier,
+        url: generateDeviceGroupAccessKeyUrl.toString(),
         headers: { "Authorization": `Bearer ${HydraLabAPIConfig['authToken']}` }
     }
 
@@ -501,7 +523,7 @@ async function triggerTestRun(HydraLabAPIConfig: any, runningType: string, devic
 
     let requestParameters = {
         method: "post",
-        url: HydraLabAPIConfig.serviceEndpointUrl + HydraLabAPIConfig.Path.runTestAPIPath,
+        url: (new URL(HydraLabAPIConfig.Path.runTestAPIPath, HydraLabAPIConfig.serviceEndpointUrl)).toString(),
         data: json,
         headers: { "Content-Type": 'application/json; ; charset=utf-8', "Authorization": `Bearer ${HydraLabAPIConfig['authToken']}` }
     }
@@ -511,10 +533,10 @@ async function triggerTestRun(HydraLabAPIConfig: any, runningType: string, devic
     return responseContent.testTaskId
 }
 
-async function getTestStatus(HydraLabAPIConfig: any, testTaskId: string): Promise<object> {    
+async function getTestStatus(HydraLabAPIConfig: any, testTaskId: string): Promise<object> {
     let requestParameters = {
         method: "get",
-        url: HydraLabAPIConfig.serviceEndpointUrl + HydraLabAPIConfig.Path.testStatusAPIPath + testTaskId,
+        url: (new URL(path.join(HydraLabAPIConfig.Path.testStatusAPIPath, testTaskId), HydraLabAPIConfig.serviceEndpointUrl)).toString(),
         headers: { "Authorization": `Bearer ${HydraLabAPIConfig['authToken']}` }
     }
 
@@ -526,7 +548,7 @@ async function getTestStatus(HydraLabAPIConfig: any, testTaskId: string): Promis
 async function getBlobSAS(HydraLabAPIConfig: any): Promise<object> {    
     let requestParameters = {
         method: "get",
-        url: HydraLabAPIConfig.serviceEndpointUrl + HydraLabAPIConfig.Path.getBlobSAS,
+        url: (new URL(HydraLabAPIConfig.Path.getBlobSAS, HydraLabAPIConfig.serviceEndpointUrl)).toString(),
         headers: { "Authorization": `Bearer ${HydraLabAPIConfig['authToken']}` }
     }
 
@@ -554,6 +576,8 @@ async function requestHydraLab(APIName: string, requestParameters: any): Promise
         "success": false,
         "content": undefined
     }
+
+    console.log(`##[section][${APIName}] URL: ${requestParameters.url}`)
 
     await axios(requestParameters)
     .then(function (response: any) {
@@ -598,7 +622,7 @@ async function requestHydraLab(APIName: string, requestParameters: any): Promise
 async function requestHydraLabAfterCheckCenterAlive(HydraLabAPIConfig: any, APIName: string, requestParameters: any): Promise<object> {
     let checkCenterRequestParameters = {
         method: "get",
-        url: HydraLabAPIConfig.serviceEndpointUrl + HydraLabAPIConfig.Path.getCenterInfo,
+        url: (new URL(HydraLabAPIConfig.Path.getCenterInfo, HydraLabAPIConfig.serviceEndpointUrl).toString()),
         headers: { "Authorization": `Bearer ${HydraLabAPIConfig['authToken']}` }
     }
 
