@@ -15,6 +15,7 @@ public interface Const {
         String TEST_TASK_CANCEL = "/api/test/task/cancel";
         String TEST_TASK_RETRY = "/api/test/task/retry";
         String AGENT_UPDATE = "/api/agent/update";
+        String AGENT_RESTART = "/api/agent/restart";
         String default_photo = "static/dist/images/default_user.png";
     }
 

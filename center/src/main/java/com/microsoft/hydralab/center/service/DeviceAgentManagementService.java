@@ -936,6 +936,17 @@ public class DeviceAgentManagementService {
         sendMessageToSession(agentSessionInfoByAgentId.session, message);
     }
 
+    public void restartAgent(String agentId) {
+        //check is agent connected
+        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentId);
+        Assert.notNull(agentSessionInfoByAgentId, "Agent Offline!");
+
+        //Start restart agent
+        Message message = new Message();
+        message.setPath(Const.Path.AGENT_RESTART);
+        sendMessageToSession(agentSessionInfoByAgentId.session, message);
+    }
+
     public AgentUpdateTask getUpdateTask(String agentId) {
         return agentUpdateMap.get(agentId);
     }
