@@ -15,6 +15,7 @@ public interface Const {
         String TEST_TASK_CANCEL = "/api/test/task/cancel";
         String TEST_TASK_RETRY = "/api/test/task/retry";
         String AGENT_UPDATE = "/api/agent/update";
+        String AGENT_RESTART = "/api/agent/restart";
         String default_photo = "static/dist/images/default_user.png";
     }
 
@@ -36,7 +37,7 @@ public interface Const {
         String serial_param = "serialNum";
         String status_param = "status";
         String scope_param = "isPrivate";
-        String restartFileIOS = "restartAgent.sh";
+        String restartFileMac = "restartAgent.sh";
         String restartFileWin = "restartAgent.bat";
     }
 
