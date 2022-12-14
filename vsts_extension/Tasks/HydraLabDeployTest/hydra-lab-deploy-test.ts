@@ -26,11 +26,11 @@ async function run() {
         tl.cd(workingDirectory);
         console.log('##[section]Working Directory: %s', workingDirectory);
 
-        var build = false;
+        var isBuild = false;
         const systemHostType: string | undefined = tl.getVariable('SYSTEM_HOSTTYPE');
         if (systemHostType) {
             console.log('##[section]System.HostType: %s', systemHostType);
-            build = (systemHostType === 'build')
+            isBuild = (systemHostType === 'build')
         }
 
         let taskSuccess: boolean = true;
@@ -375,7 +375,7 @@ async function run() {
 
         // use the https://docs.microsoft.com/en-us/azure/devops/pipelines/scripts/logging-commands?view=azure-devops&tabs=powershell#build-commands
         // to upload the report
-        if (build){
+        if (isBuild){
             console.log("##vso[artifact.upload artifactname=testResult;]%s", path.resolve(reportFolderPath));
             console.log("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl.toString());
 
