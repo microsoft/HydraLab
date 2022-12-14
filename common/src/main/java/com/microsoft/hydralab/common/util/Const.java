@@ -37,7 +37,7 @@ public interface Const {
         String serial_param = "serialNum";
         String status_param = "status";
         String scope_param = "isPrivate";
-        String restartFileIOS = "restartAgent.sh";
+        String restartFileMac = "restartAgent.sh";
         String restartFileWin = "restartAgent.bat";
     }
 

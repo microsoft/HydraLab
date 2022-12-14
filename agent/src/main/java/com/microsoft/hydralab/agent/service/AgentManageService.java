@@ -63,7 +63,7 @@ public class AgentManageService {
 
         packageFileName = packageFileName == null ? "" : packageFileName;
         if (deviceManager instanceof IOSDeviceManager && !((IOSDeviceManager) deviceManager).isDeviceConnectedToWindows()) {
-            scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.restartFileIOS;
+            scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.restartFileMac;
             restartArgs = new String[]{"sh", scriptPath, packageFileName};
         } else {
             scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.restartFileWin;
