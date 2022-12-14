@@ -35,7 +35,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @Resource
     TestTaskEngineService testTaskEngineService;
     @Resource
-    AgentMgrService agentMgrService;
+    AgentManageService agentManageService;
     @Resource
     BlobStorageClient blobStorageClient;
     AgentUser agentUser;
@@ -79,10 +79,10 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                     break;
                 }
                 AgentUpdateTask taskInfo = (AgentUpdateTask) message.getBody();
-                agentMgrService.updateAgentPackage(taskInfo, path);
+                agentManageService.updateAgentPackage(taskInfo, path);
                 break;
             case Const.Path.AGENT_RESTART:
-                agentMgrService.restartAgent(null, path);
+                agentManageService.restartAgent(null, path);
                 break;
             case Const.Path.DEVICE_LIST:
                 if (agentUser.getBatteryStrategy() == null) {

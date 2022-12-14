@@ -22,8 +22,8 @@ import java.io.File;
  * @author zhoule
  */
 @Service
-public class AgentMgrService {
-    private final Logger logger = LoggerFactory.getLogger(AgentMgrService.class);
+public class AgentManageService {
+    private final Logger logger = LoggerFactory.getLogger(AgentManageService.class);
     @Resource
     DeviceManager deviceManager;
     @Resource
