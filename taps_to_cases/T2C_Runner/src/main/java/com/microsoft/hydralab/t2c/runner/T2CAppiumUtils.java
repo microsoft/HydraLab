@@ -13,54 +13,74 @@ import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.EdgeElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import io.appium.java_client.android.nativekey.AndroidKey;
+import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.WebElement;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class T2CAppiumUtils {
     static HashMap<String, String> keyToInfoMap = new HashMap<>();
+    private static boolean isSelfTesting = false;
 
-    public static WebElement findElement(BaseDriverController driver, BaseElementInfo element) {
+    public static WebElement findElement(BaseDriverController driver, BaseElementInfo element, Logger logger) {
         WebElement elementFinded = null;
         if (element == null) return null;
         Map<String, String> keyToVal = element.getBasisSearchedBy();
         if (keyToVal.get("accessibilityId") != null && keyToVal.get("accessibilityId").length() != 0) {
             elementFinded = driver.findElementByAccessibilityId(keyToVal.get("accessibilityId"));
-            if (elementFinded != null) return elementFinded;
+            if (elementFinded != null) {
+                return elementFinded;
+            }
         }
         if (keyToVal.get("text") != null && keyToVal.get("text").length() != 0) {
             elementFinded = driver.findElementByName(keyToVal.get("text"));
-            if (elementFinded != null) return elementFinded;
+            if (elementFinded != null) {
+                return elementFinded;
+            }
         }
         if (keyToVal.get("xpath") != null && keyToVal.get("xpath").length() != 0) {
             elementFinded = driver.findElementByXPath(keyToVal.get("xpath"));
-            if (elementFinded != null) return elementFinded;
+            if (elementFinded != null) {
+                return elementFinded;
+            }
         }
+        logger.warn("Page source: " + driver.webDriver.getPageSource());
         throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
     }
 
-    public static void doAction(BaseDriverController driver, ActionInfo actionInfo) {
+    public static void doAction(@NotNull BaseDriverController driver, @NotNull ActionInfo actionInfo, @NotNull Logger logger) {
         boolean isOption = actionInfo.isOption();
         try {
-            chooseActionType(driver, actionInfo);
+            chooseActionType(driver, actionInfo, logger);
         } catch (Exception e) {
             e.printStackTrace();
+            int index = actionInfo.getId();
+            logger.error("doAction at step " + index + "with exception: " + e.getMessage());
             if (!isOption) {
-                throw e;
+                throw new IllegalStateException("Failed at step " + index + ": " + e.getMessage(), e);
             }
         }
     }
 
-    public static void chooseActionType(BaseDriverController driver, ActionInfo actionInfo) {
+    public static void chooseActionType(BaseDriverController driver, ActionInfo actionInfo, Logger logger) {
         String ActionType = actionInfo.getActionType();
         BaseElementInfo element = actionInfo.getTestElement();
-        WebElement webElement = findElement(driver, element);
+        WebElement webElement = findElement(driver, element, logger);
         Map<String, Object> arguments = actionInfo.getArguments();
-
+        // Safe wait if no element required before this action to ensure the UI is ready
+        if (webElement == null && !isSelfTesting) {
+            safeSleep(3000);
+        }
         switch (ActionType) {
             case "click":
                 driver.click(webElement);
+                break;
+            case "tap":
+                int x = (Integer) arguments.get("x");
+                int y = (Integer) arguments.get("y");
+                driver.tap(x, y);
                 break;
             case "input":
                 String content;
@@ -73,7 +93,11 @@ public class T2CAppiumUtils {
                 if (content == null) {
                     throw new IllegalArgumentException("Trying to input a null String. actionId: " + actionInfo.getId());
                 }
-                driver.input(webElement, content);
+                if (webElement == null) {
+                    driver.sendKeys(content);
+                } else {
+                    driver.input(webElement, content);
+                }
                 break;
             case "clear":
                 driver.clear(webElement);
@@ -98,13 +122,19 @@ public class T2CAppiumUtils {
             case "home":
                 driver.pressKey(AndroidKey.HOME);
                 break;
+            case "pressKeyCode":
+                String keyCode = arguments.get("keyCode") + "";
+                driver.pressKeyCode(keyCode);
+                break;
             case "move":
-                Integer xVector = (Integer) arguments.get("xVector");
-                Integer yVector = (Integer) arguments.get("yVector");
+                Object xVector = arguments.get("xVector");
+                Object yVector = arguments.get("yVector");
                 if (xVector == null || yVector == null) {
                     throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' and 'yVector' in the json. actionId: " + actionInfo.getId());
                 }
-                driver.scroll(webElement, xVector, yVector);
+                int xVectorInt = xVector instanceof Integer ? (Integer) xVector : Integer.getInteger((String) xVector);
+                int yVectorInt = yVector instanceof Integer ? (Integer) yVector : Integer.getInteger((String) yVector);
+                driver.scroll(webElement, xVectorInt, yVectorInt);
                 break;
             case "swipe":
                 String direction = (String) arguments.get("direction");
@@ -114,10 +144,11 @@ public class T2CAppiumUtils {
                 driver.swipe(direction);
                 break;
             case "longClick":
-                Integer duration = (Integer) arguments.get("duration");
-                if (duration == null) {
+                Object durationObj = arguments.get("duration");
+                if (durationObj == null) {
                     throw new IllegalArgumentException("Duration is not defined. Please add argument 'duration' in the json. actionId: " + actionInfo.getId());
                 }
+                int duration = durationObj instanceof Integer ? (Integer) durationObj : Integer.getInteger((String) durationObj);
                 driver.longClick(duration, webElement);
                 break;
             case "assert":
@@ -129,15 +160,9 @@ public class T2CAppiumUtils {
                 driver.assertElementAttribute(webElement, attribute, expectedValue);
                 break;
             case "sleep":
-                Integer timeout = (Integer) arguments.get("duration");
-                if (timeout == null) {
-                    throw new IllegalArgumentException("Duration is not defined. Please add argument 'timeout' in the json. actionId: " + actionInfo.getId());
-                }
-                try {
-                    Thread.sleep(timeout);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Object timeoutObj = arguments.get("duration");
+                long timeout = timeoutObj instanceof Integer ? (Integer) timeoutObj : Long.parseLong((String) arguments.get("duration"));
+                safeSleep(timeout);
                 break;
             case "getInfo":
                 String attributeKey = (String) arguments.get("attribute");
@@ -149,11 +174,13 @@ public class T2CAppiumUtils {
                 keyToInfoMap.put(id, info);
                 break;
             case "dragAndDrop":
-                xVector = (Integer) arguments.get("xVector");
-                yVector = (Integer) arguments.get("yVector");
+                Object xVectorDnd = arguments.get("xVector");
+                Object yVectorDnd = arguments.get("yVector");
                 String toElementStr = (String) arguments.get("toElement");
-                if (xVector != null && yVector != null) {
-                    driver.dragAndDrop(webElement, xVector, yVector);
+                if (xVectorDnd != null && yVectorDnd != null) {
+                    int xVectorIntDnd = xVectorDnd instanceof Integer ? (Integer) xVectorDnd : Integer.getInteger((String) xVectorDnd);
+                    int yVectorIntDnd = yVectorDnd instanceof Integer ? (Integer) yVectorDnd : Integer.getInteger((String) yVectorDnd);
+                    driver.dragAndDrop(webElement, xVectorIntDnd, yVectorIntDnd);
                 } else if (toElementStr != null) {
                     BaseElementInfo toElementInfo;
                     if (driver instanceof AndroidDriverController) {
@@ -165,7 +192,7 @@ public class T2CAppiumUtils {
                     } else {
                         throw new IllegalArgumentException("Fail to parse the 'toElement' in the json. actionId: " + actionInfo.getId());
                     }
-                    WebElement toElement = findElement(driver, toElementInfo);
+                    WebElement toElement = findElement(driver, toElementInfo, logger);
                     driver.dragAndDrop(webElement, toElement);
                 } else {
                     throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' & 'yVector' or 'toElement' in the json. actionId: " + actionInfo.getId());
@@ -185,5 +212,21 @@ public class T2CAppiumUtils {
                         "ed. actionId:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
 
         }
+        // Safe wait if no element required after doing this action to ensure the action is finished
+        if (webElement == null && !isSelfTesting) {
+            safeSleep(3000);
+        }
+    }
+
+    private static void safeSleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void setSelfTesting(boolean isTesting) {
+        isSelfTesting = isTesting;
     }
 }

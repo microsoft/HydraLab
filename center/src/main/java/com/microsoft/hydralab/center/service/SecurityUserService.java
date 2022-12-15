@@ -140,13 +140,13 @@ public class SecurityUserService {
                 SysUser authUser = (SysUser) authentication;
 
                 switch (updateContent) {
-                    case Const.AUTH_COMPONENT.DEFAULT_TEAM:
+                    case Const.AuthComponent.DEFAULT_TEAM:
                         loadDefaultTeam(authUser);
                         break;
-                    case Const.AUTH_COMPONENT.TEAM:
+                    case Const.AuthComponent.TEAM:
                         loadTeamAndAdmin(authUser);
                         break;
-                    case Const.AUTH_COMPONENT.ROLE:
+                    case Const.AuthComponent.ROLE:
                         loadGrantedAuthority(authUser);
                         break;
                     default:

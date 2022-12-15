@@ -66,9 +66,9 @@ public class XmlBuilder {
         testSuite.setAttribute(ATTR_TESTS, String.valueOf(deviceTestTask.getTotalCount()));
         testSuite.setAttribute(ATTR_FAILURES, String.valueOf(deviceTestTask.getFailCount()));
         testSuite.setAttribute(ATTR_TIME, Double.toString((double) (deviceTestTask.getTestEndTimeMillis() - deviceTestTask.getTestStartTimeMillis()) / 1000.f));
-        testSuite.setAttribute(TIMESTAMP, DateUtil.appCenterFormat2.format(new Date(deviceTestTask.getTestStartTimeMillis())));
+        testSuite.setAttribute(TIMESTAMP, DateUtil.appCenterFormat2.format(DateUtil.localToUTC(new Date(deviceTestTask.getTestStartTimeMillis()))));
         testSuite.setAttribute(HOSTNAME, InetAddress.getLocalHost().getHostName());
-        if (deviceTestTask.getTestUnitList() != null) {
+        if (deviceTestTask.getTestUnitList() != null && deviceTestTask.getTotalCount() != deviceTestTask.getFailCount()) {
             testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(deviceTestTask.getTotalCount() - deviceTestTask.getTestUnitList().size()));
             for (AndroidTestUnit unitTest : deviceTestTask.getTestUnitList()) {
                 Element testCase = buildTestCase(document, unitTest);

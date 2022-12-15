@@ -4,9 +4,8 @@ package com.microsoft.hydralab.agent.runner.monkey;
 
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
-import com.microsoft.hydralab.agent.runner.RunningControlService;
 import com.microsoft.hydralab.agent.runner.TestRunner;
-import com.microsoft.hydralab.agent.runner.TestRunningCallback;
+import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
@@ -29,7 +28,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@Service
+@Service("adbMonkeyRunner")
 public class AdbMonkeyRunner extends TestRunner {
     static final Logger classLogger = LoggerFactory.getLogger(AdbMonkeyRunner.class);
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
@@ -45,15 +44,11 @@ public class AdbMonkeyRunner extends TestRunner {
 
 
     @Override
-    public RunningControlService.DeviceTask getDeviceTask(TestTask testTask, TestRunningCallback testRunningCallback) {
-
-        return (deviceInfo, logger) -> {
-            runMonkeyTest(deviceInfo, testTask, testRunningCallback, logger);
-            return true;
-        };
+    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
+        runMonkeyTest(deviceInfo, testTask, testTaskRunCallback, logger);
     }
 
-    private void runMonkeyTest(DeviceInfo deviceInfo, TestTask testTask, TestRunningCallback testRunningCallback, Logger logger) {
+    private void runMonkeyTest(DeviceInfo deviceInfo, TestTask testTask, TestTaskRunCallback testTaskRunCallback, Logger logger) {
         checkTestTaskCancel(testTask);
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
@@ -67,7 +62,7 @@ public class AdbMonkeyRunner extends TestRunner {
 
         pkgName = testTask.getPkgName();
         try {
-            reportLogger = initReportLogger(deviceTestTask, testTask, logger);
+            reportLogger = deviceTestTask.getLogger();
             initDevice(deviceInfo, testTask, reportLogger);
 
             /** start Record **/
@@ -112,7 +107,7 @@ public class AdbMonkeyRunner extends TestRunner {
             }
             deviceTestTask.setErrorInProcess(errorStr);
         } finally {
-            afterTest(deviceInfo, testTask, deviceTestTask, testRunningCallback, reportLogger);
+            afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
         }
     }
 

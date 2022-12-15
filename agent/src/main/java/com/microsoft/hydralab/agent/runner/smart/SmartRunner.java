@@ -15,9 +15,8 @@ import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.agent.runner.RunningControlService;
 import com.microsoft.hydralab.agent.runner.TestRunner;
-import com.microsoft.hydralab.agent.runner.TestRunningCallback;
+import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-@Service
+@Service("smartRunner")
 public class SmartRunner extends TestRunner {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     @Resource
@@ -43,15 +42,11 @@ public class SmartRunner extends TestRunner {
     private AndroidTestUnit ongoingSmartTest;
 
     @Override
-    public RunningControlService.DeviceTask getDeviceTask(TestTask testTask, TestRunningCallback testRunningCallback) {
-
-        return (deviceInfo, logger) -> {
-            runSmartTest(deviceInfo, testTask, testRunningCallback, logger);
-            return true;
-        };
+    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
+        runSmartTest(deviceInfo, testTask, testTaskRunCallback, logger);
     }
 
-    private void runSmartTest(DeviceInfo deviceInfo, TestTask testTask, TestRunningCallback testRunningCallback, Logger logger) {
+    private void runSmartTest(DeviceInfo deviceInfo, TestTask testTask, TestTaskRunCallback testTaskRunCallback, Logger logger) {
         checkTestTaskCancel(testTask);
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
@@ -66,7 +61,7 @@ public class SmartRunner extends TestRunner {
         pkgName = testTask.getPkgName();
 
         try {
-            reportLogger = initReportLogger(deviceTestTask, testTask, logger);
+            reportLogger = deviceTestTask.getLogger();
             initDevice(deviceInfo, testTask, reportLogger);
 
             /** start Record **/
@@ -108,7 +103,7 @@ public class SmartRunner extends TestRunner {
             }
             deviceTestTask.setErrorInProcess(errorStr);
         } finally {
-            afterTest(deviceInfo, testTask, deviceTestTask, testRunningCallback, reportLogger);
+            afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
         }
     }
 

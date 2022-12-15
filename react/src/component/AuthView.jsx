@@ -399,6 +399,11 @@ export default class AuthView extends BaseView {
     }
 
     createAgent = () => {
+        if (!this.state.selectedTeamId) {
+            this.snackBarMsg("Please select a team")
+            return
+        }
+
         this.setState({
             agentCreateDialogIsShown: false
         })
@@ -550,9 +555,9 @@ export default class AuthView extends BaseView {
     }
 
     componentDidMount() {
+        this.getUserInfo();
         this.refreshAgentList()
         this.refreshTeamList()
-        console.log(this.state.teamList)
         this.refreshTokenList()
     }
 

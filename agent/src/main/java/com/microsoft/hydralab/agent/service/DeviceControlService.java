@@ -2,24 +2,16 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.service;
 
-import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.agent.repository.MobileDeviceRepository;
+import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
-import com.microsoft.hydralab.common.entity.agent.RunningControl;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
+import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
+import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
-import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.WindowsDeviceManager;
-import com.microsoft.hydralab.agent.repository.MobileDeviceRepository;
-import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
-import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
-import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
-import com.microsoft.hydralab.agent.runner.monkey.AppiumMonkeyRunner;
-import com.microsoft.hydralab.agent.runner.monkey.AdbMonkeyRunner;
-import com.microsoft.hydralab.agent.runner.RunningControlService;
-import com.microsoft.hydralab.agent.runner.smart.SmartRunner;
-import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
+import com.microsoft.hydralab.common.util.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -41,57 +33,45 @@ public class DeviceControlService {
     @Resource
     AgentWebSocketClientService agentWebSocketClientService;
     @Resource
-    RunningControlService runningControlService;
-    @Resource
-    AppiumCrossRunner appiumCrossRunner;
-    @Resource
-    AppiumRunner appiumRunner;
-    @Resource
-    SmartRunner smartRunner;
-    @Resource
-    AdbMonkeyRunner adbMonkeyRunner;
-    @Resource
-    AppiumMonkeyRunner appiumMonkeyRunner;
-    @Resource
-    T2CRunner t2cRunner;
-    @Resource
-    EspressoRunner espressoRunner;
+    DeviceTaskControlExecutor deviceTaskControlExecutor;
+
 
     public Set<DeviceInfo> getAllConnectedDevice() {
         updateAllDeviceScope();
         return deviceManager.getDeviceList(log);
     }
 
-    public void heartBeat(){
-        //captureAllScreensSync();
-        Set<DeviceInfo> allConnectedDevices = deviceManager.getActiveDeviceList(log);
+    public void provideDeviceList(AgentUser.BatteryStrategy batteryStrategy) {
+        captureAllScreensSync(batteryStrategy);
+        Set<DeviceInfo> allConnectedDevices = getAllConnectedDevice();
         ArrayList<DeviceInfo> deviceInfos = new ArrayList<>(allConnectedDevices);
         deviceInfos.sort(Comparator.comparing(d -> d.getName() + d.getSerialNum()));
         Message message = new Message();
         message.setPath(Const.Path.DEVICE_LIST);
         message.setBody(deviceInfos);
         agentWebSocketClientService.send(message);
+        log.info("/api/device/list device SN: {}", deviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
     }
 
-    public void captureAllScreensSync() {
+    public void captureAllScreensSync(AgentUser.BatteryStrategy batteryStrategy) {
         Set<DeviceInfo> allConnectedDevices = deviceManager.getActiveDeviceList(log);
         if (deviceManager instanceof WindowsDeviceManager) {
             Assert.isTrue(allConnectedDevices.size() == 1, "expect only 1 device");
         }
-        captureDevicesScreenSync(allConnectedDevices, false);
+        captureDevicesScreenSync(allConnectedDevices, false, batteryStrategy);
     }
 
-    private void captureDevicesScreenSync(Collection<DeviceInfo> allDevices, boolean logging) {
-        RunningControl runningControl = runningControlService.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
-            deviceManager.getScreenShot(deviceInfo, log);
+    private void captureDevicesScreenSync(Collection<DeviceInfo> allDevices, boolean logging, AgentUser.BatteryStrategy batteryStrategy) {
+        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
+            deviceManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
             return true;
         }, null, logging, true);
 
-        if (runningControl == null) {
+        if (deviceTaskControl == null) {
             return;
         }
 
-        CountDownLatch countDownLatch = runningControl.countDownLatch;
+        CountDownLatch countDownLatch = deviceTaskControl.countDownLatch;
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
@@ -99,17 +79,6 @@ public class DeviceControlService {
         }
     }
 
-
-    public boolean cancelTestTaskById(String testId) {
-        final Map<String, TestTask> runningTestTask = deviceManager.getRunningTestTask();
-        final TestTask testTask = runningTestTask.get(testId);
-        if (testTask == null || testTask.isCanceled()) {
-            return false;
-        }
-        testTask.setStatus(TestTask.TestStatus.CANCELED);
-        deviceManager.resetDeviceByTestId(testId, log);
-        return true;
-    }
 
 
     private void updateAllDeviceScope() {
@@ -151,33 +120,7 @@ public class DeviceControlService {
         return device;
     }
 
-    public TestTask runTestTask(TestTaskSpec testTaskSpec) {
-        TestTask testTask;
-        switch (testTaskSpec.runningType) {
-            case TestTask.TestRunningType.APPIUM_CROSS:
-                testTask = appiumCrossRunner.runTest(testTaskSpec);
-                break;
-            case TestTask.TestRunningType.APPIUM:
-                testTask = appiumRunner.runTest(testTaskSpec);
-                break;
-            case TestTask.TestRunningType.SMART_TEST:
-                testTask = smartRunner.runTest(testTaskSpec);
-                break;
-            case TestTask.TestRunningType.MONKEY_TEST:
-                testTask = adbMonkeyRunner.runTest(testTaskSpec);
-                break;
-            case TestTask.TestRunningType.APPIUM_MONKEY_TEST:
-                testTask = appiumMonkeyRunner.runTest(testTaskSpec);
-                break;
-            case TestTask.TestRunningType.T2C_JSON_TEST:
-                testTask = t2cRunner.runTest(testTaskSpec);
-                break;
-            default:
-                testTask = espressoRunner.runTest(testTaskSpec);
-                break;
-        }
-        return testTask;
-    }
+
 
     public DeviceManager getDeviceManager() {
         return deviceManager;

@@ -47,7 +47,7 @@ export default class VideoNavView extends React.Component {
         const thisEleObj = this
         const title = 'Test Video Navigator'
         let element = null;
-        const re = /\d+\..*/;
+        const re = /^\d+\..*/;
         const processedInfo = []
         info.forEach((i) => {
             // console.log(i)

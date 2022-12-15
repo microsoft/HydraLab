@@ -20,6 +20,19 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
+import {Badge, styled} from "@mui/material";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+
+const StyledBadge = styled(Badge)(({ theme }) => ({
+    '& .MuiBadge-badge': {
+        right: 10,
+        top: 45,
+        border: `2px solid ${theme.palette.background.paper}`,
+        padding: '0 4px',
+    },
+}));
+
 
 export default class HeaderView extends BaseView {
 
@@ -33,6 +46,8 @@ export default class HeaderView extends BaseView {
     }
 
     render() {
+        const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
+
         const settings = [
             { text: this.state.userInfo ? this.state.userInfo.userName : 'Loading', dialog: null },
             { text: `Default Team: ${this.state.userInfo && this.state.userInfo.defaultTeamName ? this.state.userInfo.defaultTeamName : 'Loading'}`, dialog: 'changeDefaultTeamIsShown' },
@@ -90,10 +105,16 @@ export default class HeaderView extends BaseView {
                         ))}
                     </Menu>
                     <Tooltip title={"Open user menu"}>
-                        <IconButton onClick={() => this.handleStatus("avatarOpen", true)}
-                                    sx={{p: 0}}>
-                            <Avatar alt={this.state.userInfo ? this.state.userInfo.userName : 'Loading'} src={"/api/auth/getUserPhoto"}/>
-                        </IconButton>
+                        <StyledBadge
+                            badgeContent={'Admin'}
+                            color={"secondary"}
+                            invisible={!this.state.userInfo || this.state.userInfo.roleName === 'USER'}
+                        >
+                            <IconButton onClick={() => this.handleStatus("avatarOpen", true)}
+                                        sx={{p: 0}}>
+                                <Avatar alt={this.state.userInfo ? this.state.userInfo.userName : 'Loading'} src={"/api/auth/getUserPhoto"}/>
+                            </IconButton>
+                        </StyledBadge>
                     </Tooltip>
                     <Menu
                         sx={{mt: '45px'}}
@@ -111,7 +132,11 @@ export default class HeaderView extends BaseView {
                         onClose={() => this.handleStatus("avatarOpen", false)}
                     >
                         {settings.map((setting) => (
-                            <MenuItem key={setting.text} onClick={() => this.handleStatus(setting.dialog, true)}>
+                            <MenuItem key={setting.text} onClick={() => {
+                                this.handleStatus(setting.dialog, true)
+                                this.getUserInfo()
+                                this.refreshTeamList()
+                            }}>
                                 <Typography textAlign="center">{setting.text}</Typography>
                             </MenuItem>
                         ))}
@@ -130,7 +155,7 @@ export default class HeaderView extends BaseView {
                                 id="agent-team-select"
                                 label="Team"
                                 size="small"
-                                value={(teamList && this.state.selectedTeamId) ? this.state.selectedTeamId : 'None_Team'}
+                                value={teamList ? this.state.selectedTeamId : 'None_Team'}
                                 onChange={(select) => this.handleStatus('selectedTeamId', select.target.value)}
                             >
                                 {teamList ? null : <MenuItem value={'None_Team'}>No team available</MenuItem>}
@@ -149,6 +174,21 @@ export default class HeaderView extends BaseView {
                         </Button>
                     </DialogActions>
                 </Dialog>
+            <Snackbar
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center'
+                }}
+                open={snackbarIsShown}
+                autoHideDuration={3000}
+                onClose={() => this.handleStatus("snackbarIsShown", false)}>
+                <Alert
+                    onClose={() => this.handleStatus("snackbarIsShown", false)}
+                    severity={snackbarSeverity}
+                    sx={{width: '100%'}}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Stack>
     }
 
@@ -161,29 +201,32 @@ export default class HeaderView extends BaseView {
     }
 
     changeDefaultTeam() {
-        const formParams = new URLSearchParams()
-        formParams.append("teamId", this.state.selectedTeamId)
+        if (!this.state.selectedTeamId || (this.state.userInfo && this.state.selectedTeamId === this.state.userInfo.defaultTeamId)) {
+            this.snackBarMsg("Please select a team different from the current default team")
+        } else {
+            const formParams = new URLSearchParams()
+            formParams.append("teamId", this.state.selectedTeamId)
 
-        axios.post('/api/userTeam/switchDefaultTeam', formParams, {
-            headers: {'content-type': 'application/x-www-form-urlencoded'}
-        }).then(res => {
-            if (res.data.code === 200) {
-                this.setState({
-                    snackbarSeverity: "success",
-                    snackbarMessage: "Default team successfully updated",
-                    snackbarIsShown: true,
-                    selectedTeamId: null
-                })
-            } else {
-                this.snackBarFail(res)
-            }
-        }).catch((error) => {
-            this.snackBarError(error)
-        })
-
-        this.setState({
-            changeDefaultTeamIsShown: false,
-        })
+            axios.post('/api/userTeam/switchDefaultTeam', formParams, {
+                headers: {'content-type': 'application/x-www-form-urlencoded'}
+            }).then(res => {
+                if (res.data.code === 200) {
+                    this.setState({
+                        snackbarSeverity: "success",
+                        snackbarMessage: "Default team successfully updated",
+                        snackbarIsShown: true,
+                        selectedTeamId: null
+                    })
+                } else {
+                    this.snackBarFail(res)
+                }
+            }).catch((error) => {
+                this.snackBarError(error)
+            })
+            this.setState({
+                changeDefaultTeamIsShown: false,
+            })
+        }
     }
 
     componentDidMount() {

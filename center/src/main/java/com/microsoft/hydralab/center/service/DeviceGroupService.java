@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.center.service;
 
 
+import com.microsoft.hydralab.common.entity.center.DeviceGroupRelationId;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.center.DeviceGroup;
 import com.microsoft.hydralab.common.entity.center.DeviceGroupRelation;
@@ -38,7 +39,6 @@ public class DeviceGroupService {
         deviceGroup.setTeamName(teamName);
         deviceGroup.setGroupName(Const.DeviceGroup.groupPre + groupName);
         deviceGroup.setGroupDisplayName(groupName);
-        deviceGroup.setOwner(owner);
         deviceGroup.setGroupType(Const.DeviceGroup.userGroup);
         return deviceGroupRepository.save(deviceGroup);
     }
@@ -87,6 +87,13 @@ public class DeviceGroupService {
         deviceGroupRelationRepository.delete(deviceGroupRelation);
     }
 
+    public DeviceGroupRelation getRelation(String groupName, String deviceSerial) {
+        DeviceGroupRelationId id = new DeviceGroupRelationId();
+        id.setDeviceSerial(deviceSerial);
+        id.setGroupName(groupName);
+        return deviceGroupRelationRepository.findById(id).orElse(null);
+    }
+
     public List<DeviceGroupRelation> getDeviceByGroup(String groupName) {
         return deviceGroupRelationRepository.findAllByGroupName(groupName);
     }
@@ -110,11 +117,6 @@ public class DeviceGroupService {
 
         // ROLE = SUPER_ADMIN / ADMIN
         if (sysUserService.checkUserAdmin(requestor)) {
-            return true;
-        }
-
-        // group owner
-        if (deviceGroup.getOwner().equals(requestor.getMailAddress())) {
             return true;
         }
 

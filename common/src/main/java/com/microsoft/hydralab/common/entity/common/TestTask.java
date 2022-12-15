@@ -24,11 +24,11 @@ public class TestTask {
     public static final String MICROSOFT_LAUNCHER_PACKAGE_NAME_KEY_PART = "microsoft.launcher";
     static final Pattern pIdMatch = Pattern.compile("\\d{3,7}");
     @Transient
-    private static final transient String defaultAct2 = "com.microsoft.launcher.Launcher";
+    private static final String defaultAct2 = "com.microsoft.launcher.Launcher";
     @Transient
-    private static final transient String defaultAct = "com.android.launcher3.DefaultLauncherApp";
+    private static final String defaultAct = "com.android.launcher3.DefaultLauncherApp";
     @Transient
-    private static final transient String defaultRunner = "androidx.test.runner.AndroidJUnitRunner";
+    private static final String defaultRunner = "androidx.test.runner.AndroidJUnitRunner";
     @Transient
     private List<String> neededPermissions;
     @Transient
@@ -37,6 +37,8 @@ public class TestTask {
     @Transient
     public transient File testAppFile;
     @Transient
+    public transient List<File> testJsonFileList = new ArrayList<>();
+    @Transient
     public Set<String> agentIds = new HashSet<>();
     @Id
     private String id = UUID.randomUUID().toString();
@@ -44,7 +46,6 @@ public class TestTask {
     private int totalTestCount;
     private int totalFailCount;
     private String testTaskReportPath;
-    private String testSuite;
     private String testCommitId;
     private String testCommitMsg;
     private String testErrorMsg;
@@ -81,7 +82,7 @@ public class TestTask {
     @Transient
     private TestFileSet testFileSet;
     @Transient
-    private File testCaseBaseDir;
+    private File resourceDir;
     @Transient
     private int maxStepCount;
     @Transient
@@ -92,8 +93,11 @@ public class TestTask {
     @Column(name = "team_id")
     private String teamId;
     private String teamName;
-    @Transient
     private transient String testRunnerName = defaultRunner;
+    private String testScope;
+    // todo: change this to a more general name for all scopes of ESPRESSO tests.
+    private String testSuite;
+
 
     public TestTask() {
     }
@@ -135,6 +139,8 @@ public class TestTask {
         if (StringUtils.isNotBlank(testTaskSpec.testRunnerName)) {
             testTask.setTestRunnerName(testTaskSpec.testRunnerName);
         }
+        testTask.setTestScope(testTaskSpec.testScope);
+
         return testTask;
     }
 
@@ -164,6 +170,8 @@ public class TestTask {
         testTaskSpec.teamId = testTask.getTeamId();
         testTaskSpec.teamName = testTask.getTeamName();
         testTaskSpec.testRunnerName = testTask.getTestRunnerName();
+        testTaskSpec.testScope = testTask.getTestScope();
+
         return testTaskSpec;
     }
 
@@ -181,6 +189,10 @@ public class TestTask {
 
     public synchronized void addTestedDeviceResult(DeviceTestTask deviceTestResult) {
         deviceTestResults.add(deviceTestResult);
+    }
+
+    public synchronized void addTestJsonFile(File jsonFile) {
+        testJsonFileList.add(jsonFile);
     }
 
     public void switchDefaultActivity() {
@@ -287,8 +299,24 @@ public class TestTask {
         String T2C_JSON_TEST = "T2C_JSON";
     }
 
+    public static Map<String, String> TestRunnerMap = new HashMap<>() {{
+        put(TestRunningType.INSTRUMENTATION, "espressoRunner");
+        put(TestRunningType.APPIUM, "appiumRunner");
+        put(TestRunningType.APPIUM_CROSS, "appiumCrossRunner");
+        put(TestRunningType.SMART_TEST, "smartRunner");
+        put(TestRunningType.MONKEY_TEST, "adbMonkeyRunner");
+        put(TestRunningType.APPIUM_MONKEY_TEST, "appiumMonkeyRunner");
+        put(TestRunningType.T2C_JSON_TEST, "t2cRunner");
+    }};
+
     public interface TestFrameworkType {
         String JUNIT4 = "JUnit4";
         String JUNIT5 = "JUnit5";
+    }
+
+    public interface TestScope {
+        String TEST_APP = "TEST_APP";
+        String PACKAGE = "PACKAGE";
+        String CLASS = "CLASS";
     }
 }

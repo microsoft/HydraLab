@@ -33,10 +33,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
 
     @Override
     public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
-        File deviceFile = super.getScreenShot(deviceInfo, logger);
-        if (deviceFile == null) {
-            return null;
-        }
+        super.getScreenShot(deviceInfo, logger);
         File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
         if (pcScreenShotImageFile == null) {
             pcScreenShotImageFile = new File(screenshotDir, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
@@ -52,33 +49,16 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         String blobUrl = blobStorageClient.uploadBlobFromFile(pcScreenShotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + pcScreenShotImageFile.getName(), null);
         if (StringUtils.isBlank(blobUrl)) {
             classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
+        } else {
+            deviceInfo.setPcScreenshotImageUrl(blobUrl);
         }
-        deviceInfo.setPcScreenshotImageUrl(blobUrl);
         return pcScreenShotImageFile;
     }
 
     public File getPairScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
-        File deviceFile = super.getScreenShot(deviceInfo, logger);
-        if (deviceFile == null) {
-            return null;
-        }
+        getScreenShot(deviceInfo, logger);
+        File deviceFile = deviceInfo.getScreenshotImageFile();
         File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
-        if (pcScreenShotImageFile == null) {
-            pcScreenShotImageFile = new File(screenshotDir, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
-            String pcImageRelPath = pcScreenShotImageFile.getAbsolutePath().replace(new File(getDeviceStoragePath()).getAbsolutePath(), "");
-            pcImageRelPath = getDeviceFolderUrlPrefix() + pcImageRelPath.replace(File.separator, "/");
-            deviceInfo.setPcImageRelPath(pcImageRelPath);
-        }
-        try {
-            screenCapture(pcScreenShotImageFile.getAbsolutePath());
-        } catch (IOException e) {
-            classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
-        }
-        String blobUrl = blobStorageClient.uploadBlobFromFile(pcScreenShotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + pcScreenShotImageFile.getName(), null);
-        if (StringUtils.isBlank(blobUrl)) {
-            classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
-        }
-        deviceInfo.setPcScreenshotImageUrl(blobUrl);
         return joinImages(pcScreenShotImageFile, deviceFile, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "comb" + ".jpg");
     }
 
@@ -150,18 +130,41 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
 
         String testWindowsApp = "";
         Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
+
+        // Check device requirements
+        int androidCount = 0, edgeCount = 0;
+
+        for (DriverInfo driverInfo : testInfo.getDrivers()) {
+            if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
+                androidCount++;
+            }
+            if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
+                edgeCount++;
+            }
+            if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
+                throw new RuntimeException("No iOS device connected to this agent");
+            }
+        }
+        // TODO: upgrade to check the available device count on the agent
+        Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
+        Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
+
         try {
             // Prepare drivers
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
                 if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
-                    driverControllerMap.put(driverInfo.getId(),
-                            new AndroidDriverController(appiumServerManager.getAndroidDriver(deviceInfo, reportLogger), reportLogger));
+                    AndroidDriverController androidDriverController = new AndroidDriverController(
+                            appiumServerManager.getAndroidDriver(deviceInfo, reportLogger), reportLogger);
+                    driverControllerMap.put(driverInfo.getId(), androidDriverController);
+                    if (!StringUtils.isEmpty(driverInfo.getLauncherApp())) {
+                        androidDriverController.activateApp(driverInfo.getLauncherApp());
+                    }
                     reportLogger.info("Successfully init an Android driver: " + deviceInfo.getSerialNum());
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
                     WindowsDriver windowsDriver;
                     testWindowsApp = driverInfo.getLauncherApp();
-                    if (testWindowsApp.length() > 0) {
+                    if (testWindowsApp.length() > 0 && !testWindowsApp.equalsIgnoreCase("root")) {
                         windowsDriver = appiumServerManager.getWindowsAppDriver(testWindowsApp, reportLogger);
                     } else {
                         testWindowsApp = "Root";
@@ -174,7 +177,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
                     appiumServerManager.getEdgeDriver(reportLogger);
-                    if (driverInfo.getInitURL() != null) {
+                    if (!StringUtils.isEmpty(driverInfo.getInitURL())) {
                         appiumServerManager.getEdgeDriver(reportLogger).get(driverInfo.getInitURL());
                     }
                     // Waiting for loading url
@@ -191,8 +194,8 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
 
             for (ActionInfo actionInfo : caseList) {
                 BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
+                T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
                 reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
-                T2CAppiumUtils.doAction(driverController, actionInfo);
             }
         } catch (Exception e) {
             reportLogger.error("T2C Test Error: ", e);

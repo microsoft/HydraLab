@@ -13,20 +13,10 @@ import org.springframework.util.Assert;
 
 import java.util.Set;
 
-@Service
+@Service("appiumCrossRunner")
 public class AppiumCrossRunner extends AppiumRunner {
     @Value("${app.registry.name}")
     String agentName;
-
-    @Override
-    protected Set<DeviceInfo> chooseDevices(TestTaskSpec testTaskSpec) {
-        Set<DeviceInfo> allActiveConnectedDevice = deviceManager.getActiveDeviceList(log);
-        log.info("Choosing devices from {}", allActiveConnectedDevice.size());
-        Assert.notNull(allActiveConnectedDevice, "No connected device!");
-        Assert.isTrue(allActiveConnectedDevice.size() == 1, "No connected device!");
-
-        return allActiveConnectedDevice;
-    }
 
     @Override
     public DeviceTestTask initDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger logger) {
