@@ -10,7 +10,7 @@ public class ThreadParamTest {
     @Test
     public void init() {
         logger.info("todo");
-        ThreadParam.init(null,null);
+        ThreadParam.init(null, null, null);
     }
 
     @Test

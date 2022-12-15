@@ -10,8 +10,10 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
+import com.microsoft.hydralab.common.performace.impl.AndroidMemRecorder;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.performance.PerformanceManager;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -98,9 +100,18 @@ public class AppiumRunner extends TestRunner {
             instrumentationArgs = new HashMap<>();
         }
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-        ThreadParam.init(appiumParam, instrumentationArgs);
+        AndroidMemRecorder recorder1 = new AndroidMemRecorder(deviceInfo, new File(deviceTestTask.getDeviceTestResultFolderUrl()));
+        PerformanceManager manager = new PerformanceManager();
+        //deviceManager.initMana(manager,is..)
+        manager.addRecorder(recorder1);
+        manager.beforeTest();
+        ThreadParam.init(appiumParam, instrumentationArgs, manager);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
         File gifFile = null;
+
+        ThreadParam.getPerformanceManager().addRecord();
+
+
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");
             Junit5Listener junit5Listener = new Junit5Listener(deviceManager, deviceInfo, deviceTestTask, testTask.getPkgName(), reportLogger);
@@ -125,6 +136,7 @@ public class AppiumRunner extends TestRunner {
             checkTestTaskCancel(testTask);
             gifFile = listener.getGifFile();
         }
+        manager.afterTest();
         /** set paths */
         String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();
         deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));

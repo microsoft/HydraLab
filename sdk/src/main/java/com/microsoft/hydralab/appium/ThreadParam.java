@@ -2,21 +2,26 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.appium;
 
+import com.microsoft.hydralab.performance.PerformanceManager;
+
 import java.util.Map;
 
 public class ThreadParam {
     private static InheritableThreadLocal<AppiumParam> appiumParam = new InheritableThreadLocal<>();
     private static InheritableThreadLocal<Map<String, String>> configMap = new InheritableThreadLocal<>();
+    private static InheritableThreadLocal<PerformanceManager> performanceManager = new InheritableThreadLocal<>();
 
-    public static void init(AppiumParam appiumParamTemp, Map<String, String> configMapParam) {
+    public static void init(AppiumParam appiumParamTemp, Map<String, String> configMapParam, PerformanceManager performanceManagerTemp) {
         clean();
         appiumParam.set(appiumParamTemp);
         configMap.set(configMapParam);
+        performanceManager.set(performanceManagerTemp);
     }
 
     public static void clean() {
         appiumParam.remove();
         configMap.remove();
+        performanceManager.remove();
     }
 
     public static AppiumParam getAppiumParam() {
@@ -29,7 +34,12 @@ public class ThreadParam {
         }
         return temp;
     }
+    public static PerformanceManager getPerformanceManager() {
 
+        PerformanceManager manager = performanceManager.get();
+
+        return manager;
+    }
 
     public static String getConfigString(String key) {
         if (configMap == null) {
