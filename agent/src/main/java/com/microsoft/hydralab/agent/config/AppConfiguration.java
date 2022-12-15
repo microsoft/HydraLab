@@ -9,6 +9,7 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
+import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
 import com.microsoft.hydralab.agent.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -42,7 +43,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- *
  * @author : shbu
  * @since 3.0
  */
@@ -221,7 +221,10 @@ public class AppConfiguration {
     }
 
     @Bean
-    public MetricUtil getMetricUtil(MeterRegistry meterRegistry, AgentWebSocketClient agentWebSocketClient, AgentWebSocketClientService agentWebSocketClientService, DeviceStabilityMonitor deviceStabilityMonitor) {
+    public MetricUtil metricUtil(MeterRegistry meterRegistry,
+                                 AgentWebSocketClient agentWebSocketClient,
+                                 AgentWebSocketClientService agentWebSocketClientService,
+                                 TestTaskEngineService testTaskEngineService) {
         MetricUtil metricUtil = new MetricUtil();
 
         InetAddress localHost;
@@ -238,7 +241,7 @@ public class AppConfiguration {
 
         metricUtil.registerAgentDiskUsageRatio(appOptions);
         metricUtil.registerAgentReconnectRetryTimes(agentWebSocketClient);
-        metricUtil.registerAgentRunningTestTaskNum(deviceStabilityMonitor);
+        metricUtil.registerAgentRunningTestTaskNum(testTaskEngineService);
 
         return metricUtil;
     }

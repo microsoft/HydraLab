@@ -101,6 +101,24 @@ public class AgentManageController {
      * 2) agent creator,
      * 3) admin of the TEAM that agent is in
      */
+    @PostMapping("/api/agent/restartAgent")
+    public Result restartAgent(@CurrentSecurityContext SysUser requestor,
+                               @RequestParam(value = "agentId") String agentId) {
+
+        if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
+        }
+
+        deviceAgentManagementService.restartAgent(agentId);
+        return Result.ok("Restart agent Success!");
+    }
+
+    /**
+     * Authenticated USER:
+     * 1) users with ROLE SUPER_ADMIN/ADMIN,
+     * 2) agent creator,
+     * 3) admin of the TEAM that agent is in
+     */
     @GetMapping("/api/agent/getUpdateInfo/{agentId}")
     public Result getUpdateInfo(@CurrentSecurityContext SysUser requestor,
                                 @PathVariable(value = "agentId") String agentId) {

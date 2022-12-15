@@ -194,8 +194,8 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
 
             for (ActionInfo actionInfo : caseList) {
                 BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
+                T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
                 reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
-                T2CAppiumUtils.doAction(driverController, actionInfo);
             }
         } catch (Exception e) {
             reportLogger.error("T2C Test Error: ", e);

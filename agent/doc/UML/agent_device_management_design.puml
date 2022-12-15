@@ -1,0 +1,8 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class AgentDeviceManager {}
+abstract class TestDeviceManager
+class TestDevice
+
+@enduml

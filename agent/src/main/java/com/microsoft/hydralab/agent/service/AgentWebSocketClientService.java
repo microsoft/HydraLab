@@ -3,14 +3,13 @@
 package com.microsoft.hydralab.agent.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.agent.runner.TestRunningCallback;
+import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,7 @@ import java.net.UnknownHostException;
 
 @Service("WebSocketClient")
 @Slf4j
-public class AgentWebSocketClientService implements TestRunningCallback {
+public class AgentWebSocketClientService implements TestTaskRunCallback {
     @Value("${app.registry.agent-type}")
     public int agentTypeValue;
     @Value("${app.registry.name}")
@@ -34,7 +33,9 @@ public class AgentWebSocketClientService implements TestRunningCallback {
     @Resource
     DeviceControlService deviceControlService;
     @Resource
-    AgentUpdateService agentUpdateService;
+    TestTaskEngineService testTaskEngineService;
+    @Resource
+    AgentManageService agentManageService;
     @Resource
     BlobStorageClient blobStorageClient;
     AgentUser agentUser;
@@ -78,7 +79,10 @@ public class AgentWebSocketClientService implements TestRunningCallback {
                     break;
                 }
                 AgentUpdateTask taskInfo = (AgentUpdateTask) message.getBody();
-                agentUpdateService.updateAgentPackage(taskInfo);
+                agentManageService.updateAgentPackage(taskInfo, path);
+                break;
+            case Const.Path.AGENT_RESTART:
+                agentManageService.restartAgent(null, path);
                 break;
             case Const.Path.DEVICE_LIST:
                 if (agentUser.getBatteryStrategy() == null) {
@@ -94,14 +98,14 @@ public class AgentWebSocketClientService implements TestRunningCallback {
                     break;
                 }
                 JSONObject data = (JSONObject) message.getBody();
-                deviceControlService.cancelTestTaskById(data.getString(Const.AgentConfig.task_id_param));
+                testTaskEngineService.cancelTestTaskById(data.getString(Const.AgentConfig.task_id_param));
                 break;
             case Const.Path.TEST_TASK_RUN:
                 try {
                     if (!(message.getBody() instanceof TestTaskSpec)) {
                         break;
                     }
-                    TestTask testTask = deviceControlService.runTestTask((TestTaskSpec) message.getBody());
+                    TestTask testTask = testTaskEngineService.runTestTask((TestTaskSpec) message.getBody());
                     if (testTask == null) {
                         response = Message.error(message, 404, "No device meet the requirement");
                     } else {
@@ -159,7 +163,12 @@ public class AgentWebSocketClientService implements TestRunningCallback {
     }
 
     @Override
-    public void onAllComplete(TestTask testTask) {
+    public void onTaskStart(TestTask testTask) {
+
+    }
+
+    @Override
+    public void onTaskComplete(TestTask testTask) {
         log.info("test task {} onAllComplete in webclient, send message", testTask.getId());
         send(Message.ok(Const.Path.TEST_TASK_UPDATE, testTask));
     }

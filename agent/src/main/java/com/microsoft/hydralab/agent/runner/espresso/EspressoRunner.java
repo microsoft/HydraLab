@@ -4,9 +4,8 @@ package com.microsoft.hydralab.agent.runner.espresso;
 
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.testrunner.InstrumentationResultParser;
-import com.microsoft.hydralab.agent.runner.RunningControlService;
 import com.microsoft.hydralab.agent.runner.TestRunner;
-import com.microsoft.hydralab.agent.runner.TestRunningCallback;
+import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -29,14 +28,11 @@ public class EspressoRunner extends TestRunner {
     ADBOperateUtil adbOperateUtil;
 
     @Override
-    public RunningControlService.DeviceTask getDeviceTask(TestTask testTask, TestRunningCallback testRunningCallback) {
-        return (deviceInfo, logger) -> {
-            runEspressoTest(deviceInfo, testTask, testRunningCallback, logger);
-            return true;
-        };
+    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
+        runEspressoTest(deviceInfo, testTask, testTaskRunCallback, logger);
     }
 
-    public void runEspressoTest(DeviceInfo deviceInfo, TestTask testTask, TestRunningCallback testRunningCallback, Logger logger) {
+    public void runEspressoTest(DeviceInfo deviceInfo, TestTask testTask, TestTaskRunCallback testTaskRunCallback, Logger logger) {
         checkTestTaskCancel(testTask);
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
@@ -49,7 +45,7 @@ public class EspressoRunner extends TestRunner {
         Logger reportLogger = null;
 
         try {
-            reportLogger = initReportLogger(deviceTestTask, testTask, logger);
+            reportLogger = deviceTestTask.getLogger();
             initDevice(deviceInfo, testTask, reportLogger);
 
             /** xml report: parse listener */
@@ -70,7 +66,7 @@ public class EspressoRunner extends TestRunner {
             listener.startRecording(testTask.getTimeOutSecond());
             String result = startInstrument(deviceInfo, testTask.getTestScope(), testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(), reportLogger, instrumentationResultParser, testTask.getTimeOutSecond(), testTask.getInstrumentationArgs());
             if (Const.TaskResult.error_device_offline.equals(result)) {
-                testRunningCallback.onDeviceOffline(testTask);
+                testTaskRunCallback.onDeviceOffline(testTask);
                 return;
             }
             checkTestTaskCancel(testTask);
@@ -99,7 +95,7 @@ public class EspressoRunner extends TestRunner {
             if (instrumentationResultParser != null) {
                 instrumentationResultParser.flush();
             }
-            afterTest(deviceInfo, testTask, deviceTestTask, testRunningCallback, reportLogger);
+            afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
         }
     }
 
@@ -148,8 +144,11 @@ public class EspressoRunner extends TestRunner {
             adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, receiver, testTimeOutSec);
             return Const.TaskResult.success;
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            if (logger != null) {
+                logger.error(e.getMessage(), e);
+            }
             return e.getMessage();
         }
     }
+
 }

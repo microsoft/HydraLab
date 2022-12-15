@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.util;
 
+import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.common.management.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.util.GlobalConstant;
 import com.microsoft.hydralab.agent.config.AppOptions;
@@ -41,10 +42,10 @@ public class MetricUtil {
         log.info("Metric of agent reconnect retry times has been registered.");
     }
 
-    public void registerAgentRunningTestTaskNum(DeviceStabilityMonitor deviceStabilityMonitor) {
+    public void registerAgentRunningTestTaskNum(TestTaskEngineService testTaskEngineService) {
         meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_RUNNING_TEST_NUM,
                 Tags.empty(),
-                deviceStabilityMonitor,
+                testTaskEngineService,
                 this::runningTestTaskNum);
         log.info("Metric of agent running test task number has been registered.");
     }
@@ -67,7 +68,7 @@ public class MetricUtil {
         return agentWebSocketClient.getReconnectTime();
     }
 
-    private int runningTestTaskNum(DeviceStabilityMonitor deviceStabilityMonitor) {
-        return deviceStabilityMonitor.getDeviceManager().getRunningTestTask().size();
+    private int runningTestTaskNum(TestTaskEngineService testTaskEngineService) {
+        return testTaskEngineService.getRunningTestTask().size();
     }
 }

@@ -4,12 +4,15 @@ package com.microsoft.hydralab.center.controller;
 
 import com.azure.core.annotation.QueryParam;
 import com.microsoft.hydralab.center.service.*;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.agent.Result;
-import com.microsoft.hydralab.common.entity.center.*;
+import com.microsoft.hydralab.common.entity.center.DeviceGroup;
+import com.microsoft.hydralab.common.entity.center.DeviceGroupRelation;
+import com.microsoft.hydralab.common.entity.center.SysTeam;
+import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AccessInfo;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.util.Const;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
@@ -209,8 +212,8 @@ public class DeviceGroupController {
             if (!deviceGroupService.checkGroupAuthorization(requestor, groupName, true)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
             }
-            if (!deviceAgentManagementService.checkDeviceInfo(deviceSerial)) {
-                return Result.error(HttpStatus.BAD_REQUEST.value(), "DeviceSerial is incorrect");
+            if (deviceGroupService.getRelation(groupName, deviceSerial) == null) {
+                return Result.error(HttpStatus.BAD_REQUEST.value(), "DeviceSerial or groupName is incorrect");
             }
 
             deviceGroupService.deleteRelation(groupName, deviceSerial);

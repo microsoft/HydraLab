@@ -47,7 +47,7 @@ public class MockDriverT2CTest {
 
         for (ActionInfo actionInfo : caseList) {
             BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
-            T2CAppiumUtils.doAction(driverController, actionInfo);
+            T2CAppiumUtils.doAction(driverController, actionInfo, logger);
         }
     }
 

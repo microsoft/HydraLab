@@ -13,7 +13,9 @@ import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.EdgeElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import io.appium.java_client.android.nativekey.AndroidKey;
+import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.WebElement;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +24,7 @@ public class T2CAppiumUtils {
     static HashMap<String, String> keyToInfoMap = new HashMap<>();
     private static boolean isSelfTesting = false;
 
-    public static WebElement findElement(BaseDriverController driver, BaseElementInfo element) {
+    public static WebElement findElement(BaseDriverController driver, BaseElementInfo element, Logger logger) {
         WebElement elementFinded = null;
         if (element == null) return null;
         Map<String, String> keyToVal = element.getBasisSearchedBy();
@@ -44,26 +46,28 @@ public class T2CAppiumUtils {
                 return elementFinded;
             }
         }
+        logger.warn("Page source: " + driver.webDriver.getPageSource());
         throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
     }
 
-    public static void doAction(BaseDriverController driver, ActionInfo actionInfo) {
+    public static void doAction(@NotNull BaseDriverController driver, @NotNull ActionInfo actionInfo, @NotNull Logger logger) {
         boolean isOption = actionInfo.isOption();
         try {
-            chooseActionType(driver, actionInfo);
+            chooseActionType(driver, actionInfo, logger);
         } catch (Exception e) {
             e.printStackTrace();
+            int index = actionInfo.getId();
+            logger.error("doAction at step " + index + "with exception: " + e.getMessage());
             if (!isOption) {
-                int index = actionInfo.getId();
                 throw new IllegalStateException("Failed at step " + index + ": " + e.getMessage(), e);
             }
         }
     }
 
-    public static void chooseActionType(BaseDriverController driver, ActionInfo actionInfo) {
+    public static void chooseActionType(BaseDriverController driver, ActionInfo actionInfo, Logger logger) {
         String ActionType = actionInfo.getActionType();
         BaseElementInfo element = actionInfo.getTestElement();
-        WebElement webElement = findElement(driver, element);
+        WebElement webElement = findElement(driver, element, logger);
         Map<String, Object> arguments = actionInfo.getArguments();
         // Safe wait if no element required before this action to ensure the UI is ready
         if (webElement == null && !isSelfTesting) {
@@ -188,7 +192,7 @@ public class T2CAppiumUtils {
                     } else {
                         throw new IllegalArgumentException("Fail to parse the 'toElement' in the json. actionId: " + actionInfo.getId());
                     }
-                    WebElement toElement = findElement(driver, toElementInfo);
+                    WebElement toElement = findElement(driver, toElementInfo, logger);
                     driver.dragAndDrop(webElement, toElement);
                 } else {
                     throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' & 'yVector' or 'toElement' in the json. actionId: " + actionInfo.getId());

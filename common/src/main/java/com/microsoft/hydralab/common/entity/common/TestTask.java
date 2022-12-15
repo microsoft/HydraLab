@@ -82,7 +82,7 @@ public class TestTask {
     @Transient
     private TestFileSet testFileSet;
     @Transient
-    private File testCaseBaseDir;
+    private File resourceDir;
     @Transient
     private int maxStepCount;
     @Transient
