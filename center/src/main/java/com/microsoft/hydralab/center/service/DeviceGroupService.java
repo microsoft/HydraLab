@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.center.service;
 
 
+import com.microsoft.hydralab.common.entity.center.DeviceGroupRelationId;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.center.DeviceGroup;
 import com.microsoft.hydralab.common.entity.center.DeviceGroupRelation;
@@ -84,6 +85,13 @@ public class DeviceGroupService {
     public void deleteRelation(String groupName, String deviceSerial) {
         DeviceGroupRelation deviceGroupRelation = new DeviceGroupRelation(groupName, deviceSerial);
         deviceGroupRelationRepository.delete(deviceGroupRelation);
+    }
+
+    public DeviceGroupRelation getRelation(String groupName, String deviceSerial) {
+        DeviceGroupRelationId id = new DeviceGroupRelationId();
+        id.setDeviceSerial(deviceSerial);
+        id.setGroupName(groupName);
+        return deviceGroupRelationRepository.findById(id).orElse(null);
     }
 
     public List<DeviceGroupRelation> getDeviceByGroup(String groupName) {
