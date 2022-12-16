@@ -108,20 +108,20 @@ public class DeviceAgentManagementService {
     }
 
     @Scheduled(cron = "*/10 * * * * *")
-    public void heartBeatAll() {
+    public void heartbeatAll() {
         for (AgentSessionInfo value : agentSessionMap.values()) {
-            heartBeat(value.session, value.agentUser);
+            sendAgentMetadata(value.session, value.agentUser, Const.Path.HEARTBEAT);
         }
     }
 
-    private void heartBeat(Session session, AgentUser agentUser) {
+    private void sendAgentMetadata(Session session, AgentUser agentUser, String signalName) {
         agentUser.setBatteryStrategy(AgentUser.BatteryStrategy.valueOf(batteryStrategy));
-        HeartBeatData data = new HeartBeatData();
+        AgentMetadata data = new AgentMetadata();
         data.setBlobSAS(blobStorageService.GenerateWriteSAS(agentUser.getId()));
         data.setAgentUser(agentUser);
 
         Message message = new Message();
-        message.setPath(Const.Path.HEART_BEAT);
+        message.setPath(signalName);
         message.setBody(data);
         sendMessageToSession(session, message);
     }
@@ -171,7 +171,7 @@ public class DeviceAgentManagementService {
 
                     tempTask.getUpdateMsgs().add(updateMag);
                 }
-                heartBeat(session, agentUser);
+                sendAgentMetadata(session, agentUser, Const.Path.AGENT_INIT);
             }
         } else {
             handleQualifiedAgentMessage(message, savedSession);
@@ -258,8 +258,8 @@ public class DeviceAgentManagementService {
                     }
                 }
                 break;
-            case Const.Path.HEART_BEAT:
-                heartBeat(savedSession.session, savedSession.agentUser);
+            case Const.Path.HEARTBEAT:
+                sendAgentMetadata(savedSession.session, savedSession.agentUser, Const.Path.HEARTBEAT);
                 break;
             default:
                 break;

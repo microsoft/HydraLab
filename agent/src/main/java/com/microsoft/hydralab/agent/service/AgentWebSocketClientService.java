@@ -3,12 +3,17 @@
 package com.microsoft.hydralab.agent.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
+import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.GlobalConstant;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -38,6 +44,12 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     AgentManageService agentManageService;
     @Resource
     BlobStorageClient blobStorageClient;
+    @Resource
+    private AppOptions appOptions;
+    @Resource
+    private AgentWebSocketClient agentWebSocketClient;
+    @Resource
+    MeterRegistry meterRegistry;
     AgentUser agentUser;
     @Value("${agent.version}")
     private String versionName;
@@ -53,14 +65,21 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
             case Const.Path.AUTH:
                 provideAuthInfo(message);
                 return;
-            case Const.Path.HEART_BEAT:
-                if (!(message.getBody() instanceof HeartBeatData)) {
+            case Const.Path.AGENT_INIT:
+                if (!(message.getBody() instanceof AgentMetadata)) {
                     break;
                 }
-                HeartBeatData heartBeatData = (HeartBeatData) message.getBody();
-                agentUser.setBatteryStrategy(heartBeatData.getAgentUser().getBatteryStrategy());
-                blobStorageClient.setSASData(heartBeatData.getBlobSAS());
-                deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
+                heartbeatResponse(message);
+
+                // Sequence shouldn't be changed, as the adb init will create device related metrics, and should be after configuring commonTags of prometheus.
+                registerAgentMetrics();
+                deviceControlService.deviceManagerInit();
+                return;
+            case Const.Path.HEARTBEAT:
+                if (!(message.getBody() instanceof AgentMetadata)) {
+                    break;
+                }
+                heartbeatResponse(message);
                 return;
             case Const.Path.DEVICE_UPDATE:
                 if (!(message.getBody() instanceof JSONObject)) {
@@ -87,7 +106,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
             case Const.Path.DEVICE_LIST:
                 if (agentUser.getBatteryStrategy() == null) {
                     response = new Message();
-                    response.setPath(Const.Path.HEART_BEAT);
+                    response.setPath(Const.Path.HEARTBEAT);
                     response.setSessionId(message.getSessionId());
                 } else {
                     deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
@@ -124,6 +143,19 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
             return;
         }
         send(response);
+    }
+
+    private void heartbeatResponse(Message message) {
+        AgentMetadata agentMetadata = (AgentMetadata) message.getBody();
+        blobStorageClient.setSASData(agentMetadata.getBlobSAS());
+        syncAgentStatus(agentMetadata.getAgentUser());
+        deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
+    }
+
+    private void syncAgentStatus(AgentUser passedAgent) {
+        agentUser.setTeamId(passedAgent.getTeamId());
+        agentUser.setTeamName(passedAgent.getTeamName());
+        agentUser.setBatteryStrategy(passedAgent.getBatteryStrategy());
     }
 
 
@@ -184,8 +216,58 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         send(Message.ok(Const.Path.TEST_TASK_RETRY, testTask));
     }
 
-    public String getAgentName(){
-        return agentName;
+    public void registerAgentMetrics(){
+        meterRegistry.config().commonTags("computerName", agentUser.getHostname(), "agentName", agentUser.getName(), "teamName", agentUser.getTeamName());
+
+        registerAgentDiskUsageRatio();
+        registerAgentReconnectRetryTimes();
+        registerAgentRunningTestTaskNum();
+    }
+
+    public void registerAgentDiskUsageRatio() {
+        meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_DISK_USAGE_RATIO,
+                Tags.empty().and("disk", appOptions.getLocation().substring(0, 2)),
+                appOptions.getLocation(),
+                this::getPCDiskUsageRatio);
+        log.info("Metric of disk usage ratio has been registered.");
+    }
+
+    public void registerAgentReconnectRetryTimes() {
+        meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_WEBSOCKET_RECONNECT_RETRY_TIMES,
+                Tags.empty(),
+                agentWebSocketClient,
+                this::getReconnectRetryTimes);
+        log.info("Metric of agent reconnect retry times has been registered.");
+    }
+
+    public void registerAgentRunningTestTaskNum() {
+        meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_RUNNING_TEST_NUM,
+                Tags.empty(),
+                testTaskEngineService,
+                this::runningTestTaskNum);
+        log.info("Metric of agent running test task number has been registered.");
+    }
+
+    private double getPCDiskUsageRatio(String appLocation) {
+        File[] roots = File.listRoots();
+        double diskUsageRatio = 0;
+        for (File root : roots) {
+            if (!appLocation.contains(root.getPath())) {
+                continue;
+            }
+
+            diskUsageRatio = 1 - (double) root.getFreeSpace() / root.getTotalSpace();
+            break;
+        }
+        return diskUsageRatio;
+    }
+
+    private int getReconnectRetryTimes(AgentWebSocketClient agentWebSocketClient) {
+        return agentWebSocketClient.getReconnectTime();
+    }
+
+    private int runningTestTaskNum(TestTaskEngineService testTaskEngineService) {
+        return testTaskEngineService.getRunningTestTask().size();
     }
 
     public interface SendMessageCallback {
