@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.t2c.runner.controller;
 
 import com.google.common.collect.ImmutableMap;
+import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.nativekey.AndroidKey;
@@ -88,11 +89,7 @@ public class AndroidDriverController extends BaseDriverController {
     @Override
     public void swipe(String direction) {
         //androidDriver.executeScript("mobile: scroll", ImmutableMap.of("direction", direction));
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        T2CAppiumUtils.safeSleep(1000);
         Dimension dimension = androidDriver.manage().window().getSize();
         int width = dimension.getWidth();
         int height = dimension.getHeight();

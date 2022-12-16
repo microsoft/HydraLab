@@ -19,6 +19,7 @@ import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
@@ -603,34 +604,29 @@ public class AndroidDeviceManager extends DeviceManager {
 
     @Override
     public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName, Logger logger) {
-        try {
-            boolean isProjectionPermissionGranted = false;
-            stopPackageProcess(deviceInfo, recordPackageName, logger);
-            startRecordActivity(deviceInfo, logger);
-            Thread.sleep(2000);
-            if (!clickNodeOnDeviceWithText(deviceInfo, logger, "Start now", "Allow", "允许")) {
-                if (clickNodeOnDeviceWithText(deviceInfo, logger, "Allow display over other apps")) {
-                    sendKeyEvent(deviceInfo, KEYCODE_BACK, logger);
-                    sendKeyEvent(deviceInfo, KEYCODE_HOME, logger);
-                    stopPackageProcess(deviceInfo, recordPackageName, logger);
-                    startRecordActivity(deviceInfo, logger);
-                    Thread.sleep(2000);
-                    if (clickNodeOnDeviceWithText(deviceInfo, logger, "Start now")) {
-                        isProjectionPermissionGranted = true;
-                    }
+        boolean isProjectionPermissionGranted = false;
+        stopPackageProcess(deviceInfo, recordPackageName, logger);
+        startRecordActivity(deviceInfo, logger);
+        ThreadUtils.safeSleep(2000);
+        if (!clickNodeOnDeviceWithText(deviceInfo, logger, "Start now", "Allow", "允许")) {
+            if (clickNodeOnDeviceWithText(deviceInfo, logger, "Allow display over other apps")) {
+                sendKeyEvent(deviceInfo, KEYCODE_BACK, logger);
+                sendKeyEvent(deviceInfo, KEYCODE_HOME, logger);
+                stopPackageProcess(deviceInfo, recordPackageName, logger);
+                startRecordActivity(deviceInfo, logger);
+                ThreadUtils.safeSleep(2000);
+                if (clickNodeOnDeviceWithText(deviceInfo, logger, "Start now")) {
+                    isProjectionPermissionGranted = true;
                 }
-            } else {
-                isProjectionPermissionGranted = true;
             }
-
-            if (isProjectionPermissionGranted) {
-                clickNodeOnDeviceWithText(deviceInfo, logger, "Allow");
-            }
-            return isProjectionPermissionGranted;
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage(), e);
+        } else {
+            isProjectionPermissionGranted = true;
         }
-        return false;
+
+        if (isProjectionPermissionGranted) {
+            clickNodeOnDeviceWithText(deviceInfo, logger, "Allow");
+        }
+        return isProjectionPermissionGranted;
     }
 
     private String dumpView(DeviceInfo deviceInfo, Logger logger) {

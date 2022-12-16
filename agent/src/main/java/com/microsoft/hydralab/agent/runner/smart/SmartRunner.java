@@ -18,6 +18,7 @@ import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -226,7 +227,7 @@ public class SmartRunner extends TestRunner {
     public void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
         if (testTask.getRequireReinstall() || deviceManager instanceof IOSDeviceManager) {
             deviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
-            deviceManager.safeSleep(1000);
+            ThreadUtils.safeSleep(1000);
         } else if (testTask.getRequireClearData()) {
             deviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
         }

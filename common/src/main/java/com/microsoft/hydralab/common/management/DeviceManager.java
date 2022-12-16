@@ -13,6 +13,7 @@ import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.appium.java_client.appmanagement.ApplicationState;
 import io.appium.java_client.ios.IOSDriver;
@@ -186,14 +187,6 @@ public abstract class DeviceManager {
         return false;
     }
 
-    public void safeSleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            classLogger.error(e.getMessage(), e);
-        }
-    }
-
     public Logger getDeviceLogger(DeviceInfo device) {
         String file = deviceLogBaseDir.getAbsolutePath() + "/" + device.getName() + "/device_control.log";
         return LogUtils.getLoggerWithRollingFileAppender(LOGGER_PREFIX + device.getSerialNum(), file, "%d %logger{0} %p [%t] - %m%n");
@@ -208,7 +201,7 @@ public abstract class DeviceManager {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(delayMillis);
+                    ThreadUtils.safeSleep(delayMillis);
                     File imageFile = getScreenShot(deviceInfo, logger);
                     if (fileAvailableCallback != null) {
                         fileAvailableCallback.onFileReady(imageFile);
