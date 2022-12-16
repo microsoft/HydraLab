@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -183,7 +184,7 @@ public class AppiumRunner extends TestRunner {
     public void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
         if (testTask.getRequireReinstall() || deviceManager instanceof IOSDeviceManager) {
             deviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
-            deviceManager.safeSleep(1000);
+            ThreadUtils.safeSleep(1000);
         } else if (testTask.getRequireClearData()) {
             deviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
         }

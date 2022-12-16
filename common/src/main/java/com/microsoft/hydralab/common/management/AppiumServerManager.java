@@ -6,6 +6,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.ios.IOSDriver;
@@ -18,11 +19,13 @@ import io.appium.java_client.windows.WindowsDriver;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.openqa.selenium.NoSuchSessionException;
+import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.net.UrlChecker;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
@@ -186,19 +189,12 @@ public class AppiumServerManager {
         }
 
         DesiredCapabilities caps;
-        try {
-            caps = new DesiredCapabilities();
-            caps.setCapability("platformName", "Windows");
-            caps.setCapability("deviceName", "WindowsPC");
-            caps.setCapability("app", appFamilyName + "!App");
-            caps.setCapability("newCommandTimeout", 4000);
-            try {
-                windowsAppDriver = new WindowsDriver(new URL(String.format("http://%s:%d/wd/hub", appiumServerHost, appiumServerPort)), caps);
-            } catch (MalformedURLException ex) {
-                throw new RuntimeException(ex);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        // Launch Windows App
+        ShellUtils.execLocalCommand(ShellUtils.POWER_SHELL_PATH + " -Command " + "start-process shell:AppsFolder\\" + appFamilyName + "!App", logger);
+        ThreadUtils.safeSleep(5000);
+        int tries = 3;
+        for (int i = 0; i < tries; i++) {
             caps = new DesiredCapabilities();
             String hexAppTopLevelWindowByKeyWord = getHexAppTopLevelWindowByFamilyName(appFamilyName, logger);
             if (hexAppTopLevelWindowByKeyWord.length() == 0) {
@@ -213,6 +209,10 @@ public class AppiumServerManager {
                 windowsAppDriver = new WindowsDriver(new URL(String.format("http://%s:%d/wd/hub", appiumServerHost, appiumServerPort)), caps);
             } catch (MalformedURLException ex) {
                 throw new RuntimeException(ex);
+            } catch (NoSuchWindowException e) {
+                if (i == tries - 1) {
+                    throw e;
+                }
             }
         }
         windowsAppDrivers.put(appFamilyName, windowsAppDriver);
@@ -364,11 +364,7 @@ public class AppiumServerManager {
             FileUtil.downloadFileUsingStream(EDGE_DRIVER_DOWNLOAD_URL + version + "/" + EDGE_DRIVER_ZIP, edgeDriverZipPath);
             FileUtil.unzipFile(edgeDriverZipPath, workspacePath);
             // wait 2s to ensure the un-zip finished
-            try {
-                Thread.sleep(TimeUnit.SECONDS.toMillis(2));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            ThreadUtils.safeSleep(TimeUnit.SECONDS.toMillis(2));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -382,11 +378,8 @@ public class AppiumServerManager {
             e.printStackTrace();
         }
         // wait 2s to ensure that process is totally crashed
-        try {
-            Thread.sleep(TimeUnit.SECONDS.toMillis(2));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        ThreadUtils.safeSleep(TimeUnit.SECONDS.toMillis(2));
+
     }
 
 

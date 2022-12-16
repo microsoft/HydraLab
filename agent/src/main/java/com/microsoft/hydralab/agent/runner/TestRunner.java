@@ -9,6 +9,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public abstract class TestRunner {
         reportLogger.info("Start setup device");
         deviceManager.testDeviceSetup(deviceInfo, reportLogger);
         deviceManager.wakeUpDevice(deviceInfo, reportLogger);
-        deviceManager.safeSleep(1000);
+        ThreadUtils.safeSleep(1000);
         checkTestTaskCancel(testTask);
         reInstallApp(deviceInfo, testTask, reportLogger);
 
@@ -72,7 +73,7 @@ public abstract class TestRunner {
         reportLogger.info("Finish default launcher, currentDefaultActivity {}", testTask.getCurrentDefaultActivity());
 
         deviceManager.backToHome(deviceInfo, reportLogger);
-        deviceManager.safeSleep(3000);
+        ThreadUtils.safeSleep(3000);
     }
 
     protected void afterTest(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, TestTaskRunCallback testTaskRunCallback, Logger reportLogger) {
@@ -102,7 +103,7 @@ public abstract class TestRunner {
         if (testTask.getRequireReinstall()) {
             deviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
             deviceManager.uninstallApp(deviceInfo, testTask.getTestPkgName(), reportLogger);
-            deviceManager.safeSleep(1000);
+            ThreadUtils.safeSleep(1000);
         } else if (testTask.getRequireClearData()) {
             deviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
         }

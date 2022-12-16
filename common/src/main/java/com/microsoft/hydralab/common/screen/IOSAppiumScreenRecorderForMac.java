@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.screen;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.appium.java_client.ios.IOSStartScreenRecordingOptions;
 
 import java.io.File;
@@ -49,7 +50,7 @@ public class IOSAppiumScreenRecorderForMac extends IOSAppiumScreenRecorder {
         String destPath = "";
         try {
             // wait 5s to record more info after testing
-            deviceManager.safeSleep(5000);
+            ThreadUtils.safeSleep(5000);
             String base64String = iosDriver.stopRecordingScreen();
             byte[] data = Base64.getDecoder().decode(base64String);
             destPath = new File(recordDir, Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();

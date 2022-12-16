@@ -45,4 +45,12 @@ public class ThreadUtils {
 
         void onError(T item, Exception e);
     }
+
+    public static void safeSleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

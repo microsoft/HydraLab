@@ -11,6 +11,7 @@ import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DownloadUtils;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class AgentUpdateService {
             sendMessageToCenter(true, "Restart Agent.", "");
             Process process = null;
             try {
-                Thread.sleep(2000);
+                ThreadUtils.safeSleep(2000);
                 process = Runtime.getRuntime().exec(restartArgs);
                 CommandOutputReceiver err = new CommandOutputReceiver(process.getErrorStream(), logger);
                 CommandOutputReceiver out = new CommandOutputReceiver(process.getInputStream(), logger);
