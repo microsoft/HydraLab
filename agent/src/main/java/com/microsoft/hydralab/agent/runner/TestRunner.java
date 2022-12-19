@@ -40,15 +40,19 @@ public abstract class TestRunner {
         try {
             run(deviceInfo, testTask, deviceTestTask);
         } catch (Exception e) {
-            deviceTestTask.getLogger().info(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
-            String errorStr = e.getClass().getName() + ": " + e.getMessage();
-            if (errorStr.length() > 255) {
-                errorStr = errorStr.substring(0, 254);
-            }
-            deviceTestTask.setErrorInProcess(errorStr);
+            deviceTestTask.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
+            saveErrorSummary(deviceTestTask, e);
         } finally {
             tearDown(deviceInfo, testTask, deviceTestTask);
         }
+    }
+
+    private static void saveErrorSummary(DeviceTestTask deviceTestTask, Exception e) {
+        String errorStr = e.getClass().getName() + ": " + e.getMessage();
+        if (errorStr.length() > 255) {
+            errorStr = errorStr.substring(0, 254);
+        }
+        deviceTestTask.setErrorInProcess(errorStr);
     }
 
     protected void checkTestTaskCancel(TestTask testTask) {

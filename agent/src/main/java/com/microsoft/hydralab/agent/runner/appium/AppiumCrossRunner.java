@@ -18,7 +18,7 @@ public class AppiumCrossRunner extends AppiumRunner {
     }
 
     @Override
-    public DeviceTestTask buildDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
+    protected DeviceTestTask buildDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
         DeviceTestTask deviceTestTask = super.buildDeviceTestTask(deviceInfo, testTask, parentLogger);
         String deviceName = System.getProperties().getProperty("os.name") + "-" + agentName + "-" + deviceInfo.getName();
         deviceTestTask.setDeviceName(deviceName);
