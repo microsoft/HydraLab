@@ -75,7 +75,7 @@ deactivate TaskCompletion
     "maxStepCount": "",
     "deviceTestCount": "",
     "testTimeOutSec": "",
-    "deviceSetupActions":[{
+    "deviceSetUpActions":[{
             "action":"setProperty",
             "args": ["log.tag.WelcomeScreen","Verbose"]
         },
@@ -88,20 +88,12 @@ deactivate TaskCompletion
             "args": ["com.android.launcher3.DefaultLauncherApp"]
         }
     ],
-    "deviceTeardownActions":[{
+    "deviceTearDownActions":[{
             "action":"setProperty",
-            "args": ["log.tag.WelcomeScreen","Verbose"]
-        },
-        {
-            "action":"setProperty",
-            "args": ["log.tag.WelcomeScreen","Verbose"]
-        },
-        {
-            "action":"setLauncherAsDefault",
-            "args": ["com.android.launcher3.DefaultLauncherApp"]
+            "args": ["log.tag.WelcomeScreen","-"]
         }
     ],
-    "instrumentationArgs": {
+    "testRunArgs": {
         "enableScreenRecord": false,
         "testInterval": 5000,
         "runtimeUpLimit": 1,
@@ -130,12 +122,6 @@ interface TestRunnerListener {
 }
 
 Runner *--> TestRunnerListener
-@enduml
-
-@startuml loggers
-EachTestDevice *--> DeviceLogger
-EachTestTaskOnEachTargetDevice *--> TaskOnDeviceLogger
-EachTestTaskOnEachTargetDevice *--> LogcatLogger
 @enduml
 
 @startuml test_objects

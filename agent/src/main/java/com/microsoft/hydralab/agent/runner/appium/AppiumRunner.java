@@ -152,16 +152,4 @@ public class AppiumRunner extends TestRunner {
         }
     }
 
-    @Override
-    protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
-        if (testTask.getRequireReinstall() || deviceManager instanceof IOSDeviceManager) {
-            deviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
-            ThreadUtils.safeSleep(1000);
-        } else if (testTask.getRequireClearData()) {
-            deviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
-        }
-        checkTestTaskCancel(testTask);
-
-        deviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
-    }
 }

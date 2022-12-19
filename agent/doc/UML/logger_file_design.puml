@@ -13,3 +13,9 @@ end note
 
 DeviceTestTaskLogger -u-|> DeviceLogger
 @enduml
+
+@startuml loggers
+EachTestDevice *--> DeviceLogger
+EachTestTaskOnEachTargetDevice *--> TaskOnDeviceLogger
+EachTestTaskOnEachTargetDevice *--> LogcatLogger
+@enduml

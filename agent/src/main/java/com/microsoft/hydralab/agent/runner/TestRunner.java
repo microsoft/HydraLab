@@ -7,9 +7,11 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +70,7 @@ public abstract class TestRunner {
                 throw new RuntimeException("deviceTestResultFolder.mkdirs() failed: " + deviceTestResultFolder);
             }
         }
+
         deviceTestTask.setDeviceTestResultFolder(deviceTestResultFolder);
         Logger loggerForDeviceTestTask = createLoggerForDeviceTestTask(deviceTestTask, testTask.getTestSuite(), parentLogger);
         deviceTestTask.setLogger(loggerForDeviceTestTask);
@@ -87,6 +90,7 @@ public abstract class TestRunner {
         ThreadUtils.safeSleep(1000);
         checkTestTaskCancel(testTask);
         reInstallApp(deviceInfo, testTask, deviceTestTask.getLogger());
+        reInstallTestApp(deviceInfo, testTask, deviceTestTask.getLogger());
 
         if (testTask.isThisForMicrosoftLauncher()) {
             presetForMicrosoftLauncherApp(deviceInfo, testTask, deviceTestTask.getLogger());
@@ -139,9 +143,8 @@ public abstract class TestRunner {
 
 
     protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
-        if (testTask.getRequireReinstall()) {
+        if (testTask.getRequireReinstall() || deviceManager instanceof IOSDeviceManager) {
             deviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
-            deviceManager.uninstallApp(deviceInfo, testTask.getTestPkgName(), reportLogger);
             ThreadUtils.safeSleep(1000);
         } else if (testTask.getRequireClearData()) {
             deviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
@@ -149,8 +152,23 @@ public abstract class TestRunner {
         checkTestTaskCancel(testTask);
 
         deviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
-        deviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger);
+    }
 
+    protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
+        if (testTask.getTestAppFile() == null) {
+            return;
+        }
+        if (StringUtils.isEmpty(testTask.getTestPkgName())) {
+            return;
+        }
+        if (!testTask.getTestAppFile().exists()) {
+            return;
+        }
+        if (testTask.getRequireReinstall()) {
+            deviceManager.uninstallApp(deviceInfo, testTask.getTestPkgName(), reportLogger);
+        }
+        checkTestTaskCancel(testTask);
+        deviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger);
     }
 
     private Logger createLoggerForDeviceTestTask(DeviceTestTask deviceTestTask, String loggerNamePrefix, Logger parentLogger) {
