@@ -10,8 +10,10 @@ import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.*;
+import com.microsoft.hydralab.common.entity.center.DeviceGroup;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
+import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
@@ -63,6 +65,8 @@ public class DeviceAgentManagementService {
     private final ConcurrentHashMap<String, AgentUpdateTask> agentUpdateMap = new ConcurrentHashMap<>();
     @Resource
     MetricUtil metricUtil;
+    @Resource
+    StatisticDataRepository statisticDataRepository;
     @Resource
     AgentUserRepository agentUserRepository;
     @Resource
@@ -967,12 +971,23 @@ public class DeviceAgentManagementService {
         }
     }
 
-    public int getAgentNum(){
+    public int getAliveAgentNum(){
         return agentSessionMap.size();
     }
 
     public int getAliveDeviceNum(){
         return (int) deviceListMap.values().stream().filter(DeviceInfo::isAlive).count();
+    }
+
+    @Scheduled(cron = "0 * * * * *")
+    public void recordStatisticData() {
+        int maxAgentNumInAMinute = getAliveAgentNum();
+        int maxDeviceNumInAMinute = getAliveDeviceNum();
+
+        statisticDataRepository.save(new StatisticData("agent_num", maxAgentNumInAMinute));
+        log.info("Current online agent number is stored.");
+        statisticDataRepository.save(new StatisticData("device_num", maxDeviceNumInAMinute));
+        log.info("Current online device number is stored.");
     }
 
     static class AgentSessionInfo {
