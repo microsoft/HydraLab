@@ -1,11 +1,9 @@
 @startuml test_runners_classes
 abstract class TestRunner {
-    #getDeviceTask(...)
-    #chooseDevices(TestTaskSpec)
-    +setupTestDir(TestTask)
-    +runTest(TestTaskSpec)
-    +initDevice(...)
-    #afterTest(...)
+    #buildDeviceTestTask(...)
+    #setUp(TestTask)
+    #run(TestTaskSpec)
+    #tearDown(...)
 }
 interface TestRunningCallback
 
@@ -23,46 +21,32 @@ AppiumCrossRunner --|> AppiumRunner
 @enduml
 
 @startuml running_sequence
-AgentWebSocketClientService -> DeviceControlService :runTestTask
-activate DeviceControlService
+AgentWebSocketClientService -> TestTaskEngineService :runTestTask(TestTaskSpec)
+activate TestTaskEngineService
+TestTaskEngineService -> TestTaskEngineService: chooseDevices
+TestTaskEngineService -> TestTask: convertToTestTask(static)
 
-DeviceControlService -> TestRunner: runTest
-activate TestRunner
+TestTaskEngineService -> DeviceTaskControlExecutor: runForAllDeviceAsync
+activate DeviceTaskControlExecutor
 
-TestRunner -> TestRunner: chooseDevices
-TestRunner -> TestTask: convertToTestTask(static)
-TestRunner -> RunningControlService: runForAllDeviceAsync
-activate RunningControlService
 
-RunningControlService --> TestThreadPool.Executor: execute
+
+DeviceTaskControlExecutor --> TestThreadPool.Executor: execute
 activate TestThreadPool.Executor
 
-RunningControlService -> TestRunner
-deactivate RunningControlService
+DeviceTaskControlExecutor -> TestTaskEngineService
+deactivate DeviceTaskControlExecutor
 
-TestRunner -> DeviceControlService
-deactivate TestRunner
-
-DeviceControlService -> AgentWebSocketClientService
-deactivate DeviceControlService
+TestTaskEngineService -> AgentWebSocketClientService
+deactivate TestTaskEngineService
 
 participant DeviceTask
-note over DeviceTask #aqua
-DeviceTask
-seems
-extra.
-end note
-
 TestThreadPool.Executor -> DeviceTask: doTask
 activate DeviceTask
-
-DeviceTask -> RunnerImpl : runTestImpl
-activate RunnerImpl #FFBBFF
-note right: each runner implements this logic
-RunnerImpl -> DeviceTask
-deactivate RunnerImpl
-
-
+DeviceTask -> TestRunner: runTestOnDevice
+activate TestRunner
+TestRunner -> DeviceTask
+deactivate TestRunner
 DeviceTask -> TestThreadPool.Executor
 deactivate DeviceTask
 
@@ -91,7 +75,7 @@ deactivate TaskCompletion
     "maxStepCount": "",
     "deviceTestCount": "",
     "testTimeOutSec": "",
-    "deviceSetupActions":[{
+    "deviceSetUpActions":[{
             "action":"setProperty",
             "args": ["log.tag.WelcomeScreen","Verbose"]
         },
@@ -104,20 +88,12 @@ deactivate TaskCompletion
             "args": ["com.android.launcher3.DefaultLauncherApp"]
         }
     ],
-    "deviceTeardownActions":[{
+    "deviceTearDownActions":[{
             "action":"setProperty",
-            "args": ["log.tag.WelcomeScreen","Verbose"]
-        },
-        {
-            "action":"setProperty",
-            "args": ["log.tag.WelcomeScreen","Verbose"]
-        },
-        {
-            "action":"setLauncherAsDefault",
-            "args": ["com.android.launcher3.DefaultLauncherApp"]
+            "args": ["log.tag.WelcomeScreen","-"]
         }
     ],
-    "instrumentationArgs": {
+    "testRunArgs": {
         "enableScreenRecord": false,
         "testInterval": 5000,
         "runtimeUpLimit": 1,
@@ -148,11 +124,6 @@ interface TestRunnerListener {
 Runner *--> TestRunnerListener
 @enduml
 
-@startuml loggers
-EachTestDevice *--> DeviceLogger
-EachTestTaskOnEachTargetDevice *--> TaskOnDeviceLogger
-@enduml
-
 @startuml test_objects
 
 entity (TestTaskSpec)
@@ -175,8 +146,12 @@ entity (TestUnitResult)
 entity (AgentDeviceManager)
 entity (DeviceManager)
 entity (TestDevice)
+entity (DevicePair)
 
 AgentDeviceManager *--> DeviceManager
+DeviceManager *--> TestDevice
+
+DevicePair *-u-> TestDevice
 
 TestTask ... TestDevice: is running on
 

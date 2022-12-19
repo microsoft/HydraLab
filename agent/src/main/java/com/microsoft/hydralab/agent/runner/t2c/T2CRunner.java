@@ -4,38 +4,35 @@ package com.microsoft.hydralab.agent.runner.t2c;
 
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
+import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-@Service("t2cRunner")
 public class T2CRunner extends AppiumRunner {
 
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private LogCollector logCollector;
     private ScreenRecorder deviceScreenRecorder;
     private String pkgName;
-    private File gifFile;
-    private AndroidTestUnit ongoingTest;
-    // Todo: The following 2 methods are copied from AppiumCrossRunner. Need to be upgrade to support multiple device json test
-    @Value("${app.registry.name}")
     String agentName;
     private int currentIndex = 0;
+
+    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName) {
+        super(deviceManager, testTaskRunCallback);
+        this.agentName = agentName;
+    }
 
     @Override
     protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, DeviceInfo deviceInfo, TestTask testTask,
@@ -57,7 +54,7 @@ public class T2CRunner extends AppiumRunner {
         deviceInfo.setRunningTestName(pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
         currentIndex = 0;
 
-        gifFile = new File(deviceTestTask.getDeviceTestResultFolder(), pkgName + ".gif");
+        File gifFile = new File(deviceTestTask.getDeviceTestResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
@@ -80,8 +77,8 @@ public class T2CRunner extends AppiumRunner {
     }
 
     @Override
-    public DeviceTestTask initDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger logger) {
-        DeviceTestTask deviceTestTask = super.initDeviceTestTask(deviceInfo, testTask, logger);
+    public DeviceTestTask buildDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
+        DeviceTestTask deviceTestTask = super.buildDeviceTestTask(deviceInfo, testTask, parentLogger);
         String deviceName = System.getProperties().getProperty("os.name") + "-" + agentName + "-" + deviceInfo.getName();
         deviceTestTask.setDeviceName(deviceName);
         return deviceTestTask;
@@ -89,7 +86,7 @@ public class T2CRunner extends AppiumRunner {
 
     private void runT2CJsonTestCase(File jsonFile, DeviceInfo deviceInfo, DeviceTestTask deviceTestTask,
                                     Logger reportLogger, long recordingStartTimeMillis) {
-        ongoingTest = new AndroidTestUnit();
+        AndroidTestUnit ongoingTest = new AndroidTestUnit();
         ongoingTest.setNumtests(deviceTestTask.getTotalCount());
         ongoingTest.setStartTimeMillis(System.currentTimeMillis());
         ongoingTest.setRelStartTimeInVideo(ongoingTest.getStartTimeMillis() - recordingStartTimeMillis);

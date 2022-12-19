@@ -299,16 +299,6 @@ public class TestTask {
         String T2C_JSON_TEST = "T2C_JSON";
     }
 
-    public static Map<String, String> TestRunnerMap = new HashMap<>() {{
-        put(TestRunningType.INSTRUMENTATION, "espressoRunner");
-        put(TestRunningType.APPIUM, "appiumRunner");
-        put(TestRunningType.APPIUM_CROSS, "appiumCrossRunner");
-        put(TestRunningType.SMART_TEST, "smartRunner");
-        put(TestRunningType.MONKEY_TEST, "adbMonkeyRunner");
-        put(TestRunningType.APPIUM_MONKEY_TEST, "appiumMonkeyRunner");
-        put(TestRunningType.T2C_JSON_TEST, "t2cRunner");
-    }};
-
     public interface TestFrameworkType {
         String JUNIT4 = "JUnit4";
         String JUNIT5 = "JUnit5";

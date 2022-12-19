@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.agent.runner;
 
+import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
@@ -17,17 +18,18 @@ import java.io.File;
 public class TestRunnerTest extends BaseTest {
     @Resource
     DeviceManager deviceManager;
+    @Resource
+    TestTaskEngineService testTaskEngineService;
     final Logger logger = LoggerFactory.getLogger(TestRunnerTest.class);
 
     @Test
     public void createTestRunnerAndInitDeviceTest() {
-        TestRunner testRunner = new TestRunner() {
+        TestRunner testRunner = new TestRunner(deviceManager, testTaskEngineService) {
             @Override
-            public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
+            protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
 
             }
         };
-        testRunner.deviceManager = deviceManager;
 
         DeviceInfo deviceInfo = Mockito.mock(DeviceInfo.class);
         Mockito.when(deviceInfo.getSerialNum()).thenReturn("build");
@@ -40,7 +42,7 @@ public class TestRunnerTest extends BaseTest {
         testTask.setResourceDir(resourceDir);
         testTask.setTestSuite("TestSuite");
 
-        DeviceTestTask deviceTestTask = testRunner.initDeviceTestTask(deviceInfo, testTask, logger);
+        DeviceTestTask deviceTestTask = testRunner.buildDeviceTestTask(deviceInfo, testTask, logger);
 
         deviceTestTask.getLogger().info("Test DeviceTestTask logging function");
         deviceTestTask.getLogger().info("DeviceTestTask InstrumentReportPath {}", deviceTestTask.getInstrumentReportPath());
