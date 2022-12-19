@@ -6,7 +6,6 @@ import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import cn.hutool.core.lang.Assert;
 import com.android.ddmlib.testrunner.TestIdentifier;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
@@ -14,16 +13,19 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.Const;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class EspressoListener extends XmlTestRunListener {
+public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     private final DeviceInfo deviceInfo;
     private final DeviceTestTask deviceTestResult;
@@ -43,15 +45,21 @@ public class EspressoListener extends XmlTestRunListener {
     private int pid;
     private int addedFrameCount;
 
-    public EspressoListener(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, DeviceTestTask deviceTestResult, String pkgName, Logger logger) {
+    public EspressoTestInfoProcessorListener(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, DeviceTestTask deviceTestResult, String pkgName) {
         this.deviceManager = deviceManager;
         this.adbOperateUtil = adbOperateUtil;
         this.deviceInfo = deviceInfo;
         this.deviceTestResult = deviceTestResult;
-        this.logger = logger;
+        this.logger = deviceTestResult.getLogger();
         this.pkgName = pkgName;
         adbLogcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestResult, logger);
         adbDeviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getDeviceTestResultFolder(), logger);
+        setReportDir(deviceTestResult.getDeviceTestResultFolder());
+        try {
+            setHostName(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException ex) {
+            logger.error(ex.getMessage(), ex);
+        }
     }
 
     public File getGifFile() {

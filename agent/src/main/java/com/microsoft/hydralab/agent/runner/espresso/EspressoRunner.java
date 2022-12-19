@@ -9,50 +9,33 @@ import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.io.File;
-import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Map;
 
-@Service("espressoRunner")
 public class EspressoRunner extends TestRunner {
-    @Resource
-    ADBOperateUtil adbOperateUtil;
+    ADBOperateUtil adbOperateUtil = new ADBOperateUtil();
 
-    @Override
-    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
-        runEspressoTest(deviceInfo, testTask, testTaskRunCallback, logger);
+    public EspressoRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
+        super(deviceManager, testTaskRunCallback);
     }
 
-    public void runEspressoTest(DeviceInfo deviceInfo, TestTask testTask, TestTaskRunCallback testTaskRunCallback, Logger logger) {
-        checkTestTaskCancel(testTask);
-        logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
-
-        DeviceTestTask deviceTestTask = initDeviceTestTask(deviceInfo, testTask, logger);
-        File deviceTestResultFolder = deviceTestTask.getDeviceTestResultFolder();
-        testTask.addTestedDeviceResult(deviceTestTask);
-        checkTestTaskCancel(testTask);
-
+    @Override
+    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
         InstrumentationResultParser instrumentationResultParser = null;
-        Logger reportLogger = null;
+        Logger reportLogger = deviceTestTask.getLogger();
 
         try {
-            reportLogger = deviceTestTask.getLogger();
-            initDevice(deviceInfo, testTask, reportLogger);
-
             /** xml report: parse listener */
             reportLogger.info("Start xml report: parse listener");
-            EspressoListener listener = new EspressoListener(deviceManager, adbOperateUtil, deviceInfo, deviceTestTask, testTask.getPkgName(), reportLogger);
-            listener.setHostName(InetAddress.getLocalHost().getHostName());
-            listener.setReportDir(deviceTestResultFolder);
+            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(deviceManager, adbOperateUtil, deviceInfo, deviceTestTask, testTask.getPkgName());
             instrumentationResultParser = new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
                 @Override
                 public boolean isCancelled() {
@@ -80,24 +63,13 @@ public class EspressoRunner extends TestRunner {
                 deviceTestTask.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
             }
 
-        } catch (Exception e) {
-            if (reportLogger != null) {
-                reportLogger.info(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
-            } else {
-                logger.info(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
-            }
-            String errorStr = e.getClass().getName() + ": " + e.getMessage();
-            if (errorStr.length() > 255) {
-                errorStr = errorStr.substring(0, 254);
-            }
-            deviceTestTask.setErrorInProcess(errorStr);
         } finally {
             if (instrumentationResultParser != null) {
                 instrumentationResultParser.flush();
             }
-            afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
         }
     }
+
 
     public String startInstrument(DeviceInfo deviceInfo, String scope, String suiteName, String testPkgName, String testRunnerName, Logger logger, IShellOutputReceiver receiver,
                                   int testTimeOutSec, Map<String, String> instrumentationArgs) {

@@ -1,7 +1,6 @@
 @startuml test_runners_classes
 abstract class TestRunner {
     #getDeviceTask(...)
-    #chooseDevices(TestTaskSpec)
     +setupTestDir(TestTask)
     +runTest(TestTaskSpec)
     +initDevice(...)
@@ -52,6 +51,64 @@ DeviceTask
 seems
 extra.
 end note
+
+TestThreadPool.Executor -> DeviceTask: doTask
+activate DeviceTask
+
+DeviceTask -> RunnerImpl : runTestImpl
+activate RunnerImpl #FFBBFF
+note right: each runner implements this logic
+RunnerImpl -> DeviceTask
+deactivate RunnerImpl
+
+
+DeviceTask -> TestThreadPool.Executor
+deactivate DeviceTask
+
+TestThreadPool.Executor -> TaskCompletion: onComplete
+activate TaskCompletion
+
+TaskCompletion -> TestRunningCallback: onAllComplete
+activate TestRunningCallback
+
+TestRunningCallback -> TaskCompletion
+deactivate TestRunningCallback
+
+TaskCompletion -> TestThreadPool.Executor
+deactivate TaskCompletion
+
+@enduml
+
+@startuml running_sequence
+AgentWebSocketClientService -> TestTaskEngineService :runTestTask(TestTaskSpec)
+activate TestTaskEngineService
+TestTaskEngineService -> TestTaskEngineService: chooseDevices
+TestTaskEngineService -> TestTask: convertToTestTask(static)
+
+TestTaskEngineService -> DeviceTaskControlExecutor: runForAllDeviceAsync
+activate DeviceTaskControlExecutor
+
+
+
+
+
+
+
+DeviceTaskControlExecutor --> TestThreadPool.Executor: execute
+activate TestThreadPool.Executor
+
+DeviceTaskControlExecutor -> TestRunner
+
+deactivate DeviceTaskControlExecutor
+activate TestRunner
+TestRunner -> TestTaskEngineService
+deactivate TestRunner
+
+TestTaskEngineService -> AgentWebSocketClientService
+deactivate TestTaskEngineService
+
+participant DeviceTask
+DeviceTask -> TestRunner: runTest
 
 TestThreadPool.Executor -> DeviceTask: doTask
 activate DeviceTask
@@ -175,8 +232,12 @@ entity (TestUnitResult)
 entity (AgentDeviceManager)
 entity (DeviceManager)
 entity (TestDevice)
+entity (DevicePair)
 
 AgentDeviceManager *--> DeviceManager
+DeviceManager *--> TestDevice
+
+DevicePair *-u-> TestDevice
 
 TestTask ... TestDevice: is running on
 

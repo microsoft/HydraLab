@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
+import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
@@ -20,21 +21,17 @@ import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@Service("adbMonkeyRunner")
 public class AdbMonkeyRunner extends TestRunner {
     static final Logger classLogger = LoggerFactory.getLogger(AdbMonkeyRunner.class);
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
-    @Resource
-    ADBOperateUtil adbOperateUtil;
+    final ADBOperateUtil adbOperateUtil = new ADBOperateUtil();
     private LogCollector logCollector;
     private ScreenRecorder deviceScreenRecorder;
     private long recordingStartTimeMillis;
@@ -43,73 +40,47 @@ public class AdbMonkeyRunner extends TestRunner {
     private File gifFile;
     private AndroidTestUnit ongoingMonkeyTest;
 
-
-    @Override
-    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
-        runMonkeyTest(deviceInfo, testTask, testTaskRunCallback, logger);
+    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
+        super(deviceManager, testTaskRunCallback);
     }
 
-    private void runMonkeyTest(DeviceInfo deviceInfo, TestTask testTask, TestTaskRunCallback testTaskRunCallback, Logger logger) {
-        checkTestTaskCancel(testTask);
-        logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
-        DeviceTestTask deviceTestTask = initDeviceTestTask(deviceInfo, testTask, logger);
+    @Override
+    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
         deviceTestTask.setTotalCount(1);
-        File deviceTestResultFolder = deviceTestTask.getDeviceTestResultFolder();
-        testTask.addTestedDeviceResult(deviceTestTask);
-        checkTestTaskCancel(testTask);
-
-        Logger reportLogger = null;
+        Logger reportLogger = deviceTestTask.getLogger();
 
         pkgName = testTask.getPkgName();
-        try {
-            reportLogger = deviceTestTask.getLogger();
-            initDevice(deviceInfo, testTask, reportLogger);
+        /** start Record **/
+        logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestTask, reportLogger);
+        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestTask.getDeviceTestResultFolder(), reportLogger);
+        startRecording(deviceInfo, deviceTestTask, testTask.getTimeOutSecond(), reportLogger);
 
-            /** start Record **/
-            logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestTask, logger);
-            deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestTask.getDeviceTestResultFolder(), reportLogger);
-            startRecording(deviceInfo, deviceTestTask, testTask.getTimeOutSecond(), logger);
-
-            /** run the test */
-            reportLogger.info("Start monkey test");
-            deviceTestTask.setTestStartTimeMillis(System.currentTimeMillis());
-            checkTestTaskCancel(testTask);
-            long checkTime = runMonkeyTestOnce(deviceInfo, deviceTestTask, logger, testTask.getInstrumentationArgs(), testTask.getMaxStepCount());
-            if (checkTime > 0) {
-                String crashStack = deviceTestTask.getCrashStack();
-                if (crashStack != null && !"".equals(crashStack)) {
-                    ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
-                    ongoingMonkeyTest.setSuccess(false);
-                    ongoingMonkeyTest.setStack(crashStack);
-                    deviceTestTask.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", checkTime);
-                    deviceTestTask.oneMoreFailure();
-                }
+        /** run the test */
+        reportLogger.info("Start monkey test");
+        deviceTestTask.setTestStartTimeMillis(System.currentTimeMillis());
+        checkTestTaskCancel(testTask);
+        long checkTime = runMonkeyTestOnce(deviceInfo, deviceTestTask, reportLogger, testTask.getInstrumentationArgs(), testTask.getMaxStepCount());
+        if (checkTime > 0) {
+            String crashStack = deviceTestTask.getCrashStack();
+            if (crashStack != null && !"".equals(crashStack)) {
+                ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
+                ongoingMonkeyTest.setSuccess(false);
+                ongoingMonkeyTest.setStack(crashStack);
+                deviceTestTask.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", checkTime);
+                deviceTestTask.oneMoreFailure();
             }
-            testRunEnded(deviceInfo, deviceTestTask);
-
-            /** set paths */
-            String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();
-            deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-            File gifFile = getGifFile();
-            if (gifFile.exists() && gifFile.length() > 0) {
-                deviceTestTask.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
-            }
-
-        } catch (Exception e) {
-            if (reportLogger != null) {
-                reportLogger.info(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
-            } else {
-                logger.info(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
-            }
-            String errorStr = e.getClass().getName() + ": " + e.getMessage();
-            if (errorStr.length() > 255) {
-                errorStr = errorStr.substring(0, 254);
-            }
-            deviceTestTask.setErrorInProcess(errorStr);
-        } finally {
-            afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
         }
+        testRunEnded(deviceInfo, deviceTestTask);
+
+        /** set paths */
+        String absoluteReportPath = deviceTestTask.getDeviceTestResultFolder().getAbsolutePath();
+        deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+        File gifFile = getGifFile();
+        if (gifFile.exists() && gifFile.length() > 0) {
+            deviceTestTask.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
+        }
+
     }
 
 
@@ -184,10 +155,8 @@ public class AdbMonkeyRunner extends TestRunner {
         }
         try {
             String command = String.format(commFormat, pkgName, maxStepCount);
-            if (logger != null) {
-                // make sure pass is not printed
-                logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), LogUtils.scrubSensitiveArgs(command));
-            }
+            // make sure pass is not printed
+            logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), LogUtils.scrubSensitiveArgs(command));
             adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, new MultiLineNoCancelLoggingReceiver(logger), -1);
             checkTime = System.currentTimeMillis() - recordingStartTimeMillis;
             ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
@@ -225,7 +194,7 @@ public class AdbMonkeyRunner extends TestRunner {
     }
 
     @Override
-    public void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
+    protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
         if (testTask.getRequireReinstall() || deviceManager instanceof IOSDeviceManager) {
             deviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
             ThreadUtils.safeSleep(1000);
