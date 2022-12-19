@@ -70,6 +70,10 @@ public class EspressoRunner extends TestRunner {
         }
     }
 
+    @Override
+    protected boolean shouldInstallTestPackageAsApp() {
+        return true;
+    }
 
     public String startInstrument(DeviceInfo deviceInfo, String scope, String suiteName, String testPkgName, String testRunnerName, Logger logger, IShellOutputReceiver receiver,
                                   int testTimeOutSec, Map<String, String> instrumentationArgs) {

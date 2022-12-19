@@ -155,6 +155,9 @@ public abstract class TestRunner {
     }
 
     protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
+        if(!shouldInstallTestPackageAsApp()){
+            return;
+        }
         if (testTask.getTestAppFile() == null) {
             return;
         }
@@ -169,6 +172,10 @@ public abstract class TestRunner {
         }
         checkTestTaskCancel(testTask);
         deviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger);
+    }
+
+    protected boolean shouldInstallTestPackageAsApp() {
+        return false;
     }
 
     private Logger createLoggerForDeviceTestTask(DeviceTestTask deviceTestTask, String loggerNamePrefix, Logger parentLogger) {
