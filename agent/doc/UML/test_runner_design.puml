@@ -1,10 +1,9 @@
 @startuml test_runners_classes
 abstract class TestRunner {
-    #getDeviceTask(...)
-    +setupTestDir(TestTask)
-    +runTest(TestTaskSpec)
-    +initDevice(...)
-    #afterTest(...)
+    #buildDeviceTestTask(...)
+    #setUp(TestTask)
+    #run(TestTaskSpec)
+    #tearDown(...)
 }
 interface TestRunningCallback
 
@@ -22,64 +21,6 @@ AppiumCrossRunner --|> AppiumRunner
 @enduml
 
 @startuml running_sequence
-AgentWebSocketClientService -> DeviceControlService :runTestTask
-activate DeviceControlService
-
-DeviceControlService -> TestRunner: runTest
-activate TestRunner
-
-TestRunner -> TestRunner: chooseDevices
-TestRunner -> TestTask: convertToTestTask(static)
-TestRunner -> RunningControlService: runForAllDeviceAsync
-activate RunningControlService
-
-RunningControlService --> TestThreadPool.Executor: execute
-activate TestThreadPool.Executor
-
-RunningControlService -> TestRunner
-deactivate RunningControlService
-
-TestRunner -> DeviceControlService
-deactivate TestRunner
-
-DeviceControlService -> AgentWebSocketClientService
-deactivate DeviceControlService
-
-participant DeviceTask
-note over DeviceTask #aqua
-DeviceTask
-seems
-extra.
-end note
-
-TestThreadPool.Executor -> DeviceTask: doTask
-activate DeviceTask
-
-DeviceTask -> RunnerImpl : runTestImpl
-activate RunnerImpl #FFBBFF
-note right: each runner implements this logic
-RunnerImpl -> DeviceTask
-deactivate RunnerImpl
-
-
-DeviceTask -> TestThreadPool.Executor
-deactivate DeviceTask
-
-TestThreadPool.Executor -> TaskCompletion: onComplete
-activate TaskCompletion
-
-TaskCompletion -> TestRunningCallback: onAllComplete
-activate TestRunningCallback
-
-TestRunningCallback -> TaskCompletion
-deactivate TestRunningCallback
-
-TaskCompletion -> TestThreadPool.Executor
-deactivate TaskCompletion
-
-@enduml
-
-@startuml running_sequence
 AgentWebSocketClientService -> TestTaskEngineService :runTestTask(TestTaskSpec)
 activate TestTaskEngineService
 TestTaskEngineService -> TestTaskEngineService: chooseDevices
@@ -90,36 +31,22 @@ activate DeviceTaskControlExecutor
 
 
 
-
-
-
-
 DeviceTaskControlExecutor --> TestThreadPool.Executor: execute
 activate TestThreadPool.Executor
 
-DeviceTaskControlExecutor -> TestRunner
-
+DeviceTaskControlExecutor -> TestTaskEngineService
 deactivate DeviceTaskControlExecutor
-activate TestRunner
-TestRunner -> TestTaskEngineService
-deactivate TestRunner
 
 TestTaskEngineService -> AgentWebSocketClientService
 deactivate TestTaskEngineService
 
 participant DeviceTask
-DeviceTask -> TestRunner: runTest
-
 TestThreadPool.Executor -> DeviceTask: doTask
 activate DeviceTask
-
-DeviceTask -> RunnerImpl : runTestImpl
-activate RunnerImpl #FFBBFF
-note right: each runner implements this logic
-RunnerImpl -> DeviceTask
-deactivate RunnerImpl
-
-
+DeviceTask -> TestRunner: runTestOnDevice
+activate TestRunner
+TestRunner -> DeviceTask
+deactivate TestRunner
 DeviceTask -> TestThreadPool.Executor
 deactivate DeviceTask
 
@@ -208,6 +135,7 @@ Runner *--> TestRunnerListener
 @startuml loggers
 EachTestDevice *--> DeviceLogger
 EachTestTaskOnEachTargetDevice *--> TaskOnDeviceLogger
+EachTestTaskOnEachTargetDevice *--> LogcatLogger
 @enduml
 
 @startuml test_objects

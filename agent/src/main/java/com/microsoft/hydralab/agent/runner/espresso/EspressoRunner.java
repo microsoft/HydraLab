@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 
 public class EspressoRunner extends TestRunner {
-    ADBOperateUtil adbOperateUtil = new ADBOperateUtil();
+    final ADBOperateUtil adbOperateUtil = new ADBOperateUtil();
 
     public EspressoRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
         super(deviceManager, testTaskRunCallback);
