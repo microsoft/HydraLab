@@ -981,13 +981,13 @@ public class DeviceAgentManagementService {
 
     @Scheduled(cron = "0 * * * * *")
     public void recordStatisticData() {
-        int maxAgentNumInAMinute = getAliveAgentNum();
-        int maxDeviceNumInAMinute = getAliveDeviceNum();
+        int currentAgentNum = getAliveAgentNum();
+        int currentDeviceNum = getAliveDeviceNum();
 
-        statisticDataRepository.save(new StatisticData("agent_num", maxAgentNumInAMinute));
-        log.info("Current online agent number is stored.");
-        statisticDataRepository.save(new StatisticData("device_num", maxDeviceNumInAMinute));
-        log.info("Current online device number is stored.");
+        statisticDataRepository.save(new StatisticData("agent_num", currentAgentNum));
+        log.info("Storing current online agent number {}.", currentAgentNum);
+        statisticDataRepository.save(new StatisticData("device_num", currentDeviceNum));
+        log.info("Storing current online device number {}.", currentDeviceNum);
     }
 
     static class AgentSessionInfo {
