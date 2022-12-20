@@ -19,16 +19,11 @@ import java.io.File;
 
 public class TestRunnerTest extends BaseTest {
     @Resource
-    DeviceManager deviceManager;
-    @Resource
-    ADBOperateUtil adbOperateUtil;
-    @Resource
-    TestTaskEngineService testTaskEngineService;
+    EspressoRunner espressoRunner;
     final Logger logger = LoggerFactory.getLogger(TestRunnerTest.class);
 
     @Test
     public void createTestRunnerAndInitDeviceTest() throws Exception {
-        EspressoRunner testRunner = new EspressoRunner(deviceManager, testTaskEngineService, adbOperateUtil);
 
         DeviceInfo deviceInfo = Mockito.mock(DeviceInfo.class);
         Mockito.when(deviceInfo.getSerialNum()).thenReturn("build");
@@ -41,7 +36,7 @@ public class TestRunnerTest extends BaseTest {
         testTask.setResourceDir(resourceDir);
         testTask.setTestSuite("TestSuite");
 
-        DeviceTestTask deviceTestTask = testRunner.buildDeviceTestTask(deviceInfo, testTask, logger);
+        DeviceTestTask deviceTestTask = espressoRunner.buildDeviceTestTask(deviceInfo, testTask, logger);
 
         deviceTestTask.getLogger().info("Test DeviceTestTask logging function");
         deviceTestTask.getLogger().info("DeviceTestTask InstrumentReportPath {}", deviceTestTask.getInstrumentReportPath());
