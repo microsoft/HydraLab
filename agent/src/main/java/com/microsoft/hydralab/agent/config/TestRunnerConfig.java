@@ -13,6 +13,7 @@ import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,13 +35,13 @@ public class TestRunnerConfig {
     );
 
     @Bean
-    public EspressoRunner espressoRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService) {
-        return new EspressoRunner(deviceManager, testTaskEngineService);
+    public EspressoRunner espressoRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil) {
+        return new EspressoRunner(deviceManager, testTaskEngineService, adbOperateUtil);
     }
 
     @Bean
-    public AdbMonkeyRunner adbMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService) {
-        return new AdbMonkeyRunner(deviceManager, testTaskEngineService);
+    public AdbMonkeyRunner adbMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil) {
+        return new AdbMonkeyRunner(deviceManager, testTaskEngineService, adbOperateUtil);
     }
 
     @Bean

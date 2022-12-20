@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 public class AdbMonkeyRunner extends TestRunner {
     static final Logger classLogger = LoggerFactory.getLogger(AdbMonkeyRunner.class);
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
-    final ADBOperateUtil adbOperateUtil = new ADBOperateUtil();
+    final ADBOperateUtil adbOperateUtil;
     private LogCollector logCollector;
     private ScreenRecorder deviceScreenRecorder;
     private long recordingStartTimeMillis;
@@ -40,8 +40,9 @@ public class AdbMonkeyRunner extends TestRunner {
     private File gifFile;
     private AndroidTestUnit ongoingMonkeyTest;
 
-    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
+    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, ADBOperateUtil adbOperateUtil) {
         super(deviceManager, testTaskRunCallback);
+        this.adbOperateUtil = adbOperateUtil;
     }
 
 
