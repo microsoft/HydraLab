@@ -105,7 +105,7 @@ public class MockDeviceManager extends DeviceManager {
 
     @Override
     public boolean setDefaultLauncher(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @NotNull String defaultActivity, @Nullable Logger logger) {
-        logger.info("Invoke setLauncherAsDefault success! deviceInfo {}, packageName {}, defaultActivity {}", deviceInfo, packageName, defaultActivity);
+        logger.info("Invoke setDefaultLauncher success! deviceInfo {}, packageName {}, defaultActivity {}", deviceInfo, packageName, defaultActivity);
         return true;
     }
 
