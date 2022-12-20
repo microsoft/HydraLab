@@ -110,8 +110,9 @@ We are happy to hear your ideas for the future of Hydra Lab. Check the [GitHub I
 
 The Hydra Lab team encourages community feedback and contributions. Thank you for your interest in making Hydra Lab better!
 
-<!--TODO: Generate an image of contributors to keep our README.md in sync. The image can be generated after the status of repo is public.  -->
-<!--TODO: For more details, please refer: https://contrib.rocks/preview?repo=microsoft%2Fjust  -->
+<a href="https://github.com/Microsoft/hydralab/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Microsoft/hydralab" />
+</a>
 
 <span id="contact"></span>
 ## Contact Us
