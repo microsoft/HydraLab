@@ -100,16 +100,16 @@ public class AppiumRunner extends TestRunner {
             instrumentationArgs = new HashMap<>();
         }
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-        AndroidMemRecorder recorder1 = new AndroidMemRecorder(deviceInfo, new File(deviceTestTask.getDeviceTestResultFolderUrl()));
+        AndroidMemRecorder recorder1 = new AndroidMemRecorder(deviceInfo, deviceTestTask.getDeviceTestResultFolderUrl());
         PerformanceManager manager = new PerformanceManager();
         //deviceManager.initMana(manager,is..)
         manager.addRecorder(recorder1);
-        manager.beforeTest();
+        manager.initDevice();
         ThreadParam.init(appiumParam, instrumentationArgs, manager);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
         File gifFile = null;
 
-        ThreadParam.getPerformanceManager().addRecord();
+        ThreadParam.getPerformanceManager().addMetricsData(null);
 
 
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
@@ -136,7 +136,7 @@ public class AppiumRunner extends TestRunner {
             checkTestTaskCancel(testTask);
             gifFile = listener.getGifFile();
         }
-        manager.afterTest();
+        manager.analyzeResult();
         /** set paths */
         String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();
         deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));

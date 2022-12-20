@@ -2,26 +2,33 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.performace.impl;
 
-import com.microsoft.hydralab.performance.PerformanceRecorder;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.performance.PerfMetaInfo;
 
 /**
  * @author zhoule
  * @date 12/15/2022
  */
 
-public class AndroidBatteryRecorder implements PerformanceRecorder {
+public class AndroidBatteryRecorder extends BasePerformanceRecorder {
+
+    AndroidBatteryRecorder(DeviceInfo deviceInfo, String resultsDir) {
+        super(deviceInfo, resultsDir);
+    }
+
     @Override
-    public void beforeTest() {
+    public void initDevice() {
 
     }
 
     @Override
-    public void addRecord() {
+    public void addMetricsData(PerfMetaInfo perfMetaInfo) {
 
     }
 
+
     @Override
-    public void afterTest() {
+    public void analyzeResult() {
 
     }
 }

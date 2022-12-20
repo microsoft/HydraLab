@@ -3,38 +3,31 @@
 package com.microsoft.hydralab.common.performace.impl;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.performance.PerformanceRecorder;
-
-import java.io.File;
-import java.util.UUID;
+import com.microsoft.hydralab.performance.PerfMetaInfo;
 
 /**
  * @author zhoule
  * @date 12/14/2022
  */
 
-public class AndroidMemRecorder implements PerformanceRecorder {
-    DeviceInfo deviceInfo;
-    String fileName = "";
+public class AndroidMemRecorder extends BasePerformanceRecorder {
 
-    public AndroidMemRecorder(DeviceInfo deviceInfo, File file) {
-        this.deviceInfo = deviceInfo;
-        fileName = UUID.randomUUID().toString();
+    public AndroidMemRecorder(DeviceInfo deviceInfo, String resultsDir) {
+        super(deviceInfo, resultsDir);
     }
 
     @Override
-    public void beforeTest() {
+    public void initDevice() {
         // init device
     }
 
     @Override
-    public void addRecord() {
+    public void addMetricsData(PerfMetaInfo perfMetaInfo) {
         // add ..
-        
     }
 
     @Override
-    public void afterTest() {
+    public void analyzeResult() {
         // analysis
     }
 }

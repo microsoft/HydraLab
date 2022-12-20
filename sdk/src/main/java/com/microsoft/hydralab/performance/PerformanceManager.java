@@ -25,17 +25,17 @@ public class PerformanceManager implements PerformanceRecorder {
     }
 
     @Override
-    public void beforeTest() {
-        notifyEach(recorders, recorder -> recorder.beforeTest());
+    public void initDevice() {
+        notifyEach(recorders, recorder -> recorder.initDevice());
     }
 
     @Override
-    public void addRecord() {
-        notifyEach(recorders, recorder -> recorder.addRecord());
+    public void addMetricsData(PerfMetaInfo perfMetaInfo) {
+        notifyEach(recorders, recorder -> recorder.addMetricsData(perfMetaInfo));
     }
 
     @Override
-    public void afterTest() {
-        notifyEach(recorders, recorder -> recorder.afterTest());
+    public void analyzeResult() {
+        notifyEach(recorders, recorder -> recorder.analyzeResult());
     }
 }
