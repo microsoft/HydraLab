@@ -1,13 +1,10 @@
 package com.microsoft.hydralab.agent.runner;
 
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
-import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
