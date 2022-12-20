@@ -436,7 +436,7 @@ public class AndroidDeviceManager extends DeviceManager {
     }
 
     @Override
-    public boolean setLauncherAsDefault(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
+    public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
         try {
             adbOperateUtil.execOnDevice(deviceInfo, String.format("cmd package set-home-activity %s/%s", packageName, defaultActivity), new MultiLineNoCancelLoggingReceiver(logger), logger);
             return true;

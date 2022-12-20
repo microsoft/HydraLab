@@ -2,14 +2,8 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.service;
 
-import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
-import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
-import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
-import com.microsoft.hydralab.common.repository.DeviceTestResultRepository;
-import com.microsoft.hydralab.common.repository.KeyValueRepository;
-import com.microsoft.hydralab.common.repository.TestTaskRepository;
+import com.microsoft.hydralab.common.entity.common.*;
+import com.microsoft.hydralab.common.repository.*;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +23,8 @@ public class TestDataService {
     @Resource
     DeviceTestResultRepository deviceTestResultRepository;
     @Resource
+    DeviceActionRepository deviceActionRepository;
+    @Resource
     KeyValueRepository keyValueRepository;
     @Resource
     AttachmentService attachmentService;
@@ -43,6 +39,12 @@ public class TestDataService {
         List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
         if (deviceTestResults.isEmpty()) {
             return;
+        }
+
+        List<DeviceAction> deviceActions = testTask.getDeviceActions();
+        if (deviceActions != null && !deviceActions.isEmpty()) {
+            deviceActions.forEach(deviceAction -> deviceAction.setTestTaskId(testTask.getId()));
+            deviceActionRepository.saveAll(deviceActions);
         }
 
         deviceTestResultRepository.saveAll(deviceTestResults);

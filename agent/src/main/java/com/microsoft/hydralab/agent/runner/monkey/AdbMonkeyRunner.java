@@ -13,11 +13,9 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class AdbMonkeyRunner extends TestRunner {
     static final Logger classLogger = LoggerFactory.getLogger(AdbMonkeyRunner.class);
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
-    final ADBOperateUtil adbOperateUtil = new ADBOperateUtil();
+    final ADBOperateUtil adbOperateUtil;
     private LogCollector logCollector;
     private ScreenRecorder deviceScreenRecorder;
     private long recordingStartTimeMillis;
@@ -40,8 +38,9 @@ public class AdbMonkeyRunner extends TestRunner {
     private File gifFile;
     private AndroidTestUnit ongoingMonkeyTest;
 
-    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
+    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, ADBOperateUtil adbOperateUtil) {
         super(deviceManager, testTaskRunCallback);
+        this.adbOperateUtil = adbOperateUtil;
     }
 
 

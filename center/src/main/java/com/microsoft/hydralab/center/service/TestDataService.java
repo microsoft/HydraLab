@@ -7,10 +7,7 @@ import com.microsoft.hydralab.center.repository.StabilityDataRepository;
 import com.microsoft.hydralab.common.entity.center.StabilityData;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.*;
-import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
-import com.microsoft.hydralab.common.repository.DeviceTestResultRepository;
-import com.microsoft.hydralab.common.repository.KeyValueRepository;
-import com.microsoft.hydralab.common.repository.TestTaskRepository;
+import com.microsoft.hydralab.common.repository.*;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
@@ -46,6 +43,8 @@ public class TestDataService {
     AndroidTestUnitRepository androidTestUnitRepository;
     @Resource
     DeviceTestResultRepository deviceTestResultRepository;
+    @Resource
+    DeviceActionRepository deviceActionRepository;
     @Resource
     KeyValueRepository keyValueRepository;
     @Resource
@@ -205,6 +204,12 @@ public class TestDataService {
         }
 
         deviceTestResultRepository.saveAll(deviceTestResults);
+
+        List<DeviceAction> deviceActions = testTask.getDeviceActions();
+        if (deviceActions != null && !deviceActions.isEmpty()) {
+            deviceActions.forEach(deviceAction -> deviceAction.setTestTaskId(testTask.getId()));
+            deviceActionRepository.saveAll(deviceActions);
+        }
 
         List<AndroidTestUnit> list = new ArrayList<>();
         for (DeviceTestTask deviceTestResult : deviceTestResults) {
