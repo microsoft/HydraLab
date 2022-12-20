@@ -20,7 +20,7 @@ public class TestRunnerTest extends BaseTest {
     final Logger logger = LoggerFactory.getLogger(TestRunnerTest.class);
 
     @Test
-    public void createTestRunnerAndInitDeviceTest() throws Exception {
+    public void createTestRunnerAndInitDeviceTest() {
 
         DeviceInfo deviceInfo = Mockito.mock(DeviceInfo.class);
         Mockito.when(deviceInfo.getSerialNum()).thenReturn("build");
