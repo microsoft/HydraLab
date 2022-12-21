@@ -1,7 +1,7 @@
 # Contributing to Hydra Lab
 
-The Hydra Lab team encourages community feedback and contributions. 
-Thank you for your interest in making Hydra Lab better!
+The Hydra Lab dev team would love community feedback and contributions. 
+Thank you for your interest in making mobile testing better with Hydra Lab!
 
 ## Reporting issues and suggesting new features
 
