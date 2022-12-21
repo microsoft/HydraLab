@@ -31,9 +31,6 @@ dependencies {
     testCompile 'org.mockito:mockito-core:3.12.4'
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
     testCompile 'me.paulschwarz:spring-dotenv:2.3.0'
-    testCompile 'io.appium:java-client:8.0.0'
-    testCompile 'org.seleniumhq.selenium:selenium-java:4.1.4'
-    testCompile 'org.apache.httpcomponents:httpcore:4.4.9'
 
     compile project(":common")
 

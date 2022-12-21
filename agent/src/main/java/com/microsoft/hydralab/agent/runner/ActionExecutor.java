@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -61,27 +62,24 @@ public class ActionExecutor {
                 logger.error("Analysis action type error:Unsupported method");
                 return;
             }
-            logger.info("Analysis action type: success");
 
             logger.info("Start to analysis action args! Current action is {}", deviceAction.getMethod());
             List<String> actionArgs = deviceAction.getArgs();
             Object[] methodArgs = convertArgs(deviceInfo, logger, actionArgs, method.getParameterTypes());
-            logger.info("Analysis action args: success");
 
             logger.info("Start to execute action! Current action is {}", deviceAction.getMethod());
             method.setAccessible(true);
             method.invoke(deviceManager, methodArgs);
-            logger.info("Execute action: success");
 
         } catch (InvocationTargetException | IllegalAccessException e) {
             logger.error("Execute action: fail", e);
-        } catch (ClassNotFoundException e) {
+        } catch (HydraLabRuntimeException e) {
             logger.error("Convert action arg: fail", e);
         }
     }
 
 
-    private Object[] convertArgs(@NotNull DeviceInfo deviceInfo, @NotNull Logger logger, @NotNull List<String> actionArgs, Class<?>[] parameterTypes) throws ClassNotFoundException {
+    private Object[] convertArgs(@NotNull DeviceInfo deviceInfo, @NotNull Logger logger, @NotNull List<String> actionArgs, Class<?>[] parameterTypes) throws HydraLabRuntimeException {
         Object[] methodArgs = new Object[actionArgs.size() + 2];
 
         methodArgs[0] = deviceInfo;
@@ -93,9 +91,12 @@ public class ActionExecutor {
                 methodArgs[i + 1] = parameterTypes[i + 1].cast(actionArgs.get(i));
             } catch (Exception e) {
                 logger.info("Convert directly: failed. Try to convert by JSONObject", actionArgs.get(i));
-                methodArgs[i + 1] = JSONObject.parseObject(actionArgs.get(i), DeviceAction.class);
+                try {
+                    methodArgs[i + 1] = JSONObject.parseObject(actionArgs.get(i), DeviceAction.class);
+                } catch (Exception e1) {
+                    throw new HydraLabRuntimeException(500, "Convert arg failed!", e1);
+                }
             }
-            logger.error("Convert action arg: success");
         }
         return methodArgs;
     }
