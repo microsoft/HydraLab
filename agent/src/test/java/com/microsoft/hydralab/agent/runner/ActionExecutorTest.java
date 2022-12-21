@@ -42,7 +42,7 @@ class ActionExecutorTest extends BaseTest {
         actions.add(action2);
         actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
         verify(deviceManager, times(2)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
-
+        verify(deviceManager, times(1)).changeGlobalSetting(deviceInfo, args2.get(0), args2.get(1), baseLogger);
     }
 
 }
