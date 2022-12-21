@@ -35,22 +35,6 @@ spring:
   security:
     oauth2:
       enabled: false
-      client:
-        provider:
-          azure-ad:
-            authorization-uri: https://login.microsoftonline.com/${MICROSOFT_PROVIDER_TENANT_ID}/oauth2/v2.0/authorize
-            token-uri: https://login.microsoftonline.com/${MICROSOFT_PROVIDER_TENANT_ID}/oauth2/v2.0/token
-            jwk-set-uri: https://login.microsoftonline.com/${MICROSOFT_PROVIDER_TENANT_ID}/discovery/v2.0/keys
-            photo-uri: https://graph.microsoft.com/v1.0/me/photo/$value
-        registration:
-          azure-client:
-            provider: azure-ad
-            client-id: ${MICROSOFT_PROVIDER_CLIENT_ID}
-            client-secret: ${MICROSOFT_PROVIDER_AUTHENTICATION_SECRET}
-            authorization-grant-type: authorization_code
-            redirect-uri: 'http://localhost:9886/api/auth' # if nginx enabled, switch to port of nginx
-            ignore-uri: '/api/auth,/agent/connect'
-            scope: 'https://graph.microsoft.com/User.Read'
 
 # log file split
 logging:
@@ -62,7 +46,7 @@ app:
   batteryStrategy: ${BATTERY_STRATEGY:Economic}
   access-token-limit: 2
   # Mail Address Format
-  default-user: ${DEFAULT_USER:@null}
+  default-user: ${DEFAULT_USER:default@hydralab.com}
   blob:
     connection: ${BLOB_CONNECTION_STR}
     fileLimitDay: 6
