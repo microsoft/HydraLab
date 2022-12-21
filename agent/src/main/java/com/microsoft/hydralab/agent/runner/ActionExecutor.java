@@ -27,7 +27,7 @@ public class ActionExecutor {
     /**
      * the implementation of supported actions should not be overload
      */
-    private Set<String> actionTypes = Set.of("setProperty", "setDefaultLauncher", "backToHome");
+    private Set<String> actionTypes = Set.of("setProperty", "setDefaultLauncher", "backToHome", "changeGlobalSetting", "changeSystemSetting");
 
     public void doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
                           @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
@@ -52,7 +52,15 @@ public class ActionExecutor {
             logger.info("Start to analysis action type! Current action is {}", deviceAction.getMethod());
             Method method = Arrays.stream(deviceManager.getClass().getMethods())
                     .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getMethod()))
-                    .findFirst().get();
+                    .findFirst().orElse(
+                            Arrays.stream(deviceManager.getClass().getDeclaredMethods())
+                                    .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getMethod()))
+                                    .findFirst().orElse(null)
+                    );
+            if (method == null) {
+                logger.error("Analysis action type error:Unsupported method");
+                return;
+            }
             logger.info("Analysis action type: success");
 
             logger.info("Start to analysis action args! Current action is {}", deviceAction.getMethod());
@@ -61,6 +69,7 @@ public class ActionExecutor {
             logger.info("Analysis action args: success");
 
             logger.info("Start to execute action! Current action is {}", deviceAction.getMethod());
+            method.setAccessible(true);
             method.invoke(deviceManager, methodArgs);
             logger.info("Execute action: success");
 

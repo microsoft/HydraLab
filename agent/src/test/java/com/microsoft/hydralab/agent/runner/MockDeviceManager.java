@@ -5,8 +5,8 @@ package com.microsoft.hydralab.agent.runner;
 import com.android.ddmlib.InstallException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
-import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.logger.impl.ADBLogcatCollector;
+import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +22,7 @@ import java.util.Set;
  * @date 12/20/2022
  */
 
-public class MockDeviceManager extends DeviceManager {
+public class MockDeviceManager extends AndroidDeviceManager {
     @Override
     public void init() throws Exception {
 
@@ -89,7 +89,7 @@ public class MockDeviceManager extends DeviceManager {
     }
 
     @Override
-    public LogCollector getLogCollector(@NotNull DeviceInfo deviceInfo, @NotNull String pkgName, @NotNull DeviceTestTask deviceTestResult, @NotNull Logger logger) {
+    public ADBLogcatCollector getLogCollector(@NotNull DeviceInfo deviceInfo, @NotNull String pkgName, @NotNull DeviceTestTask deviceTestResult, @NotNull Logger logger) {
         return null;
     }
 
@@ -142,5 +142,13 @@ public class MockDeviceManager extends DeviceManager {
     @Override
     public void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
 
+    }
+
+    private void changeGlobalSetting(DeviceInfo deviceInfo, String property, String val, Logger logger) {
+        logger.info("Invoke changeGlobalSetting success! property {}, val {}, defaultActivity {}", deviceInfo, property, val);
+    }
+
+    private void changeSystemSetting(DeviceInfo deviceInfo, String property, String val, Logger logger) {
+        logger.info("Invoke changeSystemSetting success! property {}, val {}, defaultActivity {}", deviceInfo, property, val);
     }
 }

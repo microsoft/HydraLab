@@ -8,6 +8,7 @@ import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
+import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.SerializeUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,19 +23,23 @@ class ActionExecutorTest extends BaseTest {
 
     @Test
     void doAction() {
-        MockDeviceManager deviceManager = new MockDeviceManager();
+        DeviceManager deviceManager = new MockDeviceManager();
         DeviceInfo deviceInfo = new DeviceInfo();
         JSONObject actionJson = new JSONObject();
         actionJson.put("method", "setProperty");
         actionJson.put("deviceType", "Android");
 
-        DeviceAction action = JSONObject.parseObject(actionJson.toJSONString(), DeviceAction.class);
-        action.getArgs().add("paramA");
-        action.getArgs().add("paramB");
-        actionExecutor.doAction(deviceManager, deviceInfo, baseLogger, action);
+        DeviceAction action1 = JSONObject.parseObject(actionJson.toJSONString(), DeviceAction.class);
+        action1.getArgs().add("paramA");
+        action1.getArgs().add("paramB");
+        actionExecutor.doAction(deviceManager, deviceInfo, baseLogger, action1);
+
+        DeviceAction action2 = new DeviceAction("Android", "changeGlobalSetting");
+        action2.getArgs().add("paramC");
+        action2.getArgs().add("paramD");
         List<DeviceAction> actions = new ArrayList<>();
-        actions.add(action);
-        actions.add(action);
+        actions.add(action1);
+        actions.add(action2);
         actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
 
     }
