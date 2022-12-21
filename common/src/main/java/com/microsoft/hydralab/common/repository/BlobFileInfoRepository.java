@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface BlobFileInfoRepository extends JpaRepository<BlobFileInfo, String> {
-    public List<BlobFileInfo> queryBlobFileInfoByMd5(String MD5);
-    public List<BlobFileInfo> queryBlobFileInfoByFileType(String fileType);
-    public List<BlobFileInfo> queryBlobFileInfoByFileTypeOrderByCreateTimeDesc(String fileType);
+    List<BlobFileInfo> queryBlobFileInfoByMd5(String MD5);
+    List<BlobFileInfo> queryBlobFileInfoByFileType(String fileType);
+    List<BlobFileInfo> queryBlobFileInfoByFileTypeOrderByCreateTimeDesc(String fileType);
 }

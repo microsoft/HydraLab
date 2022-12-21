@@ -75,24 +75,28 @@ deactivate TaskCompletion
     "maxStepCount": "",
     "deviceTestCount": "",
     "testTimeOutSec": "",
-    "deviceSetUpActions":[{
-            "action":"setProperty",
+    "deviceActions":{
+        "setUp":[{
+            "deviceType":"Android",
+            "method":"setProperty",
             "args": ["log.tag.WelcomeScreen","Verbose"]
         },
         {
-            "action":"setProperty",
+            "deviceType":"Android",
+            "method":"setProperty",
             "args": ["log.tag.WelcomeScreen","Verbose"]
         },
         {
-            "action":"setLauncherAsDefault",
+            "deviceType":"Android",
+            "method":"setDefaultLauncher",
             "args": ["com.android.launcher3.DefaultLauncherApp"]
-        }
-    ],
-    "deviceTearDownActions":[{
-            "action":"setProperty",
+        }],
+        "tearDown":[{
+            "deviceType":"Android",
+            "method":"setProperty",
             "args": ["log.tag.WelcomeScreen","-"]
-        }
-    ],
+        }]
+     },
     "testRunArgs": {
         "enableScreenRecord": false,
         "testInterval": 5000,

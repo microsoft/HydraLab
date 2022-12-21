@@ -206,7 +206,7 @@ public class IOSDeviceManager extends DeviceManager {
     }
 
     @Override
-    public boolean setLauncherAsDefault(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
+    public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
         return true;
     }
@@ -224,6 +224,7 @@ public class IOSDeviceManager extends DeviceManager {
         return false;
     }
 
+    @Override
     public void updateAllDeviceInfo() {
         String deviceListJsonStr = IOSUtils.getIOSDeviceListJsonStr(classLogger);
         JSONArray deviceListJson = JSON.parseArray(deviceListJsonStr);

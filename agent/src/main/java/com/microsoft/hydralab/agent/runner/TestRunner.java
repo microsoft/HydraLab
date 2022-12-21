@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.agent.runner;
 
 import cn.hutool.core.lang.Assert;
+import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -23,6 +24,7 @@ public abstract class TestRunner {
     protected final DeviceManager deviceManager;
     protected final TestTaskRunCallback testTaskRunCallback;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
+    protected final ActionExecutor actionExecutor = new ActionExecutor();
 
     public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
         this.deviceManager = deviceManager;
@@ -95,6 +97,11 @@ public abstract class TestRunner {
         if (testTask.isThisForMicrosoftLauncher()) {
             presetForMicrosoftLauncherApp(deviceInfo, testTask, deviceTestTask.getLogger());
         }
+        //execute actions
+        if (testTask.getDeviceActions() != null) {
+            deviceTestTask.getLogger().info("Start executing setUp actions.");
+            actionExecutor.doActions(deviceManager, deviceInfo, deviceTestTask.getLogger(), testTask.getDeviceActions(), DeviceAction.When.SET_UP);
+        }
 
         deviceTestTask.getLogger().info("Start granting all package needed permissions device");
         deviceManager.grantAllTaskNeededPermissions(deviceInfo, testTask, deviceTestTask.getLogger());
@@ -120,6 +127,12 @@ public abstract class TestRunner {
             }
         }
         deviceManager.testDeviceUnset(deviceInfo, deviceTestTask.getLogger());
+        //execute actions
+        if (testTask.getDeviceActions() != null) {
+            deviceTestTask.getLogger().info("Start executing tearDown actions.");
+            actionExecutor.doActions(deviceManager, deviceInfo, deviceTestTask.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+        }
+
         deviceTestTask.getLogger().info("Start Close/finish resource");
         LogUtils.releaseLogger(deviceTestTask.getLogger());
     }
@@ -131,9 +144,9 @@ public abstract class TestRunner {
         deviceManager.setProperty(deviceInfo, "log.tag.WhatsNewDialog", "VERBOSE", reportLogger);
         deviceManager.setProperty(deviceInfo, "log.tag.NoneCheckUpdates", "VERBOSE", reportLogger);
 
-        if (!deviceManager.setLauncherAsDefault(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger)) {
+        if (!deviceManager.setDefaultLauncher(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger)) {
             testTask.switchDefaultActivity();
-            deviceManager.setLauncherAsDefault(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger);
+            deviceManager.setDefaultLauncher(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger);
         }
         reportLogger.info("Finish default launcher, currentDefaultActivity {}", testTask.getCurrentDefaultActivity());
 

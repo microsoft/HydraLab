@@ -355,7 +355,7 @@ public class AndroidDeviceManager extends DeviceManager {
         }
     }
 
-    private void changeGlobalSetting(DeviceInfo deviceInfo, String property, String val, Logger logger) {
+    public void changeGlobalSetting(DeviceInfo deviceInfo, String property, String val, Logger logger) {
         try {
             adbOperateUtil.execOnDevice(deviceInfo, String.format("settings put global %s %s", property, val), new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
@@ -363,7 +363,7 @@ public class AndroidDeviceManager extends DeviceManager {
         }
     }
 
-    private void changeSystemSetting(DeviceInfo deviceInfo, String property, String val, Logger logger) {
+    public void changeSystemSetting(DeviceInfo deviceInfo, String property, String val, Logger logger) {
         try {
             adbOperateUtil.execOnDevice(deviceInfo, String.format("settings put system %s %s", property, val), new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
@@ -436,7 +436,7 @@ public class AndroidDeviceManager extends DeviceManager {
     }
 
     @Override
-    public boolean setLauncherAsDefault(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
+    public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
         try {
             adbOperateUtil.execOnDevice(deviceInfo, String.format("cmd package set-home-activity %s/%s", packageName, defaultActivity), new MultiLineNoCancelLoggingReceiver(logger), logger);
             return true;
