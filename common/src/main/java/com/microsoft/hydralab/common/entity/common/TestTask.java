@@ -79,7 +79,7 @@ public class TestTask {
     @Transient
     private List<DeviceTestTask> deviceTestResults = new ArrayList<>();
     @Transient
-    private List<DeviceAction> deviceActions = new ArrayList<>();
+    private Map<String, List<DeviceAction>> deviceActions = new HashMap<>();
     private String fileSetId;
     @Transient
     private TestFileSet testFileSet;

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 class ActionExecutorTest extends BaseTest {
 
@@ -24,18 +25,17 @@ class ActionExecutorTest extends BaseTest {
         MockDeviceManager deviceManager = new MockDeviceManager();
         DeviceInfo deviceInfo = new DeviceInfo();
         JSONObject actionJson = new JSONObject();
-        actionJson.put("actionType", "setProperty");
-        actionJson.put("actionOrder", 0);
-        actionJson.put("timingToAct", DeviceAction.Timing.SET_UP);
+        actionJson.put("method", "setProperty");
+        actionJson.put("deviceType", "Android");
 
         DeviceAction action = JSONObject.parseObject(actionJson.toJSONString(), DeviceAction.class);
-        action.getActionArgs().add("paramA");
-        action.getActionArgs().add("paramB");
+        action.getArgs().add("paramA");
+        action.getArgs().add("paramB");
         actionExecutor.doAction(deviceManager, deviceInfo, baseLogger, action);
         List<DeviceAction> actions = new ArrayList<>();
         actions.add(action);
         actions.add(action);
-        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, actions, DeviceAction.Timing.SET_UP);
+        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
 
     }
 

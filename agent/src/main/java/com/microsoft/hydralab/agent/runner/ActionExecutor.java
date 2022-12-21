@@ -13,8 +13,8 @@ import org.slf4j.Logger;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,17 +30,14 @@ public class ActionExecutor {
     private Set<String> actionTypes = Set.of("setProperty", "setDefaultLauncher", "backToHome");
 
     public void doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
-                          @NotNull List<DeviceAction> actions, @NotNull String timing) {
-        if (actions.isEmpty()) {
+                          @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
+        if (actions.get(when) == null || actions.get(when).isEmpty()) {
             return;
         }
         //filter todoActions
-        //sort: asc
-        List<DeviceAction> todoActions = actions.stream().filter(deviceAction -> timing.equals(deviceAction.getTimingToAct()))
-                .filter(deviceAction -> actionTypes.contains(deviceAction.getActionType()))
-                .sorted(Comparator.comparingInt(DeviceAction::getActionOrder)).collect(Collectors.toList());
+        List<DeviceAction> todoActions = actions.get(when).stream().filter(deviceAction -> actionTypes.contains(deviceAction.getMethod())).collect(Collectors.toList());
 
-        logger.info("Start to execute actions! Current timing is {}, action size is {}", timing, todoActions.size());
+        logger.info("Start to execute actions! Current timing is {}, action size is {}", when, todoActions.size());
         todoActions.forEach(deviceAction -> doAction(deviceManager, deviceInfo, logger, deviceAction));
         logger.info("Execute actions finished!");
         ThreadUtils.safeSleep(3000);
@@ -49,21 +46,21 @@ public class ActionExecutor {
     public void doAction(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
                          @NotNull DeviceAction deviceAction) {
         try {
-            if (!actionTypes.contains(deviceAction.getActionType())) {
+            if (!actionTypes.contains(deviceAction.getMethod())) {
                 return;
             }
-            logger.info("Start to analysis action type! Current action is {}, order is {}", deviceAction.getActionType(), deviceAction.getActionOrder());
+            logger.info("Start to analysis action type! Current action is {}", deviceAction.getMethod());
             Method method = Arrays.stream(deviceManager.getClass().getMethods())
-                    .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getActionType()))
+                    .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getMethod()))
                     .findFirst().get();
             logger.info("Analysis action type: success");
 
-            logger.info("Start to analysis action args! Current action is {}, order is {}", deviceAction.getActionType(), deviceAction.getActionOrder());
-            List<String> actionArgs = deviceAction.getActionArgs();
+            logger.info("Start to analysis action args! Current action is {}", deviceAction.getMethod());
+            List<String> actionArgs = deviceAction.getArgs();
             Object[] methodArgs = convertArgs(deviceInfo, logger, actionArgs, method.getParameterTypes());
             logger.info("Analysis action args: success");
 
-            logger.info("Start to execute action! Current action is {}, order is {}", deviceAction.getActionType(), deviceAction.getActionOrder());
+            logger.info("Start to execute action! Current action is {}", deviceAction.getMethod());
             method.invoke(deviceManager, methodArgs);
             logger.info("Execute action: success");
 

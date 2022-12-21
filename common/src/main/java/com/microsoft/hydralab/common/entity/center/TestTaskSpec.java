@@ -42,5 +42,5 @@ public class TestTaskSpec {
     public String testRunnerName;
     public String testScope;
     public String testSuiteClass;
-    public List<DeviceAction> deviceActions;
+    public Map<String, List<DeviceAction>> deviceActions;
 }

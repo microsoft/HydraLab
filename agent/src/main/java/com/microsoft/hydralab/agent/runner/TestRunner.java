@@ -99,7 +99,8 @@ public abstract class TestRunner {
         }
         //execute actions
         if (testTask.getDeviceActions() != null) {
-            actionExecutor.doActions(deviceManager, deviceInfo, deviceTestTask.getLogger(), testTask.getDeviceActions(), DeviceAction.Timing.SET_UP);
+            deviceTestTask.getLogger().info("Start executing setUp actions.");
+            actionExecutor.doActions(deviceManager, deviceInfo, deviceTestTask.getLogger(), testTask.getDeviceActions(), DeviceAction.When.SET_UP);
         }
 
         deviceTestTask.getLogger().info("Start granting all package needed permissions device");
@@ -128,7 +129,8 @@ public abstract class TestRunner {
         deviceManager.testDeviceUnset(deviceInfo, deviceTestTask.getLogger());
         //execute actions
         if (testTask.getDeviceActions() != null) {
-            actionExecutor.doActions(deviceManager, deviceInfo, deviceTestTask.getLogger(), testTask.getDeviceActions(), DeviceAction.Timing.TEAR_DOWN);
+            deviceTestTask.getLogger().info("Start executing tearDown actions.");
+            actionExecutor.doActions(deviceManager, deviceInfo, deviceTestTask.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
         }
 
         deviceTestTask.getLogger().info("Start Close/finish resource");

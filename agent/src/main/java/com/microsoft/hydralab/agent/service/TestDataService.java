@@ -23,8 +23,6 @@ public class TestDataService {
     @Resource
     DeviceTestResultRepository deviceTestResultRepository;
     @Resource
-    DeviceActionRepository deviceActionRepository;
-    @Resource
     KeyValueRepository keyValueRepository;
     @Resource
     AttachmentService attachmentService;
@@ -39,12 +37,6 @@ public class TestDataService {
         List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
         if (deviceTestResults.isEmpty()) {
             return;
-        }
-
-        List<DeviceAction> deviceActions = testTask.getDeviceActions();
-        if (deviceActions != null && !deviceActions.isEmpty()) {
-            deviceActions.forEach(deviceAction -> deviceAction.setTestTaskId(testTask.getId()));
-            deviceActionRepository.saveAll(deviceActions);
         }
 
         deviceTestResultRepository.saveAll(deviceTestResults);
