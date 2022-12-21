@@ -12,23 +12,14 @@ import java.util.UUID;
 /**
  * @author zhoule
  */
-@Entity
-@Table(name = "device_action")
 @Data
 public class DeviceAction {
-    @Id
-    @Column(name = "id", nullable = false)
-    private String id = UUID.randomUUID().toString();
-    @Column(name = "test_task_id")
-    private String testTaskId;
-    private String timingToAct;
-    private String actionType;
-    private int actionOrder;
-    @Convert(converter = ActionArgConverter.class)
-    private List<String> actionArgs = new ArrayList<>();
+    private String deviceType;
+    private String method;
+    private List<String> args = new ArrayList<>();
 
 
-    public interface Timing {
+    public interface When {
         String SET_UP = "setUp";
         String TEAR_DOWN = "tearDown";
     }

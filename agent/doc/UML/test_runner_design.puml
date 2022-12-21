@@ -75,28 +75,28 @@ deactivate TaskCompletion
     "maxStepCount": "",
     "deviceTestCount": "",
     "testTimeOutSec": "",
-    "deviceActions":[{
-            "timingToAct":"setUp",
-            "actionOrder":"0",
-            "actionType":"setProperty",
-            "actionArgs": ["log.tag.WelcomeScreen","Verbose"]
-        },
-        {   "timingToAct":"setUp",
-            "actionOrder":"0",
-            "actionType":"setProperty",
-            "actionArgs": ["log.tag.WelcomeScreen","Verbose"]
-        },
-        {   "timingToAct":"setUp",
-            "actionOrder":"1",
-            "actionType":"setDefaultLauncher",
-            "actionArgs": ["com.android.launcher3.DefaultLauncherApp"]
+    "deviceActions":{
+        "setUp":[{
+            "deviceType":"Android",
+            "method":"setProperty",
+            "args": ["log.tag.WelcomeScreen","Verbose"]
         },
         {
-            "timingToAct":"tearDown",
-            "action":"setProperty",
+            "deviceType":"Android",
+            "method":"setProperty",
+            "args": ["log.tag.WelcomeScreen","Verbose"]
+        },
+        {
+            "deviceType":"Android",
+            "method":"setDefaultLauncher",
+            "args": ["com.android.launcher3.DefaultLauncherApp"]
+        }],
+        "tearDown":[{
+            "deviceType":"Android",
+            "method":"setProperty",
             "args": ["log.tag.WelcomeScreen","-"]
-        }
-    ],
+        }]
+     },
     "testRunArgs": {
         "enableScreenRecord": false,
         "testInterval": 5000,

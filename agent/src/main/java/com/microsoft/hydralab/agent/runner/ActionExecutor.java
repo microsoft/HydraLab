@@ -68,10 +68,8 @@ public class ActionExecutor {
             logger.info("Execute action: success");
 
         } catch (InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
             logger.error("Execute action: fail", e);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             logger.error("Convert action arg: fail", e);
         }
     }
@@ -88,6 +86,7 @@ public class ActionExecutor {
             try {
                 methodArgs[i + 1] = parameterTypes[i + 1].cast(actionArgs.get(i));
             } catch (Exception e) {
+                logger.info("Convert directly: failed. Try to convert by JSONObject", actionArgs.get(i));
                 methodArgs[i + 1] = JSONObject.parseObject(actionArgs.get(i), DeviceAction.class);
             }
             logger.error("Convert action arg: success");
