@@ -13,24 +13,22 @@
 
 ![Logo](docs/images/banner-made-easy.png)
 
-- [What is Hydra Lab and what can it do?](#what-is)
+- [What is Hydra Lab?](#what-is)
 - [Get Started](#get-started)
     - [Environment](#environment)
     - [Quick guide on build and run](#quick-start)
     - [For Hydra Lab User](#for-user)
     - [For Contributor](#for-contributor)
 - [Who are using Hydra Lab?](#who-use-it)
-- [Update Notes](#update)
 - [Contribute](#contribute)
 - [Contact Us](#contact)
+- [Links](#links)
 - [Microsoft Give Sponsors](#ms-give)
-- [References](#references)
-- [Trademarks](#trademarks)  
-- [License](#license)
+- [License & Trademarks](#license-trademarks)
 
 
 <span id="what-is"></span>
-## What is Hydra Lab and what can it do?
+## What is Hydra Lab?
 
 Hydra Lab is a framework that can help you easily build a cloud testing platform utilizing the test devices/machines in hand. 
 It enables dev team to quickly build a self-manageable and intelligent cloud testing infrastructure. With the help of Hydra Lab, you can:
@@ -71,7 +69,7 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal and open an Azure blob storage account, and get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string), 
 and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can run the center java with the following command:
 
-Step 1: build and run Hydra Lab center service.
+**Step 1: build and run Hydra Lab center service.**
 
 ```bash
 # In project root, switch to react folder to build the Web front.
@@ -86,7 +84,7 @@ java -jar center/build/libs/center.jar
 # Then visit http://localhost:9886/portal/index.html#/auth to generate a new agent ID and agent secret.
 ```
 
-Step 2: build and run Hydra Lab agent service.
+**Step 2: build and run Hydra Lab agent service.**
 
 ```bash
 # In project root, copy the sample config file and update the YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID, and YOUR_REGISTERED_AGENT_SECRET.
@@ -95,6 +93,8 @@ cp agent/application-sample.yml application.yml
 gradlew :agent:bootJar
 java -jar agent/build/libs/center.jar
 ```
+
+**Technical design overview:**
 
 ![Tech Architecture](docs/images/technical_architecture.png)
 
@@ -121,17 +121,12 @@ It's already powering the UI test automation of the following Microsoft products
 - Microsoft Outlook/Edge (Android/iOS)
 - Microsoft Yammer/Fluent UI Android
 
-<span id="update"></span>
-## Update Notes
-
-[Update Notes](https://github.com/microsoft/HydraLab/wiki/8.-Update-Notes)
-
 <span id="contribute"></span>
 ## Contribute
 
-We are happy to hear your ideas for the future of Hydra Lab. Check the [GitHub Issues](https://github.com/microsoft/Hydra-Lab/issues) and see if others have submitted similar issue. You can upvote existing issue or submit a new suggestion. Remember that all community interactions must abide by the [Code of Conduct](https://github.com/microsoft/Hydra-Lab/blob/main/CODE_OF_CONDUCT.md).
+Your contribution to Hydra Lab will make a difference for the entire test automation ecosystem. Please refer to **[CONTRIBUTING.md](CONTRIBUTING.md)** for contribution instructions.
 
-The Hydra Lab team encourages community feedback and contributions. Thank you for your interest in making Hydra Lab better!
+### Contributor Hero Wall:
 
 <a href="https://github.com/Microsoft/hydralab/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Microsoft/hydralab" />
@@ -144,6 +139,14 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 - [Open an issue](https://github.com/microsoft/HydraLab/issues/new) or submit PRs.
 - Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
 
+<span id="links"></span>
+## Links
+
+- [Hydra Lab Release Notes](https://github.com/microsoft/HydraLab/wiki/Release-Notes)
+- [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
+- [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
+- [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
+
 <span id="ms-give"></span>
 ## Microsoft Give Sponsors
 
@@ -153,19 +156,10 @@ Thank you for your contribution to [Microsoft employee giving program](https://a
 
 ![Microsoft Give](docs/images/Give_WebBanner.png)
 
-<span id="references"></span>
-## References
+<span id="license-trademarks"></span>
+## License & Trademarks
 
-- [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
-- [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
-- [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
-
-<span id="trademarks"></span>
-## Trademarks
+The entire codebase is under [MIT license](https://github.com/microsoft/HydraLab/blob/main/LICENSE).
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft’s Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
 
-<span id="license"></span>
-## License
-
-The entire codebase is under [MIT license](https://github.com/microsoft/HydraLab/blob/main/LICENSE).
