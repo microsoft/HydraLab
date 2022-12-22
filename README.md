@@ -6,58 +6,43 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
+![visitors](https://visitor-badge.glitch.me/badge?page_id=microsoft.hydralab&left_color=gray&right_color=red)
 </div>
 
 ---
 
 ![Logo](docs/images/banner-made-easy.png)
 
-- [What is Hydra Lab and what can it do?](#what-is)
+- [What is Hydra Lab?](#what-is)
 - [Get Started](#get-started)
     - [Environment](#environment)
+    - [Quick guide on build and run](#quick-start)
     - [For Hydra Lab User](#for-user)
     - [For Contributor](#for-contributor)
-- [Update Notes](#update)
+- [Who are using Hydra Lab?](#who-use-it)
 - [Contribute](#contribute)
 - [Contact Us](#contact)
+- [Links](#links)
 - [Microsoft Give Sponsors](#ms-give)
-- [References](#references)
-- [Trademarks](#trademarks)  
-- [License](#license)
+- [License & Trademarks](#license-trademarks)
 
 
 <span id="what-is"></span>
-## What is Hydra Lab and what can it do?
+## What is Hydra Lab?
 
-Hydra Lab is a framework that can help you easily build an intelligent cloud testing platform utilizing the devices in hand.
+Hydra Lab is a framework that can help you easily build a cloud testing platform utilizing the test devices/machines in hand. 
+It enables dev team to quickly build a self-manageable and intelligent cloud testing infrastructure. With the help of Hydra Lab, you can:
 
-Hydra Lab enables dev team to quickly build a self-manageable and intelligent cloud testing infrastructure. With the help of Hydra Lab, you can:
+- Either: Create a new cloud testing network.
+- Or: Onboard your test device to an existing network with a minimized effort.
 
-- Either: Build a new cloud testing network with Hydra Lab released packages.
-- Or: Onboard your test device to an existing network with low-cost and small effort.
-
-Capabilities of Hydra Lab include but not limit to:
-- Espresso test
-- Appium test on different platforms:
-  - Windows
-  - iOS
-  - Android
-  - Browser
-  - Cross platform
-- Smart test with AI
-- Monkey test
-
-Tests have been onboard for many products:
-- Microsoft Phone Link
-- Microsoft Link to Windows
-- Microsoft Launcher
-- Microsoft Outlook
-- Microsoft Edge
-- Microsoft Yammer
+Capabilities of Hydra Lab include:
+- Scalable test device management under the center-agent distributed design; Test task management and test result visualization.
+- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso)
+- Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform
+- Case-free test automation: Monkey test, Smart exploratory test
 
 For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
-
-![Tech Architecture](docs/images/technical_architecture.png)
 
 <span id="get-started"></span>
 ## Get Started
@@ -65,24 +50,53 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 <span id="environment"></span>
 ### Environment
 
-#### Supported platform for Hydra Lab agent:
+**Supported platform for Hydra Lab agent**: Windows, Mac OSX, and Linux (docker).
 
-|Hydra Lab agent|
-|---- |
-| Windows | 
-| Mac OSX  |
+**Supported platform and framework for test devices**:
 
-#### Supported platform and framework for test devices:
+|  | Appium(Java) | Espresso | 
+| ---- |--------------|---- |
+|Android| &#10004;     | &#10004; |
+|iOS| &#10004;     | x | x |
+|Windows| &#10004;     | x | 
+|Web (Browser)| &#10004;     | x | 
 
-|  | Appium | Espresso | 
-| ---- |---- |---- |
-|Android| &#10004; | &#10004; |
-|iOS|&#10004; | x | x |
-|Windows|&#10004; | x | 
-|Web (Browser)|&#10004; | x | 
+**Install required packages**: [Set Up PC Environment](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent#1-set-up-pc-environment)
 
-#### Install required packages
-[Set Up PC Environment](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent#1-set-up-pc-environment)
+<span id="quick-start"></span>
+### Quick guide on build and run
+
+Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal and open an Azure blob storage account, and get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string), 
+and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can run the center java with the following command:
+
+**Step 1: build and run Hydra Lab center service.**
+
+```bash
+# In project root, switch to react folder to build the Web front.
+cd react
+npm ci
+npm run pub
+# Get back to the project root, and build the center runnable Jar
+cd ..
+gradlew :center:bootJar
+# Run it, and then visit http://localhost:9886/portal/index.html#/
+java -jar center/build/libs/center.jar
+# Then visit http://localhost:9886/portal/index.html#/auth to generate a new agent ID and agent secret.
+```
+
+**Step 2: build and run Hydra Lab agent service.**
+
+```bash
+# In project root, copy the sample config file and update the YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID, and YOUR_REGISTERED_AGENT_SECRET.
+cp agent/application-sample.yml application.yml
+# Then build agent jar and run it
+gradlew :agent:bootJar
+java -jar agent/build/libs/center.jar
+```
+
+**Technical design overview:**
+
+![Tech Architecture](docs/images/technical_architecture.png)
 
 <span id="for-user"></span>
 ### For Hydra Lab User:
@@ -98,17 +112,21 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 - [How to Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/5.-How-to-Contribute-to-Hydra-Lab)
 - [The example Hydra Lab network front page hosted by Microsoft MaX team (AAD login required)](https://hydradevicenetwork.azurewebsites.net/portal/index.html#/)
 
-<span id="update"></span>
-## Update Notes
+<span id="who-use-it"></span>
+## Who are using Hydra Lab?
 
-[Update Notes](https://github.com/microsoft/HydraLab/wiki/8.-Update-Notes)
+It's already powering the UI test automation of the following Microsoft products:
+- Microsoft Phone Link (Windows UWP app) and Link to Windows (Android app)
+- Microsoft Launcher (Android)
+- Microsoft Outlook/Edge (Android/iOS)
+- Microsoft Yammer/Fluent UI Android
 
 <span id="contribute"></span>
 ## Contribute
 
-We are happy to hear your ideas for the future of Hydra Lab. Check the [GitHub Issues](https://github.com/microsoft/Hydra-Lab/issues) and see if others have submitted similar issue. You can upvote existing issue or submit a new suggestion. Remember that all community interactions must abide by the [Code of Conduct](https://github.com/microsoft/Hydra-Lab/blob/main/CODE_OF_CONDUCT.md).
+Your contribution to Hydra Lab will make a difference for the entire test automation ecosystem. Please refer to **[CONTRIBUTING.md](CONTRIBUTING.md)** for contribution instructions.
 
-The Hydra Lab team encourages community feedback and contributions. Thank you for your interest in making Hydra Lab better!
+### Contributor Hero Wall:
 
 <a href="https://github.com/Microsoft/hydralab/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Microsoft/hydralab" />
@@ -118,8 +136,16 @@ The Hydra Lab team encourages community feedback and contributions. Thank you fo
 ## Contact Us
 
 Feel free to dive in! If you have questions about Hydra Lab, or you would like to reach out to us about an issue you're having, you can reach us as follows:
-- [Open an issue](https://github.com/microsoft/HydraLab/issues) or submit PRs.
+- [Open an issue](https://github.com/microsoft/HydraLab/issues/new) or submit PRs.
 - Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
+
+<span id="links"></span>
+## Links
+
+- [Hydra Lab Release Notes](https://github.com/microsoft/HydraLab/wiki/Release-Notes)
+- [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
+- [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
+- [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
 
 <span id="ms-give"></span>
 ## Microsoft Give Sponsors
@@ -130,19 +156,10 @@ Thank you for your contribution to [Microsoft employee giving program](https://a
 
 ![Microsoft Give](docs/images/Give_WebBanner.png)
 
-<span id="references"></span>
-## References
+<span id="license-trademarks"></span>
+## License & Trademarks
 
-- [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
-- [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
-- [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
-
-<span id="trademarks"></span>
-## Trademarks
+The entire codebase is under [MIT license](https://github.com/microsoft/HydraLab/blob/main/LICENSE).
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft’s Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
 
-<span id="license"></span>
-## License
-
-The entire codebase is under [MIT license](https://github.com/microsoft/HydraLab/blob/main/LICENSE).
