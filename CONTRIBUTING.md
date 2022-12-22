@@ -1,7 +1,7 @@
 # Contributing to Hydra Lab
 
-The Hydra Lab dev team would love community feedback and contributions. 
-Thank you for your interest in making mobile testing better with Hydra Lab!
+We truly welcome any constructive feedback and community contributions to Hydra Lab.
+Any interest in making testing better with Hydra Lab is much appreciated!
 
 ## Reporting issues and suggesting new features
 
@@ -19,8 +19,8 @@ To learn how to build the code and run tests, follow the instructions in the [RE
 
 ### Git workflow
 
-Calculator uses the [GitHub flow](https://guides.github.com/introduction/flow/) where most
-development happens directly on the `master` branch. The `master` branch should always be in a
+We use the [GitHub flow](https://guides.github.com/introduction/flow/) where most
+development happens directly on the `main` branch. The `main` branch should always be in a
 healthy state which is ready for release.
 
 If your change is complex, please clean up the branch history before submitting a pull request.
@@ -33,8 +33,7 @@ let us know if your pull request needs to be merged as separate commits.
 ## Review Process
 
 After submitting a pull request, members of the Hydra Lab team will review your code. We will assign the request to an appropriate reviewer. Any member of the community may participate in the review, but at least one member of the Hydra Lab team will ultimately approve the request.
-
-Often, multiple iterations will be needed to responding to feedback from reviewers. Try looking at [past pull requests](https://github.com/microsoft/Hydra-Lab/pulls?q=is%3Apr+is%3Aclosed) to see what the experience might be like.
+Try looking at [past pull requests](https://github.com/microsoft/Hydra-Lab/pulls?q=is%3Apr+is%3Aclosed) to see what the experience might be like.
 
 ## Contributor License Agreement
 
