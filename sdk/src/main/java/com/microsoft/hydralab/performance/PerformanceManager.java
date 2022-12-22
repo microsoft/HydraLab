@@ -11,17 +11,17 @@ import java.util.function.Consumer;
  * @date 12/14/2022
  */
 
-public class PerformanceManager implements PerformanceRecorder {
-    List<PerformanceRecorder> recorders = new ArrayList<>();
+public class PerformanceManager implements PerformanceInspector {
+    List<PerformanceInspector> recorders = new ArrayList<>();
 
-    private static <T extends PerformanceRecorder> void notifyEach(List<T> recorders, Consumer<T> consumer) {
+    private static <T extends PerformanceInspector> void notifyEach(List<T> recorders, Consumer<T> consumer) {
         recorders.forEach(recorder -> {
             consumer.accept(recorder);
         });
     }
 
-    public void addRecorder(PerformanceRecorder performanceRecorder) {
-        recorders.add(performanceRecorder);
+    public void addRecorder(PerformanceInspector performanceInspector) {
+        recorders.add(performanceInspector);
     }
 
     @Override

@@ -1,0 +1,83 @@
+@startuml
+'https://plantuml.com/class-diagram'
+
+package "sdk" {
+
+    class PerfMetaData {
+        {static}+int FLAG_MEM
+        {static}+int FLAG_BATTERY
+        -int typeFlag
+        -String appId
+        -String deviceId
+        -String stepName
+        +constructor()
+        +getter()
+        +setter()
+    }
+    interface PerformanceRecorder {
+        void initDevice()
+        void addMetricsData(PerfMetaInfo perfMetaInfo)
+        void analyzeResult()
+    }
+
+    class PerformanceManager {
+        ~List<PerformanceRecorder> recorders
+        +void addRecorder(PerformanceRecorder performanceRecorder)
+        -void notifyEach()
+    }
+
+
+    PerformanceRecorder -left..> PerfMetaData
+    PerformanceRecorder <|---up PerformanceManager
+}
+
+package "common" {
+    abstract class BasePerformanceRecorder {
+        #DeviceInfo deviceInfo
+        #File resultsDir
+        +BasePerformanceRecorder(DeviceInfo deviceInfo, String resultsDir)
+    }
+    
+    class AndroidMemRecorder {
+        - double averageMem
+    }
+
+    PerformanceRecorder  <|---down BasePerformanceRecorder
+    BasePerformanceRecorder <|-- AndroidBatteryRecorder
+    BasePerformanceRecorder <|-- AndroidMemRecorder
+    BasePerformanceRecorder <|-- WindowsBatteryRecorder
+    BasePerformanceRecorder <|-- WindowsMemRecorder
+}
+@enduml
+
+@startuml
+participant AppiumRunner
+participant PerformanceManager
+participant AndroidMemRecorder
+participant AndroidBatteryRecorder
+participant WindowsBatteryRecorder
+participant ThreadParam
+
+activate AppiumRunner
+AppiumRunner -> PerformanceManager : new PerformanceManager()
+activate PerformanceManager
+AppiumRunner -> PerformanceManager : addRecorder
+AppiumRunner -> ThreadParam: init(..., performanceManager)
+activate ThreadParam
+AppiumRunner -> PerformanceManager : initDevice
+PerformanceManager -> AndroidMemRecorder : initDevice
+PerformanceManager -> AndroidBatteryRecorder : initDevice
+PerformanceManager -> WindowsBatteryRecorder : initDevice
+AppiumRunner -> PerformanceManager : addMetricsData
+PerformanceManager -> AndroidMemRecorder : addMetricsData
+PerformanceManager -> AndroidBatteryRecorder : addMetricsData
+PerformanceManager -> WindowsBatteryRecorder : addMetricsData
+AppiumRunner -> PerformanceManager : analyzeResult
+PerformanceManager -> AndroidMemRecorder : analyzeResult
+PerformanceManager -> AndroidBatteryRecorder : analyzeResult
+PerformanceManager -> WindowsBatteryRecorder : analyzeResult
+deactivate PerformanceManager
+AppiumRunner -> ThreadParam: clean
+deactivate ThreadParam
+deactivate AppiumRunner
+@enduml

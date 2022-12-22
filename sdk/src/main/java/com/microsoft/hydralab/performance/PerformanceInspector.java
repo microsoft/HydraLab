@@ -7,7 +7,7 @@ package com.microsoft.hydralab.performance;
  * @date 12/14/2022
  */
 
-public interface PerformanceRecorder {
+public interface PerformanceInspector {
     void initDevice();
 
     void addMetricsData(PerfMetaInfo perfMetaInfo);

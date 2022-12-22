@@ -1,29 +1,29 @@
 package com.microsoft.hydralab.performance;
 
 public class PerfMetaInfo {
-    public static final String TYPE_MEM = "TYPE_MEM";
-    public static final String TYPE_BATTERY = "TYPE_BATTERY";
-    public static final String TYPE_LATENCY = "TYPE_LATENCY";
-    public static final String TYPE_CPU = "TYPE_CPU";
+    public static final int FLAG_MEM = 0x01;
+    public static final int TYPE_BATTERY = 0x02;
+    public static final int TYPE_LATENCY = 0x04;
+    public static final int TYPE_CPU = 0x08;
 
-    String type;
+    int typeFlag;
     String appId;
     String deviceId;
-    String stepName;
+    String name;
 
-    public PerfMetaInfo(String type, String appId, String deviceId, String stepName) {
-        this.type = type;
+    public PerfMetaInfo(int typeFlag, String appId, String deviceId, String name) {
+        this.typeFlag = typeFlag;
         this.appId = appId;
         this.deviceId = deviceId;
-        this.stepName = stepName;
+        this.name = name;
     }
 
-    public String getType() {
-        return type;
+    public int getTypeFlag() {
+        return typeFlag;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTypeFlag(int typeFlag) {
+        this.typeFlag = typeFlag;
     }
 
     public String getAppId() {
@@ -42,21 +42,21 @@ public class PerfMetaInfo {
         this.deviceId = deviceId;
     }
 
-    public String getStepName() {
-        return stepName;
+    public String getName() {
+        return name;
     }
 
-    public void setStepName(String stepName) {
-        this.stepName = stepName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
     public String toString() {
         return "PerfMetaInfo{" +
-                "type='" + type + '\'' +
+                "typeFlag='" + typeFlag + '\'' +
                 ", appId='" + appId + '\'' +
                 ", deviceId='" + deviceId + '\'' +
-                ", stepName='" + stepName + '\'' +
+                ", stepName='" + name + '\'' +
                 '}';
     }
 }

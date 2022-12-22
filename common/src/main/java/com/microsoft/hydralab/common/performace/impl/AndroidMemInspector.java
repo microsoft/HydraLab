@@ -10,9 +10,9 @@ import com.microsoft.hydralab.performance.PerfMetaInfo;
  * @date 12/14/2022
  */
 
-public class AndroidMemRecorder extends BasePerformanceRecorder {
+public class AndroidMemInspector extends BasePerformanceInspector {
 
-    public AndroidMemRecorder(DeviceInfo deviceInfo, String resultsDir) {
+    public AndroidMemInspector(DeviceInfo deviceInfo, String resultsDir) {
         super(deviceInfo, resultsDir);
     }
 

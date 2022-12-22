@@ -10,7 +10,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.common.performace.impl.AndroidMemRecorder;
+import com.microsoft.hydralab.common.performace.impl.AndroidMemInspector;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.performance.PerformanceManager;
@@ -100,7 +100,7 @@ public class AppiumRunner extends TestRunner {
             instrumentationArgs = new HashMap<>();
         }
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-        AndroidMemRecorder recorder1 = new AndroidMemRecorder(deviceInfo, deviceTestTask.getDeviceTestResultFolderUrl());
+        AndroidMemInspector recorder1 = new AndroidMemInspector(deviceInfo, deviceTestTask.getDeviceTestResultFolderUrl());
         PerformanceManager manager = new PerformanceManager();
         //deviceManager.initMana(manager,is..)
         manager.addRecorder(recorder1);
