@@ -5,7 +5,7 @@ Any interest in making testing better with Hydra Lab is much appreciated!
 
 ## Reporting issues and suggesting new features
 
-If Hydra Lab is not working properly, please [create an GitHub Issues](https://github.com/microsoft/HydraLab/issues/new). 
+If Hydra Lab is not working properly, please [create a GitHub Issues](https://github.com/microsoft/HydraLab/issues/new). 
 We are happy to hear your ideas for the future of Hydra Lab. Check the [GitHub Issues](https://github.com/microsoft/HydraLab/issues) and see if others have submitted similar issue. You can upvote existing issue or submit a new suggestion.
 We will regularly look at upvoted items in [issues](https://github.com/microsoft/HydraLab/issues) when we decide what to work on next, and we look forward to hearing your input. Remember that all community interactions must abide by the [Code of Conduct](https://github.com/microsoft/Hydra-Lab/blob/main/CODE_OF_CONDUCT.md).
 
