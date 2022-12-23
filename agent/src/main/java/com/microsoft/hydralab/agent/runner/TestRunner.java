@@ -3,59 +3,138 @@
 package com.microsoft.hydralab.agent.runner;
 
 import cn.hutool.core.lang.Assert;
+import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.common.util.ThreadUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.Date;
 
-@Service
 public abstract class TestRunner {
-    protected Logger log = LoggerFactory.getLogger(DeviceManager.class);
-    @Resource
-    protected DeviceManager deviceManager;
-    @Resource
-    XmlBuilder xmlBuilder;
-    @Resource(name = "TestTaskEngineService")
-    protected TestTaskRunCallback testTaskRunCallback;
+    protected final Logger log = LoggerFactory.getLogger(DeviceManager.class);
+    protected final DeviceManager deviceManager;
+    protected final TestTaskRunCallback testTaskRunCallback;
+    protected final XmlBuilder xmlBuilder = new XmlBuilder();
+    protected final ActionExecutor actionExecutor = new ActionExecutor();
 
-    public abstract void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger);
+    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
+        this.deviceManager = deviceManager;
+        this.testTaskRunCallback = testTaskRunCallback;
+    }
 
+    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) throws Exception {
+        checkTestTaskCancel(testTask);
+        logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
+
+        DeviceTestTask deviceTestTask = buildDeviceTestTask(deviceInfo, testTask, logger);
+        checkTestTaskCancel(testTask);
+
+        setUp(deviceInfo, testTask, deviceTestTask);
+        checkTestTaskCancel(testTask);
+
+        try {
+            run(deviceInfo, testTask, deviceTestTask);
+        } catch (Exception e) {
+            deviceTestTask.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
+            saveErrorSummary(deviceTestTask, e);
+        } finally {
+            tearDown(deviceInfo, testTask, deviceTestTask);
+        }
+    }
+
+    private static void saveErrorSummary(DeviceTestTask deviceTestTask, Exception e) {
+        String errorStr = e.getClass().getName() + ": " + e.getMessage();
+        if (errorStr.length() > 255) {
+            errorStr = errorStr.substring(0, 254);
+        }
+        deviceTestTask.setErrorInProcess(errorStr);
+    }
 
     protected void checkTestTaskCancel(TestTask testTask) {
         Assert.isFalse(testTask.isCanceled(), "Task {} is canceled", testTask.getId());
     }
 
-    public void initDevice(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
+    protected DeviceTestTask buildDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
+        DeviceTestTask deviceTestTask = new DeviceTestTask(deviceInfo.getSerialNum(), deviceInfo.getName(), testTask.getId());
+        File deviceTestResultFolder = new File(testTask.getResourceDir(), deviceInfo.getSerialNum());
+        parentLogger.info("DeviceTestResultFolder {}", deviceTestResultFolder);
+        if (!deviceTestResultFolder.exists()) {
+            if (!deviceTestResultFolder.mkdirs()) {
+                throw new RuntimeException("deviceTestResultFolder.mkdirs() failed: " + deviceTestResultFolder);
+            }
+        }
+
+        deviceTestTask.setDeviceTestResultFolder(deviceTestResultFolder);
+        Logger loggerForDeviceTestTask = createLoggerForDeviceTestTask(deviceTestTask, testTask.getTestSuite(), parentLogger);
+        deviceTestTask.setLogger(loggerForDeviceTestTask);
+        testTask.addTestedDeviceResult(deviceTestTask);
+        return deviceTestTask;
+    }
+
+    protected void setUp(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
         deviceInfo.killAll();
         // this key will be used to recover device status when lost the connection between agent and master
         deviceInfo.addCurrentTask(testTask);
 
         /* set up device */
-        reportLogger.info("Start setup device");
-        deviceManager.testDeviceSetup(deviceInfo, reportLogger);
-        deviceManager.wakeUpDevice(deviceInfo, reportLogger);
-        deviceManager.safeSleep(1000);
+        deviceTestTask.getLogger().info("Start setup device");
+        deviceManager.testDeviceSetup(deviceInfo, deviceTestTask.getLogger());
+        deviceManager.wakeUpDevice(deviceInfo, deviceTestTask.getLogger());
+        ThreadUtils.safeSleep(1000);
         checkTestTaskCancel(testTask);
-        reInstallApp(deviceInfo, testTask, reportLogger);
+        reInstallApp(deviceInfo, testTask, deviceTestTask.getLogger());
+        reInstallTestApp(deviceInfo, testTask, deviceTestTask.getLogger());
 
         if (testTask.isThisForMicrosoftLauncher()) {
-            presetForMicrosoftLauncherApp(deviceInfo, testTask, reportLogger);
+            presetForMicrosoftLauncherApp(deviceInfo, testTask, deviceTestTask.getLogger());
+        }
+        //execute actions
+        if (testTask.getDeviceActions() != null) {
+            deviceTestTask.getLogger().info("Start executing setUp actions.");
+            actionExecutor.doActions(deviceManager, deviceInfo, deviceTestTask.getLogger(), testTask.getDeviceActions(), DeviceAction.When.SET_UP);
         }
 
-        reportLogger.info("Start granting all package needed permissions device");
-        deviceManager.grantAllTaskNeededPermissions(deviceInfo, testTask, reportLogger);
+        deviceTestTask.getLogger().info("Start granting all package needed permissions device");
+        deviceManager.grantAllTaskNeededPermissions(deviceInfo, testTask, deviceTestTask.getLogger());
 
         checkTestTaskCancel(testTask);
-        deviceManager.getScreenShot(deviceInfo, log);
+        deviceManager.getScreenShot(deviceInfo, deviceTestTask.getLogger());
+    }
+
+    protected abstract void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception;
+
+    protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) {
+        try {
+            String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, deviceTestTask);
+            deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+        } catch (Exception e) {
+            deviceTestTask.getLogger().error("Error in buildTestResultXml", e);
+        }
+        if (testTaskRunCallback != null) {
+            try {
+                testTaskRunCallback.onOneDeviceComplete(testTask, deviceInfo, deviceTestTask.getLogger(), deviceTestTask);
+            } catch (Exception e) {
+                deviceTestTask.getLogger().error("Error in onOneDeviceComplete", e);
+            }
+        }
+        deviceManager.testDeviceUnset(deviceInfo, deviceTestTask.getLogger());
+        //execute actions
+        if (testTask.getDeviceActions() != null) {
+            deviceTestTask.getLogger().info("Start executing tearDown actions.");
+            actionExecutor.doActions(deviceManager, deviceInfo, deviceTestTask.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+        }
+
+        deviceTestTask.getLogger().info("Start Close/finish resource");
+        LogUtils.releaseLogger(deviceTestTask.getLogger());
     }
 
     private void presetForMicrosoftLauncherApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) {
@@ -65,52 +144,51 @@ public abstract class TestRunner {
         deviceManager.setProperty(deviceInfo, "log.tag.WhatsNewDialog", "VERBOSE", reportLogger);
         deviceManager.setProperty(deviceInfo, "log.tag.NoneCheckUpdates", "VERBOSE", reportLogger);
 
-        if (!deviceManager.setLauncherAsDefault(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger)) {
+        if (!deviceManager.setDefaultLauncher(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger)) {
             testTask.switchDefaultActivity();
-            deviceManager.setLauncherAsDefault(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger);
+            deviceManager.setDefaultLauncher(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger);
         }
         reportLogger.info("Finish default launcher, currentDefaultActivity {}", testTask.getCurrentDefaultActivity());
 
         deviceManager.backToHome(deviceInfo, reportLogger);
-        deviceManager.safeSleep(3000);
+        ThreadUtils.safeSleep(3000);
     }
 
-    protected void afterTest(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, TestTaskRunCallback testTaskRunCallback, Logger reportLogger) {
-        if (testTaskRunCallback != null) {
-            try {
-                String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, deviceTestTask);
-                deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-            } catch (Exception e) {
-                reportLogger.error("Error in buildTestResultXml", e);
-            }
-            try {
-                testTaskRunCallback.onOneDeviceComplete(testTask, deviceInfo, reportLogger, deviceTestTask);
-            } catch (Exception e) {
-                reportLogger.error("Error in onOneDeviceComplete", e);
-            }
-        }
-        deviceManager.testDeviceUnset(deviceInfo, reportLogger);
-        reportLogger.info("Finally: restore state");
-        /* Close/finish resource */
-        if (reportLogger != null) {
-            reportLogger.info("Start Close/finish resource");
-            LogUtils.releaseLogger(reportLogger);
-        }
-    }
 
-    public void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
-        if (testTask.getRequireReinstall()) {
+    protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
+        if (testTask.getRequireReinstall() || deviceManager instanceof IOSDeviceManager) {
             deviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
-            deviceManager.uninstallApp(deviceInfo, testTask.getTestPkgName(), reportLogger);
-            deviceManager.safeSleep(1000);
+            ThreadUtils.safeSleep(1000);
         } else if (testTask.getRequireClearData()) {
             deviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
         }
         checkTestTaskCancel(testTask);
 
         deviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
-        deviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger);
+    }
 
+    protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
+        if(!shouldInstallTestPackageAsApp()){
+            return;
+        }
+        if (testTask.getTestAppFile() == null) {
+            return;
+        }
+        if (StringUtils.isEmpty(testTask.getTestPkgName())) {
+            return;
+        }
+        if (!testTask.getTestAppFile().exists()) {
+            return;
+        }
+        if (testTask.getRequireReinstall()) {
+            deviceManager.uninstallApp(deviceInfo, testTask.getTestPkgName(), reportLogger);
+        }
+        checkTestTaskCancel(testTask);
+        deviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger);
+    }
+
+    protected boolean shouldInstallTestPackageAsApp() {
+        return false;
     }
 
     private Logger createLoggerForDeviceTestTask(DeviceTestTask deviceTestTask, String loggerNamePrefix, Logger parentLogger) {
@@ -126,17 +204,4 @@ public abstract class TestRunner {
         return reportLogger;
     }
 
-    protected DeviceTestTask initDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger logger) {
-        DeviceTestTask deviceTestTask = new DeviceTestTask(deviceInfo.getSerialNum(), deviceInfo.getName(), testTask.getId());
-        File deviceTestResultFolder = new File(testTask.getResourceDir(), deviceInfo.getSerialNum());
-        logger.info("DeviceTestResultFolder {}", deviceTestResultFolder);
-        if (!deviceTestResultFolder.exists()) {
-            if (!deviceTestResultFolder.mkdirs()) {
-                throw new RuntimeException("deviceTestResultFolder.mkdirs() failed: " + deviceTestResultFolder);
-            }
-        }
-        deviceTestTask.setDeviceTestResultFolder(deviceTestResultFolder);
-        deviceTestTask.setLogger(createLoggerForDeviceTestTask(deviceTestTask, testTask.getTestSuite(), logger));
-        return deviceTestTask;
-    }
 }

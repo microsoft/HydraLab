@@ -4,43 +4,43 @@ package com.microsoft.hydralab.agent.runner.monkey;
 
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
+import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-@Service("appiumMonkeyRunner")
 public class AppiumMonkeyRunner extends AppiumRunner {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
-    private LogCollector logCollector;
-    private ScreenRecorder deviceScreenRecorder;
-    private String pkgName;
-    private File gifFile;
-    private AndroidTestUnit ongoingMonkeyTest;
+
+    public AppiumMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
+        super(deviceManager, testTaskRunCallback);
+    }
+
     @Override
     protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, File deviceTestResultFolder, Logger reportLogger) {
-        pkgName = testTask.getPkgName();
+        String pkgName = testTask.getPkgName();
 
         long recordingStartTimeMillis = System.currentTimeMillis();
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
+        ScreenRecorder deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
 
-        logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestTask, reportLogger);
+        LogCollector logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestTask, reportLogger);
         logCollector.start();
         deviceTestTask.setTotalCount(1);
 
-        ongoingMonkeyTest = new AndroidTestUnit();
+        AndroidTestUnit ongoingMonkeyTest = new AndroidTestUnit();
         ongoingMonkeyTest.setNumtests(deviceTestTask.getTotalCount());
         ongoingMonkeyTest.setStartTimeMillis(System.currentTimeMillis());
         ongoingMonkeyTest.setRelStartTimeInVideo(ongoingMonkeyTest.getStartTimeMillis() - recordingStartTimeMillis);
@@ -54,7 +54,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
 
         deviceTestTask.addNewTimeTag(1 + ". " + ongoingMonkeyTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingMonkeyTest.getTitle());
-        gifFile = new File(deviceTestTask.getDeviceTestResultFolder(), pkgName + ".gif");
+        File gifFile = new File(deviceTestTask.getDeviceTestResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);

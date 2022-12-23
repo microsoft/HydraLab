@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.agent.service;
 
+import com.microsoft.hydralab.agent.config.TestRunnerConfig;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
 import com.microsoft.hydralab.agent.test.BaseTest;
@@ -34,7 +35,7 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForGroupDevice.testFileSet = new TestFileSet();
         taskSpecForGroupDevice.groupDevices = "TestDeviceSerial1,TestDeviceSerial2";
 
-        String beanName = TestTask.TestRunnerMap.get(taskSpecForGroupDevice.runningType);
+        String beanName = TestRunnerConfig.TestRunnerMap.get(taskSpecForGroupDevice.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
         baseLogger.info("Try to get bean by name: " + taskSpecForGroupDevice);
 

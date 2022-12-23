@@ -9,6 +9,7 @@ import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.FlowUtil;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -108,7 +109,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         }
         boolean tag = false;
         // wait 5s to record more info after testing
-        deviceManager.safeSleep(5000);
+        ThreadUtils.safeSleep(5000);
         stopRecordService();
         if (keepAliveThread != null) {
             if (!keepAliveThread.isInterrupted()) {
@@ -118,7 +119,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         String pathOnDevice = "/sdcard/Movies/test_lab/" + fileName;
         String pathOnAgent = baseFolder.getAbsolutePath() + "/" + fileName;
         // wait for screen recording to finish
-        deviceManager.safeSleep(5000);
+        ThreadUtils.safeSleep(5000);
 
         int retryTime = 1;
         while (retryTime < Const.AgentConfig.retry_time) {
@@ -128,7 +129,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
                 videoFile.delete();
             }
             adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
-            deviceManager.safeSleep(5000);
+            ThreadUtils.safeSleep(5000);
 
             long phoneFileSize = adbOperateUtil.getFileLength(deviceInfo, logger, pathOnDevice);
             logger.info("PC file path:{} size:{} , Phone file path {} size {}", pathOnAgent, videoFile.length(), pathOnDevice, phoneFileSize);

@@ -8,6 +8,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import com.microsoft.hydralab.t2c.runner.*;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
@@ -68,7 +69,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(delayMillis);
+                    ThreadUtils.safeSleep(delayMillis);
                     File imageFile = getPairScreenShot(deviceInfo, logger);
                     if (fileAvailableCallback != null) {
                         fileAvailableCallback.onFileReady(imageFile);
@@ -181,7 +182,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
                         appiumServerManager.getEdgeDriver(reportLogger).get(driverInfo.getInitURL());
                     }
                     // Waiting for loading url
-                    safeSleep(5000);
+                    ThreadUtils.safeSleep(5000);
                     driverControllerMap.put(driverInfo.getId(), new EdgeDriverController(
                             appiumServerManager.getWindowsEdgeDriver(reportLogger),
                             appiumServerManager.getEdgeDriver(reportLogger),
