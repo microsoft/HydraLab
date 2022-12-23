@@ -1,4 +1,4 @@
-rootProject.name = 'Hydra-Lab'
+rootProject.name = 'HydraLab'
 include 'common'
 include 'agent'
 include 'center'
