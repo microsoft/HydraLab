@@ -15,6 +15,10 @@ We always look at upvoted items in [GitHub Issues](https://github.com/microsoft/
 
 ### Preparing your development environment
 
+After becoming a HydraLab contributor, clone HydraLab code repo and open it with your IDE, [IntelliJ IDEA](https://www.jetbrains.com/idea/) is recommended here.  
+![img.png](docs/images/guide_screenshot_project_structure.png)
+Select correto-11 JDK in project structure and click apply.  
+Add-ons including JPA Buddy and PlantUML Integration are strongly recommended.  
 To learn how to build the code and run tests, follow the instructions in the [README](https://github.com/microsoft/Hydra-Lab/blob/main/README.md).
 
 ### Git workflow
