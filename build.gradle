@@ -64,7 +64,7 @@ task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
     description = 'Generates an aggregate report from all subprojects'
     dependsOn(subprojects.test)
 
-    def projects = ['center', 'common', 'agent', 'sdk', 'gradle_plugin', 'T2C_Runner']
+    def projects = ['center', 'common', 'agent', 'sdk', 'gradle_plugin', 'runner']
     def jacocoProjects = subprojects.findAll { projects.contains(it.getName()) }
 
     additionalSourceDirs.from = files(jacocoProjects.sourceSets.main.allSource.srcDirs)
