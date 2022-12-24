@@ -14,6 +14,11 @@ We will regularly look at upvoted items in [issues](https://github.com/microsoft
 ### Preparing your development environment
 
 We recommend using [IntelliJ IDEA](https://www.jetbrains.com/idea/) as the Java/SpringBoot project IDE, and community edition would suffice. 
+![img.png](docs/images/guide_screenshot_project_structure.png)
+
+Select correto-11 JDK in project structure and click apply.  
+Add-ons including JPA Buddy and PlantUML Integration are strongly recommended.  
+
 For code design we leverage the [PlantUML](https://plantuml.com/) as UML tools. Therefore, you can install the [PlantUML Integration](https://plugins.jetbrains.com/plugin/7017-plantuml-integration) plugin to preview the design diagrams.
 For instance, you can view agent side code design in folder: [agent/doc/UML](agent/doc/UML).
 
