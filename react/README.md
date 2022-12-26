@@ -1,6 +1,6 @@
 # DeviceManagementPortal
 
-## Get started for dev
+## Quick start for dev environment setup
 
 Config webpack.config.js to use the right server:
 
