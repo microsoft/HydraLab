@@ -2,14 +2,15 @@ package com.microsoft.hydralab.performance;
 
 public class PerfMetaInfo {
     public static final int FLAG_MEM = 0x01;
-    public static final int TYPE_BATTERY = 0x02;
-    public static final int TYPE_LATENCY = 0x04;
-    public static final int TYPE_CPU = 0x08;
+    public static final int FLAG_BATTERY = 0x02;
+    public static final int FLAG_LATENCY = 0x04;
+    public static final int FLAG_CPU = 0x08;
 
     int typeFlag;
     String appId;
     String deviceId;
     String name;
+    String metricsDir;
 
     public PerfMetaInfo(int typeFlag, String appId, String deviceId, String name) {
         this.typeFlag = typeFlag;
@@ -48,6 +49,14 @@ public class PerfMetaInfo {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getMetricsDir() {
+        return metricsDir;
+    }
+
+    public void setMetricsDir(String metricsDir) {
+        this.metricsDir = metricsDir;
     }
 
     @Override

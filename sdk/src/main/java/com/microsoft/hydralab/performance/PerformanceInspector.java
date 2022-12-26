@@ -8,9 +8,9 @@ package com.microsoft.hydralab.performance;
  */
 
 public interface PerformanceInspector {
-    void initDevice();
+    void initDevice(PerfMetaInfo perfMetaInfo);
 
     void addMetricsData(PerfMetaInfo perfMetaInfo);
 
-    void analyzeResult();
+    PerfResult<?> analyzeResult(PerfMetaInfo perfMetaInfo);
 }

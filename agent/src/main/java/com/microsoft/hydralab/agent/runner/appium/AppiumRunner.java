@@ -13,7 +13,8 @@ import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.performace.impl.AndroidMemInspector;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.performance.PerformanceManager;
+import com.microsoft.hydralab.performance.PerfResult;
+import com.microsoft.hydralab.performance.PerformanceExecutor;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -29,6 +30,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -100,16 +102,16 @@ public class AppiumRunner extends TestRunner {
             instrumentationArgs = new HashMap<>();
         }
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-        AndroidMemInspector recorder1 = new AndroidMemInspector(deviceInfo, deviceTestTask.getDeviceTestResultFolderUrl());
-        PerformanceManager manager = new PerformanceManager();
+        AndroidMemInspector inspector1 = new AndroidMemInspector();
+        PerformanceExecutor performanceExecutor = new PerformanceExecutor();
         //deviceManager.initMana(manager,is..)
-        manager.addRecorder(recorder1);
-        manager.initDevice();
-        ThreadParam.init(appiumParam, instrumentationArgs, manager);
+        performanceExecutor.addInspector(null);
+        performanceExecutor.initDevice(null);
+        ThreadParam.init(appiumParam, instrumentationArgs, performanceExecutor);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
         File gifFile = null;
 
-        ThreadParam.getPerformanceManager().addMetricsData(null);
+        ThreadParam.getPerformanceExecutor().addMetricsData(null);
 
 
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
@@ -136,7 +138,7 @@ public class AppiumRunner extends TestRunner {
             checkTestTaskCancel(testTask);
             gifFile = listener.getGifFile();
         }
-        manager.analyzeResult();
+        List<PerfResult<?>> perfResultList = performanceExecutor.analyzeResult(null);
         /** set paths */
         String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();
         deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
