@@ -51,7 +51,7 @@ public class T2CAppiumUtils {
     }
 
     public static void doAction(@NotNull BaseDriverController driver, @NotNull ActionInfo actionInfo, @NotNull Logger logger) {
-        boolean isOption = actionInfo.isOption();
+        boolean isOption = actionInfo.isOptional();
         try {
             chooseActionType(driver, actionInfo, logger);
         } catch (Exception e) {

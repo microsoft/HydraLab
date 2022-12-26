@@ -14,16 +14,16 @@ public class ActionInfo {
 
     private String driverId;
     private Map<String, Object> arguments;
-    private boolean isOption;
+    private boolean isOptional;
 
 
     public ActionInfo(Integer id, @Nullable BaseElementInfo testElement, String actionType, Map<String, Object> arguments,
-                      String driverId, boolean isOption) {
+                      String driverId, boolean isOptional) {
         this.id = id;
         this.testElement = testElement;
         this.actionType = actionType;
         this.driverId = driverId;
-        this.isOption = isOption;
+        this.isOptional = isOptional;
         if (arguments != null) {
             this.arguments = arguments;
         }
@@ -49,8 +49,8 @@ public class ActionInfo {
         return arguments;
     }
 
-    public boolean isOption() {
-        return isOption;
+    public boolean isOptional() {
+        return isOptional;
     }
 }
 

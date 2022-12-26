@@ -78,23 +78,25 @@ public class T2CJsonParser {
             logger.info("Action: " + action.toJSONString());
             String actionType = action.getString("actionType");
             Map<String, Object> arguments = (Map<String, Object>) action.getJSONObject("arguments");
-            boolean isOption = caseJsonObject.containsKey("isOption") ? caseJsonObject.getBoolean("isOption") : false;
+            boolean isOptional = caseJsonObject.containsKey("isOptional") ? caseJsonObject.getBoolean("isOptional") :
+                    caseJsonObject.containsKey("isOption") ? caseJsonObject.getBoolean("isOption") :
+                            false;
 
             if (elementInfo != null && !elementInfo.isEmpty()) {
                 if (driveIdToTypeMap.get(driverId).equals("android")) {
                     androidElement = AndroidElementInfo.getAndroidElementFromJson(elementInfo);
-                    actionInfo = new ActionInfo(id, androidElement, actionType, arguments, driverId, isOption);
+                    actionInfo = new ActionInfo(id, androidElement, actionType, arguments, driverId, isOptional);
                 }
                 if (driveIdToTypeMap.get(driverId).equals("windows")) {
                     windowsElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), WindowsElementInfo.class);
-                    actionInfo = new ActionInfo(id, windowsElement, actionType, arguments, driverId, isOption);
+                    actionInfo = new ActionInfo(id, windowsElement, actionType, arguments, driverId, isOptional);
                 }
                 if (driveIdToTypeMap.get(driverId).equals("browser")) {
                     edgeElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), EdgeElementInfo.class);
-                    actionInfo = new ActionInfo(id, edgeElement, actionType, arguments, driverId, isOption);
+                    actionInfo = new ActionInfo(id, edgeElement, actionType, arguments, driverId, isOptional);
                 }
             }else {
-                actionInfo = new ActionInfo(id, null, actionType, arguments, driverId, isOption);
+                actionInfo = new ActionInfo(id, null, actionType, arguments, driverId, isOptional);
             }
             caseList.add(actionInfo);
             Comparator<ActionInfo> comparator = (o1, o2) -> {
