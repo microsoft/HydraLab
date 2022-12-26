@@ -1,4 +1,4 @@
-# DeviceManagementPortal
+# Hydra Lab Web Portal
 
 ## Quick start for dev environment setup
 
