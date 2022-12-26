@@ -16,6 +16,12 @@ npm ci
 npm run dev
 ```
 
+To build the production Javascript bundle, run the command:
+
+```bash
+npm run pub
+```
+
 ## Dependencies
 
 - lodash: https://lodash.com/, https://www.lodashjs.com/
