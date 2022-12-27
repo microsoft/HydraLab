@@ -105,7 +105,7 @@ Enjoy exploring it! And please refer to this section for more features: [For Hyd
 <span id="for-user"></span>
 ### For Hydra Lab User:
 
-- [Trigger a test task run in the Hydra Lab test service](hhttps://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
+- [Trigger a test task run in the Hydra Lab test service](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
 - [Deploy a test agent service](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
 - [Create an Appium UI Test Automation Project](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
 
