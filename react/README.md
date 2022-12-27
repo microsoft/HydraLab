@@ -1,6 +1,6 @@
-# DeviceManagementPortal
+# Hydra Lab Web Portal
 
-## Get started for dev
+## Quick start for dev environment setup
 
 Config webpack.config.js to use the right server:
 
@@ -14,6 +14,12 @@ Run command:
 # Or you can use npm install if you want to update the lockfile.
 npm ci
 npm run dev
+```
+
+To build the production Javascript bundle, run the command:
+
+```bash
+npm run pub
 ```
 
 ## Dependencies
