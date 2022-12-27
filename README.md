@@ -96,6 +96,8 @@ java -jar agent/build/libs/center.jar
 
 **Step 3: visit http://localhost:9886/portal/index.html#/ and see your connected devices**
 
+Enjoy exploring it! And please refer to this section for more features: [For Hydra Lab User](#for-user)
+
 **Technical design overview:**
 
 ![Tech Architecture](docs/images/technical_architecture.png)
@@ -103,16 +105,14 @@ java -jar agent/build/libs/center.jar
 <span id="for-user"></span>
 ### For Hydra Lab User:
 
-- [Develop and Package a Test Project](https://github.com/microsoft/HydraLab/wiki/1.-Get-Started-%E2%80%94-Develop-and-Package-a-Test-Project)
-- [Run a Test Task in Hydra Lab](https://github.com/microsoft/HydraLab/wiki/2.-Get-Started-%E2%80%94-Run-a-Test-Task-in-Hydra-Lab)
-- [How to Deploy an Agent](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent)
-- [How to Develop Appium Test Project](https://github.com/microsoft/HydraLab/wiki/4.-How-to-Develop-Appium-Test-Project)
+- [Trigger a test task run in the Hydra Lab test service](hhttps://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
+- [Deploy a test agent service](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
+- [Create an Appium UI Test Automation Project](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
 
 <span id="for-contributor"></span>
 ### For Contributor:
 
-- [How to Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/5.-How-to-Contribute-to-Hydra-Lab)
-- [The example Hydra Lab network front page hosted by Microsoft MaX team (AAD login required)](https://hydradevicenetwork.azurewebsites.net/portal/index.html#/)
+- [Contribute to the Hydra Lab GitHub Project](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
 <span id="who-use-it"></span>
 ## Who are using Hydra Lab?
