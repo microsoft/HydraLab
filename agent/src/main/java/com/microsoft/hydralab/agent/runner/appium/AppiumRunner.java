@@ -10,10 +10,8 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -71,7 +69,8 @@ public class AppiumRunner extends TestRunner {
             instrumentationArgs = new HashMap<>();
         }
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-        ThreadParam.init(appiumParam, instrumentationArgs);
+        // TODO link deviceInfo with performanceTestSpec
+        ThreadParam.init(appiumParam, instrumentationArgs, null);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
         File gifFile = null;
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {

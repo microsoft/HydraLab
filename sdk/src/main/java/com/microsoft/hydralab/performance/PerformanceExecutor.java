@@ -23,15 +23,15 @@ public class PerformanceExecutor {
         notifyEach(inspectors, recorder -> recorder.initialize(performanceTestSpec));
     }
 
-    public void addMetricsData(PerformanceTestSpec performanceTestSpec) {
-        notifyEach(inspectors, recorder -> recorder.capturePerformanceMatrix(performanceTestSpec));
+    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec) {
+        notifyEach(inspectors, recorder -> recorder.capturePerformanceMetrics(performanceTestSpec));
     }
 
-    public List<PerfResult<?>> analyzeResult(PerformanceTestSpec performanceTestSpec) {
-        List<PerfResult<?>> perfResultList = new ArrayList<>();
+    public List<PerformanceResult<?>> analyzeResult(PerformanceTestSpec performanceTestSpec) {
+        List<PerformanceResult<?>> performanceResultList = new ArrayList<>();
         for (PerformanceInspector performanceInspector : inspectors) {
-            perfResultList.add(performanceInspector.analyzeResult(performanceTestSpec));
+            performanceResultList.add(performanceInspector.analyzeResult(performanceTestSpec));
         }
-        return perfResultList;
+        return performanceResultList;
     }
 }

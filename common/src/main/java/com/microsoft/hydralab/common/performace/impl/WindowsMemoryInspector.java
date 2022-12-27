@@ -1,7 +1,7 @@
 package com.microsoft.hydralab.common.performace.impl;
 
-import com.microsoft.hydralab.performance.PerfResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
+import com.microsoft.hydralab.performance.PerformanceResult;
 import com.microsoft.hydralab.performance.PerformanceTestSpec;
 
 public class WindowsMemoryInspector implements PerformanceInspector {
@@ -11,12 +11,12 @@ public class WindowsMemoryInspector implements PerformanceInspector {
     }
 
     @Override
-    public void capturePerformanceMatrix(PerformanceTestSpec performanceTestSpec) {
+    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec) {
 
     }
 
     @Override
-    public PerfResult<?> analyzeResult(PerformanceTestSpec performanceTestSpec) {
+    public PerformanceResult<?> analyzeResult(PerformanceTestSpec performanceTestSpec) {
         return null;
     }
 }

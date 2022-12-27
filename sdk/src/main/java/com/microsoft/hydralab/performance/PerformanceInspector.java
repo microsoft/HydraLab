@@ -10,7 +10,7 @@ package com.microsoft.hydralab.performance;
 public interface PerformanceInspector {
     void initialize(PerformanceTestSpec performanceTestSpec);
 
-    void capturePerformanceMatrix(PerformanceTestSpec performanceTestSpec);
+    void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec);
 
-    PerfResult<?> analyzeResult(PerformanceTestSpec performanceTestSpec);
+    PerformanceResult<?> analyzeResult(PerformanceTestSpec performanceTestSpec);
 }

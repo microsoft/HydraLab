@@ -1,6 +1,6 @@
 package com.microsoft.hydralab.performance;
 
-public class PerfResult<T> {
+public class PerformanceResult<T> {
     String category;
 
     /**
