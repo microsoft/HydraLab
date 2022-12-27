@@ -94,7 +94,7 @@ gradlew :agent:bootJar
 java -jar agent/build/libs/center.jar
 ```
 
-**Step 3: visit http://localhost:9886/portal/index.html#/ and see your connected devices**
+**Step 3: visit http://localhost:9886/portal/index.html#/ and view your connected devices**
 
 Enjoy exploring it! And please refer to this section for more features: [For Hydra Lab User](#for-user)
 
