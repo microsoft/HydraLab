@@ -1,14 +1,37 @@
 package com.microsoft.hydralab.common.performace;
 
 import com.microsoft.hydralab.common.performace.impl.AndroidBatteryInspector;
-import com.microsoft.hydralab.common.performace.impl.AndroidMemInspector;
+import com.microsoft.hydralab.common.performace.impl.AndroidMemoryInspector;
+import com.microsoft.hydralab.common.performace.impl.WindowsBatteryInspector;
+import com.microsoft.hydralab.common.performace.impl.WindowsMemoryInspector;
 
 public class PerformanceManager {
     private AndroidBatteryInspector androidBatteryInspector;
-    private AndroidMemInspector androidMemInspector;
+    private AndroidMemoryInspector androidMemoryInspector;
+    private WindowsBatteryInspector windowsBatteryInspector;
+    private WindowsMemoryInspector windowsMemoryInspector;
 
     PerformanceManager() {
         androidBatteryInspector = new AndroidBatteryInspector();
-        androidMemInspector = new AndroidMemInspector();
+        androidMemoryInspector = new AndroidMemoryInspector();
+        windowsBatteryInspector = new WindowsBatteryInspector();
+        windowsMemoryInspector = new WindowsMemoryInspector();
+    }
+
+
+    public AndroidBatteryInspector getAndroidBatteryInspector() {
+        return androidBatteryInspector;
+    }
+
+    public AndroidMemoryInspector getAndroidMemoryInspector() {
+        return androidMemoryInspector;
+    }
+
+    public WindowsBatteryInspector getWindowsBatteryInspector() {
+        return windowsBatteryInspector;
+    }
+
+    public WindowsMemoryInspector getWindowsMemoryInspector() {
+        return windowsMemoryInspector;
     }
 }

@@ -19,18 +19,18 @@ public class PerformanceExecutor {
         inspectors.add(performanceInspector);
     }
 
-    public void initDevice(PerfMetaInfo perfMetaInfo) {
-        notifyEach(inspectors, recorder -> recorder.initDevice(perfMetaInfo));
+    public void initDevice(PerformanceTestSpec performanceTestSpec) {
+        notifyEach(inspectors, recorder -> recorder.initialize(performanceTestSpec));
     }
 
-    public void addMetricsData(PerfMetaInfo perfMetaInfo) {
-        notifyEach(inspectors, recorder -> recorder.addMetricsData(perfMetaInfo));
+    public void addMetricsData(PerformanceTestSpec performanceTestSpec) {
+        notifyEach(inspectors, recorder -> recorder.capturePerformanceMatrix(performanceTestSpec));
     }
 
-    public List<PerfResult<?>> analyzeResult(PerfMetaInfo perfMetaInfo) {
+    public List<PerfResult<?>> analyzeResult(PerformanceTestSpec performanceTestSpec) {
         List<PerfResult<?>> perfResultList = new ArrayList<>();
         for (PerformanceInspector performanceInspector : inspectors) {
-            perfResultList.add(performanceInspector.analyzeResult(perfMetaInfo));
+            perfResultList.add(performanceInspector.analyzeResult(performanceTestSpec));
         }
         return perfResultList;
     }

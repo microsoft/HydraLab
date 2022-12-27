@@ -10,7 +10,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.common.performace.impl.AndroidMemInspector;
+import com.microsoft.hydralab.common.performace.impl.AndroidMemoryInspector;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.performance.PerfResult;
@@ -102,7 +102,7 @@ public class AppiumRunner extends TestRunner {
             instrumentationArgs = new HashMap<>();
         }
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-        AndroidMemInspector inspector1 = new AndroidMemInspector();
+        AndroidMemoryInspector inspector1 = new AndroidMemoryInspector();
         PerformanceExecutor performanceExecutor = new PerformanceExecutor();
         //deviceManager.initMana(manager,is..)
         performanceExecutor.addInspector(null);
