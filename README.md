@@ -11,7 +11,7 @@
 
 ---
 
-![Logo](docs/images/banner-made-easy.png)
+![Logo](docs/images/HydraLabV4_1.gif)
 
 - [What is Hydra Lab?](#what-is)
 - [Get Started](#get-started)
