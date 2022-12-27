@@ -47,7 +47,7 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 <span id="get-started"></span>
 ## Get Started
 
-Please visit our **[Project Wiki](https://github.com/microsoft/HydraLab/wiki)** to understand the dev environment setup procedure: [Contribution Guideline](https://github.com/microsoft/HydraLab/wiki/Contribute-to-Hydra-Lab)
+Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/wiki)** to understand the dev environment setup procedure: [Contribution Guideline](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
 <span id="environment"></span>
 ### Environment
@@ -121,7 +121,7 @@ It's already powering the UI test automation of the following Microsoft products
 - Microsoft Phone Link (Windows UWP app) and Link to Windows (Android app)
 - Microsoft Launcher (Android)
 - Microsoft Outlook/Edge (Android/iOS)
-- Microsoft Yammer/Fluent UI Android
+- Microsoft Fluent UI Android/Yammer Android
 
 <span id="contribute"></span>
 ## Contribute
