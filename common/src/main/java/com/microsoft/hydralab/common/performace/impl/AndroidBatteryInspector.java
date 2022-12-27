@@ -24,7 +24,7 @@ public class AndroidBatteryInspector implements PerformanceInspector {
     }
 
     @Override
-    public PerformanceResult<?> analyzeResult(PerformanceTestSpec performanceTestSpec) {
+    public PerformanceResult<?> analyzeResults(PerformanceTestSpec performanceTestSpec) {
         return null;
     }
 }

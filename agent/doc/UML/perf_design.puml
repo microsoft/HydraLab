@@ -3,7 +3,7 @@
 
 package "sdk" {
 
-    class PerfMetaData {
+    class PerformanceTestSpec {
         {static}+int FLAG_MEM
         {static}+int FLAG_BATTERY
         -int typeFlag
@@ -14,69 +14,84 @@ package "sdk" {
         +getter()
         +setter()
     }
-    interface PerformanceRecorder {
-        void initDevice()
-        void addMetricsData(PerfMetaInfo perfMetaInfo)
-        void analyzeResult()
+    interface PerformanceInspector {
+        void initialize(PerformanceTestSpec performanceTestSpec)
+        void collectPerformanceMetrics(PerformanceTestSpec performanceTestSpec)
+        PerformanceResult<?> analyzeResults(PerformanceTestSpec performanceTestSpec)
     }
 
-    class PerformanceManager {
-        ~List<PerformanceRecorder> recorders
-        +void addRecorder(PerformanceRecorder performanceRecorder)
+    class PerformanceExecutor {
+        ~List<PerformanceRecorder> inspectors
+        +void addInspector(PerformanceInspector performanceRecorder)
         -void notifyEach()
+        +void initDevice(PerformanceTestSpec performanceTestSpec)
+        +void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec)
+        +List<PerformanceResult<?>> analyzeResult(PerformanceTestSpec performanceTestSpec)
+    }
+
+    class PerformanceResult {
+        String category
+        T performanceData
     }
 
 
-    PerformanceRecorder -left..> PerfMetaData
-    PerformanceRecorder <|---up PerformanceManager
+    PerformanceInspector -left..> PerformanceTestSpec
+    PerformanceInspector <---up PerformanceExecutor
+    PerformanceInspector -right..> PerformanceResult
 }
 
 package "common" {
-    abstract class BasePerformanceRecorder {
-        #DeviceInfo deviceInfo
-        #File resultsDir
-        +BasePerformanceRecorder(DeviceInfo deviceInfo, String resultsDir)
+    class PerformanceManager {
+        AndroidBatteryInspector androidBatteryInspector;
+        AndroidMemoryInspector androidMemoryInspector;
+        WindowsBatteryInspector windowsBatteryInspector;
+        WindowsMemoryInspector windowsMemoryInspector;
+        PerformanceExecutor()
     }
-    
-    class AndroidMemRecorder {
-        - double averageMem
-    }
+    PerformanceInspector <|-- AndroidBatteryRecorder
+    PerformanceInspector <|-- AndroidMemoryRecorder
+    PerformanceInspector <|-- WindowsBatteryRecorder
+    PerformanceInspector <|-- WindowsMemoryRecorder
 
-    PerformanceRecorder  <|---down BasePerformanceRecorder
-    BasePerformanceRecorder <|-- AndroidBatteryRecorder
-    BasePerformanceRecorder <|-- AndroidMemRecorder
-    BasePerformanceRecorder <|-- WindowsBatteryRecorder
-    BasePerformanceRecorder <|-- WindowsMemRecorder
+    AndroidBatteryRecorder o-- PerformanceManager
+    AndroidMemoryRecorder o-- PerformanceManager
+    WindowsBatteryRecorder o-- PerformanceManager
+    WindowsMemoryRecorder o-- PerformanceManager
 }
 @enduml
 
 @startuml
-participant AppiumRunner
 participant PerformanceManager
+participant AppiumRunner
+participant PerformanceExecutor
 participant AndroidMemRecorder
 participant AndroidBatteryRecorder
 participant WindowsBatteryRecorder
 participant ThreadParam
 
 activate AppiumRunner
-AppiumRunner -> PerformanceManager : new PerformanceManager()
-activate PerformanceManager
-AppiumRunner -> PerformanceManager : addRecorder
-AppiumRunner -> ThreadParam: init(..., performanceManager)
+AppiumRunner -> PerformanceExecutor : new PerformanceExecutor()
+activate PerformanceExecutor
+AppiumRunner -> PerformanceManager: get...Inspectors
+PerformanceManager -> AppiumRunner: XxxInspector
+AppiumRunner -> PerformanceExecutor : addInspector(XxxInspector)
+AppiumRunner -> ThreadParam: init(..., PerformanceExecutor)
 activate ThreadParam
-AppiumRunner -> PerformanceManager : initDevice
-PerformanceManager -> AndroidMemRecorder : initDevice
-PerformanceManager -> AndroidBatteryRecorder : initDevice
-PerformanceManager -> WindowsBatteryRecorder : initDevice
-AppiumRunner -> PerformanceManager : addMetricsData
-PerformanceManager -> AndroidMemRecorder : addMetricsData
-PerformanceManager -> AndroidBatteryRecorder : addMetricsData
-PerformanceManager -> WindowsBatteryRecorder : addMetricsData
-AppiumRunner -> PerformanceManager : analyzeResult
-PerformanceManager -> AndroidMemRecorder : analyzeResult
-PerformanceManager -> AndroidBatteryRecorder : analyzeResult
-PerformanceManager -> WindowsBatteryRecorder : analyzeResult
-deactivate PerformanceManager
+AppiumRunner -> PerformanceExecutor : initialize(performanceTestSpec1)
+PerformanceExecutor -> AndroidMemRecorder : initialize(performanceTestSpec1)
+PerformanceExecutor -> AndroidBatteryRecorder : initialize(performanceTestSpec1)
+AppiumRunner -> PerformanceExecutor : initialize(performanceTestSpec2)
+PerformanceExecutor -> WindowsBatteryRecorder : initialize(performanceTestSpec2)
+AppiumRunner -> PerformanceExecutor : capturePerformanceMetrics
+PerformanceExecutor -> AndroidMemRecorder : addMetricsData
+PerformanceExecutor -> AndroidBatteryRecorder : addMetricsData
+PerformanceExecutor -> WindowsBatteryRecorder : addMetricsData
+AppiumRunner -> PerformanceExecutor : analyzeResults
+PerformanceExecutor -> AndroidMemRecorder : analyzeResults
+PerformanceExecutor -> AndroidBatteryRecorder : analyzeResults
+PerformanceExecutor -> WindowsBatteryRecorder : analyzeResults
+PerformanceExecutor -> AppiumRunner: List<PerformanceResult<?>>
+deactivate PerformanceExecutor
 AppiumRunner -> ThreadParam: clean
 deactivate ThreadParam
 deactivate AppiumRunner

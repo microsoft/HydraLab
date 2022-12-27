@@ -10,5 +10,5 @@ public class PerformanceResult<T> {
      * <p>
      * battery: CPU	screen	Wake_lock	other	App_usage	Total_usage
      */
-    T perfData;
+    T performanceData;
 }

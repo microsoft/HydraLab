@@ -99,7 +99,8 @@ public class TestTask {
     private String testScope;
     // todo: change this to a more general name for all scopes of ESPRESSO tests.
     private String testSuite;
-
+    private boolean enableMemoryTest;
+    private boolean enableBatteryTest;
 
     public TestTask() {
     }
@@ -143,6 +144,8 @@ public class TestTask {
             testTask.setTestRunnerName(testTaskSpec.testRunnerName);
         }
         testTask.setTestScope(testTaskSpec.testScope);
+        testTask.setEnableMemoryTest(testTaskSpec.enableMemoryTest);
+        testTask.setEnableBatteryTest(testTaskSpec.enableBatteryTest);
 
         return testTask;
     }
@@ -175,7 +178,6 @@ public class TestTask {
         testTaskSpec.teamName = testTask.getTeamName();
         testTaskSpec.testRunnerName = testTask.getTestRunnerName();
         testTaskSpec.testScope = testTask.getTestScope();
-
         return testTaskSpec;
     }
 

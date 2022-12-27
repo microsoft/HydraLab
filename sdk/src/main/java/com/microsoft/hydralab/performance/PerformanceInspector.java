@@ -12,5 +12,5 @@ public interface PerformanceInspector {
 
     void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec);
 
-    PerformanceResult<?> analyzeResult(PerformanceTestSpec performanceTestSpec);
+    PerformanceResult<?> analyzeResults(PerformanceTestSpec performanceTestSpec);
 }

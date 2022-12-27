@@ -30,7 +30,7 @@ public class PerformanceExecutor {
     public List<PerformanceResult<?>> analyzeResult(PerformanceTestSpec performanceTestSpec) {
         List<PerformanceResult<?>> performanceResultList = new ArrayList<>();
         for (PerformanceInspector performanceInspector : inspectors) {
-            performanceResultList.add(performanceInspector.analyzeResult(performanceTestSpec));
+            performanceResultList.add(performanceInspector.analyzeResults(performanceTestSpec));
         }
         return performanceResultList;
     }
