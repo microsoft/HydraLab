@@ -47,6 +47,8 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 <span id="get-started"></span>
 ## Get Started
 
+Please visit our **[Project Wiki](https://github.com/microsoft/HydraLab/wiki)** to understand the dev environment setup procedure: [Contribution Guideline](https://github.com/microsoft/HydraLab/wiki/Contribute-to-Hydra-Lab)
+
 <span id="environment"></span>
 ### Environment
 
@@ -60,8 +62,6 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 |iOS| &#10004;     | x | x |
 |Windows| &#10004;     | x | 
 |Web (Browser)| &#10004;     | x | 
-
-**Install required packages**: [Set Up PC Environment](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent#1-set-up-pc-environment)
 
 <span id="quick-start"></span>
 ### Quick guide on build and run
@@ -93,6 +93,8 @@ cp agent/application-sample.yml application.yml
 gradlew :agent:bootJar
 java -jar agent/build/libs/center.jar
 ```
+
+**Step 3: visit http://localhost:9886/portal/index.html#/ and see your connected devices**
 
 **Technical design overview:**
 
