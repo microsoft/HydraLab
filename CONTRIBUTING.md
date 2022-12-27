@@ -11,7 +11,7 @@ We will regularly look at upvoted items in [issues](https://github.com/microsoft
 
 ## Making changes to the code
 
-Please turn to the wiki to set up your dev environment: [Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/Contribute-to-Hydra-Lab)
+Please turn to the wiki to set up your dev environment: [Contribution Guideline](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
 ### Git workflow
 
