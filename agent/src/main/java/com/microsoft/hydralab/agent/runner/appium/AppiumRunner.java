@@ -9,12 +9,11 @@ import com.microsoft.hydralab.appium.ThreadParam;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.common.performace.impl.AndroidMemoryInspector;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.performance.PerfResult;
-import com.microsoft.hydralab.performance.PerformanceExecutor;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -23,71 +22,41 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.runner.JUnitCore;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
-@Service("appiumRunner")
 public class AppiumRunner extends TestRunner {
 
-    @Override
-    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
-        runAppiumTest(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testTaskRunCallback, logger);
+    public AppiumRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
+        super(deviceManager, testTaskRunCallback);
     }
 
-    public void runAppiumTest(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo,
-                              TestTask testTask,
-                              TestTaskRunCallback testTaskRunCallback, Logger logger) {
-        checkTestTaskCancel(testTask);
-        logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
+    @Override
+    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
 
-        DeviceTestTask deviceTestTask = initDeviceTestTask(deviceInfo, testTask, logger);
-        File deviceTestResultFolder = deviceTestTask.getDeviceTestResultFolder();
-        testTask.addTestedDeviceResult(deviceTestTask);
-        checkTestTaskCancel(testTask);
-
-        Logger reportLogger = null;
-
+        Logger reportLogger = deviceTestTask.getLogger();
         try {
-            reportLogger = deviceTestTask.getLogger();
-            initDevice(deviceInfo, testTask, reportLogger);
-
-            File gifFile = runAndGetGif(appiumJarFile, appiumCommand, deviceInfo, testTask, deviceTestTask, deviceTestResultFolder, reportLogger);
+            File gifFile = runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, deviceTestTask, deviceTestTask.getDeviceTestResultFolder(), reportLogger);
             if (gifFile != null && gifFile.exists() && gifFile.length() > 0) {
                 deviceTestTask.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (reportLogger != null) {
-                reportLogger.info(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
-            } else {
-                logger.info(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
-            }
-            String errorStr = e.getClass().getName() + ": " + e.getMessage();
-            if (errorStr.length() > 255) {
-                errorStr = errorStr.substring(0, 254);
-            }
-            deviceTestTask.setErrorInProcess(errorStr);
         } finally {
             //clear config
             ThreadParam.clean();
-            afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
         }
     }
 
     @Override
-    protected void afterTest(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, TestTaskRunCallback testTaskRunCallback, Logger reportLogger) {
-        quitAppiumDrivers(deviceInfo, testTask, reportLogger);
-        super.afterTest(deviceInfo, testTask, deviceTestTask, testTaskRunCallback, reportLogger);
+    protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) {
+        quitAppiumDrivers(deviceInfo, testTask, deviceTestTask.getLogger());
+        super.tearDown(deviceInfo, testTask, deviceTestTask);
     }
 
     protected void quitAppiumDrivers(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) {
@@ -102,18 +71,9 @@ public class AppiumRunner extends TestRunner {
             instrumentationArgs = new HashMap<>();
         }
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-        AndroidMemoryInspector inspector1 = new AndroidMemoryInspector();
-        PerformanceExecutor performanceExecutor = new PerformanceExecutor();
-        //deviceManager.initMana(manager,is..)
-        performanceExecutor.addInspector(null);
-        performanceExecutor.initDevice(null);
-        ThreadParam.init(appiumParam, instrumentationArgs, performanceExecutor);
+        ThreadParam.init(appiumParam, instrumentationArgs);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
         File gifFile = null;
-
-        ThreadParam.getPerformanceExecutor().addMetricsData(null);
-
-
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");
             Junit5Listener junit5Listener = new Junit5Listener(deviceManager, deviceInfo, deviceTestTask, testTask.getPkgName(), reportLogger);
@@ -138,7 +98,6 @@ public class AppiumRunner extends TestRunner {
             checkTestTaskCancel(testTask);
             gifFile = listener.getGifFile();
         }
-        List<PerfResult<?>> perfResultList = performanceExecutor.analyzeResult(null);
         /** set paths */
         String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();
         deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
@@ -193,16 +152,4 @@ public class AppiumRunner extends TestRunner {
         }
     }
 
-    @Override
-    public void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
-        if (testTask.getRequireReinstall() || deviceManager instanceof IOSDeviceManager) {
-            deviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
-            deviceManager.safeSleep(1000);
-        } else if (testTask.getRequireClearData()) {
-            deviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
-        }
-        checkTestTaskCancel(testTask);
-
-        deviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
-    }
 }

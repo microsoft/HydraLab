@@ -218,7 +218,7 @@ public class T2CAppiumUtils {
         }
     }
 
-    private static void safeSleep(long millis) {
+    public static void safeSleep(long millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {

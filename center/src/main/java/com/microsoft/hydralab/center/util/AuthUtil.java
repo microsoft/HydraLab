@@ -25,22 +25,22 @@ import java.util.Map;
 @Component
 public class AuthUtil {
 
-    @Value("${spring.security.oauth2.client.provider.azure-ad.token-uri}")
+    @Value("${spring.security.oauth2.client.provider.azure-ad.token-uri:}")
     String tokenUrl;
-    @Value("${spring.security.oauth2.client.provider.azure-ad.photo-uri}")
+    @Value("${spring.security.oauth2.client.provider.azure-ad.photo-uri:}")
     String photoUrl;
-    @Value("${spring.security.oauth2.client.provider.azure-ad.authorization-uri}")
+    @Value("${spring.security.oauth2.client.provider.azure-ad.authorization-uri:}")
     String authorizationUri;
 
-    @Value("${spring.security.oauth2.client.registration.azure-client.client-id}")
+    @Value("${spring.security.oauth2.client.registration.azure-client.client-id:}")
     String clientId;
-    @Value("${spring.security.oauth2.client.registration.azure-client.client-secret}")
+    @Value("${spring.security.oauth2.client.registration.azure-client.client-secret:}")
     String clientSecret;
-    @Value("${spring.security.oauth2.client.registration.azure-client.redirect-uri}")
+    @Value("${spring.security.oauth2.client.registration.azure-client.redirect-uri:}")
     String redirectUri;
-    @Value("${spring.security.oauth2.client.registration.azure-client.ignore-uri}")
+    @Value("${spring.security.oauth2.client.registration.azure-client.ignore-uri:}")
     String ignoreUri;
-    @Value("${spring.security.oauth2.client.registration.azure-client.scope}")
+    @Value("${spring.security.oauth2.client.registration.azure-client.scope:}")
     String scope;
 
     Map<String, Boolean> urlMapping = null;

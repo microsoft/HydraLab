@@ -4,6 +4,7 @@ import com.azure.storage.blob.models.BlobProperties;
 import com.microsoft.hydralab.common.entity.center.BlobProperty;
 import com.microsoft.hydralab.common.entity.common.SASData;
 import com.microsoft.hydralab.common.test.BaseTest;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.junit.jupiter.api.*;
 import org.junit.platform.commons.util.StringUtils;
 
@@ -61,11 +62,7 @@ class BlobStorageClientTest extends BaseTest {
         SASData sasdata = blobStorageClient.generateSAS(SASData.SASPermission.Read);
         logger.info("Generate SAS finished: " + sasdata);
         Assertions.assertNotNull(sasdata, "Download File Failed!");
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        ThreadUtils.safeSleep(5000);
         Assertions.assertTrue(blobStorageClient.isSASExpired(sasdata), "Check SAS expired fail!");
     }
 }

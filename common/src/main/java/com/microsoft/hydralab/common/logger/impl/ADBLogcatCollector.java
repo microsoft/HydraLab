@@ -8,6 +8,7 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
@@ -27,7 +28,6 @@ public class ADBLogcatCollector implements LogCollector {
     ADBOperateUtil adbOperateUtil;
     private boolean started;
     private String loggerFilePath;
-    private boolean collectCrash;
 
     public ADBLogcatCollector(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, String pkgName, DeviceTestTask deviceTestResult, Logger logger) {
         this.deviceManager = deviceManager;
@@ -79,14 +79,14 @@ public class ADBLogcatCollector implements LogCollector {
 
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
-                collectCrash = false;
+                boolean collectCrash = false;
                 StringBuilder crashLines = new StringBuilder();
                 while ((line = bufferedReader.readLine()) != null) {
                     if (collectCrash) {
                         if (!line.contains(" E ") && !line.contains(" F ")) {
                             collectCrash = false;
                         } else {
-                            if (line.contains(".launcher.")) {
+                            if (line.contains(pkgName)) {
                                 crashLines.append("<b>").append(line).append("</b>").append("\n");
                             } else {
                                 crashLines.append(line).append("\n");
@@ -115,6 +115,6 @@ public class ADBLogcatCollector implements LogCollector {
 
     @Override
     public boolean isCrashFound() {
-        return collectCrash;
+        return StringUtils.isNotEmpty(deviceTestResult.getCrashStack());
     }
 }

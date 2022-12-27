@@ -6,7 +6,6 @@ import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.DateUtil;
-import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -24,7 +23,6 @@ import java.util.Date;
  * @author zhoule
  * @date 10/31/2022
  */
-@Service
 public class XmlBuilder {
     private static final String TEST_RESULT_FILE_SUFFIX = ".xml";
     private static final String TEST_RESULT_FILE_PREFIX = "hydra_result_";

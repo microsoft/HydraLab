@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.center;
 
+import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import lombok.ToString;
 
@@ -41,6 +42,7 @@ public class TestTaskSpec {
     public String testRunnerName;
     public String testScope;
     public String testSuiteClass;
+    public Map<String, List<DeviceAction>> deviceActions;
     public boolean enableMemoryTest;
     public boolean enableBatteryTest;
 }
