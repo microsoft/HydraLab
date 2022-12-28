@@ -69,11 +69,10 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                 if (!(message.getBody() instanceof AgentMetadata)) {
                     break;
                 }
-                heartbeatResponse(message);
-
                 // Sequence shouldn't be changed, as the adb init will create device related metrics, and should be after configuring commonTags of prometheus.
                 registerAgentMetrics();
                 deviceControlService.deviceManagerInit();
+                heartbeatResponse(message);
                 return;
             case Const.Path.HEARTBEAT:
                 if (!(message.getBody() instanceof AgentMetadata)) {
