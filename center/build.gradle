@@ -58,3 +58,19 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
 }
+
+import org.apache.tools.ant.taskdefs.condition.Os
+String npm = 'npm'
+if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    npm = 'npm.cmd'
+}
+String reactDir = "${projectDir.parentFile.absolutePath}${File.separator}react"
+task installWebFront(type: Exec, group: 'build') {
+    workingDir reactDir
+    commandLine npm, 'ci'
+}
+
+task buildWebFront(type: Exec, group: 'build', dependsOn: installWebFront) {
+    workingDir reactDir
+    commandLine npm, 'run', 'pub'
+}
