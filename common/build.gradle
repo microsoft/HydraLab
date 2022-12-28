@@ -25,7 +25,7 @@ dependencies {
     testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
 
     compile project(":sdk")
-    compile project(":taps_to_cases:T2C_Runner")
+    compile project(":taps_to_cases:runner")
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootWebVersion)
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springBootWebVersion)
     compileOnly 'org.projectlombok:lombok:1.18.20'
