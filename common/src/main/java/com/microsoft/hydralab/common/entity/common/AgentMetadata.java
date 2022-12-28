@@ -10,7 +10,7 @@ import lombok.Data;
  * @date 11/15/2022
  */
 @Data
-public class HeartBeatData {
+public class AgentMetadata {
     SASData blobSAS;
     AgentUser agentUser;
 }
