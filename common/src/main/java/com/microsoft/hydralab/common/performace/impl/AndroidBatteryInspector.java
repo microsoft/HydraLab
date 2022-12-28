@@ -2,11 +2,13 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.performace.impl;
 
+import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
 import com.microsoft.hydralab.performance.PerformanceResult;
 import com.microsoft.hydralab.performance.PerformanceTestSpec;
 
 import java.io.File;
+import java.util.List;
 import java.util.Locale;
 
 public class AndroidBatteryInspector implements PerformanceInspector {
@@ -17,13 +19,15 @@ public class AndroidBatteryInspector implements PerformanceInspector {
     }
 
     @Override
-    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec, File resultFolder) {
-        if (!"android".equals(performanceTestSpec.getDeviceId().toLowerCase(Locale.ROOT))) return;
+    public PerformanceInspectionResult capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec, File resultFolder) {
+        if ((performanceTestSpec.getTypeFlag() & PerformanceTestSpec.FLAG_BATTERY) == 0
+                || !"android".equals(performanceTestSpec.getDeviceId().toLowerCase(Locale.ROOT))) return null;
         // else capture performance metrics
+        return null;
     }
 
     @Override
-    public PerformanceResult<?> analyzeResults(File resultFolder) {
+    public PerformanceResult<?> analyzeResults(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
 }

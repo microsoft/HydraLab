@@ -3,16 +3,12 @@
 package com.microsoft.hydralab.performance;
 
 import java.io.File;
-
-/**
- * @author zhoule
- * @date 12/14/2022
- */
+import java.util.List;
 
 public interface PerformanceInspector {
     void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder);
 
-    void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec, File resultFolder);
+    PerformanceInspectionResult capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec, File resultFolder);
 
-    PerformanceResult<?> analyzeResults(File resultFolder);
+    PerformanceResult<?> analyzeResults(List<PerformanceInspectionResult> performanceInspectionResultList);
 }

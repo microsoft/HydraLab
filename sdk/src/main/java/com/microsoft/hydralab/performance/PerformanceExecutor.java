@@ -13,7 +13,8 @@ import java.util.function.Consumer;
 
 public class PerformanceExecutor {
     List<PerformanceInspector> inspectors = new ArrayList<>();
-    List<ScheduledFuture<?>> timerList = new ArrayList<>();
+    List<ScheduledFuture<?>> capturePerformanceTimerList = new ArrayList<>();
+    List<PerformanceInspectionResult> performanceInspectionResultList = new ArrayList<>();
     File resultFolder;
     static final ScheduledExecutorService timerExecutor = Executors.newScheduledThreadPool(20 /* corePoolSize */);
 
@@ -46,16 +47,24 @@ public class PerformanceExecutor {
         }, interval, TimeUnit.SECONDS);
     }
 
-    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec) {
-        notifyEach(inspectors, recorder -> recorder.capturePerformanceMetrics(performanceTestSpec, resultFolder));
+    public List<PerformanceInspectionResult> capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec) {
+        List<PerformanceInspectionResult> tempInspectionResultList = new ArrayList<>();
+        for (PerformanceInspector performanceInspector : inspectors) {
+            PerformanceInspectionResult result = performanceInspector.capturePerformanceMetrics(performanceTestSpec, resultFolder);
+            if (result != null) {
+                tempInspectionResultList.add(result);
+            }
+        }
+        performanceInspectionResultList.addAll(tempInspectionResultList);
+        return tempInspectionResultList;
     }
 
     public List<PerformanceResult<?>> analyzeResult() {
         List<PerformanceResult<?>> performanceResultList = new ArrayList<>();
         for (PerformanceInspector performanceInspector : inspectors) {
-            performanceResultList.add(performanceInspector.analyzeResults(resultFolder));
+            performanceResultList.add(performanceInspector.analyzeResults(performanceInspectionResultList));
         }
-        for (ScheduledFuture<?> timer : timerList) {
+        for (ScheduledFuture<?> timer : capturePerformanceTimerList) {
             timer.cancel(true);
         }
         return performanceResultList;
