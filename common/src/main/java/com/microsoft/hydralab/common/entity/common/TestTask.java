@@ -6,6 +6,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.util.DateUtil;
+import com.microsoft.hydralab.performance.PerformanceTestSpec;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -101,6 +102,8 @@ public class TestTask {
     private String testSuite;
     private boolean enableMemoryTest;
     private boolean enableBatteryTest;
+    private long performanceInterval = -1;
+    private List<PerformanceTestSpec> performanceTestSpecList = new ArrayList<>();
 
     public TestTask() {
     }

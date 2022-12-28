@@ -12,6 +12,9 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.performance.PerformanceExecutor;
+import com.microsoft.hydralab.performance.PerformanceResult;
+import com.microsoft.hydralab.performance.PerformanceTestSpec;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -26,6 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -69,8 +73,23 @@ public class AppiumRunner extends TestRunner {
             instrumentationArgs = new HashMap<>();
         }
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-        // TODO link deviceInfo with performanceTestSpec
-        ThreadParam.init(appiumParam, instrumentationArgs, null);
+
+        PerformanceExecutor performanceExecutor = new PerformanceExecutor(deviceTestTask.getDeviceTestResultFolder());
+        if (testTask.isEnableBatteryTest()) {
+            performanceExecutor.addInspector(deviceManager.getPerformanceManager().getAndroidBatteryInspector());
+            performanceExecutor.addInspector(deviceManager.getPerformanceManager().getWindowsBatteryInspector());
+        }
+        if (testTask.isEnableMemoryTest()) {
+            performanceExecutor.addInspector(deviceManager.getPerformanceManager().getAndroidMemoryInspector());
+            performanceExecutor.addInspector(deviceManager.getPerformanceManager().getWindowsMemoryInspector());
+        }
+        ThreadParam.init(appiumParam, instrumentationArgs, performanceExecutor);
+        if (testTask.getPerformanceInterval() > 0) {
+            for (PerformanceTestSpec performanceTestSpec : testTask.getPerformanceTestSpecList()) {
+                performanceExecutor.startCapturePerformanceTimer(performanceTestSpec, testTask.getPerformanceInterval());
+            }
+        }
+
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
         File gifFile = null;
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
@@ -100,6 +119,8 @@ public class AppiumRunner extends TestRunner {
         /** set paths */
         String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();
         deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+
+        List<PerformanceResult<?>> performanceResults = performanceExecutor.analyzeResult();
         return gifFile;
     }
 

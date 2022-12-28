@@ -48,7 +48,9 @@ public class EspressoRunner extends TestRunner {
             reportLogger.info("Start instrumenting the test");
             checkTestTaskCancel(testTask);
             listener.startRecording(testTask.getTimeOutSecond());
-            String result = startInstrument(deviceInfo, testTask.getTestScope(), testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(), reportLogger, instrumentationResultParser, testTask.getTimeOutSecond(), testTask.getInstrumentationArgs());
+            String result = startInstrument(deviceInfo, testTask.getTestScope(), testTask.getTestSuite(),
+                    testTask.getTestPkgName(), testTask.getTestRunnerName(), reportLogger, instrumentationResultParser,
+                    testTask.getTimeOutSecond(), testTask.getInstrumentationArgs());
             if (Const.TaskResult.error_device_offline.equals(result)) {
                 testTaskRunCallback.onDeviceOffline(testTask);
                 return;

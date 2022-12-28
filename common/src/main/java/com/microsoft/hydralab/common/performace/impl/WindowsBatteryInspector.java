@@ -4,20 +4,21 @@ import com.microsoft.hydralab.performance.PerformanceInspector;
 import com.microsoft.hydralab.performance.PerformanceResult;
 import com.microsoft.hydralab.performance.PerformanceTestSpec;
 
-public class WindowsBatteryInspector implements PerformanceInspector {
+import java.io.File;
 
+public class WindowsBatteryInspector implements PerformanceInspector {
     @Override
-    public void initialize(PerformanceTestSpec performanceTestSpec) {
+    public void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder) {
         
     }
 
     @Override
-    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec) {
+    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec, File resultFolder) {
 
     }
 
     @Override
-    public PerformanceResult<?> analyzeResults(PerformanceTestSpec performanceTestSpec) {
+    public PerformanceResult<?> analyzeResults(File resultFolder) {
         return null;
     }
 }

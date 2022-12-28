@@ -6,25 +6,22 @@ import com.microsoft.hydralab.performance.PerformanceInspector;
 import com.microsoft.hydralab.performance.PerformanceResult;
 import com.microsoft.hydralab.performance.PerformanceTestSpec;
 
-/**
- * @author zhoule
- * @date 12/14/2022
- */
+import java.io.File;
 
 public class AndroidMemoryInspector implements PerformanceInspector {
 
     @Override
-    public void initialize(PerformanceTestSpec performanceTestSpec) {
+    public void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder) {
 
     }
 
     @Override
-    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec) {
+    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec, File resultFolder) {
 
     }
 
     @Override
-    public PerformanceResult<?> analyzeResults(PerformanceTestSpec performanceTestSpec) {
+    public PerformanceResult<?> analyzeResults(File resultFolder) {
         return null;
     }
 }

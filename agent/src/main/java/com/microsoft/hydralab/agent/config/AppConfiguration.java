@@ -19,6 +19,7 @@ import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
+import com.microsoft.hydralab.common.performace.PerformanceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
@@ -105,7 +106,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceManager initDeviceManager(BlobStorageClient deviceLabBlobClient, ADBOperateUtil adbOperateUtil, AppiumServerManager appiumServerManager) {
+    public DeviceManager initDeviceManager(BlobStorageClient deviceLabBlobClient, ADBOperateUtil adbOperateUtil, AppiumServerManager appiumServerManager, PerformanceManager performanceManager) {
 
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
@@ -144,6 +145,7 @@ public class AppConfiguration {
         appiumServerManager.setWorkspacePath(appOptions.getLocation());
 
         deviceManager.setAppiumServerManager(appiumServerManager);
+        deviceManager.setPerformanceManager(performanceManager);
         return deviceManager;
     }
 

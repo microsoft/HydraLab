@@ -6,25 +6,24 @@ import com.microsoft.hydralab.performance.PerformanceInspector;
 import com.microsoft.hydralab.performance.PerformanceResult;
 import com.microsoft.hydralab.performance.PerformanceTestSpec;
 
-/**
- * @author zhoule
- * @date 12/15/2022
- */
+import java.io.File;
+import java.util.Locale;
 
 public class AndroidBatteryInspector implements PerformanceInspector {
 
     @Override
-    public void initialize(PerformanceTestSpec performanceTestSpec) {
+    public void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder) {
 
     }
 
     @Override
-    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec) {
-
+    public void capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec, File resultFolder) {
+        if (!"android".equals(performanceTestSpec.getDeviceId().toLowerCase(Locale.ROOT))) return;
+        // else capture performance metrics
     }
 
     @Override
-    public PerformanceResult<?> analyzeResults(PerformanceTestSpec performanceTestSpec) {
+    public PerformanceResult<?> analyzeResults(File resultFolder) {
         return null;
     }
 }

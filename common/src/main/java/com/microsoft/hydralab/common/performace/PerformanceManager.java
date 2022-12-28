@@ -4,7 +4,9 @@ import com.microsoft.hydralab.common.performace.impl.AndroidBatteryInspector;
 import com.microsoft.hydralab.common.performace.impl.AndroidMemoryInspector;
 import com.microsoft.hydralab.common.performace.impl.WindowsBatteryInspector;
 import com.microsoft.hydralab.common.performace.impl.WindowsMemoryInspector;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PerformanceManager {
     private AndroidBatteryInspector androidBatteryInspector;
     private AndroidMemoryInspector androidMemoryInspector;

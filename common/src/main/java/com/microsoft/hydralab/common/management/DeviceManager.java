@@ -9,6 +9,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.performace.PerformanceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -26,7 +27,9 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.android.ddmlib.IDevice.DeviceState;
@@ -45,6 +48,7 @@ public abstract class DeviceManager {
     protected String deviceStoragePath;
 
     protected AppiumServerManager appiumServerManager;
+    protected PerformanceManager performanceManager;
 
     public static MobileDeviceState mobileDeviceStateMapping(DeviceState adbState) {
         if (adbState == null) {
@@ -71,6 +75,13 @@ public abstract class DeviceManager {
         this.appiumServerManager = appiumServerManager;
     }
 
+    public PerformanceManager getPerformanceManager() {
+        return performanceManager;
+    }
+
+    public void setPerformanceManager(PerformanceManager performanceManager) {
+        this.performanceManager = performanceManager;
+    }
 
     public BlobStorageClient getBlobStorageClient() {
         return blobStorageClient;
