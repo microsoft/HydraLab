@@ -32,11 +32,12 @@ public class PerformanceExecutor {
         inspectors.add(performanceInspector);
     }
 
-    public void initDevice(PerformanceTestSpec performanceTestSpec) {
+    public void initialize(PerformanceTestSpec performanceTestSpec) {
         notifyEach(inspectors, recorder -> recorder.initialize(performanceTestSpec, resultFolder));
     }
 
     public void startCapturePerformanceTimer(PerformanceTestSpec performanceTestSpec, long interval) {
+        initialize(performanceTestSpec);
         ScheduledFuture<?> scheduledFuture = timerExecutor.schedule(new Runnable() {
             @Override
             public void run() {

@@ -16,8 +16,8 @@ public class PerformanceTest {
                 PerformanceTestSpec.FLAG_MEM | PerformanceTestSpec.FLAG_BATTERY,
                 "Microsoft.YourPhone_8wekyb3d8bbwe",
                 "Windows", "Initialize");
-        performanceExecutor.initDevice(androidPerfSpec);
-        performanceExecutor.initDevice(windowsPerfSpec);
+        performanceExecutor.initialize(androidPerfSpec);
+        performanceExecutor.initialize(windowsPerfSpec);
 
         //testing...
         System.out.println("Start LTW...");
