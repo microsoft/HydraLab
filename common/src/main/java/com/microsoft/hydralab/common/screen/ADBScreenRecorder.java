@@ -6,6 +6,7 @@ import cn.hutool.core.thread.ThreadUtil;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.DateUtil;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
@@ -59,7 +60,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
         recordingThread = new Thread(() -> {
             try {
                 if (preSleepSeconds > 0) {
-                    Thread.sleep(preSleepSeconds * 1000L);
+                    ThreadUtils.safeSleep(preSleepSeconds * 1000L);
                 }
                 int timeSpan = 180;
                 if (maxTimeInSecond < timeSpan) {
@@ -115,7 +116,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
                     list.forEach(File::delete);
                 }
 
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 logger.warn("Exception from recordingThread {} {}", e.getClass().getName(), e.getMessage());
             } finally {
                 if (recordingProcess != null) {

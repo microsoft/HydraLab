@@ -7,6 +7,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -74,7 +75,7 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
         }
         try {
             // wait 5s to record more info after testing
-            deviceManager.safeSleep(5000);
+            ThreadUtils.safeSleep(5000);
             CLASS_LOGGER.info("Stopping recording");
             synchronized (this) {
                 iosDriver.stopRecordingScreen();

@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.agent.service;
 
+import com.microsoft.hydralab.agent.config.TestRunnerConfig;
 import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
@@ -48,15 +49,13 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     public TestTask runTestTask(TestTaskSpec testTaskSpec) {
         updateTaskSpecWithDefaultValues(testTaskSpec);
         log.info("TestTaskSpec: {}", testTaskSpec);
+        TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
+        setupTestDir(testTask);
 
-        String beanName = TestTask.TestRunnerMap.get(testTaskSpec.runningType);
+        String beanName = TestRunnerConfig.TestRunnerMap.get(testTaskSpec.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
 
         Set<DeviceInfo> chosenDevices = chooseDevices(testTaskSpec, runner);
-
-        TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
-
-        setupTestDir(testTask);
 
         onTaskStart(testTask);
         DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices, new DeviceTaskControlExecutor.DeviceTask() {
