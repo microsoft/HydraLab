@@ -13,19 +13,7 @@
 
 ![HydraLabFeaturesPreview](docs/images/HydraLabFeaturesPreview.gif)
 
-- [What is Hydra Lab?](#what-is)
-- [Get Started](#get-started)
-    - [Environment](#environment)
-    - [Quick guide on build and run](#quick-start)
-    - [For Hydra Lab User](#for-user)
-    - [For Contributor](#for-contributor)
-- [Who are using Hydra Lab?](#who-use-it)
-- [Contribute](#contribute)
-- [Contact Us](#contact)
-- [Links](#links)
-- [Microsoft Give Sponsors](#ms-give)
-- [License & Trademarks](#license-trademarks)
-
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [License & Trademarks](#license-trademarks)
 
 <span id="what-is"></span>
 ## What is Hydra Lab?
