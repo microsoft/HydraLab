@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
 package com.microsoft.hydralab.common.performace.impl;
 
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
@@ -10,11 +8,10 @@ import com.microsoft.hydralab.performance.PerformanceTestSpec;
 import java.io.File;
 import java.util.List;
 
-public class AndroidMemoryInspector implements PerformanceInspector {
-
+public class AndroidMemoryInfoInspector implements PerformanceInspector {
     @Override
     public void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder) {
-
+        
     }
 
     @Override
@@ -26,5 +23,4 @@ public class AndroidMemoryInspector implements PerformanceInspector {
     public PerformanceResult<?> parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
-
 }

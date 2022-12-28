@@ -1,29 +1,32 @@
 package com.microsoft.hydralab.performance;
 
-public class PerformanceTestSpec {
-    public static final int FLAG_MEM = 0x01;
-    public static final int FLAG_BATTERY = 0x02;
-    public static final int FLAG_LATENCY = 0x04;
-    public static final int FLAG_CPU = 0x08;
+import java.util.List;
 
-    int typeFlag;
+public class PerformanceTestSpec {
+    public static final String TYPE_ANDROID_MEMORY_DUMP = "AndroidMemoryDump";
+    public static final String TYPE_ANDROID_MEMORY_INFO = "AndroidMemoryInfo";
+    public static final String TYPE_ANDROID_BATTERY_INFO = "AndroidBatteryInfo";
+    public static final String TYPE_WIN_BATTERY = "WindowsBattery";
+    public static final String TYPE_WIN_MEMORY = "WindowsMemory";
+
+    List<String> typeSpecList;
     String appId;
     String deviceId;
     String name;
 
-    public PerformanceTestSpec(int typeFlag, String appId, String deviceId, String name) {
-        this.typeFlag = typeFlag;
+    public PerformanceTestSpec(List<String> typeSpecList, String appId, String deviceId, String name) {
+        this.typeSpecList = typeSpecList;
         this.appId = appId;
         this.deviceId = deviceId;
         this.name = name;
     }
 
-    public int getTypeFlag() {
-        return typeFlag;
+    public List<String> getTypeSpecList() {
+        return typeSpecList;
     }
 
-    public void setTypeFlag(int typeFlag) {
-        this.typeFlag = typeFlag;
+    public void setTypeSpecList(List<String> typeSpecList) {
+        this.typeSpecList = typeSpecList;
     }
 
     public String getAppId() {
@@ -48,15 +51,5 @@ public class PerformanceTestSpec {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return "PerfMetaInfo{" +
-                "typeFlag='" + typeFlag + '\'' +
-                ", appId='" + appId + '\'' +
-                ", deviceId='" + deviceId + '\'' +
-                ", stepName='" + name + '\'' +
-                '}';
     }
 }

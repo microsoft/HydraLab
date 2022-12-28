@@ -10,7 +10,7 @@ import com.microsoft.hydralab.performance.PerformanceTestSpec;
 import java.io.File;
 import java.util.List;
 
-public class AndroidBatteryInspector implements PerformanceInspector {
+public class AndroidMemoryDumpInspector implements PerformanceInspector {
 
     @Override
     public void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder) {
@@ -19,9 +19,6 @@ public class AndroidBatteryInspector implements PerformanceInspector {
 
     @Override
     public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec, File resultFolder) {
-        if (!performanceTestSpec.getTypeSpecList().contains(PerformanceTestSpec.TYPE_ANDROID_BATTERY_INFO)) return null;
-
-        // else capture performance metrics
         return null;
     }
 
@@ -29,4 +26,5 @@ public class AndroidBatteryInspector implements PerformanceInspector {
     public PerformanceResult<?> parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
+
 }

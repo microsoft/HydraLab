@@ -12,7 +12,9 @@ import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.performace.PerformanceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -29,14 +31,15 @@ public class T2CRunner extends AppiumRunner {
     String agentName;
     private int currentIndex = 0;
 
-    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName) {
-        super(deviceManager, testTaskRunCallback);
+    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName, PerformanceManager performanceManager) {
+        super(deviceManager, testTaskRunCallback, performanceManager);
         this.agentName = agentName;
     }
 
     @Override
     protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, DeviceInfo deviceInfo, TestTask testTask,
-                                DeviceTestTask deviceTestTask, File deviceTestResultFolder, Logger reportLogger) {
+                                DeviceTestTask deviceTestTask, File deviceTestResultFolder,
+                                PerformanceInspectionService performanceInspectionService, Logger reportLogger) {
         pkgName = testTask.getPkgName();
 
         // Test start

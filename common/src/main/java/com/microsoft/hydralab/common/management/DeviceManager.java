@@ -9,7 +9,6 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.performace.PerformanceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -48,7 +47,6 @@ public abstract class DeviceManager {
     protected String deviceStoragePath;
 
     protected AppiumServerManager appiumServerManager;
-    protected PerformanceManager performanceManager;
 
     public static MobileDeviceState mobileDeviceStateMapping(DeviceState adbState) {
         if (adbState == null) {
@@ -73,14 +71,6 @@ public abstract class DeviceManager {
 
     public void setAppiumServerManager(AppiumServerManager appiumServerManager) {
         this.appiumServerManager = appiumServerManager;
-    }
-
-    public PerformanceManager getPerformanceManager() {
-        return performanceManager;
-    }
-
-    public void setPerformanceManager(PerformanceManager performanceManager) {
-        this.performanceManager = performanceManager;
     }
 
     public BlobStorageClient getBlobStorageClient() {

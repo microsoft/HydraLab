@@ -11,15 +11,15 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class PerformanceExecutor {
+public class PerformanceInspectionService {
     List<PerformanceInspector> inspectors = new ArrayList<>();
-    List<ScheduledFuture<?>> capturePerformanceTimerList = new ArrayList<>();
+    List<ScheduledFuture<?>> inspectPerformanceTimerList = new ArrayList<>();
     List<PerformanceInspectionResult> performanceInspectionResultList = new ArrayList<>();
     File resultFolder;
     static final ScheduledExecutorService timerExecutor = Executors.newScheduledThreadPool(20 /* corePoolSize */);
 
 
-    public PerformanceExecutor(File resultFolder) {
+    public PerformanceInspectionService(File resultFolder) {
         this.resultFolder = resultFolder;
     }
 
@@ -64,7 +64,7 @@ public class PerformanceExecutor {
         for (PerformanceInspector performanceInspector : inspectors) {
             performanceResultList.add(performanceInspector.parse(performanceInspectionResultList));
         }
-        for (ScheduledFuture<?> timer : capturePerformanceTimerList) {
+        for (ScheduledFuture<?> timer : inspectPerformanceTimerList) {
             timer.cancel(true);
         }
         return performanceResultList;

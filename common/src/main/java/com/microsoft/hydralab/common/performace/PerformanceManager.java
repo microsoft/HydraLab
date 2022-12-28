@@ -1,32 +1,34 @@
 package com.microsoft.hydralab.common.performace;
 
-import com.microsoft.hydralab.common.performace.impl.AndroidBatteryInspector;
-import com.microsoft.hydralab.common.performace.impl.AndroidMemoryInspector;
-import com.microsoft.hydralab.common.performace.impl.WindowsBatteryInspector;
-import com.microsoft.hydralab.common.performace.impl.WindowsMemoryInspector;
+import com.microsoft.hydralab.common.performace.impl.*;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PerformanceManager {
     private AndroidBatteryInspector androidBatteryInspector;
-    private AndroidMemoryInspector androidMemoryInspector;
+    private AndroidMemoryDumpInspector androidMemoryDumpInspector;
+    private AndroidMemoryInfoInspector androidMemoryInfoInspector;
     private WindowsBatteryInspector windowsBatteryInspector;
     private WindowsMemoryInspector windowsMemoryInspector;
 
     PerformanceManager() {
         androidBatteryInspector = new AndroidBatteryInspector();
-        androidMemoryInspector = new AndroidMemoryInspector();
+        androidMemoryDumpInspector = new AndroidMemoryDumpInspector();
+        androidMemoryInfoInspector = new AndroidMemoryInfoInspector();
         windowsBatteryInspector = new WindowsBatteryInspector();
         windowsMemoryInspector = new WindowsMemoryInspector();
     }
-
 
     public AndroidBatteryInspector getAndroidBatteryInspector() {
         return androidBatteryInspector;
     }
 
-    public AndroidMemoryInspector getAndroidMemoryInspector() {
-        return androidMemoryInspector;
+    public AndroidMemoryDumpInspector getAndroidMemoryDumpInspector() {
+        return androidMemoryDumpInspector;
+    }
+
+    public AndroidMemoryInfoInspector getAndroidMemoryInfoInspector() {
+        return androidMemoryInfoInspector;
     }
 
     public WindowsBatteryInspector getWindowsBatteryInspector() {

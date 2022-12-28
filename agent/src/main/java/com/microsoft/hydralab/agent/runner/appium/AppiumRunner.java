@@ -10,11 +10,10 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.performace.PerformanceManager;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.performance.PerformanceExecutor;
-import com.microsoft.hydralab.performance.PerformanceResult;
-import com.microsoft.hydralab.performance.PerformanceTestSpec;
+import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -29,23 +28,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 public class AppiumRunner extends TestRunner {
 
-    public AppiumRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
-        super(deviceManager, testTaskRunCallback);
+    public AppiumRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceManager performanceManager) {
+        super(deviceManager, testTaskRunCallback, performanceManager);
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
+    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, PerformanceInspectionService performanceInspectionService) throws Exception {
 
         Logger reportLogger = deviceTestTask.getLogger();
         try {
-            File gifFile = runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, deviceTestTask, deviceTestTask.getDeviceTestResultFolder(), reportLogger);
+            File gifFile = runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask,
+                    deviceTestTask, deviceTestTask.getDeviceTestResultFolder(), performanceInspectionService, reportLogger);
             if (gifFile != null && gifFile.exists() && gifFile.length() > 0) {
                 deviceTestTask.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
             }
@@ -65,32 +64,18 @@ public class AppiumRunner extends TestRunner {
         deviceManager.quitMobileAppiumDriver(deviceInfo, reportLogger);
     }
 
-    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, File deviceTestResultFolder, Logger reportLogger) {
+    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, File deviceTestResultFolder, PerformanceInspectionService performanceInspectionService, Logger reportLogger) {
         //set appium test property
         reportLogger.info("Start set appium test property");
         Map<String, String> instrumentationArgs = testTask.getInstrumentationArgs();
         if (instrumentationArgs == null) {
             instrumentationArgs = new HashMap<>();
         }
+
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-
-        PerformanceExecutor performanceExecutor = new PerformanceExecutor(deviceTestTask.getDeviceTestResultFolder());
-        if (testTask.isEnableBatteryTest()) {
-            performanceExecutor.addInspector(deviceManager.getPerformanceManager().getAndroidBatteryInspector());
-            performanceExecutor.addInspector(deviceManager.getPerformanceManager().getWindowsBatteryInspector());
-        }
-        if (testTask.isEnableMemoryTest()) {
-            performanceExecutor.addInspector(deviceManager.getPerformanceManager().getAndroidMemoryInspector());
-            performanceExecutor.addInspector(deviceManager.getPerformanceManager().getWindowsMemoryInspector());
-        }
-        ThreadParam.init(appiumParam, instrumentationArgs, performanceExecutor);
-        if (testTask.getPerformanceInterval() > 0) {
-            for (PerformanceTestSpec performanceTestSpec : testTask.getPerformanceTestSpecList()) {
-                performanceExecutor.startInspectPerformanceTimer(performanceTestSpec, testTask.getPerformanceInterval());
-            }
-        }
-
+        ThreadParam.init(appiumParam, instrumentationArgs, performanceInspectionService);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
+
         File gifFile = null;
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");
@@ -119,8 +104,6 @@ public class AppiumRunner extends TestRunner {
         /** set paths */
         String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();
         deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-
-        List<PerformanceResult<?>> performanceResults = performanceExecutor.parse();
         return gifFile;
     }
 

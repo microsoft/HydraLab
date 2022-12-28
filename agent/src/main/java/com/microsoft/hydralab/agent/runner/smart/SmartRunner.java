@@ -16,10 +16,10 @@ import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
+import com.microsoft.hydralab.common.performace.PerformanceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.ThreadUtils;
+import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -38,13 +38,13 @@ public class SmartRunner extends TestRunner {
     private File gifFile;
     private SmartTestParam smartTestParam;
 
-    public SmartRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, SmartTestUtil smartTestUtil) {
-        super(deviceManager, testTaskRunCallback);
+    public SmartRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, SmartTestUtil smartTestUtil, PerformanceManager performanceManager) {
+        super(deviceManager, testTaskRunCallback, performanceManager);
         this.smartTestUtil = smartTestUtil;
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
+    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, PerformanceInspectionService performanceInspectionService) throws Exception {
 
         Logger reportLogger = deviceTestTask.getLogger();
 

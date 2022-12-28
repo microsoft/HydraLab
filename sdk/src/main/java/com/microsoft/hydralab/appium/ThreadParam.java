@@ -2,20 +2,20 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.appium;
 
-import com.microsoft.hydralab.performance.PerformanceExecutor;
+import com.microsoft.hydralab.performance.PerformanceInspectionService;
 
 import java.util.Map;
 
 public class ThreadParam {
     private static InheritableThreadLocal<AppiumParam> appiumParam = new InheritableThreadLocal<>();
     private static InheritableThreadLocal<Map<String, String>> configMap = new InheritableThreadLocal<>();
-    private static InheritableThreadLocal<PerformanceExecutor> performanceExecutor = new InheritableThreadLocal<>();
+    private static InheritableThreadLocal<PerformanceInspectionService> performanceExecutor = new InheritableThreadLocal<>();
 
-    public static void init(AppiumParam appiumParamTemp, Map<String, String> configMapParam, PerformanceExecutor performanceExecutorTemp) {
+    public static void init(AppiumParam appiumParamTemp, Map<String, String> configMapParam, PerformanceInspectionService performanceInspectionServiceTemp) {
         clean();
         appiumParam.set(appiumParamTemp);
         configMap.set(configMapParam);
-        performanceExecutor.set(performanceExecutorTemp);
+        performanceExecutor.set(performanceInspectionServiceTemp);
     }
 
     public static void clean() {
@@ -35,9 +35,9 @@ public class ThreadParam {
         return temp;
     }
 
-    public static PerformanceExecutor getPerformanceExecutor() {
+    public static PerformanceInspectionService getPerformanceExecutor() {
 
-        PerformanceExecutor manager = performanceExecutor.get();
+        PerformanceInspectionService manager = performanceExecutor.get();
 
         return manager;
     }

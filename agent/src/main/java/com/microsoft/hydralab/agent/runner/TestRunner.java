@@ -9,25 +9,32 @@ import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
+import com.microsoft.hydralab.common.performace.PerformanceManager;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
+import com.microsoft.hydralab.performance.PerformanceInspectionService;
+import com.microsoft.hydralab.performance.PerformanceResult;
+import com.microsoft.hydralab.performance.PerformanceTestSpec;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 public abstract class TestRunner {
     protected final Logger log = LoggerFactory.getLogger(DeviceManager.class);
     protected final DeviceManager deviceManager;
+    protected final PerformanceManager performanceManager;
     protected final TestTaskRunCallback testTaskRunCallback;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
     protected final ActionExecutor actionExecutor = new ActionExecutor();
 
-    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
+    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceManager performanceManager) {
         this.deviceManager = deviceManager;
+        this.performanceManager = performanceManager;
         this.testTaskRunCallback = testTaskRunCallback;
     }
 
@@ -41,12 +48,29 @@ public abstract class TestRunner {
         setUp(deviceInfo, testTask, deviceTestTask);
         checkTestTaskCancel(testTask);
 
+        PerformanceInspectionService performanceInspectionService = new PerformanceInspectionService(deviceTestTask.getDeviceTestResultFolder());
+        if (testTask.isEnableBatteryTest()) {
+            performanceInspectionService.addInspector(performanceManager.getAndroidBatteryInspector());
+            performanceInspectionService.addInspector(performanceManager.getWindowsBatteryInspector());
+        }
+        if (testTask.isEnableMemoryTest()) {
+            performanceInspectionService.addInspector(performanceManager.getAndroidMemoryDumpInspector());
+            performanceInspectionService.addInspector(performanceManager.getAndroidMemoryInfoInspector());
+            performanceInspectionService.addInspector(performanceManager.getWindowsMemoryInspector());
+        }
+        if (testTask.getPerformanceInterval() > 0) {
+            for (PerformanceTestSpec performanceTestSpec : testTask.getPerformanceTestSpecList()) {
+                performanceInspectionService.startInspectPerformanceTimer(performanceTestSpec, testTask.getPerformanceInterval());
+            }
+        }
+
         try {
-            run(deviceInfo, testTask, deviceTestTask);
+            run(deviceInfo, testTask, deviceTestTask, performanceInspectionService);
         } catch (Exception e) {
             deviceTestTask.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(deviceTestTask, e);
         } finally {
+            List<PerformanceResult<?>> performanceResults = performanceInspectionService.parse();
             tearDown(deviceInfo, testTask, deviceTestTask);
         }
     }
@@ -110,7 +134,7 @@ public abstract class TestRunner {
         deviceManager.getScreenShot(deviceInfo, deviceTestTask.getLogger());
     }
 
-    protected abstract void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception;
+    protected abstract void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, PerformanceInspectionService performanceInspectionService) throws Exception;
 
     protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) {
         try {
