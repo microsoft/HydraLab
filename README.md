@@ -13,7 +13,7 @@
 
 ![HydraLabFeaturesPreview](docs/images/HydraLabFeaturesPreview.gif)
 
-[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [License & Trademarks](#license-trademarks)
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
 
 <span id="what-is"></span>
 ## What is Hydra Lab?
@@ -40,9 +40,9 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 <span id="environment"></span>
 ### Environment
 
-**Supported platform for Hydra Lab agent**: Windows, Mac OSX, and Linux (docker).
+**Supported environments for Hydra Lab agent**: Windows, Mac OSX, and Linux ([Docker](https://github.com/microsoft/HydraLab/blob/main/agent/README.md#run-agent-in-docker)).
 
-**Supported platform and framework for test devices**:
+**Supported platforms and frameworks**:
 
 |  | Appium(Java) | Espresso | 
 | ---- |--------------|---- |
