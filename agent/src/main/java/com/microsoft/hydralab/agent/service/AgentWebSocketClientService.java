@@ -69,16 +69,22 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                 if (!(message.getBody() instanceof AgentMetadata)) {
                     break;
                 }
-                // Sequence shouldn't be changed, as the adb init will create device related metrics, and should be after configuring commonTags of prometheus.
+                heartbeatResponse(message);
+
+                /** Sequence shouldn't be changed.
+                 * [agentUser.setTeamName -> meterRegistry.config().commonTags -> deviceManager.init
+                 *  -> (deviceControlService.provideDeviceList + deviceStatbilityMonitor.addDeviceMetricRegistration)].
+                 */
                 registerAgentMetrics();
                 deviceControlService.deviceManagerInit();
-                heartbeatResponse(message);
+                deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
                 return;
             case Const.Path.HEARTBEAT:
                 if (!(message.getBody() instanceof AgentMetadata)) {
                     break;
                 }
                 heartbeatResponse(message);
+                deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
                 return;
             case Const.Path.DEVICE_UPDATE:
                 if (!(message.getBody() instanceof JSONObject)) {
@@ -148,7 +154,6 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         AgentMetadata agentMetadata = (AgentMetadata) message.getBody();
         blobStorageClient.setSASData(agentMetadata.getBlobSAS());
         syncAgentStatus(agentMetadata.getAgentUser());
-        deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
     }
 
     private void syncAgentStatus(AgentUser passedAgent) {
@@ -215,7 +220,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         send(Message.ok(Const.Path.TEST_TASK_RETRY, testTask));
     }
 
-    public void registerAgentMetrics(){
+    public void registerAgentMetrics() {
         meterRegistry.config().commonTags("computerName", agentUser.getHostname(), "agentName", agentUser.getName(), "teamName", agentUser.getTeamName());
 
         registerAgentDiskUsageRatio();
