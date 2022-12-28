@@ -18,12 +18,12 @@ public class AndroidMemoryInspector implements PerformanceInspector {
     }
 
     @Override
-    public PerformanceInspectionResult capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec, File resultFolder) {
+    public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec, File resultFolder) {
         return null;
     }
 
     @Override
-    public PerformanceResult<?> analyzeResults(List<PerformanceInspectionResult> performanceInspectionResultList) {
+    public PerformanceResult<?> parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
 

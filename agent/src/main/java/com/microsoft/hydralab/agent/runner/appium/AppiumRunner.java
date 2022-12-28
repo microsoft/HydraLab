@@ -86,7 +86,7 @@ public class AppiumRunner extends TestRunner {
         ThreadParam.init(appiumParam, instrumentationArgs, performanceExecutor);
         if (testTask.getPerformanceInterval() > 0) {
             for (PerformanceTestSpec performanceTestSpec : testTask.getPerformanceTestSpecList()) {
-                performanceExecutor.startCapturePerformanceTimer(performanceTestSpec, testTask.getPerformanceInterval());
+                performanceExecutor.startInspectPerformanceTimer(performanceTestSpec, testTask.getPerformanceInterval());
             }
         }
 
@@ -120,7 +120,7 @@ public class AppiumRunner extends TestRunner {
         String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();
         deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
 
-        List<PerformanceResult<?>> performanceResults = performanceExecutor.analyzeResult();
+        List<PerformanceResult<?>> performanceResults = performanceExecutor.parse();
         return gifFile;
     }
 

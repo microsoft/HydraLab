@@ -22,13 +22,13 @@ public class PerformanceTest {
         //testing...
         System.out.println("Start LTW...");
         androidPerfSpec.setName("Start LTW");
-        performanceExecutor.capturePerformanceMetrics(androidPerfSpec);
+        performanceExecutor.inspect(androidPerfSpec);
         androidPerfSpec.setAppId("com.mocrosoft.systemapp");
-        performanceExecutor.capturePerformanceMetrics(androidPerfSpec);
+        performanceExecutor.inspect(androidPerfSpec);
 
         System.out.println("Start PL...");
         windowsPerfSpec.setName("Start PL");
-        performanceExecutor.capturePerformanceMetrics(windowsPerfSpec);
+        performanceExecutor.inspect(windowsPerfSpec);
 
     }
 }

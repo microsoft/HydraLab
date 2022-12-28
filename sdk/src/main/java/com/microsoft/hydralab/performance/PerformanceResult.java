@@ -1,5 +1,7 @@
 package com.microsoft.hydralab.performance;
 
+import java.util.List;
+
 public class PerformanceResult<T> {
     String category;
 
@@ -11,4 +13,5 @@ public class PerformanceResult<T> {
      * battery: CPU	screen	Wake_lock	other	App_usage	Total_usage
      */
     T performanceData;
+    List<PerformanceInspectionResult> performanceInspectionResultList;
 }

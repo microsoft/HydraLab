@@ -37,20 +37,20 @@ public class PerformanceExecutor {
         notifyEach(inspectors, recorder -> recorder.initialize(performanceTestSpec, resultFolder));
     }
 
-    public void startCapturePerformanceTimer(PerformanceTestSpec performanceTestSpec, long interval) {
+    public void startInspectPerformanceTimer(PerformanceTestSpec performanceTestSpec, long interval) {
         initialize(performanceTestSpec);
         ScheduledFuture<?> scheduledFuture = timerExecutor.schedule(new Runnable() {
             @Override
             public void run() {
-                capturePerformanceMetrics(performanceTestSpec);
+                inspect(performanceTestSpec);
             }
         }, interval, TimeUnit.SECONDS);
     }
 
-    public List<PerformanceInspectionResult> capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec) {
+    public List<PerformanceInspectionResult> inspect(PerformanceTestSpec performanceTestSpec) {
         List<PerformanceInspectionResult> tempInspectionResultList = new ArrayList<>();
         for (PerformanceInspector performanceInspector : inspectors) {
-            PerformanceInspectionResult result = performanceInspector.capturePerformanceMetrics(performanceTestSpec, resultFolder);
+            PerformanceInspectionResult result = performanceInspector.inspect(performanceTestSpec, resultFolder);
             if (result != null) {
                 tempInspectionResultList.add(result);
             }
@@ -59,10 +59,10 @@ public class PerformanceExecutor {
         return tempInspectionResultList;
     }
 
-    public List<PerformanceResult<?>> analyzeResult() {
+    public List<PerformanceResult<?>> parse() {
         List<PerformanceResult<?>> performanceResultList = new ArrayList<>();
         for (PerformanceInspector performanceInspector : inspectors) {
-            performanceResultList.add(performanceInspector.analyzeResults(performanceInspectionResultList));
+            performanceResultList.add(performanceInspector.parse(performanceInspectionResultList));
         }
         for (ScheduledFuture<?> timer : capturePerformanceTimerList) {
             timer.cancel(true);

@@ -19,7 +19,7 @@ public class AndroidBatteryInspector implements PerformanceInspector {
     }
 
     @Override
-    public PerformanceInspectionResult capturePerformanceMetrics(PerformanceTestSpec performanceTestSpec, File resultFolder) {
+    public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec, File resultFolder) {
         if ((performanceTestSpec.getTypeFlag() & PerformanceTestSpec.FLAG_BATTERY) == 0
                 || !"android".equals(performanceTestSpec.getDeviceId().toLowerCase(Locale.ROOT))) return null;
         // else capture performance metrics
@@ -27,7 +27,7 @@ public class AndroidBatteryInspector implements PerformanceInspector {
     }
 
     @Override
-    public PerformanceResult<?> analyzeResults(List<PerformanceInspectionResult> performanceInspectionResultList) {
+    public PerformanceResult<?> parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
 }
