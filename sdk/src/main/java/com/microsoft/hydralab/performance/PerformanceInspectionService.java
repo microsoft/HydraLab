@@ -45,6 +45,7 @@ public class PerformanceInspectionService {
                 inspect(performanceTestSpec);
             }
         }, interval, TimeUnit.SECONDS);
+        inspectPerformanceTimerList.add(scheduledFuture);
     }
 
     public List<PerformanceInspectionResult> inspect(PerformanceTestSpec performanceTestSpec) {
