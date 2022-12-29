@@ -12,16 +12,16 @@ import static com.microsoft.hydralab.performance.PerformanceTestSpec.*;
 /**
  * Sample of performance test. Will not check in
  */
-public class PerformanceTest {
+public class PerformanceTestSample {
     @Test
     public void performanceTestCase() {
         PerformanceInspectionService performanceInspectionService = ThreadParam.getPerformanceExecutor();
         PerformanceTestSpec androidPerfSpec = new PerformanceTestSpec(
-                new ArrayList<>(Arrays.asList(TYPE_ANDROID_BATTERY_INFO, TYPE_ANDROID_MEMORY_INFO, TYPE_ANDROID_MEMORY_DUMP)),
+                new ArrayList<>(Arrays.asList(INSPECTOR_ANDROID_BATTERY_INFO, INSPECTOR_ANDROID_MEMORY_INFO, INSPECTOR_ANDROID_MEMORY_DUMP)),
                 "com.mocrosoft.appmanager",
                 "Android", "Initialize");
         PerformanceTestSpec windowsPerfSpec = new PerformanceTestSpec(
-                new ArrayList<>(Arrays.asList(TYPE_WIN_BATTERY, TYPE_WIN_MEMORY)),
+                new ArrayList<>(Arrays.asList(INSPECTOR_WIN_MEMORY, INSPECTOR_WIN_BATTERY)),
                 "Microsoft.YourPhone_8wekyb3d8bbwe",
                 "Windows", "Initialize");
         performanceInspectionService.initialize(androidPerfSpec);

@@ -19,7 +19,8 @@ public class AndroidBatteryInspector implements PerformanceInspector {
 
     @Override
     public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec, File resultFolder) {
-        if (!performanceTestSpec.getTypeSpecList().contains(PerformanceTestSpec.TYPE_ANDROID_BATTERY_INFO)) return null;
+        if (!performanceTestSpec.getAppliedInspectors().contains(PerformanceTestSpec.INSPECTOR_ANDROID_BATTERY_INFO))
+            return null;
 
         // else capture performance metrics
         return null;

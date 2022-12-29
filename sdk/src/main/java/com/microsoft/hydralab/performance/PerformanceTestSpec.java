@@ -3,30 +3,30 @@ package com.microsoft.hydralab.performance;
 import java.util.List;
 
 public class PerformanceTestSpec {
-    public static final String TYPE_ANDROID_MEMORY_DUMP = "AndroidMemoryDump";
-    public static final String TYPE_ANDROID_MEMORY_INFO = "AndroidMemoryInfo";
-    public static final String TYPE_ANDROID_BATTERY_INFO = "AndroidBatteryInfo";
-    public static final String TYPE_WIN_BATTERY = "WindowsBattery";
-    public static final String TYPE_WIN_MEMORY = "WindowsMemory";
+    public static final String INSPECTOR_ANDROID_MEMORY_DUMP = "AndroidMemoryDump";
+    public static final String INSPECTOR_ANDROID_MEMORY_INFO = "AndroidMemoryInfo";
+    public static final String INSPECTOR_ANDROID_BATTERY_INFO = "AndroidBatteryInfo";
+    public static final String INSPECTOR_WIN_BATTERY = "WindowsBattery";
+    public static final String INSPECTOR_WIN_MEMORY = "WindowsMemory";
 
-    List<String> typeSpecList;
+    List<String> appliedInspectors;
     String appId;
     String deviceId;
     String name;
 
-    public PerformanceTestSpec(List<String> typeSpecList, String appId, String deviceId, String name) {
-        this.typeSpecList = typeSpecList;
+    public PerformanceTestSpec(List<String> appliedInspectors, String appId, String deviceId, String name) {
+        this.appliedInspectors = appliedInspectors;
         this.appId = appId;
         this.deviceId = deviceId;
         this.name = name;
     }
 
-    public List<String> getTypeSpecList() {
-        return typeSpecList;
+    public List<String> getAppliedInspectors() {
+        return appliedInspectors;
     }
 
-    public void setTypeSpecList(List<String> typeSpecList) {
-        this.typeSpecList = typeSpecList;
+    public void setAppliedInspectors(List<String> appliedInspectors) {
+        this.appliedInspectors = appliedInspectors;
     }
 
     public String getAppId() {

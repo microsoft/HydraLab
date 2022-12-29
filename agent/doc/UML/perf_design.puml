@@ -4,12 +4,12 @@
 package "sdk" {
 
     class PerformanceTestSpec {
-        +{static}String TYPE_ANDROID_MEMORY_DUMP = "AndroidMemoryDump"
-        +{static}String TYPE_ANDROID_MEMORY_INFO = "AndroidMemoryInfo"
-        +{static}String TYPE_ANDROID_BATTERY_INFO = "AndroidBatteryInfo"
-        +{static}String TYPE_WIN_BATTERY = "WindowsBattery"
-        +{static}String TYPE_WIN_MEMORY = "WindowsMemory"
-        -List<String> typeSpecList
+        +{static}String INSPECTOR_ANDROID_MEMORY_DUMP = "AndroidMemoryDump"
+        +{static}String INSPECTOR_ANDROID_MEMORY_INFO = "AndroidMemoryInfo"
+        +{static}String INSPECTOR_ANDROID_BATTERY_INFO = "AndroidBatteryInfo"
+        +{static}String INSPECTOR_WIN_BATTERY = "WindowsBattery"
+        +{static}String INSPECTOR_WIN_MEMORY = "WindowsMemory"
+        -List<String> appliedInspectors
         -String appId
         -String deviceId
         -String stepName
