@@ -2,13 +2,12 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance;
 
-import java.io.File;
 import java.util.List;
 
 public interface PerformanceInspector {
-    void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder);
+    void initialize(PerformanceTestSpec performanceTestSpec);
 
-    PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec, File resultFolder);
+    PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec);
 
-    PerformanceResult<?> parse(List<PerformanceInspectionResult> performanceInspectionResultList);
+    PerformanceTestResult parse(List<PerformanceInspectionResult> performanceInspectionResultList);
 }

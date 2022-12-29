@@ -2,25 +2,24 @@ package com.microsoft.hydralab.common.performace.impl;
 
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
-import com.microsoft.hydralab.performance.PerformanceResult;
+import com.microsoft.hydralab.performance.PerformanceTestResult;
 import com.microsoft.hydralab.performance.PerformanceTestSpec;
 
-import java.io.File;
 import java.util.List;
 
 public class AndroidMemoryInfoInspector implements PerformanceInspector {
     @Override
-    public void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder) {
+    public void initialize(PerformanceTestSpec performanceTestSpec) {
         
     }
 
     @Override
-    public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec, File resultFolder) {
+    public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec) {
         return null;
     }
 
     @Override
-    public PerformanceResult<?> parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
+    public PerformanceTestResult parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
 }

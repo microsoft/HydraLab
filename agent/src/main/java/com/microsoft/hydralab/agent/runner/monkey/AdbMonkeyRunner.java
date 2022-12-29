@@ -47,7 +47,7 @@ public class AdbMonkeyRunner extends TestRunner {
 
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, PerformanceInspectionService performanceInspectionService) throws Exception {
+    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
         deviceTestTask.setTotalCount(1);
         Logger reportLogger = deviceTestTask.getLogger();
 

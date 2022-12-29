@@ -1,9 +1,10 @@
 package com.microsoft.hydralab.performance;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class PerformanceResult<T> {
-    String category;
+public class PerformanceTestResult {
+    public String category;
 
     /**
      * memory: java_heap_pss	java_heap_rss	native_heap_pss	native_heap_rss	code_pss	code_rss	stack_pss	stack_rss
@@ -12,6 +13,6 @@ public class PerformanceResult<T> {
      * <p>
      * battery: CPU	screen	Wake_lock	other	App_usage	Total_usage
      */
-    T performanceData;
-    List<PerformanceInspectionResult> performanceInspectionResultList;
+    public Object resultSummary;
+    public List<PerformanceInspectionResult> performanceInspectionResults = new ArrayList<>();
 }

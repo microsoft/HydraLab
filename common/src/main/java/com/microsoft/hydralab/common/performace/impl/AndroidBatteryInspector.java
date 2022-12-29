@@ -4,22 +4,21 @@ package com.microsoft.hydralab.common.performace.impl;
 
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
-import com.microsoft.hydralab.performance.PerformanceResult;
+import com.microsoft.hydralab.performance.PerformanceTestResult;
 import com.microsoft.hydralab.performance.PerformanceTestSpec;
 
-import java.io.File;
 import java.util.List;
 
 public class AndroidBatteryInspector implements PerformanceInspector {
 
     @Override
-    public void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder) {
+    public void initialize(PerformanceTestSpec performanceTestSpec) {
 
     }
 
     @Override
-    public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec, File resultFolder) {
-        if (!performanceTestSpec.getAppliedInspectors().contains(PerformanceTestSpec.INSPECTOR_ANDROID_BATTERY_INFO))
+    public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec) {
+        if (!performanceTestSpec.getInspectors().contains(PerformanceTestSpec.INSPECTOR_ANDROID_BATTERY_INFO))
             return null;
 
         // else capture performance metrics
@@ -27,7 +26,7 @@ public class AndroidBatteryInspector implements PerformanceInspector {
     }
 
     @Override
-    public PerformanceResult<?> parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
+    public PerformanceTestResult parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
 }

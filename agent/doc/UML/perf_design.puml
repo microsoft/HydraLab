@@ -9,18 +9,18 @@ package "sdk" {
         +{static}String INSPECTOR_ANDROID_BATTERY_INFO = "AndroidBatteryInfo"
         +{static}String INSPECTOR_WIN_BATTERY = "WindowsBattery"
         +{static}String INSPECTOR_WIN_MEMORY = "WindowsMemory"
-        -List<String> appliedInspectors
+        -List<String> inspectors
         -String appId
         -String deviceId
-        -String stepName
-        +constructor()
-        +getter()
-        +setter()
+        -String name
     }
     interface PerformanceInspector {
         void initialize(PerformanceTestSpec performanceTestSpec, File resultFolder)
         PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec, File resultFolder)
         PerformanceResult<?> parse(List<PerformanceInspectionResult> performanceInspectionResultList)
+    }
+
+    interface IPerformanceInspectionService {
     }
 
     class PerformanceInspectionService {
@@ -32,7 +32,7 @@ package "sdk" {
         +void addInspector(PerformanceInspector performanceRecorder)
         -void notifyEach()
         +void initialize(PerformanceTestSpec performanceTestSpec)
-        +void startInspectPerformanceTimer((PerformanceTestSpec performanceTestSpec, long interval)
+        +void startInspectPerformanceTimer((PerformanceTestSpec performanceTestSpec)
         +void inspect(PerformanceTestSpec performanceTestSpec)
         +List<PerformanceResult<?>> parse()
     }
@@ -54,6 +54,7 @@ package "sdk" {
     PerformanceInspector <---right PerformanceInspectionService
     PerformanceInspector -up..> PerformanceResult
     PerformanceResult -right..> PerformanceInspectionResult
+    PerformanceInspectionService -r-|> IPerformanceInspectionService
 }
 
 package "agent" {
@@ -83,6 +84,7 @@ package "common" {
     AndroidMemoryDumpInspector --o PerformanceInspectorManager
     WindowsBatteryInspector --o PerformanceInspectorManager
     WindowsMemoryInspector --o PerformanceInspectorManager
+    PerformanceInspectorManager --|> IPerformanceInspectionService
 
     TestRunner o-r- PerformanceInspectorManager
     TestRunner -up..> PerformanceInspectionService

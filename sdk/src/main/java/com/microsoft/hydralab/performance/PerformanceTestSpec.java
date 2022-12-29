@@ -1,6 +1,9 @@
 package com.microsoft.hydralab.performance;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class PerformanceTestSpec {
     public static final String INSPECTOR_ANDROID_MEMORY_DUMP = "AndroidMemoryDump";
@@ -8,25 +11,24 @@ public class PerformanceTestSpec {
     public static final String INSPECTOR_ANDROID_BATTERY_INFO = "AndroidBatteryInfo";
     public static final String INSPECTOR_WIN_BATTERY = "WindowsBattery";
     public static final String INSPECTOR_WIN_MEMORY = "WindowsMemory";
-
-    List<String> appliedInspectors;
+    public String id = UUID.randomUUID().toString();
+    String inspector;
     String appId;
     String deviceId;
     String name;
 
-    public PerformanceTestSpec(List<String> appliedInspectors, String appId, String deviceId, String name) {
-        this.appliedInspectors = appliedInspectors;
+    File resultFolder;
+    public long interval;
+
+    public PerformanceTestSpec(String inspector, String appId, String deviceId, String name) {
+        this.inspector = inspector;
         this.appId = appId;
         this.deviceId = deviceId;
         this.name = name;
     }
 
-    public List<String> getAppliedInspectors() {
-        return appliedInspectors;
-    }
-
-    public void setAppliedInspectors(List<String> appliedInspectors) {
-        this.appliedInspectors = appliedInspectors;
+    public String getInspectors() {
+        return inspector;
     }
 
     public String getAppId() {

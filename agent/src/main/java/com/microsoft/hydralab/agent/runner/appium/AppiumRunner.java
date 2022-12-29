@@ -39,12 +39,12 @@ public class AppiumRunner extends TestRunner {
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, PerformanceInspectionService performanceInspectionService) throws Exception {
+    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
 
         Logger reportLogger = deviceTestTask.getLogger();
         try {
             File gifFile = runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask,
-                    deviceTestTask, deviceTestTask.getDeviceTestResultFolder(), performanceInspectionService, reportLogger);
+                    deviceTestTask, deviceTestTask.getDeviceTestResultFolder(), reportLogger);
             if (gifFile != null && gifFile.exists() && gifFile.length() > 0) {
                 deviceTestTask.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
             }
@@ -64,7 +64,7 @@ public class AppiumRunner extends TestRunner {
         deviceManager.quitMobileAppiumDriver(deviceInfo, reportLogger);
     }
 
-    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, File deviceTestResultFolder, PerformanceInspectionService performanceInspectionService, Logger reportLogger) {
+    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, File deviceTestResultFolder, Logger reportLogger) {
         //set appium test property
         reportLogger.info("Start set appium test property");
         Map<String, String> instrumentationArgs = testTask.getInstrumentationArgs();
@@ -73,7 +73,6 @@ public class AppiumRunner extends TestRunner {
         }
 
         AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
-        ThreadParam.init(appiumParam, instrumentationArgs, performanceInspectionService);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
 
         File gifFile = null;
