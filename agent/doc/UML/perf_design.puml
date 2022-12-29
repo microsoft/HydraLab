@@ -56,6 +56,12 @@ package "sdk" {
     PerformanceResult -right..> PerformanceInspectionResult
 }
 
+package "agent" {
+    abstract class TestRunner {
+        #PerformanceManager performanceManager
+    }
+}
+
 package "common" {
     class PerformanceInspectorManager {
         AndroidBatteryInspector androidBatteryInspector;
@@ -64,6 +70,8 @@ package "common" {
         WindowsBatteryInspector windowsBatteryInspector;
         WindowsMemoryInspector windowsMemoryInspector;
     }
+
+
     PerformanceInspector <|-- AndroidBatteryInspector
     PerformanceInspector <|-- AndroidMemoryInfoInspector
     PerformanceInspector <|-- AndroidMemoryDumpInspector
@@ -77,6 +85,7 @@ package "common" {
     WindowsMemoryInspector --o PerformanceInspectorManager
 
     TestRunner o-r- PerformanceInspectorManager
+    TestRunner -up..> PerformanceInspectionService
 }
 @enduml
 
