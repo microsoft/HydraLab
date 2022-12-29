@@ -52,7 +52,9 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 ### Quick guide on build and run
 
 Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal and open an Azure blob storage account, and get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string), 
-and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can run the center java with the following command:
+and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can run the center java SpringBoot service (a runnable Jar) with the following command:
+
+> The build and run process will require JDK | NPM | Android SDK platform-tools in position.
 
 **Step 1: build and run Hydra Lab center service.**
 
@@ -61,7 +63,7 @@ and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can r
 cd react
 npm ci
 npm run pub
-# Get back to the project root, and build the center runnable Jar
+# Get back to the project root, and build the center runnable Jar, for gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
 cd ..
 gradlew :center:bootJar
 # Run it, and then visit http://localhost:9886/portal/index.html#/
