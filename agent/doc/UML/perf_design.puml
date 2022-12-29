@@ -94,7 +94,7 @@ participant PerformanceManager
 participant Runner
 participant PerformanceInspectionService
 participant AndroidMemoryInfoInspector
-participant AndroidBatteryInfoInspector
+participant AndroidBatteryInspector
 participant WindowsBatteryInspector
 
 title Sequence 1: Regularly inspect performance metrics
@@ -108,19 +108,19 @@ PerformanceManager -> Runner: Inspectors
 Runner -> PerformanceInspectionService : add Inspectors
 Runner -> PerformanceInspectionService : startInspectPerformanceTimer(performanceTestSpec, interval)
 PerformanceInspectionService -> AndroidMemoryInfoInspector : initialize
-PerformanceInspectionService -> AndroidBatteryInfoInspector : initialize
+PerformanceInspectionService -> AndroidBatteryInspector : initialize
 PerformanceInspectionService -> WindowsBatteryInspector : initialize
 PerformanceInspectionService -> AndroidMemoryInfoInspector : inspect
 AndroidMemoryInfoInspector -> PerformanceInspectionService : PerformanceInspectionResult
-PerformanceInspectionService -> AndroidBatteryInfoInspector : inspect
-AndroidBatteryInfoInspector -> PerformanceInspectionService : PerformanceInspectionResult
+PerformanceInspectionService -> AndroidBatteryInspector : inspect
+AndroidBatteryInspector -> PerformanceInspectionService : PerformanceInspectionResult
 PerformanceInspectionService -> WindowsBatteryInspector : inspect
 WindowsBatteryInspector -> PerformanceInspectionService : PerformanceInspectionResult
 Runner -> PerformanceInspectionService : parse
 PerformanceInspectionService -> AndroidMemoryInfoInspector : parse
 AndroidMemoryInfoInspector -> PerformanceInspectionService : PerformanceResult
-PerformanceInspectionService -> AndroidBatteryInfoInspector : parse
-AndroidBatteryInfoInspector -> PerformanceInspectionService : PerformanceResult
+PerformanceInspectionService -> AndroidBatteryInspector : parse
+AndroidBatteryInspector -> PerformanceInspectionService : PerformanceResult
 PerformanceInspectionService -> WindowsBatteryInspector : parse
 WindowsBatteryInspector -> PerformanceInspectionService : PerformanceResult
 PerformanceInspectionService -> Runner: List<PerformanceResult>
@@ -134,7 +134,7 @@ participant Runner
 participant TestCase
 participant PerformanceInspectionService
 participant AndroidMemoryInfoInspector
-participant AndroidBatteryInfoInspector
+participant AndroidBatteryInspector
 participant WindowsBatteryInspector
 participant ThreadParam
 
@@ -155,13 +155,13 @@ TestCase -> ThreadParam : getPerformanceInspectionService
 ThreadParam -> TestCase : PerformanceInspectionService
 TestCase -> PerformanceInspectionService : initialize
 PerformanceInspectionService -> AndroidMemoryInfoInspector : initialize
-PerformanceInspectionService -> AndroidBatteryInfoInspector : initialize
+PerformanceInspectionService -> AndroidBatteryInspector : initialize
 PerformanceInspectionService -> WindowsBatteryInspector : initialize
 TestCase -> PerformanceInspectionService : inspect
 PerformanceInspectionService -> AndroidMemoryInfoInspector : inspect
 AndroidMemoryInfoInspector -> PerformanceInspectionService : PerformanceInspectionResult
-PerformanceInspectionService -> AndroidBatteryInfoInspector : inspect
-AndroidBatteryInfoInspector -> PerformanceInspectionService : PerformanceInspectionResult
+PerformanceInspectionService -> AndroidBatteryInspector : inspect
+AndroidBatteryInspector -> PerformanceInspectionService : PerformanceInspectionResult
 PerformanceInspectionService -> WindowsBatteryInspector : inspect
 WindowsBatteryInspector -> PerformanceInspectionService : PerformanceInspectionResult
 PerformanceInspectionService -> TestCase : List<PerformanceInspectionResult>
@@ -170,8 +170,8 @@ deactivate
 Runner -> PerformanceInspectionService : parse
 PerformanceInspectionService -> AndroidMemoryInfoInspector : parse
 AndroidMemoryInfoInspector -> PerformanceInspectionService : PerformanceResult
-PerformanceInspectionService -> AndroidBatteryInfoInspector : parse
-AndroidBatteryInfoInspector -> PerformanceInspectionService : PerformanceResult
+PerformanceInspectionService -> AndroidBatteryInspector : parse
+AndroidBatteryInspector -> PerformanceInspectionService : PerformanceResult
 PerformanceInspectionService -> WindowsBatteryInspector : parse
 WindowsBatteryInspector -> PerformanceInspectionService : PerformanceResult
 PerformanceInspectionService -> Runner: List<PerformanceResult>
