@@ -9,9 +9,7 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
-import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
-import com.microsoft.hydralab.agent.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.AgentType;
@@ -37,9 +35,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -94,13 +90,11 @@ public class AppConfiguration {
     }
 
     @Bean
-    public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService, DeviceManager deviceManager, DeviceStabilityMonitor deviceStabilityMonitor) throws Exception {
+    public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService) throws Exception {
         String wsUrl = String.format("ws://%s/agent/connect", registryServer);
         logger.info("connect to {}", wsUrl);
         AgentWebSocketClient agentWebSocketClient = new AgentWebSocketClient(new URI(wsUrl), agentWebSocketClientService);
         agentWebSocketClient.connect();
-        deviceManager.setDeviceStabilityMonitor(deviceStabilityMonitor);
-        deviceManager.init();
         return agentWebSocketClient;
     }
 
@@ -218,31 +212,5 @@ public class AppConfiguration {
         });
 
         return deviceStabilityMonitor;
-    }
-
-    @Bean
-    public MetricUtil metricUtil(MeterRegistry meterRegistry,
-                                 AgentWebSocketClient agentWebSocketClient,
-                                 AgentWebSocketClientService agentWebSocketClientService,
-                                 TestTaskEngineService testTaskEngineService) {
-        MetricUtil metricUtil = new MetricUtil();
-
-        InetAddress localHost;
-        String hostName = "";
-        try {
-            localHost = InetAddress.getLocalHost();
-            hostName = localHost.getHostName();
-        } catch (UnknownHostException e) {
-            logger.error("No localhost info is found.");
-        }
-
-        metricUtil.setMeterRegistry(meterRegistry);
-        metricUtil.init(hostName, agentWebSocketClientService.getAgentName());
-
-        metricUtil.registerAgentDiskUsageRatio(appOptions);
-        metricUtil.registerAgentReconnectRetryTimes(agentWebSocketClient);
-        metricUtil.registerAgentRunningTestTaskNum(testTaskEngineService);
-
-        return metricUtil;
     }
 }

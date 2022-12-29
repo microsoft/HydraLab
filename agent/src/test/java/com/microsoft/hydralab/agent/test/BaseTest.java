@@ -4,7 +4,6 @@ package com.microsoft.hydralab.agent.test;
 
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
-import com.microsoft.hydralab.agent.util.MetricUtil;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +34,4 @@ public class BaseTest {
     AgentWebSocketClient AgentWebSocketClient;
     @MockBean
     AgentWebSocketClientService agentWebSocketClientService;
-    @MockBean
-    MetricUtil metricUtil;
 }

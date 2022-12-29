@@ -11,21 +11,9 @@
 
 ---
 
-![Logo](docs/images/banner-made-easy.png)
+![HydraLabFeaturesPreview](docs/images/HydraLabFeaturesPreview.gif)
 
-- [What is Hydra Lab?](#what-is)
-- [Get Started](#get-started)
-    - [Environment](#environment)
-    - [Quick guide on build and run](#quick-start)
-    - [For Hydra Lab User](#for-user)
-    - [For Contributor](#for-contributor)
-- [Who are using Hydra Lab?](#who-use-it)
-- [Contribute](#contribute)
-- [Contact Us](#contact)
-- [Links](#links)
-- [Microsoft Give Sponsors](#ms-give)
-- [License & Trademarks](#license-trademarks)
-
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
 
 <span id="what-is"></span>
 ## What is Hydra Lab?
@@ -47,12 +35,11 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 <span id="get-started"></span>
 ## Get Started
 
-<span id="environment"></span>
-### Environment
+Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/wiki)** to understand the dev environment setup procedure: [Contribution Guideline](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
-**Supported platform for Hydra Lab agent**: Windows, Mac OSX, and Linux (docker).
+**Supported environments for Hydra Lab agent**: Windows, Mac OSX, and Linux ([Docker](https://github.com/microsoft/HydraLab/blob/main/agent/README.md#run-agent-in-docker)).
 
-**Supported platform and framework for test devices**:
+**Supported platforms and frameworks**:
 
 |  | Appium(Java) | Espresso | 
 | ---- |--------------|---- |
@@ -61,13 +48,13 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 |Windows| &#10004;     | x | 
 |Web (Browser)| &#10004;     | x | 
 
-**Install required packages**: [Set Up PC Environment](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent#1-set-up-pc-environment)
-
 <span id="quick-start"></span>
 ### Quick guide on build and run
 
 Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal and open an Azure blob storage account, and get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string), 
-and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can run the center java with the following command:
+and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can run the center java SpringBoot service (a runnable Jar) with the following command:
+
+> The build and run process will require JDK | NPM | Android SDK platform-tools in position.
 
 **Step 1: build and run Hydra Lab center service.**
 
@@ -76,7 +63,7 @@ and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can r
 cd react
 npm ci
 npm run pub
-# Get back to the project root, and build the center runnable Jar
+# Get back to the project root, and build the center runnable Jar, for gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
 cd ..
 gradlew :center:bootJar
 # Run it, and then visit http://localhost:9886/portal/index.html#/
@@ -94,6 +81,10 @@ gradlew :agent:bootJar
 java -jar agent/build/libs/center.jar
 ```
 
+**Step 3: visit http://localhost:9886/portal/index.html#/ and view your connected devices**
+
+Enjoy exploring it! And please refer to this section for more features: [For Hydra Lab User](#for-user)
+
 **Technical design overview:**
 
 ![Tech Architecture](docs/images/technical_architecture.png)
@@ -101,16 +92,16 @@ java -jar agent/build/libs/center.jar
 <span id="for-user"></span>
 ### For Hydra Lab User:
 
-- [Develop and Package a Test Project](https://github.com/microsoft/HydraLab/wiki/1.-Get-Started-%E2%80%94-Develop-and-Package-a-Test-Project)
-- [Run a Test Task in Hydra Lab](https://github.com/microsoft/HydraLab/wiki/2.-Get-Started-%E2%80%94-Run-a-Test-Task-in-Hydra-Lab)
-- [How to Deploy an Agent](https://github.com/microsoft/HydraLab/wiki/3.-How-to-Deploy-an-Agent)
-- [How to Develop Appium Test Project](https://github.com/microsoft/HydraLab/wiki/4.-How-to-Develop-Appium-Test-Project)
+- [Trigger a test task run in the Hydra Lab test service](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
+- [Deploy a test agent service](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
+- [Create an Appium UI Test Automation Project](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
+
+> Note: If you are a Microsoft FTE and want to onboard to the internal Hydra Lab testing service, please visit [our SharePoint site](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) to learn more about the internal service instance.
 
 <span id="for-contributor"></span>
 ### For Contributor:
 
-- [How to Contribute to Hydra Lab](https://github.com/microsoft/HydraLab/wiki/5.-How-to-Contribute-to-Hydra-Lab)
-- [The example Hydra Lab network front page hosted by Microsoft MaX team (AAD login required)](https://hydradevicenetwork.azurewebsites.net/portal/index.html#/)
+- [Contribute to the Hydra Lab GitHub Project](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
 <span id="who-use-it"></span>
 ## Who are using Hydra Lab?
@@ -119,7 +110,7 @@ It's already powering the UI test automation of the following Microsoft products
 - Microsoft Phone Link (Windows UWP app) and Link to Windows (Android app)
 - Microsoft Launcher (Android)
 - Microsoft Outlook/Edge (Android/iOS)
-- Microsoft Yammer/Fluent UI Android
+- Microsoft Fluent UI Android/Yammer Android
 
 <span id="contribute"></span>
 ## Contribute
