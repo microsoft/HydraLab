@@ -15,4 +15,11 @@
            timeToLiveSeconds="600"
            overflowToDisk="true">
     </cache>
+    <cache name="keyValueCache"
+           maxElementsInMemory="200"
+           eternal="false"
+           timeToIdleSeconds="300"
+           timeToLiveSeconds="600"
+           overflowToDisk="true">
+    </cache>
 </ehcache>

@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Resource;
 
 @Repository
-@CacheConfig
+@CacheConfig(cacheNames = "keyValueCache")
 public class KeyValueRepository {
     public final static String UNIT_TEST_DETAIL = "UNIT_TEST_DETAIL:";
     public static final String DEVICE_RES_INFO = "Device_Res_Info:";
