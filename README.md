@@ -78,7 +78,7 @@ java -jar center/build/libs/center.jar
 cp agent/application-sample.yml application.yml
 # Then build agent jar and run it
 gradlew :agent:bootJar
-java -jar agent/build/libs/center.jar
+java -jar agent/build/libs/agent.jar
 ```
 
 **Step 3: visit http://localhost:9886/portal/index.html#/ and view your connected devices**
