@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.runner;
 
-import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.management.DeviceManager;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +81,7 @@ public class DeviceTaskControlExecutor {
                 } finally {
                     count.countDown();
                     if (count.getCount() <= 0 && taskCompletion != null) {
-                        taskCompletion.onComplete(devices);
+                        taskCompletion.onComplete();
                     }
                 }
             };
@@ -95,6 +95,6 @@ public class DeviceTaskControlExecutor {
     }
 
     public interface TaskCompletion {
-        void onComplete(Set<DeviceInfo> deviceControls);
+        void onComplete();
     }
 }

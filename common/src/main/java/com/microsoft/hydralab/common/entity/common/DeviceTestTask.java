@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @Entity
 @Table(indexes = {
         @Index(name = "task_id_index", columnList = "test_task_id", unique = false)})
-public class DeviceTestTask {
+public class DeviceTestTask implements Serializable {
     //    private static Pattern testResultLine = Pattern.compile("Tests run:\\s+(\\d+),\\s+Failures:\\s+(\\d+)");
     // OK (8 tests)
 //    private static Pattern testResultOkLine = Pattern.compile("OK\\s+\\((\\d+)\\s+tests\\)");

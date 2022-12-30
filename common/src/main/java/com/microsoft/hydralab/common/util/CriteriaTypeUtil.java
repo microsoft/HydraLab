@@ -56,6 +56,9 @@ public class CriteriaTypeUtil<T> {
             case OpType.Equal:
                 predicate = criteriaBuilder.equal(root.get(key).as(String.class), value);
                 break;
+            case OpType.NotEqual:
+                predicate = criteriaBuilder.notEqual(root.get(key).as(String.class), value);
+                break;
             case OpType.GreaterThan:
                 Assert.isTrue(!StringUtils.isEmpty(value), "When querying with gt, the value of criteriaType can't be empty!");
                 dateValue = transferValueToDate(value, dateFormatString);

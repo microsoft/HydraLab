@@ -16,13 +16,17 @@ import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
@@ -33,13 +37,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
+@CacheConfig(cacheNames = "taskCache")
 public class TestDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDataService.class);
     private final Sort sortByStartMillis = Sort.by(Sort.Direction.DESC, "startTimeMillis");
     private final Sort sortByStartDate = Sort.by(Sort.Direction.DESC, "startDate");
+    @Lazy
+    @Resource
+    private TestDataService testDataServiceCache;
     @Resource
     TestTaskRepository testTaskRepository;
     @Resource
@@ -75,17 +82,13 @@ public class TestDataService {
         return testUnits;
     }
 
+    @Cacheable(key = "#testId")
     public TestTask getTestTaskDetail(String testId) {
-        TestTask testTask = keyValueRepository.getTestTaskMem(testId);
-        if (testTask != null) {
-            return testTask;
-        }
-
         Optional<TestTask> taskOpt = testTaskRepository.findById(testId);
         if (taskOpt.isEmpty()) {
             return null;
         }
-        testTask = taskOpt.get();
+        TestTask testTask = taskOpt.get();
         List<DeviceTestTask> byTestTaskId = deviceTestResultRepository.findByTestTaskId(testId);
 
         if (byTestTaskId == null || byTestTaskId.isEmpty()) {
@@ -103,23 +106,6 @@ public class TestDataService {
 
     public List<TestTask> getTasksByTeamId(String teamId) {
         return testTaskRepository.findAllByTeamId(teamId);
-    }
-
-    public List<TestTask> getTasksMemByTeamId(String teamId) {
-        return keyValueRepository.getTestTasksMemByTeamId(teamId);
-    }
-
-    public List<TestTask> getRunningTestTaskDetailsByTeam(Set<String> teamIds) {
-        List<TestTask> testTasks = keyValueRepository.getRunningTestTasksMem();
-
-        if (!CollectionUtils.isEmpty(teamIds)) {
-            testTasks = testTasks.stream().filter(task -> teamIds.contains(task.getTeamId())).collect(Collectors.toList());
-        }
-
-        if (testTasks.isEmpty()) {
-            return null;
-        }
-        return testTasks;
     }
 
     public void saveAllTestTasks(List<TestTask> testTasks) {
@@ -153,23 +139,20 @@ public class TestDataService {
         return result;
     }
 
-    public Set<String> cancelTaskById(String taskId, boolean isSaveDB) {
-        TestTask testTaskMem = keyValueRepository.getTestTaskMem(taskId);
-        if (isSaveDB) {
-            testTaskMem.setStatus(TestTask.TestStatus.CANCELED);
-            keyValueRepository.saveTestTask(testTaskMem);
-            saveTestTaskData(testTaskMem, true);
-        } else {
-            keyValueRepository.deleteTestTaskById(taskId);
-        }
-        return testTaskMem.getAgentIds();
+    public Set<String> cancelTaskById(String taskId, String reason) {
+        TestTask testTaskHis = testDataServiceCache.getTestTaskDetail(taskId);
+        testTaskHis.setStatus(TestTask.TestStatus.CANCELED);
+        testTaskHis.setTestErrorMsg(reason);
+
+        testDataServiceCache.saveTestTaskData(testTaskHis);
+        return testTaskHis.getAgentIds();
     }
 
     public void saveTestTaskDataFromAgent(TestTask testTask, boolean persistence, String agentId) {
-        TestTask testTaskMem = keyValueRepository.getTestTaskMem(testTask.getId());
+        TestTask testTaskHis = testDataServiceCache.getTestTaskDetail(testTask.getId());
         //run by device
-        if (testTaskMem.agentIds.size() == 0) {
-            saveTestTaskData(testTask, persistence);
+        if (testTaskHis.agentIds.size() == 0) {
+            testDataServiceCache.saveTestTaskData(testTask);
             return;
         }
         //run by group
@@ -177,31 +160,26 @@ public class TestDataService {
             return;
         }
 
-        testTaskMem.getDeviceTestResults().addAll(testTask.getDeviceTestResults());
-        testTaskMem.setTotalTestCount(testTaskMem.getTotalTestCount() + testTask.getTotalTestCount());
-        testTaskMem.setTotalFailCount(testTaskMem.getTotalFailCount() + testTask.getTotalFailCount());
-        testTaskMem.setTestSuite(testTask.getTestSuite());
-        testTaskMem.agentIds.remove(agentId);
+        testTaskHis.getDeviceTestResults().addAll(testTask.getDeviceTestResults());
+        testTaskHis.setTotalTestCount(testTaskHis.getTotalTestCount() + testTask.getTotalTestCount());
+        testTaskHis.setTotalFailCount(testTaskHis.getTotalFailCount() + testTask.getTotalFailCount());
+        testTaskHis.setTestSuite(testTask.getTestSuite());
+        testTaskHis.agentIds.remove(agentId);
 
-        boolean isAllFinish = testTaskMem.agentIds.size() == 0;
+        boolean isAllFinish = testTaskHis.agentIds.size() == 0;
         if (isAllFinish) {
-            testTaskMem.setStatus(TestTask.TestStatus.FINISHED);
-            testTaskMem.setEndDate(testTask.getEndDate());
+            testTaskHis.setStatus(TestTask.TestStatus.FINISHED);
+            testTaskHis.setEndDate(testTask.getEndDate());
         }
-        saveTestTaskData(testTaskMem, isAllFinish);
+        testDataServiceCache.saveTestTaskData(testTaskHis);
     }
 
-    public void saveTestTaskData(TestTask testTask, boolean persistence) {
-        keyValueRepository.saveTestTask(testTask);
-
-        if (!persistence) {
-            return;
-        }
-
+    @CachePut(key = "#testTask.id")
+    public TestTask saveTestTaskData(TestTask testTask) {
         testTaskRepository.save(testTask);
         List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
         if (deviceTestResults.isEmpty()) {
-            return;
+            return testTask;
         }
 
         deviceTestResultRepository.saveAll(deviceTestResults);
@@ -225,7 +203,6 @@ public class TestDataService {
 
                 }
             }
-
             keyValueRepository.saveDeviceTestResultResInfo(deviceTestResult);
 
             String crashStack = deviceTestResult.getCrashStack();
@@ -236,6 +213,7 @@ public class TestDataService {
         }
         androidTestUnitRepository.saveAll(list);
         LOGGER.info("All saved {}", testTask.getId());
+        return testTask;
     }
 
     public DeviceTestTask getDeviceTestTaskWithVideoInfo(String dttId) {
@@ -252,7 +230,7 @@ public class TestDataService {
     }
 
     public void checkTestDataAuthorization(SysUser requestor, String testId) {
-        TestTask testTask = getTestTaskDetail(testId);
+        TestTask testTask = testDataServiceCache.getTestTaskDetail(testId);
         if (testTask == null) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "The TestTask linked doesn't exist!");
         } else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {

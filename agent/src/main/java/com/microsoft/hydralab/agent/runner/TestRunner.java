@@ -18,6 +18,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public abstract class TestRunner {
     protected final Logger log = LoggerFactory.getLogger(DeviceManager.class);
@@ -41,11 +45,24 @@ public abstract class TestRunner {
         setUp(deviceInfo, testTask, deviceTestTask);
         checkTestTaskCancel(testTask);
 
-        try {
+        FutureTask<String> futureTask = new FutureTask<>(() -> {
             run(deviceInfo, testTask, deviceTestTask);
-        } catch (Exception e) {
+            return null;
+        });
+        TimerThreadPool.executor.execute(futureTask);
+
+        try {
+            if (testTask.getTimeOutSecond() > 0) {
+                futureTask.get(testTask.getTimeOutSecond(), TimeUnit.SECONDS);
+            } else {
+                futureTask.get();
+            }
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+            futureTask.cancel(true);
             deviceTestTask.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(deviceTestTask, e);
+            stopTest(deviceInfo, logger);
         } finally {
             tearDown(deviceInfo, testTask, deviceTestTask);
         }
@@ -206,4 +223,7 @@ public abstract class TestRunner {
         return reportLogger;
     }
 
+    public void stopTest(DeviceInfo deviceInfo, Logger logger) {
+        deviceInfo.killAll();
+    }
 }
