@@ -155,6 +155,18 @@ public class MockDriverT2CTest {
             logger.info("Called " + currentMethodName());
             return new MockElement();
         }
+
+        public void copy(WebElement webElement) {
+            logger.info("Called " + currentMethodName());
+        }
+
+        public void paste(WebElement webElement) {
+            logger.info("Called " + currentMethodName());
+        }
+
+        public void setClipboard(String text) {
+            logger.info("Called " + currentMethodName());
+        }
     }
 
     static class MockElement implements WebElement {
