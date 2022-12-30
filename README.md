@@ -63,7 +63,8 @@ and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can r
 cd react
 npm ci
 npm run pub
-# Get back to the project root, and build the center runnable Jar, for gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
+# Get back to the project root, and build the center runnable Jar. 
+# For the gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
 cd ..
 gradlew :center:bootJar
 # Run it, and then visit http://localhost:9886/portal/index.html#/
@@ -74,7 +75,8 @@ java -jar center/build/libs/center.jar
 **Step 2: build and run Hydra Lab agent service.**
 
 ```bash
-# In project root, copy the sample config file and update the YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID, and YOUR_REGISTERED_AGENT_SECRET.
+# In project root, copy the sample config file and update the:
+# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID, and YOUR_REGISTERED_AGENT_SECRET.
 cp agent/application-sample.yml application.yml
 # Then build agent jar and run it
 gradlew :agent:bootJar
