@@ -8,7 +8,7 @@ import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -38,7 +38,7 @@ public class T2CRunner extends AppiumRunner {
 
     @Override
     protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, DeviceInfo deviceInfo, TestTask testTask,
-                                DeviceTestTask deviceTestTask, File deviceTestResultFolder,
+                                TestRun testRun, File deviceTestResultFolder,
                                 PerformanceInspectionService performanceInspectionService, Logger reportLogger) {
         pkgName = testTask.getPkgName();
 
@@ -48,61 +48,61 @@ public class T2CRunner extends AppiumRunner {
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
         long recordingStartTimeMillis = System.currentTimeMillis();
 
-        logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestTask, reportLogger);
+        logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
         logCollector.start();
 
-        deviceTestTask.setTotalCount(testTask.testJsonFileList.size() + (initialJsonFile == null ? 0 : 1));
-        deviceTestTask.setTestStartTimeMillis(System.currentTimeMillis());
-        deviceTestTask.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.setTotalCount(testTask.testJsonFileList.size() + (initialJsonFile == null ? 0 : 1));
+        testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
         currentIndex = 0;
 
-        File gifFile = new File(deviceTestTask.getDeviceTestResultFolder(), pkgName + ".gif");
+        File gifFile = new File(testRun.getDeviceTestResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
 
         if (initialJsonFile != null) {
-            runT2CJsonTestCase(initialJsonFile, deviceInfo, deviceTestTask, reportLogger, recordingStartTimeMillis);
+            runT2CJsonTestCase(initialJsonFile, deviceInfo, testRun, reportLogger, recordingStartTimeMillis);
         }
         for (File jsonFile : testTask.testJsonFileList) {
-            runT2CJsonTestCase(jsonFile, deviceInfo, deviceTestTask, reportLogger, recordingStartTimeMillis);
+            runT2CJsonTestCase(jsonFile, deviceInfo, testRun, reportLogger, recordingStartTimeMillis);
         }
 
 
         // Test finish
         reportLogger.info(pkgName + ".end");
-        deviceTestTask.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceTestTask.onTestEnded();
+        testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.onTestEnded();
         deviceInfo.setRunningTestName(null);
         releaseResource();
         return gifFile;
     }
 
     @Override
-    public DeviceTestTask buildDeviceTestTask(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
-        DeviceTestTask deviceTestTask = super.buildDeviceTestTask(deviceInfo, testTask, parentLogger);
+    public TestRun createTestRun(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
+        TestRun testRun = super.createTestRun(deviceInfo, testTask, parentLogger);
         String deviceName = System.getProperties().getProperty("os.name") + "-" + agentName + "-" + deviceInfo.getName();
-        deviceTestTask.setDeviceName(deviceName);
-        return deviceTestTask;
+        testRun.setDeviceName(deviceName);
+        return testRun;
     }
 
-    private void runT2CJsonTestCase(File jsonFile, DeviceInfo deviceInfo, DeviceTestTask deviceTestTask,
+    private void runT2CJsonTestCase(File jsonFile, DeviceInfo deviceInfo, TestRun testRun,
                                     Logger reportLogger, long recordingStartTimeMillis) {
         AndroidTestUnit ongoingTest = new AndroidTestUnit();
-        ongoingTest.setNumtests(deviceTestTask.getTotalCount());
+        ongoingTest.setNumtests(testRun.getTotalCount());
         ongoingTest.setStartTimeMillis(System.currentTimeMillis());
         ongoingTest.setRelStartTimeInVideo(ongoingTest.getStartTimeMillis() - recordingStartTimeMillis);
         ongoingTest.setCurrentIndexNum(currentIndex++);
         ongoingTest.setTestName(jsonFile.getName());
         ongoingTest.setTestedClass(pkgName);
-        ongoingTest.setDeviceTestResultId(deviceTestTask.getId());
-        ongoingTest.setTestTaskId(deviceTestTask.getTestTaskId());
+        ongoingTest.setDeviceTestResultId(testRun.getId());
+        ongoingTest.setTestTaskId(testRun.getTestTaskId());
 
         reportLogger.info(ongoingTest.getTitle());
 
-        deviceTestTask.addNewTimeTag(currentIndex + ". " + ongoingTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceTestTask.addNewTestUnit(ongoingTest);
+        testRun.addNewTimeTag(currentIndex + ". " + ongoingTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTestUnit(ongoingTest);
 
         deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
             if (imagePNGFile == null) {
@@ -128,12 +128,12 @@ public class T2CRunner extends AppiumRunner {
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingTest.setSuccess(false);
             ongoingTest.setStack(e.toString());
-            deviceTestTask.addNewTimeTag(ongoingTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
-            deviceTestTask.oneMoreFailure();
+            testRun.addNewTimeTag(ongoingTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.oneMoreFailure();
         }
         ongoingTest.setEndTimeMillis(System.currentTimeMillis());
         ongoingTest.setRelEndTimeInVideo(ongoingTest.getEndTimeMillis() - recordingStartTimeMillis);
-        deviceTestTask.addNewTimeTag(ongoingTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
     }
 
     private void releaseResource() {

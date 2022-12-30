@@ -63,8 +63,8 @@ public class TestDataService {
         List<AndroidTestUnit> testUnits = androidTestUnitRepository.findBySuccess(false, PageRequest.of(page, size, sortByStartMillis)).getContent();
 
         for (AndroidTestUnit testUnit : testUnits) {
-            Optional<DeviceTestTask> deviceTestTask = deviceTestResultRepository.findById(testUnit.getDeviceTestResultId());
-            deviceTestTask.ifPresent(testUnit::setDeviceTestTask);
+            Optional<TestRun> deviceTestTask = deviceTestResultRepository.findById(testUnit.getDeviceTestResultId());
+            deviceTestTask.ifPresent(testUnit::setTestRun);
         }
 
         return testUnits;
@@ -86,14 +86,14 @@ public class TestDataService {
             return null;
         }
         testTask = taskOpt.get();
-        List<DeviceTestTask> byTestTaskId = deviceTestResultRepository.findByTestTaskId(testId);
+        List<TestRun> byTestTaskId = deviceTestResultRepository.findByTestTaskId(testId);
 
         if (byTestTaskId == null || byTestTaskId.isEmpty()) {
             return testTask;
         }
 
         testTask.getDeviceTestResults().addAll(byTestTaskId);
-        for (DeviceTestTask deviceTestResult : byTestTaskId) {
+        for (TestRun deviceTestResult : byTestTaskId) {
             List<AndroidTestUnit> byDeviceTestResultId = androidTestUnitRepository.findByDeviceTestResultId(deviceTestResult.getId());
             deviceTestResult.getTestUnitList().addAll(byDeviceTestResultId);
             deviceTestResult.setAttachments(attachmentService.getAttachments(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT));
@@ -194,20 +194,21 @@ public class TestDataService {
     public void saveTestTaskData(TestTask testTask, boolean persistence) {
         keyValueRepository.saveTestTask(testTask);
 
-        if (!persistence) {
-            return;
-        }
+
 
         testTaskRepository.save(testTask);
-        List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
+        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
         if (deviceTestResults.isEmpty()) {
+            return;
+        }
+        if (!persistence) {
             return;
         }
 
         deviceTestResultRepository.saveAll(deviceTestResults);
 
         List<AndroidTestUnit> list = new ArrayList<>();
-        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+        for (TestRun deviceTestResult : deviceTestResults) {
             attachmentService.saveAttachments(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT, deviceTestResult.getAttachments());
 
             List<AndroidTestUnit> testUnitList = deviceTestResult.getTestUnitList();
@@ -238,16 +239,16 @@ public class TestDataService {
         LOGGER.info("All saved {}", testTask.getId());
     }
 
-    public DeviceTestTask getDeviceTestTaskWithVideoInfo(String dttId) {
-        DeviceTestTask deviceTestTask = deviceTestResultRepository.getOne(dttId);
+    public TestRun getDeviceTestTaskWithVideoInfo(String dttId) {
+        TestRun testRun = deviceTestResultRepository.getOne(dttId);
         JSONArray deviceTestResInfo = keyValueRepository.getDeviceTestResInfo(dttId);
-        deviceTestTask.setVideoTimeTagArr(deviceTestResInfo);
-        deviceTestTask.setVideoBlobUrl();
-        deviceTestTask.setAttachments(attachmentService.getAttachments(dttId, EntityFileRelation.EntityType.TEST_RESULT));
-        return deviceTestTask;
+        testRun.setVideoTimeTagArr(deviceTestResInfo);
+        testRun.setVideoBlobUrl();
+        testRun.setAttachments(attachmentService.getAttachments(dttId, EntityFileRelation.EntityType.TEST_RESULT));
+        return testRun;
     }
 
-    public DeviceTestTask getDeviceTestTaskByCrashId(String crashId) {
+    public TestRun getDeviceTestTaskByCrashId(String crashId) {
         return deviceTestResultRepository.findByCrashStackId(crashId).orElse(null);
     }
 

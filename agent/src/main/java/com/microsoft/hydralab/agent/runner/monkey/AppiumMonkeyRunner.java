@@ -8,7 +8,7 @@ import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -30,7 +30,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
     }
 
     @Override
-    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask, File deviceTestResultFolder, PerformanceInspectionService performanceInspectionService, Logger reportLogger) {
+    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, TestRun testRun, File deviceTestResultFolder, PerformanceInspectionService performanceInspectionService, Logger reportLogger) {
         String pkgName = testTask.getPkgName();
 
         long recordingStartTimeMillis = System.currentTimeMillis();
@@ -38,25 +38,25 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
 
-        LogCollector logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestTask, reportLogger);
+        LogCollector logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
         logCollector.start();
-        deviceTestTask.setTotalCount(1);
+        testRun.setTotalCount(1);
 
         AndroidTestUnit ongoingMonkeyTest = new AndroidTestUnit();
-        ongoingMonkeyTest.setNumtests(deviceTestTask.getTotalCount());
+        ongoingMonkeyTest.setNumtests(testRun.getTotalCount());
         ongoingMonkeyTest.setStartTimeMillis(System.currentTimeMillis());
         ongoingMonkeyTest.setRelStartTimeInVideo(ongoingMonkeyTest.getStartTimeMillis() - recordingStartTimeMillis);
         ongoingMonkeyTest.setCurrentIndexNum(1);
         ongoingMonkeyTest.setTestName("Appium_Monkey_Test");
         ongoingMonkeyTest.setTestedClass(pkgName);
-        ongoingMonkeyTest.setDeviceTestResultId(deviceTestTask.getId());
-        ongoingMonkeyTest.setTestTaskId(deviceTestTask.getTestTaskId());
+        ongoingMonkeyTest.setDeviceTestResultId(testRun.getId());
+        ongoingMonkeyTest.setTestTaskId(testRun.getTestTaskId());
 
         reportLogger.info(ongoingMonkeyTest.getTitle());
 
-        deviceTestTask.addNewTimeTag(1 + ". " + ongoingMonkeyTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(1 + ". " + ongoingMonkeyTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingMonkeyTest.getTitle());
-        File gifFile = new File(deviceTestTask.getDeviceTestResultFolder(), pkgName + ".gif");
+        File gifFile = new File(testRun.getDeviceTestResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
@@ -73,7 +73,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
                 ioException.printStackTrace();
             }
         }), reportLogger);
-        deviceTestTask.setTestStartTimeMillis(System.currentTimeMillis());
+        testRun.setTestStartTimeMillis(System.currentTimeMillis());
         deviceManager.runAppiumMonkey(deviceInfo, pkgName, testTask.getMaxStepCount(), reportLogger);
 
         deviceScreenRecorder.finishRecording();
@@ -85,23 +85,23 @@ public class AppiumMonkeyRunner extends AppiumRunner {
             ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingMonkeyTest.setSuccess(false);
             ongoingMonkeyTest.setStack(e.toString());
-            deviceTestTask.setSuccess(false);
-            deviceTestTask.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
-            deviceTestTask.oneMoreFailure();
+            testRun.setSuccess(false);
+            testRun.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.oneMoreFailure();
         } else {
             // Pass
             ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingMonkeyTest.setSuccess(true);
-            deviceTestTask.setSuccess(true);
+            testRun.setSuccess(true);
         }
 
         // Test finish
         reportLogger.info(ongoingMonkeyTest.getTitle() + ".end");
         ongoingMonkeyTest.setEndTimeMillis(System.currentTimeMillis());
         deviceInfo.setRunningTestName(null);
-        deviceTestTask.addNewTestUnit(ongoingMonkeyTest);
-        deviceTestTask.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceTestTask.onTestEnded();
+        testRun.addNewTestUnit(ongoingMonkeyTest);
+        testRun.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.onTestEnded();
         return gifFile;
     }
 }

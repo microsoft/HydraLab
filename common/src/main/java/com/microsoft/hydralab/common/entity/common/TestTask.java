@@ -6,7 +6,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.util.DateUtil;
-import com.microsoft.hydralab.performance.PerformanceTestSpec;
+import com.microsoft.hydralab.performance.PerformanceInspection;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -78,7 +78,7 @@ public class TestTask {
     @Transient
     private transient Map<String, String> instrumentationArgs;
     @Transient
-    private List<DeviceTestTask> deviceTestResults = new ArrayList<>();
+    private List<TestRun> deviceTestResults = new ArrayList<>();
     @Transient
     private Map<String, List<DeviceAction>> deviceActions = new HashMap<>();
     private String fileSetId;
@@ -100,10 +100,8 @@ public class TestTask {
     private String testScope;
     // todo: change this to a more general name for all scopes of ESPRESSO tests.
     private String testSuite;
-    private boolean enableMemoryTest;
-    private boolean enableBatteryTest;
-    private long performanceInterval = -1;
-    private List<PerformanceTestSpec> performanceTestSpecList = new ArrayList<>();
+    @Transient
+    private List<PerformanceInspection> performanceInspectionList = new ArrayList<>();
 
     public TestTask() {
     }
@@ -147,8 +145,6 @@ public class TestTask {
             testTask.setTestRunnerName(testTaskSpec.testRunnerName);
         }
         testTask.setTestScope(testTaskSpec.testScope);
-        testTask.setEnableMemoryTest(testTaskSpec.enableMemoryTest);
-        testTask.setEnableBatteryTest(testTaskSpec.enableBatteryTest);
 
         return testTask;
     }
@@ -196,7 +192,7 @@ public class TestTask {
         return testTask;
     }
 
-    public synchronized void addTestedDeviceResult(DeviceTestTask deviceTestResult) {
+    public synchronized void addTestedDeviceResult(TestRun deviceTestResult) {
         deviceTestResults.add(deviceTestResult);
     }
 
@@ -265,7 +261,7 @@ public class TestTask {
         if (deviceTestResults.isEmpty()) {
             return;
         }
-        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+        for (TestRun deviceTestResult : deviceTestResults) {
             totalTestCount += deviceTestResult.getTotalCount();
             totalFailCount += deviceTestResult.getFailCount();
         }

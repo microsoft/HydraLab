@@ -34,7 +34,7 @@ public class TestDataService {
             return;
         }
 
-        List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
+        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
         if (deviceTestResults.isEmpty()) {
             return;
         }
@@ -43,7 +43,7 @@ public class TestDataService {
         testTaskRepository.save(testTask);
 
         List<AndroidTestUnit> list = new ArrayList<>();
-        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+        for (TestRun deviceTestResult : deviceTestResults) {
             attachmentService.saveRelations(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT, deviceTestResult.getAttachments());
 
             List<AndroidTestUnit> testUnitList = deviceTestResult.getTestUnitList();

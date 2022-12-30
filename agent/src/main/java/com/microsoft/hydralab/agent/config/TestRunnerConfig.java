@@ -34,6 +34,12 @@ public class TestRunnerConfig {
             TestTask.TestRunningType.APPIUM_MONKEY_TEST, "appiumMonkeyRunner",
             TestTask.TestRunningType.T2C_JSON_TEST, "t2cRunner"
     );
+    @Bean
+    public PerformanceInspectorManagementService performanceInspectorManagementService() {
+        PerformanceInspectorManagementService performanceInspectorManagementService = new PerformanceInspectorManagementService();
+        performanceInspectorManagementService.initialize();
+        return performanceInspectorManagementService;
+    }
 
     @Bean
     public EspressoRunner espressoRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil, PerformanceInspectorManagementService performanceInspectorManagementService) {

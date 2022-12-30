@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.common.logger.impl;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
@@ -19,7 +19,7 @@ import java.util.UUID;
 
 public class IOSLogCollector implements LogCollector {
     private final DeviceInfo connectedDevice;
-    private final DeviceTestTask deviceTestResult;
+    private final TestRun deviceTestResult;
     private final String pkgName;
     private final Logger infoLogger;
     IOSDeviceManager deviceManager;
@@ -28,7 +28,7 @@ public class IOSLogCollector implements LogCollector {
     private Process logProcess;
     private boolean crashFound;
 
-    public IOSLogCollector(DeviceManager deviceManager, DeviceInfo deviceInfo, String pkgName, DeviceTestTask deviceTestResult, Logger logger) {
+    public IOSLogCollector(DeviceManager deviceManager, DeviceInfo deviceInfo, String pkgName, TestRun deviceTestResult, Logger logger) {
         this.deviceManager = (IOSDeviceManager) deviceManager;
         this.connectedDevice = deviceInfo;
         this.deviceTestResult = deviceTestResult;

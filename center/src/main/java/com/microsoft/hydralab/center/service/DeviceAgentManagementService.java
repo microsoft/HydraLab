@@ -229,8 +229,8 @@ public class DeviceAgentManagementService {
 
                     //after the task finishing, update the status of device used
                     if (isFinished) {
-                        List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
-                        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+                        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
+                        for (TestRun deviceTestResult : deviceTestResults) {
                             updateDeviceStatus(deviceTestResult.getDeviceSerialNumber(), DeviceInfo.ONLINE, null);
                         }
                         //run the task saved in queue

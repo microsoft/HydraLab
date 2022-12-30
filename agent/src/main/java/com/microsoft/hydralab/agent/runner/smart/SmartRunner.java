@@ -12,7 +12,7 @@ import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.agent.SmartTestParam;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -43,21 +43,21 @@ public class SmartRunner extends TestRunner {
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
+    protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
 
-        Logger reportLogger = deviceTestTask.getLogger();
+        Logger reportLogger = testRun.getLogger();
 
         pkgName = testTask.getPkgName();
 
         /** start Record **/
-        logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestTask, reportLogger);
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestTask.getDeviceTestResultFolder(), reportLogger);
-        startRecording(deviceInfo, deviceTestTask, testTask.getTimeOutSecond(), reportLogger);
+        logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
+        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getDeviceTestResultFolder(), reportLogger);
+        startRecording(deviceInfo, testRun, testTask.getTimeOutSecond(), reportLogger);
 
         /** run the test */
         reportLogger.info("Start Smart test");
         checkTestTaskCancel(testTask);
-        deviceTestTask.setTestStartTimeMillis(System.currentTimeMillis());
+        testRun.setTestStartTimeMillis(System.currentTimeMillis());
 
         /** init smart_test arg */
         //TODO choose model before starting test task
@@ -65,62 +65,62 @@ public class SmartRunner extends TestRunner {
 
         for (int i = 1; i <= testTask.getDeviceTestCount(); i++) {
             checkTestTaskCancel(testTask);
-            runSmartTestOnce(i, deviceInfo, deviceTestTask, reportLogger);
+            runSmartTestOnce(i, deviceInfo, testRun, reportLogger);
         }
-        testRunEnded(deviceInfo, deviceTestTask);
+        testRunEnded(deviceInfo, testRun);
         /** set paths */
-        String absoluteReportPath = deviceTestTask.getDeviceTestResultFolder().getAbsolutePath();
-        deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+        String absoluteReportPath = testRun.getDeviceTestResultFolder().getAbsolutePath();
+        testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
         File gifFile = getGifFile();
         if (gifFile.exists() && gifFile.length() > 0) {
-            deviceTestTask.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
+            testRun.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
         }
 
     }
 
-    public void startRecording(DeviceInfo deviceInfo, DeviceTestTask deviceTestTask, int maxTime, Logger logger) {
-        startTools(deviceTestTask, logger);
+    public void startRecording(DeviceInfo deviceInfo, TestRun testRun, int maxTime, Logger logger) {
+        startTools(testRun, logger);
         logger.info("Start record screen");
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(maxTime <= 0 ? 30 * 60 : maxTime);
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
         deviceInfo.setRunningTestName(initializing);
-        deviceTestTask.addNewTimeTag(initializing, 0);
+        testRun.addNewTimeTag(initializing, 0);
     }
 
-    private void startTools(DeviceTestTask deviceTestTask, Logger logger) {
+    private void startTools(TestRun testRun, Logger logger) {
         logger.info("Start gif frames collection");
-        gifFile = new File(deviceTestTask.getDeviceTestResultFolder(), pkgName + ".gif");
+        gifFile = new File(testRun.getDeviceTestResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
 
         logger.info("Start adb logcat collection");
         String logcatFilePath = logCollector.start();
-        deviceTestTask.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
     public File getGifFile() {
         return gifFile;
     }
 
-    public void runSmartTestOnce(int i, DeviceInfo deviceInfo, DeviceTestTask deviceTestTask, Logger logger) {
+    public void runSmartTestOnce(int i, DeviceInfo deviceInfo, TestRun testRun, Logger logger) {
         final int unitIndex = ++index;
         String title = "Smart_Test(" + i + ")";
 
         AndroidTestUnit ongoingSmartTest = new AndroidTestUnit();
 
-        ongoingSmartTest.setNumtests(deviceTestTask.getTotalCount());
+        ongoingSmartTest.setNumtests(testRun.getTotalCount());
         ongoingSmartTest.setStartTimeMillis(System.currentTimeMillis());
         ongoingSmartTest.setRelStartTimeInVideo(ongoingSmartTest.getStartTimeMillis() - recordingStartTimeMillis);
         ongoingSmartTest.setCurrentIndexNum(unitIndex);
         ongoingSmartTest.setTestName(title);
         ongoingSmartTest.setTestedClass(pkgName);
-        ongoingSmartTest.setDeviceTestResultId(deviceTestTask.getId());
-        ongoingSmartTest.setTestTaskId(deviceTestTask.getTestTaskId());
+        ongoingSmartTest.setDeviceTestResultId(testRun.getId());
+        ongoingSmartTest.setTestTaskId(testRun.getTestTaskId());
 
-        deviceTestTask.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingSmartTest.getTitle());
         logger.info(ongoingSmartTest.getTitle());
         deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1), (imagePNGFile -> {
@@ -154,14 +154,14 @@ public class SmartRunner extends TestRunner {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(res.getString(Const.SmartTestConfig.taskExpTag));
-            deviceTestTask.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
-            deviceTestTask.oneMoreFailure();
+            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.oneMoreFailure();
         } else if (crashStack != null && crashStack.size() > 0) {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(crashStack.toJSONString());
-            deviceTestTask.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
-            deviceTestTask.oneMoreFailure();
+            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.oneMoreFailure();
         } else {
             analysisRes = smartTestUtil.analysisRes(res);
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
@@ -170,18 +170,18 @@ public class SmartRunner extends TestRunner {
         ongoingSmartTest.setEndTimeMillis(System.currentTimeMillis());
         logger.info(ongoingSmartTest.getTitle() + ".end");
         deviceInfo.setRunningTestName(null);
-        deviceTestTask.addNewTestUnit(ongoingSmartTest);
-        deviceTestTask.addNewTimeTag(ongoingSmartTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTestUnit(ongoingSmartTest);
+        testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
         if (ongoingSmartTest.isSuccess()) {
-            deviceTestTask.addNewTimeTag(ongoingSmartTest.getTitle() + ".res" + ":" + analysisRes, System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".res" + ":" + analysisRes, System.currentTimeMillis() - recordingStartTimeMillis);
         }
 
     }
 
-    public void testRunEnded(DeviceInfo deviceInfo, DeviceTestTask deviceTestTask) {
+    public void testRunEnded(DeviceInfo deviceInfo, TestRun testRun) {
 
-        deviceTestTask.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceTestTask.onTestEnded();
+        testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.onTestEnded();
         deviceInfo.setRunningTestName(null);
         releaseResource();
     }

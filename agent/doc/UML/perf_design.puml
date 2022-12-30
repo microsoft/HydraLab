@@ -64,7 +64,7 @@ package "agent" {
 }
 
 package "common" {
-    class PerformanceInspectorManager {
+    class PerformanceInspectorManagementService {
         AndroidBatteryInspector androidBatteryInspector;
         AndroidMemoryInfoInspector androidMemoryInfoInspector;
         AndroidMemoryDumpInspector androidMemoryDumpInspector;
@@ -79,12 +79,12 @@ package "common" {
     PerformanceInspector <|-- WindowsBatteryInspector
     PerformanceInspector <|-- WindowsMemoryInspector
 
-    AndroidBatteryInspector --o PerformanceInspectorManager
-    AndroidMemoryInfoInspector --o PerformanceInspectorManager
-    AndroidMemoryDumpInspector --o PerformanceInspectorManager
-    WindowsBatteryInspector --o PerformanceInspectorManager
-    WindowsMemoryInspector --o PerformanceInspectorManager
-    PerformanceInspectorManager --|> IPerformanceInspectionService
+    AndroidBatteryInspector --o PerformanceInspectorManagementService
+    AndroidMemoryInfoInspector --o PerformanceInspectorManagementService
+    AndroidMemoryDumpInspector --o PerformanceInspectorManagementService
+    WindowsBatteryInspector --o PerformanceInspectorManagementService
+    WindowsMemoryInspector --o PerformanceInspectorManagementService
+    PerformanceInspectorManagementService --|> IPerformanceInspectionService
 
     TestRunner o-r- PerformanceInspectorManager
     TestRunner -up..> PerformanceInspectionService

@@ -5,7 +5,7 @@ package com.microsoft.hydralab.common.repository;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.KeyValue;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +44,7 @@ public class KeyValueRepository {
         putKeyValuePairDB(CRASH_STACK_IN_DEVICE + crashStackId, crashStack.replace("\n", "<br>"));
     }
 
-    public void saveDeviceTestResultResInfo(DeviceTestTask result) {
+    public void saveDeviceTestResultResInfo(TestRun result) {
         JSONArray videoTimeTagArr = result.getVideoTimeTagArr();
         if (videoTimeTagArr == null) {
             return;

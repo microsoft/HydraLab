@@ -1,7 +1,8 @@
 package com.microsoft.hydralab.appium;
 
+import com.microsoft.hydralab.TestRunThreadContext;
 import com.microsoft.hydralab.performance.PerformanceInspectionService;
-import com.microsoft.hydralab.performance.PerformanceTestSpec;
+import com.microsoft.hydralab.performance.PerformanceInspection;
 import org.junit.jupiter.api.Test;
 
 
@@ -18,11 +19,11 @@ public class PerformanceTestSample {
 
         PerformanceInspectionService performanceInspectionService = PerformanceInspectionService.getInstance();
 
-        PerformanceTestSpec androidBatteryInfoSpec = PerformanceTestSpec.createAndroidBatteryInfoSpec(appIdAndroid, androidDeviceId);
-        PerformanceTestSpec androidMemoryDumpSpec = PerformanceTestSpec.createAndroidMemoryDumpSpec(appIdAndroid, androidDeviceId);
-        PerformanceTestSpec androidMemoryInfoSpec = PerformanceTestSpec.createAndroidMemoryInfoSpec(appIdAndroid, androidDeviceId);
-        PerformanceTestSpec windowsBatteryInfoSpec = PerformanceTestSpec.createWindowsBatteryInfoSpec(appIdWindows, windowsDeviceId);
-        PerformanceTestSpec windowsMemoryInfoSpec = PerformanceTestSpec.createWindowsMemoryInfoSpec(appIdWindows, windowsDeviceId);
+        PerformanceInspection androidBatteryInfoSpec = PerformanceInspection.createAndroidBatteryInfoSpec(appIdAndroid, androidDeviceId);
+        PerformanceInspection androidMemoryDumpSpec = PerformanceInspection.createAndroidMemoryDumpSpec(appIdAndroid, androidDeviceId);
+        PerformanceInspection androidMemoryInfoSpec = PerformanceInspection.createAndroidMemoryInfoSpec(appIdAndroid, androidDeviceId);
+        PerformanceInspection windowsBatteryInfoSpec = PerformanceInspection.createWindowsBatteryInfoSpec(appIdWindows, windowsDeviceId);
+        PerformanceInspection windowsMemoryInfoSpec = PerformanceInspection.createWindowsMemoryInfoSpec(appIdWindows, windowsDeviceId);
 
         performanceInspectionService.initialize(androidBatteryInfoSpec);
         performanceInspectionService.initialize(androidMemoryDumpSpec);
@@ -38,6 +39,8 @@ public class PerformanceTestSample {
         System.out.println("Start PL...");
         performanceInspectionService.inspect(windowsMemoryInfoSpec.rename("Start PL"));
         performanceInspectionService.inspect(windowsBatteryInfoSpec);
+
+        performanceInspectionService.parse(windowsMemoryInfoSpec);
 
     }
 }

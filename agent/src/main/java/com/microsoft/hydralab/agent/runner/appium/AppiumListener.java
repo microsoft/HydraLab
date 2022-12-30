@@ -6,7 +6,7 @@ import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AppiumListener extends RunListener {
     private final DeviceInfo deviceInfo;
-    private final DeviceTestTask deviceTestResult;
+    private final TestRun deviceTestResult;
     private final LogCollector logcatCollector;
     private final ScreenRecorder deviceScreenRecorder;
     private final Logger logger;
@@ -43,7 +43,7 @@ public class AppiumListener extends RunListener {
     private int currentTestIndex = 0;
 
 
-    public AppiumListener(DeviceManager deviceManager, DeviceInfo deviceInfo, DeviceTestTask deviceTestResult, String pkgName, Logger logger) {
+    public AppiumListener(DeviceManager deviceManager, DeviceInfo deviceInfo, TestRun deviceTestResult, String pkgName, Logger logger) {
         this.deviceManager = deviceManager;
         this.deviceInfo = deviceInfo;
         this.deviceTestResult = deviceTestResult;

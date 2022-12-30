@@ -1,33 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.appium;
+package com.microsoft.hydralab;
 
+import com.microsoft.hydralab.appium.AppiumParam;
 import com.microsoft.hydralab.performance.PerformanceInspectionService;
 
 import java.util.Map;
 
-public class ThreadParam {
-    private static InheritableThreadLocal<AppiumParam> appiumParam = new InheritableThreadLocal<>();
-    private static InheritableThreadLocal<Map<String, String>> configMap = new InheritableThreadLocal<>();
-    private static InheritableThreadLocal<PerformanceInspectionService> performanceExecutor = new InheritableThreadLocal<>();
+public class TestRunThreadContext {
+    private static final InheritableThreadLocal<AppiumParam> appiumParam = new InheritableThreadLocal<>();
+    private static final InheritableThreadLocal<Map<String, String>> configMap = new InheritableThreadLocal<>();
 
     public static void init(AppiumParam appiumParamTemp, Map<String, String> configMapParam, PerformanceInspectionService performanceInspectionServiceTemp) {
         clean();
         appiumParam.set(appiumParamTemp);
         configMap.set(configMapParam);
-        performanceExecutor.set(performanceInspectionServiceTemp);
     }
 
     public static void clean() {
         appiumParam.remove();
         configMap.remove();
-        performanceExecutor.remove();
     }
 
     public static AppiumParam getAppiumParam() {
-        if (appiumParam == null) {
-            return new AppiumParam();
-        }
         AppiumParam temp = appiumParam.get();
         if (temp == null) {
             return new AppiumParam();
@@ -35,17 +30,7 @@ public class ThreadParam {
         return temp;
     }
 
-    public static PerformanceInspectionService getPerformanceExecutor() {
-
-        PerformanceInspectionService manager = performanceExecutor.get();
-
-        return manager;
-    }
-
     public static String getConfigString(String key) {
-        if (configMap == null) {
-            return null;
-        }
         Map<String, String> temp = configMap.get();
         if (temp == null) {
             return null;
@@ -60,5 +45,9 @@ public class ThreadParam {
             return defaultValue;
         }
         return temp;
+    }
+
+    public static void initWithTestRun(ITestRun deviceTestTask) {
+
     }
 }

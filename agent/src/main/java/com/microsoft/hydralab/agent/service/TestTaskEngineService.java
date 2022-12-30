@@ -173,7 +173,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, DeviceTestTask result) {
+    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result) {
         log.info("onOneDeviceComplete: {}", deviceControl.getSerialNum());
         deviceControl.finishTask();
         File deviceTestResultFolder = result.getDeviceTestResultFolder();
@@ -207,7 +207,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         return attachmentService.addFileInfo(blobFileInfo, file, EntityFileRelation.EntityType.TEST_RESULT, logger);
     }
 
-    private void processAndSaveDeviceTestResultBlobUrl(DeviceTestTask result) {
+    private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
         Assert.isTrue(result.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
         String deviceTestResultBlobUrl = result.getAttachments().get(0).getBlobUrl();
         String fileName = result.getAttachments().get(0).getFileName();

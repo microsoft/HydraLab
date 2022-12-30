@@ -3,18 +3,18 @@ package com.microsoft.hydralab.performance.impl;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
-import com.microsoft.hydralab.performance.PerformanceTestSpec;
+import com.microsoft.hydralab.performance.PerformanceInspection;
 
 import java.util.List;
 
 public class WindowsBatteryInspector implements PerformanceInspector {
     @Override
-    public void initialize(PerformanceTestSpec performanceTestSpec) {
+    public void initialize(PerformanceInspection performanceInspection) {
         
     }
 
     @Override
-    public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec) {
+    public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
         return null;
     }
 

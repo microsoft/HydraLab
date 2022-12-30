@@ -4,10 +4,10 @@ package com.microsoft.hydralab.common.entity.common;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.ITestRun;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.io.File;
@@ -17,9 +17,9 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(indexes = {
+@Table(name = "device_task_task",indexes = {
         @Index(name = "task_id_index", columnList = "test_task_id", unique = false)})
-public class DeviceTestTask {
+public class TestRun implements ITestRun {
     //    private static Pattern testResultLine = Pattern.compile("Tests run:\\s+(\\d+),\\s+Failures:\\s+(\\d+)");
     // OK (8 tests)
 //    private static Pattern testResultOkLine = Pattern.compile("OK\\s+\\((\\d+)\\s+tests\\)");
@@ -71,10 +71,10 @@ public class DeviceTestTask {
     @Transient
     private transient Logger logger;
 
-    public DeviceTestTask() {
+    public TestRun() {
     }
 
-    public DeviceTestTask(String deviceSerialNumber, String deviceName, String testTaskId) {
+    public TestRun(String deviceSerialNumber, String deviceName, String testTaskId) {
         this.deviceSerialNumber = deviceSerialNumber;
         this.deviceName = deviceName.replace('_', ' ');
         this.testTaskId = testTaskId;

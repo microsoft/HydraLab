@@ -1,81 +1,81 @@
 package com.microsoft.hydralab.performance;
 
 import com.microsoft.hydralab.performance.impl.*;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
-@Service
 public class PerformanceInspectorManagementService implements IPerformanceInspectionService {
     static final ScheduledExecutorService timerExecutor = Executors.newScheduledThreadPool(5 /* corePoolSize */);
     private final Map<String, PerformanceInspector> performanceInspectorMap = Map.of(
-            PerformanceTestSpec.INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInspector(),
-            PerformanceTestSpec.INSPECTOR_ANDROID_MEMORY_DUMP, new AndroidMemoryDumpInspector(),
-            PerformanceTestSpec.INSPECTOR_ANDROID_MEMORY_INFO, new AndroidMemoryInfoInspector(),
-            PerformanceTestSpec.INSPECTOR_WIN_BATTERY, new WindowsBatteryInspector(),
-            PerformanceTestSpec.INSPECTOR_WIN_MEMORY, new WindowsMemoryInspector()
+            PerformanceInspection.INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInspector(),
+            PerformanceInspection.INSPECTOR_ANDROID_MEMORY_DUMP, new AndroidMemoryDumpInspector(),
+            PerformanceInspection.INSPECTOR_ANDROID_MEMORY_INFO, new AndroidMemoryInfoInspector(),
+            PerformanceInspection.INSPECTOR_WIN_BATTERY, new WindowsBatteryInspector(),
+            PerformanceInspection.INSPECTOR_WIN_MEMORY, new WindowsMemoryInspector()
     );
     final List<ScheduledFuture<?>> inspectPerformanceTimerList = new ArrayList<>();
     private final Map<String, PerformanceTestResult> resultMap = new ConcurrentHashMap<>();
 
-    public void setup() {
-        PerformanceInspectionService.getInstance().switchServiceInstance(this);
+    public void initialize() {
+        PerformanceInspectionService.getInstance().swapServiceInstance(this);
     }
 
     /**
      * TODO: when found a strategy, start it here
      *
-     * @param performanceTestSpec
      */
-    public void initialize(PerformanceTestSpec performanceTestSpec) {
-        PerformanceInspector performanceInspector = getInspectorByName(performanceTestSpec.inspector);
+    public void initialize(PerformanceInspection performanceInspection) {
+        PerformanceInspector performanceInspector = getInspectorByName(performanceInspection.inspector);
         if (performanceInspector == null) {
             return;
         }
-        performanceInspector.initialize(performanceTestSpec);
+        performanceInspector.initialize(performanceInspection);
     }
 
     private PerformanceInspector getInspectorByName(String inspectorName) {
         return performanceInspectorMap.get(inspectorName);
     }
 
-    public void startInspectPerformanceTimer(PerformanceTestSpec performanceTestSpec) {
-        initialize(performanceTestSpec);
+    public void startInspectPerformanceTimer(PerformanceInspection performanceInspection) {
+        initialize(performanceInspection);
         ScheduledFuture<?> scheduledFuture = timerExecutor.schedule(new Runnable() {
             @Override
             public void run() {
-                inspect(performanceTestSpec);
+                inspect(performanceInspection);
             }
-        }, performanceTestSpec.interval, TimeUnit.SECONDS);
+        }, performanceInspection.interval, TimeUnit.SECONDS);
         inspectPerformanceTimerList.add(scheduledFuture);
     }
+    public List<PerformanceInspectionResult> inspectWithStrategy(PerformanceInspection performanceInspection,InspectionStrategy inspectionStrategy){
 
-    public List<PerformanceInspectionResult> inspect(PerformanceTestSpec performanceTestSpec) {
+    }
+
+    public List<PerformanceInspectionResult> inspect(PerformanceInspection performanceInspection) {
         List<PerformanceInspectionResult> tempInspectionResultList = new ArrayList<>();
-        String inspector = performanceTestSpec.inspector;
+        String inspector = performanceInspection.inspector;
         PerformanceInspector performanceInspector = getInspectorByName(inspector);
         if (performanceInspector == null) {
             return tempInspectionResultList;
         }
-        PerformanceInspectionResult result = performanceInspector.inspect(performanceTestSpec);
+        PerformanceInspectionResult result = performanceInspector.inspect(performanceInspection);
         if (result != null) {
             tempInspectionResultList.add(result);
         }
-        resultMap.putIfAbsent(performanceTestSpec.inspectionKey, new PerformanceTestResult());
-        PerformanceTestResult performanceTestResult = resultMap.get(performanceTestSpec.inspectionKey);
+        resultMap.putIfAbsent(performanceInspection.inspectionKey, new PerformanceTestResult());
+        PerformanceTestResult performanceTestResult = resultMap.get(performanceInspection.inspectionKey);
         performanceTestResult.performanceInspectionResults.addAll(tempInspectionResultList);
         return tempInspectionResultList;
     }
 
-    public PerformanceTestResult parse(PerformanceTestSpec performanceTestSpec) {
-        PerformanceTestResult performanceTestResult = resultMap.get(performanceTestSpec.inspectionKey);
+    public PerformanceTestResult parse(PerformanceInspection performanceInspection) {
+        PerformanceTestResult performanceTestResult = resultMap.get(performanceInspection.inspectionKey);
         if (performanceTestResult == null) {
             return null;
         }
-        String inspector = performanceTestSpec.inspector;
+        String inspector = performanceInspection.inspector;
         PerformanceInspector performanceInspector = getInspectorByName(inspector);
         performanceInspector.parse(performanceTestResult.performanceInspectionResults);
         for (ScheduledFuture<?> timer : inspectPerformanceTimerList) {
