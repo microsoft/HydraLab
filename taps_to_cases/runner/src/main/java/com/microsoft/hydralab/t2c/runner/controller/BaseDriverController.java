@@ -130,6 +130,16 @@ public class BaseDriverController {
     public void switchToUrl(String url) {
     }
 
+    public void copy(WebElement webElement) {
+        setClipboard(webElement.getText());
+    }
+
+    public void paste(WebElement webElement) {
+    }
+
+    public void setClipboard(String text) {
+    }
+
     public WebElement findElementByAccessibilityId(String accessibilityId) {
         WebElement elementFound = null;
         try {
