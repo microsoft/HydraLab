@@ -10,10 +10,9 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.performace.PerformanceManager;
+import com.microsoft.hydralab.performance.PerformanceInspectorManagementService;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -34,8 +33,8 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 
 public class AppiumRunner extends TestRunner {
 
-    public AppiumRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceManager performanceManager) {
-        super(deviceManager, testTaskRunCallback, performanceManager);
+    public AppiumRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceInspectorManagementService performanceInspectorManagementService) {
+        super(deviceManager, testTaskRunCallback, performanceInspectorManagementService);
     }
 
     @Override

@@ -2,18 +2,48 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
-public class PerformanceInspectionService implements IPerformanceInspectionService{
-    IPerformanceInspectionService serviceInstance = new IPerformanceInspectionService() {
+public enum PerformanceInspectionService implements IPerformanceInspectionService {
+    INSTANCE;
+    private IPerformanceInspectionService serviceInstance = new IPerformanceInspectionService() {
+        @Override
+        public void initialize(PerformanceTestSpec performanceTestSpec) {
+
+        }
+
+        @Override
+        public List<PerformanceInspectionResult> inspect(PerformanceTestSpec performanceTestSpec) {
+            return new ArrayList<>();
+        }
+
+        @Override
+        public PerformanceTestResult parse(PerformanceTestSpec performanceTestSpec) {
+            return new PerformanceTestResult();
+        }
     };
-    List<PerformanceInspector> inspectors = new ArrayList<>();
 
+    void switchServiceInstance(IPerformanceInspectionService serviceInstance) {
+        this.serviceInstance = serviceInstance;
+    }
+
+    public static PerformanceInspectionService getInstance() {
+        return INSTANCE;
+    }
+
+    @Override
+    public void initialize(PerformanceTestSpec performanceTestSpec) {
+        serviceInstance.initialize(performanceTestSpec);
+    }
+
+    @Override
+    public List<PerformanceInspectionResult> inspect(PerformanceTestSpec performanceTestSpec) {
+        return serviceInstance.inspect(performanceTestSpec);
+    }
+
+    @Override
+    public PerformanceTestResult parse(PerformanceTestSpec performanceTestSpec) {
+        return serviceInstance.parse(performanceTestSpec);
+    }
 }

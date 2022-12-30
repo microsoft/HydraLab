@@ -13,7 +13,7 @@ import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.performace.PerformanceManager;
+import com.microsoft.hydralab.performance.PerformanceInspectorManagementService;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -36,37 +36,37 @@ public class TestRunnerConfig {
     );
 
     @Bean
-    public EspressoRunner espressoRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil, PerformanceManager performanceManager) {
-        return new EspressoRunner(deviceManager, testTaskEngineService, adbOperateUtil, performanceManager);
+    public EspressoRunner espressoRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil, PerformanceInspectorManagementService performanceInspectorManagementService) {
+        return new EspressoRunner(deviceManager, testTaskEngineService, adbOperateUtil, performanceInspectorManagementService);
     }
 
     @Bean
-    public AdbMonkeyRunner adbMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil, PerformanceManager performanceManager) {
-        return new AdbMonkeyRunner(deviceManager, testTaskEngineService, adbOperateUtil, performanceManager);
+    public AdbMonkeyRunner adbMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil, PerformanceInspectorManagementService performanceInspectorManagementService) {
+        return new AdbMonkeyRunner(deviceManager, testTaskEngineService, adbOperateUtil, performanceInspectorManagementService);
     }
 
     @Bean
-    public AppiumMonkeyRunner appiumMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, PerformanceManager performanceManager) {
-        return new AppiumMonkeyRunner(deviceManager, testTaskEngineService, performanceManager);
+    public AppiumMonkeyRunner appiumMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, PerformanceInspectorManagementService performanceInspectorManagementService) {
+        return new AppiumMonkeyRunner(deviceManager, testTaskEngineService, performanceInspectorManagementService);
     }
 
     @Bean
-    public AppiumRunner appiumRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, PerformanceManager performanceManager) {
-        return new AppiumRunner(deviceManager, testTaskEngineService, performanceManager);
+    public AppiumRunner appiumRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, PerformanceInspectorManagementService performanceInspectorManagementService) {
+        return new AppiumRunner(deviceManager, testTaskEngineService, performanceInspectorManagementService);
     }
 
     @Bean
-    public AppiumCrossRunner appiumCrossRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, PerformanceManager performanceManager) {
-        return new AppiumCrossRunner(deviceManager, testTaskEngineService, agentName, performanceManager);
+    public AppiumCrossRunner appiumCrossRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, PerformanceInspectorManagementService performanceInspectorManagementService) {
+        return new AppiumCrossRunner(deviceManager, testTaskEngineService, agentName, performanceInspectorManagementService);
     }
 
     @Bean
-    public SmartRunner smartRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, SmartTestUtil smartTestUtil, PerformanceManager performanceManager) {
-        return new SmartRunner(deviceManager, testTaskEngineService, smartTestUtil, performanceManager);
+    public SmartRunner smartRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, SmartTestUtil smartTestUtil, PerformanceInspectorManagementService performanceInspectorManagementService) {
+        return new SmartRunner(deviceManager, testTaskEngineService, smartTestUtil, performanceInspectorManagementService);
     }
 
     @Bean
-    public T2CRunner t2cRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, PerformanceManager performanceManager) {
-        return new T2CRunner(deviceManager, testTaskEngineService, agentName, performanceManager);
+    public T2CRunner t2cRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, PerformanceInspectorManagementService performanceInspectorManagementService) {
+        return new T2CRunner(deviceManager, testTaskEngineService, agentName, performanceInspectorManagementService);
     }
 }

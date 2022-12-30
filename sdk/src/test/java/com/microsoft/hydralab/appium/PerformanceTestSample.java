@@ -4,10 +4,6 @@ import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import com.microsoft.hydralab.performance.PerformanceTestSpec;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import static com.microsoft.hydralab.performance.PerformanceTestSpec.*;
 
 /**
  * Sample of performance test. Will not check in
@@ -15,28 +11,33 @@ import static com.microsoft.hydralab.performance.PerformanceTestSpec.*;
 public class PerformanceTestSample {
     @Test
     public void performanceTestCase() {
-        PerformanceInspectionService performanceInspectionService = ThreadParam.getPerformanceExecutor();
-        PerformanceTestSpec androidPerfSpec = new PerformanceTestSpec(
-                new ArrayList<>(Arrays.asList(INSPECTOR_ANDROID_BATTERY_INFO, INSPECTOR_ANDROID_MEMORY_INFO, INSPECTOR_ANDROID_MEMORY_DUMP)),
-                "com.mocrosoft.appmanager",
-                "Android", "Initialize");
-        PerformanceTestSpec windowsPerfSpec = new PerformanceTestSpec(
-                new ArrayList<>(Arrays.asList(INSPECTOR_WIN_MEMORY, INSPECTOR_WIN_BATTERY)),
-                "Microsoft.YourPhone_8wekyb3d8bbwe",
-                "Windows", "Initialize");
-        performanceInspectionService.initialize(androidPerfSpec);
-        performanceInspectionService.initialize(windowsPerfSpec);
+        String appIdAndroid = "com.mocrosoft.appmanager";
+        String androidDeviceId = "Android";
+        String appIdWindows = "Microsoft.YourPhone_8wekyb3d8bbwe";
+        String windowsDeviceId = "Windows";
+
+        PerformanceInspectionService performanceInspectionService = PerformanceInspectionService.getInstance();
+
+        PerformanceTestSpec androidBatteryInfoSpec = PerformanceTestSpec.createAndroidBatteryInfoSpec(appIdAndroid, androidDeviceId);
+        PerformanceTestSpec androidMemoryDumpSpec = PerformanceTestSpec.createAndroidMemoryDumpSpec(appIdAndroid, androidDeviceId);
+        PerformanceTestSpec androidMemoryInfoSpec = PerformanceTestSpec.createAndroidMemoryInfoSpec(appIdAndroid, androidDeviceId);
+        PerformanceTestSpec windowsBatteryInfoSpec = PerformanceTestSpec.createWindowsBatteryInfoSpec(appIdWindows, windowsDeviceId);
+        PerformanceTestSpec windowsMemoryInfoSpec = PerformanceTestSpec.createWindowsMemoryInfoSpec(appIdWindows, windowsDeviceId);
+
+        performanceInspectionService.initialize(androidBatteryInfoSpec);
+        performanceInspectionService.initialize(androidMemoryDumpSpec);
+        performanceInspectionService.initialize(androidMemoryInfoSpec);
+        performanceInspectionService.initialize(windowsBatteryInfoSpec);
+        performanceInspectionService.initialize(windowsMemoryInfoSpec);
 
         //testing...
         System.out.println("Start LTW...");
-        androidPerfSpec.setName("Start LTW");
-        performanceInspectionService.inspect(androidPerfSpec);
-        androidPerfSpec.setAppId("com.mocrosoft.systemapp");
-        performanceInspectionService.inspect(androidPerfSpec);
+        performanceInspectionService.inspect(androidBatteryInfoSpec.rename("Start LTW"));
+        performanceInspectionService.inspect(androidMemoryDumpSpec);
 
         System.out.println("Start PL...");
-        windowsPerfSpec.setName("Start PL");
-        performanceInspectionService.inspect(windowsPerfSpec);
+        performanceInspectionService.inspect(windowsMemoryInfoSpec.rename("Start PL"));
+        performanceInspectionService.inspect(windowsBatteryInfoSpec);
 
     }
 }

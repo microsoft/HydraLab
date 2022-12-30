@@ -12,7 +12,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.performace.PerformanceManager;
+import com.microsoft.hydralab.performance.PerformanceInspectorManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import org.slf4j.Logger;
@@ -31,8 +31,8 @@ public class T2CRunner extends AppiumRunner {
     String agentName;
     private int currentIndex = 0;
 
-    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName, PerformanceManager performanceManager) {
-        super(deviceManager, testTaskRunCallback, performanceManager);
+    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName, PerformanceInspectorManagementService performanceInspectorManagementService) {
+        super(deviceManager, testTaskRunCallback, performanceInspectorManagementService);
         this.agentName = agentName;
     }
 

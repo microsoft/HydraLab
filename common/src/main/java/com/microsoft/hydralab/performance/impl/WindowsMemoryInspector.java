@@ -1,6 +1,4 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-package com.microsoft.hydralab.common.performace.impl;
+package com.microsoft.hydralab.performance.impl;
 
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
@@ -9,7 +7,7 @@ import com.microsoft.hydralab.performance.PerformanceTestSpec;
 
 import java.util.List;
 
-public class AndroidBatteryInspector implements PerformanceInspector {
+public class WindowsMemoryInspector implements PerformanceInspector {
 
     @Override
     public void initialize(PerformanceTestSpec performanceTestSpec) {
@@ -18,10 +16,6 @@ public class AndroidBatteryInspector implements PerformanceInspector {
 
     @Override
     public PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec) {
-        if (!performanceTestSpec.getInspectors().contains(PerformanceTestSpec.INSPECTOR_ANDROID_BATTERY_INFO))
-            return null;
-
-        // else capture performance metrics
         return null;
     }
 
@@ -29,4 +23,6 @@ public class AndroidBatteryInspector implements PerformanceInspector {
     public PerformanceTestResult parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
+
+
 }

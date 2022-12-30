@@ -1,4 +1,4 @@
-package com.microsoft.hydralab.common.performace.impl;
+package com.microsoft.hydralab.performance.impl;
 
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
@@ -7,11 +7,10 @@ import com.microsoft.hydralab.performance.PerformanceTestSpec;
 
 import java.util.List;
 
-public class WindowsMemoryInspector implements PerformanceInspector {
-
+public class WindowsBatteryInspector implements PerformanceInspector {
     @Override
     public void initialize(PerformanceTestSpec performanceTestSpec) {
-
+        
     }
 
     @Override

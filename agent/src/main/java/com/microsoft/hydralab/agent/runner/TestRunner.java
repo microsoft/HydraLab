@@ -9,7 +9,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.common.performace.PerformanceManager;
+import com.microsoft.hydralab.performance.PerformanceInspectorManagementService;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
@@ -23,14 +23,14 @@ import java.util.Date;
 public abstract class TestRunner {
     protected final Logger log = LoggerFactory.getLogger(DeviceManager.class);
     protected final DeviceManager deviceManager;
-    protected final PerformanceManager performanceManager;
+    protected final PerformanceInspectorManagementService performanceInspectorManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
     protected final ActionExecutor actionExecutor = new ActionExecutor();
 
-    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceManager performanceManager) {
+    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceInspectorManagementService performanceInspectorManagementService) {
         this.deviceManager = deviceManager;
-        this.performanceManager = performanceManager;
+        this.performanceInspectorManagementService = performanceInspectorManagementService;
         this.testTaskRunCallback = testTaskRunCallback;
     }
 
@@ -50,7 +50,7 @@ public abstract class TestRunner {
             deviceTestTask.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(deviceTestTask, e);
         } finally {
-            // List<PerformanceResult<?>> performanceResults = performanceInspectionService.parse();
+            // TODO List<PerformanceResult<?>> performanceResults = performanceInspectionService.parse();
             tearDown(deviceInfo, testTask, deviceTestTask);
         }
     }
@@ -85,6 +85,8 @@ public abstract class TestRunner {
     }
 
     protected void setUp(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
+        // TODO add the performance service initialization call setup folder and link the testTask and perfSpec
+
         deviceInfo.killAll();
         // this key will be used to recover device status when lost the connection between agent and master
         deviceInfo.addCurrentTask(testTask);
