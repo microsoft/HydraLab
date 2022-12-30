@@ -16,7 +16,6 @@ import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -140,18 +139,18 @@ public class TestDataService {
     }
 
     public Set<String> cancelTaskById(String taskId, String reason) {
-        TestTask testTaskHis = testDataServiceCache.getTestTaskDetail(taskId);
-        testTaskHis.setStatus(TestTask.TestStatus.CANCELED);
-        testTaskHis.setTestErrorMsg(reason);
+        TestTask oldTestTask = testDataServiceCache.getTestTaskDetail(taskId);
+        oldTestTask.setStatus(TestTask.TestStatus.CANCELED);
+        oldTestTask.setTestErrorMsg(reason);
 
-        testDataServiceCache.saveTestTaskData(testTaskHis);
-        return testTaskHis.getAgentIds();
+        testDataServiceCache.saveTestTaskData(oldTestTask);
+        return oldTestTask.getAgentIds();
     }
 
     public void saveTestTaskDataFromAgent(TestTask testTask, boolean persistence, String agentId) {
-        TestTask testTaskHis = testDataServiceCache.getTestTaskDetail(testTask.getId());
+        TestTask oldTestTask = testDataServiceCache.getTestTaskDetail(testTask.getId());
         //run by device
-        if (testTaskHis.agentIds.size() == 0) {
+        if (oldTestTask.agentIds.size() == 0) {
             testDataServiceCache.saveTestTaskData(testTask);
             return;
         }
@@ -160,18 +159,18 @@ public class TestDataService {
             return;
         }
 
-        testTaskHis.getDeviceTestResults().addAll(testTask.getDeviceTestResults());
-        testTaskHis.setTotalTestCount(testTaskHis.getTotalTestCount() + testTask.getTotalTestCount());
-        testTaskHis.setTotalFailCount(testTaskHis.getTotalFailCount() + testTask.getTotalFailCount());
-        testTaskHis.setTestSuite(testTask.getTestSuite());
-        testTaskHis.agentIds.remove(agentId);
+        oldTestTask.getDeviceTestResults().addAll(testTask.getDeviceTestResults());
+        oldTestTask.setTotalTestCount(oldTestTask.getTotalTestCount() + testTask.getTotalTestCount());
+        oldTestTask.setTotalFailCount(oldTestTask.getTotalFailCount() + testTask.getTotalFailCount());
+        oldTestTask.setTestSuite(testTask.getTestSuite());
+        oldTestTask.agentIds.remove(agentId);
 
-        boolean isAllFinish = testTaskHis.agentIds.size() == 0;
+        boolean isAllFinish = oldTestTask.agentIds.size() == 0;
         if (isAllFinish) {
-            testTaskHis.setStatus(TestTask.TestStatus.FINISHED);
-            testTaskHis.setEndDate(testTask.getEndDate());
+            oldTestTask.setStatus(TestTask.TestStatus.FINISHED);
+            oldTestTask.setEndDate(testTask.getEndDate());
         }
-        testDataServiceCache.saveTestTaskData(testTaskHis);
+        testDataServiceCache.saveTestTaskData(oldTestTask);
     }
 
     @CachePut(key = "#testTask.id")
@@ -197,11 +196,7 @@ public class TestDataService {
                     continue;
                 }
                 LOGGER.warn("one more failed cases saved: {}", androidTestUnit.getTitle());
-                try {
-                    keyValueRepository.saveAndroidTestUnit(androidTestUnit);
-                } catch (Exception ignore) {
-
-                }
+                keyValueRepository.saveAndroidTestUnit(androidTestUnit);
             }
             keyValueRepository.saveDeviceTestResultResInfo(deviceTestResult);
 

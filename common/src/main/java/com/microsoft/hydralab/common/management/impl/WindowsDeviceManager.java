@@ -65,7 +65,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
 
     @Override
     public void updateScreenshotImageAsyncDelay(@NotNull DeviceInfo deviceInfo, long delayMillis, @NotNull FileAvailableCallback fileAvailableCallback, @NotNull Logger logger) {
-        ThreadPoolUtil.executor.execute(new Runnable() {
+        ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(new Runnable() {
             @Override
             public void run() {
                 try {

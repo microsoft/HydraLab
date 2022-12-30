@@ -5,6 +5,7 @@ package com.microsoft.hydralab.agent.runner;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,7 @@ public class DeviceTaskControlExecutor {
                     }
                 }
             };
-            TestThreadPool.executor.execute(run);
+            ThreadPoolUtil.TEST_EXECUTOR.execute(run);
         }
         return new DeviceTaskControl(count, devices);
     }

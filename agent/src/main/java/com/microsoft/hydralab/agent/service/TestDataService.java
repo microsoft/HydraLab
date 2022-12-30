@@ -55,11 +55,7 @@ public class TestDataService {
                     continue;
                 }
                 LOGGER.warn("one more failed cases saved: {}", androidTestUnit.getTitle());
-                try {
-                    keyValueRepository.saveAndroidTestUnit(androidTestUnit);
-                } catch (Exception ignore) {
-
-                }
+                keyValueRepository.saveAndroidTestUnit(androidTestUnit);
             }
 
             String crashStack = deviceTestResult.getCrashStack();

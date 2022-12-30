@@ -11,6 +11,7 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -45,11 +46,16 @@ public abstract class TestRunner {
         setUp(deviceInfo, testTask, deviceTestTask);
         checkTestTaskCancel(testTask);
 
+        runByFeatureTask(deviceInfo, testTask, deviceTestTask);
+        tearDown(deviceInfo, testTask, deviceTestTask);
+    }
+
+    private FutureTask<String> runByFeatureTask(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) {
         FutureTask<String> futureTask = new FutureTask<>(() -> {
             run(deviceInfo, testTask, deviceTestTask);
             return null;
         });
-        TimerThreadPool.executor.execute(futureTask);
+        ThreadPoolUtil.TEST_EXECUTOR.execute(futureTask);
 
         try {
             if (testTask.getTimeOutSecond() > 0) {
@@ -57,15 +63,14 @@ public abstract class TestRunner {
             } else {
                 futureTask.get();
             }
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            e.printStackTrace();
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
             futureTask.cancel(true);
             deviceTestTask.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(deviceTestTask, e);
-            stopTest(deviceInfo, logger);
-        } finally {
-            tearDown(deviceInfo, testTask, deviceTestTask);
+            stopTest(deviceInfo);
         }
+
+        return futureTask;
     }
 
     private static void saveErrorSummary(DeviceTestTask deviceTestTask, Exception e) {
@@ -223,7 +228,7 @@ public abstract class TestRunner {
         return reportLogger;
     }
 
-    public void stopTest(DeviceInfo deviceInfo, Logger logger) {
+    public void stopTest(DeviceInfo deviceInfo) {
         deviceInfo.killAll();
     }
 }
