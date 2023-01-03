@@ -5,12 +5,14 @@ package com.microsoft.hydralab.center;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
+@EnableCaching
 @EnableWebMvc
 @EnableScheduling
 @EnableJpaRepositories(basePackages = {"com.microsoft.hydralab.common.repository", "com.microsoft.hydralab.center.repository"})
@@ -21,6 +23,5 @@ public class RegisterCenterApplication {
     public static void main(String[] args) {
         SpringApplication.run(RegisterCenterApplication.class, args);
     }
-
 }
 

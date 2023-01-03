@@ -84,7 +84,7 @@ public class TestTaskController {
                 } else {
                     TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
                     testTask.setTestDevicesCount(result.getString(Const.Param.TEST_DEVICE_SN).split(",").length);
-                    testDataService.saveTestTaskData(testTask, false);
+                    testDataService.saveTestTaskData(testTask);
                 }
             } else {
                 testTaskService.addTask(testTaskSpec);
@@ -136,33 +136,6 @@ public class TestTaskController {
             result.put("status", TestTask.TestStatus.WAITING);
             result.put("retryTime", queuedInfo.getQueuedInfo()[1]);
             return Result.ok(result);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
-        }
-    }
-
-    /**
-     * Authenticated USER:
-     * 1) users with ROLE SUPER_ADMIN/ADMIN,
-     * 2) members of the TEAM that TestTask is in
-     */
-    @GetMapping(value = {"/api/test/task/running"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<TestTask>> getRunningTaskList(@CurrentSecurityContext SysUser requestor) {
-        try {
-            if (requestor == null) {
-                return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
-            }
-
-            List<TestTask> res;
-            // filter all TestFileSets in TEAMs that user is in
-            if (sysUserService.checkUserAdmin(requestor)) {
-                res = testDataService.getRunningTestTaskDetailsByTeam(null);
-            } else {
-                res = testDataService.getRunningTestTaskDetailsByTeam(requestor.getTeamAdminMap().keySet());
-            }
-
-            return Result.ok(res);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
@@ -248,7 +221,8 @@ public class TestTaskController {
      */
     @GetMapping(value = {"/api/test/task/cancel/{testId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<Object> cancelTask(@CurrentSecurityContext SysUser requestor,
-                                     @PathVariable("testId") String testId) {
+                                     @PathVariable("testId") String testId,
+                                     @RequestParam("reason") String reason) {
         try {
             if (requestor == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
@@ -273,7 +247,7 @@ public class TestTaskController {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
                 }
 
-                deviceAgentManagementService.cancelTestTaskById(testId, true);
+                deviceAgentManagementService.cancelTestTaskById(testId, reason);
             }
             if (!LogUtils.isLegalStr(testId, Const.RegexString.UUID, false)) {
                 logger.warn("test {} is canceled", testId);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression

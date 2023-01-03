@@ -4,6 +4,10 @@ server:
     enabled: true
     min-response-size: 102400
 spring:
+  cache:
+    type: ehcache
+    ehcache:
+      config: classpath:ehcache.xml
   application:
     name: device-network-center
   output:

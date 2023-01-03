@@ -6,6 +6,7 @@ import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.common.entity.agent.DeviceStateChangeRecord;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.util.GlobalConstant;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import lombok.Data;
@@ -22,14 +23,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
 public class DeviceStabilityMonitor {
-    private static final ScheduledExecutorService timerExecutor = Executors.newScheduledThreadPool(20 /* corePoolSize */);
     private final Map<String, ConcurrentLinkedDeque<DeviceStateChangeRecord>> deviceStateChangesMap = new HashMap<>();
     // map from device SN to a boolean flagging if a device is UNSTABLE and waiting for converting back to normal
     private final Map<String, AtomicBoolean> deviceStateIsConvertingList = new HashMap<>();
@@ -108,7 +106,7 @@ public class DeviceStabilityMonitor {
                 classLogger.info("[Stability] Device {}: last state change happened {} seconds ago, will re-check after {} seconds", deviceInfo.getSerialNum(), secondsSinceLastChange, sleepTime);
 
                 // start a timer to trigger when recovery time limit is reached, to recover state from UNSTABLE to last recorded normal state
-                timerExecutor.schedule(new Runnable() {
+                ThreadPoolUtil.TIMER_EXECUTOR.schedule(new Runnable() {
                     @Override
                     public void run() {
                         if (isWaitingForConverting.compareAndSet(true, false)) {

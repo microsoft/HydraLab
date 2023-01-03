@@ -58,20 +58,22 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         Set<DeviceInfo> chosenDevices = chooseDevices(testTaskSpec, runner);
 
         onTaskStart(testTask);
-        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices, new DeviceTaskControlExecutor.DeviceTask() {
-            @Override
-            public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
-                runner.runTestOnDevice(testTask, deviceInfo, logger);
-                return false;
-            }
-        }, (devices) -> {
-            testTask.onFinished();
-            if (!testTask.isCanceled()) {
-                testTask.setStatus(TestTask.TestStatus.FINISHED);
-            }
+        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices,
+                new DeviceTaskControlExecutor.DeviceTask() {
+                    @Override
+                    public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
+                        runner.runTestOnDevice(testTask, deviceInfo, logger);
+                        return false;
+                    }
+                },
+                () -> {
+                    testTask.onFinished();
+                    if (!testTask.isCanceled()) {
+                        testTask.setStatus(TestTask.TestStatus.FINISHED);
+                    }
 
-            onTaskComplete(testTask);
-        });
+                    onTaskComplete(testTask);
+                });
 
         if (deviceTaskControl == null) {
             testTask.setTestDevicesCount(0);
@@ -168,7 +170,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
         log.info("test task {} is completed, start to save info", testTask.getId());
 
-        testDataService.saveTestTaskData(testTask, true);
+        testDataService.saveTestTaskData(testTask);
         runningTestTask.remove(testTask.getId());
     }
 

@@ -2,8 +2,14 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.service;
 
-import com.microsoft.hydralab.common.entity.common.*;
-import com.microsoft.hydralab.common.repository.*;
+import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
+import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
+import com.microsoft.hydralab.common.repository.DeviceTestResultRepository;
+import com.microsoft.hydralab.common.repository.KeyValueRepository;
+import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,13 +33,7 @@ public class TestDataService {
     @Resource
     AttachmentService attachmentService;
 
-    public void saveTestTaskData(TestTask testTask, boolean complete) {
-        keyValueRepository.saveTestTask(testTask);
-
-        if (!complete) {
-            return;
-        }
-
+    public void saveTestTaskData(TestTask testTask) {
         List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
         if (deviceTestResults.isEmpty()) {
             return;
@@ -55,11 +55,7 @@ public class TestDataService {
                     continue;
                 }
                 LOGGER.warn("one more failed cases saved: {}", androidTestUnit.getTitle());
-                try {
-                    keyValueRepository.saveAndroidTestUnit(androidTestUnit);
-                } catch (Exception ignore) {
-
-                }
+                keyValueRepository.saveAndroidTestUnit(androidTestUnit);
             }
 
             String crashStack = deviceTestResult.getCrashStack();

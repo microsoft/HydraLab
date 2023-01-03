@@ -10,7 +10,6 @@ import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.*;
-import com.microsoft.hydralab.common.entity.center.DeviceGroup;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
@@ -251,12 +250,12 @@ public class DeviceAgentManagementService {
                     if (testTask.getRetryTime() == Const.AgentConfig.retry_time) {
                         testTask.setStatus(TestTask.TestStatus.EXCEPTION);
                         testTask.setTestErrorMsg("Device offline!");
-                        testDataService.saveTestTaskData(testTask, false);
+                        testDataService.saveTestTaskData(testTask);
                     } else {
                         TestTaskSpec taskSpec = TestTask.convertToTestTaskSpec(testTask);
                         taskSpec.retryTime++;
                         testTaskService.addTask(taskSpec);
-                        cancelTestTaskById(testTask.getId(), false);
+                        cancelTestTaskById(testTask.getId(), "Retry time limit!");
                         //run the task saved in queue
                         testTaskService.runTask();
                     }
@@ -276,8 +275,8 @@ public class DeviceAgentManagementService {
         }
     }
 
-    public void cancelTestTaskById(String taskId, boolean isSaveDB) {
-        Set<String> agentIds = testDataService.cancelTaskById(taskId, isSaveDB);
+    public void cancelTestTaskById(String taskId, String reason) {
+        Set<String> agentIds = testDataService.cancelTaskById(taskId, reason);
         JSONObject data = new JSONObject();
         Message message = new Message();
         data.put(Const.AgentConfig.task_id_param, taskId);
