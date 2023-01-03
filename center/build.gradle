@@ -24,7 +24,7 @@ dependencies {
     testCompile 'me.paulschwarz:spring-dotenv:2.3.0'
 
     compile project(":common")
-    compile project(":taps_to_cases:T2C_Runner")
+    compile project(":taps_to_cases:runner")
 
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootWebVersion)
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: springBootWebVersion)

@@ -411,7 +411,7 @@ public class HydraLabClientUtils {
         printlnf("##[section]Test task report link:");
         printlnf(testReportUrl);
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
-
+        
         displayFinalTestState();
     }
 

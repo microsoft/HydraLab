@@ -1,8 +1,30 @@
-@startuml
+@startuml new_design
 'https://plantuml.com/class-diagram
 
-class AgentDeviceManager {}
-abstract class TestDeviceManager
+class AgentManagementService {
+    File testBaseDir
+    File deviceLogBaseDir
+}
 class TestDevice
+abstract class TestDeviceManager
+class AndroidTestDeviceManager
+class IOSTestDeviceManager
+class WindowsTestDeviceManager
 
+interface TestDriver
+
+AndroidTestDeviceManager --|> TestDeviceManager
+IOSTestDeviceManager --|> TestDeviceManager
+WindowsTestDeviceManager --|> TestDeviceManager
+
+AgentManagementService *--> AndroidTestDeviceManager
+AgentManagementService *--> IOSTestDeviceManager
+AgentManagementService *--> WindowsTestDeviceManager
+
+TestDeviceManager --> TestDriver
+
+ADBDriver -u-|> TestDriver
+AppiumDriver -u-|> TestDriver
+
+TestRunner -r-> TestDeviceManager
 @enduml

@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.impl.WindowsDeviceManager;
 import com.microsoft.hydralab.common.util.Const;
 import org.slf4j.Logger;
@@ -34,7 +35,8 @@ public class DeviceControlService {
     AgentWebSocketClientService agentWebSocketClientService;
     @Resource
     DeviceTaskControlExecutor deviceTaskControlExecutor;
-
+    @Resource
+    DeviceStabilityMonitor deviceStabilityMonitor;
 
     public Set<DeviceInfo> getAllConnectedDevice() {
         updateAllDeviceScope();
@@ -124,5 +126,14 @@ public class DeviceControlService {
 
     public DeviceManager getDeviceManager() {
         return deviceManager;
+    }
+
+    public void deviceManagerInit() {
+        deviceManager.setDeviceStabilityMonitor(deviceStabilityMonitor);
+        try {
+            deviceManager.init();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

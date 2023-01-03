@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.common.util;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.test.BaseTest;
@@ -31,4 +32,26 @@ public class SerializeUtilTest extends BaseTest {
                 "Transfer to message error!");
     }
 
+    @Test
+    void testJsonArraySerialize() {
+        JSONArray array = new JSONArray();
+        array.add(1);
+        array.add(3);
+        array.add(5);
+        array.add(2);
+        array.add(4);
+        array.add(6);
+        String str1 = array.toJSONString();
+        logger.info(str1);
+        Message msg = new Message();
+        msg.setBody(array);
+        Message msg2 = SerializeUtil.byteArrToMessage(SerializeUtil.messageToByteArr(msg));
+        String str2 = ((JSONArray) msg2.getBody()).toJSONString();
+        logger.info(str2);
+        JSONArray array2 = JSONArray.parseArray(str2);
+        String str3 = array2.toJSONString();
+        logger.info(str3);
+        Assertions.assertEquals(str1, str2, "Serialize error!");
+        Assertions.assertEquals(str1, str3, "Serialize error!");
+    }
 }

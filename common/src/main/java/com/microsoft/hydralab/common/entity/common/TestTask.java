@@ -78,6 +78,8 @@ public class TestTask {
     private transient Map<String, String> instrumentationArgs;
     @Transient
     private List<DeviceTestTask> deviceTestResults = new ArrayList<>();
+    @Transient
+    private Map<String, List<DeviceAction>> deviceActions = new HashMap<>();
     private String fileSetId;
     @Transient
     private TestFileSet testFileSet;
@@ -114,6 +116,7 @@ public class TestTask {
         testTask.setPipelineLink(testTaskSpec.pipelineLink);
         testTask.setTimeOutSecond(testTaskSpec.testTimeOutSec);
         testTask.setNeededPermissions(testTaskSpec.neededPermissions);
+        testTask.setDeviceActions(testTaskSpec.deviceActions);
         testTask.setInstrumentationArgs(testTaskSpec.instrumentationArgs);
         testTask.setFileSetId(testTaskSpec.fileSetId);
         testTask.setPkgName(testTaskSpec.pkgName);
@@ -162,6 +165,7 @@ public class TestTask {
         testTaskSpec.needUninstall = testTask.getRequireReinstall();
         testTaskSpec.needClearData = testTask.getRequireClearData();
         testTaskSpec.neededPermissions = testTask.getNeededPermissions();
+        testTaskSpec.deviceActions = testTask.getDeviceActions();
         testTaskSpec.instrumentationArgs = testTask.getInstrumentationArgs();
         testTaskSpec.runningType = testTask.getRunningType();
         testTaskSpec.maxStepCount = testTask.getMaxStepCount();
@@ -298,16 +302,6 @@ public class TestTask {
         String APPIUM_MONKEY_TEST = "APPIUM_MONKEY";
         String T2C_JSON_TEST = "T2C_JSON";
     }
-
-    public static Map<String, String> TestRunnerMap = new HashMap<>() {{
-        put(TestRunningType.INSTRUMENTATION, "espressoRunner");
-        put(TestRunningType.APPIUM, "appiumRunner");
-        put(TestRunningType.APPIUM_CROSS, "appiumCrossRunner");
-        put(TestRunningType.SMART_TEST, "smartRunner");
-        put(TestRunningType.MONKEY_TEST, "adbMonkeyRunner");
-        put(TestRunningType.APPIUM_MONKEY_TEST, "appiumMonkeyRunner");
-        put(TestRunningType.T2C_JSON_TEST, "t2cRunner");
-    }};
 
     public interface TestFrameworkType {
         String JUNIT4 = "JUnit4";
