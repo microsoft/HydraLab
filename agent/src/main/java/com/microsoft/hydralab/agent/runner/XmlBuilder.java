@@ -52,7 +52,7 @@ public class XmlBuilder {
         Element testSuite = buildTestSuite(document, testTask, testRun);
         document.appendChild(testSuite);
 
-        File xmlFile = File.createTempFile(TEST_RESULT_FILE_PREFIX, TEST_RESULT_FILE_SUFFIX, testRun.getDeviceTestResultFolder());
+        File xmlFile = File.createTempFile(TEST_RESULT_FILE_PREFIX, TEST_RESULT_FILE_SUFFIX, testRun.getTestRunResultFolder());
         transferToFile(document, xmlFile);
         return xmlFile.getAbsolutePath();
     }

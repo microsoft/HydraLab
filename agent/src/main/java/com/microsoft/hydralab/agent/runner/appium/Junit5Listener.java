@@ -52,7 +52,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
         this.logger = logger;
         this.pkgName = pkgName;
         logcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestResult, logger);
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getDeviceTestResultFolder(), logger);
+        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getTestRunResultFolder(), logger);
     }
 
     public File getGifFile() {
@@ -82,7 +82,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
     private void startTools() {
         logger.info("Start gif frames collection");
-        gifFile = new File(deviceTestResult.getDeviceTestResultFolder(), pkgName + ".gif");
+        gifFile = new File(deviceTestResult.getTestRunResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);

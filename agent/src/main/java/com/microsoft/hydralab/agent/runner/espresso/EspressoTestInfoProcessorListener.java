@@ -53,8 +53,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         this.logger = deviceTestResult.getLogger();
         this.pkgName = pkgName;
         adbLogcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestResult, logger);
-        adbDeviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getDeviceTestResultFolder(), logger);
-        setReportDir(deviceTestResult.getDeviceTestResultFolder());
+        adbDeviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getTestRunResultFolder(), logger);
+        setReportDir(deviceTestResult.getTestRunResultFolder());
         try {
             setHostName(InetAddress.getLocalHost().getHostName());
         } catch (UnknownHostException ex) {
@@ -101,7 +101,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             exception.printStackTrace();
         }
         logger.info("Start gif frames collection");
-        gifFile = new File(deviceTestResult.getDeviceTestResultFolder(), runName + ".gif");
+        gifFile = new File(deviceTestResult.getTestRunResultFolder(), runName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);

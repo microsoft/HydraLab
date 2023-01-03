@@ -3,16 +3,17 @@
 package com.microsoft.hydralab;
 
 import com.microsoft.hydralab.appium.AppiumParam;
-import com.microsoft.hydralab.performance.PerformanceInspectionService;
 
 import java.util.Map;
 
 public class TestRunThreadContext {
     private static final InheritableThreadLocal<AppiumParam> appiumParam = new InheritableThreadLocal<>();
+    private static final InheritableThreadLocal<ITestRun> testRunThreadLocal = new InheritableThreadLocal<>();
     private static final InheritableThreadLocal<Map<String, String>> configMap = new InheritableThreadLocal<>();
 
-    public static void init(AppiumParam appiumParamTemp, Map<String, String> configMapParam, PerformanceInspectionService performanceInspectionServiceTemp) {
+    public static void init(ITestRun testRun, AppiumParam appiumParamTemp, Map<String, String> configMapParam) {
         clean();
+        testRunThreadLocal.set(testRun);
         appiumParam.set(appiumParamTemp);
         configMap.set(configMapParam);
     }
@@ -47,7 +48,7 @@ public class TestRunThreadContext {
         return temp;
     }
 
-    public static void initWithTestRun(ITestRun deviceTestTask) {
-
+    public static ITestRun getTestRun() {
+        return testRunThreadLocal.get();
     }
 }

@@ -67,7 +67,7 @@ public class TestRun implements ITestRun {
     @Transient
     private transient List<CommandlineAndTime> commandlineAndTimeList = new ArrayList<>();
     @Transient
-    private transient File deviceTestResultFolder;
+    private transient File testRunResultFolder;
     @Transient
     private transient Logger logger;
 

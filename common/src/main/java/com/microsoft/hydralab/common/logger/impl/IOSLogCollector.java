@@ -42,10 +42,10 @@ public class IOSLogCollector implements LogCollector {
             return loggerFilePath;
         }
         started = true;
-        loggerFilePath = new File(deviceTestResult.getDeviceTestResultFolder(), "iOSSysLog.log").getAbsolutePath();
+        loggerFilePath = new File(deviceTestResult.getTestRunResultFolder(), "iOSSysLog.log").getAbsolutePath();
         try {
             // Clear the crash happened before UI test start.
-            IOSUtils.collectCrashInfo(deviceTestResult.getDeviceTestResultFolder() + "/LegacyCrash", connectedDevice, infoLogger);
+            IOSUtils.collectCrashInfo(deviceTestResult.getTestRunResultFolder() + "/LegacyCrash", connectedDevice, infoLogger);
             logProcess = IOSUtils.startIOSLog(pkgName, loggerFilePath, connectedDevice, infoLogger);
             if (logProcess != null) {
                 connectedDevice.addCurrentProcess(logProcess);
@@ -65,7 +65,7 @@ public class IOSLogCollector implements LogCollector {
         }
         try {
             // Collect the crash logs
-            String crashFilesPath = deviceTestResult.getDeviceTestResultFolder() + "/Crash";
+            String crashFilesPath = deviceTestResult.getTestRunResultFolder() + "/Crash";
             IOSUtils.collectCrashInfo(crashFilesPath, connectedDevice, infoLogger);
             File dir = new File(crashFilesPath);
             StringBuilder crashLines = new StringBuilder();

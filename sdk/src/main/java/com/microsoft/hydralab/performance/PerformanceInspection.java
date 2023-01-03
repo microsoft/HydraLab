@@ -15,9 +15,6 @@ public class PerformanceInspection {
     public final String deviceId;
     public String name;
     public final String inspectionKey;
-    /**
-     * TODO: set this to the deviceTestTask
-     */
     public File resultFolder;
 
 

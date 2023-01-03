@@ -44,7 +44,7 @@ public class ADBLogcatCollector implements LogCollector {
             return loggerFilePath;
         }
         started = true;
-        loggerFilePath = new File(deviceTestResult.getDeviceTestResultFolder(), "logcat.log").getAbsolutePath();
+        loggerFilePath = new File(deviceTestResult.getTestRunResultFolder(), "logcat.log").getAbsolutePath();
         runCommand("logcat -G 48M");
         runCommand("logcat -c");
         return loggerFilePath;

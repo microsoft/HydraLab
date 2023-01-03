@@ -3,7 +3,10 @@ package com.microsoft.hydralab.appium;
 import com.microsoft.hydralab.TestRunThreadContext;
 import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import com.microsoft.hydralab.performance.PerformanceInspection;
+import com.microsoft.hydralab.performance.PerformanceTestResult;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 
 /**
@@ -25,11 +28,11 @@ public class PerformanceTestSample {
         PerformanceInspection windowsBatteryInfoSpec = PerformanceInspection.createWindowsBatteryInfoSpec(appIdWindows, windowsDeviceId);
         PerformanceInspection windowsMemoryInfoSpec = PerformanceInspection.createWindowsMemoryInfoSpec(appIdWindows, windowsDeviceId);
 
-        performanceInspectionService.initialize(androidBatteryInfoSpec);
-        performanceInspectionService.initialize(androidMemoryDumpSpec);
-        performanceInspectionService.initialize(androidMemoryInfoSpec);
-        performanceInspectionService.initialize(windowsBatteryInfoSpec);
-        performanceInspectionService.initialize(windowsMemoryInfoSpec);
+        performanceInspectionService.reset(androidBatteryInfoSpec);
+        performanceInspectionService.reset(androidMemoryDumpSpec);
+        performanceInspectionService.reset(androidMemoryInfoSpec);
+        performanceInspectionService.reset(windowsBatteryInfoSpec);
+        performanceInspectionService.reset(windowsMemoryInfoSpec);
 
         //testing...
         System.out.println("Start LTW...");
@@ -40,7 +43,7 @@ public class PerformanceTestSample {
         performanceInspectionService.inspect(windowsMemoryInfoSpec.rename("Start PL"));
         performanceInspectionService.inspect(windowsBatteryInfoSpec);
 
-        performanceInspectionService.parse(windowsMemoryInfoSpec);
+        List<PerformanceTestResult> performanceTestResults = performanceInspectionService.parse();
 
     }
 }

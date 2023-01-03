@@ -5,6 +5,7 @@ import java.util.List;
 
 public class PerformanceTestResult {
     public String category;
+    public String inspector;
 
     /**
      * memory: java_heap_pss	java_heap_rss	native_heap_pss	native_heap_rss	code_pss	code_rss	stack_pss	stack_rss
