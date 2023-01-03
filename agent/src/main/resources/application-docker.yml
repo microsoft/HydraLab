@@ -5,5 +5,5 @@ app:
     port: 10086
   adb:
     # Official doc about this hostname: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
-    host: host.docker.internal
+    host: host.docker.internal # may not work in linux
     port: 5037

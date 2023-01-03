@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:${app.location}/hydra_lab_center_db.sqlite
+    username: sqlite
+    password: 98765432
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
+    show-sql: false
+    hibernate:
+      dialect: org.sqlite.hibernate.dialect.SQLiteDialect
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 400
+          batch_versioned_data: true
+  security:
+    oauth2:
+      enabled: false
+
+app:
+  # Mail Address Format
+  default-user: ${DEFAULT_USER:default@hydralab.com}
+  blob:
+    connection: ${BLOB_CONNECTION_STR}
+    CDNUrl: ${CDN_URL:@null}
+  location: /hydra/data
+
+# Prometheus Configuration
+management:
+  metrics:
+    export:
+      prometheus:
+        pushgateway:
+          enabled: ${PUSHGATEWAY_ENABLED:false}
