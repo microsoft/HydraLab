@@ -11,6 +11,7 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -18,6 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public abstract class TestRunner {
     protected final Logger log = LoggerFactory.getLogger(DeviceManager.class);
@@ -40,14 +45,32 @@ public abstract class TestRunner {
 
         setUp(deviceInfo, testTask, deviceTestTask);
         checkTestTaskCancel(testTask);
-
         try {
-            run(deviceInfo, testTask, deviceTestTask);
+            runByFutureTask(deviceInfo, testTask, deviceTestTask);
         } catch (Exception e) {
             deviceTestTask.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(deviceTestTask, e);
         } finally {
             tearDown(deviceInfo, testTask, deviceTestTask);
+        }
+    }
+
+    private void runByFutureTask(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
+        FutureTask<String> futureTask = new FutureTask<>(() -> {
+            run(deviceInfo, testTask, deviceTestTask);
+            return null;
+        });
+        ThreadPoolUtil.TEST_EXECUTOR.execute(futureTask);
+        try {
+            if (testTask.getTimeOutSecond() > 0) {
+                futureTask.get(testTask.getTimeOutSecond(), TimeUnit.SECONDS);
+            } else {
+                futureTask.get();
+            }
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            futureTask.cancel(true);
+            stopTest(deviceInfo);
+            throw e;
         }
     }
 
@@ -206,4 +229,7 @@ public abstract class TestRunner {
         return reportLogger;
     }
 
+    public void stopTest(DeviceInfo deviceInfo) {
+        deviceInfo.killAll();
+    }
 }

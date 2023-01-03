@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
 import java.io.File;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
         @Index(name = "task_id_unit_index", columnList = "test_task_id", unique = false),
         @Index(name = "device_test_result_id_index", columnList = "device_test_result_id", unique = false)
 })
-public class AndroidTestUnit {
+public class AndroidTestUnit implements Serializable {
 
     public static final String P_START = "<p style='color:green;font-weight:bold'>";
     @Id
