@@ -45,32 +45,33 @@ public abstract class TestRunner {
 
         setUp(deviceInfo, testTask, deviceTestTask);
         checkTestTaskCancel(testTask);
-
-        runByFeatureTask(deviceInfo, testTask, deviceTestTask);
-        tearDown(deviceInfo, testTask, deviceTestTask);
+        try {
+            runByFutureTask(deviceInfo, testTask, deviceTestTask);
+        } catch (Exception e) {
+            deviceTestTask.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
+            saveErrorSummary(deviceTestTask, e);
+        } finally {
+            tearDown(deviceInfo, testTask, deviceTestTask);
+        }
     }
 
-    private FutureTask<String> runByFeatureTask(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) {
+    private void runByFutureTask(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
         FutureTask<String> futureTask = new FutureTask<>(() -> {
             run(deviceInfo, testTask, deviceTestTask);
             return null;
         });
         ThreadPoolUtil.TEST_EXECUTOR.execute(futureTask);
-
         try {
             if (testTask.getTimeOutSecond() > 0) {
                 futureTask.get(testTask.getTimeOutSecond(), TimeUnit.SECONDS);
             } else {
                 futureTask.get();
             }
-        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
             futureTask.cancel(true);
-            deviceTestTask.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
-            saveErrorSummary(deviceTestTask, e);
             stopTest(deviceInfo);
+            throw e;
         }
-
-        return futureTask;
     }
 
     private static void saveErrorSummary(DeviceTestTask deviceTestTask, Exception e) {
