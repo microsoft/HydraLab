@@ -11,15 +11,12 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.Date;
 
 @Entity
 @Data
-public class BlobFileInfo {
+public class BlobFileInfo implements Serializable {
     @Id
     @Column(name = "file_id", nullable = false)
     private String fileId;

@@ -12,9 +12,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import TestReportView from '@/component/TestReportView';
 import 'bootstrap/dist/css/bootstrap.css'
-import { withStyles } from '@material-ui/core/styles';
-import _ from 'lodash';
-import { PieChart, Pie, Cell } from 'recharts';
+import {Cell, Pie, PieChart} from 'recharts';
 import moment from 'moment';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
@@ -32,15 +30,15 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 
 import Button from "@mui/material/Button";
-import { Backdrop, CircularProgress } from "@mui/material";
-import BaseView, {StyledTableCell, StyledTableRow, darkTheme} from "@/component/BaseView";
+import {Backdrop, CircularProgress} from "@mui/material";
+import BaseView, {darkTheme, StyledTableCell, StyledTableRow} from "@/component/BaseView";
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import { withRouter } from 'react-router-dom';
+import {withRouter} from 'react-router-dom';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from "@mui/material/TextField";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import {ThemeProvider} from '@mui/material/styles';
 
 const pieCOLORS = ['#00C49F', '#FF8042', '#808080'];
 const taskRowHeight = 35
@@ -585,7 +583,7 @@ class TasksView extends BaseView {
         this.setState({
             loading: true
         })
-        axios.get('/api/test/task/cancel/' + task.id).then(res => {
+        axios.get('/api/test/task/cancel/' + task.id + "?reason=manually").then(res => {
             if (res.data && res.data.code === 200) {
                 console.log(res.data)
                 this.setState({
@@ -636,6 +634,11 @@ class TasksView extends BaseView {
     queryTask() {
         console.log(this.state.selectedParams)
         let queryParams = [
+            {
+                "key": "status",
+                "op": "ne",
+                "value": "running"
+            },
             {
                 "key": "runningType",
                 "op": "in",
@@ -722,19 +725,26 @@ class TasksView extends BaseView {
         this.queryTask()
 
         if (this.state.page === 1) {
-            axios.get('/api/test/task/running').then(res => {
-                if (res.data && res.data.code === 200) {
-                    if (res.data.content) {
-                        this.setState({
-                            runningTasks: res.data.content,
-                            hideSkeleton: true,
-                            timeOutSecond: res.data.content.timeOutSecond
-                        })
-                    }
-                } else {
-                    this.snackBarFail(res)
+            let queryParams = [
+                {
+                    "key": "status",
+                    "op": "equal",
+                    "value": "running"
                 }
-            }).catch(this.snackBarError)
+            ]
+            let postBody = {
+                'page': 0,
+                'pageSize': -1,
+                'queryParams': queryParams
+            }
+
+            this.axiosPost(`/api/test/task/list`, (content) => {
+                this.setState({
+                    runningTasks: content.content,
+                    hideSkeleton: true,
+                })
+
+            }, postBody, null, null, null)
         }
     }
 

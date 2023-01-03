@@ -3,10 +3,13 @@
 package com.microsoft.hydralab.center.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.entity.center.*;
-import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.entity.center.AgentUser;
+import com.microsoft.hydralab.common.entity.center.DeviceGroup;
+import com.microsoft.hydralab.common.entity.center.TestTaskQueuedInfo;
+import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.util.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +79,7 @@ public class TestTaskService {
                     break;
                 } else {
                     testTask.setTestDevicesCount(result.getString(Const.Param.TEST_DEVICE_SN).split(",").length);
-                    testDataService.saveTestTaskData(testTask, false);
+                    testDataService.saveTestTaskData(testTask);
                     taskQueue.poll();
                 }
             } catch (Exception e) {
@@ -84,7 +87,7 @@ public class TestTaskService {
                 //the task will be saved in memory if taskSpec is error
                 testTask.setStatus(TestTask.TestStatus.EXCEPTION);
                 testTask.setTestErrorMsg(e.getMessage());
-                testDataService.saveTestTaskData(testTask, false);
+                testDataService.saveTestTaskData(testTask);
                 taskQueue.poll();
             }
         }
@@ -175,10 +178,7 @@ public class TestTaskService {
     }
 
     public void updateTaskTeam(String teamId, String teamName) {
-        List<TestTask> testTasksMem = testDataService.getTasksMemByTeamId(teamId);
         List<TestTask> testTasks = testDataService.getTasksByTeamId(teamId);
-
-        testTasksMem.forEach(testTaskMem -> testTaskMem.setTeamName(teamName));
 
         testTasks.forEach(testTask -> testTask.setTeamName(teamName));
         testDataService.saveAllTestTasks(testTasks);

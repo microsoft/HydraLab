@@ -5,13 +5,14 @@ package com.microsoft.hydralab.common.entity.common;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Data
 @Entity
-public class KeyValue {
+public class KeyValue implements Serializable {
     @Id
     private String keyid;
-    @Column(name="value", columnDefinition="CLOB", nullable=true)
+    @Column(name = "value", columnDefinition = "CLOB", nullable = true)
     private String value;
 
     public KeyValue() {

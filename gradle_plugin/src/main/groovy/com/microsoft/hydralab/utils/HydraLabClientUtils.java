@@ -256,7 +256,7 @@ public class HydraLabClientUtils {
         while (!finished) {
             if (TestTask.TestStatus.WAITING.equals(currentStatus)) {
                 if (totalWaitSecond > queueTimeoutSec) {
-                    cancelTestTask(apiConfig, testTaskId);
+                    cancelTestTask(apiConfig, testTaskId, "Queue timeout!");
                     printlnf("Cancelled the task as timeout %d seconds is reached", queueTimeoutSec);
                     break;
                 }
@@ -311,6 +311,7 @@ public class HydraLabClientUtils {
         if (TestTask.TestStatus.WAITING.equals(currentStatus)) {
             assertTrue(finished, "Queuing timeout after waiting for " + queueTimeoutSec + " seconds! Test id", runningTest);
         } else if (TestTask.TestStatus.RUNNING.equals(currentStatus)) {
+            cancelTestTask(apiConfig, testTaskId, "Run timeout!");
             assertTrue(finished, "Running timeout after waiting for " + runTimeoutSec + " seconds! Test id", runningTest);
         }
 
@@ -708,12 +709,12 @@ public class HydraLabClientUtils {
         }
     }
 
-    private static void cancelTestTask(HydraLabAPIConfig apiConfig, String testTaskId) {
+    private static void cancelTestTask(HydraLabAPIConfig apiConfig, String testTaskId, String reason) {
         checkCenterAlive(apiConfig);
 
         Request req = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(apiConfig.getCancelTestTaskUrl(testTaskId))
+                .url(String.format(apiConfig.getCancelTestTaskUrl(), testTaskId, reason))
                 .build();
         OkHttpClient clientToUse = client;
         try (Response response = clientToUse.newCall(req).execute()) {
@@ -779,7 +780,7 @@ public class HydraLabClientUtils {
         public String generateAccessKeyAPIPath = "/api/deviceGroup/generate?deviceIdentifier=%s";
         public String runTestAPIPath = "/api/test/task/run/";
         public String testStatusAPIPath = "/api/test/task/";
-        public String cancelTestTaskAPIPath = "/api/test/task/cancel/";
+        public String cancelTestTaskAPIPath = "/api/test/task/cancel/%s?reason=%s";
         public String testPortalTaskInfoPath = "/portal/index.html?redirectUrl=/info/task/";
         public String testPortalTaskDeviceVideoPath = "/portal/index.html?redirectUrl=/info/videos/";
         public String pkgName = "";
@@ -827,8 +828,8 @@ public class HydraLabClientUtils {
             return String.format(Locale.US, "%s://%s%s%s%s", schema, host, contextPath, testStatusAPIPath, testTaskId);
         }
 
-        public String getCancelTestTaskUrl(String testTaskId) {
-            return String.format(Locale.US, "%s://%s%s%s%s", schema, host, contextPath, cancelTestTaskAPIPath, testTaskId);
+        public String getCancelTestTaskUrl() {
+            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, cancelTestTaskAPIPath);
         }
 
         public String getTestReportUrl(String testTaskId) {
