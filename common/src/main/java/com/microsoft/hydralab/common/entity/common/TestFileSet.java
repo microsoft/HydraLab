@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.entity.common;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "test_file_set", indexes = {@Index(columnList = "team_id")})
 @Data
-public class TestFileSet {
+public class TestFileSet implements Serializable {
     @Id
     private String id;
     private String buildType;
