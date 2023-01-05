@@ -48,7 +48,7 @@ export default class DeviceDetailView extends React.Component {
         return <table className="table table-borderless">
             <tbody>
                 <tr>
-                    {item.pcScreenshotImageUrl ?
+                    {item.pcScreenshotImageUrl && item.alive?
                         <td width="75%" align="center" style={tdStyle}>
                             {this.getPCCase(item)}
                         </td> : null
@@ -91,7 +91,7 @@ export default class DeviceDetailView extends React.Component {
                             <div>
                                 <span className={"badge " + badgeClass}
                                     style={{ fontSize: "1rem" }}>
-                                    {item.pcScreenshotImageUrl ? this.getPCName(item) : this.getPhoneName(item)}</span>
+                                    {item.pcScreenshotImageUrl && item.alive ? this.getPCName(item) : this.getPhoneName(item)}</span>
                                 <br />
                                 <span className="badge"
                                     style={{ fontSize: "0.9rem" }}>{item.serialNum}</span>
