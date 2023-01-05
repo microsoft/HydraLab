@@ -4,7 +4,10 @@ import java.io.File;
 
 public class PerformanceInspectionResult {
     private int type;
+    private long timestamp;
     private File profilingRawResultFile;
+    // TODO: restrict the size of it.
+    private Object parsedData;
 
     public PerformanceInspectionResult(int type, File profilingRawResultFile) {
         this.type = type;

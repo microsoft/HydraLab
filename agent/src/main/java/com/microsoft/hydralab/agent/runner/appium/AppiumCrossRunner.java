@@ -7,14 +7,14 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.performance.PerformanceInspectorManagementService;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
 public class AppiumCrossRunner extends AppiumRunner {
     String agentName;
 
-    public AppiumCrossRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName, PerformanceInspectorManagementService performanceInspectorManagementService) {
-        super(deviceManager, testTaskRunCallback, performanceInspectorManagementService);
+    public AppiumCrossRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName, PerformanceTestManagementService performanceTestManagementService) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.agentName = agentName;
     }
 

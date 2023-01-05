@@ -13,7 +13,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.performance.PerformanceInspectorManagementService;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -39,8 +39,8 @@ public class AdbMonkeyRunner extends TestRunner {
     private File gifFile;
     private AndroidTestUnit ongoingMonkeyTest;
 
-    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, ADBOperateUtil adbOperateUtil, PerformanceInspectorManagementService performanceInspectorManagementService) {
-        super(deviceManager, testTaskRunCallback, performanceInspectorManagementService);
+    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, ADBOperateUtil adbOperateUtil, PerformanceTestManagementService performanceTestManagementService) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 

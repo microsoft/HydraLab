@@ -12,7 +12,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.performance.PerformanceInspectorManagementService;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import org.slf4j.Logger;
@@ -25,12 +25,12 @@ import java.util.concurrent.TimeUnit;
 public class AppiumMonkeyRunner extends AppiumRunner {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
 
-    public AppiumMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceInspectorManagementService performanceInspectorManagementService) {
-        super(deviceManager, testTaskRunCallback, performanceInspectorManagementService);
+    public AppiumMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceTestManagementService) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
     }
 
     @Override
-    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, TestRun testRun, File deviceTestResultFolder, PerformanceInspectionService performanceInspectionService, Logger reportLogger) {
+    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         String pkgName = testTask.getPkgName();
 
         long recordingStartTimeMillis = System.currentTimeMillis();

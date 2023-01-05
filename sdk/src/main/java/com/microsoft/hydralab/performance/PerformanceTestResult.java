@@ -15,5 +15,8 @@ public class PerformanceTestResult {
      * battery: CPU	screen	Wake_lock	other	App_usage	Total_usage
      */
     public Object resultSummary;
+    /**
+     * Set max size
+     */
     public List<PerformanceInspectionResult> performanceInspectionResults = new ArrayList<>();
 }

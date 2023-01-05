@@ -16,7 +16,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.performance.PerformanceInspectorManagementService;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.Const;
 import org.slf4j.Logger;
@@ -37,8 +37,8 @@ public class SmartRunner extends TestRunner {
     private File gifFile;
     private SmartTestParam smartTestParam;
 
-    public SmartRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, SmartTestUtil smartTestUtil, PerformanceInspectorManagementService performanceInspectorManagementService) {
-        super(deviceManager, testTaskRunCallback, performanceInspectorManagementService);
+    public SmartRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, SmartTestUtil smartTestUtil, PerformanceTestManagementService performanceTestManagementService) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.smartTestUtil = smartTestUtil;
     }
 

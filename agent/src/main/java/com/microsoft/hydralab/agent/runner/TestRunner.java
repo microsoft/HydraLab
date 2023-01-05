@@ -10,7 +10,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.performance.PerformanceInspectorManagementService;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
@@ -24,14 +24,14 @@ import java.util.Date;
 public abstract class TestRunner {
     protected final Logger log = LoggerFactory.getLogger(DeviceManager.class);
     protected final DeviceManager deviceManager;
-    protected final PerformanceInspectorManagementService performanceInspectorManagementService;
+    protected final PerformanceTestManagementService performanceTestManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
     protected final ActionExecutor actionExecutor = new ActionExecutor();
 
-    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceInspectorManagementService performanceInspectorManagementService) {
+    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceTestManagementService) {
         this.deviceManager = deviceManager;
-        this.performanceInspectorManagementService = performanceInspectorManagementService;
+        this.performanceTestManagementService = performanceTestManagementService;
         this.testTaskRunCallback = testTaskRunCallback;
     }
 

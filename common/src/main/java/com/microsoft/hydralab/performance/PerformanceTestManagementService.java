@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
-public class PerformanceInspectorManagementService implements IPerformanceInspectionService {
+public class PerformanceTestManagementService implements IPerformanceInspectionService {
     static final ScheduledExecutorService timerExecutor = Executors.newScheduledThreadPool(5 /* corePoolSize */);
     private final Map<String, PerformanceInspector> performanceInspectorMap = Map.of(
             PerformanceInspection.INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInspector(),
@@ -33,7 +33,7 @@ public class PerformanceInspectorManagementService implements IPerformanceInspec
     }
 
     /**
-     * TODO: when found a strategy, start it here
+     * Maybe we can merge this to inspect method? add a boolean param called reset.
      */
     public void reset(PerformanceInspection performanceInspection) {
         PerformanceInspector performanceInspector = getInspectorByName(performanceInspection.inspector);
