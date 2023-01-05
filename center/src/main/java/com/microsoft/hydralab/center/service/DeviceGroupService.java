@@ -12,6 +12,10 @@ import com.microsoft.hydralab.center.repository.DeviceGroupRepository;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@CacheConfig(cacheNames = "groupCache")
 public class DeviceGroupService {
-
     @Resource
     DeviceGroupRepository deviceGroupRepository;
     @Resource
@@ -77,11 +81,13 @@ public class DeviceGroupService {
         return deviceGroupRepository.findAllByTeamId(teamId);
     }
 
+    @CacheEvict(key = "'groups-'+#deviceSerial")
     public DeviceGroupRelation saveRelation(String groupName, String deviceSerial) {
         DeviceGroupRelation deviceGroupRelation = new DeviceGroupRelation(groupName, deviceSerial);
         return deviceGroupRelationRepository.save(deviceGroupRelation);
     }
 
+    @CacheEvict(key = "'groups-'+#deviceSerial")
     public void deleteRelation(String groupName, String deviceSerial) {
         DeviceGroupRelation deviceGroupRelation = new DeviceGroupRelation(groupName, deviceSerial);
         deviceGroupRelationRepository.delete(deviceGroupRelation);
@@ -98,6 +104,7 @@ public class DeviceGroupService {
         return deviceGroupRelationRepository.findAllByGroupName(groupName);
     }
 
+    @Cacheable(key = "'groups-'+#deviceSerial")
     public List<DeviceGroupRelation> getGroupByDevice(String deviceSerial) {
         return deviceGroupRelationRepository.findAllByDeviceSerial(deviceSerial);
     }

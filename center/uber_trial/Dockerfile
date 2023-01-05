@@ -23,11 +23,14 @@ RUN \
 
 ARG CENTER_JAR_FILE=center.jar
 ARG AGENT_JAR_FILE=agent.jar
-ARG CENTER_INIT_SQLITE=hydra_lab_center_db.sqlite
+ARG CENTER_INIT_SQLITE=hydra_lab_uber_center_db.sqlite
 COPY ${CENTER_JAR_FILE} ${CENTER_JAR_FILE}
 COPY ${AGENT_JAR_FILE} ${AGENT_JAR_FILE}
 COPY ${STARTUP_FOLDER_PATH}/${CENTER_INIT_SQLITE} /hydra/data/${CENTER_INIT_SQLITE}
 COPY ${STARTUP_FOLDER_PATH}/start.sh start.sh
+
+# Connect package with repo HydraLab
+LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
 
 EXPOSE 9886
 ENTRYPOINT ["sh", "start.sh"]
