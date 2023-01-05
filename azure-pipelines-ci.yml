@@ -122,9 +122,9 @@ stages:
     - task: CopyFiles@2
       displayName: Copy deploy uber files
       inputs:
-        SourceFolder: 'center/uber_trial/'
+        SourceFolder: 'center/uber_image/'
         Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/uber_trial_docker'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/uber_image'
       condition: and(succeeded(), eq(variables.fullBuild, 'true'))
     - task: PowerShell@2
       displayName: Add Release Tag
