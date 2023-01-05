@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 
 @RestController
@@ -135,6 +136,44 @@ public class TestTaskController {
             result.put("message", "Current position in queue: " + queuedInfo.getQueuedInfo()[0]);
             result.put("status", TestTask.TestStatus.WAITING);
             result.put("retryTime", queuedInfo.getQueuedInfo()[1]);
+            return Result.ok(result);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+    }
+
+    /**
+     * Authenticated USER: all
+     * Data access:
+     * 1) For users with ROLE SUPER_ADMIN/ADMIN, return all data.
+     * 2) For the rest users, return data that is in the user's TEAMs
+     */
+    @GetMapping(value = {"/api/test/task/queue"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<List<TestTaskQueuedInfo>> getTaskQueue(@CurrentSecurityContext SysUser requestor) {
+        try {
+            if (requestor == null) {
+                return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+            }
+            boolean isAdmin = sysUserService.checkUserAdmin(requestor);
+            List<TestTaskQueuedInfo> result = new ArrayList<>();
+            Queue<TestTaskSpec> taskQueueCopy = testTaskService.getTestQueueCopy();
+            int index = 0;
+            while (!taskQueueCopy.isEmpty()) {
+                index++;
+                TestTaskSpec temp = taskQueueCopy.poll();
+                if (!isAdmin && !requestor.getTeamAdminMap().keySet().contains(temp.teamId)) {
+                    index++;
+                    continue;
+                }
+                TestTaskQueuedInfo taskQueuedInfo = new TestTaskQueuedInfo();
+                int[] queuedInfo = new int[]{
+                        index, temp.retryTime
+                };
+                taskQueuedInfo.setQueuedInfo(queuedInfo);
+                taskQueuedInfo.setTestTaskSpec(temp);
+                result.add(taskQueuedInfo);
+            }
             return Result.ok(result);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
