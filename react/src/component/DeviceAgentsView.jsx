@@ -181,8 +181,9 @@ export default class DeviceAgentsView extends BaseView {
                 const collapseStatus = {}
                 for (let i = 0; i < agents.length; i++) {
                     agents[i].groupedDevices = []
-                    for (let j = 0; j < agents[i].devices.length; j += 4) {
-                        agents[i].groupedDevices.push(agents[i].devices.slice(j, j + 4))
+                    const sliceLen = agents[i].agentDeviceType == 2 ? 2 : 4;
+                    for (let j = 0; j < agents[i].devices.length; j += sliceLen) {
+                        agents[i].groupedDevices.push(agents[i].devices.slice(j, j + sliceLen))
                     }
                     collapseStatus[agents[i].agentId] = true
                 }
