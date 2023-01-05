@@ -772,8 +772,7 @@ class TasksView extends BaseView {
                     this.snackBarFail(res)
                 }
             }).catch(this.snackBarError)
-
-
+            
             let queryParams = [
                 {
                     "key": "status",
