@@ -8,6 +8,7 @@ ARG ARG_AGENT_SECRET
 ARG ARG_AGENT_NAME
 ARG CENTER_JAR_FILE=center.jar
 ARG AGENT_JAR_FILE=agent.jar
+# Sqlite file under the same directory, storing pre-defined data for uber-image
 ARG CENTER_INIT_SQLITE=hydra_lab_uber_center_db.sqlite
 
 ENV TZ="Asia/Shanghai" \
