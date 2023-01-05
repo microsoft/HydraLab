@@ -163,7 +163,6 @@ public class TestTaskController {
                 index++;
                 TestTaskSpec temp = taskQueueCopy.poll();
                 if (!isAdmin && !requestor.getTeamAdminMap().keySet().contains(temp.teamId)) {
-                    index++;
                     continue;
                 }
                 TestTaskQueuedInfo taskQueuedInfo = new TestTaskQueuedInfo();
