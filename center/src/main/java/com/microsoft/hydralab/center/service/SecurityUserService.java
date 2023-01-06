@@ -69,8 +69,7 @@ public class SecurityUserService {
             SysTeam defaultTeam = sysTeamService.getOrCreateDefaultTeam(Const.DefaultTeam.DEFAULT_TEAM_NAME);
 
             user = sysUserService.createUserWithDefaultRole(displayName, mailAddress, defaultRole.getRoleId(), defaultRole.getRoleName());
-            user.setDefaultTeamId(defaultTeam.getTeamId());
-            user.setDefaultTeamName(defaultTeam.getTeamName());
+            user = sysUserService.switchUserDefaultTeam(user, defaultTeam.getTeamId(), defaultTeam.getTeamName());
             userTeamManagementService.addUserTeamRelation(defaultTeam.getTeamId(), user, false);
         }
 

@@ -5,11 +5,12 @@ package com.microsoft.hydralab.common.entity.center;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Data
 @Entity
 @Table(indexes = {@Index(columnList = "team_id")})
-public class DeviceGroup {
+public class DeviceGroup implements Serializable {
     @Id
     @Column(name = "group_name", nullable = false, length = 128)
     private String groupName;
