@@ -49,12 +49,12 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 |Web (Browser)| &#10004;     | x | 
 
 <span id="quick-start"></span>
-### Quick guide on Out-Of-Box Uber experience
+### Quick guide on out-of-box Uber experience
 
 Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal, open an Azure blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
 and place it in the environment variable with the name of BLOB_CONNECTION_STR.
 
-Based on this, Hydra Lab offers an out-of-box experience of docker image. By providing BLOB_CONNECTION_STR, you can simply follow the below steps and start your docker container with a center and an agent built in:
+Hydra Lab offers an out-of-box experience of docker image. By providing BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
 **Step 1. pull Docker image from container registry**
 > docker pull ghcr.io/microsoft/hydra-lab-uber:latest
@@ -64,13 +64,15 @@ Based on this, Hydra Lab offers an out-of-box experience of docker image. By pro
 
 **Step 3: visit front-end page and view your connected devices**
 
-Url: http://localhost:9886/portal/index.html#/ (or your custom port).
+> Url: http://localhost:9886/portal/index.html#/ (or your custom port).
 
-Enjoy starting your journey of exploration! And please refer to this section for more features: [For Hydra Lab User](#for-user)
+Enjoy starting your journey of exploration!
+
+**Note: out-of-box Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)** 
 
 ### Quick guide on build and run
 
-You can also run the center java Spring Boot service (a runnable Jar) with the following commands:
+You can also run the center java Spring Boot service (a runnable Jar) separately with the following commands:
 
 > The build and run process will require JDK | NPM | Android SDK platform-tools in position.
 
