@@ -66,14 +66,14 @@ public class XmlBuilder {
         testSuite.setAttribute(ATTR_TIME, Double.toString((double) (deviceTestTask.getTestEndTimeMillis() - deviceTestTask.getTestStartTimeMillis()) / 1000.f));
         testSuite.setAttribute(TIMESTAMP, DateUtil.appCenterFormat2.format(DateUtil.localToUTC(new Date(deviceTestTask.getTestStartTimeMillis()))));
         testSuite.setAttribute(HOSTNAME, InetAddress.getLocalHost().getHostName());
-        if (deviceTestTask.getTestUnitList() != null && deviceTestTask.getTotalCount() != deviceTestTask.getFailCount()) {
+        if (deviceTestTask.getTestUnitList() != null) {
             testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(deviceTestTask.getTotalCount() - deviceTestTask.getTestUnitList().size()));
             for (AndroidTestUnit unitTest : deviceTestTask.getTestUnitList()) {
                 Element testCase = buildTestCase(document, unitTest);
                 testSuite.appendChild(testCase);
             }
         } else {
-            testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(deviceTestTask.getTotalCount()));
+            testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(deviceTestTask.getTotalCount() - deviceTestTask.getFailCount()));
         }
         return testSuite;
     }

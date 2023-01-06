@@ -96,7 +96,7 @@ public class TestTaskService {
 
     public void cancelTask(String testTaskId) {
         synchronized (taskQueue) {
-            Queue<TestTaskSpec> taskQueueCopy = new LinkedList<>(taskQueue);
+            Queue<TestTaskSpec> taskQueueCopy = getTestQueueCopy();
             TestTaskSpec tempTask = null;
             while (!taskQueueCopy.isEmpty()) {
                 TestTaskSpec temp = taskQueueCopy.poll();
@@ -111,14 +111,19 @@ public class TestTaskService {
         }
     }
 
+    public LinkedList<TestTaskSpec> getTestQueueCopy() {
+        return new LinkedList<>(taskQueue);
+    }
+
     public TestTaskQueuedInfo getTestQueuedInfo(String testTaskId) {
         TestTaskQueuedInfo taskQueuedInfo = new TestTaskQueuedInfo();
-        int[] queuedInfo = new int[2]; // [index, retry time]
+        // [index, retry time]
+        int[] queuedInfo = new int[2];
         queuedInfo[0] = -1;
         queuedInfo[1] = 0;
         taskQueuedInfo.setQueuedInfo(queuedInfo);
 
-        Queue<TestTaskSpec> taskQueueCopy = new LinkedList<>(taskQueue);
+        Queue<TestTaskSpec> taskQueueCopy = getTestQueueCopy();
         int index = 1;
         while (!taskQueueCopy.isEmpty()) {
             TestTaskSpec temp = taskQueueCopy.poll();

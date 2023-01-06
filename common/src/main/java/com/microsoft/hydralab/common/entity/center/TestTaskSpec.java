@@ -21,7 +21,7 @@ public class TestTaskSpec {
     public String reportAudience;
     public String pkgName;
     public String testPkgName;
-    public String type;
+    public String type = "API";
     public String fileSetId;
     public TestFileSet testFileSet;
     public int testTimeOutSec = -1;

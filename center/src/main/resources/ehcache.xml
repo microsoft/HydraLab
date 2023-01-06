@@ -8,6 +8,13 @@
                   overflowToDisk="true"
                   memoryStoreEvictionPolicy="LRU">
     </defaultCache>
+    <cache name="groupCache"
+           maxElementsInMemory="200"
+           eternal="false"
+           timeToIdleSeconds="300"
+           timeToLiveSeconds="600"
+           overflowToDisk="true">
+    </cache>
     <cache name="taskCache"
            maxElementsInMemory="200"
            eternal="false"

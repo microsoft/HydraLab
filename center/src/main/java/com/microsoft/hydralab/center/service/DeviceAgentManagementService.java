@@ -418,11 +418,10 @@ public class DeviceAgentManagementService {
 
     public Set<String> queryGroupByDevice(String deviceSerial) {
         DeviceInfo deviceInfo = deviceListMap.get(deviceSerial);
-        Set<String> groups = deviceInfo.getDeviceGroup();
-        if (groups == null) {
+        if (deviceInfo == null || deviceInfo.getDeviceGroup() == null) {
             return new HashSet<>();
         }
-        return new HashSet<>(groups);
+        return new HashSet<>(deviceInfo.getDeviceGroup());
     }
 
     //add group&device relation and check device access
