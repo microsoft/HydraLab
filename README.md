@@ -54,7 +54,7 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal, open an Azure blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
 and place it in the environment variable with the name of BLOB_CONNECTION_STR.
 
-Hydra Lab offers an out-of-box experience of docker image. By providing BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
+Hydra Lab offers an out-of-box experience of docker image. By providing the (Azure) BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
 **Step 1. pull Docker image from container registry**
 > docker pull ghcr.io/microsoft/hydra-lab-uber:latest
@@ -74,7 +74,7 @@ Enjoy starting your journey of exploration!
 
 You can also run the center java Spring Boot service (a runnable Jar) separately with the following commands:
 
-> The build and run process will require JDK | NPM | Android SDK platform-tools in position.
+> The build and run process will require JDK11 | NPM | Android SDK platform-tools in position.
 
 **Step 1: build and run Hydra Lab center service.**
 
