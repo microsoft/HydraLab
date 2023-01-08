@@ -12,7 +12,7 @@
 
 ![HydraLabFeaturesPreview](docs/images/HydraLabFeaturesPreview.gif)
 
-[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki) | [中文](README.zh-CN.md)
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki) | [中文(完善中)](README.zh-CN.md)
 </div>
 
 
