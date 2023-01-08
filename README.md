@@ -7,13 +7,15 @@
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=microsoft.hydralab&left_color=gray&right_color=red)
-</div>
 
 ---
 
 ![HydraLabFeaturesPreview](docs/images/HydraLabFeaturesPreview.gif)
 
-[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki) | [中文](README.zh-CN.md)
+</div>
+
+
 
 <span id="what-is"></span>
 ## What is Hydra Lab?
