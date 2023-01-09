@@ -152,12 +152,9 @@ export default class AuthView extends BaseView {
                         {t.mailAddress}
                     </TableCell>
                     <TableCell id={t.id} align="center">
-                        <Button variant="contained"
-                                endIcon={<span
-                                    className="material-icons-outlined">download_for_offline</span>}
-                                onClick={() => this.downloadAgentConfigFile(t.id)}>
-                            Download agent config file
-                        </Button>
+                        <IconButton onClick={() => this.downloadAgentConfigFile(t.id)}>
+                            <span className="material-icons-outlined">download_for_offline</span>
+                        </IconButton>
                         <IconButton onClick={() => this.getAgentInfo(t.id)}>
                             <span className="material-icons-outlined">info</span>
                         </IconButton>
