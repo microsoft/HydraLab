@@ -1,5 +1,5 @@
 <h1 align="center">Hydra Lab</h1>
-<p align="center">Build your own cloud testing infrastructure</p>
+<p align="center">搭建属于你的智能移动云测平台</p>
 <div align="center">
 
 [![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/HydraLab-CI?branchName=main)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=743&branchName=main)
@@ -7,20 +7,18 @@
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=microsoft.hydralab&left_color=gray&right_color=red)
+</div>
 
 ---
 
 ![HydraLabFeaturesPreview](docs/images/HydraLabFeaturesPreview.gif)
 
-[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki) | [中文(完善中)](README.zh-CN.md)
-</div>
-
-
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
 
 <span id="what-is"></span>
-## What is Hydra Lab?
+## Hydra Lab是什么？
 
-Hydra Lab is a framework that can help you easily build a cloud testing platform utilizing the test devices/machines in hand. 
+Hydra Lab 是一个基于Spring Boot & React 构建的服务框架，帮你快速构建一套集测试运行部署、测试设备管理、低代码测试等功能于一身的跨平台云测服务，开箱即用. 
 It enables dev team to quickly build a self-manageable and intelligent cloud testing infrastructure. With the help of Hydra Lab, you can:
 
 - Either: Create a new cloud testing network.
@@ -56,7 +54,7 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal, open an Azure blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
 and place it in the environment variable with the name of BLOB_CONNECTION_STR.
 
-Hydra Lab offers an out-of-box experience of docker image. By providing the (Azure) BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
+Hydra Lab offers an out-of-box experience of docker image. By providing BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
 **Step 1. pull Docker image from container registry**
 > docker pull ghcr.io/microsoft/hydra-lab-uber:latest
@@ -76,7 +74,7 @@ Enjoy starting your journey of exploration!
 
 You can also run the center java Spring Boot service (a runnable Jar) separately with the following commands:
 
-> The build and run process will require JDK11 | NPM | Android SDK platform-tools in position.
+> The build and run process will require JDK | NPM | Android SDK platform-tools in position.
 
 **Step 1: build and run Hydra Lab center service.**
 
