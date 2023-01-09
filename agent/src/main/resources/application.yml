@@ -75,4 +75,3 @@ management:
           enabled: ${PUSHGATEWAY_ENABLED:false}
           job: ${spring.application.name}
           push-rate: 10s
-          
