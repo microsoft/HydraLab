@@ -43,24 +43,10 @@ app:
   registry:
     # The url of Hydra Lab Center. If nginx enabled, switch to port of nginx
     server: "localhost:9886"
-#    server: "host.docker.internal:9886"
-#    server: "hydradevicenetwork.azurewebsites.net"
     # The Agent info registered in Hydra Lab Center
     id: ${AGENT_ID}
     secret: ${AGENT_SECRET}
-    name: ${AGENT_NAME}
-#    # Docker
-#    id: ${AGENT_ID:d3111900-22ac-4e80-bb39-b6120aa23738}
-#    secret: ${AGENT_SECRET:2a10lJ0ujxo8SOO8vnq56vyp8uoHy1GUGrIb8kGdcvp8pHks1wwwBDke}
-#    name: ${AGENT_NAME:TestAgent}
-#    # local
-#    id: ${AGENT_ID:4afc2739-aca0-4a9a-91ef-71604ab7cd7e}
-#    secret: ${AGENT_SECRET:2a10uivCJYcO20gKSa9po6KGuOA8lOj5jWDgw1l0qMqNurHIbynt1Mam}
-#    name: ${AGENT_NAME:Testtest}
-#    # Online
-#    id: ${AGENT_ID:7d3738aa-a916-470c-8bb5-9342fe55197d}
-#    secret: ${AGENT_SECRET:2a10xNkVkatFYrQmCZR4Cvvmbr8A4pMVnd4f67Sf55WWpmIeRmdk}
-#    name: ${AGENT_NAME:SuzhouAgent}
+    name: ${AGENT_NAME:default}
     # Agent Type {1 : 1*WINDOWS + n*ANDROIDS , 2 : 1*WINDOWS+1*ANDROID , 3 : iOS}
     agent-type: ${AGENT_TYPE:1}
   # Device Stability Monitor Configuration
@@ -89,3 +75,4 @@ management:
           enabled: ${PUSHGATEWAY_ENABLED:false}
           job: ${spring.application.name}
           push-rate: 10s
+          
