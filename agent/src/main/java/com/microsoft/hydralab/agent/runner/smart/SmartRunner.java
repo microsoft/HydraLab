@@ -16,10 +16,8 @@ import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -46,6 +44,7 @@ public class SmartRunner extends TestRunner {
     @Override
     protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
 
+        deviceTestTask.setTotalCount(testTask.getDeviceTestCount());
         Logger reportLogger = deviceTestTask.getLogger();
 
         pkgName = testTask.getPkgName();
