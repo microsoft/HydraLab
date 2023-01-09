@@ -59,10 +59,16 @@ and place it in the environment variable with the name of BLOB_CONNECTION_STR.
 Hydra Lab offers an out-of-box experience of docker image. By providing the (Azure) BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
 **Step 1. pull Docker image from container registry**
-> docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+
+```
+docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+``` 
 
 **Step 2. run on your machine with BLOB_CONNECTION_STR**
-> docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
+
+```
+docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
+```
 
 **Step 3: visit front-end page and view your connected devices**
 
