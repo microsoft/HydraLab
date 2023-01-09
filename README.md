@@ -7,13 +7,15 @@
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=microsoft.hydralab&left_color=gray&right_color=red)
-</div>
 
 ---
 
 ![HydraLabFeaturesPreview](docs/images/HydraLabFeaturesPreview.gif)
 
-[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki) | [中文(完善中)](README.zh-CN.md)
+</div>
+
+
 
 <span id="what-is"></span>
 ## What is Hydra Lab?
@@ -54,13 +56,24 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal, open an Azure blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
 and place it in the environment variable with the name of BLOB_CONNECTION_STR.
 
-Hydra Lab offers an out-of-box experience of docker image. By providing the (Azure) BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
+Hydra Lab offers an out-of-box experience of docker image. By providing the env variable BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
 **Step 1. pull Docker image from container registry**
-> docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+
+```
+docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+``` 
 
 **Step 2. run on your machine with BLOB_CONNECTION_STR**
-> docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
+
+You may write the content "BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}" in an env file, and pass the path of the file to docker container:
+```
+docker run [-p 9886:9886] [--name=hydra-lab] --env-file ${YOUR_ENV_FILE_PATH} ghcr.io/microsoft/hydra-lab-uber:latest
+```
+Or simply run with the env parameter -e:
+```
+docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
+```
 
 **Step 3: visit front-end page and view your connected devices**
 
