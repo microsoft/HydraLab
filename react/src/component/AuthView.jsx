@@ -152,6 +152,12 @@ export default class AuthView extends BaseView {
                         {t.mailAddress}
                     </TableCell>
                     <TableCell id={t.id} align="center">
+                        <Button variant="contained"
+                                endIcon={<span
+                                    className="material-icons-outlined">download_for_offline</span>}
+                                onClick={() => this.downloadAgentConfigFile(t.id)}>
+                            Download agent config file
+                        </Button>
                         <IconButton onClick={() => this.getAgentInfo(t.id)}>
                             <span className="material-icons-outlined">info</span>
                         </IconButton>
@@ -550,6 +556,18 @@ export default class AuthView extends BaseView {
                 })
             } else {
                 this.snackBarFail(res)
+            }
+        }).catch(this.snackBarError)
+    }
+
+    downloadAgentConfigFile(agentId) {
+        axios.get(`/api/agent/downloadAgentConfigFile/${agentId}`).then(res => {
+            if (res.data.code === 200) {
+                this.setState({
+                    snackbarIsShown: true,
+                    snackbarSeverity: "success",
+                    snackbarMessage: "Agent config file downloaded"
+                })
             }
         }).catch(this.snackBarError)
     }
