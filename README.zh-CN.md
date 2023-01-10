@@ -92,6 +92,8 @@ java -jar center/build/libs/center.jar
 # 然后访问 http://localhost:9886/portal/index.html#/auth 来生成新的agent ID和agent secret.
 ```
 
+> 如果你遇到了以下错误: `Error: error:0308010C:digital envelope routines::unsupported`, 设置环境变量 `NODE_OPTIONS` 的值为 `--openssl-legacy-provider` 并重启命令行。
+
 **第2步：构建并运行Hydra Lab agent服务。**
 
 ```bash
