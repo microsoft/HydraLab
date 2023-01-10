@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.agent.service;
 
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
@@ -34,7 +34,7 @@ public class TestDataService {
     AttachmentService attachmentService;
 
     public void saveTestTaskData(TestTask testTask) {
-        List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
+        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
         if (deviceTestResults.isEmpty()) {
             return;
         }
@@ -43,7 +43,7 @@ public class TestDataService {
         testTaskRepository.save(testTask);
 
         List<AndroidTestUnit> list = new ArrayList<>();
-        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+        for (TestRun deviceTestResult : deviceTestResults) {
             attachmentService.saveRelations(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT, deviceTestResult.getAttachments());
 
             List<AndroidTestUnit> testUnitList = deviceTestResult.getTestUnitList();

@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.common.logger.impl;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ADBLogcatCollector implements LogCollector {
     private final DeviceInfo connectedDevice;
-    private final DeviceTestTask deviceTestResult;
+    private final TestRun deviceTestResult;
     private final String pkgName;
     private final Logger infoLogger;
     DeviceManager deviceManager;
@@ -29,7 +29,7 @@ public class ADBLogcatCollector implements LogCollector {
     private boolean started;
     private String loggerFilePath;
 
-    public ADBLogcatCollector(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, String pkgName, DeviceTestTask deviceTestResult, Logger logger) {
+    public ADBLogcatCollector(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, String pkgName, TestRun deviceTestResult, Logger logger) {
         this.deviceManager = deviceManager;
         this.adbOperateUtil = adbOperateUtil;
         this.connectedDevice = deviceInfo;
@@ -44,7 +44,7 @@ public class ADBLogcatCollector implements LogCollector {
             return loggerFilePath;
         }
         started = true;
-        loggerFilePath = new File(deviceTestResult.getDeviceTestResultFolder(), "logcat.log").getAbsolutePath();
+        loggerFilePath = new File(deviceTestResult.getTestRunResultFolder(), "logcat.log").getAbsolutePath();
         runCommand("logcat -G 48M");
         runCommand("logcat -c");
         return loggerFilePath;

@@ -9,7 +9,7 @@ import com.microsoft.hydralab.center.service.UserTeamManagementService;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
@@ -73,7 +73,7 @@ public class TestDetailController {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
-            DeviceTestTask testInfo = testDataService.getDeviceTestTaskByCrashId(crashId);
+            TestRun testInfo = testDataService.getDeviceTestTaskByCrashId(crashId);
             testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
 
             return Result.ok(keyValueRepository.getCrashStack(crashId));
@@ -103,7 +103,7 @@ public class TestDetailController {
             } else {
                 logger.info("result id {}", resultId); // CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
             }
-            DeviceTestTask testInfo = testDataService.getDeviceTestTaskWithVideoInfo(resultId);
+            TestRun testInfo = testDataService.getDeviceTestTaskWithVideoInfo(resultId);
             testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
 
             JSONObject data = new JSONObject();
@@ -148,7 +148,7 @@ public class TestDetailController {
             } else {
                 return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error param! Should be UUID");
             }
-            DeviceTestTask testInfo = testDataService.getDeviceTestTaskWithVideoInfo(deviceTaskId);
+            TestRun testInfo = testDataService.getDeviceTestTaskWithVideoInfo(deviceTaskId);
             testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
 
             //use CDN url to access video

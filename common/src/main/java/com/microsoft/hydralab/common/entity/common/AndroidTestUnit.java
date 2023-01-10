@@ -55,7 +55,7 @@ public class AndroidTestUnit implements Serializable {
     private transient File cpuTraceFile;
 
     @Transient
-    private DeviceTestTask deviceTestTask;
+    private TestRun testRun;
 
     @Transient
     public String getTitle() {
