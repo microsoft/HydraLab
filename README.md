@@ -28,9 +28,9 @@ It enables dev team to quickly build a self-manageable and intelligent cloud tes
 
 Capabilities of Hydra Lab include:
 - Scalable test device management under the center-agent distributed design; Test task management and test result visualization.
-- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso)
-- Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform
-- Case-free test automation: Monkey test, Smart exploratory test
+- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso).
+- Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform.
+- Case-free test automation: Monkey test, Smart exploratory test.
 
 For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
 
@@ -75,7 +75,7 @@ Or simply run with the env parameter -e:
 docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-**Step 3: visit front-end page and view your connected devices**
+**Step 3. visit front-end page and view your connected devices**
 
 > Url: http://localhost:9886/portal/index.html#/ (or your custom port).
 
@@ -97,8 +97,8 @@ cd react
 npm ci
 npm run pub
 # Get back to the project root, and build the center runnable Jar. 
-# For the gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
 cd ..
+# For the gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
 gradlew :center:bootJar
 # Run it, and then visit http://localhost:9886/portal/index.html#/
 java -jar center/build/libs/center.jar
