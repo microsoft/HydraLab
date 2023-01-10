@@ -28,7 +28,7 @@ Hydra Lab的特性包括：
 - center-agent分布式设计下的可扩展测试设备管理；测试任务管理和测试结果可视化。
 - 支持 [Android Espresso Test](https://developer.android.com/training/testing/espresso)。
 - 支持在不同平台上进行Appium(Java)测试：Windows/iOS/Android/浏览器/跨平台。
-- 无用例的自动化测试：猴子测试，智能探索测试
+- 无用例的自动化测试：Monkey test，智能探索测试
 
 更多细节，请参见 [介绍：什么是Hydra Lab？](https://github.com/microsoft/HydraLab/wiki)
 
