@@ -96,7 +96,7 @@ java -jar center/build/libs/center.jar
 
 ```bash
 # 在项目根目录下，复制示例配置文件并更新：
-# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID, 和 YOUR_REGISTERED_AGENT_SECRET.
+# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID 和 YOUR_REGISTERED_AGENT_SECRET.
 cp agent/application-sample.yml application.yml
 # 然后构建agent jar并运行它
 gradlew :agent:bootJar

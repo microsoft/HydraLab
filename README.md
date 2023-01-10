@@ -109,7 +109,7 @@ java -jar center/build/libs/center.jar
 
 ```bash
 # In project root, copy the sample config file and update the:
-# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID, and YOUR_REGISTERED_AGENT_SECRET.
+# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID and YOUR_REGISTERED_AGENT_SECRET.
 cp agent/application-sample.yml application.yml
 # Then build agent jar and run it
 gradlew :agent:bootJar
