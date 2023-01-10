@@ -4,7 +4,6 @@ package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.azure.core.annotation.Get;
 import com.microsoft.hydralab.center.service.*;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
@@ -15,15 +14,12 @@ import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.json.YamlJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
-import org.yaml.snakeyaml.Yaml;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -226,7 +222,7 @@ public class AgentManageController {
     @GetMapping("/api/agent/downloadAgentConfigFile/{agentId}")
     public Result downloadAgentConfigFile(@CurrentSecurityContext SysUser requestor,
                                           @PathVariable(value = "agentId") String agentId) {
-        if (requestor == null) {
+        if (agentManageService.checkAgentAuthorization(requestor, agentId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
         Boolean downloaded = agentManageService.downloadAgentConfigFile(requestor, agentId);

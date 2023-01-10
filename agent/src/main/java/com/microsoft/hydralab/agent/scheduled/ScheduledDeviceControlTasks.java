@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.agent.runner.scheduled;
+package com.microsoft.hydralab.agent.scheduled;
 
 import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.agent.service.DeviceControlService;
