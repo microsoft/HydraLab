@@ -8,7 +8,7 @@ import cn.hutool.core.lang.Assert;
 import com.android.ddmlib.testrunner.TestIdentifier;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     private final DeviceInfo deviceInfo;
-    private final DeviceTestTask deviceTestResult;
+    private final TestRun deviceTestResult;
     private final LogCollector adbLogcatCollector;
     private final ScreenRecorder adbDeviceScreenRecorder;
     private final Logger logger;
@@ -45,7 +45,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private int pid;
     private int addedFrameCount;
 
-    public EspressoTestInfoProcessorListener(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, DeviceTestTask deviceTestResult, String pkgName) {
+    public EspressoTestInfoProcessorListener(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, TestRun deviceTestResult, String pkgName) {
         this.deviceManager = deviceManager;
         this.adbOperateUtil = adbOperateUtil;
         this.deviceInfo = deviceInfo;
@@ -53,8 +53,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         this.logger = deviceTestResult.getLogger();
         this.pkgName = pkgName;
         adbLogcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestResult, logger);
-        adbDeviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getDeviceTestResultFolder(), logger);
-        setReportDir(deviceTestResult.getDeviceTestResultFolder());
+        adbDeviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getTestRunResultFolder(), logger);
+        setReportDir(deviceTestResult.getTestRunResultFolder());
         try {
             setHostName(InetAddress.getLocalHost().getHostName());
         } catch (UnknownHostException ex) {
@@ -101,7 +101,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             exception.printStackTrace();
         }
         logger.info("Start gif frames collection");
-        gifFile = new File(deviceTestResult.getDeviceTestResultFolder(), runName + ".gif");
+        gifFile = new File(deviceTestResult.getTestRunResultFolder(), runName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
