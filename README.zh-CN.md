@@ -24,7 +24,7 @@ Hydra Lab 是一个基于Spring Boot & React 构建的服务框架，帮你快�
 - 搭建：创建一个新的云测试网络。
 - 加入：以最小的代价将你的测试设备部署到现有的网络上。
 
-Hydra Lab的功能包括：
+Hydra Lab的特性包括：
 - center-agent分布式设计下的可扩展测试设备管理；测试任务管理和测试结果可视化。
 - 支持 [Android Espresso Test](https://developer.android.com/training/testing/espresso)。
 - 支持在不同平台上进行Appium(Java)测试：Windows/iOS/Android/浏览器/跨平台。
