@@ -699,11 +699,6 @@ public class AndroidDeviceManager extends DeviceManager {
 
     @Override
     public void testDeviceUnset(DeviceInfo deviceInfo, Logger logger) {
-        setProperty(deviceInfo, "log.tag.WelcomeScreen", " ", logger);
-        setProperty(deviceInfo, "log.tag.ConsentDialog", " ", logger);
-        setProperty(deviceInfo, "log.tag.WhatsNewDialog", " ", logger);
-        setProperty(deviceInfo, "log.tag.NoneCheckUpdates", " ", logger);
-
         changeGlobalSetting(deviceInfo, "window_animation_scale", "1", logger);
         changeGlobalSetting(deviceInfo, "transition_animation_scale", "1", logger);
         changeGlobalSetting(deviceInfo, "animator_duration_scale", "1", logger);
