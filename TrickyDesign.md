@@ -11,6 +11,6 @@ com.microsoft.hydralab.agent.runner.smart.SmartTestLog
 We'd better create a new POJO to wrap the info.
 Related references:
 - com.microsoft.hydralab.agent.runner.espresso.testStarted
-- com.microsoft.hydralab.common.entity.common.DeviceTestTask.addNewTimeTag
+- com.microsoft.hydralab.common.entity.common.TestRun.addNewTimeTag
 - com.microsoft.hydralab.center.controller.TestDetailController.deviceTaskInfo
 - react/src/component/VideoNavView.jsx:110

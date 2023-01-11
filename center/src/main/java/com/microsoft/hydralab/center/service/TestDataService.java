@@ -8,7 +8,7 @@ import com.microsoft.hydralab.common.entity.center.StabilityData;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
-import com.microsoft.hydralab.common.repository.DeviceTestResultRepository;
+import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
 import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -51,7 +51,7 @@ public class TestDataService {
     @Resource
     AndroidTestUnitRepository androidTestUnitRepository;
     @Resource
-    DeviceTestResultRepository deviceTestResultRepository;
+    TestRunRepository testRunRepository;
     @Resource
     KeyValueRepository keyValueRepository;
     @Resource
@@ -69,7 +69,7 @@ public class TestDataService {
         List<AndroidTestUnit> testUnits = androidTestUnitRepository.findBySuccess(false, PageRequest.of(page, size, sortByStartMillis)).getContent();
 
         for (AndroidTestUnit testUnit : testUnits) {
-            Optional<DeviceTestTask> deviceTestTask = deviceTestResultRepository.findById(testUnit.getDeviceTestResultId());
+            Optional<TestRun> deviceTestTask = testRunRepository.findById(testUnit.getDeviceTestResultId());
             deviceTestTask.ifPresent(testUnit::setDeviceTestTask);
         }
 
@@ -88,14 +88,14 @@ public class TestDataService {
             return null;
         }
         TestTask testTask = taskOpt.get();
-        List<DeviceTestTask> byTestTaskId = deviceTestResultRepository.findByTestTaskId(testId);
+        List<TestRun> byTestTaskId = testRunRepository.findByTestTaskId(testId);
 
         if (byTestTaskId == null || byTestTaskId.isEmpty()) {
             return testTask;
         }
 
         testTask.getDeviceTestResults().addAll(byTestTaskId);
-        for (DeviceTestTask deviceTestResult : byTestTaskId) {
+        for (TestRun deviceTestResult : byTestTaskId) {
             List<AndroidTestUnit> byDeviceTestResultId = androidTestUnitRepository.findByDeviceTestResultId(deviceTestResult.getId());
             deviceTestResult.getTestUnitList().addAll(byDeviceTestResultId);
             deviceTestResult.setAttachments(attachmentService.getAttachments(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT));
@@ -176,15 +176,15 @@ public class TestDataService {
     @CachePut(key = "#testTask.id")
     public TestTask saveTestTaskData(TestTask testTask) {
         testTaskRepository.save(testTask);
-        List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
+        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
         if (deviceTestResults.isEmpty()) {
             return testTask;
         }
 
-        deviceTestResultRepository.saveAll(deviceTestResults);
+        testRunRepository.saveAll(deviceTestResults);
 
         List<AndroidTestUnit> list = new ArrayList<>();
-        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+        for (TestRun deviceTestResult : deviceTestResults) {
             attachmentService.saveAttachments(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT, deviceTestResult.getAttachments());
 
             List<AndroidTestUnit> testUnitList = deviceTestResult.getTestUnitList();
@@ -211,17 +211,17 @@ public class TestDataService {
         return testTask;
     }
 
-    public DeviceTestTask getDeviceTestTaskWithVideoInfo(String dttId) {
-        DeviceTestTask deviceTestTask = deviceTestResultRepository.getOne(dttId);
+    public TestRun getTestRunWithVideoInfo(String dttId) {
+        TestRun testRun = testRunRepository.getOne(dttId);
         JSONArray deviceTestResInfo = keyValueRepository.getDeviceTestResInfo(dttId);
-        deviceTestTask.setVideoTimeTagArr(deviceTestResInfo);
-        deviceTestTask.setVideoBlobUrl();
-        deviceTestTask.setAttachments(attachmentService.getAttachments(dttId, EntityFileRelation.EntityType.TEST_RESULT));
-        return deviceTestTask;
+        testRun.setVideoTimeTagArr(deviceTestResInfo);
+        testRun.setVideoBlobUrl();
+        testRun.setAttachments(attachmentService.getAttachments(dttId, EntityFileRelation.EntityType.TEST_RESULT));
+        return testRun;
     }
 
-    public DeviceTestTask getDeviceTestTaskByCrashId(String crashId) {
-        return deviceTestResultRepository.findByCrashStackId(crashId).orElse(null);
+    public TestRun getTestRunByCrashId(String crashId) {
+        return testRunRepository.findByCrashStackId(crashId).orElse(null);
     }
 
     public void checkTestDataAuthorization(SysUser requestor, String testId) {

@@ -210,7 +210,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, DeviceTestTask result) {
+    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result) {
 
     }
 

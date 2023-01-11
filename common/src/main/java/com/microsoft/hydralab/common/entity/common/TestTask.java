@@ -78,7 +78,7 @@ public class TestTask implements Serializable {
     @Transient
     private transient Map<String, String> instrumentationArgs;
     @Transient
-    private List<DeviceTestTask> deviceTestResults = new ArrayList<>();
+    private List<TestRun> deviceTestResults = new ArrayList<>();
     @Transient
     private Map<String, List<DeviceAction>> deviceActions = new HashMap<>();
     private String fileSetId;
@@ -191,7 +191,7 @@ public class TestTask implements Serializable {
         return testTask;
     }
 
-    public synchronized void addTestedDeviceResult(DeviceTestTask deviceTestResult) {
+    public synchronized void addTestedDeviceResult(TestRun deviceTestResult) {
         deviceTestResults.add(deviceTestResult);
     }
 
@@ -260,7 +260,7 @@ public class TestTask implements Serializable {
         if (deviceTestResults.isEmpty()) {
             return;
         }
-        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+        for (TestRun deviceTestResult : deviceTestResults) {
             totalTestCount += deviceTestResult.getTotalCount();
             totalFailCount += deviceTestResult.getFailCount();
         }

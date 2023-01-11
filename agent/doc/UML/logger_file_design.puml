@@ -6,12 +6,12 @@ note top of DeviceLogger
 deviceLogBaseDir/device.getName()/device_control.log
 end note
 
-object DeviceTestTaskLogger
-note bottom of DeviceTestTaskLogger
+object TestRunLogger
+note bottom of TestRunLogger
 DeviceTestResultFolder/loggerNamePrefix_dateInfo.log
 end note
 
-DeviceTestTaskLogger -u-|> DeviceLogger
+TestRunLogger -u-|> DeviceLogger
 @enduml
 
 @startuml loggers

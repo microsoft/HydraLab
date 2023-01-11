@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.impl.IOSLogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -185,8 +185,8 @@ public class IOSDeviceManager extends DeviceManager {
     }
 
     @Override
-    public LogCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, DeviceTestTask deviceTestResult, Logger logger) {
-        return new IOSLogCollector(this, deviceInfo, pkgName, deviceTestResult, logger);
+    public LogCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
+        return new IOSLogCollector(this, deviceInfo, pkgName, testRun, logger);
     }
 
     @Override
