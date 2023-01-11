@@ -149,6 +149,13 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('needClearData')) {
                     apiConfig.needClearData = Boolean.parseBoolean(project.needClearData)
                 }
+                if (project.hasProperty('neededPermissions')) {
+                    apiConfig.neededPermissions = project.neededPermissions.toString().split(", +")
+                }
+                if (project.hasProperty('deviceActions')) {
+                    // add quotes back as quotes in gradle plugins will be replaced by blanks
+                    apiConfig.deviceActionsStr = project.deviceActions.replace("\\", "\"")
+                }
 
                 requiredParamCheck(runningType, appPath, testAppPath, deviceIdentifier, runTimeOutSeconds, testSuiteName, apiConfig)
 

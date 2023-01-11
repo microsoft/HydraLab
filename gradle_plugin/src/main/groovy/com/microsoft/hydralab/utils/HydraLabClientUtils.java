@@ -13,10 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -660,7 +657,14 @@ public class HydraLabClientUtils {
         jsonElement.addProperty("needClearData", apiConfig.needClearData);
         jsonElement.addProperty("testRunnerName", apiConfig.testRunnerName);
         jsonElement.addProperty("testScope", apiConfig.testScope);
-
+        if (apiConfig.neededPermissions != null) {
+            jsonElement.add("neededPermissions", GSON.toJsonTree(apiConfig.neededPermissions));
+        }
+        if (StringUtils.isNotBlank(apiConfig.deviceActionsStr)) {
+            JsonParser parser = new JsonParser();
+            JsonObject jsonObject =  parser.parse(apiConfig.deviceActionsStr).getAsJsonObject();
+            jsonElement.add("deviceActions", jsonObject);
+        }
         if (accessKey != null) {
             jsonElement.addProperty("accessKey", accessKey);
         }
@@ -832,6 +836,7 @@ public class HydraLabClientUtils {
         }
     }
 
+    // todo: split into APIConfig/deviceConfig/testConfig
     public static class HydraLabAPIConfig {
         public String schema = "https";
         public String host = "";
@@ -861,6 +866,8 @@ public class HydraLabClientUtils {
         public String teamName = "";
         public String testRunnerName = "androidx.test.runner.AndroidJUnitRunner";
         public String testScope = "";
+        public List<String> neededPermissions;
+        public String deviceActionsStr = "";
 
         public static HydraLabAPIConfig defaultAPI() {
             return new HydraLabAPIConfig();
@@ -908,11 +915,21 @@ public class HydraLabClientUtils {
 
         @Override
         public String toString() {
-            return "HydraLabAPIConfig Upload URL {" + getUploadUrl() + '}';
-        }
-
-        public String getTestStaticResUrl(String resPath) {
-            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, resPath);
+            return "HydraLabAPIConfig:\n" +
+                    "pkgName=" + pkgName + ",\n" +
+                    "testPkgName=" + testPkgName + ",\n" +
+                    "groupTestType=" + groupTestType + ",\n" +
+                    "pipelineLink=" + pipelineLink + ",\n" +
+                    "frameworkType=" + frameworkType + ",\n" +
+                    "maxStepCount=" + maxStepCount + ",\n" +
+                    "deviceTestCount=" + deviceTestCount + ",\n" +
+                    "needUninstall=" + needUninstall + ",\n" +
+                    "needClearData=" + needClearData + ",\n" +
+                    "teamName=" + teamName + ",\n" +
+                    "testRunnerName=" + testRunnerName + ",\n" +
+                    "testScope=" + testScope + ",\n" +
+                    "neededPermissions=" + neededPermissions.toString() + ",\n" +
+                    "deviceActionsStr=" + deviceActionsStr;
         }
     }
 
@@ -934,7 +951,6 @@ public class HydraLabClientUtils {
         public int totalFailCount;
         public String testSuite;
         public String reportImagePath;
-        public String baseUrl;
         public String status;
         public String testErrorMsg;
         public String message;
