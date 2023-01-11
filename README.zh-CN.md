@@ -16,94 +16,96 @@
 [What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
 
 <span id="what-is"></span>
-## Hydra Lab是什么？
+## Hydra Lab 是什么？
 
-Hydra Lab 是一个基于Spring Boot & React 构建的服务框架，帮你快速构建一套集测试运行部署、测试设备管理、低代码测试等功能于一身的跨平台云测服务，开箱即用. 
-It enables dev team to quickly build a self-manageable and intelligent cloud testing infrastructure. With the help of Hydra Lab, you can:
+Hydra Lab 是一个基于 Spring Boot & React 构建的服务框架，帮你快速构建一套集测试运行部署、测试设备管理、低代码测试等功能于一身的跨平台云测服务，开箱即用。
+它使开发团队能够快速建立一个可自我管理的智能云测试基础设施。在 Hydra Lab 的帮助下，你可以：
 
-- Either: Create a new cloud testing network.
-- Or: Onboard your test device to an existing network with a minimized effort.
+- 搭建：创建一个新的云测试网络。
+- 加入：以最小的代价将你的测试设备部署到现有的网络上。
 
-Capabilities of Hydra Lab include:
-- Scalable test device management under the center-agent distributed design; Test task management and test result visualization.
-- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso)
-- Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform
-- Case-free test automation: Monkey test, Smart exploratory test
+Hydra Lab 的特性包括：
+- center-agent 分布式设计下的可扩展测试设备管理；测试任务管理和测试结果可视化。
+- 支持 [Android Espresso Test](https://developer.android.com/training/testing/espresso)。
+- 支持在不同平台上进行 Appium(Java) 测试：Windows/iOS/Android/浏览器/跨平台。
+- 无用例的自动化测试：Monkey test，智能探索测试
 
-For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
+更多细节，请参见 [介绍：什么是 Hydra Lab？](https://github.com/microsoft/HydraLab/wiki)
 
 <span id="get-started"></span>
-## Get Started
+## 入门
 
-Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/wiki)** to understand the dev environment setup procedure: [Contribution Guideline](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
+请访问我们的 **[GitHub 项目 Wiki](https://github.com/microsoft/HydraLab/wiki)** 以了解开发环境的配置流程： [贡献指南](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
-**Supported environments for Hydra Lab agent**: Windows, Mac OSX, and Linux ([Docker](https://github.com/microsoft/HydraLab/blob/main/agent/README.md#run-agent-in-docker)).
+**Hydra Lab agent 支持的环境**：Windows, Mac OSX, 和Linux ([Docker](https://github.com/microsoft/HydraLab/blob/main/agent/README.md#run-agent-in-docker)).
 
-**Supported platforms and frameworks**:
+**支持的平台和框架**:
 
 |  | Appium(Java) | Espresso | 
 | ---- |--------------|---- |
 |Android| &#10004;     | &#10004; |
 |iOS| &#10004;     | x | x |
 |Windows| &#10004;     | x | 
-|Web (Browser)| &#10004;     | x | 
+|Web (浏览器)| &#10004;     | x | 
 
 <span id="quick-start"></span>
-### Quick guide on out-of-box Uber experience
+### 开箱即用的 Uber docker 镜像快速指南
 
-Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal, open an Azure blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
-and place it in the environment variable with the name of BLOB_CONNECTION_STR.
+Hydra Lab 使用 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储日志文件、视频、应用包等。请访问你的 Azure 门户，打开一个 Azure Blob 存储账户，获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string) 。
+并将其放入环境变量中，名称为 BLOB_CONNECTION_STR。
 
-Hydra Lab offers an out-of-box experience of docker image. By providing BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
+Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单地配置环境变量 BLOB_CONNECTION_STR 后，你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
 
-**Step 1. pull Docker image from container registry**
+**第1步. 从容器注册中心获取 Docker 镜像**
 > docker pull ghcr.io/microsoft/hydra-lab-uber:latest
 
-**Step 2. run on your machine with BLOB_CONNECTION_STR**
+**第2步. 在你的机器上运行，并使用 BLOB_CONNECTION_STR 作为参数**
 > docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
 
-**Step 3: visit front-end page and view your connected devices**
+**第3步. 访问前端页面并查看你的已连接设备**
 
-> Url: http://localhost:9886/portal/index.html#/ (or your custom port).
+> Url: http://localhost:9886/portal/index.html#/ (或自定义的端口号).
 
-Enjoy starting your journey of exploration!
+开始享受你的探索之旅吧!
 
-**Note: out-of-box Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)** 
+**注意：Uber 现在只提供安卓系统的Espresso测试功能，更多的功能请参考本节：[对于 Hydra Lab 用户](#for-user)** 
 
-### Quick guide on build and run
+### 构建和运行的快速指南
 
-You can also run the center java Spring Boot service (a runnable Jar) separately with the following commands:
+你也可以用以下命令单独运行中心 java Spring Boot 服务（一个可运行的 Jar）：
 
-> The build and run process will require JDK | NPM | Android SDK platform-tools in position.
+> 构建和运行过程需要用到 JDK | NPM | Android SDK 平台工具。
 
-**Step 1: build and run Hydra Lab center service.**
+**第1步. 构建并运行 Hydra Lab center 服务。**
 
 ```bash
-# In project root, switch to react folder to build the Web front.
+# 在项目根目录，切换到 react 文件夹来构建 Web 前端文件。
 cd react
 npm ci
 npm run pub
-# Get back to the project root, and build the center runnable Jar. 
-# For the gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
+# 回到项目根目录，构建 center 可运行的 Jar 。
 cd ..
+# 对于 gradlew 命令，如果你使用的是 Windows 系统，请用`./gradlew`或`./gradlew.bat`替换。
 gradlew :center:bootJar
-# Run it, and then visit http://localhost:9886/portal/index.html#/
+# 运行并访问 http://localhost:9886/portal/index.html#/
 java -jar center/build/libs/center.jar
-# Then visit http://localhost:9886/portal/index.html#/auth to generate a new agent ID and agent secret.
+# 然后访问 http://localhost:9886/portal/index.html#/auth 来生成新的 agent ID 和 agent secret 。
 ```
 
-**Step 2: build and run Hydra Lab agent service.**
+> 如果你遇到了以下错误: `Error: error:0308010C:digital envelope routines::unsupported`, 设置环境变量 `NODE_OPTIONS` 的值为 `--openssl-legacy-provider` 并重启命令行。
+
+**第2步. 构建并运行 Hydra Lab agent 服务。**
 
 ```bash
-# In project root, copy the sample config file and update the:
-# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID, and YOUR_REGISTERED_AGENT_SECRET.
+# 在项目根目录下，复制示例配置文件并更新：
+# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID 和 YOUR_REGISTERED_AGENT_SECRET 。
 cp agent/application-sample.yml application.yml
-# Then build agent jar and run it
+# 然后构建 agent jar 并运行它
 gradlew :agent:bootJar
 java -jar agent/build/libs/agent.jar
 ```
 
-**Step 3: visit http://localhost:9886/portal/index.html#/ and view your connected devices**
+**第3步. 访问 http://localhost:9886/portal/index.html#/ 并查看你的已连接设备**
 
 **Technical design overview:**
 

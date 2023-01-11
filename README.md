@@ -28,9 +28,9 @@ It enables dev team to quickly build a self-manageable and intelligent cloud tes
 
 Capabilities of Hydra Lab include:
 - Scalable test device management under the center-agent distributed design; Test task management and test result visualization.
-- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso)
-- Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform
-- Case-free test automation: Monkey test, Smart exploratory test
+- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso).
+- Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform.
+- Case-free test automation: Monkey test, Smart exploratory test.
 
 For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
 
@@ -51,12 +51,12 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 |Web (Browser)| &#10004;     | x | 
 
 <span id="quick-start"></span>
-### Quick guide on out-of-box Uber experience
+### Quick guide on out-of-box Uber docker image
 
 Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal, open an Azure blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
 and place it in the environment variable with the name of BLOB_CONNECTION_STR.
 
-Hydra Lab offers an out-of-box experience of docker image. By providing the env variable BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
+Hydra Lab offers an out-of-box experience of docker image called Uber. By providing the env variable BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
 **Step 1. pull Docker image from container registry**
 
@@ -75,13 +75,13 @@ Or simply run with the env parameter -e:
 docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-**Step 3: visit front-end page and view your connected devices**
+**Step 3. visit front-end page and view your connected devices**
 
 > Url: http://localhost:9886/portal/index.html#/ (or your custom port).
 
 Enjoy starting your journey of exploration!
 
-**Note: out-of-box Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)** 
+**Note: Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)** 
 
 ### Quick guide on build and run
 
@@ -89,7 +89,7 @@ You can also run the center java Spring Boot service (a runnable Jar) separately
 
 > The build and run process will require JDK11 | NPM | Android SDK platform-tools in position.
 
-**Step 1: build and run Hydra Lab center service.**
+**Step 1. build and run Hydra Lab center service.**
 
 ```bash
 # In project root, switch to react folder to build the Web front.
@@ -97,26 +97,28 @@ cd react
 npm ci
 npm run pub
 # Get back to the project root, and build the center runnable Jar. 
-# For the gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
 cd ..
+# For the gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
 gradlew :center:bootJar
 # Run it, and then visit http://localhost:9886/portal/index.html#/
 java -jar center/build/libs/center.jar
 # Then visit http://localhost:9886/portal/index.html#/auth to generate a new agent ID and agent secret.
 ```
 
-**Step 2: build and run Hydra Lab agent service.**
+> If you encounter the error: `Error: error:0308010C:digital envelope routines::unsupported`, set the System Variable `NODE_OPTIONS` as `--openssl-legacy-provider` and then restart the terminal.
+
+**Step 2. build and run Hydra Lab agent service.**
 
 ```bash
 # In project root, copy the sample config file and update the:
-# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID, and YOUR_REGISTERED_AGENT_SECRET.
+# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID and YOUR_REGISTERED_AGENT_SECRET.
 cp agent/application-sample.yml application.yml
 # Then build agent jar and run it
 gradlew :agent:bootJar
 java -jar agent/build/libs/agent.jar
 ```
 
-**Step 3: visit http://localhost:9886/portal/index.html#/ and view your connected devices**
+**Step 3. visit http://localhost:9886/portal/index.html#/ and view your connected devices**
 
 **Technical design overview:**
 
