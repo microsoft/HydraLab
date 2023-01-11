@@ -49,12 +49,12 @@ Hydra Lab 的特性包括：
 |Web (浏览器)| &#10004;     | x | 
 
 <span id="quick-start"></span>
-### 开箱即用的 Uber 快速指南
+### 开箱即用的 Uber docker 镜像快速指南
 
 Hydra Lab 使用 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储日志文件、视频、应用包等。请访问你的 Azure 门户，打开一个 Azure Blob 存储账户，获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string) 。
 并将其放入环境变量中，名称为 BLOB_CONNECTION_STR。
 
-Hydra Lab 提供了一个开箱即用的 docker 镜像。在简单地配置环境变量 BLOB_CONNECTION_STR 后，你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
+Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单地配置环境变量 BLOB_CONNECTION_STR 后，你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
 
 **第1步. 从容器注册中心获取 Docker 镜像**
 > docker pull ghcr.io/microsoft/hydra-lab-uber:latest
@@ -68,7 +68,7 @@ Hydra Lab 提供了一个开箱即用的 docker 镜像。在简单地配置环�
 
 开始享受你的探索之旅吧!
 
-**注意：开箱即用的 Uber 现在只为安卓系统提供 Espresso 测试功能，更多的功能请参考本节：[对于 Hydra Lab 用户](#for-user)** 
+**注意：Uber 现在只提供安卓系统的Espresso测试功能，更多的功能请参考本节：[对于 Hydra Lab 用户](#for-user)** 
 
 ### 构建和运行的快速指南
 
