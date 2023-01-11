@@ -74,7 +74,7 @@ Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单�
 
 你也可以用以下命令单独运行中心 java Spring Boot 服务（一个可运行的 Jar）：
 
-> 构建和运行过程需要用到 JDK | NPM | Android SDK 平台工具。
+> 构建和运行过程需要用到 JDK11+ | NPM | Android SDK 平台工具。
 
 **第1步. 构建并运行 Hydra Lab center 服务。**
 
