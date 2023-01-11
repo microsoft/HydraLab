@@ -185,8 +185,8 @@ public class IOSDeviceManager extends DeviceManager {
     }
 
     @Override
-    public LogCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun deviceTestResult, Logger logger) {
-        return new IOSLogCollector(this, deviceInfo, pkgName, deviceTestResult, logger);
+    public LogCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
+        return new IOSLogCollector(this, deviceInfo, pkgName, testRun, logger);
     }
 
     @Override

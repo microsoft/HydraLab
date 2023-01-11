@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ADBLogcatCollector implements LogCollector {
     private final DeviceInfo connectedDevice;
-    private final TestRun deviceTestResult;
+    private final TestRun testRun;
     private final String pkgName;
     private final Logger infoLogger;
     DeviceManager deviceManager;
@@ -29,11 +29,11 @@ public class ADBLogcatCollector implements LogCollector {
     private boolean started;
     private String loggerFilePath;
 
-    public ADBLogcatCollector(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, String pkgName, TestRun deviceTestResult, Logger logger) {
+    public ADBLogcatCollector(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
         this.deviceManager = deviceManager;
         this.adbOperateUtil = adbOperateUtil;
         this.connectedDevice = deviceInfo;
-        this.deviceTestResult = deviceTestResult;
+        this.testRun = testRun;
         this.pkgName = pkgName;
         this.infoLogger = logger;
     }
@@ -44,7 +44,7 @@ public class ADBLogcatCollector implements LogCollector {
             return loggerFilePath;
         }
         started = true;
-        loggerFilePath = new File(deviceTestResult.getResultFolder(), "logcat.log").getAbsolutePath();
+        loggerFilePath = new File(testRun.getResultFolder(), "logcat.log").getAbsolutePath();
         runCommand("logcat -G 48M");
         runCommand("logcat -c");
         return loggerFilePath;
@@ -99,8 +99,8 @@ public class ADBLogcatCollector implements LogCollector {
                     logger.info(line);
                 }
                 if (crashLines.length() > 0) {
-                    deviceTestResult.setCrashStack(crashLines.toString());
-                    deviceTestResult.setCrashStackId(UUID.randomUUID().toString());
+                    testRun.setCrashStack(crashLines.toString());
+                    testRun.setCrashStackId(UUID.randomUUID().toString());
                 }
             }
         } catch (IOException e) {
@@ -115,6 +115,6 @@ public class ADBLogcatCollector implements LogCollector {
 
     @Override
     public boolean isCrashFound() {
-        return StringUtils.isNotEmpty(deviceTestResult.getCrashStack());
+        return StringUtils.isNotEmpty(testRun.getCrashStack());
     }
 }

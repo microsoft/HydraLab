@@ -34,19 +34,19 @@ public class TestDataService {
     AttachmentService attachmentService;
 
     public void saveTestTaskData(TestTask testTask) {
-        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
-        if (deviceTestResults.isEmpty()) {
+        List<TestRun> testRuns = testTask.getDeviceTestResults();
+        if (testRuns.isEmpty()) {
             return;
         }
 
-        testRunRepository.saveAll(deviceTestResults);
+        testRunRepository.saveAll(testRuns);
         testTaskRepository.save(testTask);
 
         List<AndroidTestUnit> list = new ArrayList<>();
-        for (TestRun deviceTestResult : deviceTestResults) {
-            attachmentService.saveRelations(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT, deviceTestResult.getAttachments());
+        for (TestRun testRun : testRuns) {
+            attachmentService.saveRelations(testRun.getId(), EntityFileRelation.EntityType.TEST_RESULT, testRun.getAttachments());
 
-            List<AndroidTestUnit> testUnitList = deviceTestResult.getTestUnitList();
+            List<AndroidTestUnit> testUnitList = testRun.getTestUnitList();
             list.addAll(testUnitList);
 
             // only save failed cases
@@ -58,11 +58,11 @@ public class TestDataService {
                 keyValueRepository.saveAndroidTestUnit(androidTestUnit);
             }
 
-            String crashStack = deviceTestResult.getCrashStack();
+            String crashStack = testRun.getCrashStack();
             if (crashStack == null) {
                 continue;
             }
-            keyValueRepository.saveCrashStack(deviceTestResult.getCrashStackId(), deviceTestResult.getCrashStack());
+            keyValueRepository.saveCrashStack(testRun.getCrashStackId(), testRun.getCrashStack());
         }
         androidTestUnitRepository.saveAll(list);
         LOGGER.info("All saved {}", testTask.getId());

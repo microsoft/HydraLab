@@ -342,8 +342,8 @@ public class AndroidDeviceManager extends DeviceManager {
     }
 
     @Override
-    public ADBLogcatCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun deviceTestResult, Logger logger) {
-        return new ADBLogcatCollector(this, this.adbOperateUtil, deviceInfo, pkgName, deviceTestResult, logger);
+    public ADBLogcatCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
+        return new ADBLogcatCollector(this, this.adbOperateUtil, deviceInfo, pkgName, testRun, logger);
     }
 
     @Override

@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AppiumListener extends RunListener {
     private final DeviceInfo deviceInfo;
-    private final TestRun deviceTestResult;
+    private final TestRun testRun;
     private final LogCollector logcatCollector;
     private final ScreenRecorder deviceScreenRecorder;
     private final Logger logger;
@@ -43,14 +43,14 @@ public class AppiumListener extends RunListener {
     private int currentTestIndex = 0;
 
 
-    public AppiumListener(DeviceManager deviceManager, DeviceInfo deviceInfo, TestRun deviceTestResult, String pkgName, Logger logger) {
+    public AppiumListener(DeviceManager deviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName, Logger logger) {
         this.deviceManager = deviceManager;
         this.deviceInfo = deviceInfo;
-        this.deviceTestResult = deviceTestResult;
+        this.testRun = testRun;
         this.logger = logger;
         this.pkgName = pkgName;
-        logcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestResult, logger);
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getResultFolder(), logger);
+        logcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
+        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
     }
 
     public File getGifFile() {
@@ -75,7 +75,7 @@ public class AppiumListener extends RunListener {
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
         deviceInfo.setRunningTestName(initializing);
-        deviceTestResult.addNewTimeTag(initializing, 0);
+        testRun.addNewTimeTag(initializing, 0);
     }
 
     private void startTools() {
@@ -86,14 +86,14 @@ public class AppiumListener extends RunListener {
 //            exception.printStackTrace();
 //        }
         logger.info("Start gif frames collection");
-        gifFile = new File(deviceTestResult.getResultFolder(), pkgName + ".gif");
+        gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
 
         logger.info("Start logcat collection");
         String logcatFilePath = logcatCollector.start();
-        deviceTestResult.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
     @Override
@@ -102,9 +102,9 @@ public class AppiumListener extends RunListener {
         int testCount = description.getChildren().get(0).testCount();
         logEnter("testRunStarted", runName, testCount);
         this.numTests = description.testCount();
-        deviceTestResult.setTotalCount(testCount);
-        deviceTestResult.setTestStartTimeMillis(System.currentTimeMillis());
-        deviceTestResult.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.setTotalCount(testCount);
+        testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
         logEnter(runName, description.testCount());
     }
@@ -137,13 +137,13 @@ public class AppiumListener extends RunListener {
 
         ongoingTestUnit.setTestedClass(testClassName);
 
-        deviceTestResult.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingTestUnit.getTitle());
 
-        ongoingTestUnit.setDeviceTestResultId(deviceTestResult.getId());
-        ongoingTestUnit.setTestTaskId(deviceTestResult.getTestTaskId());
+        ongoingTestUnit.setDeviceTestResultId(testRun.getId());
+        ongoingTestUnit.setTestTaskId(testRun.getTestTaskId());
 
-        deviceTestResult.addNewTestUnit(ongoingTestUnit);
+        testRun.addNewTestUnit(ongoingTestUnit);
 
         deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15), (imagePNGFile -> {
             if (imagePNGFile == null) {
@@ -167,8 +167,8 @@ public class AppiumListener extends RunListener {
         logEnter("testFailed", testDisplayName, failure.getTrace());
         ongoingTestUnit.setStack(failure.getTrace());
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
-        deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceTestResult.oneMoreFailure();
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.oneMoreFailure();
     }
 
     @Override
@@ -177,8 +177,8 @@ public class AppiumListener extends RunListener {
         logEnter("testAssumptionFailure", testDisplayName, failure.getTrace());
         ongoingTestUnit.setStack(failure.getTrace());
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
-        deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail", System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceTestResult.oneMoreFailure();
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.oneMoreFailure();
     }
 
     @Override
@@ -190,7 +190,7 @@ public class AppiumListener extends RunListener {
     @Override
     public void testFinished(Description description) {
         logEnter("testEnded", description.getDisplayName());
-        deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
         if (ongoingTestUnit.getStatusCode() == 0
                 || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE
                 || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.IGNORED
@@ -209,15 +209,15 @@ public class AppiumListener extends RunListener {
 
         if (wasSuccessful) {
             logEnter("testRunSuccessful", elapsedTime, Thread.currentThread().getName());
-            deviceTestResult.addNewTimeTag("testRunSuccessful", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTag("testRunSuccessful", System.currentTimeMillis() - recordingStartTimeMillis);
         } else {
             String errorMessage = result.getFailures().get(0).getMessage();
             logEnter("testRunFailed", errorMessage);
-            deviceTestResult.addNewTimeTag("testRunFailed", System.currentTimeMillis() - recordingStartTimeMillis);
-            deviceTestResult.setTestErrorMessage(errorMessage);
+            testRun.addNewTimeTag("testRunFailed", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.setTestErrorMessage(errorMessage);
             if (errorMessage != null && errorMessage.toLowerCase(Locale.US).contains("process crash")) {
-                if (deviceTestResult.getCrashStack() == null) {
-                    deviceTestResult.setCrashStack(errorMessage);
+                if (testRun.getCrashStack() == null) {
+                    testRun.setCrashStack(errorMessage);
                 }
             }
             if (e.isStarted() && addedFrameCount < 2) {
@@ -236,8 +236,8 @@ public class AppiumListener extends RunListener {
             if (alreadyEnd) {
                 return;
             }
-            deviceTestResult.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
-            deviceTestResult.onTestEnded();
+            testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.onTestEnded();
             deviceInfo.setRunningTestName(null);
             releaseResource();
             alreadyEnd = true;
