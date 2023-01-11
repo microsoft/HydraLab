@@ -52,7 +52,7 @@ public class AdbMonkeyRunner extends TestRunner {
         pkgName = testTask.getPkgName();
         /** start Record **/
         logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getTestRunResultFolder(), reportLogger);
+        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
         startRecording(deviceInfo, testRun, testTask.getTimeOutSecond(), reportLogger);
 
         /** run the test */
@@ -73,7 +73,7 @@ public class AdbMonkeyRunner extends TestRunner {
         testRunEnded(deviceInfo, testRun);
 
         /** set paths */
-        String absoluteReportPath = testRun.getTestRunResultFolder().getAbsolutePath();
+        String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
         testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
         File gifFile = getGifFile();
         if (gifFile.exists() && gifFile.length() > 0) {
@@ -96,7 +96,7 @@ public class AdbMonkeyRunner extends TestRunner {
 
     private void startTools(TestRun testRun, Logger logger) {
         logger.info("Start gif frames collection");
-        gifFile = new File(testRun.getTestRunResultFolder(), pkgName + ".gif");
+        gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);

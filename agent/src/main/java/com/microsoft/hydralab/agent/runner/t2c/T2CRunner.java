@@ -54,7 +54,7 @@ public class T2CRunner extends AppiumRunner {
         deviceInfo.setRunningTestName(pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
         currentIndex = 0;
 
-        File gifFile = new File(testRun.getTestRunResultFolder(), pkgName + ".gif");
+        File gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);

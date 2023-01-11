@@ -54,7 +54,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
 
         testRun.addNewTimeTag(1 + ". " + ongoingMonkeyTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingMonkeyTest.getTitle());
-        File gifFile = new File(testRun.getTestRunResultFolder(), pkgName + ".gif");
+        File gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);

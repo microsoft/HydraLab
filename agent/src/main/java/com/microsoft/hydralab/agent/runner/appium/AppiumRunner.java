@@ -41,7 +41,7 @@ public class AppiumRunner extends TestRunner {
 
         Logger reportLogger = testRun.getLogger();
         try {
-            File gifFile = runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testRun, testRun.getTestRunResultFolder(), reportLogger);
+            File gifFile = runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testRun, testRun.getResultFolder(), reportLogger);
             if (gifFile != null && gifFile.exists() && gifFile.length() > 0) {
                 testRun.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
             }

@@ -178,7 +178,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result) {
         log.info("onOneDeviceComplete: {}", deviceControl.getSerialNum());
         deviceControl.finishTask();
-        File deviceTestResultFolder = result.getTestRunResultFolder();
+        File deviceTestResultFolder = result.getResultFolder();
 
         File[] files = deviceTestResultFolder.listFiles();
         List<BlobFileInfo> attachments = new ArrayList<>();

@@ -96,7 +96,7 @@ public abstract class TestRunner {
             }
         }
 
-        testRun.setTestRunResultFolder(testRunResultFolder);
+        testRun.setResultFolder(testRunResultFolder);
         Logger loggerForTestRun = createLoggerForTestRun(testRun, testTask.getTestSuite(), parentLogger);
         testRun.setLogger(loggerForTestRun);
         testTask.addTestedDeviceResult(testRun);
@@ -219,7 +219,7 @@ public abstract class TestRunner {
     private Logger createLoggerForTestRun(TestRun testRun, String loggerNamePrefix, Logger parentLogger) {
         parentLogger.info("Start setup report child parentLogger");
         String dateInfo = DateUtil.fileNameDateFormat.format(new Date());
-        File instrumentLogFile = new File(testRun.getTestRunResultFolder(), loggerNamePrefix + "_" + dateInfo + ".log");
+        File instrumentLogFile = new File(testRun.getResultFolder(), loggerNamePrefix + "_" + dateInfo + ".log");
         // make sure it's a child logger of the parentLogger
         String loggerName = parentLogger.getName() + ".test." + dateInfo;
         Logger reportLogger = LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(), "%d %p -- %m%n");

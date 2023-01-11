@@ -67,7 +67,7 @@ public class TestRun implements Serializable {
     @Transient
     private transient List<CommandlineAndTime> commandlineAndTimeList = new ArrayList<>();
     @Transient
-    private transient File testRunResultFolder;
+    private transient File resultFolder;
     @Transient
     private transient Logger logger;
 
