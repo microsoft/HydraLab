@@ -3,7 +3,7 @@ package com.microsoft.hydralab.agent.runner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -33,11 +33,11 @@ public class TestRunnerTest extends BaseTest {
         testTask.setResourceDir(resourceDir);
         testTask.setTestSuite("TestSuite");
 
-        DeviceTestTask deviceTestTask = espressoRunner.buildDeviceTestTask(deviceInfo, testTask, logger);
+        TestRun testRun = espressoRunner.createTestRun(deviceInfo, testTask, logger);
 
-        deviceTestTask.getLogger().info("Test DeviceTestTask logging function");
-        deviceTestTask.getLogger().info("DeviceTestTask InstrumentReportPath {}", deviceTestTask.getInstrumentReportPath());
+        testRun.getLogger().info("Test TestRun logging function");
+        testRun.getLogger().info("TestRun InstrumentReportPath {}", testRun.getInstrumentReportPath());
 
-        Assertions.assertTrue(new File(deviceTestTask.getInstrumentReportPath()).exists());
+        Assertions.assertTrue(new File(testRun.getInstrumentReportPath()).exists());
     }
 }

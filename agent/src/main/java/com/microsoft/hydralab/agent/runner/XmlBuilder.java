@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.agent.runner;
 
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.DateUtil;
 import org.w3c.dom.Document;
@@ -45,35 +45,35 @@ public class XmlBuilder {
     private static final String TIMESTAMP = "timestamp";
     private static final String HOSTNAME = "hostname";
 
-    public String buildTestResultXml(TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
+    public String buildTestResultXml(TestTask testTask, TestRun testRun) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = factory.newDocumentBuilder();
         Document document = db.newDocument();
-        Element testSuite = buildTestSuite(document, testTask, deviceTestTask);
+        Element testSuite = buildTestSuite(document, testTask, testRun);
         document.appendChild(testSuite);
 
-        File xmlFile = File.createTempFile(TEST_RESULT_FILE_PREFIX, TEST_RESULT_FILE_SUFFIX, deviceTestTask.getDeviceTestResultFolder());
+        File xmlFile = File.createTempFile(TEST_RESULT_FILE_PREFIX, TEST_RESULT_FILE_SUFFIX, testRun.getResultFolder());
         transferToFile(document, xmlFile);
         return xmlFile.getAbsolutePath();
     }
 
-    private Element buildTestSuite(Document document, TestTask testTask, DeviceTestTask deviceTestTask) throws UnknownHostException {
+    private Element buildTestSuite(Document document, TestTask testTask, TestRun testRun) throws UnknownHostException {
         Element testSuite = document.createElement(TESTSUITE);
 
         testSuite.setAttribute(ATTR_NAME, testTask.getTestSuite());
-        testSuite.setAttribute(ATTR_TESTS, String.valueOf(deviceTestTask.getTotalCount()));
-        testSuite.setAttribute(ATTR_FAILURES, String.valueOf(deviceTestTask.getFailCount()));
-        testSuite.setAttribute(ATTR_TIME, Double.toString((double) (deviceTestTask.getTestEndTimeMillis() - deviceTestTask.getTestStartTimeMillis()) / 1000.f));
-        testSuite.setAttribute(TIMESTAMP, DateUtil.appCenterFormat2.format(DateUtil.localToUTC(new Date(deviceTestTask.getTestStartTimeMillis()))));
+        testSuite.setAttribute(ATTR_TESTS, String.valueOf(testRun.getTotalCount()));
+        testSuite.setAttribute(ATTR_FAILURES, String.valueOf(testRun.getFailCount()));
+        testSuite.setAttribute(ATTR_TIME, Double.toString((double) (testRun.getTestEndTimeMillis() - testRun.getTestStartTimeMillis()) / 1000.f));
+        testSuite.setAttribute(TIMESTAMP, DateUtil.appCenterFormat2.format(DateUtil.localToUTC(new Date(testRun.getTestStartTimeMillis()))));
         testSuite.setAttribute(HOSTNAME, InetAddress.getLocalHost().getHostName());
-        if (deviceTestTask.getTestUnitList() != null) {
-            testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(deviceTestTask.getTotalCount() - deviceTestTask.getTestUnitList().size()));
-            for (AndroidTestUnit unitTest : deviceTestTask.getTestUnitList()) {
+        if (testRun.getTestUnitList() != null) {
+            testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(testRun.getTotalCount() - testRun.getTestUnitList().size()));
+            for (AndroidTestUnit unitTest : testRun.getTestUnitList()) {
                 Element testCase = buildTestCase(document, unitTest);
                 testSuite.appendChild(testCase);
             }
         } else {
-            testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(deviceTestTask.getTotalCount() - deviceTestTask.getFailCount()));
+            testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(testRun.getTotalCount() - testRun.getFailCount()));
         }
         return testSuite;
     }
