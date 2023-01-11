@@ -64,7 +64,7 @@ Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单�
 
 **第3步. 访问前端页面并查看你的已连接设备**
 
-> Url: http://localhost:9886/portal/index.html#/ (or your custom port).
+> Url: http://localhost:9886/portal/index.html#/ (或自定义的端口号).
 
 开始享受你的探索之旅吧!
 
