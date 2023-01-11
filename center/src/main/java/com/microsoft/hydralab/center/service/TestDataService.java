@@ -70,7 +70,7 @@ public class TestDataService {
 
         for (AndroidTestUnit testUnit : testUnits) {
             Optional<TestRun> deviceTestTask = testRunRepository.findById(testUnit.getDeviceTestResultId());
-            deviceTestTask.ifPresent(testUnit::setTestRun);
+            deviceTestTask.ifPresent(testUnit::setDeviceTestTask);
         }
 
         return testUnits;
