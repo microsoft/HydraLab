@@ -94,7 +94,7 @@ java -jar center/build/libs/center.jar
 
 > 如果你遇到了以下错误: `Error: error:0308010C:digital envelope routines::unsupported`, 设置环境变量 `NODE_OPTIONS` 的值为 `--openssl-legacy-provider` 并重启命令行。
 
-**第2步.构建并运行 Hydra Lab agent 服务。**
+**第2步. 构建并运行 Hydra Lab agent 服务。**
 
 ```bash
 # 在项目根目录下，复制示例配置文件并更新：
@@ -105,7 +105,7 @@ gradlew :agent:bootJar
 java -jar agent/build/libs/agent.jar
 ```
 
-**第3步.访问 http://localhost:9886/portal/index.html#/ 并查看你的已连接设备**
+**第3步. 访问 http://localhost:9886/portal/index.html#/ 并查看你的已连接设备**
 
 **Technical design overview:**
 
