@@ -89,7 +89,7 @@ You can also run the center java Spring Boot service (a runnable Jar) separately
 
 > The build and run process will require JDK11 | NPM | Android SDK platform-tools in position.
 
-**Step 1: build and run Hydra Lab center service.**
+**Step 1. build and run Hydra Lab center service.**
 
 ```bash
 # In project root, switch to react folder to build the Web front.
@@ -107,7 +107,7 @@ java -jar center/build/libs/center.jar
 
 > If you encounter the error: `Error: error:0308010C:digital envelope routines::unsupported`, set the System Variable `NODE_OPTIONS` as `--openssl-legacy-provider` and then restart the terminal.
 
-**Step 2: build and run Hydra Lab agent service.**
+**Step 2. build and run Hydra Lab agent service.**
 
 ```bash
 # In project root, copy the sample config file and update the:
@@ -118,7 +118,7 @@ gradlew :agent:bootJar
 java -jar agent/build/libs/agent.jar
 ```
 
-**Step 3: visit http://localhost:9886/portal/index.html#/ and view your connected devices**
+**Step 3. visit http://localhost:9886/portal/index.html#/ and view your connected devices**
 
 **Technical design overview:**
 

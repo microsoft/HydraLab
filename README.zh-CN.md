@@ -76,7 +76,7 @@ Hydra Lab 提供了一个开箱即用的 docker 镜像。在简单地配置环�
 
 > 构建和运行过程需要用到 JDK | NPM | Android SDK 平台工具。
 
-**第1步：构建并运行 Hydra Lab center 服务。**
+**第1步. 构建并运行 Hydra Lab center 服务。**
 
 ```bash
 # 在项目根目录，切换到 react 文件夹来构建 Web 前端文件。
@@ -94,7 +94,7 @@ java -jar center/build/libs/center.jar
 
 > 如果你遇到了以下错误: `Error: error:0308010C:digital envelope routines::unsupported`, 设置环境变量 `NODE_OPTIONS` 的值为 `--openssl-legacy-provider` 并重启命令行。
 
-**第2步：构建并运行 Hydra Lab agent 服务。**
+**第2步.构建并运行 Hydra Lab agent 服务。**
 
 ```bash
 # 在项目根目录下，复制示例配置文件并更新：
@@ -105,7 +105,7 @@ gradlew :agent:bootJar
 java -jar agent/build/libs/agent.jar
 ```
 
-**第3步：访问 http://localhost:9886/portal/index.html#/ 并查看你的已连接设备**
+**第3步.访问 http://localhost:9886/portal/index.html#/ 并查看你的已连接设备**
 
 **Technical design overview:**
 
