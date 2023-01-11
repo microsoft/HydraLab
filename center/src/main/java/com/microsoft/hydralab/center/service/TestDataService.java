@@ -8,7 +8,7 @@ import com.microsoft.hydralab.common.entity.center.StabilityData;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
-import com.microsoft.hydralab.common.repository.DeviceTestResultRepository;
+import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
 import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -51,7 +51,7 @@ public class TestDataService {
     @Resource
     AndroidTestUnitRepository androidTestUnitRepository;
     @Resource
-    DeviceTestResultRepository deviceTestResultRepository;
+    TestRunRepository testRunRepository;
     @Resource
     KeyValueRepository keyValueRepository;
     @Resource
@@ -69,7 +69,7 @@ public class TestDataService {
         List<AndroidTestUnit> testUnits = androidTestUnitRepository.findBySuccess(false, PageRequest.of(page, size, sortByStartMillis)).getContent();
 
         for (AndroidTestUnit testUnit : testUnits) {
-            Optional<TestRun> deviceTestTask = deviceTestResultRepository.findById(testUnit.getDeviceTestResultId());
+            Optional<TestRun> deviceTestTask = testRunRepository.findById(testUnit.getDeviceTestResultId());
             deviceTestTask.ifPresent(testUnit::setTestRun);
         }
 
@@ -88,7 +88,7 @@ public class TestDataService {
             return null;
         }
         TestTask testTask = taskOpt.get();
-        List<TestRun> byTestTaskId = deviceTestResultRepository.findByTestTaskId(testId);
+        List<TestRun> byTestTaskId = testRunRepository.findByTestTaskId(testId);
 
         if (byTestTaskId == null || byTestTaskId.isEmpty()) {
             return testTask;
@@ -181,7 +181,7 @@ public class TestDataService {
             return testTask;
         }
 
-        deviceTestResultRepository.saveAll(deviceTestResults);
+        testRunRepository.saveAll(deviceTestResults);
 
         List<AndroidTestUnit> list = new ArrayList<>();
         for (TestRun deviceTestResult : deviceTestResults) {
@@ -212,7 +212,7 @@ public class TestDataService {
     }
 
     public TestRun getTestRunWithVideoInfo(String dttId) {
-        TestRun testRun = deviceTestResultRepository.getOne(dttId);
+        TestRun testRun = testRunRepository.getOne(dttId);
         JSONArray deviceTestResInfo = keyValueRepository.getDeviceTestResInfo(dttId);
         testRun.setVideoTimeTagArr(deviceTestResInfo);
         testRun.setVideoBlobUrl();
@@ -221,7 +221,7 @@ public class TestDataService {
     }
 
     public TestRun getTestRunByCrashId(String crashId) {
-        return deviceTestResultRepository.findByCrashStackId(crashId).orElse(null);
+        return testRunRepository.findByCrashStackId(crashId).orElse(null);
     }
 
     public void checkTestDataAuthorization(SysUser requestor, String testId) {

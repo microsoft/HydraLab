@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DeviceTestResultRepository extends JpaRepository<TestRun, String> {
+public interface TestRunRepository extends JpaRepository<TestRun, String> {
 
     List<TestRun> findByTestTaskId(String taskId);
     Optional<TestRun> findByCrashStackId(String crashStackId);

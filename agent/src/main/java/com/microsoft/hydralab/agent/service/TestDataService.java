@@ -7,7 +7,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
-import com.microsoft.hydralab.common.repository.DeviceTestResultRepository;
+import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
 import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -27,7 +27,7 @@ public class TestDataService {
     @Resource
     AndroidTestUnitRepository androidTestUnitRepository;
     @Resource
-    DeviceTestResultRepository deviceTestResultRepository;
+    TestRunRepository testRunRepository;
     @Resource
     KeyValueRepository keyValueRepository;
     @Resource
@@ -39,7 +39,7 @@ public class TestDataService {
             return;
         }
 
-        deviceTestResultRepository.saveAll(deviceTestResults);
+        testRunRepository.saveAll(deviceTestResults);
         testTaskRepository.save(testTask);
 
         List<AndroidTestUnit> list = new ArrayList<>();
