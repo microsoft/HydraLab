@@ -88,17 +88,17 @@ public abstract class TestRunner {
 
     protected TestRun createTestRun(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
         TestRun testRun = new TestRun(deviceInfo.getSerialNum(), deviceInfo.getName(), testTask.getId());
-        File deviceTestResultFolder = new File(testTask.getResourceDir(), deviceInfo.getSerialNum());
-        parentLogger.info("DeviceTestResultFolder {}", deviceTestResultFolder);
-        if (!deviceTestResultFolder.exists()) {
-            if (!deviceTestResultFolder.mkdirs()) {
-                throw new RuntimeException("deviceTestResultFolder.mkdirs() failed: " + deviceTestResultFolder);
+        File testRunResultFolder = new File(testTask.getResourceDir(), deviceInfo.getSerialNum());
+        parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
+        if (!testRunResultFolder.exists()) {
+            if (!testRunResultFolder.mkdirs()) {
+                throw new RuntimeException("testRunResultFolder.mkdirs() failed: " + testRunResultFolder);
             }
         }
 
-        testRun.setTestRunResultFolder(deviceTestResultFolder);
-        Logger loggerForDeviceTestTask = createLoggerForDeviceTestTask(testRun, testTask.getTestSuite(), parentLogger);
-        testRun.setLogger(loggerForDeviceTestTask);
+        testRun.setTestRunResultFolder(testRunResultFolder);
+        Logger loggerForTestRun = createLoggerForTestRun(testRun, testTask.getTestSuite(), parentLogger);
+        testRun.setLogger(loggerForTestRun);
         testTask.addTestedDeviceResult(testRun);
         return testRun;
     }
@@ -216,7 +216,7 @@ public abstract class TestRunner {
         return false;
     }
 
-    private Logger createLoggerForDeviceTestTask(TestRun testRun, String loggerNamePrefix, Logger parentLogger) {
+    private Logger createLoggerForTestRun(TestRun testRun, String loggerNamePrefix, Logger parentLogger) {
         parentLogger.info("Start setup report child parentLogger");
         String dateInfo = DateUtil.fileNameDateFormat.format(new Date());
         File instrumentLogFile = new File(testRun.getTestRunResultFolder(), loggerNamePrefix + "_" + dateInfo + ".log");

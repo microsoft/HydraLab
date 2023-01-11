@@ -211,7 +211,7 @@ public class TestDataService {
         return testTask;
     }
 
-    public TestRun getDeviceTestTaskWithVideoInfo(String dttId) {
+    public TestRun getTestRunWithVideoInfo(String dttId) {
         TestRun testRun = deviceTestResultRepository.getOne(dttId);
         JSONArray deviceTestResInfo = keyValueRepository.getDeviceTestResInfo(dttId);
         testRun.setVideoTimeTagArr(deviceTestResInfo);
@@ -220,7 +220,7 @@ public class TestDataService {
         return testRun;
     }
 
-    public TestRun getDeviceTestTaskByCrashId(String crashId) {
+    public TestRun getTestRunByCrashId(String crashId) {
         return deviceTestResultRepository.findByCrashStackId(crashId).orElse(null);
     }
 

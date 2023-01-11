@@ -35,8 +35,8 @@ public class TestRunnerTest extends BaseTest {
 
         TestRun testRun = espressoRunner.createTestRun(deviceInfo, testTask, logger);
 
-        testRun.getLogger().info("Test DeviceTestTask logging function");
-        testRun.getLogger().info("DeviceTestTask InstrumentReportPath {}", testRun.getInstrumentReportPath());
+        testRun.getLogger().info("Test TestRun logging function");
+        testRun.getLogger().info("TestRun InstrumentReportPath {}", testRun.getInstrumentReportPath());
 
         Assertions.assertTrue(new File(testRun.getInstrumentReportPath()).exists());
     }

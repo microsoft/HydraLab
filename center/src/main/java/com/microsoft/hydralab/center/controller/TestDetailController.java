@@ -73,7 +73,7 @@ public class TestDetailController {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
-            TestRun testInfo = testDataService.getDeviceTestTaskByCrashId(crashId);
+            TestRun testInfo = testDataService.getTestRunByCrashId(crashId);
             testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
 
             return Result.ok(keyValueRepository.getCrashStack(crashId));
@@ -103,7 +103,7 @@ public class TestDetailController {
             } else {
                 logger.info("result id {}", resultId); // CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
             }
-            TestRun testInfo = testDataService.getDeviceTestTaskWithVideoInfo(resultId);
+            TestRun testInfo = testDataService.getTestRunWithVideoInfo(resultId);
             testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
 
             JSONObject data = new JSONObject();
@@ -134,7 +134,7 @@ public class TestDetailController {
     /**
      * Authenticated USER:
      * 1) users with ROLE SUPER_ADMIN/ADMIN,
-     * 2) members of the TEAM that DeviceTestTask is in
+     * 2) members of the TEAM that TestRun is in
      */
     @GetMapping("/api/test/task/device/{deviceTaskId}")
     public Result deviceTaskInfo(@CurrentSecurityContext SysUser requestor,
@@ -148,7 +148,7 @@ public class TestDetailController {
             } else {
                 return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error param! Should be UUID");
             }
-            TestRun testInfo = testDataService.getDeviceTestTaskWithVideoInfo(deviceTaskId);
+            TestRun testInfo = testDataService.getTestRunWithVideoInfo(deviceTaskId);
             testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
 
             //use CDN url to access video

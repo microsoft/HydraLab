@@ -1,6 +1,6 @@
 @startuml test_runners_classes
 abstract class TestRunner {
-    #buildDeviceTestTask(...)
+    #createTestRun(...)
     #setUp(TestTask)
     #run(TestTaskSpec)
     #tearDown(...)
@@ -132,13 +132,13 @@ Runner *--> TestRunnerListener
 
 entity (TestTaskSpec)
 entity (TestTask)
-entity (DeviceTestTask)
+entity (TestRun)
 entity (AndroidTestUnit)
 
 
 TestTaskSpec -- TestTask: is mapped to
-TestTask *--> DeviceTestTask: contain a list of
-DeviceTestTask *--> AndroidTestUnit: contain a list of
+TestTask *--> TestRun: contain a list of
+TestRun *--> AndroidTestUnit: contain a list of
 @enduml
 
 @startuml test_objects
