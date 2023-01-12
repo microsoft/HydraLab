@@ -558,7 +558,20 @@ export default class AuthView extends BaseView {
     }
 
     downloadAgentConfigFile(agentId) {
-        axios.get(`/api/agent/downloadAgentConfigFile/${agentId}`).then(res => {
+        axios({
+            url: `/api/agent/downloadAgentConfigFile/${agentId}`,
+            method: 'GET',
+            responseType: 'blob'
+        }).then((res) => {
+            const href = URL.createObjectURL(res.data);
+            const link = document.createElement('a');
+            link.href = href;
+            link.setAttribute('download', 'application.yml');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(href);
+
             if (res.data.code === 200) {
                 this.setState({
                     snackbarIsShown: true,
@@ -566,7 +579,7 @@ export default class AuthView extends BaseView {
                     snackbarMessage: "Agent config file downloaded"
                 })
             }
-        }).catch(this.snackBarError)
+        }).catch(this.snackBarError);
     }
 
     componentDidMount() {

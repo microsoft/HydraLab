@@ -131,7 +131,7 @@ public class AgentManageService {
          agentUserRepository.saveAll(agents);
     }
 
-    public Boolean downloadAgentConfigFile(SysUser requestor, String agentId) {
+    public File downloadAgentConfigFile(SysUser requestor, String agentId) {
         AgentUser agentUser = getAgent(agentId);
         if (agentUser != null) {
             try {
@@ -153,15 +153,16 @@ public class AgentManageService {
                         "    # Agent Type {1 : 1*WINDOWS + n*ANDROIDS , 2 : 1*WINDOWS+1*ANDROID , 3 : iOS}\n" +
                         "    agent-type: 1");
                 fileWriter.flush();
+                fileWriter.close();
 
                 if (userTeamManagementService.checkRequestorTeamAdmin(requestor, agentUser.getTeamId()) ||
                         agentUser.getMailAddress().equals(requestor.getMailAddress())) {
-                    return true;
+                    return agentConfigFile;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        return false;
+        return null;
     }
 }

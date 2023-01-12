@@ -22,6 +22,11 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -221,13 +226,40 @@ public class AgentManageController {
      */
     @GetMapping("/api/agent/downloadAgentConfigFile/{agentId}")
     public Result downloadAgentConfigFile(@CurrentSecurityContext SysUser requestor,
-                                          @PathVariable(value = "agentId") String agentId) {
-        if (agentManageService.checkAgentAuthorization(requestor, agentId)) {
+                                          @PathVariable(value = "agentId") String agentId,
+                                          HttpServletResponse response) throws IOException {
+        if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
-        Boolean downloaded = agentManageService.downloadAgentConfigFile(requestor, agentId);
-        if (!downloaded) {
+        File agentConfigFile = agentManageService.downloadAgentConfigFile(requestor, agentId);
+        if (agentConfigFile == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "The file was not downloaded");
+        }
+
+        ServletOutputStream out = null;
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(agentConfigFile);
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            response.setHeader("Content-Disposition","attachment;filename=" + agentConfigFile.getName());
+            out = response.getOutputStream();
+            int len = 0;
+            byte[] buffer = new byte[1024 * 10];
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+            out.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            response.flushBuffer();
+            try {
+                out.close();
+                in.close();
+                agentConfigFile.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         return Result.ok();
