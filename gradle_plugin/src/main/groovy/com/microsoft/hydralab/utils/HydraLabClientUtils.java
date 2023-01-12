@@ -489,8 +489,9 @@ public class HydraLabClientUtils {
                 .url(apiConfig.checkCenterAliveUrl())
                 .build();
         OkHttpClient clientToUse = client;
+        Response response = null;
         try {
-            Response response = clientToUse.newCall(req).execute();
+            response = clientToUse.newCall(req).execute();
             int waitingRetry = httpFailureRetryTimes;
             while (!response.isSuccessful() && waitingRetry > 0) {
                 printlnf("##[warning]Check center alive failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
@@ -502,6 +503,8 @@ public class HydraLabClientUtils {
             printlnf("Center is alive, continue on requesting API...");
         } catch (Exception e) {
             throw new RuntimeException("check center alive fail: " + e.getMessage(), e);
+        } finally {
+            response.close();
         }
     }
 
@@ -528,8 +531,9 @@ public class HydraLabClientUtils {
                 .post(multipartBodyBuilder.build())
                 .build();
         OkHttpClient clientToUse = client;
+        Response response = null;
         try {
-            Response response = clientToUse.newCall(req).execute();
+            response = clientToUse.newCall(req).execute();
             int waitingRetry = httpFailureRetryTimes;
             while (!response.isSuccessful() && waitingRetry > 0) {
                 printlnf("##[warning]Upload App failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
@@ -549,6 +553,8 @@ public class HydraLabClientUtils {
             return jsonObject.getAsJsonObject("content").get("id").getAsString();
         } catch (Exception e) {
             throw new RuntimeException("upload App fail: " + e.getMessage(), e);
+        } finally {
+            response.close();
         }
     }
 
@@ -577,8 +583,9 @@ public class HydraLabClientUtils {
                 .post(multipartBodyBuilder.build())
                 .build();
         OkHttpClient clientToUse = client;
+        Response response = null;
         try {
-            Response response = clientToUse.newCall(req).execute();
+            response = clientToUse.newCall(req).execute();
             int waitingRetry = httpFailureRetryTimes;
             while (!response.isSuccessful() && waitingRetry > 0) {
                 printlnf("##[warning]Add attachments failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
@@ -593,6 +600,8 @@ public class HydraLabClientUtils {
             return GSON.fromJson(body.string(), JsonObject.class);
         } catch (Exception e) {
             throw new RuntimeException("Add attachments fail: " + e.getMessage(), e);
+        } finally {
+            response.close();
         }
     }
 
@@ -606,8 +615,9 @@ public class HydraLabClientUtils {
                 .build();
         OkHttpClient clientToUse = client;
         JsonObject jsonObject = null;
+        Response response = null;
         try {
-            Response response = clientToUse.newCall(req).execute();
+            response = clientToUse.newCall(req).execute();
             int waitingRetry = httpFailureRetryTimes;
             while (!response.isSuccessful() && waitingRetry > 0) {
                 printlnf("##[warning]Generate accessKey failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
@@ -630,6 +640,8 @@ public class HydraLabClientUtils {
             printlnf("##[warning]Request generateAccess failed: " + jsonObject.toString());
             return "";
 //            throw new RuntimeException("generate accessKey fail: " + e.getMessage(), e);
+        } finally {
+            response.close();
         }
     }
 
@@ -656,7 +668,7 @@ public class HydraLabClientUtils {
         jsonElement.addProperty("testScope", apiConfig.testScope);
 
         try {
-            if (apiConfig.neededPermissions != null) {
+            if (apiConfig.neededPermissions.size() > 0) {
                 jsonElement.add("neededPermissions", GSON.toJsonTree(apiConfig.neededPermissions));
             }
             if (StringUtils.isNotBlank(apiConfig.deviceActionsStr)) {
@@ -688,8 +700,9 @@ public class HydraLabClientUtils {
                 .url(apiConfig.getRunTestUrl())
                 .post(jsonBody).build();
         OkHttpClient clientToUse = client;
+        Response response = null;
         try {
-            Response response = clientToUse.newCall(req).execute();
+            response = clientToUse.newCall(req).execute();
             int waitingRetry = httpFailureRetryTimes;
             while (!response.isSuccessful() && waitingRetry > 0) {
                 printlnf("##[warning]Trigger test running failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
@@ -707,6 +720,8 @@ public class HydraLabClientUtils {
             return jsonObject;
         } catch (Exception e) {
             throw new RuntimeException("trigger test running fail: " + e.getMessage(), e);
+        } finally {
+            response.close();
         }
     }
 
@@ -718,8 +733,9 @@ public class HydraLabClientUtils {
                 .url(apiConfig.getTestStatusUrl(testTaskId))
                 .build();
         OkHttpClient clientToUse = client;
+        Response response = null;
         try {
-            Response response = clientToUse.newCall(req).execute();
+            response = clientToUse.newCall(req).execute();
             int waitingRetry = httpFailureRetryTimes;
             while (!response.isSuccessful() && waitingRetry > 0) {
                 printlnf("##[warning]Get test status failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
@@ -742,6 +758,8 @@ public class HydraLabClientUtils {
             return result;
         } catch (Exception e) {
             throw new RuntimeException("get test status fail: " + e.getMessage(), e);
+        } finally {
+            response.close();
         }
     }
 
@@ -751,8 +769,9 @@ public class HydraLabClientUtils {
                 .url(apiConfig.getBlobSASUrl())
                 .build();
         OkHttpClient clientToUse = client;
+        Response response = null;
         try {
-            Response response = clientToUse.newCall(req).execute();
+            response = clientToUse.newCall(req).execute();
             int waitingRetry = httpFailureRetryTimes;
             while (!response.isSuccessful() && waitingRetry > 0) {
                 printlnf("##[warning]Get Blob SAS failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
@@ -772,6 +791,8 @@ public class HydraLabClientUtils {
             return jsonObject.getAsJsonObject("content").get("signature").getAsString();
         } catch (Exception e) {
             throw new RuntimeException("Get Blob SAS fail: " + e.getMessage(), e);
+        } finally {
+            response.close();
         }
     }
 
@@ -783,8 +804,9 @@ public class HydraLabClientUtils {
                 .url(String.format(apiConfig.getCancelTestTaskUrl(), testTaskId, reason))
                 .build();
         OkHttpClient clientToUse = client;
+        Response response = null;
         try {
-            Response response = clientToUse.newCall(req).execute();
+            response = clientToUse.newCall(req).execute();
             int waitingRetry = httpFailureRetryTimes;
             while (!response.isSuccessful() && waitingRetry > 0) {
                 printlnf("##[warning]Cancel test task failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
@@ -795,6 +817,8 @@ public class HydraLabClientUtils {
             assertTrue(response.isSuccessful(), "cancel test task", response);
         } catch (Exception e) {
             throw new RuntimeException("cancel test task fail: " + e.getMessage(), e);
+        } finally {
+            response.close();
         }
     }
 
@@ -870,7 +894,7 @@ public class HydraLabClientUtils {
         public String teamName = "";
         public String testRunnerName = "androidx.test.runner.AndroidJUnitRunner";
         public String testScope = "";
-        public List<String> neededPermissions;
+        public List<String> neededPermissions = new ArrayList<>();
         public String deviceActionsStr = "";
 
         public static HydraLabAPIConfig defaultAPI() {
