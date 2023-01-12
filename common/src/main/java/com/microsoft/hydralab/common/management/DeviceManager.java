@@ -6,7 +6,7 @@ import com.android.ddmlib.InstallException;
 import com.android.ddmlib.TimeoutException;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
@@ -218,7 +218,7 @@ public abstract class DeviceManager {
     public void updateAllDeviceInfo() {
     }
 
-    public abstract LogCollector getLogCollector(@NotNull DeviceInfo deviceInfo, @NotNull String pkgName, @NotNull DeviceTestTask deviceTestResult, @NotNull Logger logger);
+    public abstract LogCollector getLogCollector(@NotNull DeviceInfo deviceInfo, @NotNull String pkgName, @NotNull TestRun testRun, @NotNull Logger logger);
 
     public abstract void setProperty(@NotNull DeviceInfo deviceInfo, @NotNull String property, String val, @Nullable Logger logger);
 

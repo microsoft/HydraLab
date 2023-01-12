@@ -9,7 +9,7 @@ import com.android.ddmlib.IDevice;
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.RawImage;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelReceiver;
@@ -342,8 +342,8 @@ public class AndroidDeviceManager extends DeviceManager {
     }
 
     @Override
-    public ADBLogcatCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, DeviceTestTask deviceTestResult, Logger logger) {
-        return new ADBLogcatCollector(this, this.adbOperateUtil, deviceInfo, pkgName, deviceTestResult, logger);
+    public ADBLogcatCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
+        return new ADBLogcatCollector(this, this.adbOperateUtil, deviceInfo, pkgName, testRun, logger);
     }
 
     @Override
