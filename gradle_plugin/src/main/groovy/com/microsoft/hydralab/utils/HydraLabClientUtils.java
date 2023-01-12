@@ -654,19 +654,26 @@ public class HydraLabClientUtils {
         jsonElement.addProperty("needClearData", apiConfig.needClearData);
         jsonElement.addProperty("testRunnerName", apiConfig.testRunnerName);
         jsonElement.addProperty("testScope", apiConfig.testScope);
-        if (apiConfig.neededPermissions != null) {
-            jsonElement.add("neededPermissions", GSON.toJsonTree(apiConfig.neededPermissions));
+
+        try {
+            if (apiConfig.neededPermissions != null) {
+                jsonElement.add("neededPermissions", GSON.toJsonTree(apiConfig.neededPermissions));
+            }
+            if (StringUtils.isNotBlank(apiConfig.deviceActionsStr)) {
+                JsonParser parser = new JsonParser();
+                JsonObject jsonObject = parser.parse(apiConfig.deviceActionsStr).getAsJsonObject();
+                jsonElement.add("deviceActions", jsonObject);
+            }
+            if (instrumentationArgs != null) {
+                jsonElement.add("instrumentationArgs", GSON.toJsonTree(instrumentationArgs).getAsJsonObject());
+            }
+
+        } catch (JsonParseException e) {
+            throw new RuntimeException("trigger test running fail: " + e.getMessage(), e);
         }
-        if (StringUtils.isNotBlank(apiConfig.deviceActionsStr)) {
-            JsonParser parser = new JsonParser();
-            JsonObject jsonObject = parser.parse(apiConfig.deviceActionsStr).getAsJsonObject();
-            jsonElement.add("deviceActions", jsonObject);
-        }
+
         if (accessKey != null) {
             jsonElement.addProperty("accessKey", accessKey);
-        }
-        if (instrumentationArgs != null) {
-            jsonElement.add("instrumentationArgs", GSON.toJsonTree(instrumentationArgs).getAsJsonObject());
         }
         if (extraArgs != null) {
             extraArgs.forEach(jsonElement::addProperty);
