@@ -178,7 +178,7 @@ public class HydraLabClientUtils {
             if (!attachmentConfigPath.isEmpty()) {
                 file = new File(attachmentConfigPath);
                 JsonParser parser = new JsonParser();
-                attachmentInfos =  parser.parse(new FileReader(file)).getAsJsonArray();
+                attachmentInfos = parser.parse(new FileReader(file)).getAsJsonArray();
                 printlnf("Attachment size: %d", attachmentInfos.size());
                 printlnf("Attachment information: %s", attachmentInfos.toString());
             }
@@ -198,7 +198,7 @@ public class HydraLabClientUtils {
         apiConfig.pipelineLink = System.getenv("SYSTEM_TEAMFOUNDATIONSERVERURI") + System.getenv("SYSTEM_TEAMPROJECT") + "/_build/results?buildId=" + System.getenv("BUILD_BUILDID");
         printlnf("##[section]Callback pipeline link is: %s", apiConfig.pipelineLink);
 
-        for (int index = 0; index < attachmentInfos.size(); index++){
+        for (int index = 0; index < attachmentInfos.size(); index++) {
             JsonObject attachmentJson = attachmentInfos.get(index).getAsJsonObject();
             AttachmentInfo attachmentInfo = GSON.fromJson(attachmentJson, AttachmentInfo.class);
 
@@ -223,8 +223,7 @@ public class HydraLabClientUtils {
         String accessKey = generateAccessKey(apiConfig, deviceIdentifier);
         if (StringUtils.isEmpty(accessKey)) {
             printlnf("##[warning]Access key is empty.");
-        }
-        else {
+        } else {
             printlnf("##[command]Access key obtained.");
         }
 
@@ -339,10 +338,9 @@ public class HydraLabClientUtils {
         // add (test type + timestamp) in folder name to distinguish different test results when using the same device
         ZonedDateTime utc = ZonedDateTime.now(ZoneOffset.UTC);
         String testFolder;
-        if (StringUtils.isEmpty(tag)){
+        if (StringUtils.isEmpty(tag)) {
             testFolder = runningType + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
-        }
-        else {
+        } else {
             testFolder = runningType + "-" + tag + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
         }
 
@@ -411,7 +409,7 @@ public class HydraLabClientUtils {
         printlnf("##[section]Test task report link:");
         printlnf(testReportUrl);
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
-        
+
         displayFinalTestState();
     }
 
@@ -435,10 +433,9 @@ public class HydraLabClientUtils {
     }
 
     private static void displayFinalTestState() {
-        if (isTestResultFailed){
+        if (isTestResultFailed) {
             printlnf("##[error]Final test state: fail.");
-        }
-        else {
+        } else {
             printlnf("Final test state: success.");
         }
     }
@@ -662,7 +659,7 @@ public class HydraLabClientUtils {
         }
         if (StringUtils.isNotBlank(apiConfig.deviceActionsStr)) {
             JsonParser parser = new JsonParser();
-            JsonObject jsonObject =  parser.parse(apiConfig.deviceActionsStr).getAsJsonObject();
+            JsonObject jsonObject = parser.parse(apiConfig.deviceActionsStr).getAsJsonObject();
             jsonElement.add("deviceActions", jsonObject);
         }
         if (accessKey != null) {
@@ -928,7 +925,7 @@ public class HydraLabClientUtils {
                     "teamName=" + teamName + ",\n" +
                     "testRunnerName=" + testRunnerName + ",\n" +
                     "testScope=" + testScope + ",\n" +
-                    "neededPermissions=" + neededPermissions.toString() + ",\n" +
+                    "neededPermissions=" + (neededPermissions != null ? neededPermissions.toString() : "") + ",\n" +
                     "deviceActionsStr=" + deviceActionsStr;
         }
     }
