@@ -150,6 +150,9 @@ public abstract class TestRunner {
             }
         }
         deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
+        if (testTask.isThisForMicrosoftLauncher()) {
+            unsetForMicrosoftLauncherApp(deviceInfo, testRun.getLogger());
+        }
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
@@ -177,6 +180,13 @@ public abstract class TestRunner {
         ThreadUtils.safeSleep(3000);
     }
 
+    private void unsetForMicrosoftLauncherApp(DeviceInfo deviceInfo, Logger reportLogger) {
+        reportLogger.info("unsetForMicrosoftLauncherApp: unset all the log tags");
+        deviceManager.setProperty(deviceInfo, "log.tag.WelcomeScreen", " ", reportLogger);
+        deviceManager.setProperty(deviceInfo, "log.tag.ConsentDialog", " ", reportLogger);
+        deviceManager.setProperty(deviceInfo, "log.tag.WhatsNewDialog", " ", reportLogger);
+        deviceManager.setProperty(deviceInfo, "log.tag.NoneCheckUpdates", " ", reportLogger);
+    }
 
     protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
         if (testTask.getRequireReinstall() || deviceManager instanceof IOSDeviceManager) {
