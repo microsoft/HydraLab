@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.common.logger.impl;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
@@ -19,7 +19,7 @@ import java.util.UUID;
 
 public class IOSLogCollector implements LogCollector {
     private final DeviceInfo connectedDevice;
-    private final DeviceTestTask deviceTestResult;
+    private final TestRun testRun;
     private final String pkgName;
     private final Logger infoLogger;
     IOSDeviceManager deviceManager;
@@ -28,10 +28,10 @@ public class IOSLogCollector implements LogCollector {
     private Process logProcess;
     private boolean crashFound;
 
-    public IOSLogCollector(DeviceManager deviceManager, DeviceInfo deviceInfo, String pkgName, DeviceTestTask deviceTestResult, Logger logger) {
+    public IOSLogCollector(DeviceManager deviceManager, DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
         this.deviceManager = (IOSDeviceManager) deviceManager;
         this.connectedDevice = deviceInfo;
-        this.deviceTestResult = deviceTestResult;
+        this.testRun = testRun;
         this.pkgName = pkgName;
         this.infoLogger = logger;
     }
@@ -42,10 +42,10 @@ public class IOSLogCollector implements LogCollector {
             return loggerFilePath;
         }
         started = true;
-        loggerFilePath = new File(deviceTestResult.getDeviceTestResultFolder(), "iOSSysLog.log").getAbsolutePath();
+        loggerFilePath = new File(testRun.getResultFolder(), "iOSSysLog.log").getAbsolutePath();
         try {
             // Clear the crash happened before UI test start.
-            IOSUtils.collectCrashInfo(deviceTestResult.getDeviceTestResultFolder() + "/LegacyCrash", connectedDevice, infoLogger);
+            IOSUtils.collectCrashInfo(testRun.getResultFolder() + "/LegacyCrash", connectedDevice, infoLogger);
             logProcess = IOSUtils.startIOSLog(pkgName, loggerFilePath, connectedDevice, infoLogger);
             if (logProcess != null) {
                 connectedDevice.addCurrentProcess(logProcess);
@@ -65,7 +65,7 @@ public class IOSLogCollector implements LogCollector {
         }
         try {
             // Collect the crash logs
-            String crashFilesPath = deviceTestResult.getDeviceTestResultFolder() + "/Crash";
+            String crashFilesPath = testRun.getResultFolder() + "/Crash";
             IOSUtils.collectCrashInfo(crashFilesPath, connectedDevice, infoLogger);
             File dir = new File(crashFilesPath);
             StringBuilder crashLines = new StringBuilder();
@@ -87,8 +87,8 @@ public class IOSLogCollector implements LogCollector {
             }
             if (crashLines.length() > 0) {
                 crashFound = true;
-                deviceTestResult.setCrashStack(crashLines.toString());
-                deviceTestResult.setCrashStackId(UUID.randomUUID().toString());
+                testRun.setCrashStack(crashLines.toString());
+                testRun.setCrashStackId(UUID.randomUUID().toString());
             }
         } catch (IOException e) {
             e.printStackTrace();
