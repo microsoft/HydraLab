@@ -19,15 +19,18 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.hydralab.utils.CommonUtils.*;
-import static com.microsoft.hydralab.utils.HydraLabAPIUtils.*;
 
 public class HydraLabClientUtils {
-
+    private static HydraLabAPIClient hydraLabAPIClient = new HydraLabAPIClient();
     private static final int waitStartSec = 30;
     private static final int minWaitFinishSec = 15;
 
     private static boolean isTestRunningFailed = false;
     private static boolean isTestResultFailed = false;
+
+    public static void switchClientInstance(HydraLabAPIClient client) {
+        hydraLabAPIClient = client;
+    }
 
     public static void runTestOnDeviceWithApp(String runningType, String appPath, String testAppPath,
                                               String attachmentConfigPath,
@@ -162,7 +165,8 @@ public class HydraLabClientUtils {
         if (apiConfig == null) {
             apiConfig = new HydraLabAPIConfig();
         }
-        String testFileSetId = uploadApp(apiConfig, commitId, commitCount, commitMsg, app, testApp);
+
+        String testFileSetId = hydraLabAPIClient.uploadApp(apiConfig, commitId, commitCount, commitMsg, app, testApp);
         printlnf("##[section]Uploaded test file set id: %s", testFileSetId);
         assertNotNull(testFileSetId, "testFileSetId");
 
@@ -178,13 +182,13 @@ public class HydraLabClientUtils {
             File attachment = new File(attachmentInfo.filePath);
             assertTrue(attachment.exists(), "Attachment file " + attachmentInfo.fileName + "doesn't exist.", null);
 
-            JsonObject responseContent = addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
+            JsonObject responseContent = hydraLabAPIClient.addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
             int resultCode = responseContent.get("code").getAsInt();
 
             int waitingRetry = 10;
             while (resultCode != 200 && waitingRetry > 0) {
                 printlnf("##[warning]Attachment %s uploading failed, remaining retry times: %d\nServer code: %d, message: %s", attachmentInfo.filePath, waitingRetry, resultCode, responseContent.get("message").getAsString());
-                responseContent = addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
+                responseContent = hydraLabAPIClient.addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
                 resultCode = responseContent.get("code").getAsInt();
                 waitingRetry--;
             }
@@ -192,21 +196,21 @@ public class HydraLabClientUtils {
             printlnf("##[command]Attachment %s uploaded successfully", attachmentInfo.filePath);
         }
 
-        String accessKey = generateAccessKey(apiConfig, deviceIdentifier);
+        String accessKey = hydraLabAPIClient.generateAccessKey(apiConfig, deviceIdentifier);
         if (StringUtils.isEmpty(accessKey)) {
             printlnf("##[warning]Access key is empty.");
         } else {
             printlnf("##[command]Access key obtained.");
         }
 
-        JsonObject responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
+        JsonObject responseContent = hydraLabAPIClient.triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
         int resultCode = responseContent.get("code").getAsInt();
 
         // retry
         int waitingRetry = 20;
         while (resultCode != 200 && waitingRetry > 0) {
             printlnf("##[warning]Trigger test run failed, remaining retry times: %d\nServer code: %d, message: %s", waitingRetry, resultCode, responseContent.get("message").getAsString());
-            responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
+            responseContent = hydraLabAPIClient.triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
             resultCode = responseContent.get("code").getAsInt();
             waitingRetry--;
         }
@@ -226,7 +230,7 @@ public class HydraLabClientUtils {
         while (!finished) {
             if (TestTask.TestStatus.WAITING.equals(currentStatus)) {
                 if (totalWaitSecond > queueTimeoutSec) {
-                    cancelTestTask(apiConfig, testTaskId, "Queue timeout!");
+                    hydraLabAPIClient.cancelTestTask(apiConfig, testTaskId, "Queue timeout!");
                     printlnf("Cancelled the task as timeout %d seconds is reached", queueTimeoutSec);
                     break;
                 }
@@ -238,7 +242,7 @@ public class HydraLabClientUtils {
                 printlnf("Get test status after running for %d seconds", totalWaitSecond);
             }
 
-            runningTest = getTestStatus(apiConfig, testTaskId);
+            runningTest = hydraLabAPIClient.getTestStatus(apiConfig, testTaskId);
             printlnf("Current running test info: %s", runningTest.toString());
             assertNotNull(runningTest, "testTask");
 
@@ -281,7 +285,7 @@ public class HydraLabClientUtils {
         if (TestTask.TestStatus.WAITING.equals(currentStatus)) {
             assertTrue(finished, "Queuing timeout after waiting for " + queueTimeoutSec + " seconds! Test id", runningTest);
         } else if (TestTask.TestStatus.RUNNING.equals(currentStatus)) {
-            cancelTestTask(apiConfig, testTaskId, "Run timeout!");
+            hydraLabAPIClient.cancelTestTask(apiConfig, testTaskId, "Run timeout!");
             assertTrue(finished, "Running timeout after waiting for " + runTimeoutSec + " seconds! Test id", runningTest);
         }
 
@@ -342,7 +346,7 @@ public class HydraLabClientUtils {
             String deviceFileFolderPath = file.getAbsolutePath();
 
             if (deviceTestResult.attachments.size() != 0) {
-                String signature = getBlobSAS(apiConfig);
+                String signature = hydraLabAPIClient.getBlobSAS(apiConfig);
                 for (BlobFileInfo fileInfo : deviceTestResult.attachments) {
                     String attachmentUrl = fileInfo.blobUrl + "?" + signature;
                     String attachmentFileName = fileInfo.fileName;
@@ -350,7 +354,7 @@ public class HydraLabClientUtils {
                     printlnf("Start downloading attachment for device %s, device name: %s, file name: %s, link: %s", deviceTestResult.deviceSerialNumber, deviceTestResult.deviceName, attachmentFileName, attachmentUrl);
 
                     file = new File(deviceFileFolderPath, attachmentFileName);
-                    downloadToFile(attachmentUrl, file);
+                    hydraLabAPIClient.downloadToFile(attachmentUrl, file);
 
                     printlnf("Finish downloading attachment %s for device %s", attachmentFileName, deviceTestResult.deviceSerialNumber);
                 }

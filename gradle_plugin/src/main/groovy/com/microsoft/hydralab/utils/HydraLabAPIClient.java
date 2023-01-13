@@ -18,16 +18,16 @@ import java.util.concurrent.TimeUnit;
 import static com.microsoft.hydralab.utils.CommonUtils.*;
 
 
-public class HydraLabAPIUtils {
-    private static final OkHttpClient client = new OkHttpClient.Builder()
+public class HydraLabAPIClient {
+    private final OkHttpClient client = new OkHttpClient.Builder()
             .readTimeout(300, TimeUnit.SECONDS)
             .connectTimeout(300, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .build();
 
-    private static final int httpFailureRetryTimes = 10;
+    private final int httpFailureRetryTimes = 10;
 
-    public static void checkCenterAlive(HydraLabAPIConfig apiConfig) {
+    public void checkCenterAlive(HydraLabAPIConfig apiConfig) {
         Request req = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + apiConfig.authToken)
                 .url(apiConfig.checkCenterAliveUrl())
@@ -52,7 +52,7 @@ public class HydraLabAPIUtils {
         }
     }
 
-    public static String uploadApp(HydraLabAPIConfig apiConfig, String commitId, String commitCount, String commitMsg, File app, File testApp) {
+    public String uploadApp(HydraLabAPIConfig apiConfig, String commitId, String commitCount, String commitMsg, File app, File testApp) {
         checkCenterAlive(apiConfig);
 
         MediaType contentType = MediaType.get("application/vnd.android.package-archive");
@@ -102,7 +102,7 @@ public class HydraLabAPIUtils {
         }
     }
 
-    public static JsonObject addAttachment(HydraLabAPIConfig apiConfig, String testFileSetId, AttachmentInfo attachmentConfig, File attachment) {
+    public JsonObject addAttachment(HydraLabAPIConfig apiConfig, String testFileSetId, AttachmentInfo attachmentConfig, File attachment) {
         checkCenterAlive(apiConfig);
 
         // default text file type: text/plain
@@ -149,7 +149,7 @@ public class HydraLabAPIUtils {
         }
     }
 
-    public static String generateAccessKey(HydraLabAPIConfig apiConfig, String deviceIdentifier) {
+    public String generateAccessKey(HydraLabAPIConfig apiConfig, String deviceIdentifier) {
         checkCenterAlive(apiConfig);
 
         Request req = new Request.Builder()
@@ -189,7 +189,7 @@ public class HydraLabAPIUtils {
         }
     }
 
-    public static JsonObject triggerTestRun(String runningType, HydraLabAPIConfig apiConfig, String fileSetId, String testSuiteName,
+    public JsonObject triggerTestRun(String runningType, HydraLabAPIConfig apiConfig, String fileSetId, String testSuiteName,
                                              String deviceIdentifier, @Nullable String accessKey, int runTimeoutSec, Map<String, String> instrumentationArgs, Map<String, String> extraArgs) {
         checkCenterAlive(apiConfig);
 
@@ -269,7 +269,7 @@ public class HydraLabAPIUtils {
         }
     }
 
-    public static TestTask getTestStatus(HydraLabAPIConfig apiConfig, String testTaskId) {
+    public TestTask getTestStatus(HydraLabAPIConfig apiConfig, String testTaskId) {
         checkCenterAlive(apiConfig);
 
         Request req = new Request.Builder()
@@ -307,7 +307,7 @@ public class HydraLabAPIUtils {
         }
     }
 
-    public static String getBlobSAS(HydraLabAPIConfig apiConfig) {
+    public String getBlobSAS(HydraLabAPIConfig apiConfig) {
         Request req = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + apiConfig.authToken)
                 .url(apiConfig.getBlobSASUrl())
@@ -340,7 +340,7 @@ public class HydraLabAPIUtils {
         }
     }
 
-    public static void downloadToFile(String fileUrl, File file) {
+    public void downloadToFile(String fileUrl, File file) {
         Request req = new Request.Builder().get().url(fileUrl).build();
         try (Response response = client.newCall(req).execute()) {
             if (!response.isSuccessful()) {
@@ -357,7 +357,7 @@ public class HydraLabAPIUtils {
         }
     }
 
-    public static void cancelTestTask(HydraLabAPIConfig apiConfig, String testTaskId, String reason) {
+    public void cancelTestTask(HydraLabAPIConfig apiConfig, String testTaskId, String reason) {
         checkCenterAlive(apiConfig);
 
         Request req = new Request.Builder()
