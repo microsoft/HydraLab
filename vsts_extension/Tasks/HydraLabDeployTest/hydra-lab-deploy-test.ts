@@ -189,7 +189,7 @@ async function run() {
         console.log('##[section]instrumentationArgs: %s', JSON.stringify(instrumentationArgs));
 
         const neededPermissionsInput: string | undefined = tl.getInput('neededPermissions');
-        let neededPermissions: object = {};
+        let neededPermissions: object = [];
         if (neededPermissionsInput && neededPermissionsInput.length > 0) {
             neededPermissions = JSON.parse(neededPermissionsInput)
         }
@@ -535,11 +535,11 @@ async function triggerTestRun(HydraLabAPIConfig: any, runningType: string, devic
     Object.assign(json, { "needUninstall": needUninstall });
     Object.assign(json, { "needClearData": needClearData });
     
-    if (timeoutSec) {
+    if (neededPermissions) {
         Object.assign(json, { "neededPermissions": neededPermissions });
     }
     
-    if (timeoutSec) {
+    if (deviceActions) {
         Object.assign(json, { "deviceActions": deviceActions });
     }
 
