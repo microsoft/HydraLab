@@ -107,6 +107,8 @@ export default class RunnerView extends BaseView {
         instrumentationArgs: "",
         frameworkType: "JUnit4",
         testRunnerName: "androidx.test.runner.AndroidJUnitRunner",
+        neededPermissions: null,
+        deviceActions: null,
 
         teamList: null,
         selectedTeamName: null
@@ -819,6 +821,25 @@ export default class RunnerView extends BaseView {
                             </IconButton>
                         </Tooltip>
                     </Stack>
+                    <TextField
+                        margin="dense"
+                        name="neededPermissions"
+                        type="text"
+                        label="Needed Permissions"
+                        fullWidth
+                        value={this.state.neededPermissions}
+                        onChange={this.handleValueChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="deviceActions"
+                        type="text"
+                        label="Device Actions"
+                        fullWidth
+                        multiline={true}
+                        value={this.state.deviceActions}
+                        onChange={this.handleValueChange}
+                    />
                 </Box>
         }
     }
@@ -924,25 +945,19 @@ export default class RunnerView extends BaseView {
     }
 
     runTest = () => {
-        let argsObj = {}
-        if (this.state.instrumentationArgs !== "") {
-            try {
-                argsObj = JSON.parse(this.state.instrumentationArgs)
-            } catch (error) {
-                this.snackBarMsg("Error Test config, please input JSON Object")
-                this.setState({
-                    running: false
-                })
-                return
-            }
-        }
-        if (!(typeof argsObj === 'object')) {
+        let instrumentationArgsObj = {};
+        let neededPermissionsObj = [];
+        let deviceActionsObj = {};
+        try {
+            instrumentationArgsObj = this.handleJSONParams(this.state.instrumentationArgs);
+            neededPermissionsObj = this.handleJSONParams(this.state.neededPermissions, []);
+            deviceActionsObj = this.handleJSONParams(this.state.deviceActions);
+        } catch (error) {
             this.snackBarMsg("Error Test config, please input JSON Object")
-            this.setState({
-                running: false
-            })
+            this.setState({ running: false })
             return
         }
+
         const formParams = {
             fileSetId: this.state.currentAppId,
             pkgName: this.state.currentAppPackageName,
@@ -955,9 +970,11 @@ export default class RunnerView extends BaseView {
             maxStepCount: this.state.maxStepCount,
             deviceTestCount: this.state.deviceTestCount,
             testTimeOutSec: this.state.testTimeOutSec,
-            instrumentationArgs: argsObj,
+            instrumentationArgs: instrumentationArgsObj,
             frameworkType: this.state.frameworkType,
-            testRunnerName: this.state.testRunnerName
+            testRunnerName: this.state.testRunnerName,
+            neededPermissions: neededPermissionsObj,
+            deviceActions: deviceActionsObj
         }
 
         axios.post('/api/test/task/run/', formParams, {
@@ -1109,6 +1126,17 @@ export default class RunnerView extends BaseView {
                 currentAppInfo: pageData,
             })
         })
+    }
+
+    handleJSONParams(argString, initObj={}){
+        let argObj = initObj;
+        if (argString) {
+            argObj = JSON.parse(argString)
+        }
+        if (typeof argObj !== 'object') {
+            throw new Error()
+        }
+        return argObj
     }
 
     componentDidMount() {

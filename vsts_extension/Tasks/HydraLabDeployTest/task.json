@@ -15,7 +15,7 @@
     "version": {
         "Major": 2,
         "Minor": 0,
-        "Patch": 11
+        "Patch": 12
     },
     "instanceNameFormat": "Deploy Tests of ${pkgName} to HydraLab",
     "inputs": [
@@ -200,6 +200,22 @@
             "defaultValue": "",
             "required": false,
             "helpMarkDown": "Example: Arg1=Value1, Value2; Arg2=Value3"
+        },
+        {
+            "name": "neededPermissions",
+            "type": "string",
+            "label": "Needed Permissions",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Example:  [\"android.permission.FOREGROUND_SERVICE\",\"android.permission.FOREGROUND_SERVICE\"]"
+        },
+        {
+            "name": "deviceActions",
+            "type": "multiLine",
+            "label": "Device Actions",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Json String"
         },
         {
             "name": "runningInfo",
