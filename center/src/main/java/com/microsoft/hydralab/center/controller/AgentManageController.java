@@ -251,6 +251,7 @@ public class AgentManageController {
             out.flush();
         } catch (Exception e) {
             e.printStackTrace();
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error");
         } finally {
             response.flushBuffer();
             try {
