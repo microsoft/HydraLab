@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "hydra-lab",
     "name": "Hydra Lab",
-    "version": "2.0.11",
+    "version": "2.0.12",
     "publisher": "",
     "public": true,
     "targets": [
