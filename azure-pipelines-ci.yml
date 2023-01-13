@@ -112,11 +112,40 @@ stages:
         Contents: '*.jar'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
       condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+    - task: Gradle@2
+      displayName: Package Mac installer
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'packageMacInstaller'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        sonarQubeRunAnalysis: false
+        spotBugsAnalysis: false
+      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+    - task: Gradle@2
+      displayName: Package Windows installer
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'packageWindowsInstaller'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        sonarQubeRunAnalysis: false
+        spotBugsAnalysis: false
+      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
     - task: CopyFiles@2
       displayName: Copy agent jar
       inputs:
         SourceFolder: 'agent/build/libs/'
         Contents: '*.jar'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
+      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+    - task: CopyFiles@2
+      displayName: Copy agent installer
+      inputs:
+        SourceFolder: 'build/installer/'
+        Contents: '*.zip'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
       condition: and(succeeded(), eq(variables.fullBuild, 'true'))
     - task: CopyFiles@2
