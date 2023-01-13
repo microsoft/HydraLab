@@ -188,6 +188,20 @@ async function run() {
         }
         console.log('##[section]instrumentationArgs: %s', JSON.stringify(instrumentationArgs));
 
+        const neededPermissionsInput: string | undefined = tl.getInput('neededPermissions');
+        let neededPermissions: object = [];
+        if (neededPermissionsInput && neededPermissionsInput.length > 0) {
+            neededPermissions = JSON.parse(neededPermissionsInput)
+        }
+        console.log('##[section]neededPermissions: %s', JSON.stringify(neededPermissions));
+
+        const deviceActionsInput: string | undefined = tl.getInput('deviceActions');
+        let deviceActions: object = {};
+        if (deviceActionsInput && deviceActionsInput.length > 0) {
+            deviceActions = JSON.parse(deviceActionsInput)
+        }
+        console.log('##[section]deviceActions: %s', JSON.stringify(deviceActions));
+
         let runningInfo: string = getRequiredInput('runningInfo');
 
         let pipelineLink: string | undefined = undefined; 
@@ -261,7 +275,7 @@ async function run() {
             console.log('##[section]Generate Group AccessKey Failed!')
         }
 
-        let testTaskId: any = await triggerTestRun(HydraLabAPIConfig, runningType, deviceIdentifier, fileSetId, testSuiteClass, timeoutSec, maxStepCount, deviceTestCount, pipelineLink, accessKey, frameworkType, reportAudience, instrumentationArgs, needUninstall, needClearData)
+        let testTaskId: any = await triggerTestRun(HydraLabAPIConfig, runningType, deviceIdentifier, fileSetId, testSuiteClass, timeoutSec, maxStepCount, deviceTestCount, pipelineLink, accessKey, frameworkType, reportAudience, instrumentationArgs, needUninstall, needClearData, neededPermissions, deviceActions)
         console.log(`##[section]Triggered test task id: ${testTaskId} successful!`);
         
         let sleepSecond: number = Math.round(timeoutSec / 3);
@@ -475,7 +489,7 @@ async function generateDeviceGroupAccessKey(HydraLabAPIConfig: any, deviceIdenti
     return responseContent.key
 }
 
-async function triggerTestRun(HydraLabAPIConfig: any, runningType: string, deviceIdentifier: string, fileSetId: string, testSuiteClass: string | undefined, timeoutSec: number, maxStepCount: number | undefined, deviceTestCount: number | undefined, pipelineLink: string | undefined, accessKey: any | undefined, frameworkType: string | undefined, reportAudience?: string, instrumentationArgs?: object, needUninstall?: boolean, needClearData?: boolean): Promise<object> {
+async function triggerTestRun(HydraLabAPIConfig: any, runningType: string, deviceIdentifier: string, fileSetId: string, testSuiteClass: string | undefined, timeoutSec: number, maxStepCount: number | undefined, deviceTestCount: number | undefined, pipelineLink: string | undefined, accessKey: any | undefined, frameworkType: string | undefined, reportAudience?: string, instrumentationArgs?: object, needUninstall?: boolean, needClearData?: boolean, neededPermissions?: object, deviceActions?: object): Promise<object> {
     let json: object = {};
 
     Object.assign(json, { 'runningType': runningType });
@@ -520,6 +534,14 @@ async function triggerTestRun(HydraLabAPIConfig: any, runningType: string, devic
     }
     Object.assign(json, { "needUninstall": needUninstall });
     Object.assign(json, { "needClearData": needClearData });
+    
+    if (neededPermissions) {
+        Object.assign(json, { "neededPermissions": neededPermissions });
+    }
+    
+    if (deviceActions) {
+        Object.assign(json, { "deviceActions": deviceActions });
+    }
 
     let requestParameters = {
         method: "post",
