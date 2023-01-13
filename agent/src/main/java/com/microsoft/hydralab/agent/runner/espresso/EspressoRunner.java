@@ -7,7 +7,7 @@ import com.android.ddmlib.testrunner.InstrumentationResultParser;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
@@ -29,14 +29,14 @@ public class EspressoRunner extends TestRunner {
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, DeviceTestTask deviceTestTask) throws Exception {
+    protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
         InstrumentationResultParser instrumentationResultParser = null;
-        Logger reportLogger = deviceTestTask.getLogger();
+        Logger reportLogger = testRun.getLogger();
 
         try {
             /** xml report: parse listener */
             reportLogger.info("Start xml report: parse listener");
-            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(deviceManager, adbOperateUtil, deviceInfo, deviceTestTask, testTask.getPkgName());
+            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(deviceManager, adbOperateUtil, deviceInfo, testRun, testTask.getPkgName());
             instrumentationResultParser = new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
                 @Override
                 public boolean isCancelled() {
@@ -58,10 +58,10 @@ public class EspressoRunner extends TestRunner {
 
             /** set paths */
             String absoluteReportPath = listener.getAbsoluteReportPath();
-            deviceTestTask.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+            testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
             File gifFile = listener.getGifFile();
             if (gifFile.exists() && gifFile.length() > 0) {
-                deviceTestTask.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
+                testRun.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
             }
 
         } finally {

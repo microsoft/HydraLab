@@ -7,7 +7,7 @@ import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class Junit5Listener extends SummaryGeneratingListener {
     private final DeviceManager deviceManager;
     private final DeviceInfo deviceInfo;
-    private final DeviceTestTask deviceTestResult;
+    private final TestRun testRun;
     private final LogCollector logcatCollector;
     private final ScreenRecorder deviceScreenRecorder;
     private final Logger logger;
@@ -45,14 +45,14 @@ public class Junit5Listener extends SummaryGeneratingListener {
     private String currentTestName = "";
     private int currentTestIndex = 0;
 
-    public Junit5Listener(DeviceManager deviceManager, DeviceInfo deviceInfo, DeviceTestTask deviceTestResult, String pkgName, Logger logger) {
+    public Junit5Listener(DeviceManager deviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName, Logger logger) {
         this.deviceManager = deviceManager;
         this.deviceInfo = deviceInfo;
-        this.deviceTestResult = deviceTestResult;
+        this.testRun = testRun;
         this.logger = logger;
         this.pkgName = pkgName;
-        logcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestResult, logger);
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getDeviceTestResultFolder(), logger);
+        logcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
+        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
     }
 
     public File getGifFile() {
@@ -77,19 +77,19 @@ public class Junit5Listener extends SummaryGeneratingListener {
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
         deviceInfo.setRunningTestName(initializing);
-        deviceTestResult.addNewTimeTag(initializing, 0);
+        testRun.addNewTimeTag(initializing, 0);
     }
 
     private void startTools() {
         logger.info("Start gif frames collection");
-        gifFile = new File(deviceTestResult.getDeviceTestResultFolder(), pkgName + ".gif");
+        gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
 
         logger.info("Start logcat collection");
         String logcatFilePath = logcatCollector.start();
-        deviceTestResult.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
     @Override
@@ -98,9 +98,9 @@ public class Junit5Listener extends SummaryGeneratingListener {
         String runName = pkgName;
         int testCount = (int) getSummary().getTestsFoundCount();
         logEnter("testRunStarted", runName, testCount);
-        deviceTestResult.setTotalCount(testCount);
-        deviceTestResult.setTestStartTimeMillis(System.currentTimeMillis());
-        deviceTestResult.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.setTotalCount(testCount);
+        testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
         logEnter(runName, testCount);
     }
@@ -113,15 +113,15 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         if (wasSuccessful) {
             logEnter("testRunSuccessful", elapsedTime, Thread.currentThread().getName());
-            deviceTestResult.addNewTimeTag("testRunSuccessful", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTag("testRunSuccessful", System.currentTimeMillis() - recordingStartTimeMillis);
         } else {
             String errorMessage = getSummary().getFailures().get(0).getException().getMessage();
             logEnter("testRunFailed", errorMessage);
-            deviceTestResult.addNewTimeTag("testRunFailed", System.currentTimeMillis() - recordingStartTimeMillis);
-            deviceTestResult.setTestErrorMessage(errorMessage);
+            testRun.addNewTimeTag("testRunFailed", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.setTestErrorMessage(errorMessage);
             if (errorMessage != null && errorMessage.toLowerCase(Locale.US).contains("process crash")) {
-                if (deviceTestResult.getCrashStack() == null) {
-                    deviceTestResult.setCrashStack(errorMessage);
+                if (testRun.getCrashStack() == null) {
+                    testRun.setCrashStack(errorMessage);
                 }
             }
             if (e.isStarted() && addedFrameCount < 2) {
@@ -140,8 +140,8 @@ public class Junit5Listener extends SummaryGeneratingListener {
             if (alreadyEnd) {
                 return;
             }
-            deviceTestResult.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
-            deviceTestResult.onTestEnded();
+            testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.onTestEnded();
             deviceInfo.setRunningTestName(null);
             releaseResource();
             alreadyEnd = true;
@@ -194,13 +194,13 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         ongoingTestUnit.setTestedClass(testClassName);
 
-        deviceTestResult.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingTestUnit.getTitle());
 
-        ongoingTestUnit.setDeviceTestResultId(deviceTestResult.getId());
-        ongoingTestUnit.setTestTaskId(deviceTestResult.getTestTaskId());
+        ongoingTestUnit.setDeviceTestResultId(testRun.getId());
+        ongoingTestUnit.setTestTaskId(testRun.getTestTaskId());
 
-        deviceTestResult.addNewTestUnit(ongoingTestUnit);
+        testRun.addNewTestUnit(ongoingTestUnit);
 
         deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15), (imagePNGFile -> {
             if (imagePNGFile == null) {
@@ -240,12 +240,12 @@ public class Junit5Listener extends SummaryGeneratingListener {
             logEnter("testFailed", testDisplayName, getTrace(throwable));
             ongoingTestUnit.setStack(getTrace(throwable));
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
-            deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
-            deviceTestResult.oneMoreFailure();
+            testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.oneMoreFailure();
         }
         ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
-        deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
     }
 
     private void releaseResource() {
