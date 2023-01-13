@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab
 
+import com.microsoft.hydralab.entity.HydraLabAPIConfig
 import com.microsoft.hydralab.utils.HydraLabClientUtils
 import org.apache.commons.lang3.StringUtils
 import org.gradle.api.Plugin
@@ -102,7 +103,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                HydraLabClientUtils.HydraLabAPIConfig apiConfig = HydraLabClientUtils.HydraLabAPIConfig.defaultAPI()
+                HydraLabAPIConfig apiConfig = new HydraLabAPIConfig()
 
                 if (project.hasProperty('hydraLabAPISchema')) {
                     apiConfig.schema = project.hydraLabAPISchema
@@ -172,7 +173,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
         }
     }
 
-    private void requiredParamCheck(String runningType, String appPath, String testAppPath, String deviceIdentifier, String runTimeOutSeconds, String testSuiteName, HydraLabClientUtils.HydraLabAPIConfig apiConfig) {
+    void requiredParamCheck(String runningType, String appPath, String testAppPath, String deviceIdentifier, String runTimeOutSeconds, String testSuiteName, HydraLabAPIConfig apiConfig) {
         if (StringUtils.isBlank(runningType)
                 || StringUtils.isBlank(appPath)
                 || StringUtils.isBlank(apiConfig.pkgName)
