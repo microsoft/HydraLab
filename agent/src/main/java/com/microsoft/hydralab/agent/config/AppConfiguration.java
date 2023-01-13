@@ -172,11 +172,11 @@ public class AppConfiguration {
             public void onDeviceInactive(DeviceInfo deviceInfo) {
                 //send message to master to update device status
                 JSONObject data = new JSONObject();
-                data.put(Const.AgentConfig.serial_param, deviceInfo.getSerialNum());
+                data.put(Const.AgentConfig.SERIAL_PARAM, deviceInfo.getSerialNum());
                 if (DeviceInfo.UNSTABLE.equals(deviceInfo.getStatus())) {
-                    data.put(Const.AgentConfig.status_param, deviceInfo.getStatus());
+                    data.put(Const.AgentConfig.STATUS_PARAM, deviceInfo.getStatus());
                 } else {
-                    data.put(Const.AgentConfig.status_param, DeviceInfo.OFFLINE);
+                    data.put(Const.AgentConfig.STATUS_PARAM, DeviceInfo.OFFLINE);
                 }
                 agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
             }
@@ -185,11 +185,11 @@ public class AppConfiguration {
             public void onDeviceConnected(DeviceInfo deviceInfo) {
                 //send message to master to update device status
                 JSONObject data = new JSONObject();
-                data.put(Const.AgentConfig.serial_param, deviceInfo.getSerialNum());
+                data.put(Const.AgentConfig.SERIAL_PARAM, deviceInfo.getSerialNum());
                 if (DeviceInfo.UNSTABLE.equals(deviceInfo.getStatus())) {
-                    data.put(Const.AgentConfig.status_param, deviceInfo.getStatus());
+                    data.put(Const.AgentConfig.STATUS_PARAM, deviceInfo.getStatus());
                 } else {
-                    data.put(Const.AgentConfig.status_param, DeviceInfo.ONLINE);
+                    data.put(Const.AgentConfig.STATUS_PARAM, DeviceInfo.ONLINE);
                 }
                 agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
             }

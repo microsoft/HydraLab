@@ -15,7 +15,6 @@ import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -41,9 +40,9 @@ public class DeviceGroupService {
         DeviceGroup deviceGroup = new DeviceGroup();
         deviceGroup.setTeamId(teamId);
         deviceGroup.setTeamName(teamName);
-        deviceGroup.setGroupName(Const.DeviceGroup.groupPre + groupName);
+        deviceGroup.setGroupName(Const.DeviceGroup.GROUP_NAME_PREFIX + groupName);
         deviceGroup.setGroupDisplayName(groupName);
-        deviceGroup.setGroupType(Const.DeviceGroup.userGroup);
+        deviceGroup.setGroupType(Const.DeviceGroup.USER_GROUP);
         return deviceGroupRepository.save(deviceGroup);
     }
 

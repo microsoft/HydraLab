@@ -5,8 +5,8 @@ package com.microsoft.hydralab.appium;
 import java.util.Map;
 
 public class ThreadParam {
-    private static InheritableThreadLocal<AppiumParam> appiumParam = new InheritableThreadLocal<>();
-    private static InheritableThreadLocal<Map<String, String>> configMap = new InheritableThreadLocal<>();
+    private static final InheritableThreadLocal<AppiumParam> appiumParam = new InheritableThreadLocal<>();
+    private static final InheritableThreadLocal<Map<String, String>> configMap = new InheritableThreadLocal<>();
 
     public static void init(AppiumParam appiumParamTemp, Map<String, String> configMapParam) {
         clean();

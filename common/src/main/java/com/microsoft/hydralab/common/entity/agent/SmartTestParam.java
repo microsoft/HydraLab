@@ -18,10 +18,10 @@ public class SmartTestParam {
     public SmartTestParam(String apkPath, DeviceInfo deviceInfo, String sourceModelId, String targetModelId, int testSteps, String folderPath, String stringFolderPath) {
         JSONObject modelInfo = new JSONObject();
 
-        modelInfo.put(Const.SmartTestConfig.bertPathTag, folderPath + Const.SmartTestConfig.bertModelName);
-        modelInfo.put(Const.SmartTestConfig.topicPathTag, folderPath + Const.SmartTestConfig.topicModelName);
-        modelInfo.put(Const.SmartTestConfig.sourceModelTag, sourceModelId);
-        modelInfo.put(Const.SmartTestConfig.targetModelTag, targetModelId);
+        modelInfo.put(Const.SmartTestConfig.BERT_PATH_TAG, folderPath + Const.SmartTestConfig.BERT_MODEL_NAME);
+        modelInfo.put(Const.SmartTestConfig.TOPIC_PATH_TAG, folderPath + Const.SmartTestConfig.TOPIC_MODEL_NAME);
+        modelInfo.put(Const.SmartTestConfig.SOURCE_MODEL_TAG, sourceModelId);
+        modelInfo.put(Const.SmartTestConfig.TARGET_MODEL_TAG, targetModelId);
 
         this.apkPath = apkPath;
         this.deviceInfo = JSONObject.toJSONString(deviceInfo).replaceAll("\"", "'");

@@ -122,7 +122,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         ThreadUtils.safeSleep(5000);
 
         int retryTime = 1;
-        while (retryTime < Const.AgentConfig.retry_time) {
+        while (retryTime < Const.AgentConfig.RETRY_TIME) {
             logger.info("Pull file round :" + retryTime);
             File videoFile = new File(pathOnAgent);
             if (videoFile.exists()) {
@@ -139,7 +139,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
                 break;
             }
             retryTime++;
-            if (retryTime == Const.AgentConfig.retry_time) {
+            if (retryTime == Const.AgentConfig.RETRY_TIME) {
                 logger.error("Pull video file fail!");
             }
         }

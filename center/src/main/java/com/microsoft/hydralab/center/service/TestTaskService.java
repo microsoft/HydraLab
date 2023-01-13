@@ -46,7 +46,7 @@ public class TestTaskService {
     public Boolean isDeviceFree(String deviceIdentifier) {
         Set<String> relatedIdentifiers = new HashSet<>();
         relatedIdentifiers.add(deviceIdentifier);
-        if (deviceIdentifier.startsWith(Const.DeviceGroup.groupPre)) {
+        if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
             relatedIdentifiers.addAll(deviceAgentManagementService.queryDeviceByGroup(deviceIdentifier));
         } else {
             relatedIdentifiers.addAll(deviceAgentManagementService.queryGroupByDevice(deviceIdentifier));
@@ -148,7 +148,7 @@ public class TestTaskService {
             return testTaskSpec.teamId.equals(agent.getTeamId());
         } else {
             String deviceIdentifier = testTaskSpec.deviceIdentifier;
-            if (deviceIdentifier.startsWith(Const.DeviceGroup.groupPre)) {
+            if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
                 DeviceGroup deviceGroup = deviceGroupService.getGroupByName(deviceIdentifier);
                 if (deviceGroup == null) {
                     return false;

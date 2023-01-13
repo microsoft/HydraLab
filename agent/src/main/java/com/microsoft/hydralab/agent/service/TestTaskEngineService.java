@@ -105,7 +105,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         Set<DeviceInfo> allActiveConnectedDevice = deviceManager.getDeviceList(log);
         log.info("Choosing devices from {}", allActiveConnectedDevice.size());
 
-        if (identifier.startsWith(Const.DeviceGroup.groupPre)) {
+        if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
             List<String> devices = Arrays.asList(testTaskSpec.groupDevices.split(","));
             return allActiveConnectedDevice.stream()
                     .filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum()))

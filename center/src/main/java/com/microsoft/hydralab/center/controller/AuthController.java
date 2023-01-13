@@ -150,7 +150,7 @@ public class AuthController {
         try {
             InputStream inputStream = null;
             if (requestor == null || requestor.getAccessToken() == null) {
-                inputStream = FileUtils.class.getClassLoader().getResourceAsStream(Const.Path.default_photo);
+                inputStream = FileUtils.class.getClassLoader().getResourceAsStream(Const.Path.DEFAULT_PHOTO);
             } else {
                 inputStream = authUtil.requestPhoto(requestor.getAccessToken());
             }

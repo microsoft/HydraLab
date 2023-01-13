@@ -58,7 +58,7 @@ public class DeviceGroupController {
         if (deviceGroupService.isGroupNameIllegal(groupName)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "groupName should contain A-Z, a-z and 0-9 only");
         }
-        String groupRealName = Const.DeviceGroup.groupPre + groupName;
+        String groupRealName = Const.DeviceGroup.GROUP_NAME_PREFIX + groupName;
         if (deviceGroupService.checkGroupName(groupRealName)) {
             return Result.error(HttpStatus.FORBIDDEN.value(), "groupName already exist!");
         }
@@ -244,7 +244,7 @@ public class DeviceGroupController {
             if (deviceIdentifier == null || "".equals(deviceIdentifier)) {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "deviceIdentifier is required");
             }
-            if (deviceIdentifier.startsWith(Const.DeviceGroup.groupPre)) {
+            if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
                 if (!deviceGroupService.checkGroupAuthorization(requestor, deviceIdentifier, true)) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
                 }

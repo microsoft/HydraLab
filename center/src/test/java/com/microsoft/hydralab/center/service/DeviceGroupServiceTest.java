@@ -27,7 +27,7 @@ class DeviceGroupServiceTest extends BaseTest {
         SysTeam defaultTeam = sysTeamService.getOrCreateDefaultTeam(Const.DefaultTeam.DEFAULT_TEAM_NAME);
 
         deviceGroupService.createGroup(defaultTeam.getTeamId(), defaultTeam.getTeamName(), groupName, null);
-        DeviceGroup group = deviceGroupService.getGroupByName(Const.DeviceGroup.groupPre + groupName);
+        DeviceGroup group = deviceGroupService.getGroupByName(Const.DeviceGroup.GROUP_NAME_PREFIX + groupName);
         Assertions.assertNotNull(group, "Insert group failed!");
 
         deviceGroupService.saveRelation(groupName, deviceSerial);

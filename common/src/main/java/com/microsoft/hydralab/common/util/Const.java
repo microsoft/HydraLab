@@ -17,34 +17,34 @@ public interface Const {
         String TEST_TASK_RETRY = "/api/test/task/retry";
         String AGENT_UPDATE = "/api/agent/update";
         String AGENT_RESTART = "/api/agent/restart";
-        String default_photo = "static/dist/images/default_user.png";
+        String DEFAULT_PHOTO = "static/dist/images/default_user.png";
     }
 
     interface DeviceGroup {
         String CI = "CI";
         String REGULAR = "REGULAR";
-        String groupPre = "G.";
-        String sysGroup = "SYS";
-        String userGroup = "USER";
-        String singleType = "SINGLE";
-        String restType = "REST";
-        String allType = "ALL";
+        String GROUP_NAME_PREFIX = "G.";
+        String SYS_GROUP = "SYS";
+        String USER_GROUP = "USER";
+        String SINGLE_TYPE = "SINGLE";
+        String REST_TYPE = "REST";
+        String ALL_TYPE = "ALL";
     }
 
     interface AgentConfig {
-        int retry_time = 5;
-        int photo_update_sec = 15;
-        String task_id_param = "testTaskId";
-        String serial_param = "serialNum";
-        String status_param = "status";
-        String scope_param = "isPrivate";
-        String restartFileMac = "restartAgent.sh";
-        String restartFileWin = "restartAgent.bat";
+        int RETRY_TIME = 5;
+        int PHOTO_UPDATE_SEC = 15;
+        String TASK_ID_PARAM = "testTaskId";
+        String SERIAL_PARAM = "serialNum";
+        String STATUS_PARAM = "status";
+        String SCOPE_PARAM = "isPrivate";
+        String RESTART_FILE_MAC = "restartAgent.sh";
+        String RESTART_FILE_WIN = "restartAgent.bat";
     }
 
     interface TaskResult {
-        String error_device_offline = "DEVICE_OFFLINE";
-        String success = "SUCCESS";
+        String ERROR_DEVICE_OFFLINE = "DEVICE_OFFLINE";
+        String SUCCESS = "SUCCESS";
     }
 
     interface Param {
@@ -55,24 +55,24 @@ public interface Const {
     }
 
     interface SmartTestConfig {
-        String successTag = "success";
-        String taskExpTag = "exception";
-        String appExpTag = "appException";
-        String coverageTag = "coverage";
-        String visitTag = "visited";
-        String bertPathTag = "path_to_screen_bert_model";
-        String topicPathTag = "path_to_screen_topic_classifier_model";
-        String sourceModelTag = "source_model_id";
-        String targetModelTag = "target_model_id";
+        String SUCCESS_TAG = "success";
+        String TASK_EXP_TAG = "exception";
+        String APP_EXP_TAG = "appException";
+        String COVERAGE_TAG = "coverage";
+        String VISIT_TAG = "visited";
+        String BERT_PATH_TAG = "path_to_screen_bert_model";
+        String TOPIC_PATH_TAG = "path_to_screen_topic_classifier_model";
+        String SOURCE_MODEL_TAG = "source_model_id";
+        String TARGET_MODEL_TAG = "target_model_id";
 
-        String zipFileName = "SmartTest.zip";
-        String zipFolderName = "SmartTest";
-        String pyFileName = "main.py";
-        String bertModelName = "screenBert.pt";
-        String topicModelName = "topic.pt";
-        String requireFileName = "requirements.txt";
-        String stringFolderName = "SmartTestString";
-        String stringFileNames = "strings,username,password";
+        String ZIP_FILE_NAME = "SmartTest.zip";
+        String ZIP_FOLDER_NAME = "SmartTest";
+        String PY_FILE_NAME = "main.py";
+        String BERT_MODEL_NAME = "screenBert.pt";
+        String TOPIC_MODEL_NAME = "topic.pt";
+        String REQUIRE_FILE_NAME = "requirements.txt";
+        String STRING_FOLDER_NAME = "SmartTestString";
+        String STRING_FILE_NAMES = "strings,username,password";
     }
 
     interface ScreenRecoderConfig{
