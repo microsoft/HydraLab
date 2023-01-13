@@ -717,25 +717,6 @@ export default class RunnerView extends BaseView {
                             <MenuItem value={"JUnit5"}>JUnit5</MenuItem>
                         </Select>
                     </FormControl>
-                    <TextField
-                        margin="dense"
-                        name="neededPermissions"
-                        type="text"
-                        label="Needed Permissions"
-                        fullWidth
-                        value={this.state.neededPermissions}
-                        onChange={this.handleValueChange}
-                    />
-                    <TextField
-                        margin="dense"
-                        name="deviceActions"
-                        type="text"
-                        label="Device Actions"
-                        fullWidth
-                        multiline={true}
-                        value={this.state.deviceActions}
-                        onChange={this.handleValueChange}
-                    />
                 </Box>
             case 1:
                 return <Box sx={{ display: 'flex', flexDirection: 'column', pt: 2 }}>
@@ -840,6 +821,25 @@ export default class RunnerView extends BaseView {
                             </IconButton>
                         </Tooltip>
                     </Stack>
+                    <TextField
+                        margin="dense"
+                        name="neededPermissions"
+                        type="text"
+                        label="Needed Permissions"
+                        fullWidth
+                        value={this.state.neededPermissions}
+                        onChange={this.handleValueChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="deviceActions"
+                        type="text"
+                        label="Device Actions"
+                        fullWidth
+                        multiline={true}
+                        value={this.state.deviceActions}
+                        onChange={this.handleValueChange}
+                    />
                 </Box>
         }
     }
@@ -946,11 +946,11 @@ export default class RunnerView extends BaseView {
 
     runTest = () => {
         let instrumentationArgsObj = {};
-        let neededPermissionsObj = {};
+        let neededPermissionsObj = [];
         let deviceActionsObj = {};
         try {
             instrumentationArgsObj = this.handleJSONParams(this.state.instrumentationArgs);
-            neededPermissionsObj = this.handleJSONParams(this.state.neededPermissions);
+            neededPermissionsObj = this.handleJSONParams(this.state.neededPermissions, []);
             deviceActionsObj = this.handleJSONParams(this.state.deviceActions);
         } catch (error) {
             this.snackBarMsg("Error Test config, please input JSON Object")
@@ -1128,8 +1128,8 @@ export default class RunnerView extends BaseView {
         })
     }
 
-    handleJSONParams(argString){
-        let argObj = {}
+    handleJSONParams(argString, initObj={}){
+        let argObj = initObj;
         if (argString) {
             argObj = JSON.parse(argString)
         }
