@@ -4,6 +4,7 @@ package com.microsoft.hydralab.common.entity.common;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.ITestRun;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "device_test_task", indexes = {
         @Index(name = "task_id_index", columnList = "test_task_id")})
-public class TestRun implements Serializable {
+public class TestRun implements Serializable, ITestRun {
     //    private static Pattern testResultLine = Pattern.compile("Tests run:\\s+(\\d+),\\s+Failures:\\s+(\\d+)");
     // OK (8 tests)
 //    private static Pattern testResultOkLine = Pattern.compile("OK\\s+\\((\\d+)\\s+tests\\)");
