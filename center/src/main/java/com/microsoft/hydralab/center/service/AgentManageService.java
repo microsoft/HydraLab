@@ -131,7 +131,7 @@ public class AgentManageService {
          agentUserRepository.saveAll(agents);
     }
 
-    public File downloadAgentConfigFile(SysUser requestor, String agentId) {
+    public File generateAgentConfigFile(String agentId) {
         AgentUser agentUser = getAgent(agentId);
         if (agentUser != null) {
             try {
@@ -155,10 +155,7 @@ public class AgentManageService {
                 fileWriter.flush();
                 fileWriter.close();
 
-                if (userTeamManagementService.checkRequestorTeamAdmin(requestor, agentUser.getTeamId()) ||
-                        agentUser.getMailAddress().equals(requestor.getMailAddress())) {
-                    return agentConfigFile;
-                }
+                return agentConfigFile;
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -231,7 +231,7 @@ public class AgentManageController {
         if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
-        File agentConfigFile = agentManageService.downloadAgentConfigFile(requestor, agentId);
+        File agentConfigFile = agentManageService.generateAgentConfigFile(agentId);
         if (agentConfigFile == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "The file was not downloaded");
         }
