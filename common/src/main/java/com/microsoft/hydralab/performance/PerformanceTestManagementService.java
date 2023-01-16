@@ -1,6 +1,6 @@
 package com.microsoft.hydralab.performance;
 
-import com.microsoft.hydralab.ITestRun;
+import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
