@@ -77,10 +77,10 @@ public class BlobFileInfo implements Serializable {
     }
 
     public interface ParserKey {
-        String AppName = "appName";
-        String PkgName = "pkgName";
-        String Version = "version";
-        String MinSdkVersion = "minSdkVersion";
-        String TargetSdkVersion = "targetSdkVersion";
+        String APP_NAME = "appName";
+        String PKG_NAME = "pkgName";
+        String VERSION = "version";
+        String MIN_SDK_VERSION = "minSdkVersion";
+        String TARGET_SDK_VERSION = "targetSdkVersion";
     }
 }
