@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab
 
+import com.microsoft.hydralab.entity.HydraLabAPIConfig
 import com.microsoft.hydralab.utils.HydraLabClientUtils
 import org.apache.commons.lang3.StringUtils
 import org.gradle.api.Plugin
@@ -102,7 +103,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                HydraLabClientUtils.HydraLabAPIConfig apiConfig = HydraLabClientUtils.HydraLabAPIConfig.defaultAPI()
+                HydraLabAPIConfig apiConfig = new HydraLabAPIConfig()
 
                 if (project.hasProperty('hydraLabAPISchema')) {
                     apiConfig.schema = project.hydraLabAPISchema
@@ -149,6 +150,13 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('needClearData')) {
                     apiConfig.needClearData = Boolean.parseBoolean(project.needClearData)
                 }
+                if (project.hasProperty('neededPermissions')) {
+                    apiConfig.neededPermissions = project.neededPermissions.split(", +")
+                }
+                if (project.hasProperty('deviceActions')) {
+                    // add quotes back as quotes in gradle plugins will be replaced by blanks
+                    apiConfig.deviceActionsStr = project.deviceActions.replace("\\", "\"")
+                }
 
                 requiredParamCheck(runningType, appPath, testAppPath, deviceIdentifier, runTimeOutSeconds, testSuiteName, apiConfig)
 
@@ -165,7 +173,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
         }
     }
 
-    private void requiredParamCheck(String runningType, String appPath, String testAppPath, String deviceIdentifier, String runTimeOutSeconds, String testSuiteName, HydraLabClientUtils.HydraLabAPIConfig apiConfig) {
+    void requiredParamCheck(String runningType, String appPath, String testAppPath, String deviceIdentifier, String runTimeOutSeconds, String testSuiteName, HydraLabAPIConfig apiConfig) {
         if (StringUtils.isBlank(runningType)
                 || StringUtils.isBlank(appPath)
                 || StringUtils.isBlank(apiConfig.pkgName)
@@ -173,39 +181,39 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 || StringUtils.isBlank(runTimeOutSeconds)
                 || StringUtils.isBlank(apiConfig.authToken)
         ) {
-            throw new Exception('Required params not provided! Make sure the following params are all provided correctly: authToken, appPath, pkgName, runningType, deviceIdentifier, runTimeOutSeconds.')
+            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: authToken, appPath, pkgName, runningType, deviceIdentifier, runTimeOutSeconds.')
         }
 
         // running type specified params
         switch (runningType) {
             case "INSTRUMENTATION":
                 if (StringUtils.isBlank(testAppPath)) {
-                    throw new Exception('Required param testAppPath not provided!')
+                    throw new IllegalArgumentException('Required param testAppPath not provided!')
                 }
                 if (StringUtils.isBlank(apiConfig.testPkgName)) {
-                    throw new Exception('Required param testPkgName not provided!')
+                    throw new IllegalArgumentException('Required param testPkgName not provided!')
                 }
                 if (apiConfig.testScope != TestScope.PACKAGE && apiConfig.testScope != TestScope.CLASS) {
                     break
                 }
                 if (StringUtils.isBlank(testSuiteName)) {
-                    throw new Exception('Required param testSuiteName not provided!')
+                    throw new IllegalArgumentException('Required param testSuiteName not provided!')
                 }
                 break
             case "APPIUM":
                 if (StringUtils.isBlank(testAppPath)) {
-                    throw new Exception('Required param testAppPath not provided!')
+                    throw new IllegalArgumentException('Required param testAppPath not provided!')
                 }
                 if (StringUtils.isBlank(testSuiteName)) {
-                    throw new Exception('Required param testSuiteName not provided!')
+                    throw new IllegalArgumentException('Required param testSuiteName not provided!')
                 }
                 break
             case "APPIUM_CROSS":
                 if (StringUtils.isBlank(testAppPath)) {
-                    throw new Exception('Required param testAppPath not provided!')
+                    throw new IllegalArgumentException('Required param testAppPath not provided!')
                 }
                 if (StringUtils.isBlank(testSuiteName)) {
-                    throw new Exception('Required param testSuiteName not provided!')
+                    throw new IllegalArgumentException('Required param testSuiteName not provided!')
                 }
                 break
             case "SMART":
