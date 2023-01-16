@@ -1,6 +1,7 @@
 package com.microsoft.hydralab.performance;
 
 import com.microsoft.hydralab.agent.runner.ITestRun;
+import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
@@ -52,11 +53,10 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     }
 
     /**
-     * TODO
      * @return the test run object from TestRunThreadContext
      */
     private ITestRun getTestRun() {
-        return null;
+        return TestRunThreadContext.getTestRun();
     }
 
     @Override

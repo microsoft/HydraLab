@@ -57,6 +57,7 @@ public abstract class TestRunner {
 
     private void runByFutureTask(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
         FutureTask<String> futureTask = new FutureTask<>(() -> {
+            initTestRunThreadContext(testRun);
             run(deviceInfo, testTask, testRun);
             return null;
         });
@@ -72,6 +73,14 @@ public abstract class TestRunner {
             stopTest(deviceInfo);
             throw e;
         }
+    }
+
+    /**
+     * TODO Call {@link TestRunThreadContext#init(ITestRun)}
+     * This method must be called in the test run execution thread.
+     */
+    private void initTestRunThreadContext(TestRun testRun) {
+
     }
 
     private static void saveErrorSummary(TestRun testRun, Exception e) {
@@ -201,7 +210,7 @@ public abstract class TestRunner {
     }
 
     protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
-        if(!shouldInstallTestPackageAsApp()){
+        if (!shouldInstallTestPackageAsApp()) {
             return;
         }
         if (testTask.getTestAppFile() == null) {
