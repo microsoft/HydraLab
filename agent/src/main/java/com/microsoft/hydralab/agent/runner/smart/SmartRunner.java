@@ -144,16 +144,16 @@ public class SmartRunner extends TestRunner {
             String resString = smartTestUtil.runPYFunction(smartTestParam, logger);
             Assert.notEmpty(resString, "Run Smart Test Failed!");
             res = JSONObject.parseObject(resString);
-            isSuccess = res.getBoolean(Const.SmartTestConfig.successTag);
-            crashStack = res.getJSONArray(Const.SmartTestConfig.appExpTag);
+            isSuccess = res.getBoolean(Const.SmartTestConfig.SUCCESS_TAG);
+            crashStack = res.getJSONArray(Const.SmartTestConfig.APP_EXP_TAG);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            res.put(Const.SmartTestConfig.taskExpTag, e.getMessage());
+            res.put(Const.SmartTestConfig.TASK_EXP_TAG, e.getMessage());
         }
         if (!isSuccess) {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingSmartTest.setSuccess(false);
-            ongoingSmartTest.setStack(res.getString(Const.SmartTestConfig.taskExpTag));
+            ongoingSmartTest.setStack(res.getString(Const.SmartTestConfig.TASK_EXP_TAG));
             testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         } else if (crashStack != null && crashStack.size() > 0) {

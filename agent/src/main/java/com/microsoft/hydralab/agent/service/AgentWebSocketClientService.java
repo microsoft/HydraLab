@@ -91,7 +91,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                     break;
                 }
                 JSONObject deviceData = (JSONObject) message.getBody();
-                DeviceInfo device = deviceControlService.updateDeviceScope(deviceData.getString(Const.AgentConfig.serial_param), deviceData.getBoolean(Const.AgentConfig.scope_param));
+                DeviceInfo device = deviceControlService.updateDeviceScope(deviceData.getString(Const.AgentConfig.SERIAL_PARAM), deviceData.getBoolean(Const.AgentConfig.SCOPE_PARAM));
                 response = new Message();
                 response.setPath(message.getPath());
                 response.setSessionId(message.getSessionId());
@@ -122,7 +122,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                     break;
                 }
                 JSONObject data = (JSONObject) message.getBody();
-                testTaskEngineService.cancelTestTaskById(data.getString(Const.AgentConfig.task_id_param));
+                testTaskEngineService.cancelTestTaskById(data.getString(Const.AgentConfig.TASK_ID_PARAM));
                 break;
             case Const.Path.TEST_TASK_RUN:
                 try {

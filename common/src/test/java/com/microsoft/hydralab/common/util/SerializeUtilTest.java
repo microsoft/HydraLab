@@ -16,7 +16,7 @@ public class SerializeUtilTest extends BaseTest {
     public void messageToByteArr() {
         JSONObject data = new JSONObject();
         Message message = new Message();
-        data.put(Const.AgentConfig.task_id_param, UUID.randomUUID().toString());
+        data.put(Const.AgentConfig.TASK_ID_PARAM, UUID.randomUUID().toString());
         message.setPath(Const.Path.TEST_TASK_UPDATE);
         message.setBody(data);
         logger.info("Transfer json to byte: " + data);
@@ -28,7 +28,7 @@ public class SerializeUtilTest extends BaseTest {
         Assertions.assertTrue(message.getPath().equals(messageCopy.getPath()), "Transfer to message error!");
 
         JSONObject dataCopy = (JSONObject) messageCopy.getBody();
-        Assertions.assertTrue(data.getString(Const.AgentConfig.task_id_param).equals(dataCopy.getString(Const.AgentConfig.task_id_param)),
+        Assertions.assertTrue(data.getString(Const.AgentConfig.TASK_ID_PARAM).equals(dataCopy.getString(Const.AgentConfig.TASK_ID_PARAM)),
                 "Transfer to message error!");
     }
 

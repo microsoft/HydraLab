@@ -91,10 +91,8 @@ public class ADBOperateUtil {
 
     private IDevice getDeviceByInfo(DeviceInfo deviceInfo) {
         for (IDevice device : mAndroidDebugBridge.getDevices()) {
-            if (device.isOnline()) {
-                if (device.getSerialNumber().equals(deviceInfo.getSerialNum())) {
-                    return device;
-                }
+            if (device.isOnline() && device.getSerialNumber().equals(deviceInfo.getSerialNum())) {
+                return device;
             }
         }
         return null;

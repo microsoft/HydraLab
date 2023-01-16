@@ -49,7 +49,7 @@ public class EspressoRunner extends TestRunner {
             checkTestTaskCancel(testTask);
             listener.startRecording(testTask.getTimeOutSecond());
             String result = startInstrument(deviceInfo, testTask.getTestScope(), testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(), reportLogger, instrumentationResultParser, testTask.getTimeOutSecond(), testTask.getInstrumentationArgs());
-            if (Const.TaskResult.error_device_offline.equals(result)) {
+            if (Const.TaskResult.ERROR_DEVICE_OFFLINE.equals(result)) {
                 testTaskRunCallback.onDeviceOffline(testTask);
                 return;
             }
@@ -119,7 +119,7 @@ public class EspressoRunner extends TestRunner {
                 logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), LogUtils.scrubSensitiveArgs(command));
             }
             adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, receiver, testTimeOutSec);
-            return Const.TaskResult.success;
+            return Const.TaskResult.SUCCESS;
         } catch (Exception e) {
             if (logger != null) {
                 logger.error(e.getMessage(), e);

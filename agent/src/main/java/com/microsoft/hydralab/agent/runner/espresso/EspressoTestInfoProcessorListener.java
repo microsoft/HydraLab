@@ -206,7 +206,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     public void testRunFailed(String errorMessage) {
         logEnter("testRunFailed", errorMessage);
         testRun.addNewTimeTag("testRunFailed", System.currentTimeMillis() - recordingStartTimeMillis);
-        Assert.isTrue(deviceInfo.isAlive(), Const.TaskResult.error_device_offline);
+        Assert.isTrue(deviceInfo.isAlive(), Const.TaskResult.ERROR_DEVICE_OFFLINE);
         super.testRunFailed(errorMessage);
         testRun.setTestErrorMessage(errorMessage);
         if (errorMessage != null && errorMessage.toLowerCase(Locale.US).contains("process crash")) {
