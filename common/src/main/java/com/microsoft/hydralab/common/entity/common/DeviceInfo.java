@@ -3,23 +3,24 @@
 package com.microsoft.hydralab.common.entity.common;
 
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.io.File;
 import java.util.*;
+
 @Getter
 @Setter
 @ToString
 public class DeviceInfo extends MobileDevice {
-    public static final String ONLINE = DeviceManager.MobileDeviceState.ONLINE.toString();
-    public static final String OFFLINE = DeviceManager.MobileDeviceState.OFFLINE.toString();
+    public static final String ONLINE = MobileDeviceState.ONLINE.toString();
+    public static final String OFFLINE = MobileDeviceState.OFFLINE.toString();
     // modified only in Center, sync with Agent
-    public static final String TESTING = DeviceManager.MobileDeviceState.TESTING.toString();
+    public static final String TESTING = MobileDeviceState.TESTING.toString();
     // modified only in Agent, sync with Center
-    public static final String UNSTABLE = DeviceManager.MobileDeviceState.UNSTABLE.toString();
+    public static final String UNSTABLE = MobileDeviceState.UNSTABLE.toString();
     private final transient Map<Thread, String> currentCommand = new HashMap<>();
     private final transient Map<Thread, Process> currentProcess = new HashMap<>();
     private final transient Map<Thread, TestTask> currentTask = new HashMap<>();

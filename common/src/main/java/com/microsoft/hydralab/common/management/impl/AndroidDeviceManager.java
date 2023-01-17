@@ -18,7 +18,6 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import net.dongliu.apk.parser.ApkFile;
@@ -65,8 +64,7 @@ public class AndroidDeviceManager extends DeviceManager {
             if (deviceInfo == null) {
                 return;
             }
-
-            deviceStabilityMonitor.stabilityCheck(deviceInfo, device.getState(), Const.DeviceStability.BEHAVIOUR_CONNECT);
+            deviceListenerManager.onDeviceConnected(deviceInfo);
         }
 
         @Override
@@ -78,7 +76,7 @@ public class AndroidDeviceManager extends DeviceManager {
                 return;
             }
 
-            deviceStabilityMonitor.stabilityCheck(deviceInfo, device.getState(), Const.DeviceStability.BEHAVIOUR_DISCONNECT);
+            deviceListenerManager.onDeviceInactive(deviceInfo);
             appiumServerManager.quitAndroidDriver(deviceInfo, classLogger);
         }
 
@@ -102,13 +100,11 @@ public class AndroidDeviceManager extends DeviceManager {
                 return;
             }
 
-            String deviceBehaviour;
             if (device.getState() != DeviceState.ONLINE) {
-                deviceBehaviour = Const.DeviceStability.BEHAVIOUR_GO_OFFLINE;
+                deviceListenerManager.onDeviceInactive(deviceInfo);
             } else {
-                deviceBehaviour = Const.DeviceStability.BEHAVIOUR_GO_ONLINE;
+                deviceListenerManager.onDeviceConnected(deviceInfo);
             }
-            deviceStabilityMonitor.stabilityCheck(deviceInfo, device.getState(), deviceBehaviour);
         }
     };
 
@@ -123,8 +119,7 @@ public class AndroidDeviceManager extends DeviceManager {
     @Override
     public void init() throws Exception {
         adbOperateUtil.init(mListener);
-        PhoneAppScreenRecorder.copyAPK(testBaseDir);
-        //SmartTestUtil.copyPYFile(testBaseDir);
+        PhoneAppScreenRecorder.copyAPK(preAppDir);
     }
 
     @Override

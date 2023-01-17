@@ -3,22 +3,19 @@
 package com.microsoft.hydralab.agent.config;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.AgentType;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
+import com.microsoft.hydralab.common.management.listener.DeviceListenerManager;
+import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.micrometer.core.instrument.MeterRegistry;
 import okhttp3.OkHttpClient;
@@ -83,7 +80,8 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceManager initDeviceManager(BlobStorageClient deviceLabBlobClient, ADBOperateUtil adbOperateUtil, AppiumServerManager appiumServerManager) {
+    public DeviceManager initDeviceManager(BlobStorageClient deviceLabBlobClient, ADBOperateUtil adbOperateUtil
+            , AppiumServerManager appiumServerManager, DeviceListenerManager deviceListenerManager) {
 
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
@@ -101,6 +99,14 @@ public class AppConfiguration {
             }
         }
         deviceManager.setTestBaseDir(testBaseDir);
+        File preAppDir = new File(appOptions.getPreAppStorageLocation());
+        if (!preAppDir.exists()) {
+            if (!preAppDir.mkdirs()) {
+                throw new RuntimeException("adbDeviceManager dir.mkdirs() failed: " + preAppDir);
+            }
+        }
+        deviceManager.setPreAppDir(preAppDir);
+        deviceManager.setDeviceListenerManager(deviceListenerManager);
         deviceManager.setTestBaseDirUrlMapping(AppOptions.TEST_CASE_RESULT_STORAGE_MAPPING_REL_PATH);
         File deviceLogBaseDir = new File(appOptions.getDeviceLogStorageLocation());
         if (!deviceLogBaseDir.exists()) {
@@ -158,7 +164,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceStabilityMonitor deviceStabilityMonitor(AgentWebSocketClientService agentWebSocketClientService, DeviceManager deviceManager, MeterRegistry meterRegistry) {
+    public DeviceStabilityMonitor deviceStabilityMonitor(DeviceManager deviceManager, MeterRegistry meterRegistry) {
         DeviceStabilityMonitor deviceStabilityMonitor = new DeviceStabilityMonitor();
 
         deviceStabilityMonitor.setDeviceStateChangeThreshold(deviceStateChangeThreshold);
@@ -166,34 +172,6 @@ public class AppConfiguration {
         deviceStabilityMonitor.setDeviceStateChangeRecoveryTime(deviceStateChangeRecoveryTime);
         deviceStabilityMonitor.setDeviceManager(deviceManager);
         deviceStabilityMonitor.setMeterRegistry(meterRegistry);
-
-        deviceStabilityMonitor.setMonitor(new DeviceManager.DeviceStatusMonitor() {
-            @Override
-            public void onDeviceInactive(DeviceInfo deviceInfo) {
-                //send message to master to update device status
-                JSONObject data = new JSONObject();
-                data.put(Const.AgentConfig.SERIAL_PARAM, deviceInfo.getSerialNum());
-                if (DeviceInfo.UNSTABLE.equals(deviceInfo.getStatus())) {
-                    data.put(Const.AgentConfig.STATUS_PARAM, deviceInfo.getStatus());
-                } else {
-                    data.put(Const.AgentConfig.STATUS_PARAM, DeviceInfo.OFFLINE);
-                }
-                agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
-            }
-
-            @Override
-            public void onDeviceConnected(DeviceInfo deviceInfo) {
-                //send message to master to update device status
-                JSONObject data = new JSONObject();
-                data.put(Const.AgentConfig.SERIAL_PARAM, deviceInfo.getSerialNum());
-                if (DeviceInfo.UNSTABLE.equals(deviceInfo.getStatus())) {
-                    data.put(Const.AgentConfig.STATUS_PARAM, deviceInfo.getStatus());
-                } else {
-                    data.put(Const.AgentConfig.STATUS_PARAM, DeviceInfo.ONLINE);
-                }
-                agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
-            }
-        });
 
         return deviceStabilityMonitor;
     }

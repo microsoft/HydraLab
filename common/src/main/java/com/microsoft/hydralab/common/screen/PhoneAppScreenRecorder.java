@@ -3,11 +3,11 @@
 package com.microsoft.hydralab.common.screen;
 
 import com.android.ddmlib.InstallException;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.io.FileUtils;
@@ -20,7 +20,6 @@ import java.util.Objects;
 
 public class PhoneAppScreenRecorder implements ScreenRecorder {
     public static final String recordPackageName = "com.microsoft.hydralab.android.client";
-    static boolean needInstall = true;
     private static File recordApk;
     protected final File baseFolder;
     protected final Logger logger;
@@ -41,10 +40,10 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         this.logger = logger;
     }
 
-    public static void copyAPK(File testBaseDir) {
+    public static void copyAPK(File preAppDir) {
         // copy apk
         String name = "record_release.apk";
-        recordApk = new File(testBaseDir, name);
+        recordApk = new File(preAppDir, name);
         if (recordApk.exists()) {
             recordApk.delete();
         }
@@ -57,7 +56,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
 
     @Override
     public void setupDevice() {
-        if (needInstall || !deviceManager.isAppInstalled(deviceInfo, recordPackageName, logger)) {
+        if (!deviceManager.isAppInstalled(deviceInfo, recordPackageName, logger)) {
             try {
                 deviceManager.wakeUpDevice(deviceInfo, logger);
                 deviceManager.uninstallApp(deviceInfo, recordPackageName, logger);
@@ -67,7 +66,6 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
                 deviceManager.grantAllPackageNeededPermissions(deviceInfo, recordApk, recordPackageName, false, logger);
                 deviceManager.grantPermission(deviceInfo, recordPackageName, "android.permission.FOREGROUND_SERVICE", logger);
                 deviceManager.addToBatteryWhiteList(deviceInfo, recordPackageName, logger);
-                needInstall = false;
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
