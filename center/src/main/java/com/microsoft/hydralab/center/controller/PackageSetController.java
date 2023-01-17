@@ -112,9 +112,9 @@ public class PackageSetController {
             //Upload app file
             appBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityFileRelation.EntityType.APP_FILE_SET, appBlobFile, tempAppFile, logger);
             JSONObject appFileParser = appBlobFile.getFileParser();
-            testFileSet.setAppName(appFileParser.getString(ParserKey.AppName));
-            testFileSet.setPackageName(appFileParser.getString(ParserKey.PkgName));
-            testFileSet.setVersion(appFileParser.getString(ParserKey.Version));
+            testFileSet.setAppName(appFileParser.getString(ParserKey.APP_NAME));
+            testFileSet.setPackageName(appFileParser.getString(ParserKey.PKG_NAME));
+            testFileSet.setVersion(appFileParser.getString(ParserKey.VERSION));
             testFileSet.getAttachments().add(appBlobFile);
 
             //Save test app file to server if exist

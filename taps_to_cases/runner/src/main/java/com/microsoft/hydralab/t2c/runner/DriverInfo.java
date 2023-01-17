@@ -3,10 +3,10 @@
 package com.microsoft.hydralab.t2c.runner;
 
 public class DriverInfo {
-    private String id;
-    private String platform;
-    private String launcherApp;
-    private String initURL;
+    private final String id;
+    private final String platform;
+    private final String launcherApp;
+    private final String initURL;
 
     public DriverInfo(String id, String platform, String launcherApp, String initURL){
         this.id = id;
