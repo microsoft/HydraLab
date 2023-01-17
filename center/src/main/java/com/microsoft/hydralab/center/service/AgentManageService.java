@@ -4,7 +4,6 @@ package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.SecretGenerator;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
@@ -14,6 +13,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -127,5 +129,37 @@ public class AgentManageService {
          agents.forEach(agent -> agent.setTeamName(teamName));
 
          agentUserRepository.saveAll(agents);
+    }
+
+    public File generateAgentConfigFile(String agentId) {
+        AgentUser agentUser = getAgent(agentId);
+        if (agentUser != null) {
+            try {
+                File agentConfigFile = File.createTempFile(
+                        "application",
+                        ".yml",
+                        new File(".\\"));
+
+                FileWriter fileWriter = new FileWriter(agentConfigFile.getAbsolutePath());
+                fileWriter.write("app:\n" +
+                        "  # register to Hydra Lab Center\n" +
+                        "  registry:\n" +
+                        "    # The server hostname:port of Hydra Lab Center. If nginx enabled, switch to port of nginx\n" +
+                        "    server: 'localhost:9886'\n" +
+                        "    # The Agent info registered in Hydra Lab Center, for instance if it's running on localhost, the URL would be: http://localhost:9886/portal/index.html#/auth\n" +
+                        "    name: " + agentUser.getName() + "\n" +
+                        "    id: " + agentUser.getId() + "\n" +
+                        "    secret: " + agentUser.getSecret() + "\n" +
+                        "    # Agent Type {1 : 1*WINDOWS + n*ANDROIDS , 2 : 1*WINDOWS+1*ANDROID , 3 : iOS}\n" +
+                        "    agent-type: 1");
+                fileWriter.flush();
+                fileWriter.close();
+
+                return agentConfigFile;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 }
