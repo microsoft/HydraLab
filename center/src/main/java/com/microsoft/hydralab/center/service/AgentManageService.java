@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
+import com.microsoft.hydralab.center.util.CenterConstant;
 import com.microsoft.hydralab.center.util.SecretGenerator;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.center.SysUser;
@@ -138,7 +139,7 @@ public class AgentManageService {
                 File agentConfigFile = File.createTempFile(
                         "application",
                         ".yml",
-                        new File(".\\"));
+                        new File(CenterConstant.CENTER_TEMP_FILE_DIR));
 
                 FileWriter fileWriter = new FileWriter(agentConfigFile.getAbsolutePath());
                 fileWriter.write("app:\n" +
