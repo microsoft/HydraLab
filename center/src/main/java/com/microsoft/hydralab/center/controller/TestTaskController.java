@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 
 @RestController
@@ -84,7 +85,7 @@ public class TestTaskController {
                 } else {
                     TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
                     testTask.setTestDevicesCount(result.getString(Const.Param.TEST_DEVICE_SN).split(",").length);
-                    testDataService.saveTestTaskData(testTask, false);
+                    testDataService.saveTestTaskData(testTask);
                 }
             } else {
                 testTaskService.addTask(testTaskSpec);
@@ -143,26 +144,36 @@ public class TestTaskController {
     }
 
     /**
-     * Authenticated USER:
-     * 1) users with ROLE SUPER_ADMIN/ADMIN,
-     * 2) members of the TEAM that TestTask is in
+     * Authenticated USER: all
+     * Data access:
+     * 1) For users with ROLE SUPER_ADMIN/ADMIN, return all data.
+     * 2) For the rest users, return data that is in the user's TEAMs
      */
-    @GetMapping(value = {"/api/test/task/running"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<TestTask>> getRunningTaskList(@CurrentSecurityContext SysUser requestor) {
+    @GetMapping(value = {"/api/test/task/queue"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<List<TestTaskQueuedInfo>> getTaskQueue(@CurrentSecurityContext SysUser requestor) {
         try {
             if (requestor == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
-
-            List<TestTask> res;
-            // filter all TestFileSets in TEAMs that user is in
-            if (sysUserService.checkUserAdmin(requestor)) {
-                res = testDataService.getRunningTestTaskDetailsByTeam(null);
-            } else {
-                res = testDataService.getRunningTestTaskDetailsByTeam(requestor.getTeamAdminMap().keySet());
+            boolean isAdmin = sysUserService.checkUserAdmin(requestor);
+            List<TestTaskQueuedInfo> result = new ArrayList<>();
+            Queue<TestTaskSpec> taskQueueCopy = testTaskService.getTestQueueCopy();
+            int index = 0;
+            while (!taskQueueCopy.isEmpty()) {
+                index++;
+                TestTaskSpec temp = taskQueueCopy.poll();
+                if (!isAdmin && !requestor.getTeamAdminMap().keySet().contains(temp.teamId)) {
+                    continue;
+                }
+                TestTaskQueuedInfo taskQueuedInfo = new TestTaskQueuedInfo();
+                int[] queuedInfo = new int[]{
+                        index, temp.retryTime
+                };
+                taskQueuedInfo.setQueuedInfo(queuedInfo);
+                taskQueuedInfo.setTestTaskSpec(temp);
+                result.add(taskQueuedInfo);
             }
-
-            return Result.ok(res);
+            return Result.ok(result);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
@@ -248,7 +259,8 @@ public class TestTaskController {
      */
     @GetMapping(value = {"/api/test/task/cancel/{testId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<Object> cancelTask(@CurrentSecurityContext SysUser requestor,
-                                     @PathVariable("testId") String testId) {
+                                     @PathVariable("testId") String testId,
+                                     @RequestParam("reason") String reason) {
         try {
             if (requestor == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
@@ -273,7 +285,7 @@ public class TestTaskController {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
                 }
 
-                deviceAgentManagementService.cancelTestTaskById(testId, true);
+                deviceAgentManagementService.cancelTestTaskById(testId, reason);
             }
             if (!LogUtils.isLegalStr(testId, Const.RegexString.UUID, false)) {
                 logger.warn("test {} is canceled", testId);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression

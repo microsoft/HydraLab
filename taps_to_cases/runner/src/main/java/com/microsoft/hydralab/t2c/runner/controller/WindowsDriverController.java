@@ -3,10 +3,17 @@
 package com.microsoft.hydralab.t2c.runner.controller;
 
 import io.appium.java_client.windows.WindowsDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
 import org.slf4j.Logger;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 
@@ -42,5 +49,23 @@ public class WindowsDriverController extends BaseDriverController {
         tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
         tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         windowsDriver.perform(Arrays.asList(tap));
+    }
+
+    @Override
+    public void setClipboard(String text) {
+        StringSelection selection = new StringSelection(text);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection, null);
+    }
+
+    @Override
+    public void paste(WebElement webElement) {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        try {
+            String text = (String) clipboard.getData(DataFlavor.stringFlavor);
+            input(webElement, text);
+        } catch (UnsupportedFlavorException | IOException e) {
+            throw new IllegalStateException("Could not get clipboard text on Windows", e);
+        }
     }
 }

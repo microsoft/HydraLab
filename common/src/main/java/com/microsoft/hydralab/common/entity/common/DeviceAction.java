@@ -4,6 +4,7 @@ package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * @author zhoule
  */
 @Data
-public class DeviceAction {
+public class DeviceAction implements Serializable {
     private String deviceType;
     private String method;
     private List<String> args = new ArrayList<>();

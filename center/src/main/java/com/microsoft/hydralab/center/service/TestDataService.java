@@ -8,7 +8,7 @@ import com.microsoft.hydralab.common.entity.center.StabilityData;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
-import com.microsoft.hydralab.common.repository.DeviceTestResultRepository;
+import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
 import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -16,13 +16,16 @@ import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
@@ -33,19 +36,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
+@CacheConfig(cacheNames = "taskCache")
 public class TestDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDataService.class);
     private final Sort sortByStartMillis = Sort.by(Sort.Direction.DESC, "startTimeMillis");
     private final Sort sortByStartDate = Sort.by(Sort.Direction.DESC, "startDate");
+    @Lazy
+    @Resource
+    private TestDataService testDataServiceCache;
     @Resource
     TestTaskRepository testTaskRepository;
     @Resource
     AndroidTestUnitRepository androidTestUnitRepository;
     @Resource
-    DeviceTestResultRepository deviceTestResultRepository;
+    TestRunRepository testRunRepository;
     @Resource
     KeyValueRepository keyValueRepository;
     @Resource
@@ -63,7 +69,7 @@ public class TestDataService {
         List<AndroidTestUnit> testUnits = androidTestUnitRepository.findBySuccess(false, PageRequest.of(page, size, sortByStartMillis)).getContent();
 
         for (AndroidTestUnit testUnit : testUnits) {
-            Optional<DeviceTestTask> deviceTestTask = deviceTestResultRepository.findById(testUnit.getDeviceTestResultId());
+            Optional<TestRun> deviceTestTask = testRunRepository.findById(testUnit.getDeviceTestResultId());
             deviceTestTask.ifPresent(testUnit::setDeviceTestTask);
         }
 
@@ -75,25 +81,21 @@ public class TestDataService {
         return testUnits;
     }
 
+    @Cacheable(key = "#testId")
     public TestTask getTestTaskDetail(String testId) {
-        TestTask testTask = keyValueRepository.getTestTaskMem(testId);
-        if (testTask != null) {
-            return testTask;
-        }
-
         Optional<TestTask> taskOpt = testTaskRepository.findById(testId);
         if (taskOpt.isEmpty()) {
             return null;
         }
-        testTask = taskOpt.get();
-        List<DeviceTestTask> byTestTaskId = deviceTestResultRepository.findByTestTaskId(testId);
+        TestTask testTask = taskOpt.get();
+        List<TestRun> byTestTaskId = testRunRepository.findByTestTaskId(testId);
 
         if (byTestTaskId == null || byTestTaskId.isEmpty()) {
             return testTask;
         }
 
         testTask.getDeviceTestResults().addAll(byTestTaskId);
-        for (DeviceTestTask deviceTestResult : byTestTaskId) {
+        for (TestRun deviceTestResult : byTestTaskId) {
             List<AndroidTestUnit> byDeviceTestResultId = androidTestUnitRepository.findByDeviceTestResultId(deviceTestResult.getId());
             deviceTestResult.getTestUnitList().addAll(byDeviceTestResultId);
             deviceTestResult.setAttachments(attachmentService.getAttachments(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT));
@@ -103,23 +105,6 @@ public class TestDataService {
 
     public List<TestTask> getTasksByTeamId(String teamId) {
         return testTaskRepository.findAllByTeamId(teamId);
-    }
-
-    public List<TestTask> getTasksMemByTeamId(String teamId) {
-        return keyValueRepository.getTestTasksMemByTeamId(teamId);
-    }
-
-    public List<TestTask> getRunningTestTaskDetailsByTeam(Set<String> teamIds) {
-        List<TestTask> testTasks = keyValueRepository.getRunningTestTasksMem();
-
-        if (!CollectionUtils.isEmpty(teamIds)) {
-            testTasks = testTasks.stream().filter(task -> teamIds.contains(task.getTeamId())).collect(Collectors.toList());
-        }
-
-        if (testTasks.isEmpty()) {
-            return null;
-        }
-        return testTasks;
     }
 
     public void saveAllTestTasks(List<TestTask> testTasks) {
@@ -153,23 +138,20 @@ public class TestDataService {
         return result;
     }
 
-    public Set<String> cancelTaskById(String taskId, boolean isSaveDB) {
-        TestTask testTaskMem = keyValueRepository.getTestTaskMem(taskId);
-        if (isSaveDB) {
-            testTaskMem.setStatus(TestTask.TestStatus.CANCELED);
-            keyValueRepository.saveTestTask(testTaskMem);
-            saveTestTaskData(testTaskMem, true);
-        } else {
-            keyValueRepository.deleteTestTaskById(taskId);
-        }
-        return testTaskMem.getAgentIds();
+    public Set<String> cancelTaskById(String taskId, String reason) {
+        TestTask oldTestTask = testDataServiceCache.getTestTaskDetail(taskId);
+        oldTestTask.setStatus(TestTask.TestStatus.CANCELED);
+        oldTestTask.setTestErrorMsg(reason);
+
+        testDataServiceCache.saveTestTaskData(oldTestTask);
+        return oldTestTask.getAgentIds();
     }
 
     public void saveTestTaskDataFromAgent(TestTask testTask, boolean persistence, String agentId) {
-        TestTask testTaskMem = keyValueRepository.getTestTaskMem(testTask.getId());
+        TestTask oldTestTask = testDataServiceCache.getTestTaskDetail(testTask.getId());
         //run by device
-        if (testTaskMem.agentIds.size() == 0) {
-            saveTestTaskData(testTask, persistence);
+        if (oldTestTask.agentIds.size() == 0) {
+            testDataServiceCache.saveTestTaskData(testTask);
             return;
         }
         //run by group
@@ -177,37 +159,32 @@ public class TestDataService {
             return;
         }
 
-        testTaskMem.getDeviceTestResults().addAll(testTask.getDeviceTestResults());
-        testTaskMem.setTotalTestCount(testTaskMem.getTotalTestCount() + testTask.getTotalTestCount());
-        testTaskMem.setTotalFailCount(testTaskMem.getTotalFailCount() + testTask.getTotalFailCount());
-        testTaskMem.setTestSuite(testTask.getTestSuite());
-        testTaskMem.agentIds.remove(agentId);
+        oldTestTask.getDeviceTestResults().addAll(testTask.getDeviceTestResults());
+        oldTestTask.setTotalTestCount(oldTestTask.getTotalTestCount() + testTask.getTotalTestCount());
+        oldTestTask.setTotalFailCount(oldTestTask.getTotalFailCount() + testTask.getTotalFailCount());
+        oldTestTask.setTestSuite(testTask.getTestSuite());
+        oldTestTask.agentIds.remove(agentId);
 
-        boolean isAllFinish = testTaskMem.agentIds.size() == 0;
+        boolean isAllFinish = oldTestTask.agentIds.size() == 0;
         if (isAllFinish) {
-            testTaskMem.setStatus(TestTask.TestStatus.FINISHED);
-            testTaskMem.setEndDate(testTask.getEndDate());
+            oldTestTask.setStatus(TestTask.TestStatus.FINISHED);
+            oldTestTask.setEndDate(testTask.getEndDate());
         }
-        saveTestTaskData(testTaskMem, isAllFinish);
+        testDataServiceCache.saveTestTaskData(oldTestTask);
     }
 
-    public void saveTestTaskData(TestTask testTask, boolean persistence) {
-        keyValueRepository.saveTestTask(testTask);
-
-        if (!persistence) {
-            return;
-        }
-
+    @CachePut(key = "#testTask.id")
+    public TestTask saveTestTaskData(TestTask testTask) {
         testTaskRepository.save(testTask);
-        List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
+        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
         if (deviceTestResults.isEmpty()) {
-            return;
+            return testTask;
         }
 
-        deviceTestResultRepository.saveAll(deviceTestResults);
+        testRunRepository.saveAll(deviceTestResults);
 
         List<AndroidTestUnit> list = new ArrayList<>();
-        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+        for (TestRun deviceTestResult : deviceTestResults) {
             attachmentService.saveAttachments(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT, deviceTestResult.getAttachments());
 
             List<AndroidTestUnit> testUnitList = deviceTestResult.getTestUnitList();
@@ -219,13 +196,8 @@ public class TestDataService {
                     continue;
                 }
                 LOGGER.warn("one more failed cases saved: {}", androidTestUnit.getTitle());
-                try {
-                    keyValueRepository.saveAndroidTestUnit(androidTestUnit);
-                } catch (Exception ignore) {
-
-                }
+                keyValueRepository.saveAndroidTestUnit(androidTestUnit);
             }
-
             keyValueRepository.saveDeviceTestResultResInfo(deviceTestResult);
 
             String crashStack = deviceTestResult.getCrashStack();
@@ -236,23 +208,24 @@ public class TestDataService {
         }
         androidTestUnitRepository.saveAll(list);
         LOGGER.info("All saved {}", testTask.getId());
+        return testTask;
     }
 
-    public DeviceTestTask getDeviceTestTaskWithVideoInfo(String dttId) {
-        DeviceTestTask deviceTestTask = deviceTestResultRepository.getOne(dttId);
+    public TestRun getTestRunWithVideoInfo(String dttId) {
+        TestRun testRun = testRunRepository.getOne(dttId);
         JSONArray deviceTestResInfo = keyValueRepository.getDeviceTestResInfo(dttId);
-        deviceTestTask.setVideoTimeTagArr(deviceTestResInfo);
-        deviceTestTask.setVideoBlobUrl();
-        deviceTestTask.setAttachments(attachmentService.getAttachments(dttId, EntityFileRelation.EntityType.TEST_RESULT));
-        return deviceTestTask;
+        testRun.setVideoTimeTagArr(deviceTestResInfo);
+        testRun.setVideoBlobUrl();
+        testRun.setAttachments(attachmentService.getAttachments(dttId, EntityFileRelation.EntityType.TEST_RESULT));
+        return testRun;
     }
 
-    public DeviceTestTask getDeviceTestTaskByCrashId(String crashId) {
-        return deviceTestResultRepository.findByCrashStackId(crashId).orElse(null);
+    public TestRun getTestRunByCrashId(String crashId) {
+        return testRunRepository.findByCrashStackId(crashId).orElse(null);
     }
 
     public void checkTestDataAuthorization(SysUser requestor, String testId) {
-        TestTask testTask = getTestTaskDetail(testId);
+        TestTask testTask = testDataServiceCache.getTestTaskDetail(testId);
         if (testTask == null) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "The TestTask linked doesn't exist!");
         } else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {

@@ -1,9 +1,11 @@
 package com.microsoft.hydralab.utils;
 
 import com.google.gson.*;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import okhttp3.*;
+import com.microsoft.hydralab.entity.HydraLabAPIConfig;
+import com.microsoft.hydralab.entity.AttachmentInfo;
+import com.microsoft.hydralab.entity.BlobFileInfo;
+import com.microsoft.hydralab.entity.DeviceTestResult;
+import com.microsoft.hydralab.entity.TestTask;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -13,51 +15,22 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static com.microsoft.hydralab.utils.CommonUtils.*;
 
 public class HydraLabClientUtils {
-    private static final OkHttpClient client = new OkHttpClient.Builder()
-            .readTimeout(300, TimeUnit.SECONDS)
-            .connectTimeout(300, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
-            .build();
-
+    private static HydraLabAPIClient hydraLabAPIClient = new HydraLabAPIClient();
     private static final int waitStartSec = 30;
     private static final int minWaitFinishSec = 15;
 
-    private static final Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(Date.class, new TypeAdapter<Date>() {
-                @Override
-                public void write(JsonWriter out, Date value) throws IOException {
-                    if (value == null) {
-                        out.nullValue();
-                    } else {
-                        out.value(value.getTime());
-                    }
-                }
-
-                @Override
-                public Date read(JsonReader in) throws IOException {
-                    if (in != null) {
-                        try {
-                            return new Date(in.nextLong());
-                        } catch (IllegalStateException e) {
-                            in.nextNull();
-                            return null;
-                        }
-                    } else {
-                        return null;
-                    }
-                }
-            }).create();
     private static boolean isTestRunningFailed = false;
     private static boolean isTestResultFailed = false;
+
+    public static void switchClientInstance(HydraLabAPIClient client) {
+        hydraLabAPIClient = client;
+    }
 
     public static void runTestOnDeviceWithApp(String runningType, String appPath, String testAppPath,
                                               String attachmentConfigPath,
@@ -180,7 +153,7 @@ public class HydraLabClientUtils {
             if (!attachmentConfigPath.isEmpty()) {
                 file = new File(attachmentConfigPath);
                 JsonParser parser = new JsonParser();
-                attachmentInfos =  parser.parse(new FileReader(file)).getAsJsonArray();
+                attachmentInfos = parser.parse(new FileReader(file)).getAsJsonArray();
                 printlnf("Attachment size: %d", attachmentInfos.size());
                 printlnf("Attachment information: %s", attachmentInfos.toString());
             }
@@ -190,9 +163,10 @@ public class HydraLabClientUtils {
         }
 
         if (apiConfig == null) {
-            apiConfig = HydraLabAPIConfig.defaultAPI();
+            apiConfig = new HydraLabAPIConfig();
         }
-        String testFileSetId = uploadApp(apiConfig, commitId, commitCount, commitMsg, app, testApp);
+
+        String testFileSetId = hydraLabAPIClient.uploadApp(apiConfig, commitId, commitCount, commitMsg, app, testApp);
         printlnf("##[section]Uploaded test file set id: %s", testFileSetId);
         assertNotNull(testFileSetId, "testFileSetId");
 
@@ -200,7 +174,7 @@ public class HydraLabClientUtils {
         apiConfig.pipelineLink = System.getenv("SYSTEM_TEAMFOUNDATIONSERVERURI") + System.getenv("SYSTEM_TEAMPROJECT") + "/_build/results?buildId=" + System.getenv("BUILD_BUILDID");
         printlnf("##[section]Callback pipeline link is: %s", apiConfig.pipelineLink);
 
-        for (int index = 0; index < attachmentInfos.size(); index++){
+        for (int index = 0; index < attachmentInfos.size(); index++) {
             JsonObject attachmentJson = attachmentInfos.get(index).getAsJsonObject();
             AttachmentInfo attachmentInfo = GSON.fromJson(attachmentJson, AttachmentInfo.class);
 
@@ -208,13 +182,13 @@ public class HydraLabClientUtils {
             File attachment = new File(attachmentInfo.filePath);
             assertTrue(attachment.exists(), "Attachment file " + attachmentInfo.fileName + "doesn't exist.", null);
 
-            JsonObject responseContent = addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
+            JsonObject responseContent = hydraLabAPIClient.addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
             int resultCode = responseContent.get("code").getAsInt();
 
             int waitingRetry = 10;
             while (resultCode != 200 && waitingRetry > 0) {
-                printlnf("##[warning]Attachment %s uploading failed, remaining retry times: %d\nCode: %d, message: %s", attachmentInfo.filePath, waitingRetry, resultCode, responseContent.get("message").getAsString());
-                responseContent = addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
+                printlnf("##[warning]Attachment %s uploading failed, remaining retry times: %d\nServer code: %d, message: %s", attachmentInfo.filePath, waitingRetry, resultCode, responseContent.get("message").getAsString());
+                responseContent = hydraLabAPIClient.addAttachment(apiConfig, testFileSetId, attachmentInfo, attachment);
                 resultCode = responseContent.get("code").getAsInt();
                 waitingRetry--;
             }
@@ -222,21 +196,21 @@ public class HydraLabClientUtils {
             printlnf("##[command]Attachment %s uploaded successfully", attachmentInfo.filePath);
         }
 
-        String accessKey = generateAccessKey(apiConfig, deviceIdentifier);
+        String accessKey = hydraLabAPIClient.generateAccessKey(apiConfig, deviceIdentifier);
         if (StringUtils.isEmpty(accessKey)) {
             printlnf("##[warning]Access key is empty.");
-        }
-        else {
+        } else {
             printlnf("##[command]Access key obtained.");
         }
 
-        JsonObject responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
+        JsonObject responseContent = hydraLabAPIClient.triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
         int resultCode = responseContent.get("code").getAsInt();
 
         // retry
         int waitingRetry = 20;
         while (resultCode != 200 && waitingRetry > 0) {
-            responseContent = triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
+            printlnf("##[warning]Trigger test run failed, remaining retry times: %d\nServer code: %d, message: %s", waitingRetry, resultCode, responseContent.get("message").getAsString());
+            responseContent = hydraLabAPIClient.triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
             resultCode = responseContent.get("code").getAsInt();
             waitingRetry--;
         }
@@ -256,7 +230,7 @@ public class HydraLabClientUtils {
         while (!finished) {
             if (TestTask.TestStatus.WAITING.equals(currentStatus)) {
                 if (totalWaitSecond > queueTimeoutSec) {
-                    cancelTestTask(apiConfig, testTaskId);
+                    hydraLabAPIClient.cancelTestTask(apiConfig, testTaskId, "Queue timeout!");
                     printlnf("Cancelled the task as timeout %d seconds is reached", queueTimeoutSec);
                     break;
                 }
@@ -268,7 +242,7 @@ public class HydraLabClientUtils {
                 printlnf("Get test status after running for %d seconds", totalWaitSecond);
             }
 
-            runningTest = getTestStatus(apiConfig, testTaskId);
+            runningTest = hydraLabAPIClient.getTestStatus(apiConfig, testTaskId);
             printlnf("Current running test info: %s", runningTest.toString());
             assertNotNull(runningTest, "testTask");
 
@@ -311,6 +285,7 @@ public class HydraLabClientUtils {
         if (TestTask.TestStatus.WAITING.equals(currentStatus)) {
             assertTrue(finished, "Queuing timeout after waiting for " + queueTimeoutSec + " seconds! Test id", runningTest);
         } else if (TestTask.TestStatus.RUNNING.equals(currentStatus)) {
+            hydraLabAPIClient.cancelTestTask(apiConfig, testTaskId, "Run timeout!");
             assertTrue(finished, "Running timeout after waiting for " + runTimeoutSec + " seconds! Test id", runningTest);
         }
 
@@ -339,10 +314,9 @@ public class HydraLabClientUtils {
         // add (test type + timestamp) in folder name to distinguish different test results when using the same device
         ZonedDateTime utc = ZonedDateTime.now(ZoneOffset.UTC);
         String testFolder;
-        if (StringUtils.isEmpty(tag)){
+        if (StringUtils.isEmpty(tag)) {
             testFolder = runningType + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
-        }
-        else {
+        } else {
             testFolder = runningType + "-" + tag + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
         }
 
@@ -372,7 +346,7 @@ public class HydraLabClientUtils {
             String deviceFileFolderPath = file.getAbsolutePath();
 
             if (deviceTestResult.attachments.size() != 0) {
-                String signature = getBlobSAS(apiConfig);
+                String signature = hydraLabAPIClient.getBlobSAS(apiConfig);
                 for (BlobFileInfo fileInfo : deviceTestResult.attachments) {
                     String attachmentUrl = fileInfo.blobUrl + "?" + signature;
                     String attachmentFileName = fileInfo.fileName;
@@ -380,7 +354,7 @@ public class HydraLabClientUtils {
                     printlnf("Start downloading attachment for device %s, device name: %s, file name: %s, link: %s", deviceTestResult.deviceSerialNumber, deviceTestResult.deviceName, attachmentFileName, attachmentUrl);
 
                     file = new File(deviceFileFolderPath, attachmentFileName);
-                    downloadToFile(attachmentUrl, file);
+                    hydraLabAPIClient.downloadToFile(attachmentUrl, file);
 
                     printlnf("Finish downloading attachment %s for device %s", attachmentFileName, deviceTestResult.deviceSerialNumber);
                 }
@@ -411,7 +385,7 @@ public class HydraLabClientUtils {
         printlnf("##[section]Test task report link:");
         printlnf(testReportUrl);
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
-        
+
         displayFinalTestState();
     }
 
@@ -435,47 +409,11 @@ public class HydraLabClientUtils {
     }
 
     private static void displayFinalTestState() {
-        if (isTestResultFailed){
+        if (isTestResultFailed) {
             printlnf("##[error]Final test state: fail.");
-        }
-        else {
+        } else {
             printlnf("Final test state: success.");
         }
-    }
-
-    private static void downloadToFile(String fileUrl, File file) {
-        Request req = new Request.Builder().get().url(fileUrl).build();
-        try (Response response = client.newCall(req).execute()) {
-            if (!response.isSuccessful()) {
-                return;
-            }
-            if (response.body() == null) {
-                return;
-            }
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                IOUtils.copy(response.body().byteStream(), fos);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void assertNotNull(Object notnull, String argName) {
-        if (notnull == null) {
-            throw new IllegalArgumentException(argName + " is null");
-        }
-    }
-
-    private static void assertTrue(boolean beTrue, String msg, Object data) {
-        if (!beTrue) {
-            throw new IllegalStateException(msg + (data == null ? "" : ": " + data));
-        }
-    }
-
-    private static void printlnf(String format, Object... args) {
-        ZonedDateTime utc = ZonedDateTime.now(ZoneOffset.UTC);
-        System.out.print("[" + utc.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "] ");
-        System.out.printf(format + "\n", args);
     }
 
     private static void sleepIgnoreInterrupt(int second) {
@@ -486,257 +424,6 @@ public class HydraLabClientUtils {
         }
     }
 
-    private static void checkCenterAlive(HydraLabAPIConfig apiConfig) {
-        Request req = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(apiConfig.checkCenterAliveUrl())
-                .build();
-        OkHttpClient clientToUse = client;
-        try (Response response = clientToUse.newCall(req).execute()) {
-            assertTrue(response.isSuccessful(), "check center alive", response);
-            printlnf("Center is alive, continue on requesting API...");
-        } catch (Exception e) {
-            throw new RuntimeException("check center alive fail: " + e.getMessage(), e);
-        }
-    }
-
-    private static String getBlobSAS(HydraLabAPIConfig apiConfig) {
-        Request req = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(apiConfig.getBlobSASUrl())
-                .build();
-        OkHttpClient clientToUse = client;
-        try (Response response = clientToUse.newCall(req).execute()) {
-            assertTrue(response.isSuccessful(), "Get Blob SAS", response);
-            ResponseBody body = response.body();
-
-            assertNotNull(body, response + ": Blob SAS");
-            JsonObject jsonObject = GSON.fromJson(body.string(), JsonObject.class);
-
-            int resultCode = jsonObject.get("code").getAsInt();
-            assertTrue(resultCode == 200, "Server returned code: " + resultCode, jsonObject);
-
-            return jsonObject.getAsJsonObject("content").get("signature").getAsString();
-        } catch (Exception e) {
-            throw new RuntimeException("Get Blob SAS fail: " + e.getMessage(), e);
-        }
-    }
-
-    private static String uploadApp(HydraLabAPIConfig apiConfig, String commitId, String commitCount, String commitMsg, File app, File testApp) {
-        checkCenterAlive(apiConfig);
-
-        MediaType contentType = MediaType.get("application/vnd.android.package-archive");
-        MultipartBody.Builder multipartBodyBuilder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("commitId", commitId)
-                .addFormDataPart("commitCount", commitCount)
-                .addFormDataPart("commitMessage", commitMsg)
-                .addFormDataPart("appFile", app.getName(), RequestBody.create(contentType, app));
-        if (!StringUtils.isEmpty(apiConfig.teamName)) {
-            multipartBodyBuilder.addFormDataPart("teamName", apiConfig.teamName);
-        }
-        if (testApp != null) {
-            multipartBodyBuilder.addFormDataPart("testAppFile", testApp.getName(), RequestBody.create(contentType, testApp));
-        }
-
-        Request req = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(apiConfig.getUploadUrl())
-                .post(multipartBodyBuilder.build())
-                .build();
-        OkHttpClient clientToUse = client;
-        try (Response response = clientToUse.newCall(req).execute()) {
-            assertTrue(response.isSuccessful(), "upload App", response);
-            ResponseBody body = response.body();
-
-            assertNotNull(body, response + ": upload App ResponseBody");
-            JsonObject jsonObject = GSON.fromJson(body.string(), JsonObject.class);
-
-            int resultCode = jsonObject.get("code").getAsInt();
-            assertTrue(resultCode == 200, "Server returned code: " + resultCode, jsonObject);
-
-            return jsonObject.getAsJsonObject("content").get("id").getAsString();
-        } catch (Exception e) {
-            throw new RuntimeException("upload App fail: " + e.getMessage(), e);
-        }
-    }
-
-    private static JsonObject addAttachment(HydraLabAPIConfig apiConfig, String testFileSetId, AttachmentInfo attachmentConfig, File attachment) {
-        checkCenterAlive(apiConfig);
-
-        // default text file type: text/plain
-        // default binary file type: application/octet-stream
-        // todo: check if file is readable, set corresponding type
-        MediaType contentType = MediaType.get("application/octet-stream");
-        MultipartBody.Builder multipartBodyBuilder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("fileSetId", testFileSetId)
-                .addFormDataPart("fileType", attachmentConfig.fileType)
-                .addFormDataPart("attachment", attachmentConfig.fileName, RequestBody.create(contentType, attachment));
-        if (StringUtils.isNotEmpty(attachmentConfig.loadType)) {
-            multipartBodyBuilder.addFormDataPart("loadType", attachmentConfig.loadType);
-        }
-        if (StringUtils.isNotEmpty(attachmentConfig.loadDir)) {
-            multipartBodyBuilder.addFormDataPart("loadDir", attachmentConfig.loadDir);
-        }
-
-        Request req = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(apiConfig.getAddAttachmentUrl())
-                .post(multipartBodyBuilder.build())
-                .build();
-        OkHttpClient clientToUse = client;
-        try (Response response = clientToUse.newCall(req).execute()) {
-            assertTrue(response.isSuccessful(), "Add attachments", response);
-            ResponseBody body = response.body();
-            assertNotNull(body, response + ": add attachments ResponseBody");
-
-            return GSON.fromJson(body.string(), JsonObject.class);
-        } catch (Exception e) {
-            throw new RuntimeException("Add attachments fail: " + e.getMessage(), e);
-        }
-    }
-
-    private static String generateAccessKey(HydraLabAPIConfig apiConfig, String deviceIdentifier) {
-        checkCenterAlive(apiConfig);
-
-        Request req = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(String.format(apiConfig.getGenerateAccessKeyUrl(), deviceIdentifier))
-                .get()
-                .build();
-        OkHttpClient clientToUse = client;
-        JsonObject jsonObject = null;
-        try (Response response = clientToUse.newCall(req).execute()) {
-            assertTrue(response.isSuccessful(), "generate accessKey", response);
-            ResponseBody body = response.body();
-
-            assertNotNull(body, response + ": generateAccessKey ResponseBody");
-            jsonObject = GSON.fromJson(body.string(), JsonObject.class);
-
-            int resultCode = jsonObject.get("code").getAsInt();
-            assertTrue(resultCode == 200, "Server returned code: " + resultCode, jsonObject);
-
-            return jsonObject.getAsJsonObject("content").get("key").getAsString();
-        } catch (Exception e) {
-            // TODO: no blocking for now, replace after enabling the access key usage
-            printlnf("##[warning]Request generateAccess failed: " + jsonObject.toString());
-            return "";
-//            throw new RuntimeException("generate accessKey fail: " + e.getMessage(), e);
-        }
-    }
-
-    private static JsonObject triggerTestRun(String runningType, HydraLabAPIConfig apiConfig, String fileSetId, String testSuiteName,
-                                             String deviceIdentifier, @Nullable String accessKey, int runTimeoutSec, Map<String, String> instrumentationArgs, Map<String, String> extraArgs) {
-        checkCenterAlive(apiConfig);
-
-        JsonObject jsonElement = new JsonObject();
-        jsonElement.addProperty("runningType", runningType);
-        jsonElement.addProperty("deviceIdentifier", deviceIdentifier);
-        jsonElement.addProperty("fileSetId", fileSetId);
-        jsonElement.addProperty("testSuiteClass", testSuiteName);
-        jsonElement.addProperty("testTimeOutSec", runTimeoutSec);
-        jsonElement.addProperty("pkgName", apiConfig.pkgName);
-        jsonElement.addProperty("testPkgName", apiConfig.testPkgName);
-        jsonElement.addProperty("groupTestType", apiConfig.groupTestType);
-        jsonElement.addProperty("pipelineLink", apiConfig.pipelineLink);
-        jsonElement.addProperty("frameworkType", apiConfig.frameworkType);
-        jsonElement.addProperty("maxStepCount", apiConfig.maxStepCount);
-        jsonElement.addProperty("deviceTestCount", apiConfig.deviceTestCount);
-        jsonElement.addProperty("needUninstall", apiConfig.needUninstall);
-        jsonElement.addProperty("needClearData", apiConfig.needClearData);
-        jsonElement.addProperty("testRunnerName", apiConfig.testRunnerName);
-        jsonElement.addProperty("testScope", apiConfig.testScope);
-
-        if (accessKey != null) {
-            jsonElement.addProperty("accessKey", accessKey);
-        }
-        if (instrumentationArgs != null) {
-            jsonElement.add("instrumentationArgs", GSON.toJsonTree(instrumentationArgs).getAsJsonObject());
-        }
-        if (extraArgs != null) {
-            extraArgs.forEach(jsonElement::addProperty);
-        }
-
-        String content = GSON.toJson(jsonElement);
-        printlnf("triggerTestRun api post body: %s", maskCred(content));
-        RequestBody jsonBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), GSON.toJson(jsonElement));
-
-        Request req = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(apiConfig.getRunTestUrl())
-                .post(jsonBody).build();
-        OkHttpClient clientToUse = client;
-        try (Response response = clientToUse.newCall(req).execute()) {
-            assertTrue(response.isSuccessful(), "trigger test running", response);
-            ResponseBody body = response.body();
-            assertNotNull(body, response + ": triggerTestRun ResponseBody");
-            String string = body.string();
-            printlnf("RunningTestJson: %s", maskCred(string));
-            JsonObject jsonObject = GSON.fromJson(string, JsonObject.class);
-
-            return jsonObject;
-        } catch (Exception e) {
-            throw new RuntimeException("trigger test running fail: " + e.getMessage(), e);
-        }
-    }
-
-    private static TestTask getTestStatus(HydraLabAPIConfig apiConfig, String testTaskId) {
-        checkCenterAlive(apiConfig);
-
-        Request req = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(apiConfig.getTestStatusUrl(testTaskId))
-                .build();
-        OkHttpClient clientToUse = client;
-        try (Response response = clientToUse.newCall(req).execute()) {
-            assertTrue(response.isSuccessful(), "get test status", response);
-            ResponseBody body = response.body();
-            assertNotNull(body, response + ": getTestStatus ResponseBody");
-            JsonObject jsonObject = GSON.fromJson(body.string(), JsonObject.class);
-
-            int resultCode = jsonObject.get("code").getAsInt();
-            assertTrue(resultCode == 200, "Server returned code: " + resultCode, jsonObject);
-
-            TestTask result = GSON.fromJson(jsonObject.getAsJsonObject("content"), TestTask.class);
-            if (result.id == null) {
-                result.id = testTaskId;
-            }
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException("get test status fail: " + e.getMessage(), e);
-        }
-    }
-
-    private static void cancelTestTask(HydraLabAPIConfig apiConfig, String testTaskId) {
-        checkCenterAlive(apiConfig);
-
-        Request req = new Request.Builder()
-                .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(apiConfig.getCancelTestTaskUrl(testTaskId))
-                .build();
-        OkHttpClient clientToUse = client;
-        try (Response response = clientToUse.newCall(req).execute()) {
-            assertTrue(response.isSuccessful(), "cancel test task", response);
-        } catch (Exception e) {
-            throw new RuntimeException("cancel test task fail: " + e.getMessage(), e);
-        }
-    }
-
-    private static String maskCred(String content) {
-        for (MaskSensitiveData sensitiveData : MaskSensitiveData.values()) {
-            Pattern PATTERNCARD = Pattern.compile(sensitiveData.getRegEx(), Pattern.CASE_INSENSITIVE);
-            Matcher matcher = PATTERNCARD.matcher(content);
-            if (matcher.find()) {
-                String maskedMessage = matcher.group(2);
-                if (maskedMessage.length() > 0) {
-                    content = content.replaceFirst(maskedMessage, "***");
-                }
-            }
-        }
-
-        return content;
-    }
 
     public static String getCommitCount(File commandDir, String startCommit) throws IOException {
         Process process = Runtime.getRuntime().exec(String.format("git rev-list --first-parent --right-only --count %s..HEAD", startCommit), null, commandDir.getAbsoluteFile());
@@ -762,198 +449,6 @@ public class HydraLabClientUtils {
             return IOUtils.toString(inputStream, StandardCharsets.UTF_8).trim();
         } finally {
             process.destroy();
-        }
-    }
-
-    public static class HydraLabAPIConfig {
-        public String schema = "https";
-        public String host = "";
-        public String contextPath = "";
-        public String authToken = "";
-        public boolean onlyAuthPost = true;
-        public String checkCenterVersionAPIPath = "/api/center/info";
-        public String checkCenterAliveAPIPath = "/api/center/isAlive";
-        public String getBlobSAS = "/api/package/getSAS";
-        public String uploadAPKAPIPath = "/api/package/add";
-        public String addAttachmentAPIPath = "/api/package/addAttachment";
-        public String generateAccessKeyAPIPath = "/api/deviceGroup/generate?deviceIdentifier=%s";
-        public String runTestAPIPath = "/api/test/task/run/";
-        public String testStatusAPIPath = "/api/test/task/";
-        public String cancelTestTaskAPIPath = "/api/test/task/cancel/";
-        public String testPortalTaskInfoPath = "/portal/index.html?redirectUrl=/info/task/";
-        public String testPortalTaskDeviceVideoPath = "/portal/index.html?redirectUrl=/info/videos/";
-        public String pkgName = "";
-        public String testPkgName = "";
-        public String groupTestType = "SINGLE";
-        public String pipelineLink = "";
-        public String frameworkType = "JUnit4";
-        public int maxStepCount = 100;
-        public int deviceTestCount = -1;
-        public boolean needUninstall = true;
-        public boolean needClearData = true;
-        public String teamName = "";
-        public String testRunnerName = "androidx.test.runner.AndroidJUnitRunner";
-        public String testScope = "";
-
-        public static HydraLabAPIConfig defaultAPI() {
-            return new HydraLabAPIConfig();
-        }
-
-        public String getBlobSASUrl() {
-            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, getBlobSAS);
-        }
-
-        public String checkCenterAliveUrl() {
-            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, checkCenterAliveAPIPath);
-        }
-
-        public String getUploadUrl() {
-            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, uploadAPKAPIPath);
-        }
-
-        public String getAddAttachmentUrl() {
-            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, addAttachmentAPIPath);
-        }
-
-        public String getGenerateAccessKeyUrl() {
-            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, generateAccessKeyAPIPath);
-        }
-
-        public String getRunTestUrl() {
-            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, runTestAPIPath);
-        }
-
-        public String getTestStatusUrl(String testTaskId) {
-            return String.format(Locale.US, "%s://%s%s%s%s", schema, host, contextPath, testStatusAPIPath, testTaskId);
-        }
-
-        public String getCancelTestTaskUrl(String testTaskId) {
-            return String.format(Locale.US, "%s://%s%s%s%s", schema, host, contextPath, cancelTestTaskAPIPath, testTaskId);
-        }
-
-        public String getTestReportUrl(String testTaskId) {
-            return String.format(Locale.US, "%s://%s%s%s%s", schema, host, contextPath, testPortalTaskInfoPath, testTaskId);
-        }
-
-        public String getDeviceTestVideoUrl(String id) {
-            return String.format(Locale.US, "%s://%s%s%s%s", schema, host, contextPath, testPortalTaskDeviceVideoPath, id);
-        }
-
-        @Override
-        public String toString() {
-            return "HydraLabAPIConfig Upload URL {" + getUploadUrl() + '}';
-        }
-
-        public String getTestStaticResUrl(String resPath) {
-            return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, resPath);
-        }
-    }
-
-    public static class AttachmentInfo {
-        String fileName;
-        String filePath;
-        String fileType;
-        String loadType;
-        String loadDir;
-    }
-
-    public static class TestTask {
-        public String id;
-        public List<DeviceTestResult> deviceTestResults;
-        public int testDevicesCount;
-        public Date startDate;
-        public Date endDate;
-        public int totalTestCount;
-        public int totalFailCount;
-        public String testSuite;
-        public String reportImagePath;
-        public String baseUrl;
-        public String status;
-        public String testErrorMsg;
-        public String message;
-        public int retryTime;
-
-        @Override
-        public String toString() {
-            return "TestTask{" +
-                    "id='" + id + '\'' +
-                    ", testDevicesCount=" + testDevicesCount +
-                    ", startDate=" + startDate +
-                    ", totalTestCount=" + totalTestCount +
-                    ", status='" + status + '\'' +
-                    '}';
-        }
-
-        public interface TestStatus {
-            String RUNNING = "running";
-            String FINISHED = "finished";
-            String CANCELED = "canceled";
-            String EXCEPTION = "error";
-            String WAITING = "waiting";
-        }
-    }
-
-    public static class DeviceTestResult {
-        public String id;
-        public String deviceSerialNumber;
-        public String deviceName;
-        public String instrumentReportPath;
-        public String controlLogPath;
-        public String instrumentReportBlobUrl;
-        public String testXmlReportBlobUrl;
-        public String logcatBlobUrl;
-        public String testGifBlobUrl;
-
-        public List<BlobFileInfo> attachments;
-
-        public String crashStackId;
-        public String errorInProcess;
-
-        public String crashStack;
-
-        public int totalCount;
-        public int failCount;
-        public boolean success;
-        public long testStartTimeMillis;
-        public long testEndTimeMillis;
-
-        @Override
-        public String toString() {
-            return "{" +
-                    "SN='" + deviceSerialNumber + '\'' +
-                    ", totalCase:" + totalCount +
-                    ", failCase:" + failCount +
-                    ", success:" + success +
-                    '}';
-        }
-    }
-
-    public static class BlobFileInfo {
-        public String fileId;
-        public String fileType;
-        public String fileName;
-        public String blobUrl;
-        public String blobPath;
-        public long fileLen;
-        public String md5;
-        public String loadDir;
-        public String loadType;
-        public JsonObject fileParser;
-        public Date createTime;
-        public Date updateTime;
-
-
-        public interface fileType {
-            String WINDOWS_APP = "WINAPP";
-            String COMMOM_FILE = "COMMON";
-            String AGENT_PACKAGE = "PACKAGE";
-            String APP_FILE = "APP";
-            String TEST_APP_FILE = "TEST_APP";
-        }
-
-        public interface loadType {
-            String CPOY = "COPY";
-            String UNZIP = "UNZIP";
         }
     }
 

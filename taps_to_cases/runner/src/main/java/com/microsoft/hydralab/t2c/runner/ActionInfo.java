@@ -3,27 +3,24 @@
 package com.microsoft.hydralab.t2c.runner;
 
 import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
-
-import javax.annotation.Nullable;
 import java.util.Map;
+import javax.annotation.Nullable;
+
 public class ActionInfo {
-    private Integer id;
-    private BaseElementInfo testElement;
-
-    private String actionType;
-
-    private String driverId;
+    private final Integer id;
+    private final BaseElementInfo testElement;
+    private final String actionType;
+    private final String driverId;
     private Map<String, Object> arguments;
-    private boolean isOption;
-
+    private final boolean isOptional;
 
     public ActionInfo(Integer id, @Nullable BaseElementInfo testElement, String actionType, Map<String, Object> arguments,
-                      String driverId, boolean isOption) {
+                      String driverId, boolean isOptional) {
         this.id = id;
         this.testElement = testElement;
         this.actionType = actionType;
         this.driverId = driverId;
-        this.isOption = isOption;
+        this.isOptional = isOptional;
         if (arguments != null) {
             this.arguments = arguments;
         }
@@ -49,8 +46,8 @@ public class ActionInfo {
         return arguments;
     }
 
-    public boolean isOption() {
-        return isOption;
+    public boolean isOptional() {
+        return isOptional;
     }
 }
 

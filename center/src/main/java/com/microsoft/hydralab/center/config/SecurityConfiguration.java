@@ -19,7 +19,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@Profile({"default", "dev", "release"})
+@Profile({"default", "dev", "release", "docker"})
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean

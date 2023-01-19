@@ -58,20 +58,22 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         Set<DeviceInfo> chosenDevices = chooseDevices(testTaskSpec, runner);
 
         onTaskStart(testTask);
-        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices, new DeviceTaskControlExecutor.DeviceTask() {
-            @Override
-            public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
-                runner.runTestOnDevice(testTask, deviceInfo, logger);
-                return false;
-            }
-        }, (devices) -> {
-            testTask.onFinished();
-            if (!testTask.isCanceled()) {
-                testTask.setStatus(TestTask.TestStatus.FINISHED);
-            }
+        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices,
+                new DeviceTaskControlExecutor.DeviceTask() {
+                    @Override
+                    public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
+                        runner.runTestOnDevice(testTask, deviceInfo, logger);
+                        return false;
+                    }
+                },
+                () -> {
+                    testTask.onFinished();
+                    if (!testTask.isCanceled()) {
+                        testTask.setStatus(TestTask.TestStatus.FINISHED);
+                    }
 
-            onTaskComplete(testTask);
-        });
+                    onTaskComplete(testTask);
+                });
 
         if (deviceTaskControl == null) {
             testTask.setTestDevicesCount(0);
@@ -103,7 +105,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         Set<DeviceInfo> allActiveConnectedDevice = deviceManager.getDeviceList(log);
         log.info("Choosing devices from {}", allActiveConnectedDevice.size());
 
-        if (identifier.startsWith(Const.DeviceGroup.groupPre)) {
+        if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
             List<String> devices = Arrays.asList(testTaskSpec.groupDevices.split(","));
             return allActiveConnectedDevice.stream()
                     .filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum()))
@@ -168,15 +170,15 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
         log.info("test task {} is completed, start to save info", testTask.getId());
 
-        testDataService.saveTestTaskData(testTask, true);
+        testDataService.saveTestTaskData(testTask);
         runningTestTask.remove(testTask.getId());
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, DeviceTestTask result) {
+    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result) {
         log.info("onOneDeviceComplete: {}", deviceControl.getSerialNum());
         deviceControl.finishTask();
-        File deviceTestResultFolder = result.getDeviceTestResultFolder();
+        File deviceTestResultFolder = result.getResultFolder();
 
         File[] files = deviceTestResultFolder.listFiles();
         List<BlobFileInfo> attachments = new ArrayList<>();
@@ -207,7 +209,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         return attachmentService.addFileInfo(blobFileInfo, file, EntityFileRelation.EntityType.TEST_RESULT, logger);
     }
 
-    private void processAndSaveDeviceTestResultBlobUrl(DeviceTestTask result) {
+    private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
         Assert.isTrue(result.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
         String deviceTestResultBlobUrl = result.getAttachments().get(0).getBlobUrl();
         String fileName = result.getAttachments().get(0).getFileName();

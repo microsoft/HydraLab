@@ -8,7 +8,7 @@ import cn.hutool.core.lang.Assert;
 import com.android.ddmlib.testrunner.TestIdentifier;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceTestTask;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     private final DeviceInfo deviceInfo;
-    private final DeviceTestTask deviceTestResult;
+    private final TestRun testRun;
     private final LogCollector adbLogcatCollector;
     private final ScreenRecorder adbDeviceScreenRecorder;
     private final Logger logger;
@@ -45,16 +45,16 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private int pid;
     private int addedFrameCount;
 
-    public EspressoTestInfoProcessorListener(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, DeviceTestTask deviceTestResult, String pkgName) {
+    public EspressoTestInfoProcessorListener(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, TestRun testRun, String pkgName) {
         this.deviceManager = deviceManager;
         this.adbOperateUtil = adbOperateUtil;
         this.deviceInfo = deviceInfo;
-        this.deviceTestResult = deviceTestResult;
-        this.logger = deviceTestResult.getLogger();
+        this.testRun = testRun;
+        this.logger = testRun.getLogger();
         this.pkgName = pkgName;
-        adbLogcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, deviceTestResult, logger);
-        adbDeviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResult.getDeviceTestResultFolder(), logger);
-        setReportDir(deviceTestResult.getDeviceTestResultFolder());
+        adbLogcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
+        adbDeviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
+        setReportDir(testRun.getResultFolder());
         try {
             setHostName(InetAddress.getLocalHost().getHostName());
         } catch (UnknownHostException ex) {
@@ -69,23 +69,23 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     public void startRecording(int maxTime) {
         logger.info("Start adb logcat collection");
         String logcatFilePath = adbLogcatCollector.start();
-        deviceTestResult.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
         logger.info("Start record screen");
         adbDeviceScreenRecorder.setupDevice();
         adbDeviceScreenRecorder.startRecord(maxTime <= 0 ? 30 * 60 : maxTime);
         recordingStartTimeMillis = System.currentTimeMillis() + adbDeviceScreenRecorder.getPreSleepSeconds() * 1000L;
         final String initializing = "Initializing";
         deviceInfo.setRunningTestName(initializing);
-        deviceTestResult.addNewTimeTag(initializing, 0);
+        testRun.addNewTimeTag(initializing, 0);
     }
 
     @Override
     public void testRunStarted(String runName, int numTests) {
         logEnter("testRunStarted", runName, numTests);
         this.numTests = numTests;
-        deviceTestResult.setTotalCount(numTests);
-        deviceTestResult.setTestStartTimeMillis(System.currentTimeMillis());
-        deviceTestResult.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.setTotalCount(numTests);
+        testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
         super.testRunStarted(runName, numTests);
         logEnter(runName, numTests);
@@ -101,7 +101,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             exception.printStackTrace();
         }
         logger.info("Start gif frames collection");
-        gifFile = new File(deviceTestResult.getDeviceTestResultFolder(), runName + ".gif");
+        gifFile = new File(testRun.getResultFolder(), runName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
@@ -136,13 +136,13 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         }
         ongoingTestUnit.setTestedClass(test.getClassName());
 
-        deviceTestResult.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingTestUnit.getTitle());
 
-        ongoingTestUnit.setDeviceTestResultId(deviceTestResult.getId());
-        ongoingTestUnit.setTestTaskId(deviceTestResult.getTestTaskId());
+        ongoingTestUnit.setDeviceTestResultId(testRun.getId());
+        ongoingTestUnit.setTestTaskId(testRun.getTestTaskId());
 
-        deviceTestResult.addNewTestUnit(ongoingTestUnit);
+        testRun.addNewTestUnit(ongoingTestUnit);
 
         deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
             if (imagePNGFile == null) {
@@ -166,8 +166,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         super.testFailed(test, trace);
         ongoingTestUnit.setStack(trace);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
-        deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceTestResult.oneMoreFailure();
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.oneMoreFailure();
     }
 
     @Override
@@ -175,7 +175,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         logEnter("testAssumptionFailure", test, trace);
         super.testAssumptionFailure(test, trace);
         ongoingTestUnit.setStack(trace);
-        deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail", System.currentTimeMillis() - recordingStartTimeMillis);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE);
     }
 
@@ -189,7 +189,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     @Override
     public void testEnded(TestIdentifier test, Map<String, String> testMetrics) {
         logEnter("testEnded", test, testMetrics);
-        deviceTestResult.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
         super.testEnded(test, testMetrics);
         if (ongoingTestUnit.getStatusCode() == 0
                 || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE
@@ -205,13 +205,13 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     @Override
     public void testRunFailed(String errorMessage) {
         logEnter("testRunFailed", errorMessage);
-        deviceTestResult.addNewTimeTag("testRunFailed", System.currentTimeMillis() - recordingStartTimeMillis);
-        Assert.isTrue(deviceInfo.isAlive(), Const.TaskResult.error_device_offline);
+        testRun.addNewTimeTag("testRunFailed", System.currentTimeMillis() - recordingStartTimeMillis);
+        Assert.isTrue(deviceInfo.isAlive(), Const.TaskResult.ERROR_DEVICE_OFFLINE);
         super.testRunFailed(errorMessage);
-        deviceTestResult.setTestErrorMessage(errorMessage);
+        testRun.setTestErrorMessage(errorMessage);
         if (errorMessage != null && errorMessage.toLowerCase(Locale.US).contains("process crash")) {
-            if (deviceTestResult.getCrashStack() == null) {
-                deviceTestResult.setCrashStack(errorMessage);
+            if (testRun.getCrashStack() == null) {
+                testRun.setCrashStack(errorMessage);
             }
         }
         if (e.isStarted() && addedFrameCount < 2) {
@@ -228,7 +228,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     @Override
     public void testRunStopped(long elapsedTime) {
         logEnter("testRunStopped", elapsedTime);
-        deviceTestResult.addNewTimeTag("testRunStopped", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag("testRunStopped", System.currentTimeMillis() - recordingStartTimeMillis);
         super.testRunStopped(elapsedTime);
         // releaseResource();
     }
@@ -240,9 +240,9 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             if (alreadyEnd) {
                 return;
             }
-            deviceTestResult.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
             super.testRunEnded(elapsedTime, runMetrics);
-            deviceTestResult.onTestEnded();
+            testRun.onTestEnded();
             deviceInfo.setRunningTestName(null);
             releaseResource();
             alreadyEnd = true;

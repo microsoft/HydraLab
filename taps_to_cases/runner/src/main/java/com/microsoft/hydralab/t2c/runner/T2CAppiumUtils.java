@@ -51,7 +51,7 @@ public class T2CAppiumUtils {
     }
 
     public static void doAction(@NotNull BaseDriverController driver, @NotNull ActionInfo actionInfo, @NotNull Logger logger) {
-        boolean isOption = actionInfo.isOption();
+        boolean isOption = actionInfo.isOptional();
         try {
             chooseActionType(driver, actionInfo, logger);
         } catch (Exception e) {
@@ -204,6 +204,17 @@ public class T2CAppiumUtils {
                 if (url == null) {
                     throw new IllegalArgumentException("Url is not defined. Please add argument 'url' and 'id' in the json. actionId: " + actionInfo.getId());
                 }
+                break;
+            case "copy":
+                assert webElement != null;
+                driver.copy(webElement);
+                break;
+            case "paste":
+                driver.paste(webElement);
+                break;
+            case "setClipboard":
+                String clipboardText = (String) arguments.get("text");
+                driver.setClipboard(clipboardText);
                 break;
             default:
                 throw new IllegalStateException("action fail" +

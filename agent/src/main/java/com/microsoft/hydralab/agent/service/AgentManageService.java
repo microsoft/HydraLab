@@ -3,13 +3,13 @@
 package com.microsoft.hydralab.agent.service;
 
 import com.microsoft.hydralab.agent.config.AppOptions;
-import com.microsoft.hydralab.agent.runner.TestThreadPool;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class AgentManageService {
             restartAgent(updateTask.getPackageInfo().getFileName(), path);
         };
 
-        TestThreadPool.executor.execute(run);
+        ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(run);
     }
 
     private void sendMessageToCenter(Boolean isProceed, String message, String errorDesc, String path) {
@@ -63,10 +63,10 @@ public class AgentManageService {
 
         packageFileName = packageFileName == null ? "" : packageFileName;
         if (deviceManager instanceof IOSDeviceManager && !((IOSDeviceManager) deviceManager).isDeviceConnectedToWindows()) {
-            scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.restartFileMac;
+            scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.RESTART_FILE_MAC;
             restartArgs = new String[]{"sh", scriptPath, packageFileName};
         } else {
-            scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.restartFileWin;
+            scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.RESTART_FILE_WIN;
             restartArgs = new String[]{"cmd.exe", "/c", "Start", scriptPath, packageFileName};
         }
         File scriptFile = new File(scriptPath);

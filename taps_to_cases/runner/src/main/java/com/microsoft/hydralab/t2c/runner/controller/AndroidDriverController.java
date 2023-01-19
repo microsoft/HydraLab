@@ -144,4 +144,15 @@ public class AndroidDriverController extends BaseDriverController {
         }
         return elementFound;
     }
+
+    @Override
+    public void setClipboard(String text) {
+        androidDriver.setClipboardText(text);
+    }
+
+    @Override
+    public void paste(WebElement webElement) {
+        String text = androidDriver.getClipboardText();
+        input(webElement, text);
+    }
 }

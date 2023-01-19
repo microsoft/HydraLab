@@ -11,15 +11,12 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.Date;
 
 @Entity
 @Data
-public class BlobFileInfo {
+public class BlobFileInfo implements Serializable {
     @Id
     @Column(name = "file_id", nullable = false)
     private String fileId;
@@ -80,10 +77,10 @@ public class BlobFileInfo {
     }
 
     public interface ParserKey {
-        String AppName = "appName";
-        String PkgName = "pkgName";
-        String Version = "version";
-        String MinSdkVersion = "minSdkVersion";
-        String TargetSdkVersion = "targetSdkVersion";
+        String APP_NAME = "appName";
+        String PKG_NAME = "pkgName";
+        String VERSION = "version";
+        String MIN_SDK_VERSION = "minSdkVersion";
+        String TARGET_SDK_VERSION = "targetSdkVersion";
     }
 }

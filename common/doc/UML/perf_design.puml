@@ -1,0 +1,164 @@
+@startuml
+'https://plantuml.com/class-diagram'
+
+package "sdk" {
+
+    class PerformanceTestSpec {
+        -String inspector
+        -String appId
+        -String deviceId
+        -String name
+    }
+    interface PerformanceInspector {
+        void initialize(PerformanceTestSpec performanceTestSpec)
+        PerformanceInspectionResult inspect(PerformanceTestSpec performanceTestSpec)
+        PerformanceTestResult parse(List<PerformanceInspectionResult>)
+    }
+
+    interface IPerformanceInspectionService {
+        void reset(PerformanceInspection);
+        PerformanceInspectionResult inspect(PerformanceInspection);
+        void inspectWithStrategy(PerformanceInspection, InspectionStrategy);
+        List<PerformanceTestResult> parse();
+    }
+
+    class PerformanceInspectionService {
+    }
+
+    class PerformanceTestResult {
+        String category
+        Object performanceData
+        List<PerformanceInspectionResult> performanceInspectionResultList
+    }
+
+    class PerformanceInspectionResult {
+        String type;
+        File profilingRawResultFile;
+    }
+
+    PerformanceInspector -left..> PerformanceTestSpec
+    PerformanceInspector -up..> PerformanceInspectionResult
+    PerformanceInspector <---right PerformanceInspectionService
+    PerformanceInspector -up..> PerformanceTestResult
+    PerformanceTestResult -right..> PerformanceInspectionResult
+    PerformanceInspectionService -u-|> IPerformanceInspectionService
+}
+
+package "agent" {
+    abstract class TestRunner {
+    }
+}
+
+package "common" {
+    class PerformanceTestManagementService {
+
+    }
+
+    PerformanceInspector <|-- AndroidBatteryInspector
+    PerformanceInspector <|-- AndroidMemoryInfoInspector
+    PerformanceInspector <|-- AndroidMemoryDumpInspector
+    PerformanceInspector <|-- WindowsBatteryInspector
+    PerformanceInspector <|-- WindowsMemoryInspector
+
+    AndroidBatteryInspector --o PerformanceTestManagementService
+    AndroidMemoryInfoInspector --o PerformanceTestManagementService
+    AndroidMemoryDumpInspector --o PerformanceTestManagementService
+    WindowsBatteryInspector --o PerformanceTestManagementService
+    WindowsMemoryInspector --o PerformanceTestManagementService
+    PerformanceTestManagementService --|> IPerformanceInspectionService
+
+    TestRunner o-u- PerformanceTestManagementService
+}
+@enduml
+
+@startuml
+participant PerformanceManager
+participant Runner
+participant PerformanceInspectionService
+participant AndroidMemoryInfoInspector
+participant AndroidBatteryInspector
+participant WindowsBatteryInspector
+
+title Sequence 1: Regularly inspect performance metrics
+
+PerformanceManager -> PerformanceManager: new Inspectors
+activate Runner
+Runner -> PerformanceInspectionService : new PerformanceInspectionService()
+activate PerformanceInspectionService
+Runner -> PerformanceManager: get Inspectors
+PerformanceManager -> Runner: Inspectors
+Runner -> PerformanceInspectionService : add Inspectors
+Runner -> PerformanceInspectionService : startInspectPerformanceTimer(performanceTestSpec, interval)
+PerformanceInspectionService -> AndroidMemoryInfoInspector : initialize
+PerformanceInspectionService -> AndroidBatteryInspector : initialize
+PerformanceInspectionService -> WindowsBatteryInspector : initialize
+PerformanceInspectionService -> AndroidMemoryInfoInspector : inspect
+AndroidMemoryInfoInspector -> PerformanceInspectionService : PerformanceInspectionResult
+PerformanceInspectionService -> AndroidBatteryInspector : inspect
+AndroidBatteryInspector -> PerformanceInspectionService : PerformanceInspectionResult
+PerformanceInspectionService -> WindowsBatteryInspector : inspect
+WindowsBatteryInspector -> PerformanceInspectionService : PerformanceInspectionResult
+Runner -> PerformanceInspectionService : parse
+PerformanceInspectionService -> AndroidMemoryInfoInspector : parse
+AndroidMemoryInfoInspector -> PerformanceInspectionService : PerformanceTestResult
+PerformanceInspectionService -> AndroidBatteryInspector : parse
+AndroidBatteryInspector -> PerformanceInspectionService : PerformanceTestResult
+PerformanceInspectionService -> WindowsBatteryInspector : parse
+WindowsBatteryInspector -> PerformanceInspectionService : PerformanceTestResult
+PerformanceInspectionService -> Runner: List<PerformanceTestResult>
+deactivate PerformanceInspectionService
+deactivate Runner
+@enduml
+
+@startuml
+participant PerformanceManager
+participant Runner
+participant TestCase
+participant PerformanceInspectionService
+participant AndroidMemoryInfoInspector
+participant AndroidBatteryInspector
+participant WindowsBatteryInspector
+participant ThreadParam
+
+title Sequence 2: Trigger performance metrics inspection by test case
+
+PerformanceManager -> PerformanceManager: new Inspectors
+activate Runner
+Runner -> PerformanceInspectionService : new PerformanceInspectionService()
+activate PerformanceInspectionService
+Runner -> PerformanceManager: get Inspectors
+PerformanceManager -> Runner: Inspectors
+Runner -> PerformanceInspectionService : add Inspectors
+Runner -> ThreadParam: init(..., PerformanceInspectionService)
+activate ThreadParam
+Runner -> TestCase : execute
+activate TestCase
+TestCase -> ThreadParam : getPerformanceInspectionService
+ThreadParam -> TestCase : PerformanceInspectionService
+TestCase -> PerformanceInspectionService : initialize
+PerformanceInspectionService -> AndroidMemoryInfoInspector : initialize
+PerformanceInspectionService -> AndroidBatteryInspector : initialize
+PerformanceInspectionService -> WindowsBatteryInspector : initialize
+TestCase -> PerformanceInspectionService : inspect
+PerformanceInspectionService -> AndroidMemoryInfoInspector : inspect
+AndroidMemoryInfoInspector -> PerformanceInspectionService : PerformanceInspectionResult
+PerformanceInspectionService -> AndroidBatteryInspector : inspect
+AndroidBatteryInspector -> PerformanceInspectionService : PerformanceInspectionResult
+PerformanceInspectionService -> WindowsBatteryInspector : inspect
+WindowsBatteryInspector -> PerformanceInspectionService : PerformanceInspectionResult
+PerformanceInspectionService -> TestCase : List<PerformanceInspectionResult>
+TestCase -> Runner: return
+deactivate
+Runner -> PerformanceInspectionService : parse
+PerformanceInspectionService -> AndroidMemoryInfoInspector : parse
+AndroidMemoryInfoInspector -> PerformanceInspectionService : PerformanceTestResult
+PerformanceInspectionService -> AndroidBatteryInspector : parse
+AndroidBatteryInspector -> PerformanceInspectionService : PerformanceTestResult
+PerformanceInspectionService -> WindowsBatteryInspector : parse
+WindowsBatteryInspector -> PerformanceInspectionService : PerformanceTestResult
+PerformanceInspectionService -> Runner: List<PerformanceTestResult>
+deactivate PerformanceInspectionService
+Runner -> ThreadParam: clean
+deactivate ThreadParam
+deactivate Runner
+@enduml

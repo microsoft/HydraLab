@@ -3,10 +3,13 @@
 package com.microsoft.hydralab.center.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.entity.center.*;
-import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.entity.center.AgentUser;
+import com.microsoft.hydralab.common.entity.center.DeviceGroup;
+import com.microsoft.hydralab.common.entity.center.TestTaskQueuedInfo;
+import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.util.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +46,7 @@ public class TestTaskService {
     public Boolean isDeviceFree(String deviceIdentifier) {
         Set<String> relatedIdentifiers = new HashSet<>();
         relatedIdentifiers.add(deviceIdentifier);
-        if (deviceIdentifier.startsWith(Const.DeviceGroup.groupPre)) {
+        if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
             relatedIdentifiers.addAll(deviceAgentManagementService.queryDeviceByGroup(deviceIdentifier));
         } else {
             relatedIdentifiers.addAll(deviceAgentManagementService.queryGroupByDevice(deviceIdentifier));
@@ -76,7 +79,7 @@ public class TestTaskService {
                     break;
                 } else {
                     testTask.setTestDevicesCount(result.getString(Const.Param.TEST_DEVICE_SN).split(",").length);
-                    testDataService.saveTestTaskData(testTask, false);
+                    testDataService.saveTestTaskData(testTask);
                     taskQueue.poll();
                 }
             } catch (Exception e) {
@@ -84,7 +87,7 @@ public class TestTaskService {
                 //the task will be saved in memory if taskSpec is error
                 testTask.setStatus(TestTask.TestStatus.EXCEPTION);
                 testTask.setTestErrorMsg(e.getMessage());
-                testDataService.saveTestTaskData(testTask, false);
+                testDataService.saveTestTaskData(testTask);
                 taskQueue.poll();
             }
         }
@@ -93,7 +96,7 @@ public class TestTaskService {
 
     public void cancelTask(String testTaskId) {
         synchronized (taskQueue) {
-            Queue<TestTaskSpec> taskQueueCopy = new LinkedList<>(taskQueue);
+            Queue<TestTaskSpec> taskQueueCopy = getTestQueueCopy();
             TestTaskSpec tempTask = null;
             while (!taskQueueCopy.isEmpty()) {
                 TestTaskSpec temp = taskQueueCopy.poll();
@@ -108,14 +111,19 @@ public class TestTaskService {
         }
     }
 
+    public LinkedList<TestTaskSpec> getTestQueueCopy() {
+        return new LinkedList<>(taskQueue);
+    }
+
     public TestTaskQueuedInfo getTestQueuedInfo(String testTaskId) {
         TestTaskQueuedInfo taskQueuedInfo = new TestTaskQueuedInfo();
-        int[] queuedInfo = new int[2]; // [index, retry time]
+        // [index, retry time]
+        int[] queuedInfo = new int[2];
         queuedInfo[0] = -1;
         queuedInfo[1] = 0;
         taskQueuedInfo.setQueuedInfo(queuedInfo);
 
-        Queue<TestTaskSpec> taskQueueCopy = new LinkedList<>(taskQueue);
+        Queue<TestTaskSpec> taskQueueCopy = getTestQueueCopy();
         int index = 1;
         while (!taskQueueCopy.isEmpty()) {
             TestTaskSpec temp = taskQueueCopy.poll();
@@ -140,7 +148,7 @@ public class TestTaskService {
             return testTaskSpec.teamId.equals(agent.getTeamId());
         } else {
             String deviceIdentifier = testTaskSpec.deviceIdentifier;
-            if (deviceIdentifier.startsWith(Const.DeviceGroup.groupPre)) {
+            if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
                 DeviceGroup deviceGroup = deviceGroupService.getGroupByName(deviceIdentifier);
                 if (deviceGroup == null) {
                     return false;
@@ -175,10 +183,7 @@ public class TestTaskService {
     }
 
     public void updateTaskTeam(String teamId, String teamName) {
-        List<TestTask> testTasksMem = testDataService.getTasksMemByTeamId(teamId);
         List<TestTask> testTasks = testDataService.getTasksByTeamId(teamId);
-
-        testTasksMem.forEach(testTaskMem -> testTaskMem.setTeamName(teamName));
 
         testTasks.forEach(testTask -> testTask.setTeamName(teamName));
         testDataService.saveAllTestTasks(testTasks);

@@ -10,7 +10,6 @@ import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.*;
-import com.microsoft.hydralab.common.entity.center.DeviceGroup;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
@@ -216,7 +215,7 @@ public class DeviceAgentManagementService {
             case Const.Path.DEVICE_STATUS:
                 if (message.getBody() instanceof JSONObject) {
                     JSONObject data = (JSONObject) message.getBody();
-                    updateDeviceStatus(data.getString(Const.AgentConfig.serial_param), data.getString(Const.AgentConfig.status_param), data.getString(Const.AgentConfig.task_id_param));
+                    updateDeviceStatus(data.getString(Const.AgentConfig.SERIAL_PARAM), data.getString(Const.AgentConfig.STATUS_PARAM), data.getString(Const.AgentConfig.TASK_ID_PARAM));
                 }
                 break;
             case Const.Path.ACCESS_INFO:
@@ -233,8 +232,8 @@ public class DeviceAgentManagementService {
 
                     //after the task finishing, update the status of device used
                     if (isFinished) {
-                        List<DeviceTestTask> deviceTestResults = testTask.getDeviceTestResults();
-                        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+                        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
+                        for (TestRun deviceTestResult : deviceTestResults) {
                             updateDeviceStatus(deviceTestResult.getDeviceSerialNumber(), DeviceInfo.ONLINE, null);
                         }
                         //run the task saved in queue
@@ -248,15 +247,15 @@ public class DeviceAgentManagementService {
             case Const.Path.TEST_TASK_RETRY:
                 if (message.getBody() instanceof TestTask) {
                     TestTask testTask = (TestTask) message.getBody();
-                    if (testTask.getRetryTime() == Const.AgentConfig.retry_time) {
+                    if (testTask.getRetryTime() == Const.AgentConfig.RETRY_TIME) {
                         testTask.setStatus(TestTask.TestStatus.EXCEPTION);
                         testTask.setTestErrorMsg("Device offline!");
-                        testDataService.saveTestTaskData(testTask, false);
+                        testDataService.saveTestTaskData(testTask);
                     } else {
                         TestTaskSpec taskSpec = TestTask.convertToTestTaskSpec(testTask);
                         taskSpec.retryTime++;
                         testTaskService.addTask(taskSpec);
-                        cancelTestTaskById(testTask.getId(), false);
+                        cancelTestTaskById(testTask.getId(), "Retry time limit!");
                         //run the task saved in queue
                         testTaskService.runTask();
                     }
@@ -276,11 +275,11 @@ public class DeviceAgentManagementService {
         }
     }
 
-    public void cancelTestTaskById(String taskId, boolean isSaveDB) {
-        Set<String> agentIds = testDataService.cancelTaskById(taskId, isSaveDB);
+    public void cancelTestTaskById(String taskId, String reason) {
+        Set<String> agentIds = testDataService.cancelTaskById(taskId, reason);
         JSONObject data = new JSONObject();
         Message message = new Message();
-        data.put(Const.AgentConfig.task_id_param, taskId);
+        data.put(Const.AgentConfig.TASK_ID_PARAM, taskId);
         message.setPath(Const.Path.TEST_TASK_CANCEL);
         message.setBody(data);
         for (String agentId : agentIds) {
@@ -419,11 +418,10 @@ public class DeviceAgentManagementService {
 
     public Set<String> queryGroupByDevice(String deviceSerial) {
         DeviceInfo deviceInfo = deviceListMap.get(deviceSerial);
-        Set<String> groups = deviceInfo.getDeviceGroup();
-        if (groups == null) {
+        if (deviceInfo == null || deviceInfo.getDeviceGroup() == null) {
             return new HashSet<>();
         }
-        return new HashSet<>(groups);
+        return new HashSet<>(deviceInfo.getDeviceGroup());
     }
 
     //add group&device relation and check device access
@@ -494,8 +492,8 @@ public class DeviceAgentManagementService {
         Assert.notNull(agentSession.session, "agent session error");
 
         JSONObject data = new JSONObject();
-        data.put(Const.AgentConfig.serial_param, deviceSerial);
-        data.put(Const.AgentConfig.scope_param, isPrivate);
+        data.put(Const.AgentConfig.SERIAL_PARAM, deviceSerial);
+        data.put(Const.AgentConfig.SCOPE_PARAM, isPrivate);
 
         Message message = new Message();
         message.setPath(Const.Path.DEVICE_UPDATE);
@@ -661,7 +659,7 @@ public class DeviceAgentManagementService {
         } else if (TestTask.TestRunningType.T2C_JSON_TEST.equals(testTaskSpec.runningType)) {
             result = runT2CTest(testTaskSpec);
         } else {
-            if (testTaskSpec.deviceIdentifier.startsWith(Const.DeviceGroup.groupPre)) {
+            if (testTaskSpec.deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
                 result = runTestTaskByGroup(testTaskSpec);
             } else {
                 result = runTestTaskByDevice(testTaskSpec);
@@ -778,8 +776,8 @@ public class DeviceAgentManagementService {
             checkAccessInfo(testTaskSpec.deviceIdentifier, testTaskSpec.accessKey);
         }
         Map<String, List<String>> agents = new HashMap<>();
-        boolean isSingle = Const.DeviceGroup.singleType.equals(testTaskSpec.groupTestType);
-        boolean isAll = Const.DeviceGroup.allType.equals(testTaskSpec.groupTestType);
+        boolean isSingle = Const.DeviceGroup.SINGLE_TYPE.equals(testTaskSpec.groupTestType);
+        boolean isAll = Const.DeviceGroup.ALL_TYPE.equals(testTaskSpec.groupTestType);
         Message message = new Message();
         message.setPath(Const.Path.TEST_TASK_RUN);
 

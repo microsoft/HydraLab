@@ -4,6 +4,10 @@ server:
     enabled: true
     min-response-size: 102400
 spring:
+  cache:
+    type: ehcache
+    ehcache:
+      config: classpath:ehcache.xml
   application:
     name: device-network-center
   output:
@@ -14,7 +18,7 @@ spring:
       max-file-size: 1024MB
       max-request-size: 2048MB
   datasource:
-    url: jdbc:sqlite:hydra_lab_center_db.sqlite
+    url: jdbc:sqlite:${app.location}/hydra_lab_center_db.sqlite
     username: sqlite
     password: 98765432
     driver-class-name: org.sqlite.JDBC
@@ -55,7 +59,7 @@ app:
     SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
     SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
     timeUnit: ${TIME_UNIT:MINUTES}
-
+  location: ${user.dir}
 management:
   endpoints:
     web:

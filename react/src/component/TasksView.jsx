@@ -12,9 +12,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import TestReportView from '@/component/TestReportView';
 import 'bootstrap/dist/css/bootstrap.css'
-import { withStyles } from '@material-ui/core/styles';
-import _ from 'lodash';
-import { PieChart, Pie, Cell } from 'recharts';
+import {Cell, Pie, PieChart} from 'recharts';
 import moment from 'moment';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
@@ -32,15 +30,15 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 
 import Button from "@mui/material/Button";
-import { Backdrop, CircularProgress } from "@mui/material";
-import BaseView, {StyledTableCell, StyledTableRow, darkTheme} from "@/component/BaseView";
+import {Backdrop, CircularProgress} from "@mui/material";
+import BaseView, {darkTheme, StyledTableCell, StyledTableRow} from "@/component/BaseView";
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import { withRouter } from 'react-router-dom';
+import {withRouter} from 'react-router-dom';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from "@mui/material/TextField";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import {ThemeProvider} from '@mui/material/styles';
 
 const pieCOLORS = ['#00C49F', '#FF8042', '#808080'];
 const taskRowHeight = 35
@@ -83,6 +81,7 @@ class TasksView extends BaseView {
 
             displayReportTaskId: null,
             runningTasks: null,
+            queuedTasks: null,
             loading: false,
             showingType: allTag,
             showingTestType: allTag,
@@ -109,6 +108,7 @@ class TasksView extends BaseView {
     render() {
         let tasks = this.state.tasks;
         const runningTasks = this.state.runningTasks
+        const queuedTasks = this.state.queuedTasks
         const rows = []
         const heads = []
         const selectedParams = this.state.selectedParams
@@ -128,7 +128,11 @@ class TasksView extends BaseView {
                     rows.unshift(thisEleObj.getTaskRow(rt, true))
                 })
             }
-
+            if (queuedTasks) {
+                queuedTasks.forEach((rt) => {
+                    rows.unshift(thisEleObj.formatTaskSpecRow(rt))
+                })
+            }
             if (rows.length * 90 < tableBodyHeight) {
                 tableBodyHeight = rows.length * 90
             }
@@ -137,7 +141,7 @@ class TasksView extends BaseView {
                 <StyledTableCell key={'Timestamp'} align="center">
                     <ThemeProvider theme={darkTheme}>
                         <FormControl className="ml-0" fullWidth={true}>
-                            <InputLabel id="end-time-range-select-label" >End Time Range</InputLabel>
+                            <InputLabel id="end-time-range-select-label">End Time Range</InputLabel>
                             <Select
                                 labelId="end-time-range-select-label"
                                 id="end-time-range-select"
@@ -449,8 +453,35 @@ class TasksView extends BaseView {
             newSelectedParams.TriggerType = value
         }
 
-        this.setState({ selectedParams: newSelectedParams })
+        this.setState({selectedParams: newSelectedParams})
         ls.set('selectedParams', this.state.selectedParams)
+    }
+
+    formatTaskSpecRow(task) {
+        return <StyledTableRow key={task.testTaskSpec.testTaskId} id={task.testTaskSpec.testTaskId}>
+            <TableCell id={task.testTaskSpec.testTaskId} align="center">
+                <span className='badge badge-success'
+                      style={{fontSize: 16}}>Queue Position : {task.queuedInfo[0]}</span>
+            </TableCell>
+            <TableCell id={task.testTaskSpec.testTaskId} align="center">
+                {task.testTaskSpec.testSuiteClass}
+            </TableCell>
+            <TableCell id={task.testTaskSpec.testTaskId} align="center">
+                {this.getTestType(task.testTaskSpec)}
+            </TableCell>
+            <TableCell id={task.testTaskSpec.testTaskId} align="center">
+                -
+            </TableCell>
+            <TableCell id={task.testTaskSpec.testTaskId} align="center">
+                {task.testTaskSpec.type}
+            </TableCell>
+            <TableCell id={task.testTaskSpec.testTaskId} align="center">
+                <Button variant="outlined" color="warning" size='small'
+                        onClick={(e) => this.clickCancel(e, task.testTaskSpec.testTaskId)}
+                        className='badge badge-warning ml-1'>Cancel
+                </Button>
+            </TableCell>
+        </StyledTableRow>
     }
 
     getTaskRow(task, isRunning) {
@@ -458,7 +489,7 @@ class TasksView extends BaseView {
             return <StyledTableRow key={task.id} id={task.id}>
                 <TableCell id={task.id} align="center">
                     {moment(task.startDate).format('yyyy-MM-DD HH:mm:ss')} <span
-                        className='badge badge-success'>Running</span>
+                    className='badge badge-success'>Running</span>
                 </TableCell>
                 <TableCell id={task.id} align="center">
                     {task.testSuite}
@@ -473,8 +504,9 @@ class TasksView extends BaseView {
                     {task.type}
                 </TableCell>
                 <TableCell id={task.id} align="center">
-                    <Button variant="outlined" color="warning" size='small' onClick={(e) => this.clickCancel(e, task)}
-                        className='badge badge-warning ml-1'>Cancel
+                    <Button variant="outlined" color="warning" size='small'
+                            onClick={(e) => this.clickCancel(e, task.id)}
+                            className='badge badge-warning ml-1'>Cancel
                     </Button>
                 </TableCell>
             </StyledTableRow>
@@ -581,11 +613,11 @@ class TasksView extends BaseView {
         return TestType[t.runningType]
     }
 
-    clickCancel = (element, task) => {
+    clickCancel = (element, taskId) => {
         this.setState({
             loading: true
         })
-        axios.get('/api/test/task/cancel/' + task.id).then(res => {
+        axios.get('/api/test/task/cancel/' + taskId + "?reason=manually").then(res => {
             if (res.data && res.data.code === 200) {
                 console.log(res.data)
                 this.setState({
@@ -636,6 +668,11 @@ class TasksView extends BaseView {
     queryTask() {
         console.log(this.state.selectedParams)
         let queryParams = [
+            {
+                "key": "status",
+                "op": "ne",
+                "value": "running"
+            },
             {
                 "key": "runningType",
                 "op": "in",
@@ -722,19 +759,40 @@ class TasksView extends BaseView {
         this.queryTask()
 
         if (this.state.page === 1) {
-            axios.get('/api/test/task/running').then(res => {
+
+            axios.get('/api/test/task/queue').then(res => {
                 if (res.data && res.data.code === 200) {
                     if (res.data.content) {
                         this.setState({
-                            runningTasks: res.data.content,
+                            queuedTasks: res.data.content,
                             hideSkeleton: true,
-                            timeOutSecond: res.data.content.timeOutSecond
                         })
                     }
                 } else {
                     this.snackBarFail(res)
                 }
             }).catch(this.snackBarError)
+            
+            let queryParams = [
+                {
+                    "key": "status",
+                    "op": "equal",
+                    "value": "running"
+                }
+            ]
+            let postBody = {
+                'page': 0,
+                'pageSize': -1,
+                'queryParams': queryParams
+            }
+
+            this.axiosPost(`/api/test/task/list`, (content) => {
+                this.setState({
+                    runningTasks: content.content,
+                    hideSkeleton: true,
+                })
+
+            }, postBody, null, null, null)
         }
     }
 

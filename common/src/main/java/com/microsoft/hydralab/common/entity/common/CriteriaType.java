@@ -15,6 +15,7 @@ public class CriteriaType {
 
     public interface OpType {
         String Equal = "equal";
+        String NotEqual = "ne";
         String GreaterThan = "gt";
         String LessThan = "lt";
         String Like = "like";

@@ -30,13 +30,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.net.URI;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author : shbu
@@ -63,19 +60,6 @@ public class AppConfiguration {
     private String adbServerHost;
     @Value("${app.appium.host:}")
     private String appiumServerHost;
-
-    @Bean
-    public TaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(8);
-        executor.setQueueCapacity(100);
-        executor.setKeepAliveSeconds(60);
-        executor.setThreadNamePrefix("microsoft.hydra_lab.logThread-");
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        return executor;
-    }
 
     @NotNull
     private File getScreenshotDir() {
@@ -188,11 +172,11 @@ public class AppConfiguration {
             public void onDeviceInactive(DeviceInfo deviceInfo) {
                 //send message to master to update device status
                 JSONObject data = new JSONObject();
-                data.put(Const.AgentConfig.serial_param, deviceInfo.getSerialNum());
+                data.put(Const.AgentConfig.SERIAL_PARAM, deviceInfo.getSerialNum());
                 if (DeviceInfo.UNSTABLE.equals(deviceInfo.getStatus())) {
-                    data.put(Const.AgentConfig.status_param, deviceInfo.getStatus());
+                    data.put(Const.AgentConfig.STATUS_PARAM, deviceInfo.getStatus());
                 } else {
-                    data.put(Const.AgentConfig.status_param, DeviceInfo.OFFLINE);
+                    data.put(Const.AgentConfig.STATUS_PARAM, DeviceInfo.OFFLINE);
                 }
                 agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
             }
@@ -201,11 +185,11 @@ public class AppConfiguration {
             public void onDeviceConnected(DeviceInfo deviceInfo) {
                 //send message to master to update device status
                 JSONObject data = new JSONObject();
-                data.put(Const.AgentConfig.serial_param, deviceInfo.getSerialNum());
+                data.put(Const.AgentConfig.SERIAL_PARAM, deviceInfo.getSerialNum());
                 if (DeviceInfo.UNSTABLE.equals(deviceInfo.getStatus())) {
-                    data.put(Const.AgentConfig.status_param, deviceInfo.getStatus());
+                    data.put(Const.AgentConfig.STATUS_PARAM, deviceInfo.getStatus());
                 } else {
-                    data.put(Const.AgentConfig.status_param, DeviceInfo.ONLINE);
+                    data.put(Const.AgentConfig.STATUS_PARAM, DeviceInfo.ONLINE);
                 }
                 agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
             }

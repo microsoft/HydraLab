@@ -54,7 +54,7 @@ public class SysUserService {
     }
 
     public SysUser switchUserDefaultTeam(SysUser user, String defaultTeamId, String defaultTeamName) {
-        if (user.getDefaultTeamId().equals(defaultTeamId)) {
+        if (defaultTeamId.equals(user.getDefaultTeamId())) {
             return user;
         }
 

@@ -152,6 +152,9 @@ export default class AuthView extends BaseView {
                         {t.mailAddress}
                     </TableCell>
                     <TableCell id={t.id} align="center">
+                        <IconButton onClick={() => this.downloadAgentConfigFile(t.id)}>
+                            <span className="material-icons-outlined">download_for_offline</span>
+                        </IconButton>
                         <IconButton onClick={() => this.getAgentInfo(t.id)}>
                             <span className="material-icons-outlined">info</span>
                         </IconButton>
@@ -552,6 +555,46 @@ export default class AuthView extends BaseView {
                 this.snackBarFail(res)
             }
         }).catch(this.snackBarError)
+    }
+
+    downloadAgentConfigFile(agentId) {
+        axios({
+            url: `/api/agent/downloadAgentConfigFile/${agentId}`,
+            method: 'GET',
+            responseType: 'blob'
+        }).then((res) => {
+            if (res.data.type.includes('application/json')) {
+                let reader = new FileReader()
+                reader.onload = function () {
+                    let result = JSON.parse(reader.result)
+                    if (result.code !==  200) {
+                        this.setState({
+                            snackbarIsShown: true,
+                            snackbarSeverity: "error",
+                            snackbarMessage: "The file could not be downloaded"
+                        })
+                    }
+                }
+                reader.readAsText(res.data)
+            } else {
+                const href = URL.createObjectURL(res.data);
+                const link = document.createElement('a');
+                link.href = href;
+                link.setAttribute('download', 'application.yml');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(href);
+
+                if (res.data.code === 200) {
+                    this.setState({
+                        snackbarIsShown: true,
+                        snackbarSeverity: "success",
+                        snackbarMessage: "Agent config file downloaded"
+                    })
+                }
+            }
+        }).catch(this.snackBarError);
     }
 
     componentDidMount() {

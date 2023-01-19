@@ -25,11 +25,12 @@ public class SmartTestUtil {
 
     public SmartTestUtil(String location) {
         File testBaseDir = new File(location);
-        String name = Const.SmartTestConfig.zipFileName;
-        String folderName = Const.SmartTestConfig.zipFolderName;
+        String name = Const.SmartTestConfig.ZIP_FILE_NAME;
+        String folderName = Const.SmartTestConfig.ZIP_FOLDER_NAME;
 
-        folderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.zipFolderName + "/";
-        stringFolderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.stringFolderName + "/";
+        folderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.ZIP_FOLDER_NAME + "/";
+        stringFolderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.STRING_FOLDER_NAME
+            + "/";
 
         try {
             InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(name);
@@ -55,8 +56,8 @@ public class SmartTestUtil {
             e.printStackTrace();
         }
         initStringPool();
-        filePath = folderPath + Const.SmartTestConfig.pyFileName;
-        String requireFilePath = folderPath + Const.SmartTestConfig.requireFileName;
+        filePath = folderPath + Const.SmartTestConfig.PY_FILE_NAME;
+        String requireFilePath = folderPath + Const.SmartTestConfig.REQUIRE_FILE_NAME;
         String[] command = new String[]{"pip3", "install", "-r", requireFilePath};
         try {
             Process proc = Runtime.getRuntime().exec(command);
@@ -96,7 +97,7 @@ public class SmartTestUtil {
     }
 
     public JSONObject analysisRes(JSONObject data) {
-        JSONObject coverage = data.getJSONObject(Const.SmartTestConfig.coverageTag);
+        JSONObject coverage = data.getJSONObject(Const.SmartTestConfig.COVERAGE_TAG);
         JSONObject result = new JSONObject();
         Set<String> activityKeys = coverage.keySet();
         int totalActivity = activityKeys.size();
@@ -106,11 +107,11 @@ public class SmartTestUtil {
 
         for (String activityKey : activityKeys) {
             JSONObject activityInfo = coverage.getJSONObject(activityKey);
-            if (!activityInfo.getBoolean(Const.SmartTestConfig.visitTag)) {
+            if (!activityInfo.getBoolean(Const.SmartTestConfig.VISIT_TAG)) {
                 continue;
             }
             Set<String> elementKeys = activityInfo.keySet();
-            elementKeys.remove(Const.SmartTestConfig.visitTag);
+            elementKeys.remove(Const.SmartTestConfig.VISIT_TAG);
             totalElement = totalElement + elementKeys.size();
             for (String elementKey : elementKeys) {
                 if (activityInfo.getBoolean(elementKey)) {
@@ -132,7 +133,7 @@ public class SmartTestUtil {
                 throw new RuntimeException("mkdirs fail for: " + stringDir);
             }
         }
-        String[] fileNames = Const.SmartTestConfig.stringFileNames.split(",");
+        String[] fileNames = Const.SmartTestConfig.STRING_FILE_NAMES.split(",");
         for (String fileName : fileNames) {
             creatTxtFile(stringFolderPath, fileName);
         }

@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
 import java.io.File;
+import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +21,7 @@ import java.util.regex.Pattern;
 @Table(indexes = {
         @Index(name = "start_date_index", columnList = "start_date", unique = false),
         @Index(columnList = "team_id")})
-public class TestTask {
+public class TestTask implements Serializable {
     public static final String MICROSOFT_LAUNCHER_PACKAGE_NAME_KEY_PART = "microsoft.launcher";
     static final Pattern pIdMatch = Pattern.compile("\\d{3,7}");
     @Transient
@@ -77,7 +78,7 @@ public class TestTask {
     @Transient
     private transient Map<String, String> instrumentationArgs;
     @Transient
-    private List<DeviceTestTask> deviceTestResults = new ArrayList<>();
+    private List<TestRun> deviceTestResults = new ArrayList<>();
     @Transient
     private Map<String, List<DeviceAction>> deviceActions = new HashMap<>();
     private String fileSetId;
@@ -99,7 +100,6 @@ public class TestTask {
     private String testScope;
     // todo: change this to a more general name for all scopes of ESPRESSO tests.
     private String testSuite;
-
 
     public TestTask() {
     }
@@ -191,7 +191,7 @@ public class TestTask {
         return testTask;
     }
 
-    public synchronized void addTestedDeviceResult(DeviceTestTask deviceTestResult) {
+    public synchronized void addTestedDeviceResult(TestRun deviceTestResult) {
         deviceTestResults.add(deviceTestResult);
     }
 
@@ -260,7 +260,7 @@ public class TestTask {
         if (deviceTestResults.isEmpty()) {
             return;
         }
-        for (DeviceTestTask deviceTestResult : deviceTestResults) {
+        for (TestRun deviceTestResult : deviceTestResults) {
             totalTestCount += deviceTestResult.getTotalCount();
             totalFailCount += deviceTestResult.getFailCount();
         }

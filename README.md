@@ -7,13 +7,15 @@
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=microsoft.hydralab&left_color=gray&right_color=red)
-</div>
 
 ---
 
 ![HydraLabFeaturesPreview](docs/images/HydraLabFeaturesPreview.gif)
 
-[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki) | [中文(完善中)](README.zh-CN.md)
+</div>
+
+
 
 <span id="what-is"></span>
 ## What is Hydra Lab?
@@ -26,9 +28,9 @@ It enables dev team to quickly build a self-manageable and intelligent cloud tes
 
 Capabilities of Hydra Lab include:
 - Scalable test device management under the center-agent distributed design; Test task management and test result visualization.
-- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso)
-- Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform
-- Case-free test automation: Monkey test, Smart exploratory test
+- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso).
+- Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform.
+- Case-free test automation: Monkey test, Smart exploratory test.
 
 For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
 
@@ -49,39 +51,74 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 |Web (Browser)| &#10004;     | x | 
 
 <span id="quick-start"></span>
+### Quick guide on out-of-box Uber docker image
+
+Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal, open an Azure blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
+and place it in the environment variable with the name of BLOB_CONNECTION_STR.
+
+Hydra Lab offers an out-of-box experience of docker image called Uber. By providing the env variable BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
+
+**Step 1. pull Docker image from container registry**
+
+```
+docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+``` 
+
+**Step 2. run on your machine with BLOB_CONNECTION_STR**
+
+You may write the content "BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}" in an env file, and pass the path of the file to docker container:
+```
+docker run [-p 9886:9886] [--name=hydra-lab] --env-file ${YOUR_ENV_FILE_PATH} ghcr.io/microsoft/hydra-lab-uber:latest
+```
+Or simply run with the env parameter -e:
+```
+docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
+```
+
+**Step 3. visit front-end page and view your connected devices**
+
+> Url: http://localhost:9886/portal/index.html#/ (or your custom port).
+
+Enjoy starting your journey of exploration!
+
+**Note: Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)** 
+
 ### Quick guide on build and run
 
-Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal and open an Azure blob storage account, and get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string), 
-and place it in the env var with the name of BLOB_CONNECTION_STR. Then you can run the center java with the following command:
+You can also run the center java Spring Boot service (a runnable Jar) separately with the following commands:
 
-**Step 1: build and run Hydra Lab center service.**
+> The build and run process will require JDK11 | NPM | Android SDK platform-tools in position.
+
+**Step 1. build and run Hydra Lab center service.**
 
 ```bash
 # In project root, switch to react folder to build the Web front.
 cd react
 npm ci
 npm run pub
-# Get back to the project root, and build the center runnable Jar
+# Get back to the project root, and build the center runnable Jar. 
 cd ..
+# For the gradlew command, if you are on Windows please replace it with `./gradlew` or `./gradlew.bat`
 gradlew :center:bootJar
 # Run it, and then visit http://localhost:9886/portal/index.html#/
 java -jar center/build/libs/center.jar
 # Then visit http://localhost:9886/portal/index.html#/auth to generate a new agent ID and agent secret.
 ```
 
-**Step 2: build and run Hydra Lab agent service.**
+> If you encounter the error: `Error: error:0308010C:digital envelope routines::unsupported`, set the System Variable `NODE_OPTIONS` as `--openssl-legacy-provider` and then restart the terminal.
+
+**Step 2. build and run Hydra Lab agent service.**
 
 ```bash
-# In project root, copy the sample config file and update the YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID, and YOUR_REGISTERED_AGENT_SECRET.
+# In project root, copy the sample config file and update the:
+# YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID and YOUR_REGISTERED_AGENT_SECRET.
 cp agent/application-sample.yml application.yml
 # Then build agent jar and run it
 gradlew :agent:bootJar
-java -jar agent/build/libs/center.jar
+java -jar agent/build/libs/agent.jar
 ```
 
-**Step 3: visit http://localhost:9886/portal/index.html#/ and view your connected devices**
-
-Enjoy exploring it! And please refer to this section for more features: [For Hydra Lab User](#for-user)
+**Step 3. visit http://localhost:9886/portal/index.html#/ and view your connected devices**
 
 **Technical design overview:**
 
@@ -93,6 +130,8 @@ Enjoy exploring it! And please refer to this section for more features: [For Hyd
 - [Trigger a test task run in the Hydra Lab test service](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
 - [Deploy a test agent service](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
 - [Create an Appium UI Test Automation Project](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
+
+> Note: If you are a Microsoft FTE and want to onboard to the internal Hydra Lab testing service, please visit [our SharePoint site](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) to learn more about the internal service instance.
 
 <span id="for-contributor"></span>
 ### For Contributor:
