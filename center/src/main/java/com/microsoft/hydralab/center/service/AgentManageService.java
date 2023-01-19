@@ -136,6 +136,12 @@ public class AgentManageService {
         AgentUser agentUser = getAgent(agentId);
         if (agentUser != null) {
             try {
+                File tempFolder = new File(CenterConstant.CENTER_TEMP_FILE_DIR);
+                if (!tempFolder.exists()){
+                    if (!tempFolder.mkdirs()) {
+                        throw new RuntimeException("mkdirs fail for: " + tempFolder);
+                    }
+                }
                 File agentConfigFile = File.createTempFile(
                         "application",
                         ".yml",
