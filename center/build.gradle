@@ -65,17 +65,17 @@ dependencies {
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
-String npm = 'npm'
+String npmCommand = 'npm'
 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    npm = 'npm.cmd'
+    npmCommand = 'npm.cmd'
 }
 String reactDir = "${projectDir.parentFile.absolutePath}${File.separator}react"
 task installWebFront(type: Exec, group: 'build') {
     workingDir reactDir
-    commandLine npm, 'ci'
+    commandLine npmCommand, 'ci'
 }
 
 task buildWebFront(type: Exec, group: 'build', dependsOn: installWebFront) {
     workingDir reactDir
-    commandLine npm, 'run', 'pub'
+    commandLine npmCommand, 'run', 'pub'
 }
