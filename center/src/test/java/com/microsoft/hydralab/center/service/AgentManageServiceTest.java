@@ -1,11 +1,13 @@
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.common.entity.center.AgentUser;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.File;
+
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
 
 public class AgentManageServiceTest {
 
@@ -19,6 +21,8 @@ public class AgentManageServiceTest {
         agent.setSecret("Agent Secret");
         doReturn(agent).when(agentManageService).getAgent(agentId);
 
-        agentManageService.generateAgentConfigFile(agentId);
+        File file = agentManageService.generateAgentConfigFile(agentId);
+        Assertions.assertNotNull(file, "Get agent user error");
+        Assertions.assertTrue(file.length() > 0, "Write agent config file error");
     }
 }
