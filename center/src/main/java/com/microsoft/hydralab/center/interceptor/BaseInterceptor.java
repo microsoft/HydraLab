@@ -19,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
     AuthTokenService authTokenService;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException, ServletException {
         String remoteUser = request.getRemoteUser();
         String requestURI = request.getRequestURI();
         String token = null;
@@ -97,7 +98,18 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
             //redirect
             String redirectUrl = request.getParameter(Const.FontPath.REDIRECT_PARAM);
             if (StringUtils.isNotEmpty(redirectUrl) && LogUtils.isLegalStr(redirectUrl, Const.RegexString.URL, false)) {
-                response.sendRedirect(Const.FontPath.INDEX_PATH + Const.FontPath.ANCHOR + redirectUrl);// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
+                // todo: test auth for grafana and prometheus
+                if (redirectUrl.startsWith("/grafana")){
+//                    request.getRequestDispatcher(redirectUrl.replace("/grafana", "http://localhost:3000")).forward(request, response);
+//                    request.getRequestDispatcher("http://localhost:3000" + redirectUrl).forward(request, response);
+                    request.getRequestDispatcher("http://localhost:3000").forward(request, response);
+
+//                    response.sendRedirect(redirectUrl.replace("/grafana", "localhost:3000"));
+//                    response.sendRedirect("http://localhost:3000");
+                }
+                else {
+                    response.sendRedirect(Const.FontPath.INDEX_PATH + Const.FontPath.ANCHOR + redirectUrl);// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
+                }
                 return false;
             }
         }
