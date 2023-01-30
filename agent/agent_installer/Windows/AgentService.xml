@@ -1,0 +1,13 @@
+<configuration>
+<id>Hydra Lab Agent Service</id>
+<name>Hydra Lab Agent Service</name>
+<description>Hydra Lab Test Agent Service serves as the test runner and test device manager of the connected Hydra Lab center.</description>
+
+<executable>java</executable>
+<arguments>-Xms1024m -Xmx2048m -jar agent.jar</arguments>
+<startmode>Automatic</startmode>
+<logpath> {LOG_FILE_LOCATION} </logpath>
+<log mode="roll-by-time">
+<pattern>yyyyMMdd</pattern>
+</log>
+</configuration>

@@ -77,3 +77,15 @@ task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
         xml.enabled true
     }
 }
+
+task packageMacInstaller(type: Zip) {
+    from 'agent/agent_installer/MacOS/iOS'
+    archiveName 'Hydra_Agent_Installer_Mac.zip'
+    destinationDir file('build/installer')
+}
+
+task packageWindowsInstaller(type: Zip) {
+    from 'agent/agent_installer/Windows'
+    archiveName 'Hydra_Agent_Installer_Windows.zip'
+    destinationDir file('build/installer')
+}
