@@ -72,9 +72,7 @@ public class TestTaskController {
                 if (!userTeamManagementService.checkRequestorTeamRelation(requestor, testTaskSpec.teamId)) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestFileSet doesn't belong to user's Teams");
                 }
-                if (!testTaskService.checkTestTaskTeamConsistency(testTaskSpec)) {
-                    return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask is requiring deviceIdentifier that doesn't belong to user's Teams");
-                }
+                testTaskService.checkTestTaskTeamConsistency(testTaskSpec);
             }
             //if the queue is not empty, the task will be added to the queue directly
             if (testTaskService.isQueueEmpty() || testTaskService.isDeviceFree(testTaskSpec.deviceIdentifier)) {

@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,12 +139,12 @@ public class TestTaskService {
         return taskQueuedInfo;
     }
 
-    public boolean checkTestTaskTeamConsistency(TestTaskSpec testTaskSpec) {
+    public boolean checkTestTaskTeamConsistency(TestTaskSpec testTaskSpec) throws HydraLabRuntimeException {
         if (TestTask.TestRunningType.APPIUM_CROSS.equals(testTaskSpec.runningType)
                 || TestTask.TestRunningType.T2C_JSON_TEST.equals(testTaskSpec.runningType)) {
             AgentUser agent = agentManageService.getAgent(testTaskSpec.deviceIdentifier);
             if (agent == null) {
-                return false;
+                throw new HydraLabRuntimeException(400, "Didn't find AgentUser with given deviceIdentifier.");
             }
             return testTaskSpec.teamId.equals(agent.getTeamId());
         } else {
@@ -151,7 +152,7 @@ public class TestTaskService {
             if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
                 DeviceGroup deviceGroup = deviceGroupService.getGroupByName(deviceIdentifier);
                 if (deviceGroup == null) {
-                    return false;
+                    throw new HydraLabRuntimeException(400, "Didn't find DeviceGroup with given deviceIdentifier");
                 }
                 if (testTaskSpec.teamId.equals(deviceGroup.getTeamId())) {
                     return true;
@@ -164,11 +165,11 @@ public class TestTaskService {
             } else {
                 DeviceInfo device = deviceAgentManagementService.getDevice(deviceIdentifier);
                 if (device == null) {
-                    return false;
+                    throw new HydraLabRuntimeException(400, "Didn't find device with given deviceIdentifier.");
                 }
                 AgentUser agent = agentManageService.getAgent(device.getAgentId());
                 if (agent == null) {
-                    return false;
+                    throw new HydraLabRuntimeException(400, "Didn't find AgentUser with given agent id.");
                 }
                 if (testTaskSpec.teamId.equals(agent.getTeamId())) {
                     return true;
