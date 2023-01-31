@@ -66,10 +66,10 @@ docker pull ghcr.io/microsoft/hydra-lab-uber:latest
 
 **Step 2. run on your machine with BLOB_CONNECTION_STR**
 
-You may write the content `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` in an env file (e.g. env.txt), and pass the path of the file to docker container:
+You may write the content `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` in an env file (e.g. env.properties), and pass the path of the file to docker container:
 
 ```bash
-docker run --env-file env.txt -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 Or simply run with the env parameter -e:
 
