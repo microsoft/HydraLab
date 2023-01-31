@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -94,7 +95,7 @@ public class ActionExecutor {
                 try {
                     methodArgs[i + 1] = JSONObject.parseObject(actionArgs.get(i), DeviceAction.class);
                 } catch (Exception e1) {
-                    throw new HydraLabRuntimeException(500, "Convert arg failed!", e1);
+                    throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Convert arg failed!", e1);
                 }
             }
         }
