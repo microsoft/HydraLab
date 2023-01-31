@@ -7,7 +7,7 @@ Include Hydra Lab plugin dependency in your project:
 - Using the plugins DSL:
 ```
 plugins {
-  id "com.microsoft.hydralab.client-util" version "1.0.45"
+  id "com.microsoft.hydralab.client-util" version "${plugin_version}"
 }
 ```
 - Using legacy plugin application:
@@ -19,7 +19,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "com.microsoft.hydralab:gradle_plugin:1.0.45"
+    classpath "com.microsoft.hydralab:gradle_plugin:${plugin_version}"
   }
 }
 
