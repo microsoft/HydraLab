@@ -717,6 +717,11 @@ public class AndroidDeviceManager extends DeviceManager {
     }
 
     @Override
+    public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger) {
+        adbOperateUtil.execOnDevice(deviceInfo, command, new MultiLineNoCancelLoggingReceiver(logger), logger);
+    }
+
+    @Override
     public void removeFileInDevice(DeviceInfo deviceInfo, String pathOnDevice, Logger logger) {
         try {
             adbOperateUtil.execOnDevice(deviceInfo, "rm " + pathOnDevice, new MultiLineNoCancelLoggingReceiver(logger), logger);

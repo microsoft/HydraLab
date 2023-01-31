@@ -340,6 +340,11 @@ public class IOSDeviceManager extends DeviceManager {
         appiumServerManager.quitIOSDriver(deviceInfo, logger);
     }
 
+    @Override
+    public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger) {
+        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+    }
+
     private String currentMethodName() {
         return Thread.currentThread().getStackTrace()[2].getMethodName();
     }

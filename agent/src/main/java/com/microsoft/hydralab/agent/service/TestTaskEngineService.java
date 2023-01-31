@@ -1,6 +1,7 @@
 package com.microsoft.hydralab.agent.service;
 
 import com.microsoft.hydralab.agent.config.TestRunnerConfig;
+import com.microsoft.hydralab.agent.runner.CommandActionLoader;
 import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
@@ -44,6 +45,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     DeviceTaskControlExecutor deviceTaskControlExecutor;
     @Resource
     DeviceManager deviceManager;
+    @Resource
+    CommandActionLoader commandActionLoader;
     private final Map<String, TestTask> runningTestTask = new HashMap<>();
 
     public TestTask runTestTask(TestTaskSpec testTaskSpec) {
@@ -153,6 +156,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     @Override
     public void onTaskStart(TestTask testTask) {
         fileLoadUtil.loadAttachments(testTask);
+        commandActionLoader.loadCommandAction(testTask);
         runningTestTask.put(testTask.getId(), testTask);
     }
 

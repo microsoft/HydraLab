@@ -26,7 +26,9 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.android.ddmlib.IDevice.DeviceState;
@@ -240,6 +242,8 @@ public abstract class DeviceManager {
 
     abstract public void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
 
+    abstract public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
+    
     protected boolean isAppRunningForeground(DeviceInfo deviceInfo, String packageName, Logger logger) {
         IOSDriver iOSDriver = appiumServerManager.getIOSDriver(deviceInfo, logger);
         ApplicationState state = iOSDriver.queryAppState(packageName);
