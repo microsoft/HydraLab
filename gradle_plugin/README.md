@@ -3,7 +3,7 @@ This is the Gradle plugin of Hydra Lab.
 In order to simplify the onboarding procedure to Hydra Lab for any app, this project packaged the client util and made it an easy way for any app to leverage the cloud testing service of Hydra Lab.
 
 ## Prerequisite
-Include Hydra Lab plugin dependency in your project:
+Include Hydra Lab plugin dependency in build.gradle of your project:
 - Using the plugins DSL:
 ```
 plugins {
@@ -25,6 +25,7 @@ buildscript {
 
 apply plugin: "com.microsoft.hydralab.client-util"
 ```
+See [Release Notes](https://github.com/microsoft/HydraLab/wiki/Release-Notes) for latest and stable versions.
 
 ## Usage
 To trigger gradle task for Hydra Lab testing, simply follow below steps:
