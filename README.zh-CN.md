@@ -57,10 +57,23 @@ Hydra Lab 使用 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/
 Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单地配置环境变量 BLOB_CONNECTION_STR 后，你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
 
 **第1步. 从容器注册中心获取 Docker 镜像**
-> docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+
+```bash
+docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+```
 
 **第2步. 在你的机器上运行，并使用 BLOB_CONNECTION_STR 作为参数**
-> docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
+
+可以通过提供包含 `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` 的配置文件env.properties在运行目录，然后通过如下方式传入文件相对路径参数：
+
+```bash
+docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+```
+
+或者通过直接设置环境变量传参：
+```bash
+docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+```
 
 **第3步. 访问前端页面并查看你的已连接设备**
 
