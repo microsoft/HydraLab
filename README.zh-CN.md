@@ -30,7 +30,7 @@ Hydra Lab 的特性包括：
 - 支持在不同平台上进行 Appium(Java) 测试：Windows/iOS/Android/浏览器/跨平台。
 - 无用例的自动化测试：Monkey test，智能探索测试
 
-更多细节，请参见 [介绍：什么是 Hydra Lab？](https://github.com/microsoft/HydraLab/wiki)
+更多细节，请参见 [什么是 Hydra Lab？](https://github.com/microsoft/HydraLab/wiki)
 
 <span id="get-started"></span>
 ## 入门
@@ -121,12 +121,12 @@ java -jar agent/build/libs/agent.jar
 > Note: If you are a Microsoft FTE and want to onboard to the internal Hydra Lab testing service, please visit [our SharePoint site](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) to learn more about the internal service instance.
 
 <span id="for-contributor"></span>
-### For Contributor:
+### 参与贡献Hydra Lab:
 
 - [Contribute to the Hydra Lab GitHub Project](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
 <span id="who-use-it"></span>
-## Who are using Hydra Lab?
+## 谁在使用Hydra Lab?
 
 It's already powering the UI test automation of the following Microsoft products:
 - Microsoft Phone Link (Windows UWP app) and Link to Windows (Android app)

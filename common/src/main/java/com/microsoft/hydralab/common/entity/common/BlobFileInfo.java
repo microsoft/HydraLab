@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.entity.common;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import lombok.Data;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.DigestUtils;
 
 import javax.persistence.Column;
@@ -55,9 +56,9 @@ public class BlobFileInfo implements Serializable {
             this.setMd5(DigestUtils.md5DigestAsHex(inputStream));
             inputStream.close();
         } catch (FileNotFoundException e) {
-            throw new HydraLabRuntimeException(500, "Generate temp file failed!", e);
+            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generate temp file failed!", e);
         } catch (IOException e) {
-            throw new HydraLabRuntimeException(500, "Get the MD5 of temp file failed!", e);
+            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Get the MD5 of temp file failed!", e);
         }
     }
 

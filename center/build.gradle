@@ -8,6 +8,10 @@ version = hydraLabVersion
 sourceCompatibility = 11
 targetCompatibility = 11
 
+repositories {
+    mavenCentral()
+}
+
 bootJar {
     // Specify the out jar file name so that the dockerfile could copy it
     // without concerning the name change caused by version change.
@@ -60,6 +64,18 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
 }
 
-repositories {
-    mavenCentral()
+import org.apache.tools.ant.taskdefs.condition.Os
+String npmCommand = 'npm'
+if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    npmCommand = 'npm.cmd'
+}
+String reactDir = "${projectDir.parentFile.absolutePath}${File.separator}react"
+task installWebFront(type: Exec, group: 'build') {
+    workingDir reactDir
+    commandLine npmCommand, 'ci'
+}
+
+task buildWebFront(type: Exec, group: 'build', dependsOn: installWebFront) {
+    workingDir reactDir
+    commandLine npmCommand, 'run', 'pub'
 }

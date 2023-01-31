@@ -4,7 +4,7 @@ package com.microsoft.hydralab.common.entity.common;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.ITestRun;
+import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
 import org.slf4j.Logger;

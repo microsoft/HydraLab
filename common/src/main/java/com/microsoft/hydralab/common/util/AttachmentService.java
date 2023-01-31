@@ -244,7 +244,7 @@ public class AttachmentService {
         String fileSuffix = null;
         boolean isMatch = false;
         if (filename == null) {
-            throw new HydraLabRuntimeException(405, "error file type: " + filename);
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "error file type: " + filename);
         }
         if (fileTypes != null) {
             for (String fileType : fileTypes) {
@@ -255,7 +255,7 @@ public class AttachmentService {
                 }
             }
             if (!isMatch) {
-                throw new HydraLabRuntimeException(405, "error file type: " + filename);
+                throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "error file type: " + filename);
             }
         }
 
