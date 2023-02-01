@@ -6,8 +6,10 @@ import com.android.ddmlib.InstallException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import java.io.File;
 
@@ -40,7 +42,9 @@ public class PreInstallListener implements DeviceStatusListener {
             try {
                 deviceManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
             } catch (InstallException e) {
-                classLogger.error(String.format("Pre-Install %s failed", appFile.getAbsolutePath()), e);
+                String errorMessage = String.format("Pre-Install %s failed", appFile.getAbsolutePath());
+                classLogger.error(errorMessage, e);
+                throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e);
             }
         }
     }

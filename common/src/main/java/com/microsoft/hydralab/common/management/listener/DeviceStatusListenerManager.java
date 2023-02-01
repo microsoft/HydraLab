@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.common.management.listener;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,11 @@ public class DeviceStatusListenerManager implements DeviceStatusListener {
 
     private <T extends DeviceStatusListener> void notifyEach(List<T> recorders, Consumer<T> consumer) {
         recorders.forEach(recorder -> {
-            consumer.accept(recorder);
+            try {
+                consumer.accept(recorder);
+            } catch (HydraLabRuntimeException e) {
+                System.exit(e.getCode());
+            }
         });
     }
 
