@@ -8,6 +8,8 @@ import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.RawImage;
+import com.microsoft.hydralab.agent.runner.ITestRun;
+import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -335,6 +337,20 @@ public class AndroidDeviceManager extends DeviceManager {
         }
     }
 
+    @Override
+    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent, @NotNull String pathOnDevice, @Nullable Logger logger) {
+        adbOperateUtil.pushFileToDevice(deviceInfo, pathOnAgent, pathOnDevice, logger);
+    }
+
+    @Override
+    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) {
+        ITestRun testRun = TestRunThreadContext.getTestRun();
+        if (testRun == null || testRun.getResultFolder() == null) {
+            logger.error("There is no testRun instance in ThreadContext!");
+        }
+        String pathOnAgent = testRun.getResultFolder().getAbsolutePath() + "/";
+        adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
+    }
 
     @Override
     public ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder, Logger logger) {

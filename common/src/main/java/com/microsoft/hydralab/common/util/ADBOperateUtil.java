@@ -192,13 +192,32 @@ public class ADBOperateUtil {
         return true;
     }
 
-    public void pullFileToDir(DeviceInfo deviceInfo, String filePath, String pathOnDevice, Logger logger) {
+    public void pushFileToDevice(DeviceInfo deviceInfo, String pathOnAgent, String pathOnDevice, Logger logger) {
         IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
         if (deviceByInfo == null) {
             throw new RuntimeException("No such device: " + deviceInfo);
         }
         try {
-            String comm = String.format("pull %s %s", pathOnDevice, filePath);
+            String comm = String.format("push %s %s", pathOnAgent, pathOnDevice);
+            Process process = executeDeviceCommandOnPC(deviceInfo, comm, logger);
+            CommandOutputReceiver err = new CommandOutputReceiver(process.getErrorStream(), logger);
+            CommandOutputReceiver out = new CommandOutputReceiver(process.getInputStream(), logger);
+            err.start();
+            out.start();
+            process.waitFor(60, TimeUnit.SECONDS);
+            //deviceByInfo.pullFile(pathOnDevice, folder.getAbsolutePath());
+        } catch (Exception e) {
+            getNotNullLogger(logger).error(e.getMessage(), e);
+        }
+    }
+
+    public void pullFileToDir(DeviceInfo deviceInfo, String pathOnAgent, String pathOnDevice, Logger logger) {
+        IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
+        if (deviceByInfo == null) {
+            throw new RuntimeException("No such device: " + deviceInfo);
+        }
+        try {
+            String comm = String.format("pull %s %s", pathOnDevice, pathOnAgent);
             Process process = executeDeviceCommandOnPC(deviceInfo, comm, logger);
             CommandOutputReceiver err = new CommandOutputReceiver(process.getErrorStream(), logger);
             CommandOutputReceiver out = new CommandOutputReceiver(process.getInputStream(), logger);

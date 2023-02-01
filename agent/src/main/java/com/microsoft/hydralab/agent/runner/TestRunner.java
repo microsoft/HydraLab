@@ -42,6 +42,7 @@ public abstract class TestRunner {
 
         TestRun testRun = createTestRun(deviceInfo, testTask, logger);
         checkTestTaskCancel(testTask);
+        initTestRunThreadContext(testRun);
 
         setUp(deviceInfo, testTask, testRun);
         checkTestTaskCancel(testTask);
@@ -80,7 +81,7 @@ public abstract class TestRunner {
      * This method must be called in the test run execution thread.
      */
     private void initTestRunThreadContext(TestRun testRun) {
-
+        TestRunThreadContext.init(testRun);
     }
 
     private static void saveErrorSummary(TestRun testRun, Exception e) {

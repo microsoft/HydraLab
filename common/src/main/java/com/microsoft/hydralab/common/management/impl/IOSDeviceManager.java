@@ -20,6 +20,7 @@ import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,6 +173,16 @@ public class IOSDeviceManager extends DeviceManager {
 
     @Override
     public void resetPackage(DeviceInfo deviceInfo, String packageName, Logger logger) {
+        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+    }
+
+    @Override
+    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent, @NotNull String pathOnDevice, @Nullable Logger logger) {
+        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+    }
+
+    @Override
+    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
