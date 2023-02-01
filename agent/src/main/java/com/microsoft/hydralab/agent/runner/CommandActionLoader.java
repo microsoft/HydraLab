@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -22,6 +23,9 @@ public class CommandActionLoader {
     private List<DeviceCommand> commands;
 
     public void loadCommandAction(TestTask testTask) {
+        if (testTask.getDeviceActions() == null) {
+            testTask.setDeviceActions(new HashMap<>());
+        }
         List<DeviceCommand> filteredCommands = filterCommands(testTask.getTestSuite());
         for (DeviceCommand deviceCommand : filteredCommands) {
             List<DeviceAction> actions = command2Action(deviceCommand);

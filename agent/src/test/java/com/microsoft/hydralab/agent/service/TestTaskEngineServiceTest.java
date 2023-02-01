@@ -34,6 +34,7 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForGroupDevice.deviceIdentifier = "G.UnitTest";
         taskSpecForGroupDevice.testFileSet = new TestFileSet();
         taskSpecForGroupDevice.groupDevices = "TestDeviceSerial1,TestDeviceSerial2";
+        taskSpecForGroupDevice.pkgName = "com.microsoft.test";
 
         String beanName = TestRunnerConfig.TestRunnerMap.get(taskSpecForGroupDevice.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
@@ -47,6 +48,7 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForSingleDevice.runningType = TestTask.TestRunningType.INSTRUMENTATION;
         taskSpecForSingleDevice.deviceIdentifier = "TestDeviceSerial1";
         taskSpecForSingleDevice.testFileSet = new TestFileSet();
+        taskSpecForSingleDevice.pkgName = "com.microsoft.test";
         testTaskEngineService.runTestTask(taskSpecForSingleDevice);
     }
 
