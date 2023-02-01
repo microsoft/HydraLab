@@ -6,7 +6,7 @@ import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.common.entity.agent.DeviceStateChangeRecord;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.listener.DeviceListener;
+import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.util.GlobalConstant;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
-public class DeviceStabilityMonitor implements DeviceListener {
+public class DeviceStabilityMonitor implements DeviceStatusListener {
     private final Map<String, ConcurrentLinkedDeque<DeviceStateChangeRecord>> deviceStateChangesMap = new HashMap<>();
     // map from device SN to a boolean flagging if a device is UNSTABLE and waiting for converting back to normal
     private final Map<String, AtomicBoolean> deviceStateIsConvertingList = new HashMap<>();

@@ -9,7 +9,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.listener.DeviceListenerManager;
+import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.IOSUtils;
@@ -47,10 +47,10 @@ public abstract class DeviceManager {
     protected File screenshotDir;
     protected String deviceFolderUrlPrefix;
     protected String deviceStoragePath;
-    protected DeviceListenerManager deviceListenerManager;
+    protected DeviceStatusListenerManager deviceStatusListenerManager;
 
-    public void setDeviceListenerManager(DeviceListenerManager deviceListenerManager) {
-        this.deviceListenerManager = deviceListenerManager;
+    public void setDeviceStatusListenerManager(DeviceStatusListenerManager deviceStatusListenerManager) {
+        this.deviceStatusListenerManager = deviceStatusListenerManager;
     }
 
     protected AppiumServerManager appiumServerManager;

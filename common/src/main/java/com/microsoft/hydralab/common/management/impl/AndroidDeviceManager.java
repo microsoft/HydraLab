@@ -64,7 +64,7 @@ public class AndroidDeviceManager extends DeviceManager {
             if (deviceInfo == null) {
                 return;
             }
-            deviceListenerManager.onDeviceConnected(deviceInfo);
+            deviceStatusListenerManager.onDeviceConnected(deviceInfo);
         }
 
         @Override
@@ -76,7 +76,7 @@ public class AndroidDeviceManager extends DeviceManager {
                 return;
             }
 
-            deviceListenerManager.onDeviceInactive(deviceInfo);
+            deviceStatusListenerManager.onDeviceInactive(deviceInfo);
             appiumServerManager.quitAndroidDriver(deviceInfo, classLogger);
         }
 
@@ -101,9 +101,9 @@ public class AndroidDeviceManager extends DeviceManager {
             }
 
             if (device.getState() != DeviceState.ONLINE) {
-                deviceListenerManager.onDeviceInactive(deviceInfo);
+                deviceStatusListenerManager.onDeviceInactive(deviceInfo);
             } else {
-                deviceListenerManager.onDeviceConnected(deviceInfo);
+                deviceStatusListenerManager.onDeviceConnected(deviceInfo);
             }
         }
     };

@@ -13,7 +13,7 @@ import com.microsoft.hydralab.common.management.AgentType;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
-import com.microsoft.hydralab.common.management.listener.DeviceListenerManager;
+import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
@@ -81,7 +81,7 @@ public class AppConfiguration {
 
     @Bean
     public DeviceManager initDeviceManager(BlobStorageClient deviceLabBlobClient, ADBOperateUtil adbOperateUtil
-            , AppiumServerManager appiumServerManager, DeviceListenerManager deviceListenerManager) {
+            , AppiumServerManager appiumServerManager, DeviceStatusListenerManager deviceStatusListenerManager) {
 
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
@@ -106,7 +106,7 @@ public class AppConfiguration {
             }
         }
         deviceManager.setPreAppDir(preAppDir);
-        deviceManager.setDeviceListenerManager(deviceListenerManager);
+        deviceManager.setDeviceStatusListenerManager(deviceStatusListenerManager);
         deviceManager.setTestBaseDirUrlMapping(AppOptions.TEST_CASE_RESULT_STORAGE_MAPPING_REL_PATH);
         File deviceLogBaseDir = new File(appOptions.getDeviceLogStorageLocation());
         if (!deviceLogBaseDir.exists()) {

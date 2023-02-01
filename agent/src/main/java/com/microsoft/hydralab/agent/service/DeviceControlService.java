@@ -12,8 +12,8 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.WindowsDeviceManager;
-import com.microsoft.hydralab.common.management.listener.DeviceListener;
-import com.microsoft.hydralab.common.management.listener.DeviceListenerManager;
+import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
+import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.listener.impl.PreInstallListener;
 import com.microsoft.hydralab.common.util.Const;
@@ -42,7 +42,7 @@ public class DeviceControlService {
     @Resource
     DeviceStabilityMonitor deviceStabilityMonitor;
     @Resource
-    DeviceListenerManager deviceListenerManager;
+    DeviceStatusListenerManager deviceStatusListenerManager;
 
     public Set<DeviceInfo> getAllConnectedDevice() {
         updateAllDeviceScope();
@@ -131,7 +131,7 @@ public class DeviceControlService {
     }
 
     public void deviceManagerInit() {
-        deviceListenerManager.registerListener(new DeviceListener() {
+        deviceStatusListenerManager.registerListener(new DeviceStatusListener() {
 
             @Override
             public void onDeviceInactive(DeviceInfo deviceInfo) {
@@ -159,8 +159,8 @@ public class DeviceControlService {
                 agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
             }
         });
-        deviceListenerManager.registerListener(new PreInstallListener(deviceManager));
-        deviceListenerManager.registerListener(deviceStabilityMonitor);
+        deviceStatusListenerManager.registerListener(new PreInstallListener(deviceManager));
+        deviceStatusListenerManager.registerListener(deviceStabilityMonitor);
         try {
             deviceManager.init();
         } catch (Exception e) {

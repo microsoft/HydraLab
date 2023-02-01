@@ -5,7 +5,7 @@ package com.microsoft.hydralab.common.management.listener.impl;
 import com.android.ddmlib.InstallException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.listener.DeviceListener;
+import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ import java.io.File;
  * @date 01/17/2023
  */
 
-public class PreInstallListener implements DeviceListener {
+public class PreInstallListener implements DeviceStatusListener {
     DeviceManager deviceManager;
     private Logger classLogger = LoggerFactory.getLogger(PreInstallListener.class);
 
@@ -34,12 +34,13 @@ public class PreInstallListener implements DeviceListener {
         File appDir = deviceManager.getPreAppDir();
         File[] appFiles = appDir.listFiles();
         for (File appFile : appFiles) {
-            if (appFile.isFile()) {
-                try {
-                    deviceManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
-                } catch (InstallException e) {
-                    classLogger.error(String.format("Pre-Install %s failed", appFile.getAbsolutePath()), e);
-                }
+            if (!appFile.isFile()) {
+                continue;
+            }
+            try {
+                deviceManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
+            } catch (InstallException e) {
+                classLogger.error(String.format("Pre-Install %s failed", appFile.getAbsolutePath()), e);
             }
         }
     }

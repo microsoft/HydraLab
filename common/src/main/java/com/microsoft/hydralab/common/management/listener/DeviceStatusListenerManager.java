@@ -16,16 +16,16 @@ import java.util.function.Consumer;
  */
 
 @Service
-public class DeviceListenerManager implements DeviceListener {
-    private List<DeviceListener> listeners = new ArrayList<>();
+public class DeviceStatusListenerManager implements DeviceStatusListener {
+    private List<DeviceStatusListener> listeners = new ArrayList<>();
 
-    private <T extends DeviceListener> void notifyEach(List<T> recorders, Consumer<T> consumer) {
+    private <T extends DeviceStatusListener> void notifyEach(List<T> recorders, Consumer<T> consumer) {
         recorders.forEach(recorder -> {
             consumer.accept(recorder);
         });
     }
 
-    public void registerListener(@NotNull DeviceListener listener) {
+    public void registerListener(@NotNull DeviceStatusListener listener) {
         listeners.add(listener);
     }
 

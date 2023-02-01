@@ -243,7 +243,7 @@ public class IOSDeviceManager extends DeviceManager {
                 DeviceInfo removedInfo = latestDeviceInfoMap.remove(serialNum);
                 if (removedInfo != null) {
                     if (DeviceInfo.OFFLINE.equals(info.getStatus())) {
-                        deviceListenerManager.onDeviceConnected(info);
+                        deviceStatusListenerManager.onDeviceConnected(info);
                         info.setStatus(DeviceInfo.ONLINE);
 //                        classLogger.info("Device " + serialNum + " updated");
                     }
@@ -255,7 +255,7 @@ public class IOSDeviceManager extends DeviceManager {
                     // Device was disconnected
 //                    classLogger.info("Device " + serialNum + " disconnected");
                     info.setStatus(DeviceInfo.OFFLINE);
-                    deviceListenerManager.onDeviceInactive(info);
+                    deviceStatusListenerManager.onDeviceInactive(info);
                     getAppiumServerManager().quitIOSDriver(info, classLogger);
                 }
             }
@@ -266,7 +266,7 @@ public class IOSDeviceManager extends DeviceManager {
                 info.setStatus(DeviceInfo.ONLINE);
                 // Add new connected devices
                 iOSDeviceInfoMap.put(serialNum, info);
-                deviceListenerManager.onDeviceConnected(info);
+                deviceStatusListenerManager.onDeviceConnected(info);
             }
         }
     }
