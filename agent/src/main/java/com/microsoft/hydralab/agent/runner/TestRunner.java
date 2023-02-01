@@ -36,17 +36,16 @@ public abstract class TestRunner {
         this.testTaskRunCallback = testTaskRunCallback;
     }
 
-    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) throws Exception {
+    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
         checkTestTaskCancel(testTask);
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
         TestRun testRun = createTestRun(deviceInfo, testTask, logger);
         checkTestTaskCancel(testTask);
-        initTestRunThreadContext(testRun);
 
-        setUp(deviceInfo, testTask, testRun);
-        checkTestTaskCancel(testTask);
         try {
+            setUp(deviceInfo, testTask, testRun);
+            checkTestTaskCancel(testTask);
             runByFutureTask(deviceInfo, testTask, testRun);
         } catch (Exception e) {
             testRun.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
@@ -58,7 +57,7 @@ public abstract class TestRunner {
 
     private void runByFutureTask(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
         FutureTask<String> futureTask = new FutureTask<>(() -> {
-            initTestRunThreadContext(testRun);
+            setContextOfCurrentThread(testRun);
             run(deviceInfo, testTask, testRun);
             return null;
         });
@@ -80,7 +79,7 @@ public abstract class TestRunner {
      * TODO Call {@link TestRunThreadContext#init(ITestRun)}
      * This method must be called in the test run execution thread.
      */
-    private void initTestRunThreadContext(TestRun testRun) {
+    private void setContextOfCurrentThread(TestRun testRun) {
         TestRunThreadContext.init(testRun);
     }
 
@@ -117,7 +116,7 @@ public abstract class TestRunner {
         deviceInfo.killAll();
         // this key will be used to recover device status when lost the connection between agent and master
         deviceInfo.addCurrentTask(testTask);
-
+        setContextOfCurrentThread(testRun);
         /* set up device */
         testRun.getLogger().info("Start setup device");
         deviceManager.testDeviceSetup(deviceInfo, testRun.getLogger());
@@ -133,7 +132,8 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing setUp actions.");
-            actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.SET_UP);
+            Assert.isTrue(actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.SET_UP),
+                    "Execute actions failed when set up device!");
         }
 
         testRun.getLogger().info("Start granting all package needed permissions device");
@@ -149,7 +149,9 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
-            actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+            if (!actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN)) {
+                testRun.getLogger().error("Execute actions failed when tearDown!");
+            }
         }
 
         deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());

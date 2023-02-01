@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,11 @@ class ActionExecutorTest extends BaseTest {
         DeviceAction action1 = JSONObject.parseObject(actionJson.toJSONString(), DeviceAction.class);
         List<String> args1 = List.of("paramA", "paramB");
         action1.setArgs(args1);
-        actionExecutor.doAction(deviceManager, deviceInfo, baseLogger, action1);
+        try {
+            actionExecutor.doAction(deviceManager, deviceInfo, baseLogger, action1);
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
         verify(deviceManager).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
 
         DeviceAction action2 = new DeviceAction("Android", "changeGlobalSetting");

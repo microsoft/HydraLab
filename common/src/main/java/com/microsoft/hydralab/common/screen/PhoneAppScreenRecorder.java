@@ -3,11 +3,11 @@
 package com.microsoft.hydralab.common.screen;
 
 import com.android.ddmlib.InstallException;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.io.FileUtils;
@@ -128,7 +128,11 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
             if (videoFile.exists()) {
                 videoFile.delete();
             }
-            adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
+            try {
+                adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
             ThreadUtils.safeSleep(5000);
 
             long phoneFileSize = adbOperateUtil.getFileLength(deviceInfo, logger, pathOnDevice);
