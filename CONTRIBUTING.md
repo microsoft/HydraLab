@@ -32,7 +32,9 @@ Under most cases, new file/folder name should follow the [snake case](https://en
 
 ## Handling exceptions in code
 
-We are aligned on the [Fail Fast]() principles for the project, and will avoid any inappropriate practice that will bury an exception in long log or ignoed code comment, please refer to [Java-Exception-handling-best-practices](https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Java-Exception-handling-best-practices)|[中文版](https://xie.infoq.cn/article/e1acf36fa0655c321f673c230) to learn about it first. 
+We are aligned on the [Fail Fast](https://www.techtarget.com/whatis/definition/fail-fast) principles for the project, and will avoid any inappropriate practice that will bury an exception in long log or ignoed code comment, please refer to [Java-Exception-handling-best-practices](https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Java-Exception-handling-best-practices)|[中文版](https://xie.infoq.cn/article/e1acf36fa0655c321f673c230) to learn about it first.
+
+And please leverage the `Assert` API to save if conditions, for example: [Spring Assert API](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/util/Assert.html)
 
 ## Review Process
 
