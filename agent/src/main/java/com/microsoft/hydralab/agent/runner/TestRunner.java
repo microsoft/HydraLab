@@ -146,6 +146,18 @@ public abstract class TestRunner {
     protected abstract void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception;
 
     protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
+        //execute actions
+        if (testTask.getDeviceActions() != null) {
+            testRun.getLogger().info("Start executing tearDown actions.");
+            actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+        }
+
+        deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
+        if (testTask.isThisForMicrosoftLauncher()) {
+            unsetForMicrosoftLauncherApp(deviceInfo, testRun.getLogger());
+        }
+
+        //generate xml report and upload files
         try {
             String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
             testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
@@ -158,15 +170,6 @@ public abstract class TestRunner {
             } catch (Exception e) {
                 testRun.getLogger().error("Error in onOneDeviceComplete", e);
             }
-        }
-        deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
-        if (testTask.isThisForMicrosoftLauncher()) {
-            unsetForMicrosoftLauncherApp(deviceInfo, testRun.getLogger());
-        }
-        //execute actions
-        if (testTask.getDeviceActions() != null) {
-            testRun.getLogger().info("Start executing tearDown actions.");
-            actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
         }
 
         testRun.getLogger().info("Start Close/finish resource");
