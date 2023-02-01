@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 public class DeviceListenerManager implements DeviceListener {
     private List<DeviceListener> listeners = new ArrayList<>();
 
-    private static <T extends DeviceListener> void notifyEach(List<T> recorders, Consumer<T> consumer) {
+    private <T extends DeviceListener> void notifyEach(List<T> recorders, Consumer<T> consumer) {
         recorders.forEach(recorder -> {
             consumer.accept(recorder);
         });
