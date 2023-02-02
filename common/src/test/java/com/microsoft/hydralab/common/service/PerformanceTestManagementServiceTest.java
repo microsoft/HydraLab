@@ -51,8 +51,8 @@ public class PerformanceTestManagementServiceTest {
         performanceInspectionService.reset(windowsMemoryInfoSpec);
 
         System.out.println("Start PL...");
-        performanceInspectionService.inspect(windowsMemoryInfoSpec.rename("Start PL"));
         performanceInspectionService.inspect(windowsBatteryInfoSpec);
+        performanceInspectionService.inspect(windowsMemoryInfoSpec.rename("Start PL"));
 
         //testing...
         System.out.println("Start LTW...");
