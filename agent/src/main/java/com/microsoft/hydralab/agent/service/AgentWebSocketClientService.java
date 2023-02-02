@@ -9,11 +9,14 @@ import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
+import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +59,8 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @Value("${agent.versionCode}")
     private String versionCode;
     private SendMessageCallback sendMessageCallback;
+    @Resource
+    private MetricPushGateway pushGateway;
 
     public void onMessage(Message message) {
         log.info("onMessage Receive bytes message {}", message);
@@ -154,6 +159,12 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         AgentMetadata agentMetadata = (AgentMetadata) message.getBody();
         blobStorageClient.setSASData(agentMetadata.getBlobSAS());
         syncAgentStatus(agentMetadata.getAgentUser());
+        if (!pushGateway.isBasicAuthSet.get()) {
+            pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(agentMetadata.getPushgatewayUsername(), agentMetadata.getPushgatewayPassword()));
+            ThreadUtils.safeSleep(1000);
+            pushGateway.isBasicAuthSet.set(true);
+            log.info("Pushgateway has set basic auth now, data can be pushed correctly.");
+        }
     }
 
     private void syncAgentStatus(AgentUser passedAgent) {

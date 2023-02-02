@@ -17,23 +17,32 @@ import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
+import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.exporter.PushGateway;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus.PrometheusProperties;
+import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.time.Duration;
+import java.util.Map;
 
 /**
  * @author : shbu
@@ -196,5 +205,25 @@ public class AppConfiguration {
         });
 
         return deviceStabilityMonitor;
+    }
+
+    @Bean
+    public PushGateway pushGateway(PrometheusProperties prometheusProperties) throws MalformedURLException {
+        String baseUrl = prometheusProperties.getPushgateway().getBaseUrl();
+
+        // Set ConnectionFactory with basic auth later with metadata from Center message.
+        return new MetricPushGateway(new URL(baseUrl));
+    }
+
+    @Bean
+    public PrometheusPushGatewayManager monitorPrometheusPushGatewayManager(PushGateway pushGateway, PrometheusProperties prometheusProperties, CollectorRegistry registry) {
+        PrometheusProperties.Pushgateway properties = prometheusProperties.getPushgateway();
+        Duration pushRate = properties.getPushRate();
+        String job = properties.getJob();
+        Map<String, String> groupingKey = properties.getGroupingKey();
+        PrometheusPushGatewayManager.ShutdownOperation shutdownOperation = properties.getShutdownOperation();
+
+        return new PrometheusPushGatewayManager(pushGateway, registry,
+                pushRate, job, groupingKey, shutdownOperation);
     }
 }

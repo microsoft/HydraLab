@@ -13,4 +13,6 @@ import lombok.Data;
 public class AgentMetadata {
     SASData blobSAS;
     AgentUser agentUser;
+    String pushgatewayUsername;
+    String pushgatewayPassword;
 }
