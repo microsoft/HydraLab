@@ -12,7 +12,7 @@ import static org.mockito.Mockito.doReturn;
 public class AgentManageServiceTest {
 
     @Test
-    void putData() {
+    void generateAgentConfig() {
         String agentId = "test_agent_id";
         AgentManageService agentManageService = Mockito.spy(AgentManageService.class);
         AgentUser agent = new AgentUser();

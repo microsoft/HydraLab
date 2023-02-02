@@ -19,6 +19,7 @@ import io.micrometer.core.instrument.Tags;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -59,7 +60,9 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @Value("${agent.versionCode}")
     private String versionCode;
     private SendMessageCallback sendMessageCallback;
-    @Resource
+    @Value("${management.metrics.export.prometheus.pushgateway.enabled}")
+    private boolean isPrometheusEnabled;
+    @Autowired(required = false)
     private MetricPushGateway pushGateway;
 
     public void onMessage(Message message) {
@@ -159,7 +162,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         AgentMetadata agentMetadata = (AgentMetadata) message.getBody();
         blobStorageClient.setSASData(agentMetadata.getBlobSAS());
         syncAgentStatus(agentMetadata.getAgentUser());
-        if (!pushGateway.isBasicAuthSet.get()) {
+        if (isPrometheusEnabled && !pushGateway.isBasicAuthSet.get()) {
             pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(agentMetadata.getPushgatewayUsername(), agentMetadata.getPushgatewayPassword()));
             ThreadUtils.safeSleep(1000);
             pushGateway.isBasicAuthSet.set(true);

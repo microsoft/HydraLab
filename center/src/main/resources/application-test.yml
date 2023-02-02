@@ -1,2 +1,11 @@
 app:
   default-user: 'test@test.com'
+
+management:
+  metrics:
+    export:
+      prometheus:
+        pushgateway:
+          enabled: false
+          username: testUser
+          password: test
