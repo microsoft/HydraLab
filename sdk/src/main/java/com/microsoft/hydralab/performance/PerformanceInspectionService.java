@@ -17,6 +17,11 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
         public void inspectWithStrategy(PerformanceInspection performanceInspection, InspectionStrategy inspectionStrategy) {
 
         }
+
+        @Override
+        public PerformanceTestResult parse(PerformanceInspection performanceInspection, String resultParser) {
+            return null;
+        }
     };
 
     void swapImplementation(IPerformanceInspectionService serviceImplementation) {
@@ -30,6 +35,11 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
 
     @Override
     public void inspectWithStrategy(PerformanceInspection performanceInspection, InspectionStrategy inspectionStrategy) {
+        serviceImplementation.inspectWithStrategy(performanceInspection, inspectionStrategy);
+    }
 
+    @Override
+    public PerformanceTestResult parse(PerformanceInspection performanceInspection, String resultParser) {
+        return serviceImplementation.parse(performanceInspection, resultParser);
     }
 }

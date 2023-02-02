@@ -17,4 +17,5 @@ public class PerformanceTestResult {
      */
     public List<PerformanceInspectionResult> performanceInspectionResults = new ArrayList<>();
     public String inspector;
+    public String parser;
 }
