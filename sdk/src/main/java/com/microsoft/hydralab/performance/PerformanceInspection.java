@@ -6,13 +6,14 @@ import static com.microsoft.hydralab.performance.PerformanceInspector.Performanc
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
 
 public class PerformanceInspection {
+
     public final PerformanceInspector.PerformanceInspectorType inspectorType;
     public final String appId;
     public final String deviceIdentifier;
     public final String description;
     public final String inspectionKey;
     public final boolean isReset;
-    File resultFolder;
+    public File resultFolder;
 
     public PerformanceInspection(String description, PerformanceInspector.PerformanceInspectorType inspectorType, String appId, String deviceIdentifier, boolean isReset) {
         this.inspectorType = inspectorType;
