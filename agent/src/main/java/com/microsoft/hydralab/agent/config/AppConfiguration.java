@@ -210,6 +210,14 @@ public class AppConfiguration {
     @Bean
     public PushGateway pushGateway(PrometheusProperties prometheusProperties) throws MalformedURLException {
         String baseUrl = prometheusProperties.getPushgateway().getBaseUrl();
+        if (!baseUrl.startsWith("http")){
+            if (baseUrl.startsWith("127.0.0.1") || baseUrl.startsWith("localhost")) {
+                baseUrl = "http://" + baseUrl;
+            }
+            else {
+                baseUrl = "https://" + baseUrl;
+            }
+        }
 
         // Set ConnectionFactory with basic auth later with metadata from Center message.
         return new MetricPushGateway(new URL(baseUrl));
