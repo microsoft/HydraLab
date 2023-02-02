@@ -1,0 +1,2 @@
+basic_auth_users:
+  admin: env:PUSHGATEWAY_PASSWORD_BCRYPT

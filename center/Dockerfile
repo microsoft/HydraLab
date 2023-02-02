@@ -35,6 +35,7 @@ RUN cd /opt/ && \
 
 COPY ${STARTUP_FOLDER_PATH}/pushgatewayDataClean.sh /opt/
 COPY ${STARTUP_FOLDER_PATH}/prometheus.yml /opt/prometheus-2.36.2.linux-amd64/
+COPY ${STARTUP_FOLDER_PATH}/pushgateway_auth.yml /opt/pushgateway-1.4.3.linux-amd64/
 COPY ${STARTUP_FOLDER_PATH}/custom.ini /opt/grafana-9.0.1/conf/
 COPY ${STARTUP_FOLDER_PATH}/defaults.ini /opt/grafana-9.0.1/conf/
 COPY ${STARTUP_FOLDER_PATH}/alert_notification.html /opt/grafana-9.0.1/public/emails/ng_alert_notification.html
