@@ -66,13 +66,15 @@ docker pull ghcr.io/microsoft/hydra-lab-uber:latest
 
 **Step 2. run on your machine with BLOB_CONNECTION_STR**
 
-You may write the content "BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}" in an env file, and pass the path of the file to docker container:
-```
-docker run [-p 9886:9886] [--name=hydra-lab] --env-file ${YOUR_ENV_FILE_PATH} ghcr.io/microsoft/hydra-lab-uber:latest
+You may write the content `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` in an env file (e.g. env.properties), and pass the path of the file to docker container:
+
+```bash
+docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 Or simply run with the env parameter -e:
-```
-docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
+
+```bash
+docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
 **Step 3. visit front-end page and view your connected devices**

@@ -13,10 +13,7 @@ import com.microsoft.hydralab.common.entity.center.*;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
-import com.microsoft.hydralab.common.util.AttachmentService;
-import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.GlobalConstant;
-import com.microsoft.hydralab.common.util.SerializeUtil;
+import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
@@ -24,6 +21,7 @@ import com.microsoft.hydralab.t2c.runner.TestInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -90,6 +88,10 @@ public class DeviceAgentManagementService {
     @Value("${app.batteryStrategy}")
     private String batteryStrategy;
     private long lastTimeRequest;
+    @Value("${management.metrics.export.prometheus.pushgateway.username}")
+    private String pushgatewayUsername;
+    @Value("${management.metrics.export.prometheus.pushgateway.password}")
+    private String pushgatewayPassword;
 
     public void onOpen(Session session) {
         onlineCount.incrementAndGet();
@@ -122,6 +124,8 @@ public class DeviceAgentManagementService {
         AgentMetadata data = new AgentMetadata();
         data.setBlobSAS(blobStorageService.GenerateWriteSAS(agentUser.getId()));
         data.setAgentUser(agentUser);
+        data.setPushgatewayUsername(pushgatewayUsername);
+        data.setPushgatewayPassword(pushgatewayPassword);
 
         Message message = new Message();
         message.setPath(signalName);
@@ -305,18 +309,18 @@ public class DeviceAgentManagementService {
 
     public void checkAccessInfo(String name, String key) {
         if (key == null) {
-            throw new RuntimeException("access key is required!");
+            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Access key is required!");
         }
         AccessInfo accessInfo = accessInfoMap.get(name);
-        if (accessInfo != null) {
-            throw new RuntimeException("please generate access key first!");
+        if (accessInfo == null) {
+            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Please generate access key first!");
         }
         if (!key.equals(accessInfo.getKey())) {
-            throw new RuntimeException("error access key!");
+            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Error access key!");
         }
         int hour = (int) ((new Date().getTime() - accessInfo.getIngestTime().getTime()) / 1000 / 60 / 60);
         if (hour > accessLimit) {
-            throw new RuntimeException("access key has expired!");
+            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Access key has expired!");
         }
     }
 

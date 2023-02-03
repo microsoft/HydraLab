@@ -77,11 +77,11 @@ public class PkgUtil {
         JSONObject res = new JSONObject();
         try (ApkFile apkFile = new ApkFile(file)) {
             ApkMeta apkMeta = apkFile.getApkMeta();
-            res.put(ParserKey.AppName, apkMeta.getName());
-            res.put(ParserKey.PkgName, apkMeta.getPackageName());
-            res.put(ParserKey.Version, apkMeta.getVersionName());
-            res.put(ParserKey.MinSdkVersion, apkMeta.getMinSdkVersion());
-            res.put(ParserKey.TargetSdkVersion, apkMeta.getTargetSdkVersion());
+            res.put(ParserKey.APP_NAME, apkMeta.getName());
+            res.put(ParserKey.PKG_NAME, apkMeta.getPackageName());
+            res.put(ParserKey.VERSION, apkMeta.getVersionName());
+            res.put(ParserKey.MIN_SDK_VERSION, apkMeta.getMinSdkVersion());
+            res.put(ParserKey.TARGET_SDK_VERSION, apkMeta.getTargetSdkVersion());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (BufferUnderflowException e) {
@@ -116,9 +116,9 @@ public class PkgUtil {
             file.delete();
             file.getParentFile().delete();
 
-            res.put(ParserKey.AppName, name);
-            res.put(ParserKey.PkgName, pkgName);
-            res.put(ParserKey.Version, version);
+            res.put(ParserKey.APP_NAME, name);
+            res.put(ParserKey.PKG_NAME, pkgName);
+            res.put(ParserKey.VERSION, version);
         } catch (Exception e) {
             e.printStackTrace();
         }

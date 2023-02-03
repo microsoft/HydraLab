@@ -71,7 +71,7 @@ management:
     export:
       prometheus:
         pushgateway:
-          base-url: ${app.registry.server}/prometheus/pushgateway
           enabled: ${PUSHGATEWAY_ENABLED:false}
+          base-url: ${app.registry.server}/prometheus/pushgateway
           job: ${spring.application.name}
           push-rate: 10s

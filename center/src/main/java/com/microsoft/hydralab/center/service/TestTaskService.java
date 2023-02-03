@@ -10,9 +10,11 @@ import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -138,46 +140,46 @@ public class TestTaskService {
         return taskQueuedInfo;
     }
 
-    public boolean checkTestTaskTeamConsistency(TestTaskSpec testTaskSpec) {
+    public void checkTestTaskTeamConsistency(TestTaskSpec testTaskSpec) throws HydraLabRuntimeException {
         if (TestTask.TestRunningType.APPIUM_CROSS.equals(testTaskSpec.runningType)
                 || TestTask.TestRunningType.T2C_JSON_TEST.equals(testTaskSpec.runningType)) {
             AgentUser agent = agentManageService.getAgent(testTaskSpec.deviceIdentifier);
             if (agent == null) {
-                return false;
+                throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find AgentUser with given deviceIdentifier!");
             }
-            return testTaskSpec.teamId.equals(agent.getTeamId());
+            if (!testTaskSpec.teamId.equals(agent.getTeamId())) {
+                throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "AgentUser doesn't belong to the given team in spec!");
+            }
         } else {
             String deviceIdentifier = testTaskSpec.deviceIdentifier;
             if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
                 DeviceGroup deviceGroup = deviceGroupService.getGroupByName(deviceIdentifier);
                 if (deviceGroup == null) {
-                    return false;
+                    throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find DeviceGroup with given deviceIdentifier!");
                 }
                 if (testTaskSpec.teamId.equals(deviceGroup.getTeamId())) {
-                    return true;
+                    return;
                 }
                 if (!deviceGroup.getIsPrivate()) {
-                    return true;
+                    return;
                 }
                 deviceAgentManagementService.checkAccessInfo(deviceIdentifier, testTaskSpec.accessKey);
-                return true;
             } else {
                 DeviceInfo device = deviceAgentManagementService.getDevice(deviceIdentifier);
                 if (device == null) {
-                    return false;
+                    throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find device with given deviceIdentifier!");
                 }
                 AgentUser agent = agentManageService.getAgent(device.getAgentId());
                 if (agent == null) {
-                    return false;
+                    throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find AgentUser with given agent id!");
                 }
                 if (testTaskSpec.teamId.equals(agent.getTeamId())) {
-                    return true;
+                    return;
                 }
                 if (!device.getIsPrivate()) {
-                    return true;
+                    return;
                 }
                 deviceAgentManagementService.checkAccessInfo(deviceIdentifier, testTaskSpec.accessKey);
-                return true;
             }
         }
     }

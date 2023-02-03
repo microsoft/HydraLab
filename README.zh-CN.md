@@ -30,7 +30,7 @@ Hydra Lab 的特性包括：
 - 支持在不同平台上进行 Appium(Java) 测试：Windows/iOS/Android/浏览器/跨平台。
 - 无用例的自动化测试：Monkey test，智能探索测试
 
-更多细节，请参见 [介绍：什么是 Hydra Lab？](https://github.com/microsoft/HydraLab/wiki)
+更多细节，请参见 [什么是 Hydra Lab？](https://github.com/microsoft/HydraLab/wiki)
 
 <span id="get-started"></span>
 ## 入门
@@ -57,10 +57,23 @@ Hydra Lab 使用 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/
 Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单地配置环境变量 BLOB_CONNECTION_STR 后，你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
 
 **第1步. 从容器注册中心获取 Docker 镜像**
-> docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+
+```bash
+docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+```
 
 **第2步. 在你的机器上运行，并使用 BLOB_CONNECTION_STR 作为参数**
-> docker run [-p 9886:9886] [--name=hydra-lab] -e BLOB_CONNECTION_STR=${BLOB_CONNECTION_STR} ghcr.io/microsoft/hydra-lab-uber:latest
+
+可以通过提供包含 `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` 的配置文件env.properties在运行目录，然后通过如下方式传入文件相对路径参数：
+
+```bash
+docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+```
+
+或者通过直接设置环境变量传参：
+```bash
+docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+```
 
 **第3步. 访问前端页面并查看你的已连接设备**
 
@@ -121,12 +134,12 @@ java -jar agent/build/libs/agent.jar
 > Note: If you are a Microsoft FTE and want to onboard to the internal Hydra Lab testing service, please visit [our SharePoint site](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) to learn more about the internal service instance.
 
 <span id="for-contributor"></span>
-### For Contributor:
+### 参与贡献Hydra Lab:
 
 - [Contribute to the Hydra Lab GitHub Project](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
 <span id="who-use-it"></span>
-## Who are using Hydra Lab?
+## 谁在使用Hydra Lab?
 
 It's already powering the UI test automation of the following Microsoft products:
 - Microsoft Phone Link (Windows UWP app) and Link to Windows (Android app)
@@ -155,7 +168,6 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 <span id="links"></span>
 ## Links
 
-- [Hydra Lab Release Notes](https://github.com/microsoft/HydraLab/wiki/Release-Notes)
 - [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
 - [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
 - [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)

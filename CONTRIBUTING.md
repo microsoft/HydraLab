@@ -11,7 +11,7 @@ We will regularly look at upvoted items in [issues](https://github.com/microsoft
 
 ## Making changes to the code
 
-Please turn to the wiki to set up your dev environment: [Contribution Guideline](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
+Please turn to the wiki to set up your dev environment: [Dev Environment Setup](https://github.com/microsoft/HydraLab/wiki/Dev-Environment-Setup)
 
 ### Git workflow
 
@@ -29,6 +29,12 @@ let us know if your pull request needs to be merged as separate commits.
 ## Coding style conventions
 
 Under most cases, new file/folder name should follow the [snake case](https://en.wikipedia.org/wiki/Snake_case) style patterns. A fully capitalized name should come with a reasonable justification.
+
+## Handling exceptions in code
+
+We are aligned on the [Fail Fast](https://www.techtarget.com/whatis/definition/fail-fast) principles for the project, and will avoid any inappropriate practice that will bury an exception in long log or ignoed code comment, please refer to [Java-Exception-handling-best-practices](https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Java-Exception-handling-best-practices)|[中文版](https://xie.infoq.cn/article/e1acf36fa0655c321f673c230) to learn about it first.
+
+And please leverage the `Assert` API to save if conditions, for example: [Spring Assert API](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/util/Assert.html)
 
 ## Review Process
 

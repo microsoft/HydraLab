@@ -13,8 +13,11 @@ exit /B
 if exist "%temp%\getadmin.vbs" ( del "%temp%\getadmin.vbs" )
 
 echo newfile = %1
-set newfile=%1
+set newfile = %1
+::stop hydra lab agent service
 net stop "Hydra Lab Agent Service"
+::kill hydra lab agent java process
+::Powershell -Command "& {Get-WmiObject Win32_Process -Filter \"name like '%%java%%' and CommandLine like '%%agent%%'\" | Select-Object ProcessId -OutVariable pids;if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}}"
 if "%newfile%"=="" ( echo "No need to update" ) else (
     if not exist "%newfile%" ( echo "%newfile% not exist" ) else (
         echo "Updating"
@@ -22,4 +25,7 @@ if "%newfile%"=="" ( echo "No need to update" ) else (
         ren "%newfile%" agent.jar
     )
 )
+::start hydra lab agent in command mode
+::java -Xms1024m -Xmx4096m -jar .\agent.jar
+::start hydra lab agent in windows service mode
 net start "Hydra Lab Agent Service"
