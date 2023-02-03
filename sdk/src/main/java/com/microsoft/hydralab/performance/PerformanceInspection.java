@@ -2,28 +2,40 @@ package com.microsoft.hydralab.performance;
 
 import java.io.File;
 
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
+
 public class PerformanceInspection {
-    public final String inspector;
+    public final PerformanceInspector.PerformanceInspectorType inspectorType;
     public final String appId;
     public final String deviceIdentifier;
-    public final String name;
+    public final String description;
     public final String inspectionKey;
+    public final boolean isReset;
     File resultFolder;
 
-    public PerformanceInspection(String name, String inspector, String appId, String deviceIdentifier) {
-        this.inspector = inspector;
+    public PerformanceInspection(String description, PerformanceInspector.PerformanceInspectorType inspectorType, String appId, String deviceIdentifier, boolean isReset) {
+        this.inspectorType = inspectorType;
         this.appId = appId;
         this.deviceIdentifier = deviceIdentifier;
-        this.name = name;
-        inspectionKey = String.format("%s-%s-%s", appId, deviceIdentifier, inspector);
+        this.description = description;
+        this.isReset = isReset;
+        inspectionKey = String.format("%s-%s-%s", appId, deviceIdentifier, inspectorType);
     }
 
-    public static PerformanceInspection createAndroidBatteryInfoSpec(String appId, String deviceIdentifier) {
-        return new PerformanceInspection(getNameByParam(PerformanceInspector.INSPECTOR_ANDROID_BATTERY_INFO, appId, deviceIdentifier),
-                PerformanceInspector.INSPECTOR_ANDROID_BATTERY_INFO, appId, deviceIdentifier);
+    public static PerformanceInspection createAndroidBatteryInfoInspection(String appId, String deviceIdentifier, String description) {
+        return createAndroidBatteryInfoInspection(appId, deviceIdentifier, description, false);
     }
 
-    private static String getNameByParam(String inspector, String appId, String deviceId) {
-        return String.format("PerfTesting: get %s for %s on %s", inspector, appId, deviceId);
+    public static PerformanceInspection createWindowsBatteryInspection(String appId, String deviceIdentifier, String description) {
+        return createWindowsBatteryInspection(appId, deviceIdentifier, description, false);
+    }
+
+    public static PerformanceInspection createAndroidBatteryInfoInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
+        return new PerformanceInspection(description, INSPECTOR_ANDROID_BATTERY_INFO, appId, deviceIdentifier, isReset);
+    }
+
+    public static PerformanceInspection createWindowsBatteryInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
+        return new PerformanceInspection(description, INSPECTOR_WIN_BATTERY, appId, deviceIdentifier, isReset);
     }
 }
