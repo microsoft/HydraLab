@@ -2,8 +2,7 @@ package com.microsoft.hydralab.performance;
 
 import java.io.File;
 
-import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
-import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.*;
 
 public class PerformanceInspection {
 
@@ -32,6 +31,10 @@ public class PerformanceInspection {
         return createWindowsBatteryInspection(appId, deviceIdentifier, description, false);
     }
 
+    public static PerformanceInspection createWindowsMemoryInspection(String appId, String deviceIdentifier, String description) {
+        return createWindowsMemoryInspection(appId, deviceIdentifier, description, false);
+    }
+
     public static PerformanceInspection createAndroidBatteryInfoInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
         return new PerformanceInspection(description, INSPECTOR_ANDROID_BATTERY_INFO, appId, deviceIdentifier, isReset);
     }
@@ -39,4 +42,9 @@ public class PerformanceInspection {
     public static PerformanceInspection createWindowsBatteryInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
         return new PerformanceInspection(description, INSPECTOR_WIN_BATTERY, appId, deviceIdentifier, isReset);
     }
+
+    public static PerformanceInspection createWindowsMemoryInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
+        return new PerformanceInspection(description, INSPECTOR_WIN_MEMORY, appId, deviceIdentifier, isReset);
+    }
+
 }
