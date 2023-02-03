@@ -3,7 +3,7 @@ package com.microsoft.hydralab.performance;
 import java.util.List;
 
 public interface PerformanceResultParser {
-    enum PerformanceResultParserName {
+    enum PerformanceResultParserType {
         PARSER_ANDROID_MEMORY_DUMP,
         PARSER_ANDROID_MEMORY_INFO,
         PARSER_ANDROID_BATTERY_INFO,

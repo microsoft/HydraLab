@@ -2,11 +2,11 @@ package com.microsoft.hydralab.performance;
 
 import java.io.File;
 
-import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorName.INSPECTOR_ANDROID_BATTERY_INFO;
-import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorName.INSPECTOR_WIN_BATTERY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
 
 public class PerformanceInspection {
-    public final PerformanceInspector.PerformanceInspectorName inspectorName;
+    public final PerformanceInspector.PerformanceInspectorType inspectorType;
     public final String appId;
     public final String deviceIdentifier;
     public final String description;
@@ -14,13 +14,13 @@ public class PerformanceInspection {
     public final boolean isReset;
     File resultFolder;
 
-    public PerformanceInspection(String description, PerformanceInspector.PerformanceInspectorName inspectorName, String appId, String deviceIdentifier, boolean isReset) {
-        this.inspectorName = inspectorName;
+    public PerformanceInspection(String description, PerformanceInspector.PerformanceInspectorType inspectorType, String appId, String deviceIdentifier, boolean isReset) {
+        this.inspectorType = inspectorType;
         this.appId = appId;
         this.deviceIdentifier = deviceIdentifier;
         this.description = description;
         this.isReset = isReset;
-        inspectionKey = String.format("%s-%s-%s", appId, deviceIdentifier, inspectorName);
+        inspectionKey = String.format("%s-%s-%s", appId, deviceIdentifier, inspectorType);
     }
 
     public static PerformanceInspection createAndroidBatteryInfoInspection(String appId, String deviceIdentifier, String description) {
