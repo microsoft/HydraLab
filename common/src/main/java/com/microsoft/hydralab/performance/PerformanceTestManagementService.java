@@ -31,7 +31,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     @NotNull
     private static PerformanceTestResult createPerformanceTestResult(PerformanceInspection performanceInspection) {
         PerformanceTestResult performanceTestResult = new PerformanceTestResult();
-        performanceTestResult.inspector = performanceInspection.inspector;
+        performanceTestResult.inspectorName = performanceInspection.inspectorName;
         return performanceTestResult;
     }
 
@@ -49,9 +49,9 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
     @Override
     public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
-        String inspector = performanceInspection.inspector;
-        PerformanceInspector performanceInspector = getInspectorByName(inspector);
-        Assert.notNull(performanceInspector, "Found no matched inspector: " + performanceInspection.inspector);
+        String inspectorName = performanceInspection.inspectorName;
+        PerformanceInspector performanceInspector = getInspectorByName(inspectorName);
+        Assert.notNull(performanceInspector, "Found no matched inspector: " + performanceInspection.inspectorName);
         ITestRun testRun = getTestRun();
         File performanceFolder = new File(testRun.getResultFolder(), "performance");
         Assert.isTrue(performanceFolder.mkdirs(), "performanceInspection.resultFolder.mkdirs() failed in " + performanceFolder.getAbsolutePath());
@@ -86,7 +86,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         PerformanceTestResult performanceTestResult = testResultMap.get(performanceInspection.inspectionKey);
         Assert.notNull(performanceTestResult, "Found no matched performanceTestResult for performanceInspectionKey: " + performanceInspection.inspectionKey);
         List<PerformanceInspectionResult> performanceInspectionResultList = performanceTestResult.performanceInspectionResults;
-        PerformanceResultParser parser = performanceResultParserMap.get(resultParser);
+        PerformanceResultParser parser = getParserByName(resultParser);
         Assert.notNull(parser, "Found no matched result parser: " + resultParser);
         return parser.parse(performanceInspectionResultList);
     }

@@ -16,6 +16,6 @@ public class PerformanceTestResult {
      * TODO: Apply a max size to avoid OOM
      */
     public List<PerformanceInspectionResult> performanceInspectionResults = new ArrayList<>();
-    public String inspector;
-    public String parser;
+    public String inspectorName;
+    public String parserName;
 }
