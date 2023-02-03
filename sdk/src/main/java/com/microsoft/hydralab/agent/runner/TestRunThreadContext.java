@@ -13,7 +13,7 @@ public class TestRunThreadContext {
      * Should be called in the TestRunner setup lifecycle
      * @param testRun
      */
-    public static void init(ITestRun testRun) {
+    static void init(ITestRun testRun) {
         clean();
         testRunThreadLocal.set(testRun);
     }
