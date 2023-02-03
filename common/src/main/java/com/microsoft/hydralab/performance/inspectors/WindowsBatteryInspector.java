@@ -18,10 +18,20 @@ import java.util.TimeZone;
 /**
  * WindowsBatteryInspector is only suitable for the Windows devices with battery,
  * since powercfg command runs only on those devices.
+ *
+ * Note:
+ * powercfg command needs the elevated privileges of powershell, and UAC (User Account Control) dialog may pop up during
+ * the elevation process to block the testing. There is a workaround to disable the UAC dialog by setting "Never notify"
+ * in the UAC settings panel.
+ *
+ * TODO:
+ * Need to verify if the agent configured with elevated privileges can bypass the UAC popup without changing the UAC
+ * configuration.
  */
 public class WindowsBatteryInspector implements PerformanceInspector {
     private final static String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s.csv";
-    private final static String COMMAND_FORMAT = "Start-Process -FilePath Powershell.exe -Verb RunAs -ArgumentList '-command \"powercfg /srumutil /OUTPUT %s /CSV \"'";
+    private final static String COMMAND_FORMAT = "Start-Process -FilePath Powershell.exe -Verb RunAs -ArgumentList " +
+            "'-command \"powercfg /srumutil /OUTPUT %s /CSV \"'";
 
     protected Logger classLogger = LoggerFactory.getLogger(getClass());
 
