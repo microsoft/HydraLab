@@ -16,6 +16,8 @@ public class PerformanceTestResult {
      * TODO: Apply a max size to avoid OOM
      */
     public List<PerformanceInspectionResult> performanceInspectionResults = new ArrayList<>();
-    public String inspectorName;
-    public String parserName;
+    public PerformanceInspector.PerformanceInspectorName inspectorName;
+    public PerformanceResultParser.PerformanceResultParserName parserName;
+
+    //TODO: overwrite equals, toString, and hashcode methods
 }

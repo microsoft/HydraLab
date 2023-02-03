@@ -17,14 +17,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorName.INSPECTOR_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorName.INSPECTOR_WIN_MEMORY;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserName.PARSER_ANDROID_MEMORY_DUMP;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserName.PARSER_WIN_MEMORY;
+
 public class PerformanceTestManagementService implements IPerformanceInspectionService {
-    private final Map<String, PerformanceInspector> performanceInspectorMap = Map.of(
-            PerformanceInspector.INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInfoInspector(),
-            PerformanceInspector.INSPECTOR_WIN_MEMORY, new WindowsMemoryInspector()
+    private final Map<PerformanceInspector.PerformanceInspectorName, PerformanceInspector> performanceInspectorMap = Map.of(
+            INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInfoInspector(),
+            INSPECTOR_WIN_MEMORY, new WindowsMemoryInspector()
     );
-    private final Map<String, PerformanceResultParser> performanceResultParserMap = Map.of(
-            PerformanceResultParser.PARSER_ANDROID_BATTERY_INFO, new AndroidBatteryInfoResultParser(),
-            PerformanceResultParser.PARSER_WIN_MEMORY, new WindowsMemoryResultParser()
+    private final Map<PerformanceResultParser.PerformanceResultParserName, PerformanceResultParser> performanceResultParserMap = Map.of(
+            PARSER_ANDROID_MEMORY_DUMP, new AndroidBatteryInfoResultParser(),
+            PARSER_WIN_MEMORY, new WindowsMemoryResultParser()
     );
     private final Map<ITestRun, Map<String, PerformanceTestResult>> testRunPerfResultMap = new ConcurrentHashMap<>();
 
@@ -39,17 +44,17 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         PerformanceInspectionService.getInstance().swapImplementation(this);
     }
 
-    private PerformanceInspector getInspectorByName(String inspectorName) {
+    private PerformanceInspector getInspectorByName(PerformanceInspector.PerformanceInspectorName inspectorName) {
         return performanceInspectorMap.get(inspectorName);
     }
 
-    private PerformanceResultParser getParserByName(String parserName) {
+    private PerformanceResultParser getParserByName(PerformanceResultParser.PerformanceResultParserName parserName) {
         return performanceResultParserMap.get(parserName);
     }
 
     @Override
     public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
-        String inspectorName = performanceInspection.inspectorName;
+        PerformanceInspector.PerformanceInspectorName inspectorName = performanceInspection.inspectorName;
         PerformanceInspector performanceInspector = getInspectorByName(inspectorName);
         Assert.notNull(performanceInspector, "Found no matched inspector: " + performanceInspection.inspectorName);
         ITestRun testRun = getTestRun();
@@ -80,7 +85,8 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         //todo
     }
 
-    public PerformanceTestResult parse(PerformanceInspection performanceInspection, String resultParser) {
+    @Override
+    public PerformanceTestResult parse(PerformanceInspection performanceInspection, PerformanceResultParser.PerformanceResultParserName resultParser) {
         Map<String, PerformanceTestResult> testResultMap = testRunPerfResultMap.get(getTestRun());
         Assert.notNull(testResultMap, "Found no matched test result for test run");
         PerformanceTestResult performanceTestResult = testResultMap.get(performanceInspection.inspectionKey);

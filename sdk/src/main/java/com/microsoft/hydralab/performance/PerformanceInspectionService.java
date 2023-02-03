@@ -19,7 +19,7 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
         }
 
         @Override
-        public PerformanceTestResult parse(PerformanceInspection performanceInspection, String resultParser) {
+        public PerformanceTestResult parse(PerformanceInspection performanceInspection, PerformanceResultParser.PerformanceResultParserName resultParser) {
             return null;
         }
     };
@@ -39,7 +39,7 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
     }
 
     @Override
-    public PerformanceTestResult parse(PerformanceInspection performanceInspection, String resultParser) {
+    public PerformanceTestResult parse(PerformanceInspection performanceInspection, PerformanceResultParser.PerformanceResultParserName resultParser) {
         return serviceImplementation.parse(performanceInspection, resultParser);
     }
 }

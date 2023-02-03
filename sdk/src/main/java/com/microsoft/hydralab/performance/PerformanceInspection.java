@@ -2,8 +2,11 @@ package com.microsoft.hydralab.performance;
 
 import java.io.File;
 
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorName.INSPECTOR_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorName.INSPECTOR_WIN_BATTERY;
+
 public class PerformanceInspection {
-    public final String inspectorName;
+    public final PerformanceInspector.PerformanceInspectorName inspectorName;
     public final String appId;
     public final String deviceIdentifier;
     public final String description;
@@ -11,7 +14,7 @@ public class PerformanceInspection {
     public final boolean isReset;
     File resultFolder;
 
-    public PerformanceInspection(String description, String inspectorName, String appId, String deviceIdentifier, boolean isReset) {
+    public PerformanceInspection(String description, PerformanceInspector.PerformanceInspectorName inspectorName, String appId, String deviceIdentifier, boolean isReset) {
         this.inspectorName = inspectorName;
         this.appId = appId;
         this.deviceIdentifier = deviceIdentifier;
@@ -29,10 +32,10 @@ public class PerformanceInspection {
     }
 
     public static PerformanceInspection createAndroidBatteryInfoInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
-        return new PerformanceInspection(description, PerformanceInspector.INSPECTOR_ANDROID_BATTERY_INFO, appId, deviceIdentifier, isReset);
+        return new PerformanceInspection(description, INSPECTOR_ANDROID_BATTERY_INFO, appId, deviceIdentifier, isReset);
     }
 
     public static PerformanceInspection createWindowsBatteryInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
-        return new PerformanceInspection(description, PerformanceInspector.INSPECTOR_WIN_BATTERY, appId, deviceIdentifier, isReset);
+        return new PerformanceInspection(description, INSPECTOR_WIN_BATTERY, appId, deviceIdentifier, isReset);
     }
 }

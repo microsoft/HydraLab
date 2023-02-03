@@ -13,4 +13,6 @@ public class PerformanceInspectionResult {
     public PerformanceInspectionResult() {
         this.timestamp = System.currentTimeMillis();
     }
+
+    //TODO: overwrite equals, toString, and hashcode methods
 }

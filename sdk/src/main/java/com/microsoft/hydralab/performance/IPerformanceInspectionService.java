@@ -5,6 +5,6 @@ public interface IPerformanceInspectionService {
 
     void inspectWithStrategy(PerformanceInspection performanceInspection, InspectionStrategy inspectionStrategy);
 
-    PerformanceTestResult parse(PerformanceInspection performanceInspection, String resultParser);
+    PerformanceTestResult parse(PerformanceInspection performanceInspection, PerformanceResultParser.PerformanceResultParserName resultParser);
 
 }
