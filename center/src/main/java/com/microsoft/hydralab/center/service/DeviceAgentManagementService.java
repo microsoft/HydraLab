@@ -88,6 +88,10 @@ public class DeviceAgentManagementService {
     @Value("${app.batteryStrategy}")
     private String batteryStrategy;
     private long lastTimeRequest;
+    @Value("${management.metrics.export.prometheus.pushgateway.username}")
+    private String pushgatewayUsername;
+    @Value("${management.metrics.export.prometheus.pushgateway.password}")
+    private String pushgatewayPassword;
 
     public void onOpen(Session session) {
         onlineCount.incrementAndGet();
@@ -120,6 +124,8 @@ public class DeviceAgentManagementService {
         AgentMetadata data = new AgentMetadata();
         data.setBlobSAS(blobStorageService.GenerateWriteSAS(agentUser.getId()));
         data.setAgentUser(agentUser);
+        data.setPushgatewayUsername(pushgatewayUsername);
+        data.setPushgatewayPassword(pushgatewayPassword);
 
         Message message = new Message();
         message.setPath(signalName);

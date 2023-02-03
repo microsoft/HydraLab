@@ -78,3 +78,5 @@ management:
           base-url: http://localhost:9091
           job: ${spring.application.name}
           push-rate: 10s
+          username: ${PUSHGATEWAY_USERNAME:admin}
+          password: ${PUSHGATEWAY_PASSWORD}
