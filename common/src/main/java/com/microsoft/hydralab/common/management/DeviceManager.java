@@ -9,6 +9,8 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
+import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -26,7 +28,9 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.android.ddmlib.IDevice.DeviceState;
@@ -36,13 +40,18 @@ public abstract class DeviceManager {
     public static final String LOGGER_PREFIX = "logger.devices.";
     static final Logger classLogger = LoggerFactory.getLogger(DeviceManager.class);
     protected BlobStorageClient blobStorageClient;
-    protected DeviceStabilityMonitor deviceStabilityMonitor;
     protected File testBaseDir;
+    protected File preAppDir;
     protected String testBaseDirUrlMapping;
     protected File deviceLogBaseDir;
     protected File screenshotDir;
     protected String deviceFolderUrlPrefix;
     protected String deviceStoragePath;
+    protected DeviceStatusListenerManager deviceStatusListenerManager;
+
+    public void setDeviceStatusListenerManager(DeviceStatusListenerManager deviceStatusListenerManager) {
+        this.deviceStatusListenerManager = deviceStatusListenerManager;
+    }
 
     protected AppiumServerManager appiumServerManager;
 
@@ -80,20 +89,20 @@ public abstract class DeviceManager {
         this.blobStorageClient = blobStorageClient;
     }
 
-    public DeviceStabilityMonitor getDeviceStabilityMonitor() {
-        return this.deviceStabilityMonitor;
-    }
-
-    public void setDeviceStabilityMonitor(DeviceStabilityMonitor deviceStabilityMonitor) {
-        this.deviceStabilityMonitor = deviceStabilityMonitor;
-    }
-
     public File getTestBaseDir() {
         return testBaseDir;
     }
 
     public void setTestBaseDir(File testBaseDir) {
         this.testBaseDir = testBaseDir;
+    }
+
+    public File getPreAppDir() {
+        return preAppDir;
+    }
+
+    public void setPreAppDir(File preAppDir) {
+        this.preAppDir = preAppDir;
     }
 
     public String getTestBaseDirUrlMapping() {
@@ -275,7 +284,9 @@ public abstract class DeviceManager {
                         count = eleList.size();
                     }
                 }
-                if (count <= 0) continue;
+                if (count <= 0) {
+                    continue;
+                }
                 int r = new Random().nextInt(count);
                 WebElement e = eleList.get(r);
                 try {
@@ -298,22 +309,7 @@ public abstract class DeviceManager {
         return true;
     }
 
-    public enum MobileDeviceState {
-        OFFLINE,
-        ONLINE,
-        DISCONNECTED,
-        TESTING,
-        UNSTABLE,
-        OTHER
-    }
-
     public interface FileAvailableCallback {
         void onFileReady(File file);
-    }
-
-    public interface DeviceStatusMonitor {
-        void onDeviceInactive(DeviceInfo deviceInfo);
-
-        void onDeviceConnected(DeviceInfo deviceInfo);
     }
 }

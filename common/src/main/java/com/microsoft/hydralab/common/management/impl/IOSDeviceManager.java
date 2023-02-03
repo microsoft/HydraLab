@@ -14,7 +14,6 @@ import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForMac;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForWindows;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.AgentConstant;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
@@ -244,7 +243,7 @@ public class IOSDeviceManager extends DeviceManager {
                 DeviceInfo removedInfo = latestDeviceInfoMap.remove(serialNum);
                 if (removedInfo != null) {
                     if (DeviceInfo.OFFLINE.equals(info.getStatus())) {
-                        deviceStabilityMonitor.stabilityCheck(info, MobileDeviceState.ONLINE, Const.DeviceStability.BEHAVIOUR_GO_ONLINE);
+                        deviceStatusListenerManager.onDeviceConnected(info);
                         info.setStatus(DeviceInfo.ONLINE);
 //                        classLogger.info("Device " + serialNum + " updated");
                     }
@@ -256,7 +255,7 @@ public class IOSDeviceManager extends DeviceManager {
                     // Device was disconnected
 //                    classLogger.info("Device " + serialNum + " disconnected");
                     info.setStatus(DeviceInfo.OFFLINE);
-                    deviceStabilityMonitor.stabilityCheck(info, MobileDeviceState.OFFLINE, Const.DeviceStability.BEHAVIOUR_DISCONNECT);
+                    deviceStatusListenerManager.onDeviceInactive(info);
                     getAppiumServerManager().quitIOSDriver(info, classLogger);
                 }
             }
@@ -267,7 +266,7 @@ public class IOSDeviceManager extends DeviceManager {
                 info.setStatus(DeviceInfo.ONLINE);
                 // Add new connected devices
                 iOSDeviceInfoMap.put(serialNum, info);
-                deviceStabilityMonitor.stabilityCheck(info, MobileDeviceState.ONLINE, Const.DeviceStability.BEHAVIOUR_CONNECT);
+                deviceStatusListenerManager.onDeviceConnected(info);
             }
         }
     }
