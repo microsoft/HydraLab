@@ -21,7 +21,7 @@ import java.util.TimeZone;
  */
 public class WindowsBatteryInspector implements PerformanceInspector {
     private final static String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s.csv";
-    private final static String COMMAND_FORMAT = "powercfg /srumutil /OUTPUT \"%s\" /CSV ";
+    private final static String COMMAND_FORMAT = "Start-Process -FilePath Powershell.exe -Verb RunAs -ArgumentList '-command \"powercfg /srumutil /OUTPUT %s /CSV \"'";
 
     protected Logger classLogger = LoggerFactory.getLogger(getClass());
 
