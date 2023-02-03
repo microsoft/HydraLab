@@ -7,8 +7,10 @@ import com.microsoft.hydralab.performance.PerformanceTestResult;
 import java.util.List;
 
 public class WindowsMemoryResultParser implements PerformanceResultParser {
+
     @Override
     public PerformanceTestResult parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
+
 }

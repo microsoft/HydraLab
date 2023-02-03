@@ -5,8 +5,10 @@ package com.microsoft.hydralab.performance;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
+import com.microsoft.hydralab.performance.inspectors.WindowsBatteryInspector;
 import com.microsoft.hydralab.performance.inspectors.WindowsMemoryInspector;
 import com.microsoft.hydralab.performance.parsers.AndroidBatteryInfoResultParser;
+import com.microsoft.hydralab.performance.parsers.WindowsBatteryResultParser;
 import com.microsoft.hydralab.performance.parsers.WindowsMemoryResultParser;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
@@ -17,19 +19,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
-import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
-import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_DUMP;
-import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_MEMORY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.*;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.*;
 
 public class PerformanceTestManagementService implements IPerformanceInspectionService {
     private final Map<PerformanceInspector.PerformanceInspectorType, PerformanceInspector> performanceInspectorMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInfoInspector(),
-            INSPECTOR_WIN_MEMORY, new WindowsMemoryInspector()
+            INSPECTOR_WIN_MEMORY, new WindowsMemoryInspector(),
+            INSPECTOR_WIN_BATTERY, new WindowsBatteryInspector()
     );
     private final Map<PerformanceResultParser.PerformanceResultParserType, PerformanceResultParser> performanceResultParserMap = Map.of(
             PARSER_ANDROID_MEMORY_DUMP, new AndroidBatteryInfoResultParser(),
-            PARSER_WIN_MEMORY, new WindowsMemoryResultParser()
+            PARSER_WIN_MEMORY, new WindowsMemoryResultParser(),
+            PARSER_WIN_BATTERY, new WindowsBatteryResultParser()
     );
     private final Map<ITestRun, Map<String, PerformanceTestResult>> testRunPerfResultMap = new ConcurrentHashMap<>();
 

@@ -6,7 +6,7 @@ import com.microsoft.hydralab.performance.PerformanceTestResult;
 
 import java.util.List;
 
-public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
+public class WindowsBatteryResultParser implements PerformanceResultParser {
 
     @Override
     public PerformanceTestResult parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
