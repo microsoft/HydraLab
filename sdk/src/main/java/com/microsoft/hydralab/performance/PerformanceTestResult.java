@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 package com.microsoft.hydralab.performance;
 
 import java.util.ArrayList;

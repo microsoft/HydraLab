@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 param (
     [string]$keyword = "Phone",
 	[string]$output = ""
