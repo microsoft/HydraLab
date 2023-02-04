@@ -255,7 +255,8 @@ export default function Dashboard() {
                                 <ListItemText primary="About"/>
                             </ListItem>
                             <Tooltip title={"Star microsoft/HydraLab on GitHub"}>
-                                <iframe style={{float:'right',margin:'10px'}} src="https://ghbtns.com/github-btn.html?user=microsoft&repo=HydraLab&type=star&count=true" frameborder="0" scrolling="0" width="90" height="25" title="GitHub"></iframe>
+                                {/* More details in https://ghbtns.com/ */}
+                                <iframe style={{float:'right',margin:'5px 12px 0px 0px'}} src="https://ghbtns.com/github-btn.html?user=microsoft&repo=HydraLab&type=star&count=true" frameborder="0" scrolling="0" width="90" height="25" title="GitHub"></iframe>
                             </Tooltip>
                             <ListItem
                                 style={{
