@@ -56,7 +56,7 @@ export default class HeaderView extends BaseView {
         const helpSettings = [
             { text: 'Feedback', href: 'https://forms.office.com/r/0wnc2Sk0tp' },
             { text: 'Wiki', href: 'https://github.com/microsoft/HydraLab/wiki' },
-            { text: 'About', href: 'https://microsoft.github.io/HydraLab/' }
+            { text: 'About', href: 'https://github.com/microsoft/HydraLab/blob/main/README.md' }
         ];
         const {teamList, changeDefaultTeamIsShown} = this.state
 
