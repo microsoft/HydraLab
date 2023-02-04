@@ -11,9 +11,9 @@ const htmlPlugin = new HtmlWebPackPlugin({
 })
 const distPath = '../center/src/main/resources/static/dist'
 // Change the following endpoint address to point it to your Hydra Lab API service
-const devHydraLabServiceEndpoint = 'http://localhost:9886'
-const testHostPath = {
-    target: devHydraLabServiceEndpoint,
+const devHydraLabServerEndpoint = 'http://localhost:9886'
+const devHydraLabServer = {
+    target: devHydraLabServerEndpoint,
     secure: false,
     changeOrigin: true,
     // if you Hydra Lab Center Service enabled the OAuth, this node needed to be configured/uncommented.
@@ -35,11 +35,11 @@ module.exports = env => {
         devServer: {
             port: 9999,
             proxy: {
-                '/api': testHostPath,
-                '/devices': testHostPath,
-                '/test': testHostPath,
+                '/api': devHydraLabServer,
+                '/devices': devHydraLabServer,
+                '/test': devHydraLabServer,
                 '/images': {
-                    target: testHostPath,
+                    target: devHydraLabServer,
                     pathRewrite: { '^/images': '/src/images' }
                 }
             }
