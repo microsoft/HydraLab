@@ -260,7 +260,7 @@ export default function Dashboard() {
                             </Tooltip>
                             <ListItem
                                 style={{
-                                    height: "calc(100vh - 610px)",
+                                    height: "calc(100vh - 590px)",
                                     pointerEvents: "none"
                                 }}>
                             </ListItem>
