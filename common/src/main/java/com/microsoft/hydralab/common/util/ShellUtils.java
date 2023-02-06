@@ -92,7 +92,7 @@ public class ShellUtils {
                 result.append(line);
             }
             return result.toString();
-        } catch (Exception e) {
+        } catch (IOException e) {
             classLogger.error("Fail to run: " + command, e);
         }
 
