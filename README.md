@@ -2,6 +2,8 @@
 <p align="center">Build your own cloud testing infrastructure</p>
 <div align="center">
 
+[中文(完善中)](README.zh-CN.md)
+
 [![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/HydraLab-CI?branchName=main)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=743&branchName=main)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
@@ -12,7 +14,7 @@
 
 ![HydraLabFeaturesPreview](docs/images/HydraLabFeaturesPreview.gif)
 
-[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki) | [中文(完善中)](README.zh-CN.md)
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
 </div>
 
 
