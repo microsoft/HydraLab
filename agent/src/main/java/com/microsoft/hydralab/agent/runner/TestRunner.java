@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -132,8 +133,8 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing setUp actions.");
-            Exception e = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.SET_UP);
-            Assert.isNull(e, () -> e);
+            List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.SET_UP);
+            Assert.isTrue(exceptions.size() == 0, () -> exceptions.get(0));
         }
 
         testRun.getLogger().info("Start granting all package needed permissions device");
@@ -149,8 +150,8 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
-            Exception e = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
-            if (e != null) {
+            List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+            if (exceptions.size() > 0) {
                 testRun.getLogger().error("Execute actions failed when tearDown!");
             }
         }

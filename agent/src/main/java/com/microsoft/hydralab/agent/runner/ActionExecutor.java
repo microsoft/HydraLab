@@ -14,10 +14,7 @@ import org.springframework.http.HttpStatus;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -31,9 +28,9 @@ public class ActionExecutor {
      */
     private Set<String> actionTypes = Set.of("setProperty", "setDefaultLauncher", "backToHome", "changeGlobalSetting", "changeSystemSetting", "pushFileToDevice", "pullFileFromDevice");
 
-    public Exception doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
-                               @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
-        Exception exception = null;
+    public List<Exception> doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
+                                     @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
+        List<Exception> exceptions = new ArrayList<>();
         //filter todoActions
         List<DeviceAction> todoActions = actions.get(when).stream().filter(deviceAction -> actionTypes.contains(deviceAction.getMethod())).collect(Collectors.toList());
 
@@ -42,13 +39,13 @@ public class ActionExecutor {
             try {
                 doAction(deviceManager, deviceInfo, logger, deviceAction);
             } catch (InvocationTargetException | IllegalAccessException | HydraLabRuntimeException e) {
-                exception = e;
+                exceptions.add(e);
                 logger.error("Execute {} action: fail", deviceAction.getMethod(), e);
             }
         }
         logger.info("Execute actions finished!");
         ThreadUtils.safeSleep(3000);
-        return exception;
+        return exceptions;
     }
 
     public void doAction(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
