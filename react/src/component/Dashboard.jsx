@@ -257,13 +257,9 @@ export default function Dashboard() {
                                         src="https://ghbtns.com/github-btn.html?user=microsoft&repo=HydraLab&type=star&count=true"
                                         frameBorder="0" scrolling="0" align="right" width="90" height="25" title="GitHub"></iframe>
                             </ListItem>
-                            <Tooltip title={"Star microsoft/HydraLab on GitHub"}>
-                                {/* More details in https://ghbtns.com/ */}
-                                <iframe style={{float:'right',margin:'5px 12px 0px 0px'}} src="https://ghbtns.com/github-btn.html?user=microsoft&repo=HydraLab&type=star&count=true" frameborder="0" scrolling="0" width="90" height="25" title="GitHub"></iframe>
-                            </Tooltip>
                             <ListItem
                                 style={{
-                                    height: "calc(100vh - 590px)",
+                                    height: "calc(100vh - 561px)",
                                     pointerEvents: "none"
                                 }}>
                             </ListItem>
