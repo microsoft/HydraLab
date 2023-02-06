@@ -152,7 +152,7 @@ public abstract class TestRunner {
             testRun.getLogger().info("Start executing tearDown actions.");
             List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
             if (exceptions.size() > 0) {
-                testRun.getLogger().error("Execute actions failed when tearDown!");
+                testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
         }
 
