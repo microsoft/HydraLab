@@ -154,9 +154,6 @@ public abstract class TestRunner {
         }
 
         deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
-        if (testTask.isThisForMicrosoftLauncher()) {
-            unsetForMicrosoftLauncherApp(deviceInfo, testRun.getLogger());
-        }
 
         //generate xml report and upload files
         try {
