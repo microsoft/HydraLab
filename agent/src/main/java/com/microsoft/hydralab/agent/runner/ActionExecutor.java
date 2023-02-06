@@ -14,10 +14,7 @@ import org.springframework.http.HttpStatus;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -30,54 +27,53 @@ public class ActionExecutor {
      * the implementation of supported actions should not be overload
      */
     private Set<String> actionTypes = Set.of("setProperty", "setDefaultLauncher", "backToHome", "changeGlobalSetting",
-            "changeSystemSetting", "execCommandOnDevice");
+            "changeSystemSetting", "execCommandOnDevice", "pushFileToDevice", "pullFileFromDevice");
 
-    public void doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
-                          @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
-        if (actions.get(when) == null || actions.get(when).isEmpty()) {
-            return;
-        }
+    public List<Exception> doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
+                                     @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
+        List<Exception> exceptions = new ArrayList<>();
         //filter todoActions
         List<DeviceAction> todoActions = actions.get(when).stream().filter(deviceAction -> actionTypes.contains(deviceAction.getMethod())).collect(Collectors.toList());
 
         logger.info("Start to execute actions! Current timing is {}, action size is {}", when, todoActions.size());
-        todoActions.forEach(deviceAction -> doAction(deviceManager, deviceInfo, logger, deviceAction));
+        for (DeviceAction deviceAction : todoActions) {
+            try {
+                doAction(deviceManager, deviceInfo, logger, deviceAction);
+            } catch (InvocationTargetException | IllegalAccessException | HydraLabRuntimeException e) {
+                exceptions.add(e);
+                logger.error("Execute {} action: fail", deviceAction.getMethod(), e);
+            }
+        }
         logger.info("Execute actions finished!");
         ThreadUtils.safeSleep(3000);
+        return exceptions;
     }
 
     public void doAction(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
-                         @NotNull DeviceAction deviceAction) {
-        try {
-            if (!actionTypes.contains(deviceAction.getMethod())) {
-                return;
-            }
-            logger.info("Start to analysis action type! Current action is {}", deviceAction.getMethod());
-            Method method = Arrays.stream(deviceManager.getClass().getMethods())
-                    .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getMethod()))
-                    .findFirst().orElse(
-                            Arrays.stream(deviceManager.getClass().getDeclaredMethods())
-                                    .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getMethod()))
-                                    .findFirst().orElse(null)
-                    );
-            if (method == null) {
-                logger.error("Analysis action type error:Unsupported method");
-                return;
-            }
-
-            logger.info("Start to analysis action args! Current action is {}", deviceAction.getMethod());
-            List<String> actionArgs = deviceAction.getArgs();
-            Object[] methodArgs = convertArgs(deviceInfo, logger, actionArgs, method.getParameterTypes());
-
-            logger.info("Start to execute action! Current action is {}", deviceAction.getMethod());
-            method.setAccessible(true);
-            method.invoke(deviceManager, methodArgs);
-
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            logger.error("Execute action: fail", e);
-        } catch (HydraLabRuntimeException e) {
-            logger.error("Convert action arg: fail", e);
+                         @NotNull DeviceAction deviceAction) throws InvocationTargetException, IllegalAccessException {
+        if (!actionTypes.contains(deviceAction.getMethod())) {
+            return;
         }
+        logger.info("Start to analysis action type! Current action is {}", deviceAction.getMethod());
+        Method method = Arrays.stream(deviceManager.getClass().getMethods())
+                .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getMethod()))
+                .findFirst().orElse(
+                        Arrays.stream(deviceManager.getClass().getDeclaredMethods())
+                                .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getMethod()))
+                                .findFirst().orElse(null)
+                );
+        if (method == null) {
+            logger.error("Analysis action type error:Unsupported method");
+            return;
+        }
+
+        logger.info("Start to analysis action args! Current action is {}", deviceAction.getMethod());
+        List<String> actionArgs = deviceAction.getArgs();
+        Object[] methodArgs = convertArgs(deviceInfo, logger, actionArgs, method.getParameterTypes());
+
+        logger.info("Start to execute action! Current action is {}", deviceAction.getMethod());
+        method.setAccessible(true);
+        method.invoke(deviceManager, methodArgs);
     }
 
 

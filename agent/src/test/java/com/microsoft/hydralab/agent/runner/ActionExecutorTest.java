@@ -7,9 +7,11 @@ import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +24,7 @@ class ActionExecutorTest extends BaseTest {
     ActionExecutor actionExecutor = new ActionExecutor();
 
     @Test
-    void createAndExecuteActions() {
+    void createAndExecuteActions() throws InvocationTargetException, IllegalAccessException {
         AndroidDeviceManager deviceManager = Mockito.mock(AndroidDeviceManager.class);
         DeviceInfo deviceInfo = new DeviceInfo();
         JSONObject actionJson = new JSONObject();
@@ -40,7 +42,8 @@ class ActionExecutorTest extends BaseTest {
         List<DeviceAction> actions = new ArrayList<>();
         actions.add(action1);
         actions.add(action2);
-        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
+        List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
+        Assertions.assertTrue(exceptions.size() == 0, () -> exceptions.get(0).getMessage());
         verify(deviceManager, times(2)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
         verify(deviceManager, times(1)).changeGlobalSetting(deviceInfo, args2.get(0), args2.get(1), baseLogger);
     }
