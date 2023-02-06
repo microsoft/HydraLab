@@ -10,6 +10,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
+import Tooltip from "@mui/material/Tooltip";
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import DeviceAgentsView from '@/component/DeviceAgentsView'
@@ -246,12 +247,15 @@ export default function Dashboard() {
                                 </ListItemIcon>
                                 <ListItemText primary="Team Management" />
                             </ListItem>
-                            <ListItem component="a" href='https://microsoft.github.io/HydraLab/' target="_blank"
+                            <ListItem component="a" href='https://github.com/microsoft/HydraLab/blob/main/README.md' target="_blank"
                                       rel="noopener noreferrer" button>
                                 <ListItemIcon>
                                     <span className="material-icons-outlined">info</span>
                                 </ListItemIcon>
                                 <ListItemText primary="About"/>
+                                <iframe style={{margin: '6px 0px 0px 0px'}}
+                                        src="https://ghbtns.com/github-btn.html?user=microsoft&repo=HydraLab&type=star&count=true"
+                                        frameBorder="0" scrolling="0" align="right" width="90" height="25" title="GitHub"></iframe>
                             </ListItem>
                             <ListItem
                                 style={{
