@@ -192,7 +192,7 @@ public class ADBOperateUtil {
         return true;
     }
 
-    public void pushFileToDevice(DeviceInfo deviceInfo, String pathOnAgent, String pathOnDevice, Logger logger) throws Exception {
+    public void pushFileToDevice(DeviceInfo deviceInfo, String pathOnAgent, String pathOnDevice, Logger logger) throws IOException, InterruptedException {
         IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
         Assert.notNull(deviceByInfo, "No such device: " + deviceInfo);
 
@@ -205,7 +205,7 @@ public class ADBOperateUtil {
         process.waitFor(60, TimeUnit.SECONDS);
     }
 
-    public void pullFileToDir(DeviceInfo deviceInfo, String pathOnAgent, String pathOnDevice, Logger logger) throws Exception {
+    public void pullFileToDir(DeviceInfo deviceInfo, String pathOnAgent, String pathOnDevice, Logger logger) throws IOException, InterruptedException {
         IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
         Assert.notNull(deviceByInfo, "No such device: " + deviceInfo);
 

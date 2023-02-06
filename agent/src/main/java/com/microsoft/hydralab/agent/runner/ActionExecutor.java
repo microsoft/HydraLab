@@ -31,12 +31,9 @@ public class ActionExecutor {
      */
     private Set<String> actionTypes = Set.of("setProperty", "setDefaultLauncher", "backToHome", "changeGlobalSetting", "changeSystemSetting", "pushFileToDevice", "pullFileFromDevice");
 
-    public boolean doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
-                             @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
-        boolean isSuccess = true;
-        if (actions.get(when) == null || actions.get(when).isEmpty()) {
-            return isSuccess;
-        }
+    public Exception doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
+                               @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
+        Exception exception = null;
         //filter todoActions
         List<DeviceAction> todoActions = actions.get(when).stream().filter(deviceAction -> actionTypes.contains(deviceAction.getMethod())).collect(Collectors.toList());
 
@@ -44,17 +41,14 @@ public class ActionExecutor {
         for (DeviceAction deviceAction : todoActions) {
             try {
                 doAction(deviceManager, deviceInfo, logger, deviceAction);
-            } catch (InvocationTargetException | IllegalAccessException e) {
-                isSuccess = false;
-                logger.error("Execute action: fail", e);
-            } catch (HydraLabRuntimeException e) {
-                isSuccess = false;
-                logger.error("Convert action arg: fail", e);
+            } catch (InvocationTargetException | IllegalAccessException | HydraLabRuntimeException e) {
+                exception = e;
+                logger.error("Execute {} action: fail", deviceAction.getMethod(), e);
             }
         }
         logger.info("Execute actions finished!");
         ThreadUtils.safeSleep(3000);
-        return isSuccess;
+        return exception;
     }
 
     public void doAction(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,

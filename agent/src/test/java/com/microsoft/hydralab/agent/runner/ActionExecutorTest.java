@@ -42,9 +42,9 @@ class ActionExecutorTest extends BaseTest {
         List<DeviceAction> actions = new ArrayList<>();
         actions.add(action1);
         actions.add(action2);
-        boolean isSuccess = actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
+        Exception e = actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
 
-        Assertions.assertTrue(isSuccess, "Execute actions failed when set up device!");
+        Assertions.assertNull(e, e.getMessage());
         verify(deviceManager, times(2)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
         verify(deviceManager, times(1)).changeGlobalSetting(deviceInfo, args2.get(0), args2.get(1), baseLogger);
     }

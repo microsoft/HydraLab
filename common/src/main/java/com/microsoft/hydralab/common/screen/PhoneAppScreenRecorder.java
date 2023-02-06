@@ -130,7 +130,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
             }
             try {
                 adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
-            } catch (Exception e) {
+            } catch (IOException | InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }
             ThreadUtils.safeSleep(5000);
