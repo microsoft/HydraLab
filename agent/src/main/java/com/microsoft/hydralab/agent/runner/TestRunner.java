@@ -152,7 +152,6 @@ public abstract class TestRunner {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
         }
-
         deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
 
         //generate xml report and upload files
