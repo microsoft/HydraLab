@@ -126,7 +126,11 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
             if (videoFile.exists()) {
                 videoFile.delete();
             }
-            adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
+            try {
+                adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
+            } catch (IOException | InterruptedException e) {
+                logger.error(e.getMessage(), e);
+            }
             ThreadUtils.safeSleep(5000);
 
             long phoneFileSize = adbOperateUtil.getFileLength(deviceInfo, logger, pathOnDevice);
