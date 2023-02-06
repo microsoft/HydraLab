@@ -56,6 +56,8 @@ app:
       window-time: ${STATE_CHANGE_WINDOW_TIME:5}
       recovery-time: ${STATE_RECOVERY_TIME:3}
   location: ${user.dir}
+  device-script:
+    commands:
 # Prometheus Configuration
 management:
   endpoints:

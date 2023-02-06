@@ -249,6 +249,8 @@ public abstract class DeviceManager {
 
     abstract public void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
 
+    abstract public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
+    
     protected boolean isAppRunningForeground(DeviceInfo deviceInfo, String packageName, Logger logger) {
         IOSDriver iOSDriver = appiumServerManager.getIOSDriver(deviceInfo, logger);
         ApplicationState state = iOSDriver.queryAppState(packageName);
