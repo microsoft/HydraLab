@@ -13,6 +13,9 @@ public class DeviceCommand {
     private String type;
     private String device;
     private String when;
-    private String matcher;
+    /**
+     * If the suite-class doesn't be provided, the value of suite-class would be the package name.
+     */
+    private String suiteClassMatcher;
     private String inline;
 }

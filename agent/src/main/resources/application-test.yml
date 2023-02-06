@@ -3,17 +3,17 @@ app:
     commands:
       - type: ADBShell
         when: setUp
-        matcher: '.*'
+        suite-class-matcher: '.*'
         inline: |
           test command 1
       - type: ADBShell
         when: setUp
-        matcher: '.*test.*'
+        suite-class-matcher: '.*test.*'
         inline: |
           test command 2
           test command 3
       - type: ADBShell
         when: tearDown
-        matcher: 'com.microsoft.test'
+        suite-class-matcher: 'com.microsoft.test'
         inline: |
           test command 4

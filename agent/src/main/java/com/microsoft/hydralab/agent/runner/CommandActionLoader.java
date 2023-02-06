@@ -38,7 +38,7 @@ public class CommandActionLoader {
     private List<DeviceCommand> filterCommands(String suiteName) {
         List<DeviceCommand> filteredCommands = new ArrayList<>();
         for (DeviceCommand command : commands) {
-            if (suiteName.matches(command.getMatcher())) {
+            if (suiteName.matches(command.getSuiteClassMatcher())) {
                 filteredCommands.add(command);
             }
         }
