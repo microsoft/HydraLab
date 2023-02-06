@@ -338,12 +338,12 @@ public class AndroidDeviceManager extends DeviceManager {
     }
 
     @Override
-    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent, @NotNull String pathOnDevice, @Nullable Logger logger) throws Exception {
+    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent, @NotNull String pathOnDevice, @Nullable Logger logger) throws IOException, InterruptedException {
         adbOperateUtil.pushFileToDevice(deviceInfo, pathOnAgent, pathOnDevice, logger);
     }
 
     @Override
-    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) throws Exception {
+    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) throws IOException, InterruptedException {
         ITestRun testRun = TestRunThreadContext.getTestRun();
         Assert.notNull(testRun, "There is no testRun instance in ThreadContext!");
         Assert.notNull(testRun.getResultFolder(), "The testRun instance in ThreadContext does not have resultFolder property!");
