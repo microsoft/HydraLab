@@ -5,6 +5,7 @@ package com.microsoft.hydralab.performance.inspectors;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.util.ShellUtils;
+import com.microsoft.hydralab.common.util.TimeUtils;
 import com.microsoft.hydralab.performance.PerformanceInspection;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
@@ -14,11 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.TimeZone;
 
 public class WindowsMemoryInspector implements PerformanceInspector {
 
@@ -55,7 +52,7 @@ public class WindowsMemoryInspector implements PerformanceInspector {
         }
 
         File rawResultFile = new File(performanceInspection.resultFolder,
-                String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), PROCESS_NAME_KEYWORD, getTimestamp()));
+                String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), PROCESS_NAME_KEYWORD, TimeUtils.getTimestampForFilename()));
         Process process = ShellUtils.execLocalCommand(
                 SCRIPT_FILE.getAbsolutePath() + String.format(PARAMETER_FORMAT, PROCESS_NAME_KEYWORD, rawResultFile),
                 false, classLogger);
@@ -72,15 +69,6 @@ public class WindowsMemoryInspector implements PerformanceInspector {
         }
 
         return result;
-    }
-
-    private String getTimestamp() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss",
-                Locale.getDefault());
-        TimeZone gmt = TimeZone.getTimeZone("UTC");
-        dateFormat.setTimeZone(gmt);
-        dateFormat.setLenient(true);
-        return dateFormat.format(new Date());
     }
 
 }

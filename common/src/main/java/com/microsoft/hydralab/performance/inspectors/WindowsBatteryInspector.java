@@ -5,17 +5,14 @@ package com.microsoft.hydralab.performance.inspectors;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.util.ShellUtils;
+import com.microsoft.hydralab.common.util.TimeUtils;
+import com.microsoft.hydralab.performance.PerformanceInspection;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
-import com.microsoft.hydralab.performance.PerformanceInspection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  * WindowsBatteryInspector is only suitable for the Windows devices with battery,
@@ -48,7 +45,7 @@ public class WindowsBatteryInspector implements PerformanceInspector {
         }
 
         File rawResultFile = new File(performanceInspection.resultFolder,
-                String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), getTimestamp()));
+                String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), TimeUtils.getTimestampForFilename()));
         Process process = ShellUtils.execLocalCommand(String.format(COMMAND_FORMAT, rawResultFile), false, classLogger);
         PerformanceInspectionResult result = new PerformanceInspectionResult(rawResultFile);
 
@@ -63,15 +60,6 @@ public class WindowsBatteryInspector implements PerformanceInspector {
         }
 
         return result;
-    }
-
-    private String getTimestamp() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss",
-                Locale.getDefault());
-        TimeZone gmt = TimeZone.getTimeZone("UTC");
-        dateFormat.setTimeZone(gmt);
-        dateFormat.setLenient(true);
-        return dateFormat.format(new Date());
     }
 
 }
