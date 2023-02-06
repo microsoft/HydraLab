@@ -19,6 +19,7 @@ import java.util.Objects;
 
 public class WindowsMemoryInspector implements PerformanceInspector {
 
+    // TODO: [Extensible] Make it work with more processes of other Windows apps.
     private final static String PROCESS_NAME_KEYWORD = "Phone";
     private final static String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s_%s";
     private final static String SCRIPT_NAME = "WindowsMemoryInspector.ps1";
