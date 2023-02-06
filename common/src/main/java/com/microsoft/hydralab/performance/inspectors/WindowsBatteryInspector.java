@@ -29,6 +29,7 @@ import java.util.TimeZone;
  * TODO:
  * Need to verify if the agent configured with elevated privileges can bypass the UAC popup without changing the UAC
  * configuration.
+ * Add a new method in ShellUtils to run the admin command if the TODO is not feasible.
  */
 public class WindowsBatteryInspector implements PerformanceInspector {
     private final static String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s.csv";
