@@ -7,6 +7,7 @@ import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -23,7 +24,7 @@ class ActionExecutorTest extends BaseTest {
     ActionExecutor actionExecutor = new ActionExecutor();
 
     @Test
-    void createAndExecuteActions() {
+    void createAndExecuteActions() throws InvocationTargetException, IllegalAccessException {
         AndroidDeviceManager deviceManager = Mockito.mock(AndroidDeviceManager.class);
         DeviceInfo deviceInfo = new DeviceInfo();
         JSONObject actionJson = new JSONObject();
@@ -32,11 +33,7 @@ class ActionExecutorTest extends BaseTest {
         DeviceAction action1 = JSONObject.parseObject(actionJson.toJSONString(), DeviceAction.class);
         List<String> args1 = List.of("paramA", "paramB");
         action1.setArgs(args1);
-        try {
-            actionExecutor.doAction(deviceManager, deviceInfo, baseLogger, action1);
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        actionExecutor.doAction(deviceManager, deviceInfo, baseLogger, action1);
         verify(deviceManager).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
 
         DeviceAction action2 = new DeviceAction("Android", "changeGlobalSetting");
@@ -45,7 +42,9 @@ class ActionExecutorTest extends BaseTest {
         List<DeviceAction> actions = new ArrayList<>();
         actions.add(action1);
         actions.add(action2);
-        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
+        boolean isSuccess = actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
+
+        Assertions.assertTrue(isSuccess, "Execute actions failed when set up device!");
         verify(deviceManager, times(2)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
         verify(deviceManager, times(1)).changeGlobalSetting(deviceInfo, args2.get(0), args2.get(1), baseLogger);
     }

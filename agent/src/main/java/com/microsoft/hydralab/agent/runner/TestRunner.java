@@ -57,7 +57,7 @@ public abstract class TestRunner {
 
     private void runByFutureTask(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
         FutureTask<String> futureTask = new FutureTask<>(() -> {
-            setContextOfCurrentThread(testRun);
+            loadTestRunToCurrentThread(testRun);
             run(deviceInfo, testTask, testRun);
             return null;
         });
@@ -79,7 +79,7 @@ public abstract class TestRunner {
      * TODO Call {@link TestRunThreadContext#init(ITestRun)}
      * This method must be called in the test run execution thread.
      */
-    private void setContextOfCurrentThread(TestRun testRun) {
+    private void loadTestRunToCurrentThread(TestRun testRun) {
         TestRunThreadContext.init(testRun);
     }
 
@@ -116,7 +116,7 @@ public abstract class TestRunner {
         deviceInfo.killAll();
         // this key will be used to recover device status when lost the connection between agent and master
         deviceInfo.addCurrentTask(testTask);
-        setContextOfCurrentThread(testRun);
+        loadTestRunToCurrentThread(testRun);
         /* set up device */
         testRun.getLogger().info("Start setup device");
         deviceManager.testDeviceSetup(deviceInfo, testRun.getLogger());

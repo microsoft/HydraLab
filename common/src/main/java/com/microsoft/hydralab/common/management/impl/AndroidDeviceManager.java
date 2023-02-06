@@ -320,7 +320,7 @@ public class AndroidDeviceManager extends DeviceManager {
     public boolean installApp(DeviceInfo deviceInfo, String packagePath, @Nullable Logger logger) throws InstallException {
         File apk = new File(packagePath);
         Assert.isTrue(apk.exists(), "apk not exist!!");
-        return adbOperateUtil.installApp(deviceInfo, apk.getAbsolutePath(), true, "-t -r -d -g", logger);
+        return adbOperateUtil.installApp(deviceInfo, apk.getAbsolutePath(), true, "-t -d -g", logger);
     }
 
     @Override
@@ -345,9 +345,9 @@ public class AndroidDeviceManager extends DeviceManager {
     @Override
     public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) throws Exception {
         ITestRun testRun = TestRunThreadContext.getTestRun();
-        if (testRun == null || testRun.getResultFolder() == null) {
-            logger.error("There is no testRun instance in ThreadContext!");
-        }
+        Assert.notNull(testRun, "There is no testRun instance in ThreadContext!");
+        Assert.notNull(testRun.getResultFolder(), "The testRun instance in ThreadContext does not have resultFolder property!");
+
         String pathOnAgent = testRun.getResultFolder().getAbsolutePath() + "/";
         adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
     }
