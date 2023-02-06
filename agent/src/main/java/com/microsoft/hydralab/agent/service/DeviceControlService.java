@@ -2,16 +2,20 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.repository.MobileDeviceRepository;
 import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
-import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
+import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.impl.WindowsDeviceManager;
+import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
+import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
+import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
+import com.microsoft.hydralab.common.management.listener.impl.PreInstallListener;
 import com.microsoft.hydralab.common.util.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +41,8 @@ public class DeviceControlService {
     DeviceTaskControlExecutor deviceTaskControlExecutor;
     @Resource
     DeviceStabilityMonitor deviceStabilityMonitor;
+    @Resource
+    DeviceStatusListenerManager deviceStatusListenerManager;
 
     public Set<DeviceInfo> getAllConnectedDevice() {
         updateAllDeviceScope();
@@ -81,8 +87,6 @@ public class DeviceControlService {
         }
     }
 
-
-
     private void updateAllDeviceScope() {
         List<MobileDevice> devices = mobileDeviceRepository.findAll();
         for (MobileDevice device : devices) {
@@ -122,14 +126,41 @@ public class DeviceControlService {
         return device;
     }
 
-
-
     public DeviceManager getDeviceManager() {
         return deviceManager;
     }
 
     public void deviceManagerInit() {
-        deviceManager.setDeviceStabilityMonitor(deviceStabilityMonitor);
+        deviceStatusListenerManager.registerListener(new DeviceStatusListener() {
+
+            @Override
+            public void onDeviceInactive(DeviceInfo deviceInfo) {
+                //send message to master to update device status
+                JSONObject data = new JSONObject();
+                data.put(Const.AgentConfig.SERIAL_PARAM, deviceInfo.getSerialNum());
+                if (DeviceInfo.UNSTABLE.equals(deviceInfo.getStatus())) {
+                    data.put(Const.AgentConfig.STATUS_PARAM, deviceInfo.getStatus());
+                } else {
+                    data.put(Const.AgentConfig.STATUS_PARAM, DeviceInfo.OFFLINE);
+                }
+                agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
+            }
+
+            @Override
+            public void onDeviceConnected(DeviceInfo deviceInfo) {
+                //send message to master to update device status
+                JSONObject data = new JSONObject();
+                data.put(Const.AgentConfig.SERIAL_PARAM, deviceInfo.getSerialNum());
+                if (DeviceInfo.UNSTABLE.equals(deviceInfo.getStatus())) {
+                    data.put(Const.AgentConfig.STATUS_PARAM, deviceInfo.getStatus());
+                } else {
+                    data.put(Const.AgentConfig.STATUS_PARAM, DeviceInfo.ONLINE);
+                }
+                agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
+            }
+        });
+        deviceStatusListenerManager.registerListener(new PreInstallListener(deviceManager));
+        deviceStatusListenerManager.registerListener(deviceStabilityMonitor);
         try {
             deviceManager.init();
         } catch (Exception e) {

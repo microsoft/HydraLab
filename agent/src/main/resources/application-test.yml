@@ -1,0 +1,19 @@
+app:
+  device-script:
+    commands:
+      - type: ADBShell
+        when: setUp
+        suite-class-matcher: '.*'
+        inline: |
+          test command 1
+      - type: ADBShell
+        when: setUp
+        suite-class-matcher: '.*test.*'
+        inline: |
+          test command 2
+          test command 3
+      - type: ADBShell
+        when: tearDown
+        suite-class-matcher: 'com.microsoft.test'
+        inline: |
+          test command 4

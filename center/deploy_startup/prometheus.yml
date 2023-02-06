@@ -27,5 +27,8 @@ scrape_configs:
     scrape_timeout: 5s    
     # metrics_path: /actuator/prometheus
     scheme: http
-    static_configs:   
+    basic_auth:
+      username: admin
+      password: env:PUSHGATEWAY_PASSWORD
+    static_configs:
       - targets: ["localhost:9091"]

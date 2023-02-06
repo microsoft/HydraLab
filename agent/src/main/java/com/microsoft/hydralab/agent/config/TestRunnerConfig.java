@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.config;
 
+import com.microsoft.hydralab.agent.command.DeviceScriptCommand;
 import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
@@ -15,9 +16,12 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -67,5 +71,11 @@ public class TestRunnerConfig {
     @Bean
     public T2CRunner t2cRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService) {
         return new T2CRunner(deviceManager, testTaskEngineService, agentName);
+    }
+
+    @ConfigurationProperties(prefix = "app.device-script.commands")
+    @Bean(name = "DeviceCommandProperty")
+    public List<DeviceScriptCommand> DeviceCommandProperty() {
+        return new ArrayList<>();
     }
 }

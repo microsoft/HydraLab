@@ -2,7 +2,7 @@ const path = require('path')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require("copy-webpack-plugin")
 const TerserPlugin = require("terser-webpack-plugin")
-const webpack = require('webpack');
+const webpack = require('webpack')
 const CompressionPlugin = require("compression-webpack-plugin")
 
 const htmlPlugin = new HtmlWebPackPlugin({
@@ -10,16 +10,18 @@ const htmlPlugin = new HtmlWebPackPlugin({
     filename: 'index.html'
 })
 const distPath = '../center/src/main/resources/static/dist'
-const testHostPath = {
-    target: 'YOUR_HOST_ADDR',
+// Change the following endpoint address to point it to your Hydra Lab API service
+const devHydraLabServerEndpoint = 'http://localhost:9886'
+const devHydraLabServer = {
+    target: devHydraLabServerEndpoint,
     secure: false,
-    changeOrigin: true
+    changeOrigin: true,
+    // if you Hydra Lab Center Service enabled the OAuth, this node needed to be configured/uncommented.
+    // The Authorization token is accessible in page Authentication -> TOKENS, click the add token button to create if there isn't one.
+    // headers: {
+    //     'Authorization': '*******',
+    // }
 }
-// const testHostPath = 'http://localhost:9886'
-// in dev mode the testHostPath need to add token
-//      headers: {
-//         'Authorization':'*******',
-//     }
 // About Terser https://webpack.js.org/plugins/terser-webpack-plugin/
 // about ENV usage: https://webpack.js.org/guides/environment-variables/
 module.exports = env => {
@@ -33,11 +35,11 @@ module.exports = env => {
         devServer: {
             port: 9999,
             proxy: {
-                '/api': testHostPath,
-                '/devices': testHostPath,
-                '/test': testHostPath,
+                '/api': devHydraLabServer,
+                '/devices': devHydraLabServer,
+                '/test': devHydraLabServer,
                 '/images': {
-                    target: testHostPath,
+                    target: devHydraLabServer,
                     pathRewrite: { '^/images': '/src/images' }
                 }
             }

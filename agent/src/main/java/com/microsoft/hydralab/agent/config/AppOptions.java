@@ -26,6 +26,9 @@ public class AppOptions {
         return location + "/storage/devices/";
     }
 
+    public String getPreAppStorageLocation() {
+        return location + "/storage/preApp";
+    }
 
     public String getDeviceLogStorageLocation() {
         return getDeviceStorageLocation() + "/log/";
