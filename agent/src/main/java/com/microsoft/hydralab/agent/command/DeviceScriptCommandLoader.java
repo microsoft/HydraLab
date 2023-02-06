@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.agent.runner;
+package com.microsoft.hydralab.agent.command;
 
-import com.microsoft.hydralab.common.entity.agent.DeviceCommand;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import org.springframework.stereotype.Service;
@@ -18,16 +17,16 @@ import java.util.List;
  * @date 01/31/2023
  */
 @Service
-public class CommandActionLoader {
+public class DeviceScriptCommandLoader {
     @Resource(name = "DeviceCommandProperty")
-    private List<DeviceCommand> commands;
+    private List<DeviceScriptCommand> commands;
 
     public void loadCommandAction(TestTask testTask) {
         if (testTask.getDeviceActions() == null) {
             testTask.setDeviceActions(new HashMap<>());
         }
-        List<DeviceCommand> filteredCommands = filterCommands(testTask.getTestSuite());
-        for (DeviceCommand deviceCommand : filteredCommands) {
+        List<DeviceScriptCommand> filteredCommands = filterCommands(testTask.getTestSuite());
+        for (DeviceScriptCommand deviceCommand : filteredCommands) {
             List<DeviceAction> actions = command2Action(deviceCommand);
             List<DeviceAction> originActions = testTask.getDeviceActions().getOrDefault(deviceCommand.getWhen(), new ArrayList<>());
             originActions.addAll(actions);
@@ -35,9 +34,9 @@ public class CommandActionLoader {
         }
     }
 
-    private List<DeviceCommand> filterCommands(String suiteName) {
-        List<DeviceCommand> filteredCommands = new ArrayList<>();
-        for (DeviceCommand command : commands) {
+    private List<DeviceScriptCommand> filterCommands(String suiteName) {
+        List<DeviceScriptCommand> filteredCommands = new ArrayList<>();
+        for (DeviceScriptCommand command : commands) {
             if (suiteName.matches(command.getSuiteClassMatcher())) {
                 filteredCommands.add(command);
             }
@@ -45,7 +44,7 @@ public class CommandActionLoader {
         return filteredCommands;
     }
 
-    private List<DeviceAction> command2Action(DeviceCommand deviceCommand) {
+    private List<DeviceAction> command2Action(DeviceScriptCommand deviceCommand) {
         List<DeviceAction> actionList = new ArrayList<>();
         ActionConverter converter = ActionConverter.valueOf(deviceCommand.getType());
         if (converter == null) {

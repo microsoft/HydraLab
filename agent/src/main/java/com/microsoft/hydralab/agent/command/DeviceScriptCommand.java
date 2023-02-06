@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.entity.agent;
+package com.microsoft.hydralab.agent.command;
 
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import lombok.Data;
  * @date 01/31/2023
  */
 @Data
-public class DeviceCommand {
+public class DeviceScriptCommand {
     private String type;
     private String device;
     private String when;

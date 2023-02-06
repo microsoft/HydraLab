@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.agent.runner;
 
+import com.microsoft.hydralab.agent.command.DeviceScriptCommandLoader;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.verify;
 class CommandActionLoaderTest extends BaseTest {
 
     @Resource
-    CommandActionLoader commandLoader;
+    DeviceScriptCommandLoader commandLoader;
 
     @Test
     void testAttachCommandAction() {

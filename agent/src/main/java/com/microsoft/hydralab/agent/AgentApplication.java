@@ -2,14 +2,11 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent;
 
-import com.microsoft.hydralab.common.entity.agent.DeviceCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -17,9 +14,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @SpringBootApplication
 @EnableScheduling
@@ -54,11 +49,5 @@ public class AgentApplication {
             break;
         }
         return headless;
-    }
-
-    @ConfigurationProperties(prefix = "app.device-script.commands")
-    @Bean(name = "DeviceCommandProperty")
-    public List<DeviceCommand> DeviceCommandProperty() {
-        return new ArrayList<>();
     }
 }
