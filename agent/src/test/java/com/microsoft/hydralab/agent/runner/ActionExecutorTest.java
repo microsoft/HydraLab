@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.agent.runner;
 
-import cn.hutool.core.lang.Assert;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +24,7 @@ class ActionExecutorTest extends BaseTest {
     ActionExecutor actionExecutor = new ActionExecutor();
 
     @Test
-    void createAndExecuteActions() throws Exception {
+    void createAndExecuteActions() throws InvocationTargetException, IllegalAccessException {
         AndroidDeviceManager deviceManager = Mockito.mock(AndroidDeviceManager.class);
         DeviceInfo deviceInfo = new DeviceInfo();
         JSONObject actionJson = new JSONObject();
