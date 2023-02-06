@@ -22,12 +22,7 @@ import java.util.regex.Pattern;
         @Index(name = "start_date_index", columnList = "start_date", unique = false),
         @Index(columnList = "team_id")})
 public class TestTask implements Serializable {
-    public static final String MICROSOFT_LAUNCHER_PACKAGE_NAME_KEY_PART = "microsoft.launcher";
     static final Pattern pIdMatch = Pattern.compile("\\d{3,7}");
-    @Transient
-    private static final String defaultAct2 = "com.microsoft.launcher.Launcher";
-    @Transient
-    private static final String defaultAct = "com.android.launcher3.DefaultLauncherApp";
     @Transient
     private static final String defaultRunner = "androidx.test.runner.AndroidJUnitRunner";
     @Transient
@@ -73,8 +68,6 @@ public class TestTask implements Serializable {
     private String accessKey;
     @Transient
     private transient String title;
-    @Transient
-    private transient String currentDefaultActivity = defaultAct;
     @Transient
     private transient Map<String, String> instrumentationArgs;
     @Transient
@@ -199,14 +192,6 @@ public class TestTask implements Serializable {
         testJsonFileList.add(jsonFile);
     }
 
-    public void switchDefaultActivity() {
-        if (currentDefaultActivity.equals(defaultAct)) {
-            currentDefaultActivity = defaultAct2;
-        } else {
-            currentDefaultActivity = defaultAct;
-        }
-    }
-
     @Transient
     public boolean isCanceled() {
         return TestStatus.CANCELED.equals(status);
@@ -264,12 +249,6 @@ public class TestTask implements Serializable {
             totalTestCount += deviceTestResult.getTotalCount();
             totalFailCount += deviceTestResult.getFailCount();
         }
-    }
-
-    @JSONField(serialize = false)
-    @Transient
-    public boolean isThisForMicrosoftLauncher() {
-        return pkgName.contains(MICROSOFT_LAUNCHER_PACKAGE_NAME_KEY_PART);
     }
 
     /**
