@@ -1,0 +1,13 @@
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation 'net.sourceforge.plantuml:plantuml:1.2021.9'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+}

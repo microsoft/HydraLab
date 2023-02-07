@@ -1,4 +1,4 @@
-@startuml test_runners_classes
+@startuml test_runner_class_relation
 abstract class TestRunner {
     #createTestRun(...)
     #setUp(TestTask)
@@ -114,7 +114,7 @@ deactivate TaskCompletion
 }
 @endjson
 
-@startuml design
+@startuml TestRunnerListenerDesign
 abstract class Runner
 interface TestRunnerListener {
     onTestCaseStart()
@@ -128,7 +128,7 @@ interface TestRunnerListener {
 Runner *--> TestRunnerListener
 @enduml
 
-@startuml test_objects
+@startuml test_entities
 
 entity (TestTaskSpec)
 entity (TestTask)
@@ -141,7 +141,7 @@ TestTask *--> TestRun: contain a list of
 TestRun *--> AndroidTestUnit: contain a list of
 @enduml
 
-@startuml test_objects
+@startuml test_object_relationships
 
 entity (TestTaskSpec)
 entity (TestTask)
