@@ -11,6 +11,22 @@ public class ShellUtils {
     public static final String POWER_SHELL_PATH = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
     public static boolean isConnectedToWindowsOS = System.getProperty("os.name").startsWith("Windows");
 
+    private static String[] getFullCommand(String command)
+    {
+        String shellProcess = "";
+        String argName = "";
+
+        if (isConnectedToWindowsOS) {
+            shellProcess = POWER_SHELL_PATH;
+            argName = "-Command";
+        } else {
+            shellProcess = "sh";
+            argName = "-c";
+        }
+
+        return new String[]{shellProcess, argName, command};
+    }
+
     @Nullable
     public static Process execLocalCommand(String command, Logger classLogger) {
         return execLocalCommand(command, true, classLogger);
@@ -19,8 +35,10 @@ public class ShellUtils {
     @Nullable
     public static Process execLocalCommand(String command, boolean needWait, Logger classLogger) {
         Process process = null;
+        String[] fullCommand = getFullCommand(command);
+
         try {
-            process = Runtime.getRuntime().exec(command);
+            process = Runtime.getRuntime().exec(fullCommand);
             CommandOutputReceiver err = new CommandOutputReceiver(process.getErrorStream(), classLogger);
             CommandOutputReceiver out = new CommandOutputReceiver(process.getInputStream(), classLogger);
             err.start();
@@ -38,17 +56,9 @@ public class ShellUtils {
 
     @Nullable
     public static Process execLocalCommandWithRedirect(String command, File redirectTo, boolean needWait, Logger classLogger) {
-        String shellProcess = "";
-        String argName = "";
-        if (isConnectedToWindowsOS) {
-            shellProcess = POWER_SHELL_PATH;
-            argName = "-Command";
-        } else {
-            shellProcess = "sh";
-            argName = "-c";
-        }
-        String[] fullCommand = {shellProcess, argName, command + " > " + redirectTo.getAbsolutePath()};
         Process process = null;
+        String[] fullCommand = getFullCommand(command + " | Out-File -FilePath " + redirectTo.getAbsolutePath());
+
         try {
             process = Runtime.getRuntime().exec(fullCommand);
             CommandOutputReceiver err = new CommandOutputReceiver(process.getErrorStream(), classLogger);
@@ -68,8 +78,10 @@ public class ShellUtils {
 
     @Nullable
     public static String execLocalCommandWithResult(String command, Logger classLogger) {
+        String[] fullCommand = getFullCommand(command);
+
         try {
-            Process process = Runtime.getRuntime().exec(command);
+            Process process = Runtime.getRuntime().exec(fullCommand);
             // Getting the results
             process.getOutputStream().close();
             InputStream is = process.getInputStream();
@@ -82,8 +94,9 @@ public class ShellUtils {
             return result.toString();
         } catch (IOException e) {
             classLogger.error("Fail to run: " + command, e);
-            return null;
         }
+
+        return null;
     }
 
     public static void killProcessByCommandStr(String commandStr, Logger classLogger) {

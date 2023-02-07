@@ -1,6 +1,9 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 package com.microsoft.hydralab.performance;
 
 public interface PerformanceInspector {
+
     enum PerformanceInspectorType {
         INSPECTOR_ANDROID_MEMORY_DUMP,
         INSPECTOR_ANDROID_MEMORY_INFO,
@@ -10,4 +13,5 @@ public interface PerformanceInspector {
     }
 
     PerformanceInspectionResult inspect(PerformanceInspection performanceInspection);
+
 }

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 package com.microsoft.hydralab.performance.parsers;
 
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
@@ -7,8 +9,10 @@ import com.microsoft.hydralab.performance.PerformanceTestResult;
 import java.util.List;
 
 public class WindowsMemoryResultParser implements PerformanceResultParser {
+
     @Override
     public PerformanceTestResult parse(List<PerformanceInspectionResult> performanceInspectionResultList) {
         return null;
     }
+
 }
