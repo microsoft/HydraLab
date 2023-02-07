@@ -127,9 +127,6 @@ public abstract class TestRunner {
         reInstallApp(deviceInfo, testTask, testRun.getLogger());
         reInstallTestApp(deviceInfo, testTask, testRun.getLogger());
 
-        if (testTask.isThisForMicrosoftLauncher()) {
-            presetForMicrosoftLauncherApp(deviceInfo, testTask, testRun.getLogger());
-        }
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing setUp actions.");
@@ -155,11 +152,7 @@ public abstract class TestRunner {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
         }
-
         deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
-        if (testTask.isThisForMicrosoftLauncher()) {
-            unsetForMicrosoftLauncherApp(deviceInfo, testRun.getLogger());
-        }
 
         //generate xml report and upload files
         try {
@@ -175,34 +168,8 @@ public abstract class TestRunner {
                 testRun.getLogger().error("Error in onOneDeviceComplete", e);
             }
         }
-
         testRun.getLogger().info("Start Close/finish resource");
         LogUtils.releaseLogger(testRun.getLogger());
-    }
-
-    private void presetForMicrosoftLauncherApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) {
-        reportLogger.info("PresetForMicrosoftLauncherApp: Start default launcher");
-        deviceManager.setProperty(deviceInfo, "log.tag.WelcomeScreen", "VERBOSE", reportLogger);
-        deviceManager.setProperty(deviceInfo, "log.tag.ConsentDialog", "VERBOSE", reportLogger);
-        deviceManager.setProperty(deviceInfo, "log.tag.WhatsNewDialog", "VERBOSE", reportLogger);
-        deviceManager.setProperty(deviceInfo, "log.tag.NoneCheckUpdates", "VERBOSE", reportLogger);
-
-        if (!deviceManager.setDefaultLauncher(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger)) {
-            testTask.switchDefaultActivity();
-            deviceManager.setDefaultLauncher(deviceInfo, testTask.getPkgName(), testTask.getCurrentDefaultActivity(), reportLogger);
-        }
-        reportLogger.info("Finish default launcher, currentDefaultActivity {}", testTask.getCurrentDefaultActivity());
-
-        deviceManager.backToHome(deviceInfo, reportLogger);
-        ThreadUtils.safeSleep(3000);
-    }
-
-    private void unsetForMicrosoftLauncherApp(DeviceInfo deviceInfo, Logger reportLogger) {
-        reportLogger.info("unsetForMicrosoftLauncherApp: unset all the log tags");
-        deviceManager.setProperty(deviceInfo, "log.tag.WelcomeScreen", " ", reportLogger);
-        deviceManager.setProperty(deviceInfo, "log.tag.ConsentDialog", " ", reportLogger);
-        deviceManager.setProperty(deviceInfo, "log.tag.WhatsNewDialog", " ", reportLogger);
-        deviceManager.setProperty(deviceInfo, "log.tag.NoneCheckUpdates", " ", reportLogger);
     }
 
     protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
