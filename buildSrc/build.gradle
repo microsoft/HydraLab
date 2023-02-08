@@ -5,6 +5,6 @@ repositories {
 
 dependencies {
     implementation gradleApi()
-    implementation 'net.sourceforge.plantuml:plantuml:1.2021.9'
+    implementation 'net.sourceforge.plantuml:plantuml:1.2023.1'
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 }

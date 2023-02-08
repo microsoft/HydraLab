@@ -64,7 +64,7 @@ deactivate TaskCompletion
 
 @enduml
 
-@startjson
+@startjson test_task_spec_design
 {
     "fileSetId": "006b6ec7-52f9-45c7-84ad-419fc4315134",
     "pkgName": "com.microsoft.appmanager",

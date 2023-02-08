@@ -14,7 +14,7 @@ end note
 TestRunLogger -u-|> DeviceLogger
 @enduml
 
-@startuml loggers
+@startuml logger_ownership
 EachTestDevice *--> DeviceLogger
 EachTestRun *--> TestRunLogger
 AndroidDevice *--> LogcatLogger
