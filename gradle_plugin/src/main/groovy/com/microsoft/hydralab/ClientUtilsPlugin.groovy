@@ -175,7 +175,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 || testConfig.runTimeOutSeconds == -1
                 || StringUtils.isBlank(deviceConfig.deviceIdentifier)
         ) {
-            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: authToken, appPath, pkgName, runningType, runTimeOutSeconds, deviceIdentifier.')
+            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')
         }
 
         // running type specified params

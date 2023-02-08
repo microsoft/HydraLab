@@ -236,7 +236,7 @@ public class ClientUtilsPluginTest {
         IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
         }, "IllegalArgumentException was expected");
-        Assertions.assertEquals("Required params not provided! Make sure the following params are all provided correctly: authToken, appPath, pkgName, runningType, deviceIdentifier, runTimeOutSeconds.", thrown.getMessage());
+        Assertions.assertEquals("Required params not provided! Make sure the following params are all provided correctly: authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.", thrown.getMessage());
     }
 
     private void typeSpecificParamCheck(HydraLabAPIConfig apiConfig, DeviceConfig deviceConfig, TestConfig testConfig, String requiredParamName) {
