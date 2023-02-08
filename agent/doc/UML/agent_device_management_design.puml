@@ -1,4 +1,4 @@
-@startuml new_design
+@startuml
 'https://plantuml.com/class-diagram
 
 class AgentManagementService {
