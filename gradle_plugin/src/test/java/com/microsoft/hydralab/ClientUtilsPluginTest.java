@@ -156,10 +156,13 @@ public class ClientUtilsPluginTest {
         String reportFolderPath = "./reportFolder";
         Map<String, String> instrumentationArgs = new HashMap<>();
         Map<String, String> extraArgs = new HashMap<>();
+        HydraLabAPIClient client = Mockito.mock(HydraLabAPIClient.class);
         HydraLabAPIConfig apiConfig = Mockito.mock(HydraLabAPIConfig.class);
         DeviceConfig deviceConfig = Mockito.mock(DeviceConfig.class);
         TestConfig testConfig = Mockito.mock(TestConfig.class);
-        HydraLabAPIClient client = Mockito.mock(HydraLabAPIClient.class);
+        testConfig.runningType = "INSTRUMENTATION";
+        testConfig.appPath = "src/test/resources/app.txt";
+        testConfig.testAppPath = "src/test/resources/test_app.txt";
 
         String returnId = "id123456";
         when(client.uploadApp(Mockito.any(HydraLabAPIConfig.class), Mockito.any(TestConfig.class), Mockito.anyString(), Mockito.anyString(),

@@ -38,10 +38,7 @@ public class HydraLabClientUtils {
                                               HydraLabAPIConfig apiConfig,
                                               DeviceConfig deviceConfig,
                                               TestConfig testConfig) {
-        String output = String.format("##[section]All args: argsMap: %s, extraArgsMap: %s" +
-                        "\n%s" +
-                        "\n%s" +
-                        "\n%s",
+        String output = String.format("##[section]All args: argsMap: %s, extraArgsMap: %s\n%s\n%s\n%s",
                 instrumentationArgs == null ? "" : instrumentationArgs.toString(), extraArgs == null ? "" : extraArgs.toString(),
                 apiConfig.toString(), deviceConfig.toString(), testConfig.toString());
         switch (testConfig.runningType) {
@@ -123,7 +120,7 @@ public class HydraLabClientUtils {
                 app = file;
             }
 
-            if (!testConfig.testAppPath.isEmpty()) {
+            if (StringUtils.isNotEmpty(testConfig.testAppPath)) {
                 file = new File(testConfig.testAppPath);
                 assertTrue(file.exists(), "testApp not exist", null);
                 if (file.isDirectory()) {
@@ -134,7 +131,7 @@ public class HydraLabClientUtils {
             }
 
             // todo: add logic for directly used attachmentConfig
-            if (!testConfig.attachmentConfigPath.isEmpty()) {
+            if (StringUtils.isNotBlank(testConfig.attachmentConfigPath)) {
                 file = new File(testConfig.attachmentConfigPath);
                 JsonParser parser = new JsonParser();
                 attachmentInfos = parser.parse(new FileReader(file)).getAsJsonArray();
