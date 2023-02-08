@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab
 
-import com.microsoft.hydralab.entity.HydraLabAPIConfig
+import com.microsoft.hydralab.config.DeviceConfig
+import com.microsoft.hydralab.config.HydraLabAPIConfig
+import com.microsoft.hydralab.config.TestConfig
 import com.microsoft.hydralab.utils.HydraLabClientUtils
 import org.apache.commons.lang3.StringUtils
 import org.gradle.api.Plugin
@@ -14,28 +16,10 @@ class ClientUtilsPlugin implements Plugin<Project> {
     void apply(Project target) {
         target.task("requestHydraLabTest") {
             doFirst {
-                def runningType = ""
-                if (project.hasProperty('runningType')) {
-                    runningType = project.runningType
-                }
-                def deviceIdentifier = ""
-                if (project.hasProperty('deviceIdentifier')) {
-                    deviceIdentifier = project.deviceIdentifier
-                }
-                def runTimeOutSeconds = ""
-                if (project.hasProperty('runTimeOutSeconds')) {
-                    runTimeOutSeconds = project.runTimeOutSeconds
-                }
-                def queueTimeOutSeconds = runTimeOutSeconds
-                if (project.hasProperty('queueTimeOutSeconds')) {
-                    queueTimeOutSeconds = project.queueTimeOutSeconds
-                }
-                def testSuiteName = ""
-                if (project.hasProperty('testSuiteName')) {
-                    testSuiteName = project.testSuiteName
-                }
+                TestConfig testConfig = new TestConfig()
+                DeviceConfig deviceConfig = new DeviceConfig()
+                HydraLabAPIConfig apiConfig = new HydraLabAPIConfig()
 
-                def appPath = ""
                 if (project.hasProperty('appPath')) {
                     def appFile = project.file(project.appPath)
                     println("Param appPath: ${project.appPath}")
@@ -43,11 +27,10 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         def exceptionMsg = "${project.appPath} file not exist!"
                         throw new Exception(exceptionMsg)
                     } else {
-                        appPath = appFile.absolutePath
+                        testConfig.appPath = appFile.absolutePath
                     }
                 }
 
-                def testAppPath = ""
                 if (project.hasProperty('testAppPath')) {
                     def testAppFile = project.file(project.testAppPath)
                     println("Param testAppPath: ${project.testAppPath}")
@@ -55,11 +38,10 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         def exceptionMsg = "${project.testAppPath} file not exist!"
                         throw new Exception(exceptionMsg)
                     } else {
-                        testAppPath = testAppFile.absolutePath
+                        testConfig.testAppPath = testAppFile.absolutePath
                     }
                 }
 
-                def attachmentConfigPath = ""
                 if (project.hasProperty('attachmentConfigPath')) {
                     def attachmentConfigFile = project.file(project.attachmentConfigPath)
                     println("Param attachmentConfigPath: ${project.attachmentConfigPath}")
@@ -67,7 +49,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         def exceptionMsg = "${project.attachmentConfigPath} file not exist!"
                         throw new Exception(exceptionMsg)
                     } else {
-                        attachmentConfigPath = attachmentConfigFile.absolutePath
+                        testConfig.attachmentConfigPath = attachmentConfigFile.absolutePath
                     }
                 }
 
@@ -86,11 +68,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     }
                 }
 
-                def tag = null
-                if (project.hasProperty('tag')) {
-                    tag = project.tag
-                }
-
                 def extraArgsMap = null
                 if (project.hasProperty('extraArgs')) {
                     extraArgsMap = [:]
@@ -102,8 +79,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         extraArgsMap.put(kv[0], kv[1].replace("|", ","))
                     }
                 }
-
-                HydraLabAPIConfig apiConfig = new HydraLabAPIConfig()
 
                 if (project.hasProperty('hydraLabAPISchema')) {
                     apiConfig.schema = project.hydraLabAPISchema
@@ -117,54 +92,73 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('onlyAuthPost')) {
                     apiConfig.onlyAuthPost = Boolean.parseBoolean(project.onlyAuthPost)
                 }
-                if (project.hasProperty('pkgName')) {
-                    apiConfig.pkgName = project.pkgName
-                }
-                if (project.hasProperty('testPkgName')) {
-                    apiConfig.testPkgName = project.testPkgName
+
+                if (project.hasProperty('deviceIdentifier')) {
+                    deviceConfig.deviceIdentifier = project.deviceIdentifier
                 }
                 if (project.hasProperty('groupTestType')) {
-                    apiConfig.groupTestType = project.groupTestType
-                }
-                if (project.hasProperty('frameworkType')) {
-                    apiConfig.frameworkType = project.frameworkType
-                }
-                if (project.hasProperty('maxStepCount')) {
-                    apiConfig.maxStepCount = Integer.parseInt(project.maxStepCount)
-                }
-                if (project.hasProperty('deviceTestCount')) {
-                    apiConfig.deviceTestCount = Integer.parseInt(project.deviceTestCount)
-                }
-                if (project.hasProperty('teamName')) {
-                    apiConfig.teamName = project.teamName
-                }
-                if (project.hasProperty('testRunnerName')) {
-                    apiConfig.testRunnerName = project.testRunnerName
-                }
-                if (project.hasProperty('testScope')) {
-                    apiConfig.testScope = project.testScope
-                }
-                if (project.hasProperty('needUninstall')) {
-                    apiConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
-                }
-                if (project.hasProperty('needClearData')) {
-                    apiConfig.needClearData = Boolean.parseBoolean(project.needClearData)
+                    deviceConfig.groupTestType = project.groupTestType
                 }
                 if (project.hasProperty('neededPermissions')) {
-                    apiConfig.neededPermissions = project.neededPermissions.split(", +")
+                    deviceConfig.neededPermissions = project.neededPermissions.split(", +")
                 }
                 if (project.hasProperty('deviceActions')) {
                     // add quotes back as quotes in gradle plugins will be replaced by blanks
-                    apiConfig.deviceActionsStr = project.deviceActions.replace("\\", "\"")
+                    deviceConfig.deviceActionsStr = project.deviceActions.replace("\\", "\"")
                 }
 
-                requiredParamCheck(runningType, appPath, testAppPath, deviceIdentifier, runTimeOutSeconds, testSuiteName, apiConfig)
+                if (project.hasProperty('runningType')) {
+                    testConfig.runningType = project.runningType
+                }
+                if (project.hasProperty('pkgName')) {
+                    testConfig.pkgName = project.pkgName
+                }
+                if (project.hasProperty('testPkgName')) {
+                    testConfig.testPkgName = project.testPkgName
+                }
+                if (project.hasProperty('teamName')) {
+                    testConfig.teamName = project.teamName
+                }
+                if (project.hasProperty('testRunnerName')) {
+                    testConfig.testRunnerName = project.testRunnerName
+                }
+                if (project.hasProperty('testScope')) {
+                    testConfig.testScope = project.testScope
+                }
+                if (project.hasProperty('testSuiteName')) {
+                    testConfig.testSuiteName = project.testSuiteName
+                }
+                if (project.hasProperty('frameworkType')) {
+                    testConfig.frameworkType = project.frameworkType
+                }
+                if (project.hasProperty('runTimeOutSeconds')) {
+                    testConfig.runTimeOutSeconds = Integer.parseInt(project.runTimeOutSeconds)
+                }
+                testConfig.queueTimeOutSeconds = testConfig.runTimeOutSeconds
+                if (project.hasProperty('queueTimeOutSeconds')) {
+                    testConfig.queueTimeOutSeconds = Integer.parseInt(project.queueTimeOutSeconds)
+                }
+                if (project.hasProperty('maxStepCount')) {
+                    testConfig.maxStepCount = Integer.parseInt(project.maxStepCount)
+                }
+                if (project.hasProperty('deviceTestCount')) {
+                    testConfig.deviceTestCount = Integer.parseInt(project.deviceTestCount)
+                }
+                if (project.hasProperty('needUninstall')) {
+                    testConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
+                }
+                if (project.hasProperty('needClearData')) {
+                    testConfig.needClearData = Boolean.parseBoolean(project.needClearData)
+                }
+                if (project.hasProperty('tag')) {
+                    testConfig.artifactTag = project.tag
+                }
+
+                requiredParamCheck(apiConfig, deviceConfig, testConfig)
 
                 HydraLabClientUtils.runTestOnDeviceWithApp(
-                        runningType, appPath, testAppPath, attachmentConfigPath,
-                        testSuiteName, deviceIdentifier, Integer.parseInt(queueTimeOutSeconds), Integer.parseInt(runTimeOutSeconds),
-                        reportDir.absolutePath, argsMap, extraArgsMap, tag,
-                        apiConfig
+                        reportDir.absolutePath, argsMap, extraArgsMap,
+                        apiConfig, deviceConfig, testConfig
                 )
             }
         }.configure {
@@ -173,46 +167,46 @@ class ClientUtilsPlugin implements Plugin<Project> {
         }
     }
 
-    void requiredParamCheck(String runningType, String appPath, String testAppPath, String deviceIdentifier, String runTimeOutSeconds, String testSuiteName, HydraLabAPIConfig apiConfig) {
-        if (StringUtils.isBlank(runningType)
-                || StringUtils.isBlank(appPath)
-                || StringUtils.isBlank(apiConfig.pkgName)
-                || StringUtils.isBlank(deviceIdentifier)
-                || StringUtils.isBlank(runTimeOutSeconds)
-                || StringUtils.isBlank(apiConfig.authToken)
+    void requiredParamCheck(HydraLabAPIConfig apiConfig, DeviceConfig deviceConfig, TestConfig testConfig) {
+        if (StringUtils.isBlank(apiConfig.authToken)
+                || StringUtils.isBlank(testConfig.appPath)
+                || StringUtils.isBlank(testConfig.pkgName)
+                || StringUtils.isBlank(testConfig.runningType)
+                || testConfig.runTimeOutSeconds == -1
+                || StringUtils.isBlank(deviceConfig.deviceIdentifier)
         ) {
-            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: authToken, appPath, pkgName, runningType, deviceIdentifier, runTimeOutSeconds.')
+            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: authToken, appPath, pkgName, runningType, runTimeOutSeconds, deviceIdentifier.')
         }
 
         // running type specified params
-        switch (runningType) {
+        switch (testConfig.runningType) {
             case "INSTRUMENTATION":
-                if (StringUtils.isBlank(testAppPath)) {
+                if (StringUtils.isBlank(testConfig.testAppPath)) {
                     throw new IllegalArgumentException('Required param testAppPath not provided!')
                 }
-                if (StringUtils.isBlank(apiConfig.testPkgName)) {
+                if (StringUtils.isBlank(testConfig.testPkgName)) {
                     throw new IllegalArgumentException('Required param testPkgName not provided!')
                 }
-                if (apiConfig.testScope != TestScope.PACKAGE && apiConfig.testScope != TestScope.CLASS) {
+                if (testConfig.testScope != TestScope.PACKAGE && testConfig.testScope != TestScope.CLASS) {
                     break
                 }
-                if (StringUtils.isBlank(testSuiteName)) {
+                if (StringUtils.isBlank(testConfig.testSuiteName)) {
                     throw new IllegalArgumentException('Required param testSuiteName not provided!')
                 }
                 break
             case "APPIUM":
-                if (StringUtils.isBlank(testAppPath)) {
+                if (StringUtils.isBlank(testConfig.testAppPath)) {
                     throw new IllegalArgumentException('Required param testAppPath not provided!')
                 }
-                if (StringUtils.isBlank(testSuiteName)) {
+                if (StringUtils.isBlank(testConfig.testSuiteName)) {
                     throw new IllegalArgumentException('Required param testSuiteName not provided!')
                 }
                 break
             case "APPIUM_CROSS":
-                if (StringUtils.isBlank(testAppPath)) {
+                if (StringUtils.isBlank(testConfig.testAppPath)) {
                     throw new IllegalArgumentException('Required param testAppPath not provided!')
                 }
-                if (StringUtils.isBlank(testSuiteName)) {
+                if (StringUtils.isBlank(testConfig.testSuiteName)) {
                     throw new IllegalArgumentException('Required param testSuiteName not provided!')
                 }
                 break
@@ -228,7 +222,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 break
         }
     }
-
 
     interface TestScope {
         String TEST_APP = "TEST_APP";

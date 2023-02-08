@@ -3,9 +3,10 @@
 package com.microsoft.hydralab.utils;
 
 import com.google.gson.*;
-import com.microsoft.hydralab.entity.AttachmentInfo;
-import com.microsoft.hydralab.entity.HydraLabAPIConfig;
-import com.microsoft.hydralab.entity.TestTask;
+import com.microsoft.hydralab.config.DeviceConfig;
+import com.microsoft.hydralab.config.HydraLabAPIConfig;
+import com.microsoft.hydralab.config.TestConfig;
+import com.microsoft.hydralab.entity.*;
 import okhttp3.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +55,7 @@ public class HydraLabAPIClient {
         }
     }
 
-    public String uploadApp(HydraLabAPIConfig apiConfig, String commitId, String commitCount, String commitMsg, File app, File testApp) {
+    public String uploadApp(HydraLabAPIConfig apiConfig, TestConfig testConfig, String commitId, String commitCount, String commitMsg, File app, File testApp) {
         checkCenterAlive(apiConfig);
 
         MediaType contentType = MediaType.get("application/vnd.android.package-archive");
@@ -64,8 +65,8 @@ public class HydraLabAPIClient {
                 .addFormDataPart("commitCount", commitCount)
                 .addFormDataPart("commitMessage", commitMsg)
                 .addFormDataPart("appFile", app.getName(), RequestBody.create(contentType, app));
-        if (!StringUtils.isEmpty(apiConfig.teamName)) {
-            multipartBodyBuilder.addFormDataPart("teamName", apiConfig.teamName);
+        if (!StringUtils.isEmpty(testConfig.teamName)) {
+            multipartBodyBuilder.addFormDataPart("teamName", testConfig.teamName);
         }
         if (testApp != null) {
             multipartBodyBuilder.addFormDataPart("testAppFile", testApp.getName(), RequestBody.create(contentType, testApp));
@@ -151,12 +152,12 @@ public class HydraLabAPIClient {
         }
     }
 
-    public String generateAccessKey(HydraLabAPIConfig apiConfig, String deviceIdentifier) {
+    public String generateAccessKey(HydraLabAPIConfig apiConfig, DeviceConfig deviceConfig) {
         checkCenterAlive(apiConfig);
 
         Request req = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(String.format(apiConfig.getGenerateAccessKeyUrl(), deviceIdentifier))
+                .url(String.format(apiConfig.getGenerateAccessKeyUrl(), deviceConfig.deviceIdentifier))
                 .get()
                 .build();
         OkHttpClient clientToUse = client;
@@ -191,35 +192,34 @@ public class HydraLabAPIClient {
         }
     }
 
-    public JsonObject triggerTestRun(String runningType, HydraLabAPIConfig apiConfig, String fileSetId, String testSuiteName,
-                                             String deviceIdentifier, @Nullable String accessKey, int runTimeoutSec, Map<String, String> instrumentationArgs, Map<String, String> extraArgs) {
+    public JsonObject triggerTestRun(TestConfig testConfig, DeviceConfig deviceConfig, HydraLabAPIConfig apiConfig, String fileSetId, @Nullable String accessKey, Map<String, String> instrumentationArgs, Map<String, String> extraArgs) {
         checkCenterAlive(apiConfig);
 
         JsonObject jsonElement = new JsonObject();
-        jsonElement.addProperty("runningType", runningType);
-        jsonElement.addProperty("deviceIdentifier", deviceIdentifier);
+        jsonElement.addProperty("runningType", testConfig.runningType);
+        jsonElement.addProperty("deviceIdentifier", deviceConfig.deviceIdentifier);
         jsonElement.addProperty("fileSetId", fileSetId);
-        jsonElement.addProperty("testSuiteClass", testSuiteName);
-        jsonElement.addProperty("testTimeOutSec", runTimeoutSec);
-        jsonElement.addProperty("pkgName", apiConfig.pkgName);
-        jsonElement.addProperty("testPkgName", apiConfig.testPkgName);
-        jsonElement.addProperty("groupTestType", apiConfig.groupTestType);
-        jsonElement.addProperty("pipelineLink", apiConfig.pipelineLink);
-        jsonElement.addProperty("frameworkType", apiConfig.frameworkType);
-        jsonElement.addProperty("maxStepCount", apiConfig.maxStepCount);
-        jsonElement.addProperty("deviceTestCount", apiConfig.deviceTestCount);
-        jsonElement.addProperty("needUninstall", apiConfig.needUninstall);
-        jsonElement.addProperty("needClearData", apiConfig.needClearData);
-        jsonElement.addProperty("testRunnerName", apiConfig.testRunnerName);
-        jsonElement.addProperty("testScope", apiConfig.testScope);
+        jsonElement.addProperty("testSuiteClass", testConfig.testSuiteName);
+        jsonElement.addProperty("testTimeOutSec", testConfig.runTimeOutSeconds);
+        jsonElement.addProperty("pkgName", testConfig.pkgName);
+        jsonElement.addProperty("testPkgName", testConfig.testPkgName);
+        jsonElement.addProperty("groupTestType", deviceConfig.groupTestType);
+        jsonElement.addProperty("pipelineLink", testConfig.pipelineLink);
+        jsonElement.addProperty("frameworkType", testConfig.frameworkType);
+        jsonElement.addProperty("maxStepCount", testConfig.maxStepCount);
+        jsonElement.addProperty("deviceTestCount", testConfig.deviceTestCount);
+        jsonElement.addProperty("needUninstall", testConfig.needUninstall);
+        jsonElement.addProperty("needClearData", testConfig.needClearData);
+        jsonElement.addProperty("testRunnerName", testConfig.testRunnerName);
+        jsonElement.addProperty("testScope", testConfig.testScope);
 
         try {
-            if (apiConfig.neededPermissions.size() > 0) {
-                jsonElement.add("neededPermissions", GSON.toJsonTree(apiConfig.neededPermissions));
+            if (deviceConfig.neededPermissions.size() > 0) {
+                jsonElement.add("neededPermissions", GSON.toJsonTree(deviceConfig.neededPermissions));
             }
-            if (StringUtils.isNotBlank(apiConfig.deviceActionsStr)) {
+            if (StringUtils.isNotBlank(deviceConfig.deviceActionsStr)) {
                 JsonParser parser = new JsonParser();
-                JsonObject jsonObject = parser.parse(apiConfig.deviceActionsStr).getAsJsonObject();
+                JsonObject jsonObject = parser.parse(deviceConfig.deviceActionsStr).getAsJsonObject();
                 jsonElement.add("deviceActions", jsonObject);
             }
             if (instrumentationArgs != null) {
