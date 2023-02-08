@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 package com.microsoft.hydralab.utils;
 
 import com.google.gson.Gson;
