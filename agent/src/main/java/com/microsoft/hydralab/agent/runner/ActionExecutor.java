@@ -33,7 +33,7 @@ public class ActionExecutor {
                                      @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
         List<Exception> exceptions = new ArrayList<>();
         //filter todoActions
-        List<DeviceAction> todoActions = actions.get(when).stream().filter(deviceAction -> actionTypes.contains(deviceAction.getMethod())).collect(Collectors.toList());
+        List<DeviceAction> todoActions = actions.getOrDefault(when, new ArrayList<>()).stream().filter(deviceAction -> actionTypes.contains(deviceAction.getMethod())).collect(Collectors.toList());
 
         logger.info("Start to execute actions! Current timing is {}, action size is {}", when, todoActions.size());
         for (DeviceAction deviceAction : todoActions) {
