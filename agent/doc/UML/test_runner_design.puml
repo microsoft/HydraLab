@@ -114,7 +114,7 @@ deactivate TaskCompletion
 }
 @endjson
 
-@startuml TestRunnerListenerDesign
+@startuml test_runner_listener_design
 abstract class Runner
 interface TestRunnerListener {
     onTestCaseStart()
