@@ -118,10 +118,7 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
         } catch (IOException e) {
             classLogger.error("Failed to parse the battery info file: " + rawFile.getAbsolutePath());
             return null;
-        } finally {
-
         }
-
         return batteryInfo;
 
     }
