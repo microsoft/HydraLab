@@ -4,7 +4,6 @@ package com.microsoft.hydralab.config;
 
 import java.util.Locale;
 
-// todo: split into APIConfig/deviceConfig/testConfig
 public class HydraLabAPIConfig {
     public String schema = "https";
     public String host = "";

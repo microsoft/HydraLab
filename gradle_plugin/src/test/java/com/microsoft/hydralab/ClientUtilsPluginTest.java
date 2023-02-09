@@ -38,28 +38,31 @@ public class ClientUtilsPluginTest {
         apiConfig.authToken = "";
         testConfig.pkgName = "";
         testConfig.testAppPath = "./testAppPath/testApp.apk";
-        testConfig.testSuiteName = "com.example.test.suite";
         testConfig.testPkgName = "TestPkgName";
         testConfig.testScope = ClientUtilsPlugin.TestScope.CLASS;
+        testConfig.testSuiteName = "com.example.test.suite";
 
         generalParamCheck(apiConfig, deviceConfig, testConfig);
 
-        testConfig.runningType = "INSTRUMENTATION";
+        apiConfig.host = "host";
+        generalParamCheck(apiConfig, deviceConfig, testConfig);
+
+        apiConfig.authToken = "thisisanauthtokenonlyfortest";
         generalParamCheck(apiConfig, deviceConfig, testConfig);
 
         testConfig.appPath = "./appPath/app.apk";
         generalParamCheck(apiConfig, deviceConfig, testConfig);
 
-        deviceConfig.deviceIdentifier = "TESTDEVICESN001";
+        testConfig.pkgName = "PkgName";
+        generalParamCheck(apiConfig, deviceConfig, testConfig);
+
+        testConfig.runningType = "INSTRUMENTATION";
         generalParamCheck(apiConfig, deviceConfig, testConfig);
 
         testConfig.runTimeOutSeconds = 1000;
         generalParamCheck(apiConfig, deviceConfig, testConfig);
 
-        testConfig.pkgName = "PkgName";
-        generalParamCheck(apiConfig, deviceConfig, testConfig);
-
-        apiConfig.authToken = "thisisanauthtokenonlyfortest";
+        deviceConfig.deviceIdentifier = "TESTDEVICESN001";
         clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
     }
 
@@ -236,7 +239,7 @@ public class ClientUtilsPluginTest {
         IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
         }, "IllegalArgumentException was expected");
-        Assertions.assertEquals("Required params not provided! Make sure the following params are all provided correctly: authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.", thrown.getMessage());
+        Assertions.assertEquals("Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIhost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.", thrown.getMessage());
     }
 
     private void typeSpecificParamCheck(HydraLabAPIConfig apiConfig, DeviceConfig deviceConfig, TestConfig testConfig, String requiredParamName) {

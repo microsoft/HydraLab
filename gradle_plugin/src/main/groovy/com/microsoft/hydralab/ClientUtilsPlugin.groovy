@@ -168,14 +168,15 @@ class ClientUtilsPlugin implements Plugin<Project> {
     }
 
     void requiredParamCheck(HydraLabAPIConfig apiConfig, DeviceConfig deviceConfig, TestConfig testConfig) {
-        if (StringUtils.isBlank(apiConfig.authToken)
+        if (StringUtils.isBlank(apiConfig.host)
+                || StringUtils.isBlank(apiConfig.authToken)
                 || StringUtils.isBlank(testConfig.appPath)
                 || StringUtils.isBlank(testConfig.pkgName)
                 || StringUtils.isBlank(testConfig.runningType)
                 || testConfig.runTimeOutSeconds == -1
                 || StringUtils.isBlank(deviceConfig.deviceIdentifier)
         ) {
-            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')
+            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIhost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')
         }
 
         // running type specified params
