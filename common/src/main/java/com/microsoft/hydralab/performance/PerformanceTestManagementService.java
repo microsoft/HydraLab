@@ -29,7 +29,6 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     );
     private final Map<PerformanceResultParser.PerformanceResultParserType, PerformanceResultParser> performanceResultParserMap = Map.of(
             PARSER_ANDROID_BATTERY_INFO, new AndroidBatteryInfoResultParser(),
-            PARSER_ANDROID_MEMORY_DUMP, new AndroidBatteryInfoResultParser(),
             PARSER_WIN_MEMORY, new WindowsMemoryResultParser(),
             PARSER_WIN_BATTERY, new WindowsBatteryResultParser()
     );

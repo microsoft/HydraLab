@@ -6,6 +6,7 @@ import com.microsoft.hydralab.performance.Entity.AndroidBatteryInfo;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +39,11 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
         }
 
         // Use the battery usage at the end of the test as a summary
-        performanceTestResult.resultSummary = inspectionResults.get(inspectionResults.size() - 1).parsedData;
+        performanceTestResult.resultSummary = SerializationUtils.clone((AndroidBatteryInfo) inspectionResults.get(inspectionResults.size() - 1).parsedData);
         return performanceTestResult;
     }
 
-    public AndroidBatteryInfo parseRawResultFile(File rawFile, String packageName) {
+    private AndroidBatteryInfo parseRawResultFile(File rawFile, String packageName) {
         if (!rawFile.isFile() || !rawFile.exists()) return null;
 
         AndroidBatteryInfo batteryInfo = new AndroidBatteryInfo();
@@ -51,10 +52,11 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
         // 1. android version lower than 12   2. android version higher than or equal to 12
         int mode = 1;
         String uid = null;
-        boolean isCalculateTotalUsage = false;
+        boolean isCalculatedTotalUsage = false;
 
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(rawFile), StandardCharsets.UTF_8));
+        try (FileInputStream stream = new FileInputStream(rawFile);
+             InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
+             BufferedReader in = new BufferedReader(reader)) {
             List<String> contents = new ArrayList<>();
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
@@ -74,35 +76,34 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
                 return null;
             }
 
-
             for (String line : contents) {
                 //Parse total usage
                 if (mode == 1) {
                     if (Pattern.matches("capacity:.*computed drain:.*", line)) {
                         // find total usage
-                        totalUsage = Float.parseFloat(line.split("computed drain: ")[1].split(",")[0]);
+                        totalUsage = parseFloat(line.split("computed drain: ")[1].split(",")[0], line);
                         if (totalUsage == 0.0) {
                             mode = 2;
                         }
                     }
                 } else {
                     if (Pattern.matches(".*global.*", line)) {
-                        isCalculateTotalUsage = true;
+                        isCalculatedTotalUsage = true;
                         continue;
                     }
-                    if (isCalculateTotalUsage && line.startsWith("uid")) {
-                        isCalculateTotalUsage = false;
+                    if (isCalculatedTotalUsage && line.startsWith("uid")) {
+                        isCalculatedTotalUsage = false;
                     }
-                    if (isCalculateTotalUsage) {
+                    if (isCalculatedTotalUsage) {
                         if (!line.startsWith("screen:")) {
-                            totalUsage += Float.parseFloat(line.split(" ")[1].trim());
+                            totalUsage += parseFloat(line.split(" ")[1].trim(), line);
                         }
                     }
                 }
 
                 // Parse app usage
                 if (Pattern.matches("uid " + uid + ":.*", line)) {
-                    appUsage = Float.parseFloat(line.split(": ")[1].split(" ")[0]);
+                    appUsage = parseFloat(line.split(": ")[1].split(" ")[0], line);
                     batteryInfo.setAppUsage(appUsage);
                     batteryInfo.setRatio(appUsage / totalUsage);
                     batteryInfo.setCpu(parseAppDetails(line, "cpu="));
@@ -117,15 +118,27 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
         } catch (IOException e) {
             classLogger.error("Failed to parse the battery info file: " + rawFile.getAbsolutePath());
             return null;
+        } finally {
+
         }
 
         return batteryInfo;
 
     }
 
-    float parseAppDetails(String line, String keyword) {
+    private float parseAppDetails(String line, String keyword) {
         if (!line.contains(keyword)) return 0;
-        return Float.parseFloat(line.split(keyword)[1].split(" ")[0]);
+        return parseFloat(line.split(keyword)[1].split(" ")[0], line);
+    }
+
+    private float parseFloat(String input, String line) {
+        float result = 0;
+        try {
+            result = Float.parseFloat(input);
+        } catch (NullPointerException | NumberFormatException e) {
+            classLogger.error(String.format("Error at parse float when parse Android battery info: input str = [%s], line = [%s]", input, line));
+        }
+        return result;
     }
 
 }

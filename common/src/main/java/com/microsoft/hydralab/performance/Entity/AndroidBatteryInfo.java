@@ -4,8 +4,10 @@ package com.microsoft.hydralab.performance.Entity;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class AndroidBatteryInfo {
+public class AndroidBatteryInfo implements Serializable {
     private String appPackageName;
     private long timeStamp;
     private float cpu;

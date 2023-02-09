@@ -28,7 +28,6 @@ public class AndroidBatteryInfoInspector implements PerformanceInspector {
         File rawResultFile = new File(rawResultFolder,
                 String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), performanceInspection.appId, TimeUtils.getTimestampForFilename()));
 
-
         ShellUtils.execLocalCommandWithResult(String.format("adb -s %s shell dumpsys batterystats %s | out-file %s -encoding utf8",
                 performanceInspection.deviceIdentifier, performanceInspection.appId, rawResultFile.getAbsolutePath()), classLogger);
         return new PerformanceInspectionResult(rawResultFile, performanceInspection);
@@ -40,8 +39,8 @@ public class AndroidBatteryInfoInspector implements PerformanceInspector {
         ShellUtils.execLocalCommand(String.format("adb -s %s shell dumpsys batterystats --reset", device), classLogger);
     }
 
-    // TODO: Do we need to add the method to the Interface, or add  finalize flag to the PerformanceInspection?
-    public void finalize(PerformanceInspection performanceInspection) {
+    // TODO: Do we need to add the method to the Interface, or add clear flag to the PerformanceInspection?
+    public void clearEnv(PerformanceInspection performanceInspection) {
         ShellUtils.execLocalCommand(String.format("adb -s %s shell dumpsys battery reset", performanceInspection.deviceIdentifier), classLogger);
     }
 
