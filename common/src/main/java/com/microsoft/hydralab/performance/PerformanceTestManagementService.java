@@ -15,7 +15,6 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,6 +28,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             INSPECTOR_WIN_BATTERY, new WindowsBatteryInspector()
     );
     private final Map<PerformanceResultParser.PerformanceResultParserType, PerformanceResultParser> performanceResultParserMap = Map.of(
+            PARSER_ANDROID_BATTERY_INFO, new AndroidBatteryInfoResultParser(),
             PARSER_ANDROID_MEMORY_DUMP, new AndroidBatteryInfoResultParser(),
             PARSER_WIN_MEMORY, new WindowsMemoryResultParser(),
             PARSER_WIN_BATTERY, new WindowsBatteryResultParser()
@@ -61,14 +61,18 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         Assert.notNull(performanceInspector, "Found no matched inspector: " + performanceInspection.inspectorType);
         ITestRun testRun = getTestRun();
         File performanceFolder = new File(testRun.getResultFolder(), "performance");
-        Assert.isTrue(performanceFolder.mkdirs(), "performanceInspection.resultFolder.mkdirs() failed in " + performanceFolder.getAbsolutePath());
-        performanceInspection.resultFolder = performanceFolder;
+        Assert.isTrue(performanceFolder.exists() || performanceFolder.mkdirs(), "performanceInspection.resultFolder.mkdirs() failed in " + performanceFolder.getAbsolutePath());
+        File inspectorFolder = new File(performanceFolder, inspectorType.getName());
+        Assert.isTrue(inspectorFolder.exists() || inspectorFolder.mkdirs(), "performanceInspection.resultFolder.mkdirs() failed in " + inspectorFolder.getAbsolutePath());
+        performanceInspection.resultFolder = inspectorFolder;
 
         PerformanceInspectionResult result = performanceInspector.inspect(performanceInspection);
 
-        Map<String, PerformanceTestResult> performanceTestResultMap = testRunPerfResultMap.putIfAbsent(getTestRun(), new HashMap<>());
+        testRunPerfResultMap.putIfAbsent(getTestRun(), new HashMap<>());
+        Map<String, PerformanceTestResult> performanceTestResultMap = testRunPerfResultMap.get(getTestRun());
         Assert.notNull(performanceTestResultMap, "performanceTestResultMap should not be null ");
-        PerformanceTestResult performanceTestResult = performanceTestResultMap.putIfAbsent(performanceInspection.inspectionKey, createPerformanceTestResult(performanceInspection));
+        performanceTestResultMap.putIfAbsent(performanceInspection.inspectionKey, createPerformanceTestResult(performanceInspection));
+        PerformanceTestResult performanceTestResult = performanceTestResultMap.get(performanceInspection.inspectionKey);
         Assert.notNull(performanceTestResult, "performanceTestResult should not be null ");
         performanceTestResult.performanceInspectionResults.add(result);
 
@@ -93,9 +97,9 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         Assert.notNull(testResultMap, "Found no matched test result for test run");
         PerformanceTestResult performanceTestResult = testResultMap.get(performanceInspection.inspectionKey);
         Assert.notNull(performanceTestResult, "Found no matched performanceTestResult for performanceInspectionKey: " + performanceInspection.inspectionKey);
-        List<PerformanceInspectionResult> performanceInspectionResultList = performanceTestResult.performanceInspectionResults;
         PerformanceResultParser parser = getParserByType(resultParser);
         Assert.notNull(parser, "Found no matched result parser: " + resultParser);
-        return parser.parse(performanceInspectionResultList);
+        performanceTestResult.parserType = resultParser;
+        return parser.parse(performanceTestResult);
     }
 }
