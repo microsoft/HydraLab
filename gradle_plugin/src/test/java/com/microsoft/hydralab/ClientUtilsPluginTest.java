@@ -34,7 +34,7 @@ public class ClientUtilsPluginTest {
         deviceConfig.deviceIdentifier = "";
         testConfig.runningType = "";
         testConfig.appPath = "";
-        testConfig.runTimeOutSeconds = -1;
+        testConfig.runTimeOutSeconds = 0;
         apiConfig.authToken = "";
         testConfig.pkgName = "";
         testConfig.testAppPath = "./testAppPath/testApp.apk";

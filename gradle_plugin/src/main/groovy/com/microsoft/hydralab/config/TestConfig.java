@@ -3,8 +3,10 @@
 package com.microsoft.hydralab.config;
 
 import com.microsoft.hydralab.entity.AttachmentInfo;
+import org.gradle.internal.impldep.com.fasterxml.jackson.databind.annotation.JsonAppend;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -12,6 +14,7 @@ import java.util.List;
  * @date 2/8/2023
  */
 
+@JsonAppend
 public class TestConfig {
     public String runningType = "";
     public String appPath = "";
@@ -23,17 +26,28 @@ public class TestConfig {
     public String testScope = "";
     public String testSuiteName = "";
     public String frameworkType = "JUnit4";
-    public int runTimeOutSeconds = -1;
-    public int queueTimeOutSeconds = -1;
+    public int runTimeOutSeconds = 0;
+    public int queueTimeOutSeconds = 0;
     public String pipelineLink = "";
     public int maxStepCount = 100;
     public int deviceTestCount = -1;
     public boolean needUninstall = true;
     public boolean needClearData = true;
-    // priority: config file path in param > yml config
+    // priority: config file path in param > direct yml config
     public String attachmentConfigPath = "";
-    public List<AttachmentInfo> attachmentConfigs = new ArrayList<>();
+    public List<AttachmentInfo> attachmentInfos = new ArrayList<>();
     public String artifactTag = "";
+
+    public void constructField(HashMap<String, Object> map) {
+        Object tag = map.get("tag");
+        if (tag != null) {
+            this.artifactTag = map.get("tag").toString();
+        }
+        Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");
+        if (queueTimeOutSeconds == null) {
+            this.queueTimeOutSeconds = this.runTimeOutSeconds;
+        }
+    }
 
     @Override
     public String toString() {
@@ -56,7 +70,7 @@ public class TestConfig {
                 "\tneedUninstall=" + needUninstall + "\n" +
                 "\tneedClearData=" + needClearData + "\n" +
                 "\tattachmentConfigPath=" + attachmentConfigPath + "\n" +
-                "\tattachmentConfigs=" + attachmentConfigs.toString() + "\n" +
+                "\tattachmentConfigs=" + attachmentInfos.toString() + "\n" +
                 "\tartifactTag=" + artifactTag;
     }
 }

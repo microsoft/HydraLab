@@ -5,7 +5,9 @@ package com.microsoft.hydralab
 import com.microsoft.hydralab.config.DeviceConfig
 import com.microsoft.hydralab.config.HydraLabAPIConfig
 import com.microsoft.hydralab.config.TestConfig
+import com.microsoft.hydralab.utils.CommonUtils
 import com.microsoft.hydralab.utils.HydraLabClientUtils
+import com.microsoft.hydralab.utils.YamlParser
 import org.apache.commons.lang3.StringUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -16,68 +18,46 @@ class ClientUtilsPlugin implements Plugin<Project> {
     void apply(Project target) {
         target.task("requestHydraLabTest") {
             doFirst {
+                HydraLabAPIConfig apiConfig = new HydraLabAPIConfig()
                 TestConfig testConfig = new TestConfig()
                 DeviceConfig deviceConfig = new DeviceConfig()
-                HydraLabAPIConfig apiConfig = new HydraLabAPIConfig()
+                def instrumentationArgsMap = null
+                def extraArgsMap = null
+                def reportDir = new File(project.buildDir, "testResult")
+                if (!reportDir.exists()) {
+                    reportDir.mkdirs()
+                }
+
+                // read config from yml
+                if (project.hasProperty('ymlConfigFile')) {
+                    YamlParser yamlParser = new YamlParser(project.ymlConfigFile)
+                    apiConfig = yamlParser.parseAPIConfig()
+                    testConfig = yamlParser.parseTestConfig()
+                    deviceConfig = yamlParser.parseDeviceConfig()
+                    instrumentationArgsMap = CommonUtils.parseArguments(yamlParser.getString("instrumentationArgs"))
+                    extraArgsMap = CommonUtils.parseArguments(yamlParser.getString("extraArgs"))
+                }
 
                 if (project.hasProperty('appPath')) {
-                    def appFile = project.file(project.appPath)
-                    println("Param appPath: ${project.appPath}")
-                    if (!appFile.exists()) {
-                        def exceptionMsg = "${project.appPath} file not exist!"
-                        throw new Exception(exceptionMsg)
-                    } else {
-                        testConfig.appPath = appFile.absolutePath
-                    }
+                    testConfig.appPath = project.appPath
                 }
-
                 if (project.hasProperty('testAppPath')) {
-                    def testAppFile = project.file(project.testAppPath)
-                    println("Param testAppPath: ${project.testAppPath}")
-                    if (!testAppFile.exists()) {
-                        def exceptionMsg = "${project.testAppPath} file not exist!"
-                        throw new Exception(exceptionMsg)
-                    } else {
-                        testConfig.testAppPath = testAppFile.absolutePath
-                    }
+                    testConfig.testAppPath = project.testAppPath
                 }
-
                 if (project.hasProperty('attachmentConfigPath')) {
-                    def attachmentConfigFile = project.file(project.attachmentConfigPath)
-                    println("Param attachmentConfigPath: ${project.attachmentConfigPath}")
-                    if (!attachmentConfigFile.exists()) {
-                        def exceptionMsg = "${project.attachmentConfigPath} file not exist!"
-                        throw new Exception(exceptionMsg)
-                    } else {
-                        testConfig.attachmentConfigPath = attachmentConfigFile.absolutePath
-                    }
+                    testConfig.attachmentConfigPath = project.attachmentConfigPath
                 }
+                // validate file path
+                testConfig.appPath = CommonUtils.validateFile(testConfig.appPath, "appPath")
+                testConfig.testAppPath = CommonUtils.validateFile(testConfig.testAppPath, "testAppPath")
+                testConfig.attachmentConfigPath = CommonUtils.validateFile(testConfig.attachmentConfigPath, "attachmentConfigPath")
 
-                def reportDir = new File(project.buildDir, "testResult")
-                if (!reportDir.exists()) reportDir.mkdirs()
-
-                def argsMap = null
+                // todo: instrumentationArgs / extraArgs: generalize or remove one of them
                 if (project.hasProperty('instrumentationArgs')) {
-                    argsMap = [:]
-                    // quotation marks not support
-                    def argLines = project.instrumentationArgs.replace("\"", "").split(",")
-                    for (i in 0..<argLines.size()) {
-                        String[] kv = argLines[i].split("=")
-                        // use | to represent comma to avoid conflicts
-                        argsMap.put(kv[0], kv[1].replace("|", ","))
-                    }
+                    instrumentationArgsMap = CommonUtils.parseArguments(project.instrumentationArgs)
                 }
-
-                def extraArgsMap = null
                 if (project.hasProperty('extraArgs')) {
-                    extraArgsMap = [:]
-                    // quotation marks not support
-                    def argLines = project.extraArgs.replace("\"", "").split(",")
-                    for (i in 0..<argLines.size()) {
-                        String[] kv = argLines[i].split("=")
-                        // use | to represent comma to avoid conflicts
-                        extraArgsMap.put(kv[0], kv[1].replace("|", ","))
-                    }
+                    extraArgsMap = CommonUtils.parseArguments(project.extraArgs)
                 }
 
                 if (project.hasProperty('hydraLabAPISchema')) {
@@ -88,9 +68,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 }
                 if (project.hasProperty('authToken')) {
                     apiConfig.authToken = project.authToken
-                }
-                if (project.hasProperty('onlyAuthPost')) {
-                    apiConfig.onlyAuthPost = Boolean.parseBoolean(project.onlyAuthPost)
                 }
 
                 if (project.hasProperty('deviceIdentifier')) {
@@ -134,9 +111,12 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('runTimeOutSeconds')) {
                     testConfig.runTimeOutSeconds = Integer.parseInt(project.runTimeOutSeconds)
                 }
-                testConfig.queueTimeOutSeconds = testConfig.runTimeOutSeconds
                 if (project.hasProperty('queueTimeOutSeconds')) {
                     testConfig.queueTimeOutSeconds = Integer.parseInt(project.queueTimeOutSeconds)
+                } else {
+                    if (!project.hasProperty('ymlConfigFile')) {
+                        testConfig.queueTimeOutSeconds = testConfig.runTimeOutSeconds
+                    }
                 }
                 if (project.hasProperty('maxStepCount')) {
                     testConfig.maxStepCount = Integer.parseInt(project.maxStepCount)
@@ -157,7 +137,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 requiredParamCheck(apiConfig, deviceConfig, testConfig)
 
                 HydraLabClientUtils.runTestOnDeviceWithApp(
-                        reportDir.absolutePath, argsMap, extraArgsMap,
+                        reportDir.absolutePath, instrumentationArgsMap, extraArgsMap,
                         apiConfig, deviceConfig, testConfig
                 )
             }
@@ -173,7 +153,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 || StringUtils.isBlank(testConfig.appPath)
                 || StringUtils.isBlank(testConfig.pkgName)
                 || StringUtils.isBlank(testConfig.runningType)
-                || testConfig.runTimeOutSeconds == -1
+                || testConfig.runTimeOutSeconds == 0
                 || StringUtils.isBlank(deviceConfig.deviceIdentifier)
         ) {
             throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIhost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')

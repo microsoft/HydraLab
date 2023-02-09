@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.config;
 
+import java.util.HashMap;
 import java.util.Locale;
 
 public class HydraLabAPIConfig {
@@ -9,7 +10,6 @@ public class HydraLabAPIConfig {
     public String host = "";
     public String contextPath = "";
     public String authToken = "";
-    public boolean onlyAuthPost = true;
     public String checkCenterAliveAPIPath = "/api/center/isAlive";
     public String getBlobSAS = "/api/package/getSAS";
     public String uploadAPKAPIPath = "/api/package/add";
@@ -59,6 +59,17 @@ public class HydraLabAPIConfig {
 
     public String getDeviceTestVideoUrl(String id) {
         return String.format(Locale.US, "%s://%s%s%s%s", schema, host, contextPath, testPortalTaskDeviceVideoPath, id);
+    }
+
+    public void constructField(HashMap<String, Object> map){
+        Object hydraLabAPIHost = map.get("hydraLabAPIHost");
+        if (hydraLabAPIHost != null) {
+            this.host = hydraLabAPIHost.toString();
+        }
+        Object hydraLabAPISchema = map.get("hydraLabAPISchema");
+        if (hydraLabAPISchema != null) {
+            this.schema = hydraLabAPISchema.toString();
+        }
     }
 
     @Override

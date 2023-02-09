@@ -38,8 +38,8 @@ public class HydraLabClientUtils {
                                               HydraLabAPIConfig apiConfig,
                                               DeviceConfig deviceConfig,
                                               TestConfig testConfig) {
-        String output = String.format("##[section]All args: argsMap: %s, extraArgsMap: %s\n%s\n%s\n%s",
-                instrumentationArgs == null ? "" : instrumentationArgs.toString(), extraArgs == null ? "" : extraArgs.toString(),
+        String output = String.format("##[section]All args: reportFolderPath: %s, argsMap: %s, extraArgsMap: %s\n%s\n%s\n%s",
+                reportFolderPath, instrumentationArgs == null ? "" : instrumentationArgs.toString(), extraArgs == null ? "" : extraArgs.toString(),
                 apiConfig.toString(), deviceConfig.toString(), testConfig.toString());
         switch (testConfig.runningType) {
             case "INSTRUMENTATION":
@@ -109,7 +109,6 @@ public class HydraLabClientUtils {
 
         File app = null;
         File testApp = null;
-        JsonArray attachmentInfos = new JsonArray();
         try {
             File file = new File(testConfig.appPath);
             assertTrue(file.exists(), "app not exist", null);
@@ -130,13 +129,19 @@ public class HydraLabClientUtils {
                 }
             }
 
-            // todo: add logic for directly used attachmentConfig
             if (StringUtils.isNotBlank(testConfig.attachmentConfigPath)) {
                 file = new File(testConfig.attachmentConfigPath);
                 JsonParser parser = new JsonParser();
-                attachmentInfos = parser.parse(new FileReader(file)).getAsJsonArray();
-                printlnf("Attachment size: %d", attachmentInfos.size());
-                printlnf("Attachment information: %s", attachmentInfos.toString());
+                JsonArray attachmentInfoJsons = parser.parse(new FileReader(file)).getAsJsonArray();
+                printlnf("Attachment size: %d", attachmentInfoJsons.size());
+                printlnf("Attachment information: %s", attachmentInfoJsons.toString());
+
+                // new a list to override yml config if the file path exists
+                testConfig.attachmentInfos = new ArrayList<>();
+                for (JsonElement attachmentInfoJson: attachmentInfoJsons) {
+                    AttachmentInfo attachmentInfo = GSON.fromJson(attachmentInfoJson, AttachmentInfo.class);
+                    testConfig.attachmentInfos.add(attachmentInfo);
+                }
             }
 
         } catch (Exception e) {
@@ -151,10 +156,7 @@ public class HydraLabClientUtils {
         testConfig.pipelineLink = System.getenv("SYSTEM_TEAMFOUNDATIONSERVERURI") + System.getenv("SYSTEM_TEAMPROJECT") + "/_build/results?buildId=" + System.getenv("BUILD_BUILDID");
         printlnf("##[section]Callback pipeline link is: %s", testConfig.pipelineLink);
 
-        for (int index = 0; index < attachmentInfos.size(); index++) {
-            JsonObject attachmentJson = attachmentInfos.get(index).getAsJsonObject();
-            AttachmentInfo attachmentInfo = GSON.fromJson(attachmentJson, AttachmentInfo.class);
-
+        for (AttachmentInfo attachmentInfo: testConfig.attachmentInfos) {
             assertTrue(!attachmentInfo.filePath.isEmpty(), "Attachment file " + attachmentInfo.fileName + "has an empty path.", null);
             File attachment = new File(attachmentInfo.filePath);
             assertTrue(attachment.exists(), "Attachment file " + attachmentInfo.fileName + "doesn't exist.", null);
