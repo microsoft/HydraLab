@@ -1,4 +1,4 @@
-@startuml
+@startuml log_file_path
 'https://plantuml.com/class-diagram
 
 object DeviceLogger
@@ -14,8 +14,8 @@ end note
 TestRunLogger -u-|> DeviceLogger
 @enduml
 
-@startuml loggers
+@startuml logger_ownership
 EachTestDevice *--> DeviceLogger
-EachTestTaskOnEachTargetDevice *--> TaskOnDeviceLogger
-EachTestTaskOnEachTargetDevice *--> LogcatLogger
+EachTestRun *--> TestRunLogger
+AndroidDevice *--> LogcatLogger
 @enduml
