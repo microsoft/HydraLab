@@ -13,9 +13,10 @@ public class PerformanceInspectionResult {
     // TODO: restrict the size of it.
     public Object parsedData;
 
-    public PerformanceInspectionResult(File rawResultFile) {
+    public PerformanceInspectionResult(File rawResultFile, PerformanceInspection inspection) {
         this.timestamp = System.currentTimeMillis();
         this.rawResultFile = rawResultFile;
+        this.inspection = inspection;
     }
 
     //TODO: overwrite equals, toString, and hashcode methods

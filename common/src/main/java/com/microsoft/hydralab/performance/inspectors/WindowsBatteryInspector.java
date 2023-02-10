@@ -47,7 +47,7 @@ public class WindowsBatteryInspector implements PerformanceInspector {
         File rawResultFile = new File(performanceInspection.resultFolder,
                 String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), TimeUtils.getTimestampForFilename()));
         Process process = ShellUtils.execLocalCommand(String.format(COMMAND_FORMAT, rawResultFile), false, classLogger);
-        PerformanceInspectionResult result = new PerformanceInspectionResult(rawResultFile);
+        PerformanceInspectionResult result = new PerformanceInspectionResult(rawResultFile, performanceInspection);
 
         try {
             if (process != null && process.waitFor() != 0)

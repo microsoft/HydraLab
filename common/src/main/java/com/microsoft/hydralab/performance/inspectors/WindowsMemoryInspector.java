@@ -57,7 +57,7 @@ public class WindowsMemoryInspector implements PerformanceInspector {
         Process process = ShellUtils.execLocalCommand(
                 SCRIPT_FILE.getAbsolutePath() + String.format(PARAMETER_FORMAT, PROCESS_NAME_KEYWORD, rawResultFile),
                 false, classLogger);
-        PerformanceInspectionResult result = new PerformanceInspectionResult(rawResultFile);
+        PerformanceInspectionResult result = new PerformanceInspectionResult(rawResultFile, performanceInspection);
 
         try {
             if (process != null && process.waitFor() != 0)

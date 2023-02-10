@@ -52,6 +52,7 @@ public abstract class TestRunner {
             testRun.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(testRun, e);
         } finally {
+            //TODO: tearDown for performance testing. Android battery: adb shell dumpsys battery reset
             tearDown(deviceInfo, testTask, testRun);
         }
     }

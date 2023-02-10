@@ -13,7 +13,7 @@ public class PerformanceTestResult {
      * <p>
      * battery: CPU	screen	Wake_lock	other	App_usage	Total_usage
      */
-    public Object resultSummary;
+    private Object resultSummary;
     /**
      * TODO: Apply a max size to avoid OOM
      */
@@ -22,4 +22,14 @@ public class PerformanceTestResult {
     public PerformanceResultParser.PerformanceResultParserType parserType;
 
     //TODO: overwrite equals, toString, and hashcode methods
+
+
+    public void setResultSummary(Object resultSummary) {
+        //TODO: restrict the usage
+        this.resultSummary = resultSummary;
+    }
+
+    public Object getResultSummary() {
+        return resultSummary;
+    }
 }
