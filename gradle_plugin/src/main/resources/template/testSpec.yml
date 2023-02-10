@@ -10,8 +10,8 @@ device:
   deviceIdentifier: # <Required> <String>
   groupTestType: # <Optional> <String>
   neededPermissions: # <Optional> <Array>
-#   <- android.permission.A>
-#   <- android.permission.B>
+   - xxx
+   - xxx
   deviceActions: # <Optional>
      <setUp | tearDown>: # <Array>
       - method: # <setProperty | setDefaultLauncher | backToHome | changeGlobalSetting | changeSystemSetting | execCommandOnDevice | pushFileToDevice | pullFileFromDevice>
@@ -27,7 +27,7 @@ testSpec:
   testAppPath: # <Optional>
   testPkgName: # <Optional>
   teamName: # <Optional>
-  testRunnerName: "com.yammer.droid.CustomTestRunner"
+  testRunnerName: # <Optional>
   testScope: # <Optional>
   testSuiteName: # <Optional>
   frameworkType: # <Optional>
