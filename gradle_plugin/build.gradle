@@ -32,6 +32,8 @@ dependencies {
     implementation 'org.ow2.asm:asm:7.0'
     implementation 'org.ow2.asm:asm-util:7.0'
     implementation networkDependencies.okHttp
+    implementation 'org.yaml:snakeyaml:1.33'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.0.1'
 }
 
 // plugin publishing related
