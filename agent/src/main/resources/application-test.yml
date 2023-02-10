@@ -12,8 +12,19 @@ app:
         inline: |
           test command 2
           test command 3
+      - type: AgentShell
+        when: setUp
+        suite-class-matcher: '.*test.*'
+        inline: |
+          test command 4
       - type: ADBShell
         when: tearDown
         suite-class-matcher: 'com.microsoft.test'
         inline: |
-          test command 4
+          test command 5
+      - type: AgentShell
+        when: tearDown
+        suite-class-matcher: 'com.microsoft.test'
+        inline: |
+          test command 6
+          test command 7

@@ -14,17 +14,17 @@ public class ShellUtils {
     private static String[] getFullCommand(String command)
     {
         String shellProcess = "";
-        String argName = "";
+        String args = "";
 
         if (isConnectedToWindowsOS) {
             shellProcess = POWER_SHELL_PATH;
-            argName = "-Command";
+            args = "powershell -ExecutionPolicy Unrestricted -NoProfile -Command";
         } else {
             shellProcess = "sh";
-            argName = "-c";
+            args = "-c";
         }
 
-        return new String[]{shellProcess, argName, command};
+        return new String[]{shellProcess, args, command};
     }
 
     @Nullable

@@ -27,7 +27,7 @@ public class ActionExecutor {
      * the implementation of supported actions should not be overload
      */
     private Set<String> actionTypes = Set.of("setProperty", "setDefaultLauncher", "backToHome", "changeGlobalSetting",
-            "changeSystemSetting", "execCommandOnDevice", "pushFileToDevice", "pullFileFromDevice");
+            "changeSystemSetting", "execCommandOnDevice", "execCommandOnAgent", "pushFileToDevice", "pullFileFromDevice");
 
     public List<Exception> doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
                                      @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {

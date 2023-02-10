@@ -12,10 +12,7 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
-import com.microsoft.hydralab.common.util.IOSUtils;
-import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.common.util.ThreadPoolUtil;
-import com.microsoft.hydralab.common.util.ThreadUtils;
+import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.appium.java_client.appmanagement.ApplicationState;
 import io.appium.java_client.ios.IOSDriver;
@@ -254,7 +251,11 @@ public abstract class DeviceManager {
     abstract public void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
 
     abstract public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
-    
+
+    public void execCommandOnAgent(DeviceInfo deviceInfo, String command, Logger logger) {
+        ShellUtils.execLocalCommand(command, logger);
+    }
+
     protected boolean isAppRunningForeground(DeviceInfo deviceInfo, String packageName, Logger logger) {
         IOSDriver iOSDriver = appiumServerManager.getIOSDriver(deviceInfo, logger);
         ApplicationState state = iOSDriver.queryAppState(packageName);

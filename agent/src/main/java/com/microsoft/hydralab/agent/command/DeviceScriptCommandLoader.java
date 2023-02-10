@@ -68,6 +68,14 @@ public class DeviceScriptCommandLoader {
                 deviceAction.getArgs().add(commandline);
                 return deviceAction;
             }
+        },
+        AgentShell() {
+            @Override
+            public DeviceAction getAction(String commandline) {
+                DeviceAction deviceAction = new DeviceAction("Windows", "execCommandOnAgent");
+                deviceAction.getArgs().add(commandline);
+                return deviceAction;
+            }
         };
 
         public abstract DeviceAction getAction(String commandline);
