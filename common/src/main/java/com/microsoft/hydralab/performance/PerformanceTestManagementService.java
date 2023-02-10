@@ -32,12 +32,18 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             PARSER_WIN_MEMORY, new WindowsMemoryResultParser(),
             PARSER_WIN_BATTERY, new WindowsBatteryResultParser()
     );
+    private static final Map<PerformanceInspector.PerformanceInspectorType, PerformanceResultParser.PerformanceResultParserType> inspectorParserTypeMap = Map.of(
+            INSPECTOR_ANDROID_BATTERY_INFO, PARSER_ANDROID_BATTERY_INFO,
+            INSPECTOR_WIN_MEMORY, PARSER_WIN_MEMORY,
+            INSPECTOR_WIN_BATTERY, PARSER_WIN_BATTERY
+    );
     private final Map<ITestRun, Map<String, PerformanceTestResult>> testRunPerfResultMap = new ConcurrentHashMap<>();
 
     @NotNull
     private static PerformanceTestResult createPerformanceTestResult(PerformanceInspection performanceInspection) {
         PerformanceTestResult performanceTestResult = new PerformanceTestResult();
         performanceTestResult.inspectorType = performanceInspection.inspectorType;
+        performanceTestResult.parserType = getParserTypeByInspection(performanceInspection);
         return performanceTestResult;
     }
 
@@ -51,6 +57,10 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
     private PerformanceResultParser getParserByType(PerformanceResultParser.PerformanceResultParserType parserType) {
         return performanceResultParserMap.get(parserType);
+    }
+
+    private static PerformanceResultParser.PerformanceResultParserType getParserTypeByInspection(PerformanceInspection performanceInspection) {
+        return inspectorParserTypeMap.get(performanceInspection.inspectorType);
     }
 
     @Override
@@ -91,14 +101,13 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     }
 
     @Override
-    public PerformanceTestResult parse(PerformanceInspection performanceInspection, PerformanceResultParser.PerformanceResultParserType resultParser) {
+    public PerformanceTestResult parse(PerformanceInspection performanceInspection) {
         Map<String, PerformanceTestResult> testResultMap = testRunPerfResultMap.get(getTestRun());
         Assert.notNull(testResultMap, "Found no matched test result for test run");
         PerformanceTestResult performanceTestResult = testResultMap.get(performanceInspection.inspectionKey);
         Assert.notNull(performanceTestResult, "Found no matched performanceTestResult for performanceInspectionKey: " + performanceInspection.inspectionKey);
-        PerformanceResultParser parser = getParserByType(resultParser);
-        Assert.notNull(parser, "Found no matched result parser: " + resultParser);
-        performanceTestResult.parserType = resultParser;
+        PerformanceResultParser parser = getParserByType(performanceTestResult.parserType);
+        Assert.notNull(parser, "Found no matched result parser: " + performanceTestResult.parserType);
         return parser.parse(performanceTestResult);
     }
 }

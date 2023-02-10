@@ -39,8 +39,8 @@ public class AndroidBatteryInfoInspector implements PerformanceInspector {
         ShellUtils.execLocalCommand(String.format("adb -s %s shell dumpsys batterystats --reset", device), classLogger);
     }
 
-    // TODO: Do we need to add the method to the Interface, or add clear flag to the PerformanceInspection?
-    public void clearEnv(PerformanceInspection performanceInspection) {
+    // TODO: Do we need to add the method to the Interface, or add tearDown flag to the PerformanceInspection?
+    public void tearDown(PerformanceInspection performanceInspection) {
         ShellUtils.execLocalCommand(String.format("adb -s %s shell dumpsys battery reset", performanceInspection.deviceIdentifier), classLogger);
     }
 

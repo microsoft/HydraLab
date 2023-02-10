@@ -39,7 +39,8 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
         }
 
         // Use the battery usage at the end of the test as a summary
-        performanceTestResult.resultSummary = SerializationUtils.clone((AndroidBatteryInfo) inspectionResults.get(inspectionResults.size() - 1).parsedData);
+        performanceTestResult.setResultSummary(SerializationUtils.clone(
+                (AndroidBatteryInfo) inspectionResults.get(inspectionResults.size() - 1).parsedData));
         return performanceTestResult;
     }
 
@@ -132,7 +133,7 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
         float result = 0;
         try {
             result = Float.parseFloat(input);
-        } catch (NullPointerException | NumberFormatException e) {
+        } catch (NumberFormatException e) {
             classLogger.error(String.format("Error at parse float when parse Android battery info: input str = [%s], line = [%s]", input, line));
         }
         return result;
