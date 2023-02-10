@@ -57,7 +57,7 @@ public class CommonUtils {
             throw new IllegalArgumentException(exceptionMsg);
         }
 
-        System.out.println("Param " + paramName + ": " + filePath + "validated.");
+        System.out.println("Param " + paramName + ": " + filePath + " validated.");
         return file.getAbsolutePath();
     }
 

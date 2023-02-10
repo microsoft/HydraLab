@@ -44,7 +44,7 @@ public class ClientUtilsPluginTest {
 
         generalParamCheck(apiConfig, deviceConfig, testConfig);
 
-        apiConfig.host = "host";
+        apiConfig.host = "www.test.host";
         generalParamCheck(apiConfig, deviceConfig, testConfig);
 
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
@@ -80,6 +80,7 @@ public class ClientUtilsPluginTest {
         testConfig.testSuiteName = "";
         testConfig.testPkgName = "";
         testConfig.testScope = "";
+        apiConfig.host = "www.test.host";
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
         deviceConfig.deviceIdentifier = "TESTDEVICESN001";
 
@@ -118,6 +119,7 @@ public class ClientUtilsPluginTest {
         testConfig.pkgName = "PkgName";
         testConfig.testAppPath = "";
         testConfig.testSuiteName = "";
+        apiConfig.host = "www.test.host";
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
         deviceConfig.deviceIdentifier = "TESTDEVICESN001";
 
@@ -142,6 +144,7 @@ public class ClientUtilsPluginTest {
         testConfig.pkgName = "PkgName";
         testConfig.testAppPath = "";
         testConfig.testSuiteName = "";
+        apiConfig.host = "www.test.host";
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
         deviceConfig.deviceIdentifier = "TESTDEVICESN001";
 
@@ -166,6 +169,7 @@ public class ClientUtilsPluginTest {
         testConfig.runningType = "INSTRUMENTATION";
         testConfig.appPath = "src/test/resources/app.txt";
         testConfig.testAppPath = "src/test/resources/test_app.txt";
+        testConfig.attachmentInfos = new ArrayList<>();
 
         String returnId = "id123456";
         when(client.uploadApp(Mockito.any(HydraLabAPIConfig.class), Mockito.any(TestConfig.class), Mockito.anyString(), Mockito.anyString(),
@@ -246,6 +250,6 @@ public class ClientUtilsPluginTest {
         IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
         }, "IllegalArgumentException was expected");
-        Assertions.assertEquals("Required param " + requiredParamName + " not provided!", thrown.getMessage());
+        Assertions.assertEquals("Running type " + testConfig.runningType + " required param " + requiredParamName + " not provided!", thrown.getMessage());
     }
 }

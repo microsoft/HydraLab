@@ -163,32 +163,32 @@ class ClientUtilsPlugin implements Plugin<Project> {
         switch (testConfig.runningType) {
             case "INSTRUMENTATION":
                 if (StringUtils.isBlank(testConfig.testAppPath)) {
-                    throw new IllegalArgumentException('Required param testAppPath not provided!')
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param testAppPath not provided!')
                 }
                 if (StringUtils.isBlank(testConfig.testPkgName)) {
-                    throw new IllegalArgumentException('Required param testPkgName not provided!')
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param testPkgName not provided!')
                 }
                 if (testConfig.testScope != TestScope.PACKAGE && testConfig.testScope != TestScope.CLASS) {
                     break
                 }
                 if (StringUtils.isBlank(testConfig.testSuiteName)) {
-                    throw new IllegalArgumentException('Required param testSuiteName not provided!')
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param testSuiteName not provided!')
                 }
                 break
             case "APPIUM":
                 if (StringUtils.isBlank(testConfig.testAppPath)) {
-                    throw new IllegalArgumentException('Required param testAppPath not provided!')
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param testAppPath not provided!')
                 }
                 if (StringUtils.isBlank(testConfig.testSuiteName)) {
-                    throw new IllegalArgumentException('Required param testSuiteName not provided!')
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param testSuiteName not provided!')
                 }
                 break
             case "APPIUM_CROSS":
                 if (StringUtils.isBlank(testConfig.testAppPath)) {
-                    throw new IllegalArgumentException('Required param testAppPath not provided!')
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param testAppPath not provided!')
                 }
                 if (StringUtils.isBlank(testConfig.testSuiteName)) {
-                    throw new IllegalArgumentException('Required param testSuiteName not provided!')
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param testSuiteName not provided!')
                 }
                 break
             case "SMART":

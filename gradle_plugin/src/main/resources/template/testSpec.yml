@@ -1,0 +1,51 @@
+# See detailed explanation for parameters in https://github.com/microsoft/HydraLab/blob/main/gradle_plugin/src/main/resources/template/gradle.properties
+# Clean keys with no value, otherwise default value would be overlapped with null.
+
+server:
+  hydraLabAPIHost: # <Required>
+  hydraLabAPISchema: # <Optional>
+  authToken: # <Required>
+
+device:
+  deviceIdentifier: # <Required> <String>
+  groupTestType: # <Optional> <String>
+  neededPermissions: # <Optional> <Array>
+#   <- android.permission.A>
+#   <- android.permission.B>
+  deviceActions: # <Optional>
+     <setUp | tearDown>: # <Array>
+      - method: # <setProperty | setDefaultLauncher | backToHome | changeGlobalSetting | changeSystemSetting | execCommandOnDevice | pushFileToDevice | pullFileFromDevice>
+        args: # <Array>
+          - xxx
+          - xxx
+          - xxx
+
+testSpec:
+  runningType: # <Required>
+  appPath: # <Required>
+  pkgName: # <Required>
+  testAppPath: # <Optional>
+  testPkgName: # <Optional>
+  teamName: # <Optional>
+  testRunnerName: "com.yammer.droid.CustomTestRunner"
+  testScope: # <Optional>
+  testSuiteName: # <Optional>
+  frameworkType: # <Optional>
+  runTimeOutSeconds: # <Required>
+  queueTimeOutSeconds: # <Optional>
+  maxStepCount: # <Optional>
+  deviceTestCount: # <Optional>
+  needUninstall: # <Optional>
+  needClearData: # <Optional>
+  # <Optional>: usage priority: attachmentConfigPath > attachmentInfos
+  attachmentConfigPath: # <Optional>
+  attachmentInfos: # <Optional> <Array>
+    - fileName:
+      filePath:
+      fileType:
+      loadType:
+      loadDir:
+  tag: # <Optional>
+
+instrumentationArgs: # <Optional>
+extraArgs: # <Optional>

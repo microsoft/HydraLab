@@ -41,21 +41,6 @@ public class HydraLabClientUtils {
         String output = String.format("##[section]All args: reportFolderPath: %s, argsMap: %s, extraArgsMap: %s\n%s\n%s\n%s",
                 reportFolderPath, instrumentationArgs == null ? "" : instrumentationArgs.toString(), extraArgs == null ? "" : extraArgs.toString(),
                 apiConfig.toString(), deviceConfig.toString(), testConfig.toString());
-        switch (testConfig.runningType) {
-            case "INSTRUMENTATION":
-            case "APPIUM":
-            case "APPIUM_CROSS":
-                output = output + String.format("\n##[section]\ttestApkPath: %s, testSuiteName: %s", testConfig.testAppPath, testConfig.testSuiteName);
-                break;
-            case "T2C_JSON":
-                output = output + String.format("\n##[section]\ttestApkPath: %s", testConfig.testAppPath);
-                break;
-            case "SMART":
-            case "MONKEY":
-            case "APPIUM_MONKEY":
-            default:
-                break;
-        }
 
         printlnf(maskCred(output));
 
@@ -283,7 +268,7 @@ public class HydraLabClientUtils {
 
         if (runningTest.totalFailCount > 0) {
             printlnf("##[error]Fatal error during test, total fail count: %d", runningTest.totalFailCount);
-            markRunningFail();
+            markTestResultFail();
         }
 
         int index = 0;
