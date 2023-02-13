@@ -34,7 +34,6 @@ class WindowsMemoryParsedData {
         private long peakWorkingSet64;
         private long privateMemorySize64;
         private long workingSet64;
-
     }
 
     // Process ID to process name.
