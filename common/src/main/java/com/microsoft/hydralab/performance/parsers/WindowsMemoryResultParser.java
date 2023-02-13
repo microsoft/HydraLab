@@ -5,10 +5,7 @@ package com.microsoft.hydralab.performance.parsers;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,15 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@EqualsAndHashCode
-@Getter
-@ToString
+@Data
 class WindowsMemoryParsedData {
 
-    @EqualsAndHashCode
-    @Getter
-    @Setter
-    @ToString
+    @Data
     static
     class WindowsMemoryMetrics
     {
@@ -52,7 +44,7 @@ class WindowsMemoryParsedData {
 
 public class WindowsMemoryResultParser implements PerformanceResultParser {
 
-    protected Logger classLogger = LoggerFactory.getLogger(getClass());
+    private final Logger classLogger = LoggerFactory.getLogger(getClass());
 
     private static final Pattern pattern = Pattern.compile("^Id=(.*?) .*?ProcessName=(.*?) " +
             ".*?NonpagedSystemMemorySize64=(.*?) .*?PagedMemorySize64=(.*?) .*?PagedSystemMemorySize64=(.*?) " +
@@ -86,6 +78,7 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
                     }
                 }
 
+                reader.close();
             } catch (FileNotFoundException e) {
                 classLogger.error("Failed to find the file.", e);
             } catch (IOException e) {
