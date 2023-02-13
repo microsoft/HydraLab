@@ -20,6 +20,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * To change the default sampling interval, from an elevated command line, run: `reg add
+ * "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SRUM\Parameters" /v Tier1Period /t REG_DWORD /d
+ * <seconds> /f`. Then restarting the PC to make it take effect.
+ *
+ * NOTE:
+ * To minimize the overhead, you should gather data as infrequently as possible for your measurement. Changing the
+ * sampling rate affects all SRUM providers and should only be done for testing purposes. Changing Tier1Period to < 10
+ * seconds or > 180 seconds will result in the default value of 60 seconds being used.
+ */
 @Data
 class WindowsBatteryParsedData {
 
