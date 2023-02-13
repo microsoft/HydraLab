@@ -83,7 +83,7 @@ class WindowsBatteryParsedData {
     }
 
     private final Set<String> AppIdSet = new ConcurrentHashSet<>();
-    private List<WindowsBatteryMetrics> windowsBatteryMetricsList = new ArrayList<>();
+    private final List<WindowsBatteryMetrics> windowsBatteryMetricsList = new ArrayList<>();
     private WindowsBatteryMetrics summarizedWindowsBatteryMetrics;
 }
 
