@@ -87,8 +87,12 @@ public class BlobStorageClient {
         for (EntityType entityType : entityTypes) {
             String containerName = entityType.blobConstant;
             try {
-                blobServiceClient.getBlobContainerClient(containerName);
+                BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
                 classLogger.info("Get a BlobContainerClient for container {}", containerName);
+                if (!blobContainerClient.exists()) {
+                    classLogger.info("Container {} doesn't exist, will try to create it.", containerName);
+                    blobContainerClient.create();
+                }
             } catch (BlobStorageException e) {
                 classLogger.info("Can't connect to container for {}. Try to create one!", containerName);
                 blobServiceClient.createBlobContainerWithResponse(containerName, null, PublicAccessType.CONTAINER, Context.NONE);
