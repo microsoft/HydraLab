@@ -141,6 +141,10 @@ public class BlobStorageClient {
         }
         BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
         logger.info("Get a BlobContainerClient for container {} for file {}", containerName, uploadFile.getAbsoluteFile());
+        if (!blobContainerClient.exists()) {
+            logger.info("Container {} doesn't exist, will try to create it.", containerName);
+            blobContainerClient.create();
+        }
 
         BlobClient blobClient = blobContainerClient.getBlobClient(blobFilePath);
         if (uploadFile.getName().endsWith(MediaType.MP4_VIDEO.subtype())) {
