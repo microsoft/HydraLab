@@ -66,7 +66,11 @@ public class AndroidDeviceManager extends DeviceManager {
             if (deviceInfo == null) {
                 return;
             }
-            deviceStatusListenerManager.onDeviceConnected(deviceInfo);
+            if (device.getState().equals(DeviceState.ONLINE)) {
+                deviceStatusListenerManager.onDeviceConnected(deviceInfo);
+            } else {
+                deviceStatusListenerManager.onDeviceInactive(deviceInfo);
+            }
         }
 
         @Override
@@ -102,10 +106,10 @@ public class AndroidDeviceManager extends DeviceManager {
                 return;
             }
 
-            if (device.getState() != DeviceState.ONLINE) {
-                deviceStatusListenerManager.onDeviceInactive(deviceInfo);
-            } else {
+            if (device.getState().equals(DeviceState.ONLINE)) {
                 deviceStatusListenerManager.onDeviceConnected(deviceInfo);
+            } else {
+                deviceStatusListenerManager.onDeviceInactive(deviceInfo);
             }
         }
     };

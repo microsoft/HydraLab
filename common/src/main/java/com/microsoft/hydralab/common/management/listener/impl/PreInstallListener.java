@@ -2,11 +2,12 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.management.listener.impl;
 
-import com.android.ddmlib.InstallException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
+import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -40,12 +41,15 @@ public class PreInstallListener implements DeviceStatusListener {
                 continue;
             }
             try {
-                deviceManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
-            } catch (InstallException e) {
+                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> deviceManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger));
+                classLogger.info("Pre-Install {} successfully", appFile.getAbsolutePath());
+                break;
+            } catch (Exception e) {
                 String errorMessage = String.format("Pre-Install %s failed", appFile.getAbsolutePath());
                 classLogger.error(errorMessage, e);
                 throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e);
             }
         }
     }
+
 }
