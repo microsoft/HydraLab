@@ -79,4 +79,4 @@ management:
           job: ${spring.application.name}
           push-rate: 10s
           username: ${PUSHGATEWAY_USERNAME:admin}
-          password: ${PUSHGATEWAY_PASSWORD}
+          password: ${PUSHGATEWAY_PASSWORD:}
