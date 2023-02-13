@@ -102,7 +102,8 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
 
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
         {
-            try {
+            try (ReversedLinesFileReader reversedReader = new ReversedLinesFileReader(inspectionResult.rawResultFile,
+                    StandardCharsets.UTF_8);) {
                 WindowsBatteryParsedData windowsBatteryParsedData = new WindowsBatteryParsedData();
                 inspectionResult.parsedData = windowsBatteryParsedData;
                 WindowsBatteryParsedData.WindowsBatteryMetrics summarizedWindowsBatteryMetrics =
@@ -110,8 +111,6 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
                 windowsBatteryParsedData.setSummarizedWindowsBatteryMetrics(summarizedWindowsBatteryMetrics);
 
                 Map<String, Integer> columnNameToIndexMap = getColumnNameToIndexMap(inspectionResult.rawResultFile);
-                ReversedLinesFileReader reversedReader = new ReversedLinesFileReader(inspectionResult.rawResultFile,
-                        StandardCharsets.UTF_8);
                 String line;
 
                 while ((line = reversedReader.readLine()) != null)
@@ -145,7 +144,6 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
                     }
                 }
 
-                reversedReader.close();
             } catch (IOException e) {
                 classLogger.error("Failed to read data from the file.", e);
             }
@@ -158,8 +156,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
     {
         Map<String, Integer> columnNameToIndexMap = new ConcurrentHashMap<>();
 
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));
+        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
             String columnNamesLine = reader.readLine();
             String[] columnNamesList = columnNamesLine.split(DELIMITER);
 
@@ -168,7 +165,6 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
                 columnNameToIndexMap.put(columnName, index++);
             }
 
-            reader.close();
         } catch (IOException e) {
             classLogger.error("Failed to read data from the file.", e);
         }
@@ -221,6 +217,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
         return 0;
     }
 
+    @NonNull
     private String getOneStringField(String[] fieldValues, String fieldName, Map<String, Integer>columnNameToIndexMap)
     {
         int index = columnNameToIndexMap.getOrDefault(fieldName, -1);
@@ -228,7 +225,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
         {
             return fieldValues[index];
         }
-        return null;
+        return "";
     }
 
 }

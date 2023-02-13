@@ -56,11 +56,10 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
         {
-            try {
+            try (BufferedReader reader = new BufferedReader(new FileReader(inspectionResult.rawResultFile,
+                    StandardCharsets.UTF_16))) {
                 WindowsMemoryParsedData parsedData = new WindowsMemoryParsedData();
                 inspectionResult.parsedData = parsedData;
-                BufferedReader reader = new BufferedReader(new FileReader(inspectionResult.rawResultFile,
-                        StandardCharsets.UTF_16));
                 String line;
 
                 while ((line = reader.readLine()) != null)
@@ -78,7 +77,6 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
                     }
                 }
 
-                reader.close();
             } catch (FileNotFoundException e) {
                 classLogger.error("Failed to find the file.", e);
             } catch (IOException e) {
