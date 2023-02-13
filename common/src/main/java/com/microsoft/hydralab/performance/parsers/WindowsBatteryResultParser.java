@@ -82,7 +82,6 @@ class WindowsBatteryParsedData {
         }
     }
 
-    // Process ID to process name.
     private final Set<String> AppIdSet = new ConcurrentHashSet<>();
     private List<WindowsBatteryMetrics> windowsBatteryMetricsList = new ArrayList<>();
     private WindowsBatteryMetrics summarizedWindowsBatteryMetrics;
@@ -139,9 +138,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
                     summarizedWindowsBatteryMetrics.accumulate(windowsBatteryMetrics);
 
                     String appId = getOneStringField(fieldValues, "AppId", columnNameToIndexMap);
-                    if (appId != null) {
-                        windowsBatteryParsedData.getAppIdSet().add(appId);
-                    }
+                    windowsBatteryParsedData.getAppIdSet().add(appId);
                 }
 
             } catch (IOException e) {
