@@ -1,4 +1,4 @@
-# See detailed explanation for parameters in https://github.com/microsoft/HydraLab/blob/main/gradle_plugin/src/main/resources/template/gradle.properties
+# See detailed explanation for parameters in https://github.com/microsoft/HydraLab/blob/main/gradle_plugin/template/gradle.properties
 # Clean keys with no value, otherwise default value would be overlapped with null.
 
 server:
