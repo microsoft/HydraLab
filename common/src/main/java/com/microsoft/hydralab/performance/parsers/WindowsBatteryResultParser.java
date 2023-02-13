@@ -26,9 +26,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * <seconds> /f`. Then restarting the PC to make it take effect.
  *
  * NOTE:
- * To minimize the overhead, you should gather data as infrequently as possible for your measurement. Changing the
+ * 1. To minimize the overhead, you should gather data as infrequently as possible for your measurement. Changing the
  * sampling rate affects all SRUM providers and should only be done for testing purposes. Changing Tier1Period to < 10
  * seconds or > 180 seconds will result in the default value of 60 seconds being used.
+ * 2. It is recommended to start parsing the result file 20 seconds after the last power data collection. This is
+ * because even though the execution of the corresponding powershell has done, the results may not have been written to
+ * the hard disk completely because the OS has not yet completed the last step of writing due to big size of the result
+ * file is too large.
  */
 @Data
 class WindowsBatteryParsedData {
