@@ -109,7 +109,7 @@ public class ShellUtils {
         if (isConnectedToWindowsOS) {
             String processName = commandStr.split(" ")[0];
             shellProcess = POWER_SHELL_PATH;
-            argName = "-Command";
+            argName = "powershell -ExecutionPolicy Unrestricted -NoProfile -Command";
             command = "\"Get-WmiObject Win32_Process  -Filter \\\"name like '%" + processName + "%' and CommandLine like '%" + commandStr.replace(" ", "%") + "%'\\\" | Select-Object ProcessId -OutVariable pids; if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}\"";
         } else {
             shellProcess = "sh";
@@ -136,7 +136,7 @@ public class ShellUtils {
     public static String parseHydraLabVariable(String command, ITestRun testRun, DeviceInfo deviceInfo) {
         //  Available Hydra Lab Variables In Script:
         //  $HydraLab_TestResultFolderPath: The full path of the test result folder
-        //  $HydraLab_deviceUdid: The UDID of mobile device. (For Android, it will equal to the serial number)
+        //  $HydraLab_deviceUdid: The UDID of mobile device. (For Android, it will be equal to the serial number)
         String outPathOnAgent = testRun.getResultFolder().getAbsolutePath() + "/";
         String udid = deviceInfo.getSerialNum();
         String newCommand = command.replace("$HydraLab_TestResultFolderPath", outPathOnAgent);
