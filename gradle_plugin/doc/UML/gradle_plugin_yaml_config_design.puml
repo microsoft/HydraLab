@@ -1,43 +1,33 @@
 @startyaml
-server:
-    hydraLabAPIHost: example.center-endpoint.com
-    hydraLabAPISchema: https
+hydraLabAPIServer:
+    host: example.center-endpoint.com
+    schema: https
     authToken: xxxxxxxxxx
-device:
-    deviceIdentifier: RANDOMDEVICESERIALNUMBER123
-    groupTestType: SINGLE
-    neededPermissions:
-        - android.permission.READ_CONTACTS
-        - android.permission.WRITE_CONTACTS
-    deviceActions:
-        setUp:
-        - deviceType: Android
-          method: setProperty
-          args:
-            - xxx
-            - xxx
-            - xxx
-        - deviceType: Android
-          method: pushFileToDevice
-          args:
-            - xxx
-            - xxx
-            - xxx
-        tearDown:
-        - deviceType: Android
-          method: setProperty
-          args:
-          - xxx
-          - xxx
-          - xxx
-        - deviceType: Android
-          method: pullFileFromDevice
-          args:
-          - xxx
-          - xxx
-          - xxx
 testSpec:
-    type: API
+    device:
+        deviceIdentifier: RANDOMDEVICESERIALNUMBER123
+        groupTestType: SINGLE
+        deviceActions:
+            setUp:
+            - deviceType: Android
+              method: setProperty
+              args:
+                - xxx
+                - xxx
+            - deviceType: Android
+              method: pushFileToDevice
+              args:
+                - xxx
+            tearDown:
+            - deviceType: Android
+              method: setProperty
+              args:
+              - xxx
+            - deviceType: Android
+              method: pullFileFromDevice
+              args:
+              - xxx
+    triggerType: API
     runningType: INSTRUMENTATION
     appPath: ABSOLUTE_PATH_TO_APP_FILE
     pkgName: app.pkg.name
@@ -50,10 +40,11 @@ testSpec:
     frameworkType: JUNIT4
     runTimeOutSeconds: 1000
     queueTimeOutSeconds: 500
-    maxStepCount: 100
-    deviceTestCount: -1
     needUninstall: true
     needClearData: true
+    neededPermissions:
+        - android.permission.READ_CONTACTS
+        - android.permission.WRITE_CONTACTS
     attachmentConfigPath: ABSOLUTE_PATH_TO_ATTACHMENT_CONFIG_FILE
     attachmentInfos:
     - fileName: a.json
@@ -66,7 +57,12 @@ testSpec:
       fileType: COMMON
       loadType: COPY
       loadDir: DIR_TO_COPY_B_TO
-    tag: artifact_file_name_tag
-instrumentationArgs: key1=a|b|c,key2=d|e|f
+    artifactTag: artifact_file_name_tag
+    testRunArgs:
+        key1: value1
+        key2: value2
+    exploration:
+        maxStepCount: 100
+        testRound: -1
 
 @endyaml

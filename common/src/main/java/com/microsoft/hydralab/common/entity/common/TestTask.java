@@ -110,7 +110,12 @@ public class TestTask implements Serializable {
         testTask.setTimeOutSecond(testTaskSpec.testTimeOutSec);
         testTask.setNeededPermissions(testTaskSpec.neededPermissions);
         testTask.setDeviceActions(testTaskSpec.deviceActions);
-        testTask.setInstrumentationArgs(testTaskSpec.instrumentationArgs);
+        if (testTaskSpec.instrumentationArgs != null) {
+            testTask.setInstrumentationArgs(testTaskSpec.instrumentationArgs);
+        }
+        else {
+            testTask.setInstrumentationArgs(testTaskSpec.testRunArgs);
+        }
         testTask.setFileSetId(testTaskSpec.fileSetId);
         testTask.setPkgName(testTaskSpec.pkgName);
         testTask.setTestPkgName(testTaskSpec.testPkgName);

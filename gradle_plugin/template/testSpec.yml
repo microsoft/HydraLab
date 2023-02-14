@@ -1,27 +1,23 @@
 # [IMPORTANT] Clean keys with no value, otherwise default value would be overlapped with null.
 # See detailed explanation for parameters in https://github.com/microsoft/HydraLab/blob/main/gradle_plugin/template/gradle.properties
 
-server:
-  hydraLabAPIHost: # <Required>
-  hydraLabAPISchema: # <Optional>
+hydraLabAPIServer:
+  host: # <Required>
+  schema: # <Optional>
   authToken: # <Required>
 
-device:
-  deviceIdentifier: # <Required> <String>
-  groupTestType: # <Optional> <String>
-  neededPermissions: # <Optional> <Array>
-   - xxx
-   - xxx
-  deviceActions: # <Optional>
-     <setUp | tearDown>: # <Array>
-      - method: # <setProperty | setDefaultLauncher | backToHome | changeGlobalSetting | changeSystemSetting | execCommandOnDevice | pushFileToDevice | pullFileFromDevice>
-        args: # <Array>
-          - xxx
-          - xxx
-          - xxx
-
 testSpec:
-  type: # <Optional>
+  device:
+    deviceIdentifier: # <Required> <String>
+    groupTestType: # <Optional> <String>
+    deviceActions: # <Optional>
+      <setUp | tearDown>: # <Array>
+        - method: # <setProperty | setDefaultLauncher | backToHome | changeGlobalSetting | changeSystemSetting | execCommandOnDevice | pushFileToDevice | pullFileFromDevice>
+          args: # <Array>
+            - xxx
+            - xxx
+            - xxx
+  triggerType: # <Optional>
   runningType: # <Required>
   appPath: # <Required>
   pkgName: # <Required>
@@ -34,10 +30,11 @@ testSpec:
   frameworkType: # <Optional>
   runTimeOutSeconds: # <Required>
   queueTimeOutSeconds: # <Optional>
-  maxStepCount: # <Optional>
-  deviceTestCount: # <Optional>
   needUninstall: # <Optional>
   needClearData: # <Optional>
+  neededPermissions: # <Optional> <Array>
+    - xxx
+    - xxx
   # <Optional>: usage priority: attachmentConfigPath > attachmentInfos
   attachmentConfigPath: # <Optional>
   attachmentInfos: # <Optional> <Array>
@@ -46,6 +43,10 @@ testSpec:
       fileType:
       loadType:
       loadDir:
-  tag: # <Optional>
-
-instrumentationArgs: # <Optional>
+  testRunArgs: # <Optional>
+#    key1: value1
+#    key2: value2
+  artifactTag: # <Optional>
+  exploration:
+    maxStepCount: # <Optional>
+    deviceTestCount: # <Optional>
