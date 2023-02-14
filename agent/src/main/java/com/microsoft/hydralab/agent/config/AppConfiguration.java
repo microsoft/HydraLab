@@ -17,6 +17,7 @@ import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerMan
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
@@ -65,6 +66,8 @@ public class AppConfiguration {
     private long deviceStateChangeRecoveryTime;
     @Value("${app.adb.host:}")
     private String adbServerHost;
+    @Value("${app.pre-install.shutdown-if-fail:true}")
+    private Boolean shutdownIfFail;
     @Value("${app.appium.host:}")
     private String appiumServerHost;
 
@@ -116,6 +119,7 @@ public class AppConfiguration {
             }
         }
         deviceManager.setPreAppDir(preAppDir);
+        deviceManager.setPreInstallPolicy(shutdownIfFail ? Const.PreInstallPolicy.SHUTDOWN : Const.PreInstallPolicy.IGNORE);
         deviceManager.setDeviceStatusListenerManager(deviceStatusListenerManager);
         deviceManager.setTestBaseDirUrlMapping(AppOptions.TEST_CASE_RESULT_STORAGE_MAPPING_REL_PATH);
         File deviceLogBaseDir = new File(appOptions.getDeviceLogStorageLocation());

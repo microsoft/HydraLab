@@ -135,4 +135,9 @@ public interface Const {
         // permission
         String AUTHORITY = "AUTHORITY";
     }
+
+    interface PreInstallPolicy{
+        String SHUTDOWN = "SHUTDOWN";
+        String IGNORE = "IGNORE";
+    }
 }

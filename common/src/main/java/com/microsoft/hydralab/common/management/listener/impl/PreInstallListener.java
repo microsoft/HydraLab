@@ -5,9 +5,9 @@ package com.microsoft.hydralab.common.management.listener.impl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
-import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -47,7 +47,9 @@ public class PreInstallListener implements DeviceStatusListener {
             } catch (Exception e) {
                 String errorMessage = String.format("Pre-Install %s failed", appFile.getAbsolutePath());
                 classLogger.error(errorMessage, e);
-                throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e);
+                if (Const.PreInstallPolicy.SHUTDOWN.equals(deviceManager.getPreInstallPolicy())) {
+                    throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e);
+                }
             }
         }
     }
