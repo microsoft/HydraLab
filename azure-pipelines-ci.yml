@@ -37,11 +37,11 @@ stages:
         workingDir: 'react'
         customCommand: 'run pub'
     - task: PowerShell@2
-      displayName: Set center/agent version
+      displayName: Generate Env File
       inputs:
         targetType: 'inline'
         script: |
-          env | sort
+          New-Item -Path common/src/test/resources -Name ".env" -ItemType "file" -Value "BLOB_CONNECTION_STRING = $(BLOB_CONNECTION_STRING)"
         workingDirectory: '$(Build.Repository.LocalPath)'
     - task: PowerShell@2
       displayName: Set center/agent version
@@ -72,6 +72,13 @@ stages:
         jdkVersionOption: '1.11'
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
+    - task: PowerShell@2
+      displayName: Delete Env File
+      inputs:
+        targetType: 'inline'
+        script: |
+          Remove-Item -Path common/src/test/resources/.env1 -Force
+        workingDirectory: '$(Build.Repository.LocalPath)'
     - task: PublishCodeCoverageResults@1
       displayName: Publich Code Coverage
       inputs:
