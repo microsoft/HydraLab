@@ -42,6 +42,12 @@ stages:
         targetType: 'inline'
         script: |
           env | sort
+        workingDirectory: '$(Build.Repository.LocalPath)'
+    - task: PowerShell@2
+      displayName: Set center/agent version
+      inputs:
+        targetType: 'inline'
+        script: |
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
           $hydraVersionCode = $(Build.BuildId)
           $hydraVersion = "$(Build.SourceBranchName).$(Build.BuildId)"
