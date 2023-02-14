@@ -22,15 +22,11 @@ class BlobStorageClientTest extends BaseTest {
     void initBlob() {
         String connectionString = null;
         try {
-            connectionString = System.getenv("BLOB_CONNECTION_STRING");
-            if (StringUtils.isBlank(connectionString)) {
-                Dotenv dotenv = Dotenv.load();
-                connectionString = dotenv.get("BLOB_CONNECTION_STRING");
-            } else {
-                logger.info("Get connectionString from System env successfully!");
-            }
+            Dotenv dotenv = Dotenv.load();
+            connectionString = dotenv.get("BLOB_CONNECTION_STRING");
+            logger.info("Get connectionString from env file successfully!");
         } catch (Exception e) {
-            logger.error("Get connectionString from env failed!", e);
+            logger.error("Get connectionString from env file failed!", e);
         }
 
         property.setConnection(connectionString);
