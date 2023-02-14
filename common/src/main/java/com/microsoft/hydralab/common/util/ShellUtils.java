@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.util;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -104,19 +105,19 @@ public class ShellUtils {
 
     public static void killProcessByCommandStr(String commandStr, Logger classLogger) {
         String shellProcess = "";
-        String argName = "";
+        String args = "";
         String command = "";
         if (isConnectedToWindowsOS) {
             String processName = commandStr.split(" ")[0];
             shellProcess = POWER_SHELL_PATH;
-            argName = "powershell -ExecutionPolicy Unrestricted -NoProfile -Command";
-            command = "\"Get-WmiObject Win32_Process  -Filter \\\"name like '%" + processName + "%' and CommandLine like '%" + commandStr.replace(" ", "%") + "%'\\\" | Select-Object ProcessId -OutVariable pids; if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}\"";
+            args = "-Command";
+            command = "\"Get-WmiObject Win32_Process -Filter {name like '%" + processName + "%' and CommandLine like '%" + commandStr.replace(" ", "%") + "%'} | Select-Object ProcessId -OutVariable pids; if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}\"";
         } else {
             shellProcess = "sh";
-            argName = "-c";
+            args = "-c";
             command = "kill $(ps aux | grep \"" + commandStr + "\" | grep -v \"grep\" | awk '{print $2}')";
         }
-        String[] fullCommand = {shellProcess, argName, command};
+        String[] fullCommand = {shellProcess, args, command};
         Process process = null;
         try {
             process = Runtime.getRuntime().exec(fullCommand);
@@ -142,5 +143,10 @@ public class ShellUtils {
         String newCommand = command.replace("$HydraLab_TestResultFolderPath", outPathOnAgent);
         newCommand = newCommand.replace("$HydraLab_deviceUdid", udid);
         return newCommand;
+    }
+
+    public static void main(String[] s) {
+        execLocalCommand("write-host \"abcd\"", LoggerFactory.getLogger("aaa"));
+        killProcessByCommandStr("python", LoggerFactory.getLogger("aaa"));
     }
 }

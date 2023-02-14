@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -256,6 +257,8 @@ public abstract class DeviceManager {
 
     public void execCommandOnAgent(DeviceInfo deviceInfo, String command, Logger logger) {
         ITestRun testRun = TestRunThreadContext.getTestRun();
+        Assert.notNull(testRun, "There is no testRun instance in ThreadContext!");
+        Assert.notNull(testRun.getResultFolder(), "The testRun instance in ThreadContext does not have resultFolder property!");
         String newCommand = ShellUtils.parseHydraLabVariable(command, testRun, deviceInfo);
         ShellUtils.execLocalCommand(newCommand, logger);
     }
