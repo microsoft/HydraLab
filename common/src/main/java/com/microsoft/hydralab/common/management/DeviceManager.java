@@ -42,6 +42,16 @@ public abstract class DeviceManager {
     protected BlobStorageClient blobStorageClient;
     protected File testBaseDir;
     protected File preAppDir;
+    protected String preInstallPolicy;
+
+    public String getPreInstallPolicy() {
+        return preInstallPolicy;
+    }
+
+    public void setPreInstallPolicy(String preInstallPolicy) {
+        this.preInstallPolicy = preInstallPolicy;
+    }
+
     protected String testBaseDirUrlMapping;
     protected File deviceLogBaseDir;
     protected File screenshotDir;
