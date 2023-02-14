@@ -47,7 +47,7 @@ public class CommonUtils {
             }).create();
 
     public static String validateAndReturnFilePath(String filePath, String paramName) throws IllegalArgumentException {
-
+        assertNotNull(filePath, paramName);
         File file = new File(filePath);
         assertTrue(file.exists(), filePath + " file not exist!", null);
 
