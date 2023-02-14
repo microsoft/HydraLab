@@ -41,6 +41,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
+          env | sort
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
           $hydraVersionCode = $(Build.BuildId)
           $hydraVersion = "$(Build.SourceBranchName).$(Build.BuildId)"
