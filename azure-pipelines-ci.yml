@@ -77,7 +77,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          Remove-Item -Path common/src/test/resources/.env1 -Force
+          Remove-Item -Path common/src/test/resources/.env -Force
         workingDirectory: '$(Build.Repository.LocalPath)'
     - task: PublishCodeCoverageResults@1
       displayName: Publich Code Coverage
