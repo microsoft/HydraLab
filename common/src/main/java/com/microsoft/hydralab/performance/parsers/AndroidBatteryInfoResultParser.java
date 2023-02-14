@@ -64,7 +64,6 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
                 inputLine = inputLine.trim().toLowerCase();
                 contents.add(inputLine);
             }
-            in.close();
 
             //Find Uid
             for (String line : contents) {
