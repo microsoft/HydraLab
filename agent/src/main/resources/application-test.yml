@@ -1,3 +1,6 @@
+#  Available Hydra Lab Variables In Script:
+#  $HydraLab_TestResultFolderPath: The full path of the test result folder
+#  $HydraLab_deviceUdid: The UDID of mobile device. (For Android, it will equal to the serial number)
 app:
   device-script:
     commands:

@@ -4,6 +4,8 @@ package com.microsoft.hydralab.common.management;
 
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.TimeoutException;
+import com.microsoft.hydralab.agent.runner.ITestRun;
+import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
@@ -253,7 +255,9 @@ public abstract class DeviceManager {
     abstract public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
 
     public void execCommandOnAgent(DeviceInfo deviceInfo, String command, Logger logger) {
-        ShellUtils.execLocalCommand(command, logger);
+        ITestRun testRun = TestRunThreadContext.getTestRun();
+        String newCommand = ShellUtils.parseHydraLabVariable(command, testRun, deviceInfo);
+        ShellUtils.execLocalCommand(newCommand, logger);
     }
 
     protected boolean isAppRunningForeground(DeviceInfo deviceInfo, String packageName, Logger logger) {

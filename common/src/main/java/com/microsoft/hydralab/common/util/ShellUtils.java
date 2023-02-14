@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.util;
 
+import com.microsoft.hydralab.agent.runner.ITestRun;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -128,5 +130,16 @@ public class ShellUtils {
         } catch (Exception e) {
             classLogger.error("Fail to run: " + String.join(" ", fullCommand), e);
         }
+    }
+
+    public static String parseHydraLabVariable(String command, ITestRun testRun, DeviceInfo deviceInfo) {
+        //  Available Hydra Lab Variables In Script:
+        //  $HydraLab_TestResultFolderPath: The full path of the test result folder
+        //  $HydraLab_deviceUdid: The UDID of mobile device. (For Android, it will equal to the serial number)
+        String outPathOnAgent = testRun.getResultFolder().getAbsolutePath() + "/";
+        String udid = deviceInfo.getSerialNum();
+        String newCommand = command.replace("$HydraLab_TestResultFolderPath", outPathOnAgent);
+        newCommand = newCommand.replace("$HydraLab_deviceUdid", udid);
+        return newCommand;
     }
 }
