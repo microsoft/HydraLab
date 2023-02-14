@@ -257,9 +257,12 @@ public abstract class DeviceManager {
 
     public void execCommandOnAgent(DeviceInfo deviceInfo, String command, Logger logger) {
         ITestRun testRun = TestRunThreadContext.getTestRun();
-        Assert.notNull(testRun, "There is no testRun instance in ThreadContext!");
-        Assert.notNull(testRun.getResultFolder(), "The testRun instance in ThreadContext does not have resultFolder property!");
-        String newCommand = ShellUtils.parseHydraLabVariable(command, testRun, deviceInfo);
+        String newCommand = command;
+        if (testRun != null) {
+            // Variable only supported when the test run is ready
+            Assert.notNull(testRun.getResultFolder(), "The testRun instance in ThreadContext does not have resultFolder property!");
+            newCommand = ShellUtils.parseHydraLabVariable(command, testRun, deviceInfo);
+        }
         ShellUtils.execLocalCommand(newCommand, logger);
     }
 
