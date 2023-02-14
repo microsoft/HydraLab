@@ -1,5 +1,5 @@
+# [IMPORTANT] Clean keys with no value, otherwise default value would be overlapped with null.
 # See detailed explanation for parameters in https://github.com/microsoft/HydraLab/blob/main/gradle_plugin/template/gradle.properties
-# Clean keys with no value, otherwise default value would be overlapped with null.
 
 server:
   hydraLabAPIHost: # <Required>
