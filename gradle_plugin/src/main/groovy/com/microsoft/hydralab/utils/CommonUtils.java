@@ -47,9 +47,6 @@ public class CommonUtils {
             }).create();
 
     public static String validateAndReturnFilePath(String filePath, String paramName) throws IllegalArgumentException {
-        if (StringUtils.isBlank(filePath)) {
-            return "";
-        }
 
         File file = new File(filePath);
         assertTrue(file.exists(), filePath + " file not exist!", null);
