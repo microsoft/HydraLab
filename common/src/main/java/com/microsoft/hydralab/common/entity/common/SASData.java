@@ -25,7 +25,7 @@ public class SASData {
         /**
          * Define permission
          */
-        Write("b", "o", "war"),
+        Write("b", "co", "war"),
         Read("b", "o", "r");
 
         public final String serviceStr, resourceStr, permissionStr;
