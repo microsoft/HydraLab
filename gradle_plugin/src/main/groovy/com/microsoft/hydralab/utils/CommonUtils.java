@@ -52,10 +52,7 @@ public class CommonUtils {
         }
 
         File file = new File(filePath);
-        if (!file.exists()) {
-            String exceptionMsg = filePath + " file not exist!";
-            throw new IllegalArgumentException(exceptionMsg);
-        }
+        assertTrue(file.exists(), filePath + " file not exist!", null);
 
         System.out.println("Param " + paramName + ": " + filePath + " validated.");
         return file.getAbsolutePath();
