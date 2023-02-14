@@ -65,3 +65,4 @@ application-local.yml
 /application-*.yml
 
 /local_debug
+.env

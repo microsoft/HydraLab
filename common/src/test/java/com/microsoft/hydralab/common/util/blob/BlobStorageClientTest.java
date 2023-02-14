@@ -5,6 +5,7 @@ import com.microsoft.hydralab.common.entity.center.BlobProperty;
 import com.microsoft.hydralab.common.entity.common.SASData;
 import com.microsoft.hydralab.common.test.BaseTest;
 import com.microsoft.hydralab.common.util.ThreadUtils;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.*;
 import org.junit.platform.commons.util.StringUtils;
 
@@ -13,13 +14,25 @@ import java.io.File;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BlobStorageClientTest extends BaseTest {
-    String connectionString = "";
     BlobStorageClient blobStorageClient;
     File sampleFile = new File("src/test/resources/uitestsample.ipa");
     BlobProperty property = new BlobProperty();
 
     @BeforeAll
     void initBlob() {
+        String connectionString = null;
+        try {
+            connectionString = System.getenv("BLOB_CONNECTION_STRING");
+            if (StringUtils.isBlank(connectionString)) {
+                Dotenv dotenv = Dotenv.load();
+                connectionString = dotenv.get("BLOB_CONNECTION_STRING");
+            } else {
+                logger.info("Get connectionString from System env successfully!");
+            }
+        } catch (Exception e) {
+            logger.error("Get connectionString from env failed!", e);
+        }
+
         property.setConnection(connectionString);
         property.setFileLimitDay(6);
         property.setSASExpiryTimeAgent(30);
@@ -50,9 +63,8 @@ class BlobStorageClientTest extends BaseTest {
             BlobProperties properties = blobStorageClient.downloadFileFromBlob(sampleFile_copy, DeviceNetworkBlobConstants.PKG_BLOB_NAME, "test/unit/" + sampleFile.getName());
             logger.info("Download sample file finished, properties: " + properties);
             Assertions.assertNotNull(properties, "Download File Failed!");
-            if (sampleFile_copy.exists()) {
-                sampleFile_copy.delete();
-            }
+            Assertions.assertTrue(sampleFile_copy.exists(), "Download File Failed!");
+            sampleFile_copy.delete();
         }
     }
 

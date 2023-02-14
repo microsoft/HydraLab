@@ -18,7 +18,6 @@ import com.azure.storage.common.sas.AccountSasService;
 import com.azure.storage.common.sas.AccountSasSignatureValues;
 import com.google.common.net.MediaType;
 import com.microsoft.hydralab.common.entity.center.BlobProperty;
-import com.microsoft.hydralab.common.entity.common.EntityFileRelation.EntityType;
 import com.microsoft.hydralab.common.entity.common.SASData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +51,6 @@ public class BlobStorageClient {
         blobServiceClient = new BlobServiceClientBuilder().connectionString(blobProperty.getConnection()).buildClient();
         fileLimitDay = blobProperty.getFileLimitDay();
         cdnUrl = blobProperty.getCDNUrl();
-        initContainer();
         isAuthedBySAS = false;
         isConnected = true;
     }
@@ -70,7 +68,6 @@ public class BlobStorageClient {
         blobServiceClient = new BlobServiceClientBuilder().endpoint(sasData.getEndpoint()).credential(azureSasCredential).buildClient();
         fileLimitDay = sasData.getFileLimitDay();
         cdnUrl = sasData.getCdnUrl();
-        initContainer();
         isConnected = true;
         sasDataInUse = sasData;
     }
@@ -82,22 +79,20 @@ public class BlobStorageClient {
         }
     }
 
-    private void initContainer() {
-        EntityType[] entityTypes = EntityType.values();
-        for (EntityType entityType : entityTypes) {
-            String containerName = entityType.blobConstant;
-            try {
-                BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
-                classLogger.info("Get a BlobContainerClient for container {}", containerName);
-                if (!blobContainerClient.exists()) {
-                    classLogger.info("Container {} doesn't exist, will try to create it.", containerName);
-                    blobContainerClient.create();
-                }
-            } catch (BlobStorageException e) {
-                classLogger.info("Can't connect to container for {}. Try to create one!", containerName);
-                blobServiceClient.createBlobContainerWithResponse(containerName, null, PublicAccessType.CONTAINER, Context.NONE);
+    private BlobContainerClient getContainer(String containerName) {
+        BlobContainerClient blobContainerClient;
+        try {
+            blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
+            classLogger.info("Get a BlobContainerClient for container {}", containerName);
+            if (!blobContainerClient.exists()) {
+                classLogger.info("Container {} doesn't exist, will try to create it.", containerName);
+                blobContainerClient.create();
             }
+        } catch (BlobStorageException e) {
+            classLogger.info("Can't connect to container for {}. Try to create one!", containerName);
+            blobContainerClient = blobServiceClient.createBlobContainerWithResponse(containerName, null, PublicAccessType.CONTAINER, Context.NONE).getValue();
         }
+        return blobContainerClient;
     }
 
     public SASData generateSAS(SASData.SASPermission sasPermission) {
@@ -143,14 +138,8 @@ public class BlobStorageClient {
         if (logger == null) {
             logger = classLogger;
         }
-        BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
-        logger.info("Get a BlobContainerClient for container {} for file {}", containerName, uploadFile.getAbsoluteFile());
-        if (!blobContainerClient.exists()) {
-            logger.info("Container {} doesn't exist, will try to create it.", containerName);
-            blobContainerClient.create();
-        }
 
-        BlobClient blobClient = blobContainerClient.getBlobClient(blobFilePath);
+        BlobClient blobClient = getContainer(containerName).getBlobClient(blobFilePath);
         if (uploadFile.getName().endsWith(MediaType.MP4_VIDEO.subtype())) {
             BlobHttpHeaders headers = new BlobHttpHeaders();
             headers.setContentType(MediaType.MP4_VIDEO.toString());
@@ -180,8 +169,7 @@ public class BlobStorageClient {
         if (!saveDir.exists()) {
             cn.hutool.core.lang.Assert.isTrue(saveDir.mkdirs(), "mkdirs fail in downloadFileFromUrl");
         }
-        BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
-        BlobClient blobClient = blobContainerClient.getBlobClient(blobFilePath);
+        BlobClient blobClient = getContainer(containerName).getBlobClient(blobFilePath);
         return blobClient.downloadToFile(downloadToFile.getAbsolutePath(), true);
     }
 }
