@@ -154,9 +154,13 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
     private long getOneMetric(String[] fieldValues, String metricName, Map<String, Integer>columnNameToIndexMap)
     {
         int index = columnNameToIndexMap.getOrDefault(metricName, -1);
-        if (index != -1)
-        {
-            return Long.parseLong(fieldValues[index]);
+        if (index != -1) {
+            try {
+                return Long.parseLong(fieldValues[index]);
+            } catch (NumberFormatException e) {
+                classLogger.error("Failed to parse long data from the field value: " + fieldValues[index], e);
+                return 0;
+            }
         }
         return 0;
     }
