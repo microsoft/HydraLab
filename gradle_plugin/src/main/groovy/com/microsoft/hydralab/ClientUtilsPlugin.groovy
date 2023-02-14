@@ -43,9 +43,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     testConfig.attachmentConfigPath = project.attachmentConfigPath
                 }
                 // validate file path
-                testConfig.appPath = CommonUtils.validateFile(testConfig.appPath, "appPath")
-                testConfig.testAppPath = CommonUtils.validateFile(testConfig.testAppPath, "testAppPath")
-                testConfig.attachmentConfigPath = CommonUtils.validateFile(testConfig.attachmentConfigPath, "attachmentConfigPath")
+                testConfig.appPath = CommonUtils.validateAndReturnFilePath(testConfig.appPath, "appPath")
+                testConfig.testAppPath = CommonUtils.validateAndReturnFilePath(testConfig.testAppPath, "testAppPath")
+                testConfig.attachmentConfigPath = CommonUtils.validateAndReturnFilePath(testConfig.attachmentConfigPath, "attachmentConfigPath")
 
 
                 if (project.hasProperty('hydraLabAPISchema')) {
