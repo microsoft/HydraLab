@@ -16,6 +16,7 @@ import java.util.List;
 
 @JsonAppend
 public class TestConfig {
+    public String type = "API";
     public String runningType = "";
     public String appPath = "";
     public String testAppPath = "";
@@ -52,6 +53,7 @@ public class TestConfig {
     @Override
     public String toString() {
         return "TestConfig:\n" +
+                "\ttype=" + type + "\n" +
                 "\trunningType=" + runningType + "\n" +
                 "\tappPath=" + appPath + "\n" +
                 "\ttestAppPath=" + testAppPath + "\n" +

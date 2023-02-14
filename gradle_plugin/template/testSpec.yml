@@ -21,6 +21,7 @@ device:
           - xxx
 
 testSpec:
+  type: # <Optional>
   runningType: # <Required>
   appPath: # <Required>
   pkgName: # <Required>
@@ -48,4 +49,3 @@ testSpec:
   tag: # <Optional>
 
 instrumentationArgs: # <Optional>
-extraArgs: # <Optional>

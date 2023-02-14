@@ -22,7 +22,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 TestConfig testConfig = new TestConfig()
                 DeviceConfig deviceConfig = new DeviceConfig()
                 def instrumentationArgsMap = null
-                def extraArgsMap = null
                 def reportDir = new File(project.buildDir, "testResult")
                 if (!reportDir.exists()) {
                     reportDir.mkdirs()
@@ -35,7 +34,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     testConfig = yamlParser.parseTestConfig()
                     deviceConfig = yamlParser.parseDeviceConfig()
                     instrumentationArgsMap = CommonUtils.parseArguments(yamlParser.getString("instrumentationArgs"))
-                    extraArgsMap = CommonUtils.parseArguments(yamlParser.getString("extraArgs"))
                 }
 
                 if (project.hasProperty('appPath')) {
@@ -52,12 +50,8 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 testConfig.testAppPath = CommonUtils.validateFile(testConfig.testAppPath, "testAppPath")
                 testConfig.attachmentConfigPath = CommonUtils.validateFile(testConfig.attachmentConfigPath, "attachmentConfigPath")
 
-                // todo: instrumentationArgs / extraArgs: generalize or remove one of them
                 if (project.hasProperty('instrumentationArgs')) {
                     instrumentationArgsMap = CommonUtils.parseArguments(project.instrumentationArgs)
-                }
-                if (project.hasProperty('extraArgs')) {
-                    extraArgsMap = CommonUtils.parseArguments(project.extraArgs)
                 }
 
                 if (project.hasProperty('hydraLabAPISchema')) {
@@ -84,6 +78,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     deviceConfig.deviceActionsStr = project.deviceActions.replace("\\", "\"")
                 }
 
+                if (project.hasProperty('type')) {
+                    testConfig.type = project.type
+                }
                 if (project.hasProperty('runningType')) {
                     testConfig.runningType = project.runningType
                 }
@@ -137,7 +134,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 requiredParamCheck(apiConfig, deviceConfig, testConfig)
 
                 HydraLabClientUtils.runTestOnDeviceWithApp(
-                        reportDir.absolutePath, instrumentationArgsMap, extraArgsMap,
+                        reportDir.absolutePath, instrumentationArgsMap,
                         apiConfig, deviceConfig, testConfig
                 )
             }

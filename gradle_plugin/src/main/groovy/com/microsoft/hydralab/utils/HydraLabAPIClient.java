@@ -192,10 +192,11 @@ public class HydraLabAPIClient {
         }
     }
 
-    public JsonObject triggerTestRun(TestConfig testConfig, DeviceConfig deviceConfig, HydraLabAPIConfig apiConfig, String fileSetId, @Nullable String accessKey, Map<String, String> instrumentationArgs, Map<String, String> extraArgs) {
+    public JsonObject triggerTestRun(TestConfig testConfig, DeviceConfig deviceConfig, HydraLabAPIConfig apiConfig, String fileSetId, @Nullable String accessKey, Map<String, String> instrumentationArgs) {
         checkCenterAlive(apiConfig);
 
         JsonObject jsonElement = new JsonObject();
+        jsonElement.addProperty("type", testConfig.type);
         jsonElement.addProperty("runningType", testConfig.runningType);
         jsonElement.addProperty("deviceIdentifier", deviceConfig.deviceIdentifier);
         jsonElement.addProperty("fileSetId", fileSetId);
@@ -232,9 +233,6 @@ public class HydraLabAPIClient {
 
         if (accessKey != null) {
             jsonElement.addProperty("accessKey", accessKey);
-        }
-        if (extraArgs != null) {
-            extraArgs.forEach(jsonElement::addProperty);
         }
 
         String content = GSON.toJson(jsonElement);

@@ -161,7 +161,6 @@ public class ClientUtilsPluginTest {
     public void runTestOnDeviceWithApp() {
         String reportFolderPath = "./reportFolder";
         Map<String, String> instrumentationArgs = new HashMap<>();
-        Map<String, String> extraArgs = new HashMap<>();
         HydraLabAPIClient client = Mockito.mock(HydraLabAPIClient.class);
         HydraLabAPIConfig apiConfig = Mockito.mock(HydraLabAPIConfig.class);
         DeviceConfig deviceConfig = Mockito.mock(DeviceConfig.class);
@@ -193,7 +192,7 @@ public class ClientUtilsPluginTest {
         subJsonObject.addProperty("devices", "device1,device2");
         subJsonObject.addProperty("testTaskId", "test_task_id");
         returnJson.add("content", subJsonObject);
-        when(client.triggerTestRun(Mockito.any(TestConfig.class), Mockito.any(DeviceConfig.class), Mockito.any(HydraLabAPIConfig.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap()))
+        when(client.triggerTestRun(Mockito.any(TestConfig.class), Mockito.any(DeviceConfig.class), Mockito.any(HydraLabAPIConfig.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
                 .thenReturn(returnJson);
 
         TestTask returnTestTask = new TestTask();
@@ -214,7 +213,7 @@ public class ClientUtilsPluginTest {
                 .thenReturn(returnBlobSAS);
 
         HydraLabClientUtils.switchClientInstance(client);
-        HydraLabClientUtils.runTestOnDeviceWithApp(reportFolderPath, instrumentationArgs, extraArgs, apiConfig, deviceConfig, testConfig);
+        HydraLabClientUtils.runTestOnDeviceWithApp(reportFolderPath, instrumentationArgs, apiConfig, deviceConfig, testConfig);
 
         verify(client, times(0)).cancelTestTask(Mockito.any(HydraLabAPIConfig.class), Mockito.anyString(), Mockito.anyString());
         verify(client, times(0)).downloadToFile(Mockito.anyString(), Mockito.any(File.class));
