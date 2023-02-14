@@ -19,6 +19,7 @@ public class ShellUtils {
         String args = "";
 
         if (isConnectedToWindowsOS) {
+            // Add execution policy to ensure powershell can run on most of Windows devices
             shellProcess = POWER_SHELL_PATH;
             args = "powershell -ExecutionPolicy Unrestricted -NoProfile -Command";
         } else {
