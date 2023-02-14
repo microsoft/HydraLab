@@ -46,7 +46,7 @@ public class CommonUtils {
                 }
             }).create();
 
-    public static String validateFile(String filePath, String paramName) throws IllegalArgumentException {
+    public static String validateAndReturnFilePath(String filePath, String paramName) throws IllegalArgumentException {
         if (StringUtils.isBlank(filePath)) {
             return "";
         }
