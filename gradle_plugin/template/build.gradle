@@ -1,0 +1,22 @@
+/**
+ * Select one from the following approaches you apply plugins.
+ */
+
+// Using the plugins DSL:
+plugins {
+    id "com.microsoft.hydralab.client-util" version "${plugin_version}"
+}
+
+// Using legacy plugin application:
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        google()
+    }
+    dependencies {
+        classpath 'com.microsoft.hydralab:gradle_plugin:${plugin_version}'
+    }
+}
+apply plugin: "com.microsoft.hydralab.client-util"

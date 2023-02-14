@@ -1,14 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 package com.microsoft.hydralab.utils;
 
 import com.google.gson.*;
-import com.microsoft.hydralab.entity.HydraLabAPIConfig;
-import com.microsoft.hydralab.entity.AttachmentInfo;
-import com.microsoft.hydralab.entity.BlobFileInfo;
-import com.microsoft.hydralab.entity.DeviceTestResult;
-import com.microsoft.hydralab.entity.TestTask;
+import com.microsoft.hydralab.config.DeviceConfig;
+import com.microsoft.hydralab.config.HydraLabAPIConfig;
+import com.microsoft.hydralab.config.TestConfig;
+import com.microsoft.hydralab.entity.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -32,51 +32,15 @@ public class HydraLabClientUtils {
         hydraLabAPIClient = client;
     }
 
-    public static void runTestOnDeviceWithApp(String runningType, String appPath, String testAppPath,
-                                              String attachmentConfigPath,
-                                              String testSuiteName,
-                                              @Nullable String deviceIdentifier,
-                                              int queueTimeoutSec,
-                                              int runTimeoutSec,
-                                              String reportFolderPath,
-                                              Map<String, String> instrumentationArgs,
-                                              Map<String, String> extraArgs,
-                                              String tag,
-                                              HydraLabAPIConfig apiConfig) {
-        String output = String.format("##[section]All args: runningType: %s, appPath: %s, deviceIdentifier: %s" +
-                        "\n##[section]\tqueueTimeOutSeconds: %d, runTimeOutSeconds: %d, argsMap: %s, extraArgsMap: %s" +
-                        "\n##[section]\tapiConfig: %s",
-                runningType, appPath, deviceIdentifier,
-                queueTimeoutSec, runTimeoutSec, instrumentationArgs == null ? "" : instrumentationArgs.toString(), extraArgs == null ? "" : extraArgs.toString(),
-                apiConfig.toString());
-        switch (runningType) {
-            case "INSTRUMENTATION":
-            case "APPIUM":
-            case "APPIUM_CROSS":
-                output = output + String.format("\n##[section]\ttestApkPath: %s, testSuiteName: %s", testAppPath, testSuiteName);
-                break;
-            case "T2C_JSON":
-                output = output + String.format("\n##[section]\ttestApkPath: %s", testAppPath);
-                break;
-            case "SMART":
-            case "MONKEY":
-            case "APPIUM_MONKEY":
-            default:
-                break;
-        }
-        if (StringUtils.isNotEmpty(attachmentConfigPath)) {
-            output = output + String.format("\n##[section]\tattachmentConfigPath: %s", attachmentConfigPath);
-        }
-        if (StringUtils.isNotEmpty(tag)) {
-            output = output + String.format("\n##[section]\ttag: %s", tag);
-        }
+    public static void runTestOnDeviceWithApp(String reportFolderPath, HydraLabAPIConfig apiConfig, TestConfig testConfig) {
+        String output = String.format("##[section]All args: reportFolderPath: %s\n%s\n%s",
+                reportFolderPath, apiConfig.toString(), testConfig.toString());
 
         printlnf(maskCred(output));
 
         isTestRunningFailed = false;
         try {
-            runTestInner(runningType, appPath, testAppPath, attachmentConfigPath, testSuiteName, deviceIdentifier,
-                    queueTimeoutSec, runTimeoutSec, reportFolderPath, instrumentationArgs, extraArgs, tag, apiConfig);
+            runTestInner(reportFolderPath, apiConfig, testConfig);
             markRunningSuccess();
         } catch (RuntimeException e) {
             markRunningFail();
@@ -84,17 +48,7 @@ public class HydraLabClientUtils {
         }
     }
 
-    private static void runTestInner(String runningType, String appPath, String testAppPath,
-                                     String attachmentConfigPath,
-                                     String testSuiteName,
-                                     @Nullable String deviceIdentifier,
-                                     int queueTimeoutSec,
-                                     int runTimeoutSec,
-                                     String reportFolderPath,
-                                     Map<String, String> instrumentationArgs,
-                                     Map<String, String> extraArgs,
-                                     String tag,
-                                     HydraLabAPIConfig apiConfig) {
+    private static void runTestInner(String reportFolderPath, HydraLabAPIConfig apiConfig, TestConfig testConfig) {
         // Collect git info
         File commandDir = new File(".");
         // TODO: make the commit info fetch approach compatible to other types of pipeline variables.
@@ -129,9 +83,8 @@ public class HydraLabClientUtils {
 
         File app = null;
         File testApp = null;
-        JsonArray attachmentInfos = new JsonArray();
         try {
-            File file = new File(appPath);
+            File file = new File(testConfig.appPath);
             assertTrue(file.exists(), "app not exist", null);
 
             if (file.isDirectory()) {
@@ -140,8 +93,8 @@ public class HydraLabClientUtils {
                 app = file;
             }
 
-            if (!testAppPath.isEmpty()) {
-                file = new File(testAppPath);
+            if (StringUtils.isNotEmpty(testConfig.testAppPath)) {
+                file = new File(testConfig.testAppPath);
                 assertTrue(file.exists(), "testApp not exist", null);
                 if (file.isDirectory()) {
                     throw new IllegalArgumentException("testAppPath should be the path to the test app/jar or JSON-described test file.");
@@ -150,34 +103,34 @@ public class HydraLabClientUtils {
                 }
             }
 
-            if (!attachmentConfigPath.isEmpty()) {
-                file = new File(attachmentConfigPath);
+            if (StringUtils.isNotBlank(testConfig.attachmentConfigPath)) {
+                file = new File(testConfig.attachmentConfigPath);
                 JsonParser parser = new JsonParser();
-                attachmentInfos = parser.parse(new FileReader(file)).getAsJsonArray();
-                printlnf("Attachment size: %d", attachmentInfos.size());
-                printlnf("Attachment information: %s", attachmentInfos.toString());
+                JsonArray attachmentInfoJsons = parser.parse(new FileReader(file)).getAsJsonArray();
+                printlnf("Attachment size: %d", attachmentInfoJsons.size());
+                printlnf("Attachment information: %s", attachmentInfoJsons.toString());
+
+                // new a list to override yml config if the file path exists
+                testConfig.attachmentInfos = new ArrayList<>();
+                for (JsonElement attachmentInfoJson : attachmentInfoJsons) {
+                    AttachmentInfo attachmentInfo = GSON.fromJson(attachmentInfoJson, AttachmentInfo.class);
+                    testConfig.attachmentInfos.add(attachmentInfo);
+                }
             }
 
         } catch (Exception e) {
             throw new IllegalArgumentException("Apps not found, or attachment config not extracted correctly: " + e.getMessage(), e);
         }
 
-        if (apiConfig == null) {
-            apiConfig = new HydraLabAPIConfig();
-        }
-
-        String testFileSetId = hydraLabAPIClient.uploadApp(apiConfig, commitId, commitCount, commitMsg, app, testApp);
+        String testFileSetId = hydraLabAPIClient.uploadApp(apiConfig, testConfig, commitId, commitCount, commitMsg, app, testApp);
         printlnf("##[section]Uploaded test file set id: %s", testFileSetId);
         assertNotNull(testFileSetId, "testFileSetId");
 
         // TODO: make the pipeline link fetch approach compatible to other types of pipeline variables.
-        apiConfig.pipelineLink = System.getenv("SYSTEM_TEAMFOUNDATIONSERVERURI") + System.getenv("SYSTEM_TEAMPROJECT") + "/_build/results?buildId=" + System.getenv("BUILD_BUILDID");
-        printlnf("##[section]Callback pipeline link is: %s", apiConfig.pipelineLink);
+        testConfig.pipelineLink = System.getenv("SYSTEM_TEAMFOUNDATIONSERVERURI") + System.getenv("SYSTEM_TEAMPROJECT") + "/_build/results?buildId=" + System.getenv("BUILD_BUILDID");
+        printlnf("##[section]Callback pipeline link is: %s", testConfig.pipelineLink);
 
-        for (int index = 0; index < attachmentInfos.size(); index++) {
-            JsonObject attachmentJson = attachmentInfos.get(index).getAsJsonObject();
-            AttachmentInfo attachmentInfo = GSON.fromJson(attachmentJson, AttachmentInfo.class);
-
+        for (AttachmentInfo attachmentInfo : testConfig.attachmentInfos) {
             assertTrue(!attachmentInfo.filePath.isEmpty(), "Attachment file " + attachmentInfo.fileName + "has an empty path.", null);
             File attachment = new File(attachmentInfo.filePath);
             assertTrue(attachment.exists(), "Attachment file " + attachmentInfo.fileName + "doesn't exist.", null);
@@ -196,21 +149,21 @@ public class HydraLabClientUtils {
             printlnf("##[command]Attachment %s uploaded successfully", attachmentInfo.filePath);
         }
 
-        String accessKey = hydraLabAPIClient.generateAccessKey(apiConfig, deviceIdentifier);
+        String accessKey = hydraLabAPIClient.generateAccessKey(apiConfig, testConfig);
         if (StringUtils.isEmpty(accessKey)) {
             printlnf("##[warning]Access key is empty.");
         } else {
             printlnf("##[command]Access key obtained.");
         }
 
-        JsonObject responseContent = hydraLabAPIClient.triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
+        JsonObject responseContent = hydraLabAPIClient.triggerTestRun(testConfig, apiConfig, testFileSetId, accessKey);
         int resultCode = responseContent.get("code").getAsInt();
 
         // retry
         int waitingRetry = 20;
         while (resultCode != 200 && waitingRetry > 0) {
             printlnf("##[warning]Trigger test run failed, remaining retry times: %d\nServer code: %d, message: %s", waitingRetry, resultCode, responseContent.get("message").getAsString());
-            responseContent = hydraLabAPIClient.triggerTestRun(runningType, apiConfig, testFileSetId, testSuiteName, deviceIdentifier, accessKey, runTimeoutSec, instrumentationArgs, extraArgs);
+            responseContent = hydraLabAPIClient.triggerTestRun(testConfig, apiConfig, testFileSetId, accessKey);
             resultCode = responseContent.get("code").getAsInt();
             waitingRetry--;
         }
@@ -219,7 +172,7 @@ public class HydraLabClientUtils {
         String testTaskId = responseContent.getAsJsonObject("content").get("testTaskId").getAsString();
         printlnf("##[section]Triggered test task id: %s successful!", testTaskId);
 
-        int sleepSecond = runTimeoutSec / 3;
+        int sleepSecond = testConfig.runTimeOutSeconds / 3;
         int totalWaitSecond = 0;
         boolean finished = false;
         TestTask runningTest = null;
@@ -229,14 +182,12 @@ public class HydraLabClientUtils {
 
         while (!finished) {
             if (TestTask.TestStatus.WAITING.equals(currentStatus)) {
-                if (totalWaitSecond > queueTimeoutSec) {
-                    hydraLabAPIClient.cancelTestTask(apiConfig, testTaskId, "Queue timeout!");
-                    printlnf("Cancelled the task as timeout %d seconds is reached", queueTimeoutSec);
+                if (totalWaitSecond > testConfig.queueTimeOutSeconds) {
                     break;
                 }
                 printlnf("Get test status after queuing for %d seconds", totalWaitSecond);
             } else if (TestTask.TestStatus.RUNNING.equals(currentStatus)) {
-                if (totalWaitSecond > runTimeoutSec) {
+                if (totalWaitSecond > testConfig.runTimeOutSeconds) {
                     break;
                 }
                 printlnf("Get test status after running for %d seconds", totalWaitSecond);
@@ -253,7 +204,7 @@ public class HydraLabClientUtils {
                 hydraRetryTime = runningTest.retryTime;
                 printlnf("##[command]Retrying to run task again, current waited second will be reset. current retryTime is: %d", hydraRetryTime);
                 totalWaitSecond = 0;
-                sleepSecond = runTimeoutSec / 3;
+                sleepSecond = testConfig.runTimeOutSeconds / 3;
             }
 
             if (TestTask.TestStatus.WAITING.equals(currentStatus)) {
@@ -264,7 +215,7 @@ public class HydraLabClientUtils {
                 if (TestTask.TestStatus.WAITING.equals(lastStatus)) {
                     printlnf("##[command]Clear waiting time: %d", totalWaitSecond);
                     totalWaitSecond = 0;
-                    sleepSecond = runTimeoutSec / 3;
+                    sleepSecond = testConfig.runTimeOutSeconds / 3;
                 }
                 printlnf("##[command]Running test on %d device, status for now: %s", runningTest.testDevicesCount, currentStatus);
                 assertTrue(!TestTask.TestStatus.CANCELED.equals(currentStatus), "The test task is canceled", runningTest);
@@ -283,10 +234,13 @@ public class HydraLabClientUtils {
         }
 
         if (TestTask.TestStatus.WAITING.equals(currentStatus)) {
-            assertTrue(finished, "Queuing timeout after waiting for " + queueTimeoutSec + " seconds! Test id", runningTest);
+            hydraLabAPIClient.cancelTestTask(apiConfig, testTaskId, "Queue timeout!");
+            printlnf("Cancelled the task as queuing timeout %d seconds is reached", testConfig.queueTimeOutSeconds);
+            assertTrue(finished, "Queuing timeout after waiting for " + testConfig.queueTimeOutSeconds + " seconds! Test id", runningTest);
         } else if (TestTask.TestStatus.RUNNING.equals(currentStatus)) {
             hydraLabAPIClient.cancelTestTask(apiConfig, testTaskId, "Run timeout!");
-            assertTrue(finished, "Running timeout after waiting for " + runTimeoutSec + " seconds! Test id", runningTest);
+            printlnf("Cancelled the task as running timeout %d seconds is reached", testConfig.runTimeOutSeconds);
+            assertTrue(finished, "Running timeout after waiting for " + testConfig.runTimeOutSeconds + " seconds! Test id", runningTest);
         }
 
         assertNotNull(runningTest, "runningTest");
@@ -303,7 +257,7 @@ public class HydraLabClientUtils {
 
         if (runningTest.totalFailCount > 0) {
             printlnf("##[error]Fatal error during test, total fail count: %d", runningTest.totalFailCount);
-            markRunningFail();
+            markTestResultFail();
         }
 
         int index = 0;
@@ -314,10 +268,10 @@ public class HydraLabClientUtils {
         // add (test type + timestamp) in folder name to distinguish different test results when using the same device
         ZonedDateTime utc = ZonedDateTime.now(ZoneOffset.UTC);
         String testFolder;
-        if (StringUtils.isEmpty(tag)) {
-            testFolder = runningType + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
+        if (StringUtils.isEmpty(testConfig.artifactTag)) {
+            testFolder = testConfig.runningType + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
         } else {
-            testFolder = runningType + "-" + tag + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
+            testFolder = testConfig.runningType + "-" + testConfig.artifactTag + "-" + utc.format(DateTimeFormatter.ofPattern("MMddHHmmss"));
         }
 
         File file = new File(reportFolderPath, testFolder);

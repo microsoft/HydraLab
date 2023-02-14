@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 package com.microsoft.hydralab.utils;
 
 import com.google.gson.Gson;
@@ -5,12 +7,15 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +45,31 @@ public class CommonUtils {
                     }
                 }
             }).create();
+
+    public static String validateAndReturnFilePath(String filePath, String paramName) throws IllegalArgumentException {
+        assertNotNull(filePath, paramName);
+        File file = new File(filePath);
+        assertTrue(file.exists(), filePath + " file not exist!", null);
+
+        System.out.println("Param " + paramName + ": " + filePath + " validated.");
+        return file.getAbsolutePath();
+    }
+
+    public static HashMap<String, String> parseArguments(String argsString){
+        if (StringUtils.isBlank(argsString)) {
+            return null;
+        }
+        HashMap<String, String> argsMap = new HashMap<>();
+
+        // quotation marks not support
+        String[] argLines = argsString.replace("\"", "").split(",");
+        for (String argLine: argLines) {
+            String[] kv = argLine.split("=");
+            argsMap.put(kv[0], kv[1]);
+        }
+
+        return argsMap;
+    }
 
     public static String maskCred(String content) {
         for (HydraLabClientUtils.MaskSensitiveData sensitiveData : HydraLabClientUtils.MaskSensitiveData.values()) {

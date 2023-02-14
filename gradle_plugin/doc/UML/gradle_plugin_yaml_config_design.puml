@@ -1,0 +1,68 @@
+@startyaml
+hydraLabAPIServer:
+    host: example.center-endpoint.com
+    schema: https
+    authToken: xxxxxxxxxx
+testSpec:
+    device:
+        deviceIdentifier: RANDOMDEVICESERIALNUMBER123
+        groupTestType: SINGLE
+        deviceActions:
+            setUp:
+            - deviceType: Android
+              method: setProperty
+              args:
+                - xxx
+                - xxx
+            - deviceType: Android
+              method: pushFileToDevice
+              args:
+                - xxx
+            tearDown:
+            - deviceType: Android
+              method: setProperty
+              args:
+              - xxx
+            - deviceType: Android
+              method: pullFileFromDevice
+              args:
+              - xxx
+    triggerType: API
+    runningType: INSTRUMENTATION
+    appPath: ABSOLUTE_PATH_TO_APP_FILE
+    pkgName: app.pkg.name
+    testAppPath: ABSOLUTE_PATH_TO_TEST_APP_FILE
+    testPkgName: test_app.pkg.name
+    teamName: Default
+    testRunnerName: androidx.test.runner.AndroidJUnitRunner
+    testScope: CLASS
+    testSuiteName: test.suite.class.name
+    frameworkType: JUNIT4
+    runTimeOutSeconds: 1000
+    queueTimeOutSeconds: 500
+    needUninstall: true
+    needClearData: true
+    neededPermissions:
+        - android.permission.READ_CONTACTS
+        - android.permission.WRITE_CONTACTS
+    attachmentConfigPath: ABSOLUTE_PATH_TO_ATTACHMENT_CONFIG_FILE
+    attachmentInfos:
+    - fileName: a.json
+      filePath: ABSOLUTE_PATH_TO_A_JSON
+      fileType: COMMON
+      loadType: COPY
+      loadDir: DIR_TO_COPY_A_TO
+    - fileName: b.json
+      filePath: ABSOLUTE_PATH_TO_A_JSON
+      fileType: COMMON
+      loadType: COPY
+      loadDir: DIR_TO_COPY_B_TO
+    artifactTag: artifact_file_name_tag
+    testRunArgs:
+        key1: value1
+        key2: value2
+    exploration:
+        maxStepCount: 100
+        testRound: -1
+
+@endyaml

@@ -28,7 +28,10 @@ public class TestTaskSpec {
     public boolean isPerfTest;
     public boolean needUninstall = true;
     public boolean needClearData = true;
+    // todo: remove this field when update overall center-ADO/Gradle plugins compatibility
+    @Deprecated
     public Map<String, String> instrumentationArgs;
+    public Map<String, String> testRunArgs;
     public Set<String> agentIds = new HashSet<>();
     public String runningType;
     public int maxStepCount = 100;

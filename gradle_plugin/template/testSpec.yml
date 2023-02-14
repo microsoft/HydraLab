@@ -1,0 +1,52 @@
+# [IMPORTANT] Clean keys with no value, otherwise default value would be overlapped with null.
+# See detailed explanation for parameters in https://github.com/microsoft/HydraLab/blob/main/gradle_plugin/template/gradle.properties
+
+hydraLabAPIServer:
+  host: # <Required>
+  schema: # <Optional>
+  authToken: # <Required>
+
+testSpec:
+  device:
+    deviceIdentifier: # <Required> <String>
+    groupTestType: # <Optional> <String>
+    deviceActions: # <Optional>
+      <setUp | tearDown>: # <Array>
+        - method: # <setProperty | setDefaultLauncher | backToHome | changeGlobalSetting | changeSystemSetting | execCommandOnDevice | pushFileToDevice | pullFileFromDevice>
+          args: # <Array>
+            - xxx
+            - xxx
+            - xxx
+  triggerType: # <Optional>
+  runningType: # <Required>
+  appPath: # <Required>
+  pkgName: # <Required>
+  testAppPath: # <Optional>
+  testPkgName: # <Optional>
+  teamName: # <Optional>
+  testRunnerName: # <Optional>
+  testScope: # <Optional>
+  testSuiteName: # <Optional>
+  frameworkType: # <Optional>
+  runTimeOutSeconds: # <Required>
+  queueTimeOutSeconds: # <Optional>
+  needUninstall: # <Optional>
+  needClearData: # <Optional>
+  neededPermissions: # <Optional> <Array>
+    - xxx
+    - xxx
+  # <Optional>: usage priority: attachmentConfigPath > attachmentInfos
+  attachmentConfigPath: # <Optional>
+  attachmentInfos: # <Optional> <Array>
+    - fileName:
+      filePath:
+      fileType:
+      loadType:
+      loadDir:
+  testRunArgs: # <Optional>
+#    key1: value1
+#    key2: value2
+  artifactTag: # <Optional>
+  exploration:
+    maxStepCount: # <Optional>
+    testRound: # <Optional>

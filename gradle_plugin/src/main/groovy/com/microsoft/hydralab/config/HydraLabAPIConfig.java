@@ -1,17 +1,15 @@
-package com.microsoft.hydralab.entity;
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+package com.microsoft.hydralab.config;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Locale;
 
-// todo: split into APIConfig/deviceConfig/testConfig
 public class HydraLabAPIConfig {
     public String schema = "https";
     public String host = "";
     public String contextPath = "";
     public String authToken = "";
-    public boolean onlyAuthPost = true;
-    public String checkCenterVersionAPIPath = "/api/center/info";
     public String checkCenterAliveAPIPath = "/api/center/isAlive";
     public String getBlobSAS = "/api/package/getSAS";
     public String uploadAPKAPIPath = "/api/package/add";
@@ -22,20 +20,6 @@ public class HydraLabAPIConfig {
     public String cancelTestTaskAPIPath = "/api/test/task/cancel/%s?reason=%s";
     public String testPortalTaskInfoPath = "/portal/index.html?redirectUrl=/info/task/";
     public String testPortalTaskDeviceVideoPath = "/portal/index.html?redirectUrl=/info/videos/";
-    public String pkgName = "";
-    public String testPkgName = "";
-    public String groupTestType = "SINGLE";
-    public String pipelineLink = "";
-    public String frameworkType = "JUnit4";
-    public int maxStepCount = 100;
-    public int deviceTestCount = -1;
-    public boolean needUninstall = true;
-    public boolean needClearData = true;
-    public String teamName = "";
-    public String testRunnerName = "androidx.test.runner.AndroidJUnitRunner";
-    public String testScope = "";
-    public List<String> neededPermissions = new ArrayList<>();
-    public String deviceActionsStr = "";
 
     public String getBlobSASUrl() {
         return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, getBlobSAS);
@@ -80,19 +64,7 @@ public class HydraLabAPIConfig {
     @Override
     public String toString() {
         return "HydraLabAPIConfig:\n" +
-                "pkgName=" + pkgName + ",\n" +
-                "testPkgName=" + testPkgName + ",\n" +
-                "groupTestType=" + groupTestType + ",\n" +
-                "pipelineLink=" + pipelineLink + ",\n" +
-                "frameworkType=" + frameworkType + ",\n" +
-                "maxStepCount=" + maxStepCount + ",\n" +
-                "deviceTestCount=" + deviceTestCount + ",\n" +
-                "needUninstall=" + needUninstall + ",\n" +
-                "needClearData=" + needClearData + ",\n" +
-                "teamName=" + teamName + ",\n" +
-                "testRunnerName=" + testRunnerName + ",\n" +
-                "testScope=" + testScope + ",\n" +
-                "neededPermissions=" + (neededPermissions != null ? neededPermissions.toString() : "") + ",\n" +
-                "deviceActionsStr=" + deviceActionsStr;
+                "\tschema=" + schema + "\n" +
+                "\thost=" + host;
     }
 }
