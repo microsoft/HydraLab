@@ -1,3 +1,6 @@
+#  Available Hydra Lab Variables In Script:
+#  $HydraLab_TestResultFolderPath: The full path of the test result folder
+#  $HydraLab_deviceUdid: The UDID of mobile device. (For Android, it will be equal to the serial number)
 app:
   device-script:
     commands:
@@ -12,8 +15,19 @@ app:
         inline: |
           test command 2
           test command 3
+      - type: AgentShell
+        when: setUp
+        suite-class-matcher: '.*test.*'
+        inline: |
+          test command 4
       - type: ADBShell
         when: tearDown
         suite-class-matcher: 'com.microsoft.test'
         inline: |
-          test command 4
+          test command 5
+      - type: AgentShell
+        when: tearDown
+        suite-class-matcher: 'com.microsoft.test'
+        inline: |
+          test command 6
+          test command 7

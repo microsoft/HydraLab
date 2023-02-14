@@ -4,6 +4,8 @@ package com.microsoft.hydralab.common.management;
 
 import com.android.ddmlib.InstallException;
 import com.android.ddmlib.TimeoutException;
+import com.microsoft.hydralab.agent.runner.ITestRun;
+import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
@@ -12,10 +14,7 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
-import com.microsoft.hydralab.common.util.IOSUtils;
-import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.common.util.ThreadPoolUtil;
-import com.microsoft.hydralab.common.util.ThreadUtils;
+import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.appium.java_client.appmanagement.ApplicationState;
 import io.appium.java_client.ios.IOSDriver;
@@ -24,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -264,7 +264,18 @@ public abstract class DeviceManager {
     abstract public void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
 
     abstract public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
-    
+
+    public void execCommandOnAgent(DeviceInfo deviceInfo, String command, Logger logger) {
+        ITestRun testRun = TestRunThreadContext.getTestRun();
+        String newCommand = command;
+        if (testRun != null) {
+            // Variable only supported when the test run is ready
+            Assert.notNull(testRun.getResultFolder(), "The testRun instance in ThreadContext does not have resultFolder property!");
+            newCommand = ShellUtils.parseHydraLabVariable(command, testRun, deviceInfo);
+        }
+        ShellUtils.execLocalCommand(newCommand, logger);
+    }
+
     protected boolean isAppRunningForeground(DeviceInfo deviceInfo, String packageName, Logger logger) {
         IOSDriver iOSDriver = appiumServerManager.getIOSDriver(deviceInfo, logger);
         ApplicationState state = iOSDriver.queryAppState(packageName);

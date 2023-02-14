@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.util;
 
+import com.microsoft.hydralab.agent.runner.ITestRun;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -14,17 +16,18 @@ public class ShellUtils {
     private static String[] getFullCommand(String command)
     {
         String shellProcess = "";
-        String argName = "";
+        String args = "";
 
         if (isConnectedToWindowsOS) {
+            // Add execution policy to ensure powershell can run on most of Windows devices
             shellProcess = POWER_SHELL_PATH;
-            argName = "-Command";
+            args = "powershell -ExecutionPolicy Unrestricted -NoProfile -Command";
         } else {
             shellProcess = "sh";
-            argName = "-c";
+            args = "-c";
         }
 
-        return new String[]{shellProcess, argName, command};
+        return new String[]{shellProcess, args, command};
     }
 
     @Nullable
@@ -101,19 +104,19 @@ public class ShellUtils {
 
     public static void killProcessByCommandStr(String commandStr, Logger classLogger) {
         String shellProcess = "";
-        String argName = "";
+        String args = "";
         String command = "";
         if (isConnectedToWindowsOS) {
             String processName = commandStr.split(" ")[0];
             shellProcess = POWER_SHELL_PATH;
-            argName = "-Command";
-            command = "\"Get-WmiObject Win32_Process  -Filter \\\"name like '%" + processName + "%' and CommandLine like '%" + commandStr.replace(" ", "%") + "%'\\\" | Select-Object ProcessId -OutVariable pids; if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}\"";
+            args = "-Command";
+            command = "\"Get-WmiObject Win32_Process -Filter {name like '%" + processName + "%' and CommandLine like '%" + commandStr.replace(" ", "%") + "%'} | Select-Object ProcessId -OutVariable pids; if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}\"";
         } else {
             shellProcess = "sh";
-            argName = "-c";
+            args = "-c";
             command = "kill $(ps aux | grep \"" + commandStr + "\" | grep -v \"grep\" | awk '{print $2}')";
         }
-        String[] fullCommand = {shellProcess, argName, command};
+        String[] fullCommand = {shellProcess, args, command};
         Process process = null;
         try {
             process = Runtime.getRuntime().exec(fullCommand);
@@ -128,5 +131,16 @@ public class ShellUtils {
         } catch (Exception e) {
             classLogger.error("Fail to run: " + String.join(" ", fullCommand), e);
         }
+    }
+
+    public static String parseHydraLabVariable(String command, ITestRun testRun, DeviceInfo deviceInfo) {
+        //  Available Hydra Lab Variables In Script:
+        //  $HydraLab_TestResultFolderPath: The full path of the test result folder
+        //  $HydraLab_deviceUdid: The UDID of mobile device. (For Android, it will be equal to the serial number)
+        String outPathOnAgent = testRun.getResultFolder().getAbsolutePath() + "/";
+        String udid = deviceInfo.getSerialNum();
+        String newCommand = command.replace("$HydraLab_TestResultFolderPath", outPathOnAgent);
+        newCommand = newCommand.replace("$HydraLab_deviceUdid", udid);
+        return newCommand;
     }
 }
