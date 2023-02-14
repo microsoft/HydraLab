@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance.parsers;
 
+import com.microsoft.hydralab.performance.Entity.WindowsMemoryParsedData;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
-import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,34 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-@Data
-class WindowsMemoryParsedData {
-
-    @Data
-    static
-    class WindowsMemoryMetrics
-    {
-        private long nonpagedSystemMemorySize64;
-        private long pagedMemorySize64;
-        private long pagedSystemMemorySize64;
-        private long peakPagedMemorySize64;
-        private long peakVirtualMemorySize64;
-        private long peakWorkingSet64;
-        private long privateMemorySize64;
-        private long workingSet64;
-    }
-
-    // Process ID to process name.
-    private final Map<Long, String> processIdProcessNameMap = new ConcurrentHashMap<>();
-    // Process ID to Windows memory metrics.
-    private final Map<Long, WindowsMemoryMetrics> processIdWindowsMemoryMetricsMap = new ConcurrentHashMap<>();
-
-}
 
 public class WindowsMemoryResultParser implements PerformanceResultParser {
 

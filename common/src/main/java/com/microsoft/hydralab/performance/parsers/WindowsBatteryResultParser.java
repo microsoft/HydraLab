@@ -2,11 +2,10 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance.parsers;
 
-import cn.hutool.core.collection.ConcurrentHashSet;
+import com.microsoft.hydralab.performance.Entity.WindowsBatteryParsedData;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
-import lombok.Data;
 import lombok.NonNull;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.slf4j.Logger;
@@ -17,7 +16,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -34,58 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * the hard disk completely because the OS has not yet completed the last step of writing due to big size of the result
  * file is too large.
  */
-@Data
-class WindowsBatteryParsedData {
-
-    final static String[] METRICS_NAME = {"EnergyLoss", "CPUEnergyConsumption", "SocEnergyConsumption",
-            "DisplayEnergyConsumption", "DiskEnergyConsumption", "NetworkEnergyConsumption", "MBBEnergyConsumption",
-            "OtherEnergyConsumption", "EmiEnergyConsumption", "CPUEnergyConsumptionWorkOnBehalf",
-            "CPUEnergyConsumptionAttributed", "TotalEnergyConsumption"};
-
-    @Data
-    static
-    class WindowsBatteryMetrics
-    {
-        private long energyLoss;
-        private long CPUEnergyConsumption;
-        private long socEnergyConsumption;
-        private long displayEnergyConsumption;
-        private long diskEnergyConsumption;
-        private long networkEnergyConsumption;
-        private long MBBEnergyConsumption;
-        private long otherEnergyConsumption;
-        private long emiEnergyConsumption;
-        private long CPUEnergyConsumptionWorkOnBehalf;
-        private long CPUEnergyConsumptionAttributed;
-        private long totalEnergyConsumption;
-        @NonNull
-        private String timeStamp = "";
-
-        void accumulate(WindowsBatteryMetrics metrics)
-        {
-            this.energyLoss += metrics.energyLoss;
-            this.CPUEnergyConsumption += metrics.CPUEnergyConsumption;
-            this.socEnergyConsumption += metrics.socEnergyConsumption;
-            this.displayEnergyConsumption += metrics.displayEnergyConsumption;
-            this.diskEnergyConsumption += metrics.diskEnergyConsumption;
-            this.networkEnergyConsumption += metrics.networkEnergyConsumption;
-            this.MBBEnergyConsumption += metrics.MBBEnergyConsumption;
-            this.otherEnergyConsumption += metrics.otherEnergyConsumption;
-            this.emiEnergyConsumption += metrics.emiEnergyConsumption;
-            this.CPUEnergyConsumptionWorkOnBehalf += metrics.CPUEnergyConsumptionWorkOnBehalf;
-            this.CPUEnergyConsumptionAttributed += metrics.CPUEnergyConsumptionAttributed;
-            this.totalEnergyConsumption += metrics.totalEnergyConsumption;
-
-            if (this.timeStamp.compareTo(metrics.timeStamp) < 0) {
-                this.timeStamp = metrics.timeStamp;
-            }
-        }
-    }
-
-    private final Set<String> AppIdSet = new ConcurrentHashSet<>();
-    private final List<WindowsBatteryMetrics> windowsBatteryMetricsList = new ArrayList<>();
-    private WindowsBatteryMetrics summarizedWindowsBatteryMetrics;
-}
 
 public class WindowsBatteryResultParser implements PerformanceResultParser {
 
