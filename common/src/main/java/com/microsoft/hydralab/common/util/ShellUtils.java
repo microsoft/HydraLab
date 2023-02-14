@@ -144,9 +144,4 @@ public class ShellUtils {
         newCommand = newCommand.replace("$HydraLab_deviceUdid", udid);
         return newCommand;
     }
-
-    public static void main(String[] s) {
-        execLocalCommand("write-host \"abcd\"", LoggerFactory.getLogger("aaa"));
-        killProcessByCommandStr("python", LoggerFactory.getLogger("aaa"));
-    }
 }
