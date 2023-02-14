@@ -5,7 +5,6 @@ package com.microsoft.hydralab.common.util;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.*;
