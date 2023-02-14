@@ -20,8 +20,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
             doFirst {
                 HydraLabAPIConfig apiConfig = new HydraLabAPIConfig()
                 TestConfig testConfig = new TestConfig()
-                DeviceConfig deviceConfig = new DeviceConfig()
-                def instrumentationArgsMap = null
+
                 def reportDir = new File(project.buildDir, "testResult")
                 if (!reportDir.exists()) {
                     reportDir.mkdirs()
@@ -32,8 +31,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     YamlParser yamlParser = new YamlParser(project.ymlConfigFile)
                     apiConfig = yamlParser.parseAPIConfig()
                     testConfig = yamlParser.parseTestConfig()
-                    deviceConfig = yamlParser.parseDeviceConfig()
-                    instrumentationArgsMap = CommonUtils.parseArguments(yamlParser.getString("instrumentationArgs"))
                 }
 
                 if (project.hasProperty('appPath')) {
@@ -50,9 +47,6 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 testConfig.testAppPath = CommonUtils.validateFile(testConfig.testAppPath, "testAppPath")
                 testConfig.attachmentConfigPath = CommonUtils.validateFile(testConfig.attachmentConfigPath, "attachmentConfigPath")
 
-                if (project.hasProperty('instrumentationArgs')) {
-                    instrumentationArgsMap = CommonUtils.parseArguments(project.instrumentationArgs)
-                }
 
                 if (project.hasProperty('hydraLabAPISchema')) {
                     apiConfig.schema = project.hydraLabAPISchema
@@ -64,22 +58,26 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     apiConfig.authToken = project.authToken
                 }
 
+                if (testConfig.deviceConfig == null) {
+                    testConfig.deviceConfig = new DeviceConfig()
+                }
                 if (project.hasProperty('deviceIdentifier')) {
-                    deviceConfig.deviceIdentifier = project.deviceIdentifier
+                    testConfig.deviceConfig.deviceIdentifier = project.deviceIdentifier
                 }
                 if (project.hasProperty('groupTestType')) {
-                    deviceConfig.groupTestType = project.groupTestType
-                }
-                if (project.hasProperty('neededPermissions')) {
-                    deviceConfig.neededPermissions = project.neededPermissions.split(", +")
+                    testConfig.deviceConfig.groupTestType = project.groupTestType
                 }
                 if (project.hasProperty('deviceActions')) {
                     // add quotes back as quotes in gradle plugins will be replaced by blanks
-                    deviceConfig.deviceActionsStr = project.deviceActions.replace("\\", "\"")
+                    testConfig.deviceConfig.deviceActionsStr = project.deviceActions.replace("\\", "\"")
                 }
 
-                if (project.hasProperty('type')) {
-                    testConfig.type = project.type
+                if (project.hasProperty('triggerType')) {
+                    testConfig.triggerType = project.triggerType
+                }
+                // @Deprecated
+                else if (project.hasProperty('type')) {
+                    testConfig.triggerType = project.type
                 }
                 if (project.hasProperty('runningType')) {
                     testConfig.runningType = project.runningType
@@ -115,28 +113,43 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         testConfig.queueTimeOutSeconds = testConfig.runTimeOutSeconds
                     }
                 }
-                if (project.hasProperty('maxStepCount')) {
-                    testConfig.maxStepCount = Integer.parseInt(project.maxStepCount)
-                }
-                if (project.hasProperty('deviceTestCount')) {
-                    testConfig.deviceTestCount = Integer.parseInt(project.deviceTestCount)
-                }
                 if (project.hasProperty('needUninstall')) {
                     testConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
                 }
                 if (project.hasProperty('needClearData')) {
                     testConfig.needClearData = Boolean.parseBoolean(project.needClearData)
                 }
-                if (project.hasProperty('tag')) {
+                if (project.hasProperty('neededPermissions')) {
+                    testConfig.neededPermissions = project.neededPermissions.split(", +")
+                }
+                if (project.hasProperty('artifactTag')) {
+                    testConfig.artifactTag = project.artifactTag
+                }
+                // @Deprecated
+                else if (project.hasProperty('tag')) {
                     testConfig.artifactTag = project.tag
                 }
+                if (project.hasProperty('testRunArgs')) {
+                    testConfig.testRunArgs = CommonUtils.parseArguments(project.testRunArgs)
+                }
+                // @Deprecated
+                else if (project.hasProperty('instrumentationArgs')) {
+                    testConfig.testRunArgs = CommonUtils.parseArguments(project.instrumentationArgs)
+                }
+                if (project.hasProperty('maxStepCount')) {
+                    testConfig.maxStepCount = Integer.parseInt(project.maxStepCount)
+                }
+                if (project.hasProperty('testRound')) {
+                    testConfig.testRound = Integer.parseInt(project.testRound)
+                }
+                // @Deprecated
+                else if (project.hasProperty('deviceTestCount')) {
+                    testConfig.testRound = Integer.parseInt(project.deviceTestCount)
+                }
 
-                requiredParamCheck(apiConfig, deviceConfig, testConfig)
+                requiredParamCheck(apiConfig, testConfig)
 
-                HydraLabClientUtils.runTestOnDeviceWithApp(
-                        reportDir.absolutePath, instrumentationArgsMap,
-                        apiConfig, deviceConfig, testConfig
-                )
+                HydraLabClientUtils.runTestOnDeviceWithApp(reportDir.absolutePath, apiConfig, testConfig)
             }
         }.configure {
             group = "Test"
@@ -144,14 +157,14 @@ class ClientUtilsPlugin implements Plugin<Project> {
         }
     }
 
-    void requiredParamCheck(HydraLabAPIConfig apiConfig, DeviceConfig deviceConfig, TestConfig testConfig) {
+    void requiredParamCheck(HydraLabAPIConfig apiConfig, TestConfig testConfig) {
         if (StringUtils.isBlank(apiConfig.host)
                 || StringUtils.isBlank(apiConfig.authToken)
                 || StringUtils.isBlank(testConfig.appPath)
                 || StringUtils.isBlank(testConfig.pkgName)
                 || StringUtils.isBlank(testConfig.runningType)
                 || testConfig.runTimeOutSeconds == 0
-                || StringUtils.isBlank(deviceConfig.deviceIdentifier)
+                || StringUtils.isBlank(testConfig.deviceConfig.deviceIdentifier)
         ) {
             throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIhost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')
         }

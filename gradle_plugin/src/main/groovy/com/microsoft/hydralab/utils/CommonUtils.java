@@ -71,8 +71,7 @@ public class CommonUtils {
         String[] argLines = argsString.replace("\"", "").split(",");
         for (String argLine: argLines) {
             String[] kv = argLine.split("=");
-            // use | to represent comma to avoid conflicts
-            argsMap.put(kv[0], kv[1].replace("|", ","));
+            argsMap.put(kv[0], kv[1]);
         }
 
         return argsMap;

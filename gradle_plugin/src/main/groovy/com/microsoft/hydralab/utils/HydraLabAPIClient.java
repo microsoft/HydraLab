@@ -152,12 +152,12 @@ public class HydraLabAPIClient {
         }
     }
 
-    public String generateAccessKey(HydraLabAPIConfig apiConfig, DeviceConfig deviceConfig) {
+    public String generateAccessKey(HydraLabAPIConfig apiConfig, TestConfig testConfig) {
         checkCenterAlive(apiConfig);
 
         Request req = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(String.format(apiConfig.getGenerateAccessKeyUrl(), deviceConfig.deviceIdentifier))
+                .url(String.format(apiConfig.getGenerateAccessKeyUrl(), testConfig.deviceConfig.deviceIdentifier))
                 .get()
                 .build();
         OkHttpClient clientToUse = client;
@@ -192,11 +192,13 @@ public class HydraLabAPIClient {
         }
     }
 
-    public JsonObject triggerTestRun(TestConfig testConfig, DeviceConfig deviceConfig, HydraLabAPIConfig apiConfig, String fileSetId, @Nullable String accessKey, Map<String, String> instrumentationArgs) {
+    public JsonObject triggerTestRun(TestConfig testConfig, HydraLabAPIConfig apiConfig, String fileSetId, @Nullable String accessKey) {
         checkCenterAlive(apiConfig);
 
+        DeviceConfig deviceConfig = testConfig.deviceConfig;
+
         JsonObject jsonElement = new JsonObject();
-        jsonElement.addProperty("type", testConfig.type);
+        jsonElement.addProperty("type", testConfig.triggerType);
         jsonElement.addProperty("runningType", testConfig.runningType);
         jsonElement.addProperty("deviceIdentifier", deviceConfig.deviceIdentifier);
         jsonElement.addProperty("fileSetId", fileSetId);
@@ -208,23 +210,23 @@ public class HydraLabAPIClient {
         jsonElement.addProperty("pipelineLink", testConfig.pipelineLink);
         jsonElement.addProperty("frameworkType", testConfig.frameworkType);
         jsonElement.addProperty("maxStepCount", testConfig.maxStepCount);
-        jsonElement.addProperty("deviceTestCount", testConfig.deviceTestCount);
+        jsonElement.addProperty("deviceTestCount", testConfig.testRound);
         jsonElement.addProperty("needUninstall", testConfig.needUninstall);
         jsonElement.addProperty("needClearData", testConfig.needClearData);
         jsonElement.addProperty("testRunnerName", testConfig.testRunnerName);
         jsonElement.addProperty("testScope", testConfig.testScope);
 
         try {
-            if (deviceConfig.neededPermissions.size() > 0) {
-                jsonElement.add("neededPermissions", GSON.toJsonTree(deviceConfig.neededPermissions));
+            if (testConfig.neededPermissions.size() > 0) {
+                jsonElement.add("neededPermissions", GSON.toJsonTree(testConfig.neededPermissions));
             }
             if (StringUtils.isNotBlank(deviceConfig.deviceActionsStr)) {
                 JsonParser parser = new JsonParser();
                 JsonObject jsonObject = parser.parse(deviceConfig.deviceActionsStr).getAsJsonObject();
                 jsonElement.add("deviceActions", jsonObject);
             }
-            if (instrumentationArgs != null) {
-                jsonElement.add("instrumentationArgs", GSON.toJsonTree(instrumentationArgs).getAsJsonObject());
+            if (testConfig.testRunArgs != null) {
+                jsonElement.add("testRunArgs", GSON.toJsonTree(testConfig.testRunArgs).getAsJsonObject());
             }
 
         } catch (JsonParseException e) {

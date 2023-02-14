@@ -2,21 +2,23 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.hydralab.entity.AttachmentInfo;
-import org.gradle.internal.impldep.com.fasterxml.jackson.databind.annotation.JsonAppend;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Li Shen
  * @date 2/8/2023
  */
 
-@JsonAppend
 public class TestConfig {
-    public String type = "API";
+    public String triggerType = "API";
+    @JsonProperty("device")
+    public DeviceConfig deviceConfig = new DeviceConfig();
     public String runningType = "";
     public String appPath = "";
     public String testAppPath = "";
@@ -30,30 +32,38 @@ public class TestConfig {
     public int runTimeOutSeconds = 0;
     public int queueTimeOutSeconds = 0;
     public String pipelineLink = "";
-    public int maxStepCount = 100;
-    public int deviceTestCount = -1;
     public boolean needUninstall = true;
     public boolean needClearData = true;
+    public List<String> neededPermissions = new ArrayList<>();
     // priority: config file path in param > direct yml config
     public String attachmentConfigPath = "";
     public List<AttachmentInfo> attachmentInfos = new ArrayList<>();
     public String artifactTag = "";
+    public Map<String, String> testRunArgs;
+    public int maxStepCount = 100;
+    public int testRound = -1;
 
     public void constructField(HashMap<String, Object> map) {
-        Object tag = map.get("tag");
-        if (tag != null) {
-            this.artifactTag = map.get("tag").toString();
-        }
         Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");
         if (queueTimeOutSeconds == null) {
             this.queueTimeOutSeconds = this.runTimeOutSeconds;
+        }
+        HashMap<String, Object> explorationArgs = (HashMap<String, Object>)map.get("exploration");
+        Object maxStepCount = explorationArgs.get("maxStepCount");
+        if (maxStepCount != null) {
+            this.maxStepCount = Integer.parseInt(maxStepCount.toString());
+        }
+        Object testRound = explorationArgs.get("testRound");
+        if (testRound != null) {
+            this.testRound = Integer.parseInt(testRound.toString());
         }
     }
 
     @Override
     public String toString() {
         return "TestConfig:\n" +
-                "\ttype=" + type + "\n" +
+                "\t" + deviceConfig.toString() + "\n" +
+                "\ttriggerType=" + triggerType + "\n" +
                 "\trunningType=" + runningType + "\n" +
                 "\tappPath=" + appPath + "\n" +
                 "\ttestAppPath=" + testAppPath + "\n" +
@@ -67,12 +77,14 @@ public class TestConfig {
                 "\trunTimeOutSeconds=" + runTimeOutSeconds + "\n" +
                 "\tqueueTimeOutSeconds=" + queueTimeOutSeconds + "\n" +
                 "\tpipelineLink=" + pipelineLink + "\n" +
-                "\tmaxStepCount=" + maxStepCount + "\n" +
-                "\tdeviceTestCount=" + deviceTestCount + "\n" +
                 "\tneedUninstall=" + needUninstall + "\n" +
                 "\tneedClearData=" + needClearData + "\n" +
+                "\tneededPermissions=" + (neededPermissions != null ? neededPermissions.toString() : "") + "\n" +
                 "\tattachmentConfigPath=" + attachmentConfigPath + "\n" +
                 "\tattachmentConfigs=" + attachmentInfos.toString() + "\n" +
-                "\tartifactTag=" + artifactTag;
+                "\tartifactTag=" + artifactTag + "\n" +
+                "\ttestRunArgs=" + testRunArgs + "\n" +
+                "\tmaxStepCount=" + maxStepCount + "\n" +
+                "\ttestRound=" + testRound;
     }
 }

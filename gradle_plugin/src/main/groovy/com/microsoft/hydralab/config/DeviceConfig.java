@@ -20,7 +20,6 @@ import static com.microsoft.hydralab.utils.CommonUtils.GSON;
 public class DeviceConfig {
     public String deviceIdentifier = "";
     public String groupTestType = "SINGLE";
-    public List<String> neededPermissions = new ArrayList<>();
     public Map<String, List<DeviceAction>> deviceActions = new HashMap<>();
     public String deviceActionsStr = "";
 
@@ -35,7 +34,6 @@ public class DeviceConfig {
         return "DeviceConfig:\n" +
                 "\tdeviceIdentifier=" + deviceIdentifier + "\n" +
                 "\tgroupTestType=" + groupTestType + "\n" +
-                "\tneededPermissions=" + (neededPermissions != null ? neededPermissions.toString() : "") + "\n" +
                 "\tdeviceActionsStr=" + deviceActionsStr;
     }
 }

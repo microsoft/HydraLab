@@ -28,8 +28,9 @@ public class ClientUtilsPluginTest {
     @Test
     public void checkGeneralTestRequiredParam() {
         HydraLabAPIConfig apiConfig = new HydraLabAPIConfig();
-        DeviceConfig deviceConfig = new DeviceConfig();
         TestConfig testConfig = new TestConfig();
+        DeviceConfig deviceConfig = new DeviceConfig();
+        testConfig.deviceConfig = deviceConfig;
 
         deviceConfig.deviceIdentifier = "";
         testConfig.runningType = "";
@@ -42,35 +43,36 @@ public class ClientUtilsPluginTest {
         testConfig.testScope = ClientUtilsPlugin.TestScope.CLASS;
         testConfig.testSuiteName = "com.example.test.suite";
 
-        generalParamCheck(apiConfig, deviceConfig, testConfig);
+        generalParamCheck(apiConfig, testConfig);
 
         apiConfig.host = "www.test.host";
-        generalParamCheck(apiConfig, deviceConfig, testConfig);
+        generalParamCheck(apiConfig, testConfig);
 
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
-        generalParamCheck(apiConfig, deviceConfig, testConfig);
+        generalParamCheck(apiConfig, testConfig);
 
         testConfig.appPath = "./appPath/app.apk";
-        generalParamCheck(apiConfig, deviceConfig, testConfig);
+        generalParamCheck(apiConfig, testConfig);
 
         testConfig.pkgName = "PkgName";
-        generalParamCheck(apiConfig, deviceConfig, testConfig);
+        generalParamCheck(apiConfig, testConfig);
 
         testConfig.runningType = "INSTRUMENTATION";
-        generalParamCheck(apiConfig, deviceConfig, testConfig);
+        generalParamCheck(apiConfig, testConfig);
 
         testConfig.runTimeOutSeconds = 1000;
-        generalParamCheck(apiConfig, deviceConfig, testConfig);
+        generalParamCheck(apiConfig, testConfig);
 
         deviceConfig.deviceIdentifier = "TESTDEVICESN001";
-        clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
+        clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
     }
 
     @Test
     public void checkInstrumentationTestRequiredParam() {
         HydraLabAPIConfig apiConfig = new HydraLabAPIConfig();
-        DeviceConfig deviceConfig = new DeviceConfig();
         TestConfig testConfig = new TestConfig();
+        DeviceConfig deviceConfig = new DeviceConfig();
+        testConfig.deviceConfig = deviceConfig;
 
         testConfig.runningType = "INSTRUMENTATION";
         testConfig.appPath = "./appPath/app.apk";
@@ -84,34 +86,35 @@ public class ClientUtilsPluginTest {
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
         deviceConfig.deviceIdentifier = "TESTDEVICESN001";
 
-        typeSpecificParamCheck(apiConfig, deviceConfig, testConfig, "testAppPath");
+        typeSpecificParamCheck(apiConfig, testConfig, "testAppPath");
         testConfig.testAppPath = "./testAppPath/testApp.apk";
 
-        typeSpecificParamCheck(apiConfig, deviceConfig, testConfig, "testPkgName");
+        typeSpecificParamCheck(apiConfig, testConfig, "testPkgName");
         testConfig.testPkgName = "TestPkgName";
 
         testConfig.testScope = ClientUtilsPlugin.TestScope.TEST_APP;
-        clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
+        clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
 
         testConfig.testScope = ClientUtilsPlugin.TestScope.PACKAGE;
-        typeSpecificParamCheck(apiConfig, deviceConfig, testConfig, "testSuiteName");
+        typeSpecificParamCheck(apiConfig, testConfig, "testSuiteName");
 
         testConfig.testScope = ClientUtilsPlugin.TestScope.CLASS;
-        typeSpecificParamCheck(apiConfig, deviceConfig, testConfig, "testSuiteName");
+        typeSpecificParamCheck(apiConfig, testConfig, "testSuiteName");
 
         testConfig.testScope = ClientUtilsPlugin.TestScope.PACKAGE;
         testConfig.testSuiteName = "com.example.test.suite";
-        clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
+        clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
 
         testConfig.testScope = ClientUtilsPlugin.TestScope.CLASS;
-        clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
+        clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
     }
 
     @Test
     public void checkAppiumTestRequiredParam() {
         HydraLabAPIConfig apiConfig = new HydraLabAPIConfig();
-        DeviceConfig deviceConfig = new DeviceConfig();
         TestConfig testConfig = new TestConfig();
+        DeviceConfig deviceConfig = new DeviceConfig();
+        testConfig.deviceConfig = deviceConfig;
 
         testConfig.runningType = "APPIUM";
         testConfig.appPath = "./appPath/app.apk";
@@ -123,20 +126,21 @@ public class ClientUtilsPluginTest {
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
         deviceConfig.deviceIdentifier = "TESTDEVICESN001";
 
-        typeSpecificParamCheck(apiConfig, deviceConfig, testConfig, "testAppPath");
+        typeSpecificParamCheck(apiConfig, testConfig, "testAppPath");
         testConfig.testAppPath = "./testAppPath/testApp.apk";
 
-        typeSpecificParamCheck(apiConfig, deviceConfig, testConfig, "testSuiteName");
+        typeSpecificParamCheck(apiConfig, testConfig, "testSuiteName");
         testConfig.testSuiteName = "com.example.test.suite";
 
-        clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
+        clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
     }
 
     @Test
     public void checkAppiumCrossTestRequiredParam() {
         HydraLabAPIConfig apiConfig = new HydraLabAPIConfig();
-        DeviceConfig deviceConfig = new DeviceConfig();
         TestConfig testConfig = new TestConfig();
+        DeviceConfig deviceConfig = new DeviceConfig();
+        testConfig.deviceConfig = deviceConfig;
 
         testConfig.runningType = "APPIUM";
         testConfig.appPath = "./appPath/app.apk";
@@ -148,22 +152,20 @@ public class ClientUtilsPluginTest {
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
         deviceConfig.deviceIdentifier = "TESTDEVICESN001";
 
-        typeSpecificParamCheck(apiConfig, deviceConfig, testConfig, "testAppPath");
+        typeSpecificParamCheck(apiConfig, testConfig, "testAppPath");
         testConfig.testAppPath = "./testAppPath/testApp.apk";
 
-        typeSpecificParamCheck(apiConfig, deviceConfig, testConfig, "testSuiteName");
+        typeSpecificParamCheck(apiConfig, testConfig, "testSuiteName");
         testConfig.testSuiteName = "com.example.test.suite";
 
-        clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
+        clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
     }
 
     @Test
     public void runTestOnDeviceWithApp() {
         String reportFolderPath = "./reportFolder";
-        Map<String, String> instrumentationArgs = new HashMap<>();
         HydraLabAPIClient client = Mockito.mock(HydraLabAPIClient.class);
         HydraLabAPIConfig apiConfig = Mockito.mock(HydraLabAPIConfig.class);
-        DeviceConfig deviceConfig = Mockito.mock(DeviceConfig.class);
         TestConfig testConfig = Mockito.mock(TestConfig.class);
         testConfig.runningType = "INSTRUMENTATION";
         testConfig.appPath = "src/test/resources/app.txt";
@@ -182,7 +184,7 @@ public class ClientUtilsPluginTest {
                 Mockito.any(AttachmentInfo.class), Mockito.any(File.class)))
                 .thenReturn(returnJson);
 
-        when(client.generateAccessKey(Mockito.any(HydraLabAPIConfig.class), Mockito.any(DeviceConfig.class)))
+        when(client.generateAccessKey(Mockito.any(HydraLabAPIConfig.class), Mockito.any(TestConfig.class)))
                 .thenReturn("accessKey");
 
         returnJson = new JsonObject();
@@ -192,7 +194,7 @@ public class ClientUtilsPluginTest {
         subJsonObject.addProperty("devices", "device1,device2");
         subJsonObject.addProperty("testTaskId", "test_task_id");
         returnJson.add("content", subJsonObject);
-        when(client.triggerTestRun(Mockito.any(TestConfig.class), Mockito.any(DeviceConfig.class), Mockito.any(HydraLabAPIConfig.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+        when(client.triggerTestRun(Mockito.any(TestConfig.class), Mockito.any(HydraLabAPIConfig.class), Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(returnJson);
 
         TestTask returnTestTask = new TestTask();
@@ -213,7 +215,7 @@ public class ClientUtilsPluginTest {
                 .thenReturn(returnBlobSAS);
 
         HydraLabClientUtils.switchClientInstance(client);
-        HydraLabClientUtils.runTestOnDeviceWithApp(reportFolderPath, instrumentationArgs, apiConfig, deviceConfig, testConfig);
+        HydraLabClientUtils.runTestOnDeviceWithApp(reportFolderPath, apiConfig, testConfig);
 
         verify(client, times(0)).cancelTestTask(Mockito.any(HydraLabAPIConfig.class), Mockito.anyString(), Mockito.anyString());
         verify(client, times(0)).downloadToFile(Mockito.anyString(), Mockito.any(File.class));
@@ -238,16 +240,16 @@ public class ClientUtilsPluginTest {
         Assertions.assertNotNull(commitMsg, "Get commit message error");
     }
 
-    private void generalParamCheck(HydraLabAPIConfig apiConfig, DeviceConfig deviceConfig, TestConfig testConfig) {
+    private void generalParamCheck(HydraLabAPIConfig apiConfig, TestConfig testConfig) {
         IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
+            clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
         }, "IllegalArgumentException was expected");
         Assertions.assertEquals("Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIhost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.", thrown.getMessage());
     }
 
-    private void typeSpecificParamCheck(HydraLabAPIConfig apiConfig, DeviceConfig deviceConfig, TestConfig testConfig, String requiredParamName) {
+    private void typeSpecificParamCheck(HydraLabAPIConfig apiConfig, TestConfig testConfig, String requiredParamName) {
         IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            clientUtilsPlugin.requiredParamCheck(apiConfig, deviceConfig, testConfig);
+            clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
         }, "IllegalArgumentException was expected");
         Assertions.assertEquals("Running type " + testConfig.runningType + " required param " + requiredParamName + " not provided!", thrown.getMessage());
     }

@@ -32,20 +32,15 @@ public class HydraLabClientUtils {
         hydraLabAPIClient = client;
     }
 
-    public static void runTestOnDeviceWithApp(String reportFolderPath,
-                                              Map<String, String> instrumentationArgs,
-                                              HydraLabAPIConfig apiConfig,
-                                              DeviceConfig deviceConfig,
-                                              TestConfig testConfig) {
-        String output = String.format("##[section]All args: reportFolderPath: %s, instrumentationArgsMap: %s\n%s\n%s\n%s",
-                reportFolderPath, instrumentationArgs == null ? "" : instrumentationArgs.toString(),
-                apiConfig.toString(), deviceConfig.toString(), testConfig.toString());
+    public static void runTestOnDeviceWithApp(String reportFolderPath, HydraLabAPIConfig apiConfig, TestConfig testConfig) {
+        String output = String.format("##[section]All args: reportFolderPath: %s\n%s\n%s",
+                reportFolderPath, apiConfig.toString(), testConfig.toString());
 
         printlnf(maskCred(output));
 
         isTestRunningFailed = false;
         try {
-            runTestInner(reportFolderPath, instrumentationArgs, apiConfig, deviceConfig, testConfig);
+            runTestInner(reportFolderPath, apiConfig, testConfig);
             markRunningSuccess();
         } catch (RuntimeException e) {
             markRunningFail();
@@ -53,11 +48,7 @@ public class HydraLabClientUtils {
         }
     }
 
-    private static void runTestInner(String reportFolderPath,
-                                     Map<String, String> instrumentationArgs,
-                                     HydraLabAPIConfig apiConfig,
-                                     DeviceConfig deviceConfig,
-                                     TestConfig testConfig) {
+    private static void runTestInner(String reportFolderPath, HydraLabAPIConfig apiConfig, TestConfig testConfig) {
         // Collect git info
         File commandDir = new File(".");
         // TODO: make the commit info fetch approach compatible to other types of pipeline variables.
@@ -121,7 +112,7 @@ public class HydraLabClientUtils {
 
                 // new a list to override yml config if the file path exists
                 testConfig.attachmentInfos = new ArrayList<>();
-                for (JsonElement attachmentInfoJson: attachmentInfoJsons) {
+                for (JsonElement attachmentInfoJson : attachmentInfoJsons) {
                     AttachmentInfo attachmentInfo = GSON.fromJson(attachmentInfoJson, AttachmentInfo.class);
                     testConfig.attachmentInfos.add(attachmentInfo);
                 }
@@ -139,7 +130,7 @@ public class HydraLabClientUtils {
         testConfig.pipelineLink = System.getenv("SYSTEM_TEAMFOUNDATIONSERVERURI") + System.getenv("SYSTEM_TEAMPROJECT") + "/_build/results?buildId=" + System.getenv("BUILD_BUILDID");
         printlnf("##[section]Callback pipeline link is: %s", testConfig.pipelineLink);
 
-        for (AttachmentInfo attachmentInfo: testConfig.attachmentInfos) {
+        for (AttachmentInfo attachmentInfo : testConfig.attachmentInfos) {
             assertTrue(!attachmentInfo.filePath.isEmpty(), "Attachment file " + attachmentInfo.fileName + "has an empty path.", null);
             File attachment = new File(attachmentInfo.filePath);
             assertTrue(attachment.exists(), "Attachment file " + attachmentInfo.fileName + "doesn't exist.", null);
@@ -158,21 +149,21 @@ public class HydraLabClientUtils {
             printlnf("##[command]Attachment %s uploaded successfully", attachmentInfo.filePath);
         }
 
-        String accessKey = hydraLabAPIClient.generateAccessKey(apiConfig, deviceConfig);
+        String accessKey = hydraLabAPIClient.generateAccessKey(apiConfig, testConfig);
         if (StringUtils.isEmpty(accessKey)) {
             printlnf("##[warning]Access key is empty.");
         } else {
             printlnf("##[command]Access key obtained.");
         }
 
-        JsonObject responseContent = hydraLabAPIClient.triggerTestRun(testConfig, deviceConfig, apiConfig, testFileSetId, accessKey, instrumentationArgs);
+        JsonObject responseContent = hydraLabAPIClient.triggerTestRun(testConfig, apiConfig, testFileSetId, accessKey);
         int resultCode = responseContent.get("code").getAsInt();
 
         // retry
         int waitingRetry = 20;
         while (resultCode != 200 && waitingRetry > 0) {
             printlnf("##[warning]Trigger test run failed, remaining retry times: %d\nServer code: %d, message: %s", waitingRetry, resultCode, responseContent.get("message").getAsString());
-            responseContent = hydraLabAPIClient.triggerTestRun(testConfig, deviceConfig, apiConfig, testFileSetId, accessKey, instrumentationArgs);
+            responseContent = hydraLabAPIClient.triggerTestRun(testConfig, apiConfig, testFileSetId, accessKey);
             resultCode = responseContent.get("code").getAsInt();
             waitingRetry--;
         }

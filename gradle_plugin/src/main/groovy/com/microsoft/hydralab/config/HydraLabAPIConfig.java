@@ -61,17 +61,6 @@ public class HydraLabAPIConfig {
         return String.format(Locale.US, "%s://%s%s%s%s", schema, host, contextPath, testPortalTaskDeviceVideoPath, id);
     }
 
-    public void constructField(HashMap<String, Object> map){
-        Object hydraLabAPIHost = map.get("hydraLabAPIHost");
-        if (hydraLabAPIHost != null) {
-            this.host = hydraLabAPIHost.toString();
-        }
-        Object hydraLabAPISchema = map.get("hydraLabAPISchema");
-        if (hydraLabAPISchema != null) {
-            this.schema = hydraLabAPISchema.toString();
-        }
-    }
-
     @Override
     public String toString() {
         return "HydraLabAPIConfig:\n" +

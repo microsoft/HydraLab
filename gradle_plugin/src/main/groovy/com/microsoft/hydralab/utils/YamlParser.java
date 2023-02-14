@@ -37,31 +37,17 @@ public class YamlParser {
     }
 
     public HydraLabAPIConfig parseAPIConfig() {
-        Object target = fileRootMap.get("server");
-        HydraLabAPIConfig apiConfig = objectMapper.convertValue(target, HydraLabAPIConfig.class);
-        apiConfig.constructField((HashMap<String, Object>) target);
-        return apiConfig;
+        Object target = fileRootMap.get("hydraLabAPIServer");
+        return objectMapper.convertValue(target, HydraLabAPIConfig.class);
     }
 
     public TestConfig parseTestConfig() {
         Object target = fileRootMap.get("testSpec");
         TestConfig testConfig = objectMapper.convertValue(target, TestConfig.class);
         testConfig.constructField((HashMap<String, Object>) target);
-        return testConfig;
-    }
-
-    public DeviceConfig parseDeviceConfig() {
-        DeviceConfig deviceConfig = objectMapper.convertValue(fileRootMap.get("device"), DeviceConfig.class);
-        deviceConfig.extractFromExistingField();
-        return deviceConfig;
-    }
-
-    public String getString(String field){
-        Object fieldObj = fileRootMap.get(field);
-        if (fieldObj == null) {
-            return "";
+        if (testConfig.deviceConfig != null) {
+            testConfig.deviceConfig.extractFromExistingField();
         }
-
-        return fieldObj.toString();
+        return testConfig;
     }
 }

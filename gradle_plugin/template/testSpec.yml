@@ -49,4 +49,4 @@ testSpec:
   artifactTag: # <Optional>
   exploration:
     maxStepCount: # <Optional>
-    deviceTestCount: # <Optional>
+    testRound: # <Optional>
