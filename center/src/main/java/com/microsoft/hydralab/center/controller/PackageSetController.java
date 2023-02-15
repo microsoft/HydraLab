@@ -431,6 +431,6 @@ public class PackageSetController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        return Result.ok(blobStorageService.GenerateReadSAS(requestor.getMailAddress()));
+        return Result.ok(blobStorageService.generateReadSAS(requestor.getMailAddress()));
     }
 }

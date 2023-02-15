@@ -122,7 +122,7 @@ public class DeviceAgentManagementService {
     private void sendAgentMetadata(Session session, AgentUser agentUser, String signalName) {
         agentUser.setBatteryStrategy(AgentUser.BatteryStrategy.valueOf(batteryStrategy));
         AgentMetadata data = new AgentMetadata();
-        data.setBlobSAS(blobStorageService.GenerateWriteSAS(agentUser.getId()));
+        data.setBlobSAS(blobStorageService.generateWriteSAS(agentUser.getId()));
         data.setAgentUser(agentUser);
         data.setPushgatewayUsername(pushgatewayUsername);
         data.setPushgatewayPassword(pushgatewayPassword);

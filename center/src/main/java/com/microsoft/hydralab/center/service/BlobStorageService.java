@@ -22,7 +22,7 @@ public class BlobStorageService {
     BlobStorageClient blobStorageClient;
     private ConcurrentMap<String, SASData> SASMap = new ConcurrentHashMap<>();
 
-    public SASData GenerateReadSAS(String uniqueId) {
+    public SASData generateReadSAS(String uniqueId) {
         Assert.notNull(uniqueId, "The key of SAS can't be null!");
         SASData sasData = SASMap.get(uniqueId);
 
@@ -34,7 +34,7 @@ public class BlobStorageService {
         return sasData;
     }
 
-    public SASData GenerateWriteSAS(String uniqueId) {
+    public SASData generateWriteSAS(String uniqueId) {
         Assert.notNull(uniqueId, "The key of SAS can't be null!");
         SASData sasData = SASMap.get(uniqueId);
 
