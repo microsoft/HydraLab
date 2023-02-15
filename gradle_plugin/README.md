@@ -25,5 +25,9 @@ To trigger Hydra Lab testing using Gradle command, simply follow below steps:
 - Step 2: Build your project/module to enable the gradle plugin and task
 - Step 3: Run gradle task requestHydraLabTest
 
+The new YAML based test task specification data structure (click it to view details):
+
+![structure visual](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/gradle_plugin_yaml_config_design.png?raw=true)
+
 ## Known issue
 - Hard-coded with Azure DevOps embedded variable names, currently may not be compatible to other CI tools when fetching commit related information.
