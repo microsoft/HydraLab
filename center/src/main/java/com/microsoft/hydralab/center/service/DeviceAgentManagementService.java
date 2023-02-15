@@ -779,7 +779,7 @@ public class DeviceAgentManagementService {
         if (deviceGroup.getIsPrivate()) {
             checkAccessInfo(testTaskSpec.deviceIdentifier, testTaskSpec.accessKey);
         }
-        Map<String, List<String>> agents = new HashMap<>();
+        Map<String, List<String>> testAgentDevicesMap = new HashMap<>();
         boolean isSingle = Const.DeviceGroup.SINGLE_TYPE.equals(testTaskSpec.groupTestType);
         boolean isAll = Const.DeviceGroup.ALL_TYPE.equals(testTaskSpec.groupTestType);
         Message message = new Message();
@@ -796,10 +796,9 @@ public class DeviceAgentManagementService {
             }
             isAllOffline = false;
             if (device.isOnline()) {
-                updateDeviceStatus(deviceSerial, DeviceInfo.TESTING, testTaskSpec.testTaskId);
-                List<String> devices = agents.getOrDefault(device.getAgentId(), new ArrayList<>());
+                List<String> devices = testAgentDevicesMap.getOrDefault(device.getAgentId(), new ArrayList<>());
                 devices.add(device.getSerialNum());
-                agents.put(device.getAgentId(), devices);
+                testAgentDevicesMap.put(device.getAgentId(), devices);
                 testTaskSpec.agentIds.add(device.getAgentId());
                 if (isSingle) {
                     break;
@@ -809,9 +808,13 @@ public class DeviceAgentManagementService {
             }
         }
         Assert.isTrue(!isAllOffline, "All Device/Agent Offline!");
-        for (String agentId : agents.keySet()) {
+        for (String agentId : testAgentDevicesMap.keySet()) {
             AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentId);
-            String groupDevices = String.join(",", agents.get(agentId));
+            List<String> testDeviceSerials = testAgentDevicesMap.get(agentId);
+            for (String temp : testDeviceSerials) {
+                updateDeviceStatus(temp, DeviceInfo.TESTING, testTaskSpec.testTaskId);
+            }
+            String groupDevices = String.join(",", testDeviceSerials);
             Assert.notNull(agentSessionInfoByAgentId, "Device/Agent Offline!");
             if (result.get(Const.Param.TEST_DEVICE_SN) == null) {
                 result.put(Const.Param.TEST_DEVICE_SN, groupDevices);
