@@ -1,0 +1,41 @@
+@startuml BLOB_storage
+BlobServiceClient -> Center.BlobStorageClient: buildClient(connectionString)
+Center.BlobStorageClient -> Storage.Endpoint: uploadBlobFromFile(screenshot / attachment / agentPackage)
+Center.BlobStorageClient -> Storage.Endpoint: downloadFileFromBlob(jsonFile)
+|||
+Center.BlobStorageClient -> Browser: generateReadSAS
+Browser -> Storage.Endpoint: read BLOB files with signature
+|||
+Center.BlobStorageClient -> AgentMetadata: generateWriteSAS
+activate AgentMetadata
+AgentMetadata -> Agent.BlobStorageClient: heartbeatResponse(sasData)
+deactivate AgentMetadata
+BlobServiceClient -> Agent.BlobStorageClient: buildClientBySAS(sasData)
+Agent.BlobStorageClient -> Storage.Endpoint: downloadFileFromBlob(app / testApp / attachment / agentPackage)
+Agent.BlobStorageClient -> Storage.Endpoint: uploadBlobFromFile(deviceTestResult)
+
+@enduml
+
+
+@startuml overall_cloud_storage_design
+'(Azure BLOB, ALI Cloud, QINIU Cloud, etc.)
+StorageServiceClient -> Center.FileStorageClient: buildClient(token)
+Center.FileStorageClient -> Storage.Endpoint: uploadFromFile(screenshot / attachment / agentPackage)
+Storage.Endpoint --> Center.FileStorageClient: uploaded file location
+Center.FileStorageClient -> Storage.Endpoint: downloadToFile(jsonFile)
+Storage.Endpoint --> Center.FileStorageClient: downloaded file
+|||
+Center.FileStorageClient -> Browser: generateTempTokenForRead
+Browser -> Storage.Endpoint: read files with signed token from Center
+|||
+Center.FileStorageClient -> AgentMetadata: generateTempTokenForWrite
+activate AgentMetadata
+AgentMetadata -> Agent.FileStorageClient: heartbeatResponse(tempToken)
+deactivate AgentMetadata
+StorageServiceClient -> Agent.FileStorageClient: buildClientByTempToken(tempToken)
+Agent.FileStorageClient -> Storage.Endpoint: downloadToFile(app / testApp / attachment / agentPackage)
+Storage.Endpoint --> Agent.FileStorageClient: downloaded file
+Agent.FileStorageClient -> Storage.Endpoint: uploadFromFile(deviceTestResult)
+Storage.Endpoint --> Agent.FileStorageClient: uploaded file location
+
+@enduml
