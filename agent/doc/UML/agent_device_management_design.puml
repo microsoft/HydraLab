@@ -32,7 +32,6 @@ TestRunner -r-> TestDeviceManager
 @startuml test_device
 'https://plantuml.com/class-diagram
 interface ITestDevice {
-    List<ITestDevice> getAllTestDevices();
     List<ITestDevice> getTestDevicesByType(type);
     ITestDevice getDefaultTestDevice();
     ITestDevice getTestDeviceById(id);
