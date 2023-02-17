@@ -11,6 +11,7 @@ import com.microsoft.hydralab.agent.runner.monkey.AppiumMonkeyRunner;
 import com.microsoft.hydralab.agent.runner.smart.SmartRunner;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
+import com.microsoft.hydralab.agent.runner.xctest.XctestRunner;
 import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -35,7 +36,8 @@ public class TestRunnerConfig {
             TestTask.TestRunningType.SMART_TEST, "smartRunner",
             TestTask.TestRunningType.MONKEY_TEST, "adbMonkeyRunner",
             TestTask.TestRunningType.APPIUM_MONKEY_TEST, "appiumMonkeyRunner",
-            TestTask.TestRunningType.T2C_JSON_TEST, "t2cRunner"
+            TestTask.TestRunningType.T2C_JSON_TEST, "t2cRunner",
+            TestTask.TestRunningType.XCTEST, "xctestRunner"
     );
 
     @Bean
@@ -71,6 +73,11 @@ public class TestRunnerConfig {
     @Bean
     public T2CRunner t2cRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService) {
         return new T2CRunner(deviceManager, testTaskEngineService, agentName);
+    }
+
+    @Bean
+    public XctestRunner xctestRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService) {
+        return new XctestRunner(deviceManager, testTaskEngineService);
     }
 
     @ConfigurationProperties(prefix = "app.device-script.commands")
