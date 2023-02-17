@@ -156,11 +156,13 @@ public abstract class TestRunner {
         deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
 
         //generate xml report and upload files
-        try {
-            String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
-            testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-        } catch (Exception e) {
-            testRun.getLogger().error("Error in buildTestResultXml", e);
+        if (testRun.getTotalCount() > 0) {
+            try {
+                String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
+                testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+            } catch (Exception e) {
+                testRun.getLogger().error("Error in buildTestResultXml", e);
+            }
         }
         if (testTaskRunCallback != null) {
             try {
