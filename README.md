@@ -168,7 +168,6 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 ## Links
 
 - [Hydra Lab Release Notes](https://github.com/microsoft/HydraLab/wiki/Release-Notes)
-- [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
 - [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
 - [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
 
