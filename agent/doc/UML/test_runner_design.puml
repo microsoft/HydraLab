@@ -110,7 +110,34 @@ deactivate TaskCompletion
         "isReset": false
     },
     "frameworkType": "JUnit4",
-    "testRunnerName": "androidx.test.runner.AndroidJUnitRunner"
+    "testRunnerName": "androidx.test.runner.AndroidJUnitRunner",
+    "inspectionStrategies": [
+        {
+            "strategyType": "TEST_SCHEDULE",
+            "interval": 300,
+            "intervalUnit": "MILLISECONDS",
+            "inspection": {
+                "inspectorType": "INSPECTOR_ANDROID_BATTERY_INFO",
+                "appId": "com.microsoft.appmanager",
+                "description": "test schedule"
+            }
+        },
+        {
+             "strategyType": "TEST_LIFECYCLE",
+             "when": [
+                 "TEST_STARTED",
+                 "TEST_SUCCESS",
+                 "TEST_FAILURE",
+                 "TEST_RUN_STARTED",
+                 "TEST_RUN_FINISHED"
+             ],
+             "inspection": {
+                 "inspectorType": "INSPECTOR_ANDROID_BATTERY_INFO",
+                 "appId": "com.microsoft.appmanager",
+                 "description": "test schedule"
+             }
+         }
+    ]
 }
 @endjson
 
