@@ -43,7 +43,7 @@ public class TestRunnerConfig {
 
     @Bean
     public EspressoRunner espressoRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil, PerformanceTestManagementService performanceTestManagementService) {
-        return new EspressoRunner(deviceManager, testTaskEngineService, adbOperateUtil, performanceTestManagementService);
+        return new TestRunner(deviceManager, testTaskEngineService, adbOperateUtil, performanceTestManagementService);
     }
 
     @Bean
