@@ -16,6 +16,7 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +39,8 @@ public class AdbMonkeyRunner extends TestRunner {
     private File gifFile;
     private AndroidTestUnit ongoingMonkeyTest;
 
-    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, ADBOperateUtil adbOperateUtil) {
-        super(deviceManager, testTaskRunCallback);
+    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceService, ADBOperateUtil adbOperateUtil) {
+        super(deviceManager, testTaskRunCallback, performanceService);
         this.adbOperateUtil = adbOperateUtil;
     }
 
@@ -58,7 +59,9 @@ public class AdbMonkeyRunner extends TestRunner {
         /** run the test */
         reportLogger.info("Start monkey test");
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        performanceService.testRunStarted();
         checkTestTaskCancel(testTask);
+        performanceService.testStarted("Adb monkey test");
         long checkTime = runMonkeyTestOnce(deviceInfo, testRun, reportLogger, testTask.getInstrumentationArgs(), testTask.getMaxStepCount());
         if (checkTime > 0) {
             String crashStack = testRun.getCrashStack();
@@ -66,10 +69,14 @@ public class AdbMonkeyRunner extends TestRunner {
                 ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
                 ongoingMonkeyTest.setSuccess(false);
                 ongoingMonkeyTest.setStack(crashStack);
+                performanceService.testFailure(ongoingMonkeyTest.getTitle());
                 testRun.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", checkTime);
                 testRun.oneMoreFailure();
+            } else {
+                performanceService.testSuccess(ongoingMonkeyTest.getTitle());
             }
         }
+        performanceService.testRunFinished();
         testRunEnded(deviceInfo, testRun);
 
         /** set paths */

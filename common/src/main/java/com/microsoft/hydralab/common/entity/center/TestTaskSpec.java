@@ -4,6 +4,7 @@ package com.microsoft.hydralab.common.entity.center;
 
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
+import com.microsoft.hydralab.performance.InspectionStrategy;
 import lombok.ToString;
 
 import java.util.HashSet;
@@ -46,4 +47,5 @@ public class TestTaskSpec {
     public String testScope;
     public String testSuiteClass;
     public Map<String, List<DeviceAction>> deviceActions;
+    public List<InspectionStrategy> inspectionStrategies;
 }

@@ -16,8 +16,7 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
         }
 
         @Override
-        public void inspectWithStrategy(PerformanceInspection performanceInspection, InspectionStrategy inspectionStrategy) {
-
+        public void inspectWithStrategy(InspectionStrategy inspectionStrategy) {
         }
 
         @Override
@@ -36,8 +35,8 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
     }
 
     @Override
-    public void inspectWithStrategy(PerformanceInspection performanceInspection, InspectionStrategy inspectionStrategy) {
-        serviceImplementation.inspectWithStrategy(performanceInspection, inspectionStrategy);
+    public void inspectWithStrategy(InspectionStrategy inspectionStrategy) {
+        serviceImplementation.inspectWithStrategy(inspectionStrategy);
     }
 
     @Override

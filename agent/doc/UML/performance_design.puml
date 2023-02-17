@@ -1,0 +1,112 @@
+
+@startmindmap
+* Performance Test
+** Strategy
+*** LifeCycle
+****:
+TEST_STARTED
+TEST_FINISHED
+TEST_FAILED
+TEST_RUN_STARTED
+TEST_RUN_FINISHED
+;
+*** Schedule
+** Custom (By test case)
+*** Hydra SDK
+*** T2C
+*** Espresso
+@endmindmap
+@startjson test_task_spec_design
+{
+  "drivers": [
+    {
+      "id": "13211FDD400183",
+      "platform": "android",
+'      Deprecated Name : init
+      "setUp": {
+        "launcherApp": ""
+      }
+'      Can also add tearDown here to match the device action design
+    }
+  ],
+'  deprecated name: cases
+  "actions": [
+    {
+      "index": 0,
+      "driverId": "13211FDD400183",
+      "action": {
+        "actionType": "inspection",
+        "arguments": {
+          "inspectorType": "INSPECTOR_ANDROID_MEMORY_INFO",
+          "targetApp": "com.microsoft.appmanager",
+          "description": "Start LTW",
+          "isReset": false
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 1,
+      "driverId": "13211FDD400183",
+      "action": {
+        "actionType": "inspection",
+        "arguments": {
+          "inspectorType": "INSPECTOR_ANDROID_BATTERY_INFO",
+          "targetApp ": "com.microsoft.appmanager",
+          "description ": "Start LTW",
+          "isReset": true
+        }
+      },
+      "isOptional": false
+    }
+  ]
+}
+@endjson
+
+@startuml
+class InspectionStrategy {
+
+    + StrategyType strategyType;
+
+    // if the strategyType == TEST_LIFECYCLE
+    + List<WhenType> when;
+
+    // if the strategyType == TEST_SCHEDULE
+    + long interval;
+    + TimeUnit intervalUnit;
+}
+
+interface IPerformanceListener {
+    void testStarted();
+    void testFinished();
+    void testFailure();
+    void testRunStarted();
+    void testRunFinished();
+}
+
+class PerformanceTestManagementService {
+    Map<String, List<ScheduledFuture<?>>> inspectPerformanceTimerMap
+    Map<String, List<InspectionStrategy>> testLifeCycleStrategyMap
+}
+
+PerformanceTestManagementService -> InspectionStrategy
+PerformanceTestManagementService --|> IPerformanceListener
+
+IPerformanceListener o-d- TestRunner
+AppiumCrossRunner --|> TestRunner
+EspressoRunner --|> TestRunner
+AppiumListener <- AppiumCrossRunner
+Junit5Listener <- AppiumCrossRunner
+EspressoRunner -> EspressoTestInfoProcessorListener
+@enduml
+
+@startuml
+class EspressoPerformanceParser {
+    void processNewLines()
+}
+EspressoPerformanceParser --|> InstrumentationResultParser
+TestRunner <|-- EspressoRunner
+EspressoRunner -> EspressoPerformanceParser
+EspressoPerformanceParser -> PerformanceInspectionService
+@enduml
+

@@ -32,4 +32,14 @@ public class PerformanceTestResult {
     public Object getResultSummary() {
         return resultSummary;
     }
+
+    @Override
+    public String toString() {
+        return "PerformanceTestResult{" +
+                "resultSummary=" + resultSummary +
+                ", performanceInspectionResults=" + performanceInspectionResults +
+                ", inspectorType=" + inspectorType +
+                ", parserType=" + parserType +
+                '}';
+    }
 }
