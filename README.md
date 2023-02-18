@@ -167,7 +167,7 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 <span id="links"></span>
 ## Links
 
-- [Hydra Lab Release Notes](https://github.com/microsoft/HydraLab/releases)
+- [Release Notes](https://github.com/microsoft/HydraLab/releases), [Hydra Lab on Up For Grabs](https://up-for-grabs.net/#/filters?names=438)
 - [Hydra Lab: the next generation cross-platform software testing infrastructure open-sourced by Microsoft](https://medium.com/@nathanbu/we-open-sourced-a-new-test-framework-on-github-in-microsoft-fd31f8861d1e)
 - [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
 - [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
