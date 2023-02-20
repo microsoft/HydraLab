@@ -31,7 +31,7 @@ import static com.microsoft.hydralab.performance.PerformanceInspector.Performanc
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.*;
 
 @Service
-public class PerformanceTestManagementService implements IPerformanceInspectionService, IPerformanceListener {
+public class PerformanceTestManagementService implements IPerformanceInspectionService, PerformanceTestListener {
     static final ScheduledExecutorService timerExecutor = Executors.newScheduledThreadPool(5 /* corePoolSize */);
     private static final Map<PerformanceInspector.PerformanceInspectorType, PerformanceResultParser.PerformanceResultParserType> inspectorParserTypeMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, PARSER_ANDROID_BATTERY_INFO,

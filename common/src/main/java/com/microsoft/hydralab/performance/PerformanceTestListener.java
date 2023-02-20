@@ -1,6 +1,6 @@
 package com.microsoft.hydralab.performance;
 
-public interface IPerformanceListener {
+public interface PerformanceTestListener {
     void testStarted(String testName);
 
     void testSuccess(String testName);

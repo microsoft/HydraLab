@@ -11,7 +11,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
-import com.microsoft.hydralab.performance.IPerformanceListener;
+import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestIdentifier;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Junit5Listener extends SummaryGeneratingListener {
     private final DeviceManager deviceManager;
-    private final IPerformanceListener performanceListener;
+    private final PerformanceTestListener performanceTestListener;
     private final DeviceInfo deviceInfo;
     private final TestRun testRun;
     private final LogCollector logcatCollector;
@@ -48,13 +48,13 @@ public class Junit5Listener extends SummaryGeneratingListener {
     private int currentTestIndex = 0;
 
     public Junit5Listener(DeviceManager deviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
-                          IPerformanceListener performanceListener, Logger logger) {
+                          PerformanceTestListener performanceTestListener, Logger logger) {
         this.deviceManager = deviceManager;
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;
         this.logger = logger;
         this.pkgName = pkgName;
-        this.performanceListener = performanceListener;
+        this.performanceTestListener = performanceTestListener;
         logcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
         deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
     }
@@ -106,7 +106,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
-        performanceListener.testRunStarted();
+        performanceTestListener.testRunStarted();
         logEnter(runName, testCount);
     }
 
@@ -140,7 +140,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         }
 
-        performanceListener.testRunFinished();
+        performanceTestListener.testRunFinished();
 
         logEnter("testRunEnded", elapsedTime, Thread.currentThread().getName());
         synchronized (this) {
@@ -224,7 +224,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
             }
         }), logger);
 
-        performanceListener.testStarted(ongoingTestUnit.getTitle());
+        performanceTestListener.testStarted(ongoingTestUnit.getTitle());
 
     }
 
@@ -238,7 +238,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
             logEnter("testEnded", testIdentifier.getDisplayName());
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTestUnit.setSuccess(true);
-            performanceListener.testSuccess(ongoingTestUnit.getTitle());
+            performanceTestListener.testSuccess(ongoingTestUnit.getTitle());
         } else {
 
             Throwable throwable;
@@ -253,7 +253,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
-            performanceListener.testFailure(ongoingTestUnit.getTestName());
+            performanceTestListener.testFailure(ongoingTestUnit.getTestName());
         }
         ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
