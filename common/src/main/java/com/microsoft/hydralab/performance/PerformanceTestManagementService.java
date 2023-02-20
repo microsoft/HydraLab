@@ -84,7 +84,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         PerformanceInspector performanceInspector = getInspectorByType(inspectorType);
         Assert.notNull(performanceInspector, "Found no matched inspector: " + performanceInspection.inspectorType);
         ITestRun testRun = getTestRun();
-        File performanceFolder = new File(testRun.getResultFolder(), "performance");
+        File performanceFolder = new File(testRun.getResultFolder(), PerformanceInspection.class.getName());
         Assert.isTrue(performanceFolder.exists() || performanceFolder.mkdirs(), "performanceInspection.resultFolder.mkdirs() failed in " + performanceFolder.getAbsolutePath());
         File inspectorFolder = new File(performanceFolder, inspectorType.name());
         Assert.isTrue(inspectorFolder.exists() || inspectorFolder.mkdirs(), "performanceInspection.resultFolder.mkdirs() failed in " + inspectorFolder.getAbsolutePath());
