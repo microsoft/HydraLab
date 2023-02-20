@@ -73,6 +73,8 @@ public interface Const {
         String REQUIRE_FILE_NAME = "requirements.txt";
         String STRING_FOLDER_NAME = "SmartTestString";
         String STRING_FILE_NAMES = "strings,username,password";
+        String XCTEST_ZIP_FILE_NAME = "Xctest.zip";
+        String XCTEST_ZIP_FOLDER_NAME = "Xctest";
     }
 
     interface ScreenRecoderConfig{
