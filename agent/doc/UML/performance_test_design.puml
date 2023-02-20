@@ -90,9 +90,9 @@ class PerformanceTestManagementService {
 }
 
 PerformanceTestManagementService -> InspectionStrategy
-PerformanceTestManagementService --|> IPerformanceListener
+PerformanceTestManagementService -u-|> PerformanceTestListener
 
-IPerformanceListener o-d- TestRunner
+PerformanceTestManagementService -d-o TestRunner
 AppiumListener --|> PerformanceTestListener
 Junit5Listener --|> PerformanceTestListener
 EspressoTestInfoProcessorListener  --|> PerformanceTestListener
