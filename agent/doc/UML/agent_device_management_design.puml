@@ -1,12 +1,33 @@
 @startuml
 'https://plantuml.com/class-diagram
+class DeviceDefine{
+    String tag;
+    String type;
+    String isRequired;
+}
 
+enum DevicePairRule{
+    SINGLE_PHONE(),
+    SINGLE_PC,
+    PC_TO_PHONE,
+    PHONE_TO_PHONE
+
+    abstract List<DeviceDefine> getDeviceDefine();
+}
 class AgentManagementService {
     File testBaseDir
     File deviceLogBaseDir
+    Map<String,TestDevice> testDevices
 }
-class TestDevice
-abstract class TestDeviceManager
+class TestDevice{
+    String type
+    String serialNumber
+    String status
+}
+abstract class TestDeviceManager{
+    AgentManagementService agentManagementService;
+    updateTestDevices()
+}
 class AndroidTestDeviceManager
 class IOSTestDeviceManager
 class WindowsTestDeviceManager
@@ -25,6 +46,13 @@ TestDeviceManager --> TestDriver
 
 ADBDriver -u-|> TestDriver
 AppiumDriver -u-|> TestDriver
+
+class TestRunner{
+    static final List <DeviceDefine> deviceDefines;
+    Map<String,TestDevice> usedDevices;
+    runTest(Map<String,TestDevice> usedDevices, ITestRun testRun)
+    TestDeviceManager getTestDeviceManager(TestDevice.type);
+}
 
 TestRunner -r-> TestDeviceManager
 @enduml
