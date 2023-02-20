@@ -1,11 +1,5 @@
 @startuml
 'https://plantuml.com/class-diagram
-class DeviceDefine{
-    String tag;
-    String type;
-    String isRequired;
-}
-
 enum DevicePairRule{
     SINGLE_PHONE(),
     SINGLE_PC,
@@ -48,7 +42,7 @@ ADBDriver -u-|> TestDriver
 AppiumDriver -u-|> TestDriver
 
 class TestRunner{
-    static final List <DeviceDefine> deviceDefines;
+    static final DevicePairRule devicePairRule;
     Map<String,TestDevice> usedDevices;
     runTest(Map<String,TestDevice> usedDevices, ITestRun testRun)
     TestDeviceManager getTestDeviceManager(TestDevice.type);
