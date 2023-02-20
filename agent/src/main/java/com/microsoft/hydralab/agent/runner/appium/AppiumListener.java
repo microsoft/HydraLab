@@ -32,7 +32,7 @@ public class AppiumListener extends RunListener {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
     DeviceManager deviceManager;
-    PerformanceTestListener performanceTestListener;
+    private final PerformanceTestListener performanceTestListener;
     private long recordingStartTimeMillis;
     private int index;
     private File gifFile;

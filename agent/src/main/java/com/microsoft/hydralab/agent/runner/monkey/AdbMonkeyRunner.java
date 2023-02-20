@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class AdbMonkeyRunner extends TestRunner {
+    private static final String TEST_RUN_NAME = "ADB monkey test";
     static final Logger classLogger = LoggerFactory.getLogger(AdbMonkeyRunner.class);
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     final ADBOperateUtil adbOperateUtil;
@@ -57,11 +58,11 @@ public class AdbMonkeyRunner extends TestRunner {
         startRecording(deviceInfo, testRun, testTask.getTimeOutSecond(), reportLogger);
 
         /** run the test */
-        reportLogger.info("Start monkey test");
+        reportLogger.info("Start " + TEST_RUN_NAME);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         performanceService.testRunStarted();
         checkTestTaskCancel(testTask);
-        performanceService.testStarted("Adb monkey test");
+        performanceService.testStarted(TEST_RUN_NAME);
         long checkTime = runMonkeyTestOnce(deviceInfo, testRun, reportLogger, testTask.getInstrumentationArgs(), testTask.getMaxStepCount());
         if (checkTime > 0) {
             String crashStack = testRun.getCrashStack();
