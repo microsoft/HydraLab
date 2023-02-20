@@ -59,7 +59,8 @@ public class T2CAppiumUtils {
             int index = actionInfo.getId();
             logger.error("doAction at step " + index + "with exception: " + e.getMessage());
             if (!isOption) {
-                throw new IllegalStateException("Failed at step " + index + ": " + e.getMessage(), e);
+                throw new IllegalStateException("Failed at step " + index + ": " + e.getMessage()
+                        + ", page source: \n" + driver.webDriver.getPageSource(), e);
             }
         }
     }
