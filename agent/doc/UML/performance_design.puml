@@ -16,7 +16,7 @@ TEST_RUN_FINISHED
 *** T2C
 *** Espresso
 @endmindmap
-@startjson test_task_spec_design
+@startjson taps_to_cases_json_with_performance_test_actions
 {
   "drivers": [
     {
@@ -63,7 +63,7 @@ TEST_RUN_FINISHED
 }
 @endjson
 
-@startuml
+@startuml perf_test_class_design
 class InspectionStrategy {
 
     + StrategyType strategyType;
@@ -76,7 +76,7 @@ class InspectionStrategy {
     + TimeUnit intervalUnit;
 }
 
-interface IPerformanceListener {
+interface PerformanceTestListener {
     void testStarted();
     void testFinished();
     void testFailure();
@@ -93,11 +93,9 @@ PerformanceTestManagementService -> InspectionStrategy
 PerformanceTestManagementService --|> IPerformanceListener
 
 IPerformanceListener o-d- TestRunner
-AppiumCrossRunner --|> TestRunner
-EspressoRunner --|> TestRunner
-AppiumListener <- AppiumCrossRunner
-Junit5Listener <- AppiumCrossRunner
-EspressoRunner -> EspressoTestInfoProcessorListener
+AppiumListener --|> PerformanceTestListener
+Junit5Listener --|> PerformanceTestListener
+EspressoTestInfoProcessorListener  --|> PerformanceTestListener
 @enduml
 
 @startuml
