@@ -3,31 +3,44 @@
 package com.microsoft.hydralab.t2c.runner;
 
 import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Map;
-import javax.annotation.Nullable;
 
 public class ActionInfo {
     private final Integer id;
     private final BaseElementInfo testElement;
     private final String actionType;
     private final String driverId;
-    private Map<String, Object> arguments;
+
+    private final String description;
+    private final Map<String, Object> arguments;
     private final boolean isOptional;
 
-    public ActionInfo(Integer id, @Nullable BaseElementInfo testElement, String actionType, Map<String, Object> arguments,
-                      String driverId, boolean isOptional) {
+    public ActionInfo(@Deprecated int id, @Nullable BaseElementInfo testElement,
+                      @NotNull String actionType,
+                      @NotNull Map<String, Object> arguments,
+                      @NotNull String driverId,
+                      @NotNull String description,
+                      boolean isOptional) {
         this.id = id;
         this.testElement = testElement;
         this.actionType = actionType;
         this.driverId = driverId;
         this.isOptional = isOptional;
-        if (arguments != null) {
-            this.arguments = arguments;
-        }
+        this.description = description;
+        this.arguments = arguments;
     }
 
+    @Deprecated
     public Integer getId() {
         return id;
+    }
+
+
+    public String getDescription() {
+        return description;
     }
 
     public BaseElementInfo getTestElement() {
