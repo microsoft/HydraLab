@@ -1,7 +1,7 @@
 
 @startmindmap performance_test_inspection_entrypoints
 * Performance Test
-** Strategy
+** Define the strategy in TestTask
 *** LifeCycle
 ****:
 TEST_STARTED
@@ -11,7 +11,7 @@ TEST_RUN_STARTED
 TEST_RUN_FINISHED
 ;
 *** Schedule
-** Custom (By test case)
+** Call inspect() method in a test case
 *** Hydra SDK
 *** T2C
 *** Espresso
