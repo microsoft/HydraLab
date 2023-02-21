@@ -28,11 +28,14 @@ let us know if your pull request needs to be merged as separate commits.
 
 ### Technical design practice
 
-We use the [PlantUML](https://github.com/plantuml/plantuml) generation tool to provide planning solution and clarity for the architecture design of Hydra Lab, and most of the designs are documented in `*.puml` files, and running the following [gradle task]([build.gradle](https://github.com/microsoft/HydraLab/blob/bc1471a9f1385664adb9bc26a204670e24917751/build.gradle#L94)) will generate the UML images in folder [docs/images/UML](docs/images/UML):
+We use the [PlantUML](https://github.com/plantuml/plantuml) generation tool to provide planning solution and clarity for the architecture design of Hydra Lab, and most of the designs are documented in `*.puml` files, and running the following [Gradle task]([build.gradle](https://github.com/microsoft/HydraLab/blob/bc1471a9f1385664adb9bc26a204670e24917751/build.gradle#L94)) will generate the UML images in folder [docs/images/UML](docs/images/UML):
 
 ```bash
-gradlew generateUMLImage
+./gradlew generateUMLImage
 ```
+And you can also trigger the run in the Gradle panel of IDEA:
+
+![image](https://user-images.githubusercontent.com/8344245/220255351-8bd2db47-9e4b-407c-9444-ac982173f77b.png)
 
 ## Coding style conventions
 
