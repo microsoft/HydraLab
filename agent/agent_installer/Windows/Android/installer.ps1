@@ -1,6 +1,13 @@
+$CurrentScriptPath = split-path -parent $MyInvocation.MyCommand.Definition
 $ProgressPreference = 'SilentlyContinue'
 
 if ((New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
+
+    $E2E = 'Unknown'
+    while (($E2E -ne 'Y') -and ($E2E -ne 'N') -and ($E2E -ne 'y') -and ($E2E -ne 'n'))
+    {
+        $E2E = Read-Host "Is E2E(End to End) Test needed in your test? (Y/N)"
+    }
 
     $destination = Join-Path (Convert-Path "~") "Downloads"
 
@@ -445,7 +452,7 @@ if ((New-Object Security.Principal.WindowsPrincipal $([Security.Principal.Window
         $Path += "$(Join-Path $FFmpeg_Root_Folder 'bin');"
     }
 
-    Write-Host "Setting PATH. This may take some time. Please wait..."
+    Write-Host "8. Setting PATH. This may take some time. Please wait..."
     Write-Host
 
     Write-Host "Adding $Path to PATH."
@@ -471,6 +478,21 @@ if ((New-Object Security.Principal.WindowsPrincipal $([Security.Principal.Window
         }
     }
     Write-Host
+
+    Write-Host "9. Setting restart approach"
+    Write-Host
+
+    if (($E2E -eq 'Y') -and ($E2E -eq 'y'))
+    {
+        $taskTrigger = New-ScheduledTaskTrigger -AtLogon
+        $taskAction = New-ScheduledTaskAction -Execute "$CurrentScriptPath\restartAgent.bat"
+        Register-ScheduledTask -TaskName "HydraLabAgentRestart" -Trigger $taskTrigger -Action $taskAction
+        Copy-Item "$CurrentScriptPath\restartAgent_WindowsTaskScheduler.bat" -Destination "$CurrentScriptPath\restartAgent.bat" -Force
+    }
+    else
+    {
+        Copy-Item "$CurrentScriptPath\restartAgent_WindowsService.bat" -Destination "$CurrentScriptPath\restartAgent.bat" -Force
+    }
 
     Write-Host "The agent deployment is complete, please reboot before start the agent"
     Write-Host
