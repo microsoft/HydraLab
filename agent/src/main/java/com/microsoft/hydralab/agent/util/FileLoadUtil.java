@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -104,14 +105,13 @@ public class FileLoadUtil {
             Assert.isTrue(!loadFolder.exists(), "Load file error : folder has been existed!");
             log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
             File attachmentFile = downloadFromBlob(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
-            if (BlobFileInfo.LoadType.UNZIP.equals(attachment.getLoadType())) {
+            if (BlobFileInfo.LoadType.UNZIP.equals(attachment.getLoadType().toUpperCase(Locale.ROOT))) {
                 FileUtil.unzipFile(attachmentFile.getAbsolutePath(), loadFolder.getAbsolutePath());
             }
             log.info("Load common file success");
         } catch (Exception e) {
             log.error("Load common file start failed", e);
         }
-
     }
 
     private File downloadFromBlob(BlobFileInfo attachment, String location, String targetFilePath) throws IOException {
