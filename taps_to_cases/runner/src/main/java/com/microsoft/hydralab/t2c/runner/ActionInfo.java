@@ -18,7 +18,8 @@ public class ActionInfo {
     private final Map<String, Object> arguments;
     private final boolean isOptional;
 
-    public ActionInfo(@Deprecated int id, @Nullable BaseElementInfo testElement,
+    public ActionInfo(@Deprecated int id,
+                      @Nullable BaseElementInfo testElement,
                       @NotNull String actionType,
                       @NotNull Map<String, Object> arguments,
                       @NotNull String driverId,
