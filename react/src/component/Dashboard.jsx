@@ -194,9 +194,9 @@ export default function Dashboard() {
                             </ListItem>
                             <ListItem component={Link} to={'/manage'} button>
                                 <ListItemIcon>
-                                    <span className="material-icons-outlined">groups</span>
+                                    <span className="material-icons-outlined">table_view</span>
                                 </ListItemIcon>
-                                <ListItemText primary="Group Management"/>
+                                <ListItemText primary="Device Group"/>
                             </ListItem>
                             <ListItem component={Link} to={'/tasks'} button>
                                 <ListItemIcon>
