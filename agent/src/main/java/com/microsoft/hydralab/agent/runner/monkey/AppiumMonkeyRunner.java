@@ -24,8 +24,9 @@ import java.util.concurrent.TimeUnit;
 public class AppiumMonkeyRunner extends AppiumRunner {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
 
-    public AppiumMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceService) {
-        super(deviceManager, testTaskRunCallback, performanceService);
+    public AppiumMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                              PerformanceTestManagementService performanceTestManagementService) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
     }
 
     @Override

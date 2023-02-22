@@ -33,8 +33,9 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 
 public class AppiumRunner extends TestRunner {
 
-    public AppiumRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceService) {
-        super(deviceManager, testTaskRunCallback, performanceService);
+    public AppiumRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                        PerformanceTestManagementService performanceTestManagementService) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
     }
 
     @Override
@@ -75,7 +76,7 @@ public class AppiumRunner extends TestRunner {
         File gifFile = null;
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");
-            Junit5Listener junit5Listener = new Junit5Listener(deviceManager, deviceInfo, testRun, testTask.getPkgName(), performanceService, reportLogger);
+            Junit5Listener junit5Listener = new Junit5Listener(deviceManager, deviceInfo, testRun, testTask.getPkgName(), performanceTestManagementService, reportLogger);
 
             /** run the test */
             reportLogger.info("Start appium test with junit5");
@@ -87,7 +88,7 @@ public class AppiumRunner extends TestRunner {
         } else {
             /** xml report: parse listener */
             reportLogger.info("Start init listener");
-            AppiumListener listener = new AppiumListener(deviceManager, deviceInfo, testRun, testTask.getPkgName(), performanceService, reportLogger);
+            AppiumListener listener = new AppiumListener(deviceManager, deviceInfo, testRun, testTask.getPkgName(), performanceTestManagementService, reportLogger);
 
             /** run the test */
             reportLogger.info("Start appium test with junit4");

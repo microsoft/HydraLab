@@ -31,14 +31,15 @@ public abstract class TestRunner {
     protected final Logger log = LoggerFactory.getLogger(DeviceManager.class);
     protected final DeviceManager deviceManager;
     protected final TestTaskRunCallback testTaskRunCallback;
-    protected final PerformanceTestManagementService performanceService;
+    protected final PerformanceTestManagementService performanceTestManagementService;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
     protected final ActionExecutor actionExecutor = new ActionExecutor();
 
-    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceService) {
+    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                      PerformanceTestManagementService performanceTestManagementService) {
         this.deviceManager = deviceManager;
         this.testTaskRunCallback = testTaskRunCallback;
-        this.performanceService = performanceService;
+        this.performanceTestManagementService = performanceTestManagementService;
     }
 
     public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
@@ -144,9 +145,9 @@ public abstract class TestRunner {
         checkTestTaskCancel(testTask);
         deviceManager.getScreenShot(deviceInfo, testRun.getLogger());
 
-        if (performanceService != null && testTask.getInspectionStrategies() != null) {
+        if (performanceTestManagementService != null && testTask.getInspectionStrategies() != null) {
             for (InspectionStrategy strategy : testTask.getInspectionStrategies()) {
-                performanceService.inspectWithStrategy(strategy);
+                performanceTestManagementService.inspectWithStrategy(strategy);
             }
         }
     }
@@ -155,8 +156,8 @@ public abstract class TestRunner {
 
     protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
         // stop performance test
-        if (performanceService != null) {
-            performanceService.testTearDown(deviceInfo);
+        if (performanceTestManagementService != null) {
+            performanceTestManagementService.testTearDown(deviceInfo, log);
         }
 
         //execute actions

@@ -30,8 +30,9 @@ public class T2CRunner extends AppiumRunner {
     String agentName;
     private int currentIndex = 0;
 
-    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceService, String agentName) {
-        super(deviceManager, testTaskRunCallback, performanceService);
+    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                     PerformanceTestManagementService performanceTestManagementService, String agentName) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.agentName = agentName;
     }
 

@@ -40,8 +40,9 @@ public class AdbMonkeyRunner extends TestRunner {
     private File gifFile;
     private AndroidTestUnit ongoingMonkeyTest;
 
-    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceService, ADBOperateUtil adbOperateUtil) {
-        super(deviceManager, testTaskRunCallback, performanceService);
+    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                           PerformanceTestManagementService performanceTestManagementService, ADBOperateUtil adbOperateUtil) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 
@@ -60,9 +61,9 @@ public class AdbMonkeyRunner extends TestRunner {
         /** run the test */
         reportLogger.info("Start " + TEST_RUN_NAME);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
-        performanceService.testRunStarted();
+        performanceTestManagementService.testRunStarted();
         checkTestTaskCancel(testTask);
-        performanceService.testStarted(TEST_RUN_NAME);
+        performanceTestManagementService.testStarted(TEST_RUN_NAME);
         long checkTime = runMonkeyTestOnce(deviceInfo, testRun, reportLogger, testTask.getInstrumentationArgs(), testTask.getMaxStepCount());
         if (checkTime > 0) {
             String crashStack = testRun.getCrashStack();
@@ -70,14 +71,14 @@ public class AdbMonkeyRunner extends TestRunner {
                 ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
                 ongoingMonkeyTest.setSuccess(false);
                 ongoingMonkeyTest.setStack(crashStack);
-                performanceService.testFailure(ongoingMonkeyTest.getTitle());
+                performanceTestManagementService.testFailure(ongoingMonkeyTest.getTitle());
                 testRun.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", checkTime);
                 testRun.oneMoreFailure();
             } else {
-                performanceService.testSuccess(ongoingMonkeyTest.getTitle());
+                performanceTestManagementService.testSuccess(ongoingMonkeyTest.getTitle());
             }
         }
-        performanceService.testRunFinished();
+        performanceTestManagementService.testRunFinished();
         testRunEnded(deviceInfo, testRun);
 
         /** set paths */

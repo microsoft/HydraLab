@@ -6,4 +6,6 @@ public interface ITestRun {
     File getResultFolder();
 
     String getId();
+
+    String getDeviceSerialNumber();
 }

@@ -24,8 +24,10 @@ import java.util.Map;
 public class EspressoRunner extends TestRunner {
     final ADBOperateUtil adbOperateUtil;
 
-    public EspressoRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceService, ADBOperateUtil adbOperateUtil) {
-        super(deviceManager, testTaskRunCallback, performanceService);
+    public EspressoRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                          PerformanceTestManagementService performanceTestManagementService,
+                          ADBOperateUtil adbOperateUtil) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 

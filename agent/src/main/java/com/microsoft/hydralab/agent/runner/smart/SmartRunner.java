@@ -37,8 +37,9 @@ public class SmartRunner extends TestRunner {
     private File gifFile;
     private SmartTestParam smartTestParam;
 
-    public SmartRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceService, SmartTestUtil smartTestUtil) {
-        super(deviceManager, testTaskRunCallback, performanceService);
+    public SmartRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                       PerformanceTestManagementService performanceTestManagementService, SmartTestUtil smartTestUtil) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.smartTestUtil = smartTestUtil;
     }
 

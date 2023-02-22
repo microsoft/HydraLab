@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PerformanceTestResult {
     /**
@@ -17,7 +17,7 @@ public class PerformanceTestResult {
     /**
      * TODO: Apply a max size to avoid OOM
      */
-    public List<PerformanceInspectionResult> performanceInspectionResults = new ArrayList<>();
+    public List<PerformanceInspectionResult> performanceInspectionResults = new CopyOnWriteArrayList<>();
     public PerformanceInspector.PerformanceInspectorType inspectorType;
     public PerformanceResultParser.PerformanceResultParserType parserType;
 

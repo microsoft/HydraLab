@@ -13,8 +13,9 @@ import org.slf4j.Logger;
 public class AppiumCrossRunner extends AppiumRunner {
     String agentName;
 
-    public AppiumCrossRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, PerformanceTestManagementService performanceService, String agentName) {
-        super(deviceManager, testTaskRunCallback, performanceService);
+    public AppiumCrossRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                             PerformanceTestManagementService performanceTestManagementService, String agentName) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.agentName = agentName;
     }
 

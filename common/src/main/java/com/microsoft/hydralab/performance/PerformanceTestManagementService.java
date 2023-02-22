@@ -2,11 +2,13 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.util.FileUtil;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
 import com.microsoft.hydralab.performance.inspectors.WindowsBatteryInspector;
 import com.microsoft.hydralab.performance.inspectors.WindowsMemoryInspector;
@@ -14,25 +16,18 @@ import com.microsoft.hydralab.performance.parsers.AndroidBatteryInfoResultParser
 import com.microsoft.hydralab.performance.parsers.WindowsBatteryResultParser;
 import com.microsoft.hydralab.performance.parsers.WindowsMemoryResultParser;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
 import org.springframework.util.Assert;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.*;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.*;
 
-@Service
 public class PerformanceTestManagementService implements IPerformanceInspectionService, PerformanceTestListener {
-    static final ScheduledExecutorService timerExecutor = Executors.newScheduledThreadPool(5 /* corePoolSize */);
     private static final Map<PerformanceInspector.PerformanceInspectorType, PerformanceResultParser.PerformanceResultParserType> inspectorParserTypeMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, PARSER_ANDROID_BATTERY_INFO,
             INSPECTOR_WIN_MEMORY, PARSER_WIN_MEMORY,
@@ -53,7 +48,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private final Map<String, List<InspectionStrategy>> testLifeCycleStrategyMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, PerformanceTestResult>> testRunPerfResultMap = new ConcurrentHashMap<>();
 
-    public PerformanceTestManagementService() {
+    public void initialize() {
         PerformanceInspectionService.getInstance().swapImplementation(this);
     }
 
@@ -79,12 +74,16 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
     @Override
     public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
+        ITestRun testRun = getTestRun();
+        return inspect(performanceInspection, testRun);
+    }
+
+    public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection, ITestRun testRun) {
         performanceInspection = getDevicePerformanceInspection(performanceInspection);
         PerformanceInspector.PerformanceInspectorType inspectorType = performanceInspection.inspectorType;
         PerformanceInspector performanceInspector = getInspectorByType(inspectorType);
         Assert.notNull(performanceInspector, "Found no matched inspector: " + performanceInspection.inspectorType);
-        ITestRun testRun = getTestRun();
-        File performanceFolder = new File(testRun.getResultFolder(), PerformanceInspection.class.getName());
+        File performanceFolder = new File(testRun.getResultFolder(), PerformanceInspection.class.getSimpleName());
         Assert.isTrue(performanceFolder.exists() || performanceFolder.mkdirs(), "performanceInspection.resultFolder.mkdirs() failed in " + performanceFolder.getAbsolutePath());
         File inspectorFolder = new File(performanceFolder, inspectorType.name());
         Assert.isTrue(inspectorFolder.exists() || inspectorFolder.mkdirs(), "performanceInspection.resultFolder.mkdirs() failed in " + inspectorFolder.getAbsolutePath());
@@ -92,8 +91,8 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
         PerformanceInspectionResult result = performanceInspector.inspect(performanceInspection);
 
-        testRunPerfResultMap.putIfAbsent(getTestRun().getId(), new HashMap<>());
-        Map<String, PerformanceTestResult> performanceTestResultMap = testRunPerfResultMap.get(getTestRun().getId());
+        testRunPerfResultMap.putIfAbsent(testRun.getId(), new HashMap<>());
+        Map<String, PerformanceTestResult> performanceTestResultMap = testRunPerfResultMap.get(testRun.getId());
         Assert.notNull(performanceTestResultMap, "performanceTestResultMap should not be null ");
         performanceTestResultMap.putIfAbsent(performanceInspection.inspectionKey, createPerformanceTestResult(performanceInspection));
         PerformanceTestResult performanceTestResult = performanceTestResultMap.get(performanceInspection.inspectionKey);
@@ -113,6 +112,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     public void inspectWithStrategy(InspectionStrategy inspectionStrategy) {
         if (inspectionStrategy == null || inspectionStrategy.inspection == null) return;
 
+        ITestRun testRun = getTestRun();
         if (inspectionStrategy.strategyType == InspectionStrategy.StrategyType.TEST_SCHEDULE) {
             PerformanceInspection inspection = inspectionStrategy.inspection;
             /* initialize inspector */
@@ -120,15 +120,20 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                     inspection.inspectorType, inspection.appId, inspection.deviceIdentifier, true);
             inspect(initialInspection);
 
-            ScheduledFuture<?> scheduledFuture = timerExecutor.scheduleAtFixedRate(() -> {
-                inspect(inspection);
+            ScheduledFuture<?> scheduledFuture = ThreadPoolUtil.PERFORMANCE_TEST_TIMER_EXECUTOR.scheduleAtFixedRate(() -> {
+                inspect(inspection, testRun);
             }, 0, inspectionStrategy.interval, inspectionStrategy.intervalUnit);
-            inspectPerformanceTimerMap.putIfAbsent(getTestRun().getId(), new ArrayList<>());
-            inspectPerformanceTimerMap.get(getTestRun().getId()).add(scheduledFuture);
+            inspectPerformanceTimerMap.putIfAbsent(testRun.getId(), new ArrayList<>());
+            inspectPerformanceTimerMap.get(testRun.getId()).add(scheduledFuture);
         }
         if (inspectionStrategy.strategyType == InspectionStrategy.StrategyType.TEST_LIFECYCLE) {
-            testLifeCycleStrategyMap.putIfAbsent(getTestRun().getId(), new ArrayList<>());
-            testLifeCycleStrategyMap.get(getTestRun().getId()).add(inspectionStrategy);
+            if (inspectionStrategy.when == null || inspectionStrategy.when.isEmpty()) {
+                //Inspect whole lifecycle by default if when is not specified
+                inspectionStrategy.when = Arrays.asList(InspectionStrategy.WhenType.values());
+            }
+
+            testLifeCycleStrategyMap.putIfAbsent(testRun.getId(), new ArrayList<>());
+            testLifeCycleStrategyMap.get(testRun.getId()).add(inspectionStrategy);
         }
     }
 
@@ -146,34 +151,31 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
     @Override
     public void testRunStarted() {
-        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_RUN_STARTED, "");
+        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_RUN_STARTED, "start_run");
     }
 
     @Override
     public void testRunFinished() {
-        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_RUN_FINISHED, "");
+        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_RUN_FINISHED, "stop_run");
     }
 
     @Override
-    public void testStarted(String testName) {
-        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_STARTED, testName);
+    public void testStarted(String description) {
+        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_STARTED, description);
     }
 
     @Override
-    public void testSuccess(String testName) {
-        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_SUCCESS, testName);
+    public void testSuccess(String description) {
+        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_SUCCESS, description);
     }
 
     @Override
-    public void testFailure(String testName) {
-        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_FAILURE, testName);
+    public void testFailure(String description) {
+        inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_FAILURE, description);
     }
 
-    public void testTearDown(DeviceInfo deviceInfo) {
+    public void testTearDown(DeviceInfo deviceInfo, Logger log) {
         ITestRun testRun = getTestRun();
-
-        List<PerformanceTestResult> resultList = parseForTestRun(testRun);
-        savePerfTestResults(resultList);
 
         List<ScheduledFuture<?>> timerList = inspectPerformanceTimerMap.get(testRun.getId());
         if (timerList != null) {
@@ -181,6 +183,8 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                 timer.cancel(true);
             }
         }
+        List<PerformanceTestResult> resultList = parseForTestRun(testRun);
+        savePerformanceTestResults(resultList, log);
 
         inspectPerformanceTimerMap.remove(testRun.getId());
         testLifeCycleStrategyMap.remove(testRun.getId());
@@ -198,16 +202,10 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             PerformanceInspection inspection = inspectionStrategy.inspection;
             if (inspectionStrategy.when == null) continue;
 
-            if (whenType == InspectionStrategy.WhenType.TEST_RUN_STARTED) {
-                // initialize inspector
-                PerformanceInspection initialInspection = new PerformanceInspection(
-                        InspectionStrategy.WhenType.TEST_RUN_STARTED.name(),
-                        inspection.inspectorType, inspection.appId, inspection.deviceIdentifier, true);
-                inspect(initialInspection);
-            } else if (inspectionStrategy.when.contains(whenType)) {
+            if (inspectionStrategy.when.contains(whenType) || whenType == InspectionStrategy.WhenType.TEST_RUN_STARTED) {
                 PerformanceInspection lifeCycleInspection = new PerformanceInspection(
-                        whenType.name() + "-" + description,
-                        inspection.inspectorType, inspection.appId, inspection.deviceIdentifier, false);
+                        whenType.name() + "-" + description, inspection.inspectorType, inspection.appId,
+                        inspection.deviceIdentifier, whenType == InspectionStrategy.WhenType.TEST_RUN_STARTED);
                 inspect(lifeCycleInspection);
             }
         }
@@ -217,13 +215,9 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
      * For giving inspection return the inspection with device id that related to test run
      */
     private PerformanceInspection getDevicePerformanceInspection(PerformanceInspection inspection) {
-        if (getTestRun() instanceof TestRun) {
-            TestRun testRun = (TestRun) getTestRun();
-            return new PerformanceInspection(inspection.description, inspection.inspectorType, inspection.appId,
-                    // For windows inspector, the deviceIdentifier is useless
-                    testRun.getDeviceSerialNumber(), inspection.isReset);
-        }
-        return inspection;
+        return new PerformanceInspection(inspection.description, inspection.inspectorType, inspection.appId,
+                // For windows inspector, the deviceIdentifier is useless
+                getTestRun().getDeviceSerialNumber(), inspection.isReset);
     }
 
     private List<PerformanceTestResult> parseForTestRun(ITestRun testRun) {
@@ -239,11 +233,16 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         return resultList;
     }
 
-    private void savePerfTestResults(List<PerformanceTestResult> resultList) {
+    private void savePerformanceTestResults(List<PerformanceTestResult> resultList, Logger log) {
         //TODO save results to DB
         if (resultList != null && !resultList.isEmpty()) {
-            FileUtil.writeToFile(resultList.toString(),
-                    new File(getTestRun().getResultFolder(), "performance") + File.separator + "PerformanceReport.txt");
+            try {
+                FileUtil.writeToFile(new ObjectMapper().writeValueAsString(resultList),
+                        new File(getTestRun().getResultFolder(), PerformanceInspection.class.getSimpleName())
+                                + File.separator + "PerformanceReport.json");
+            } catch (JsonProcessingException e) {
+                log.error("Failed to save performance test results to file");
+            }
         }
     }
 }

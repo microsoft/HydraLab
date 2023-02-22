@@ -39,50 +39,56 @@ public class TestRunnerConfig {
             TestTask.TestRunningType.T2C_JSON_TEST, "t2cRunner"
     );
 
+    @Bean
+    public PerformanceTestManagementService performanceTestManagementService() {
+        PerformanceTestManagementService performanceTestManagementService = new PerformanceTestManagementService();
+        performanceTestManagementService.initialize();
+        return performanceTestManagementService;
+    }
 
     @Bean
     public EspressoRunner espressoRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
-                                         PerformanceTestManagementService performanceService,
+                                         PerformanceTestManagementService performanceTestManagementService,
                                          ADBOperateUtil adbOperateUtil) {
-        return new EspressoRunner(deviceManager, testTaskEngineService, performanceService, adbOperateUtil);
+        return new EspressoRunner(deviceManager, testTaskEngineService, performanceTestManagementService, adbOperateUtil);
     }
 
     @Bean
     public AdbMonkeyRunner adbMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
-                                           PerformanceTestManagementService performanceService,
+                                           PerformanceTestManagementService performanceTestManagementService,
                                            ADBOperateUtil adbOperateUtil) {
-        return new AdbMonkeyRunner(deviceManager, testTaskEngineService, performanceService, adbOperateUtil);
+        return new AdbMonkeyRunner(deviceManager, testTaskEngineService, performanceTestManagementService, adbOperateUtil);
     }
 
     @Bean
     public AppiumMonkeyRunner appiumMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
-                                                 PerformanceTestManagementService performanceService) {
-        return new AppiumMonkeyRunner(deviceManager, testTaskEngineService, performanceService);
+                                                 PerformanceTestManagementService performanceTestManagementService) {
+        return new AppiumMonkeyRunner(deviceManager, testTaskEngineService, performanceTestManagementService);
     }
 
     @Bean
     public AppiumRunner appiumRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
-                                     PerformanceTestManagementService performanceService) {
-        return new AppiumRunner(deviceManager, testTaskEngineService, performanceService);
+                                     PerformanceTestManagementService performanceTestManagementService) {
+        return new AppiumRunner(deviceManager, testTaskEngineService, performanceTestManagementService);
     }
 
     @Bean
     public AppiumCrossRunner appiumCrossRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
-                                               PerformanceTestManagementService performanceService) {
-        return new AppiumCrossRunner(deviceManager, testTaskEngineService, performanceService, agentName);
+                                               PerformanceTestManagementService performanceTestManagementService) {
+        return new AppiumCrossRunner(deviceManager, testTaskEngineService, performanceTestManagementService, agentName);
     }
 
     @Bean
     public SmartRunner smartRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
-                                   PerformanceTestManagementService performanceService,
+                                   PerformanceTestManagementService performanceTestManagementService,
                                    SmartTestUtil smartTestUtil) {
-        return new SmartRunner(deviceManager, testTaskEngineService, performanceService, smartTestUtil);
+        return new SmartRunner(deviceManager, testTaskEngineService, performanceTestManagementService, smartTestUtil);
     }
 
     @Bean
     public T2CRunner t2cRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
-                               PerformanceTestManagementService performanceService) {
-        return new T2CRunner(deviceManager, testTaskEngineService, performanceService, agentName);
+                               PerformanceTestManagementService performanceTestManagementService) {
+        return new T2CRunner(deviceManager, testTaskEngineService, performanceTestManagementService, agentName);
     }
 
     @ConfigurationProperties(prefix = "app.device-script.commands")

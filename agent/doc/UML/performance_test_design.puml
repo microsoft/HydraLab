@@ -93,12 +93,12 @@ PerformanceTestManagementService -> InspectionStrategy
 PerformanceTestManagementService -u-|> PerformanceTestListener
 
 PerformanceTestManagementService -d-o TestRunner
-AppiumListener --|> PerformanceTestListener
-Junit5Listener --|> PerformanceTestListener
-EspressoTestInfoProcessorListener  --|> PerformanceTestListener
+AppiumListener -d->  PerformanceTestListener
+Junit5Listener -d->  PerformanceTestListener
+EspressoTestInfoProcessorListener  -d->  PerformanceTestListener
 @enduml
 
-@startuml
+@startuml espresso_performance_test_design
 class EspressoPerformanceParser {
     void processNewLines()
 }

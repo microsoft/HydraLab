@@ -173,7 +173,7 @@ public class AppiumListener extends RunListener {
         logEnter("testFailed", testDisplayName, failure.getTrace());
         ongoingTestUnit.setStack(failure.getTrace());
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
-        performanceTestListener.testSuccess(ongoingTestUnit.getTitle());
+        performanceTestListener.testFailure(ongoingTestUnit.getTitle());
         testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.oneMoreFailure();
     }
@@ -204,8 +204,8 @@ public class AppiumListener extends RunListener {
         ) {
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTestUnit.setSuccess(true);
+            performanceTestListener.testSuccess(ongoingTestUnit.getTitle());
         }
-        performanceTestListener.testSuccess(ongoingTestUnit.getTitle());
         ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
     }
