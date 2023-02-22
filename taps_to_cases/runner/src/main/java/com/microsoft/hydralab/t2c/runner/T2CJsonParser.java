@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class T2CJsonParser {
-    private Map<String, String> driveIdToTypeMap = new HashMap<>();
+    private final Map<String, String> driveIdToTypeMap = new HashMap<>();
     private final Logger logger;
 
     public T2CJsonParser(Logger logger) {
@@ -37,8 +37,8 @@ public class T2CJsonParser {
 
     private ArrayList<DriverInfo> getDriverList(JSONArray driverJsonArray) {
         ArrayList<DriverInfo> driverList = new ArrayList<>();
-        for (Iterator iterator = driverJsonArray.iterator(); iterator.hasNext(); ) {
-            JSONObject driverJsonObject = (JSONObject) iterator.next();
+        for (Object driverJson : driverJsonArray) {
+            JSONObject driverJsonObject = (JSONObject) driverJson;
             logger.info("Driver: " + driverJsonObject.toJSONString());
             String id = driverJsonObject.getString("id");
             String platform = driverJsonObject.getString("platform");
@@ -65,19 +65,20 @@ public class T2CJsonParser {
         WindowsElementInfo windowsElement = null;
         EdgeElementInfo edgeElement = null;
 
-        for (Iterator iterator = caseJsonArray.iterator(); iterator.hasNext(); ) {
-            JSONObject caseJsonObject = (JSONObject) iterator.next();
-
-            Integer id = caseJsonObject.getInteger("index");
+        for (int i = 0; i < caseJsonArray.size(); i++) {
+            JSONObject caseJsonObject = caseJsonArray.getJSONObject(i);
             String driverId = caseJsonObject.getString("driverId");
-
+            String description = "";
+            if (caseJsonObject.containsKey("description")) {
+                description = caseJsonObject.getString("description");
+            }
             JSONObject elementInfo = caseJsonObject.getJSONObject("elementInfo");
             //get element:android/ios/windows/web
 
             JSONObject action = caseJsonObject.getJSONObject("action");
             logger.info("Action: " + action.toJSONString());
             String actionType = action.getString("actionType");
-            Map<String, Object> arguments = (Map<String, Object>) action.getJSONObject("arguments");
+            Map<String, Object> arguments = action.getJSONObject("arguments");
             boolean isOptional = caseJsonObject.containsKey("isOptional") ? caseJsonObject.getBoolean("isOptional") :
                     caseJsonObject.containsKey("isOption") ? caseJsonObject.getBoolean("isOption") :
                             false;
@@ -85,32 +86,20 @@ public class T2CJsonParser {
             if (elementInfo != null && !elementInfo.isEmpty()) {
                 if (driveIdToTypeMap.get(driverId).equals("android")) {
                     androidElement = AndroidElementInfo.getAndroidElementFromJson(elementInfo);
-                    actionInfo = new ActionInfo(id, androidElement, actionType, arguments, driverId, isOptional);
+                    actionInfo = new ActionInfo(i, androidElement, actionType, arguments, driverId, description, isOptional);
                 }
                 if (driveIdToTypeMap.get(driverId).equals("windows")) {
                     windowsElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), WindowsElementInfo.class);
-                    actionInfo = new ActionInfo(id, windowsElement, actionType, arguments, driverId, isOptional);
+                    actionInfo = new ActionInfo(i, windowsElement, actionType, arguments, driverId, description, isOptional);
                 }
                 if (driveIdToTypeMap.get(driverId).equals("browser")) {
                     edgeElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), EdgeElementInfo.class);
-                    actionInfo = new ActionInfo(id, edgeElement, actionType, arguments, driverId, isOptional);
+                    actionInfo = new ActionInfo(i, edgeElement, actionType, arguments, driverId, description, isOptional);
                 }
-            }else {
-                actionInfo = new ActionInfo(id, null, actionType, arguments, driverId, isOptional);
+            } else {
+                actionInfo = new ActionInfo(i, null, actionType, arguments, driverId, description, isOptional);
             }
             caseList.add(actionInfo);
-            Comparator<ActionInfo> comparator = (o1, o2) -> {
-                if (Objects.equals(o1.getId(), o2.getId())) {
-                    throw new RuntimeException("Same Index Found In The Action Info");
-                }
-                if (o1.getId() > o2.getId()) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            };
-
-            caseList.sort(comparator);
         }
 
         return caseList;
