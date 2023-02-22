@@ -52,7 +52,7 @@ const StyledTableRow = withStyles((theme) => ({
     },
 }))(TableRow);
 
-export default class GroupManageView extends BaseView {
+export default class DeviceGroupView extends BaseView {
 
     state = {
         hideSkeleton: true,
