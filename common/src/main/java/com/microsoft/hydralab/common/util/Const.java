@@ -75,6 +75,7 @@ public interface Const {
         String STRING_FILE_NAMES = "strings,username,password";
         String XCTEST_ZIP_FILE_NAME = "Xctest.zip";
         String XCTEST_ZIP_FOLDER_NAME = "Xctest";
+        String XCTEST_RESULT_FILE_NAME = "XctestResult";
     }
 
     interface ScreenRecoderConfig{

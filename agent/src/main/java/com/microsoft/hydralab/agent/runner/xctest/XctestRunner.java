@@ -9,28 +9,21 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
-import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Map;
-import java.util.Objects;
-
-import cn.hutool.log.Log;
 
 public class XctestRunner extends TestRunner {
     private static String zipPath = "";
     private static String folderPath = "";
-    private static String folderNamePath = "";
+    private static String resultPath = "";
 
     public XctestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
         super(deviceManager, testTaskRunCallback);
@@ -40,43 +33,20 @@ public class XctestRunner extends TestRunner {
     protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
         Logger reportLogger = testRun.getLogger();
         // Need a location here
-        unzipXctestFolder("location", reportLogger);
+        unzipXctestFolder(testTask.getAppFile(), testRun, reportLogger);
         runXctest();
+        analysisXctestResult();
     }
 
-    private void unzipXctestFolder(String location, Logger reportLogger) {
-        File testBaseDir = new File(location);
-        String zipName = Const.SmartTestConfig.XCTEST_ZIP_FILE_NAME;
-        String folderName = Const.SmartTestConfig.XCTEST_ZIP_FOLDER_NAME;
-
-        zipPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.ZIP_FOLDER_NAME + "/";
-        folderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.XCTEST_ZIP_FOLDER_NAME
+    private void unzipXctestFolder(File zipFile, TestRun testRun, Logger reportLogger) {
+        reportLogger.info("start unzipping file");
+        zipPath = zipFile.getAbsolutePath() + "/" + Const.SmartTestConfig.ZIP_FOLDER_NAME + "/";
+        folderPath = testRun.getResultFolder().getAbsolutePath() + "/" + Const.SmartTestConfig.XCTEST_ZIP_FOLDER_NAME
+                + "/";
+        resultPath = testRun.getResultFolder().getAbsolutePath() + "/" + Const.SmartTestConfig.XCTEST_ZIP_FOLDER_NAME
                 + "/";
 
-        try {
-            reportLogger.info("Start install xctest files");
-            InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(zipName);
-            if (resourceAsStream == null) {
-                return;
-            }
-            File xctestZip = new File(testBaseDir, zipName);
-            File xctestFolder = new File(testBaseDir, folderName);
-            if (xctestZip.exists()) {
-                FileUtil.deleteFileRecursively(xctestZip);
-            }
-            if (xctestFolder.exists()) {
-                FileUtil.deleteFileRecursively(xctestFolder);
-            }
-            OutputStream out = new FileOutputStream(xctestZip);
-            IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
-            out.close();
-            FileUtil.unzipFile(xctestZip.getAbsolutePath(), testBaseDir.getAbsolutePath());
-            if (xctestZip.exists()) {
-                FileUtil.deleteFileRecursively(xctestZip);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileUtil.unzipFile(zipFile.getAbsolutePath(), folderPath);
     }
 
     private String runXctest(DeviceInfo deviceInfo, String scope, String suiteName,
@@ -116,5 +86,8 @@ public class XctestRunner extends TestRunner {
             }
             return e.getMessage();
         }
+    }
+
+    private void analysisXctestResult() {
     }
 }
