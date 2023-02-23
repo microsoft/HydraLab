@@ -57,9 +57,11 @@ public class T2CAppiumUtils {
         } catch (Exception e) {
             e.printStackTrace();
             int index = actionInfo.getId();
-            logger.error("doAction at step " + index + "with exception: " + e.getMessage());
+            String description = actionInfo.getDescription();
+            logger.error("doAction at " + index + ", description: " + description + ", with exception: " + e.getMessage());
             if (!isOption) {
-                throw new IllegalStateException("Failed at step " + index + ": " + e.getMessage(), e);
+                throw new IllegalStateException("Failed at " + index + ", description: " + description + ", " + e.getMessage()
+                        + ", page source: \n" + driver.webDriver.getPageSource(), e);
             }
         }
     }
@@ -91,7 +93,7 @@ public class T2CAppiumUtils {
                     content = (String) arguments.get("content");
                 }
                 if (content == null) {
-                    throw new IllegalArgumentException("Trying to input a null String. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Trying to input a null String. action index: " + actionInfo.getId());
                 }
                 if (webElement == null) {
                     driver.sendKeys(content);
@@ -105,14 +107,14 @@ public class T2CAppiumUtils {
             case "activateApp":
                 String appPackageName = (String) arguments.get("appPackageName");
                 if (appPackageName == null) {
-                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. action index: " + actionInfo.getId());
                 }
                 driver.activateApp(appPackageName);
                 break;
             case "terminateApp":
                 String removeAppPackageName = (String) arguments.get("appPackageName");
                 if (removeAppPackageName == null) {
-                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. action index: " + actionInfo.getId());
                 }
                 driver.terminateApp(removeAppPackageName);
                 break;
@@ -130,7 +132,7 @@ public class T2CAppiumUtils {
                 Object xVector = arguments.get("xVector");
                 Object yVector = arguments.get("yVector");
                 if (xVector == null || yVector == null) {
-                    throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' and 'yVector' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' and 'yVector' in the json. action index: " + actionInfo.getId());
                 }
                 int xVectorInt = xVector instanceof Integer ? (Integer) xVector : Integer.getInteger((String) xVector);
                 int yVectorInt = yVector instanceof Integer ? (Integer) yVector : Integer.getInteger((String) yVector);
@@ -139,14 +141,14 @@ public class T2CAppiumUtils {
             case "swipe":
                 String direction = (String) arguments.get("direction");
                 if (direction == null) {
-                    throw new IllegalArgumentException("Direction is not defined. Please add argument 'direction' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Direction is not defined. Please add argument 'direction' in the json. action index: " + actionInfo.getId());
                 }
                 driver.swipe(direction);
                 break;
             case "longClick":
                 Object durationObj = arguments.get("duration");
                 if (durationObj == null) {
-                    throw new IllegalArgumentException("Duration is not defined. Please add argument 'duration' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Duration is not defined. Please add argument 'duration' in the json. action index: " + actionInfo.getId());
                 }
                 int duration = durationObj instanceof Integer ? (Integer) durationObj : Integer.getInteger((String) durationObj);
                 driver.longClick(duration, webElement);
@@ -155,7 +157,7 @@ public class T2CAppiumUtils {
                 String attribute = (String) arguments.get("attribute");
                 String expectedValue = (String) arguments.get("expectedValue");
                 if (attribute == null || expectedValue == null) {
-                    throw new IllegalArgumentException("Assert info is not defined. Please add argument 'attribute' and 'expectedValue' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Assert info is not defined. Please add argument 'attribute' and 'expectedValue' in the json. action index: " + actionInfo.getId());
                 }
                 driver.assertElementAttribute(webElement, attribute, expectedValue);
                 break;
@@ -168,7 +170,7 @@ public class T2CAppiumUtils {
                 String attributeKey = (String) arguments.get("attribute");
                 String id = (String) arguments.get("id");
                 if (attributeKey == null || id == null) {
-                    throw new IllegalArgumentException("Assert info is not defined. Please add argument 'attribute' and 'id' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Assert info is not defined. Please add argument 'attribute' and 'id' in the json. action index: " + actionInfo.getId());
                 }
                 String info = driver.getInfo(webElement, attributeKey);
                 keyToInfoMap.put(id, info);
@@ -190,19 +192,19 @@ public class T2CAppiumUtils {
                     } else if (driver instanceof EdgeDriverController) {
                         toElementInfo = JSON.parseObject(toElementStr, EdgeElementInfo.class);
                     } else {
-                        throw new IllegalArgumentException("Fail to parse the 'toElement' in the json. actionId: " + actionInfo.getId());
+                        throw new IllegalArgumentException("Fail to parse the 'toElement' in the json. action index: " + actionInfo.getId());
                     }
                     WebElement toElement = findElement(driver, toElementInfo, logger);
                     driver.dragAndDrop(webElement, toElement);
                 } else {
-                    throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' & 'yVector' or 'toElement' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' & 'yVector' or 'toElement' in the json. action index: " + actionInfo.getId());
                 }
                 break;
             case "switchToUrl":
                 String url = (String) arguments.get("url");
                 driver.switchToUrl(url);
                 if (url == null) {
-                    throw new IllegalArgumentException("Url is not defined. Please add argument 'url' and 'id' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Url is not defined. Please add argument 'url' and 'id' in the json. action index: " + actionInfo.getId());
                 }
                 break;
             case "copy":
@@ -220,7 +222,7 @@ public class T2CAppiumUtils {
                 throw new IllegalStateException("action fail" +
                         "" +
                         "" +
-                        "ed. actionId:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
+                        "ed. action index:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
 
         }
         // Safe wait if no element required after doing this action to ensure the action is finished

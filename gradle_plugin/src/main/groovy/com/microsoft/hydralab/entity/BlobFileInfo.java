@@ -22,14 +22,14 @@ public class BlobFileInfo {
 
     public interface fileType {
         String WINDOWS_APP = "WINAPP";
-        String COMMOM_FILE = "COMMON";
+        String COMMON_FILE = "COMMON";
         String AGENT_PACKAGE = "PACKAGE";
         String APP_FILE = "APP";
         String TEST_APP_FILE = "TEST_APP";
     }
 
     public interface loadType {
-        String CPOY = "COPY";
+        String COPY = "COPY";
         String UNZIP = "UNZIP";
     }
 }

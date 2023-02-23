@@ -38,6 +38,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
         if (pcScreenShotImageFile == null) {
             pcScreenShotImageFile = new File(screenshotDir, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
+            deviceInfo.setPcScreenshotImageFile(pcScreenShotImageFile);
             String pcImageRelPath = pcScreenShotImageFile.getAbsolutePath().replace(new File(getDeviceStoragePath()).getAbsolutePath(), "");
             pcImageRelPath = getDeviceFolderUrlPrefix() + pcImageRelPath.replace(File.separator, "/");
             deviceInfo.setPcImageRelPath(pcImageRelPath);

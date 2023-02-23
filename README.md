@@ -39,7 +39,7 @@ For more details, see [Introduction: What is Hydra Lab?](https://github.com/micr
 <span id="get-started"></span>
 ## Get Started
 
-Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/wiki)** to understand the dev environment setup procedure: [Contribution Guideline](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
+Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/wiki)** to understand the dev environment setup procedure: [Contribution Guideline](CONTRIBUTING.md).
 
 **Supported environments for Hydra Lab agent**: Windows, Mac OSX, and Linux ([Docker](https://github.com/microsoft/HydraLab/blob/main/agent/README.md#run-agent-in-docker)).
 
@@ -167,7 +167,8 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 <span id="links"></span>
 ## Links
 
-- [Hydra Lab Release Notes](https://github.com/microsoft/HydraLab/wiki/Release-Notes)
+- [Hydra Lab: the next generation cross-platform software testing infrastructure open-sourced by Microsoft](https://medium.com/@nathanbu/we-open-sourced-a-new-test-framework-on-github-in-microsoft-fd31f8861d1e)
+- [Release Notes](https://github.com/microsoft/HydraLab/releases), [Hydra Lab on Up For Grabs](https://up-for-grabs.net/#/filters?names=438)
 - [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
 - [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
 
