@@ -4,10 +4,21 @@
 package com.microsoft.hydralab.t2c.runner;
 
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
+import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
+import com.microsoft.hydralab.t2c.runner.finder.ElementFinder;
+import com.microsoft.hydralab.t2c.runner.finder.ElementFinderFactory;
 import io.appium.java_client.android.nativekey.AndroidKey;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.Point;
+import org.openqa.selenium.Rectangle;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +43,7 @@ public class MockDriverT2CTest {
         testInfo = t2CJsonParser.parseJsonFile(filePath);
         T2CAppiumUtils.setSelfTesting(true);
         getDriversMap(testInfo.getDrivers());
+        ElementFinderFactory.registerFinder(MockDriverController.class, MockElementFinder.class);
 
     }
 
@@ -48,6 +60,21 @@ public class MockDriverT2CTest {
         for (ActionInfo actionInfo : caseList) {
             BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
             T2CAppiumUtils.doAction(driverController, actionInfo, logger);
+        }
+    }
+
+    public static class MockElementFinder implements ElementFinder<BaseElementInfo> {
+
+        private final BaseDriverController driverController;
+
+        public MockElementFinder(BaseDriverController driverController) {
+            this.driverController = driverController;
+        }
+
+        @Override
+        public WebElement findElement(BaseElementInfo elementInfo) {
+            driverController.findElementByXPath(elementInfo.getXpath());
+            return new MockElement();
         }
     }
 
@@ -151,10 +178,23 @@ public class MockDriverT2CTest {
             return new MockElement();
         }
 
-        public WebElement findElementByName(String name) {
+        public WebElement findElementByText(String text) {
             logger.info("Called " + currentMethodName());
             return new MockElement();
         }
+
+        @Override
+        public @Nullable WebElement findElementById(String id) {
+            logger.info("Called " + currentMethodName());
+            return new MockElement();
+        }
+
+        @Override
+        public String getPageSource() {
+            logger.info("Called " + currentMethodName());
+            return "foo";
+        }
+
 
         public void copy(WebElement webElement) {
             logger.info("Called " + currentMethodName());

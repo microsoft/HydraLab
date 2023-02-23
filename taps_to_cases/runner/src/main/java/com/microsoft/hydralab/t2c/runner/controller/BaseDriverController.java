@@ -2,8 +2,11 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.t2c.runner.controller;
 
+import com.microsoft.hydralab.t2c.runner.elements.AndroidElementInfo;
+import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.nativekey.AndroidKey;
+import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
@@ -15,8 +18,8 @@ import org.slf4j.Logger;
 
 import java.time.Duration;
 
-public class BaseDriverController {
-    public WebDriver webDriver;
+public abstract class BaseDriverController {
+    protected WebDriver webDriver;
     protected Logger logger;
 
     public BaseDriverController(WebDriver webDriver, Logger logger) {
@@ -140,6 +143,7 @@ public class BaseDriverController {
     public void setClipboard(String text) {
     }
 
+    @Nullable
     public WebElement findElementByAccessibilityId(String accessibilityId) {
         WebElement elementFound = null;
         try {
@@ -157,6 +161,7 @@ public class BaseDriverController {
         return elementFound;
     }
 
+    @Nullable
     public WebElement findElementByXPath(String xpath) {
         WebElement elementFound = null;
         try {
@@ -168,14 +173,38 @@ public class BaseDriverController {
         return elementFound;
     }
 
-    public WebElement findElementByName(String name) {
+    @Nullable
+    public WebElement findElementByText(String text) {
         WebElement elementFound = null;
         try {
             elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
-                    .until(driver -> driver.findElement(AppiumBy.name(name)));
+                    .until(driver -> driver.findElement(AppiumBy.xpath("//*[@text='" + text + "']")));
         } catch (Exception e) {
-            logger.info("Can not find element by name: " + name);
+            logger.info("Can not find element by text: " + text);
         }
         return elementFound;
     }
+
+
+    /**
+     * In windows, id refers to {@link WindowsElementInfo#getName()}
+     * In android, id refers to {@link AndroidElementInfo#getResourceId()}
+     * @param id
+     * @return
+     */
+    @Nullable
+    public WebElement findElementById(String id) {
+        WebElement elementFound = null;
+        try {
+            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
+                    .until(driver -> driver.findElement(AppiumBy.name(id)));
+        } catch (Exception e) {
+            logger.info("Can not find element by id: " + id);
+        }
+        return elementFound;
+    }
+
+
+    public abstract String getPageSource();
+
 }
