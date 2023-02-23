@@ -53,6 +53,8 @@ In a nutshell:
   DO NOT SWALLOW THE EXCEPTIONS
 </b></p>
 
+You can try `logging it with a proper logger`, `rethrowing it to bubble up`, `letting upper call stack handle it by declaring it`, and `handling it in the codeflow, or `recording the info in an entity`.
+
 ## Review Process
 
 After submitting a pull request, members of the Hydra Lab team will review your code. We will assign the request to an appropriate reviewer. Any member of the community may participate in the review, but at least one member of the Hydra Lab team will ultimately approve the request.
