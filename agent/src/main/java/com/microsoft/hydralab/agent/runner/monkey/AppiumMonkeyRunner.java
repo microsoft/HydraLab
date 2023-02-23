@@ -11,7 +11,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import org.slf4j.Logger;
 
@@ -23,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 public class AppiumMonkeyRunner extends AppiumRunner {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
 
-    public AppiumMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
-        super(deviceManager, testTaskRunCallback);
+    public AppiumMonkeyRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback) {
+        super(agentManagementService, testTaskRunCallback);
     }
 
     @Override
@@ -32,11 +32,11 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         String pkgName = testTask.getPkgName();
 
         long recordingStartTimeMillis = System.currentTimeMillis();
-        ScreenRecorder deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
+        ScreenRecorder deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
 
-        LogCollector logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
+        LogCollector logCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
         logCollector.start();
         testRun.setTotalCount(1);
 
@@ -58,7 +58,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
-        deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
             if (imagePNGFile == null) {
                 return;
             }
@@ -72,7 +72,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
             }
         }), reportLogger);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
-        deviceManager.runAppiumMonkey(deviceInfo, pkgName, testTask.getMaxStepCount(), reportLogger);
+        testDeviceManager.runAppiumMonkey(deviceInfo, pkgName, testTask.getMaxStepCount(), reportLogger);
 
         deviceScreenRecorder.finishRecording();
         logCollector.stopAndAnalyse();

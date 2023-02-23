@@ -11,7 +11,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import org.slf4j.Logger;
 
@@ -29,8 +29,8 @@ public class T2CRunner extends AppiumRunner {
     String agentName;
     private int currentIndex = 0;
 
-    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName) {
-        super(deviceManager, testTaskRunCallback);
+    public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, String agentName) {
+        super(agentManagementService, testTaskRunCallback);
         this.agentName = agentName;
     }
 
@@ -40,12 +40,12 @@ public class T2CRunner extends AppiumRunner {
         pkgName = testTask.getPkgName();
 
         // Test start
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
+        deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
         long recordingStartTimeMillis = System.currentTimeMillis();
 
-        logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
+        logCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
         logCollector.start();
 
         testRun.setTotalCount(testTask.testJsonFileList.size() + (initialJsonFile == null ? 0 : 1));
@@ -101,7 +101,7 @@ public class T2CRunner extends AppiumRunner {
         testRun.addNewTimeTag(currentIndex + ". " + ongoingTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.addNewTestUnit(ongoingTest);
 
-        deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
             if (imagePNGFile == null) {
                 return;
             }
@@ -117,7 +117,7 @@ public class T2CRunner extends AppiumRunner {
 
         // Run Test
         try {
-            deviceManager.runAppiumT2CTest(deviceInfo, jsonFile, reportLogger);
+            testDeviceManager.runAppiumT2CTest(deviceInfo, jsonFile, reportLogger);
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTest.setSuccess(true);
         } catch (Exception e) {

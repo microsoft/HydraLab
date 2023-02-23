@@ -5,9 +5,10 @@ package com.microsoft.hydralab.common.management.listener.impl;
 import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.common.entity.agent.DeviceStateChangeRecord;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.entity.common.MobileDeviceState;
+import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
-import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.util.GlobalConstant;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -46,7 +47,7 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
      * 3. switching between connected(OFFLINE)/connected(ONLINE)
      */
 
-    private DeviceManager deviceManager;
+    private AgentManagementService agentManagementService;
     private int deviceStateChangeThreshold;
     private long deviceStateChangeWindowTime;
     private long deviceStateChangeRecoveryTime;
@@ -55,7 +56,7 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
 
     // 2 triggering ways: new device state change, timer trigger
     public void stabilityCheck(DeviceInfo deviceInfo, IDevice.DeviceState adbState, String deviceBehaviour) {
-        stabilityCheck(deviceInfo, DeviceManager.mobileDeviceStateMapping(adbState), deviceBehaviour);
+        stabilityCheck(deviceInfo, TestDeviceManager.mobileDeviceStateMapping(adbState), deviceBehaviour);
     }
 
     public void stabilityCheck(DeviceInfo deviceInfo, MobileDeviceState state, String deviceBehaviour) {
@@ -233,7 +234,7 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
     @Scheduled(cron = "*/10 * * * * *")
     public void refreshDeviceStateChangeTimes() {
         LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
-        Set<DeviceInfo> deviceInfos = deviceManager.getDeviceList(null);
+        Set<DeviceInfo> deviceInfos = agentManagementService.getDeviceList(null);
 
         for (DeviceInfo info : deviceInfos) {
             cleanOutdatedDeviceStateChange(deviceStateChangesMap.get(info.getSerialNum()), now, info);

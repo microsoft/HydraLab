@@ -3,7 +3,6 @@
 package com.microsoft.hydralab.common.entity.common;
 
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
-import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -27,12 +26,10 @@ public class DeviceInfo extends MobileDevice {
     private final transient Object lock = new Object();
     private String status;
     private String imageRelPath;
-    private String pcImageRelPath;
     private String screenshotImageUrl;
     private String brand;
     private String abiList;
     private String recordVideoPath;
-    private String pcScreenshotImageUrl;
     private String deviceId;
     private String runningTaskId;
     private String runningTestName;
@@ -41,8 +38,8 @@ public class DeviceInfo extends MobileDevice {
     private boolean supportScreenRecording = true;
     private long screenshotUpdateTimeMilli;
     private transient File screenshotImageFile;
-    private transient File pcScreenshotImageFile;
     private transient boolean adbTimeout = false;
+    private String type;
 
     public void setStatus(String status) {
         this.status = status;
@@ -133,6 +130,21 @@ public class DeviceInfo extends MobileDevice {
         }
         for (Thread temp : threads) {
             temp.interrupt();
+        }
+    }
+
+    public enum DeviceType {
+        // Define device type and bean name
+        ANDROID("androidDeviceManager"),
+        WINDOWS("windowsDeviceManager"),
+        IOS("iosDeviceManager");
+        String beanName;
+
+        DeviceType(String beanName) {
+            this.beanName = beanName;
+        }
+        public String getBeanName() {
+            return beanName;
         }
     }
 }

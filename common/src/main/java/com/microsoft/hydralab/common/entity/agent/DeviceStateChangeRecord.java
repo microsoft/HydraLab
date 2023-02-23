@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.common.entity.agent;
 
 
-import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
+import com.microsoft.hydralab.common.entity.common.MobileDeviceState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

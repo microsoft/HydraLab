@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.AndroidTestDeviceManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -25,7 +25,7 @@ class ActionExecutorTest extends BaseTest {
 
     @Test
     void createAndExecuteActions() throws InvocationTargetException, IllegalAccessException {
-        AndroidDeviceManager deviceManager = Mockito.mock(AndroidDeviceManager.class);
+        AndroidTestDeviceManager deviceManager = Mockito.mock(AndroidTestDeviceManager.class);
         DeviceInfo deviceInfo = new DeviceInfo();
         JSONObject actionJson = new JSONObject();
         actionJson.put("method", "setProperty");

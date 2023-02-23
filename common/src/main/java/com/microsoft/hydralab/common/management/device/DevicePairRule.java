@@ -3,7 +3,6 @@
 package com.microsoft.hydralab.common.management.device;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author zhoule
@@ -36,7 +35,4 @@ public enum DevicePairRule {
     };
 
     public abstract List<DeviceDefine> getDeviceDefine();
-    public Map<String,DeviceDefine> getDeviceMap(){
-        return null;
-    };
 }

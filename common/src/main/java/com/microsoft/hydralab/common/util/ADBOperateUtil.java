@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -23,7 +22,6 @@ import java.net.UnknownHostException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-@Service
 public class ADBOperateUtil {
     private static final int ADB_WAIT_TIMEOUT_SECONDS = 120;
     private final Logger instanceLogger = LoggerFactory.getLogger(ADBOperateUtil.class);
@@ -32,7 +30,7 @@ public class ADBOperateUtil {
     private File mAdbPath;
     private String adbServerHost = DdmPreferences.DEFAULT_ADBHOST_VALUE;
     private AndroidDebugBridge mAndroidDebugBridge;
-    public void init(AndroidDebugBridge.IDeviceChangeListener mListener) throws IOException {
+    public void init(AndroidDebugBridge.IDeviceChangeListener mListener) {
         mAndroidHome = System.getenv("ANDROID_HOME");
         Assert.notNull(mAndroidHome, "ANDROID_HOME env var must be set and pointing to the home path of Android SDK.");
 
@@ -58,7 +56,11 @@ public class ADBOperateUtil {
         // com.android.ddmlib.AndroidDebugBridge.createBridge(java.lang.String, boolean) is a deprecated API
         // com.android.ddmlib.AndroidDebugBridge#createBridge(java.lang.String, boolean, long, java.util.concurrent.TimeUnit)
         // is recommended as it requires a timeout param to indicate an ADB server connection issue instead of forever hanging.
-        mAndroidDebugBridge = AndroidDebugBridge.createBridge(mAdbPath.getCanonicalPath(), true);
+        try {
+            mAndroidDebugBridge = AndroidDebugBridge.createBridge(mAdbPath.getCanonicalPath(), true);
+        } catch (IOException e) {
+            throw new HydraLabRuntimeException(500, "Create AndroidDebugBridge failed", e);
+        }
         Assert.notNull(mAndroidDebugBridge, "Create AndroidDebugBridge failed");
     }
 

@@ -11,7 +11,7 @@ import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
@@ -44,7 +44,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     @Resource
     DeviceTaskControlExecutor deviceTaskControlExecutor;
     @Resource
-    DeviceManager deviceManager;
+    AgentManagementService agentManagementService;
     @Resource
     DeviceScriptCommandLoader deviceScriptCommandLoader;
     private final Map<String, TestTask> runningTestTask = new HashMap<>();
@@ -99,13 +99,13 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     protected Set<DeviceInfo> chooseDevices(TestTaskSpec testTaskSpec, TestRunner runner) {
         if ((runner instanceof AppiumCrossRunner) || (runner instanceof T2CRunner)) {
-            Set<DeviceInfo> activeDeviceList = deviceManager.getActiveDeviceList(log);
+            Set<DeviceInfo> activeDeviceList = agentManagementService.getActiveDeviceList(log);
             Assert.isTrue(activeDeviceList == null || activeDeviceList.size() <= 1, "No connected device!");
             return activeDeviceList;
         }
 
         String identifier = testTaskSpec.deviceIdentifier;
-        Set<DeviceInfo> allActiveConnectedDevice = deviceManager.getDeviceList(log);
+        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getDeviceList(log);
         log.info("Choosing devices from {}", allActiveConnectedDevice.size());
 
         if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
@@ -119,7 +119,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     public void setupTestDir(TestTask testTask) {
-        File baseDir = new File(deviceManager.getTestBaseDir(), DateUtil.nowDirFormat.format(new Date()));
+        File baseDir = new File(agentManagementService.getTestBaseDir(), DateUtil.nowDirFormat.format(new Date()));
         if (!baseDir.exists()) {
             if (!baseDir.mkdirs()) {
                 throw new RuntimeException("mkdirs fail for: " + baseDir);
@@ -149,7 +149,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             return false;
         }
         testTask.setStatus(TestTask.TestStatus.CANCELED);
-        deviceManager.resetDeviceByTestId(testId, log);
+        agentManagementService.resetDeviceByTestId(testId, log);
         return true;
     }
 

@@ -17,6 +17,7 @@ class TestDevice{
     String type
     String serialNumber
     String status
+    List<Process> processList
 }
 abstract class TestDeviceManager{
     AgentManagementService agentManagementService;

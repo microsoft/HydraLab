@@ -48,14 +48,13 @@ export default class DeviceDetailView extends React.Component {
         return <table className="table table-borderless">
             <tbody>
                 <tr>
-                    {item.pcScreenshotImageUrl && item.alive?
-                        <td width="75%" align="center" style={tdStyle}>
-                            {this.getPCCase(item)}
-                        </td> : null
-                    }
+                    {item.type == "WINDOWS"?
+                    <td width="75%" align="center" style={tdStyle}>
+                        {this.getPCCase(item)}
+                    </td> :                     
                     <td align="center" style={tdStyle}>
                         {this.getProperPhoneCase(item)}
-                    </td>
+                    </td>}
                 </tr>
                 <tr>
                     <td align='center' colSpan="2">
@@ -126,7 +125,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="base" />
                 <div className="content">
                     <img className={cssObj.device_screenshot}
-                        src={item.pcScreenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
+                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
                         alt={"Computer"} />
                 </div>
             </div>

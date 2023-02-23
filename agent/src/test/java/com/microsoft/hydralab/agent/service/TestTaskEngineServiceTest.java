@@ -7,8 +7,6 @@ import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,8 +18,6 @@ public class TestTaskEngineServiceTest extends BaseTest {
 
     @Resource
     TestTaskEngineService testTaskEngineService;
-    @Resource
-    DeviceManager deviceManager;
     @MockBean
     EspressoRunner espressoRunner;
     @Resource
@@ -50,11 +46,5 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForSingleDevice.testFileSet = new TestFileSet();
         taskSpecForSingleDevice.pkgName = "com.microsoft.test";
         testTaskEngineService.runTestTask(taskSpecForSingleDevice);
-    }
-
-    @Test
-    public void getDeviceManager() {
-        baseLogger.info(String.valueOf(deviceManager instanceof AndroidDeviceManager));
-        Assertions.assertTrue(deviceManager instanceof AndroidDeviceManager, "Init DeviceManager Bean Error!");
     }
 }

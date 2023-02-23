@@ -4,7 +4,7 @@ package com.microsoft.hydralab.agent.runner;
 
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ import java.util.concurrent.CountDownLatch;
 public class DeviceTaskControlExecutor {
     static final Logger log = LoggerFactory.getLogger(DeviceTaskControlExecutor.class);
     @Resource
-    DeviceManager deviceManager;
+    AgentManagementService agentManagementService;
 
     @Nullable
     public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task, TaskCompletion taskCompletion) {
@@ -67,7 +67,7 @@ public class DeviceTaskControlExecutor {
             }
             Logger logger = null;
             if (logging) {
-                logger = deviceManager.getDeviceLogger(device);
+                logger = agentManagementService.getDeviceManager(device).getDeviceLogger(device);
             }
             final Logger fLogger = logger;
             devices.add(device);

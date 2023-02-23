@@ -5,7 +5,6 @@ package com.microsoft.hydralab.common.logger.impl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,13 +23,11 @@ public class ADBLogcatCollector implements LogCollector {
     private final TestRun testRun;
     private final String pkgName;
     private final Logger infoLogger;
-    DeviceManager deviceManager;
     ADBOperateUtil adbOperateUtil;
     private boolean started;
     private String loggerFilePath;
 
-    public ADBLogcatCollector(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
-        this.deviceManager = deviceManager;
+    public ADBLogcatCollector(ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
         this.adbOperateUtil = adbOperateUtil;
         this.connectedDevice = deviceInfo;
         this.testRun = testRun;
@@ -69,7 +66,7 @@ public class ADBLogcatCollector implements LogCollector {
     public void stopAndAnalyse() {
         started = false;
         Logger logger = LogUtils.getLoggerWithRollingFileAppender(
-                DeviceManager.LOGGER_PREFIX + "logcat_" + connectedDevice.getSerialNum(),
+                LOGGER_PREFIX + "logcat_" + connectedDevice.getSerialNum(),
                 loggerFilePath,
                 "%logger{0}>> %m%n");
         Process process = null;

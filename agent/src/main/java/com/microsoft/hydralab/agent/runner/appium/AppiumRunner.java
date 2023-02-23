@@ -9,7 +9,7 @@ import com.microsoft.hydralab.appium.ThreadParam;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
 import org.junit.internal.TextListener;
@@ -32,8 +32,8 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 
 public class AppiumRunner extends TestRunner {
 
-    public AppiumRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
-        super(deviceManager, testTaskRunCallback);
+    public AppiumRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback) {
+        super(agentManagementService, testTaskRunCallback);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class AppiumRunner extends TestRunner {
         try {
             File gifFile = runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testRun, testRun.getResultFolder(), reportLogger);
             if (gifFile != null && gifFile.exists() && gifFile.length() > 0) {
-                testRun.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
+                testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
             }
         } finally {
             //clear config
@@ -58,7 +58,7 @@ public class AppiumRunner extends TestRunner {
     }
 
     protected void quitAppiumDrivers(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) {
-        deviceManager.quitMobileAppiumDriver(deviceInfo, reportLogger);
+        testDeviceManager.quitMobileAppiumDriver(deviceInfo, reportLogger);
     }
 
     protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
@@ -74,7 +74,7 @@ public class AppiumRunner extends TestRunner {
         File gifFile = null;
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");
-            Junit5Listener junit5Listener = new Junit5Listener(deviceManager, deviceInfo, testRun, testTask.getPkgName(), reportLogger);
+            Junit5Listener junit5Listener = new Junit5Listener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(), reportLogger);
 
             /** run the test */
             reportLogger.info("Start appium test with junit5");
@@ -86,7 +86,7 @@ public class AppiumRunner extends TestRunner {
         } else {
             /** xml report: parse listener */
             reportLogger.info("Start init listener");
-            AppiumListener listener = new AppiumListener(deviceManager, deviceInfo, testRun, testTask.getPkgName(), reportLogger);
+            AppiumListener listener = new AppiumListener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(), reportLogger);
 
             /** run the test */
             reportLogger.info("Start appium test with junit4");
@@ -98,7 +98,7 @@ public class AppiumRunner extends TestRunner {
         }
         /** set paths */
         String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();
-        testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+        testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
         return gifFile;
     }
 
