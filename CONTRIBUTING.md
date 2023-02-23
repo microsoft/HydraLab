@@ -53,7 +53,7 @@ In a nutshell:
   DO NOT SWALLOW THE EXCEPTIONS
 </b></p>
 
-You can try `logging it with a proper logger`, `rethrowing it to bubble up`, `letting upper call stack handle it by declaring it`, and `handling it in the codeflow, or `recording the info in an entity`.
+You can try `logging it with a proper logger`, `rethrowing it to bubble up`, `letting upper call stack handle it by declaring it`, and `handling it in the codeflow`, or `recording the info in an entity`.
 
 ## Review Process
 
