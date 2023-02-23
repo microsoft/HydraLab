@@ -6,8 +6,6 @@ import com.alibaba.fastjson.annotation.JSONField;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AndroidElementInfo extends BaseElementInfo {
     private String index;
@@ -75,16 +73,6 @@ public class AndroidElementInfo extends BaseElementInfo {
         if(bounds != null){
             parseCoordinates(bounds);
         }
-    }
-
-    @Override
-    public Map<String, String> getSearchByProperties() {
-        Map<String, String> keyToVal = new HashMap<>();
-        keyToVal.put("accessibilityId", accessibilityId);
-        keyToVal.put("xpath", xpath);
-        keyToVal.put("text", text);
-        keyToVal.put("resource-id", resourceId);
-        return keyToVal;
     }
 
     public void parseCoordinates(String bounds){

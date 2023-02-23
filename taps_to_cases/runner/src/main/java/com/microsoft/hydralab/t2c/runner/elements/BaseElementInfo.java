@@ -4,8 +4,6 @@ package com.microsoft.hydralab.t2c.runner.elements;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import java.util.Map;
-
 public abstract class BaseElementInfo {
     protected final String accessibilityId;
     protected final String xpath;
@@ -16,9 +14,6 @@ public abstract class BaseElementInfo {
         this.xpath = xpath;
         this.text = text;
     }
-
-    public abstract Map<String, String> getSearchByProperties();
-
 
 
     public String getElementInfo(){
