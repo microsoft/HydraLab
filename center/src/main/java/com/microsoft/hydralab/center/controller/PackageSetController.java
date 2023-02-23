@@ -330,7 +330,7 @@ public class PackageSetController {
     @PostMapping("/api/package/queryAgentPackage")
     public Result queryAgentPackage() {
 
-        return Result.ok(attachmentService.queryBlobFileByType(StorageFileInfo.FileType.AGENT_PACKAGE));
+        return Result.ok(attachmentService.queryFileInfoByFileType(StorageFileInfo.FileType.AGENT_PACKAGE));
     }
 
     /**

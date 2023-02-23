@@ -12,7 +12,7 @@ import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.*;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
+import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
@@ -73,7 +73,7 @@ public class DeviceAgentManagementService {
     @Resource
     TestTaskService testTaskService;
     @Resource
-    BlobFileInfoRepository blobFileInfoRepository;
+    StorageFileInfoRepository storageFileInfoRepository;
     @Resource
     AttachmentService attachmentService;
     @Resource
@@ -915,7 +915,7 @@ public class DeviceAgentManagementService {
         //check is agent connected
         AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentId);
         Assert.notNull(agentSessionInfoByAgentId, "Agent Offline!");
-        StorageFileInfo packageInfo = blobFileInfoRepository.findById(fileId).get();
+        StorageFileInfo packageInfo = storageFileInfoRepository.findById(fileId).get();
         if (packageInfo == null || !StorageFileInfo.FileType.AGENT_PACKAGE.equals(packageInfo.getFileType())) {
             throw new Exception("Error file info!");
         }

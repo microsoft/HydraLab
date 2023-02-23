@@ -24,8 +24,6 @@ public class StorageFileInfo implements Serializable {
     private String fileType;
     private String fileName;
 
-    // general storage fields
-    private String storageType;
     private String fileDownloadUrl;
     private String storageContainer;
     // relative to storageContainer

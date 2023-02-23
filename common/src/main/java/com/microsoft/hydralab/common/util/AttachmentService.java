@@ -5,7 +5,7 @@ package com.microsoft.hydralab.common.util;
 
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
+import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.EntityFileRelationRepository;
 import com.microsoft.hydralab.common.repository.TestJsonInfoRepository;
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -28,7 +28,7 @@ import java.util.*;
 @Service
 public class AttachmentService {
     @Resource
-    BlobFileInfoRepository blobFileInfoRepository;
+    StorageFileInfoRepository storageFileInfoRepository;
     @Resource
     TestJsonInfoRepository testJsonInfoRepository;
     @Resource
@@ -40,7 +40,7 @@ public class AttachmentService {
         boolean recordExists = false;
 
         fileInfo.setStorageContainer(entityType.storageContainer);
-        List<StorageFileInfo> tempFileInfos = blobFileInfoRepository.queryBlobFileInfoByMd5(fileInfo.getMd5());
+        List<StorageFileInfo> tempFileInfos = storageFileInfoRepository.queryStorageFileInfoByMd5(fileInfo.getMd5());
         for (StorageFileInfo tempFileInfo : tempFileInfos) {
             if (compareFileInfo(fileInfo, tempFileInfo)) {
                 fileInfo = updateFileInStorageAndDB(tempFileInfo, file, entityType, logger);
@@ -69,7 +69,7 @@ public class AttachmentService {
         fileInfo.setStorageContainer(entityType.storageContainer);
         fileInfo.setCDNUrl(storageServiceClient.getCdnUrl());
         fileInfo.setFileDownloadUrl(saveFileInStorage(file, fileInfo, logger));
-        blobFileInfoRepository.save(fileInfo);
+        storageFileInfoRepository.save(fileInfo);
         return fileInfo;
     }
 
@@ -80,7 +80,7 @@ public class AttachmentService {
             oldFileInfo.setStorageContainer(entityType.storageContainer);
             oldFileInfo.setCDNUrl(storageServiceClient.getCdnUrl());
             oldFileInfo.setFileDownloadUrl(saveFileInStorage(file, oldFileInfo, logger));
-            blobFileInfoRepository.save(oldFileInfo);
+            storageFileInfoRepository.save(oldFileInfo);
         }
         return oldFileInfo;
     }
@@ -154,7 +154,7 @@ public class AttachmentService {
 
         List<EntityFileRelation> fileRelations = entityFileRelationRepository.queryAllByEntityIdAndAndEntityType(entityId, entityType.typeName);
         for (EntityFileRelation fileRelation : fileRelations) {
-            StorageFileInfo tempFileInfo = blobFileInfoRepository.findById(fileRelation.getFileId()).get();
+            StorageFileInfo tempFileInfo = storageFileInfoRepository.findById(fileRelation.getFileId()).get();
             if (tempFileInfo != null) {
                 result.add(tempFileInfo);
             }
@@ -189,7 +189,7 @@ public class AttachmentService {
         if (attachments == null || attachments.size() == 0) {
             return;
         }
-        blobFileInfoRepository.saveAll(attachments);
+        storageFileInfoRepository.saveAll(attachments);
         saveRelations(entityId, entityType, attachments);
     }
 
@@ -203,12 +203,12 @@ public class AttachmentService {
         return fileInfo.getFileDownloadUrl();
     }
 
-    public List<StorageFileInfo> queryBlobFileByType(String fileType) {
-        return blobFileInfoRepository.queryBlobFileInfoByFileType(fileType);
+    public List<StorageFileInfo> queryFileInfoByFileType(String fileType) {
+        return storageFileInfoRepository.queryStorageFileInfoByFileType(fileType);
     }
 
     public StorageFileInfo getLatestAgentPackage() {
-        List<StorageFileInfo> files = blobFileInfoRepository.queryBlobFileInfoByFileTypeOrderByCreateTimeDesc(StorageFileInfo.FileType.AGENT_PACKAGE);
+        List<StorageFileInfo> files = storageFileInfoRepository.queryStorageFileInfoByFileTypeOrderByCreateTimeDesc(StorageFileInfo.FileType.AGENT_PACKAGE);
         if (files != null && files.size() > 0) {
             return files.get(0);
         }
