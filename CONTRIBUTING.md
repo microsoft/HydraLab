@@ -47,6 +47,12 @@ We are aligned on the [Fail Fast](https://www.techtarget.com/whatis/definition/f
 
 And please leverage the `Assert` API to save if conditions, for example: [Spring Assert API](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/util/Assert.html)
 
+In a nutshell:
+
+<p align="center"><b>
+  DO NOT SWALLOW THE EXCEPTIONS
+</b></p>
+
 ## Review Process
 
 After submitting a pull request, members of the Hydra Lab team will review your code. We will assign the request to an appropriate reviewer. Any member of the community may participate in the review, but at least one member of the Hydra Lab team will ultimately approve the request.
