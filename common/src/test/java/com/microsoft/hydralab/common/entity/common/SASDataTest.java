@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.common.entity.common;
 
+import com.microsoft.hydralab.common.file.impl.blob.SASPermission;
 import com.microsoft.hydralab.common.test.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,13 +11,13 @@ class SASDataTest extends BaseTest {
 
     @Test
     void setExpiredTime() {
-        SASData.SASPermission.Read.setExpiryTime(40, "SECONDS");
-        logger.info(SASData.SASPermission.Read.toString());
-        Assertions.assertEquals(SASData.SASPermission.Read.timeUnit, ChronoUnit.SECONDS);
+        SASPermission.READ.setExpiryTime(40, "SECONDS");
+        logger.info(SASPermission.READ.toString());
+        Assertions.assertEquals(SASPermission.READ.timeUnit, ChronoUnit.SECONDS);
 
 
-        SASData.SASPermission.Write.setExpiryTime(2, "MINUTES");
-        logger.info(SASData.SASPermission.Write.toString());
-        Assertions.assertEquals(SASData.SASPermission.Write.timeUnit, ChronoUnit.MINUTES);
+        SASPermission.WRITE.setExpiryTime(2, "MINUTES");
+        logger.info(SASPermission.WRITE.toString());
+        Assertions.assertEquals(SASPermission.WRITE.timeUnit, ChronoUnit.MINUTES);
     }
 }

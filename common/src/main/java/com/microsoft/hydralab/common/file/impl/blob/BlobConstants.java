@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.util.blob;
+package com.microsoft.hydralab.common.file.impl.blob;
 
-public interface DeviceNetworkBlobConstants {
+public interface BlobConstants {
     String PKG_BLOB_NAME = "pkgstore";
     String IMAGES_BLOB_NAME = "images";
     String TEST_SUITE_BLOB_NAME = "testsuitestore";

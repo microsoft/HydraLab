@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.entity.center;
+package com.microsoft.hydralab.common.file.impl.blob;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * @date 11/15/2022
  */
 @Data
-@ConfigurationProperties(prefix = "app.blob")
+@ConfigurationProperties(prefix = "app.storage.blob")
 @Component
 public class BlobProperty {
     private String connection;

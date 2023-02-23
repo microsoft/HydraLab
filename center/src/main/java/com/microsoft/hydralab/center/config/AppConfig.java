@@ -6,9 +6,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.microsoft.hydralab.common.file.StorageServiceClient;
+import com.microsoft.hydralab.common.file.impl.blob.BlobClientAdapter;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
-import com.microsoft.hydralab.common.entity.center.BlobProperty;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
+import com.microsoft.hydralab.common.file.impl.blob.BlobProperty;
+import com.microsoft.hydralab.common.util.Const;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import io.prometheus.client.exporter.PushGateway;
@@ -17,6 +19,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus.
 import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +27,7 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
+import javax.annotation.Resource;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -32,10 +36,14 @@ import java.util.Map;
 @Configuration
 @ComponentScan(basePackages = {"com.microsoft.hydralab"})
 public class AppConfig {
+    @Resource
+    ApplicationContext applicationContext;
     @Value("${management.metrics.export.prometheus.pushgateway.username}")
     private String pushgatewayUsername;
     @Value("${management.metrics.export.prometheus.pushgateway.password}")
     private String pushgatewayPassword;
+    @Value("${app.storage.type}")
+    private String storageType;
 
     @Bean
     @ConditionalOnClass({JSON.class})
@@ -54,8 +62,22 @@ public class AppConfig {
     }
 
     @Bean
-    public BlobStorageClient blobStorageClient(BlobProperty blobProperty) {
-        return new BlobStorageClient(blobProperty);
+    public StorageServiceClient storageServiceClient() {
+        if (storageType == null) {
+            storageType = Const.StorageType.LOCAL;
+        }
+
+        StorageServiceClient storageServiceClient = null;
+        switch (storageType) {
+            case Const.StorageType.BLOB:
+                BlobProperty blobProperty = applicationContext.getBean(Const.StoragePropertyBean.BLOB, BlobProperty.class);
+                storageServiceClient = new BlobClientAdapter(blobProperty);
+                break;
+            default:
+                // todo: local storage system
+                break;
+        }
+        return storageServiceClient;
     }
 
     @Bean
@@ -72,11 +94,10 @@ public class AppConfig {
     @ConditionalOnProperty(prefix = "management.metrics.export.prometheus.pushgateway", name = "enabled", havingValue = "true")
     public PushGateway pushGateway(PrometheusProperties prometheusProperties) throws MalformedURLException {
         String baseUrl = prometheusProperties.getPushgateway().getBaseUrl();
-        if (!baseUrl.startsWith("http")){
+        if (!baseUrl.startsWith("http")) {
             if (baseUrl.startsWith("127.0.0.1") || baseUrl.startsWith("localhost")) {
                 baseUrl = "http://" + baseUrl;
-            }
-            else {
+            } else {
                 baseUrl = "https://" + baseUrl;
             }
         }

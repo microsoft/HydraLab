@@ -11,10 +11,10 @@ import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.*;
 import com.microsoft.hydralab.common.entity.common.*;
+import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.util.*;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
 import com.microsoft.hydralab.t2c.runner.TestInfo;
@@ -79,9 +79,9 @@ public class DeviceAgentManagementService {
     @Resource
     AgentManageService agentManageService;
     @Resource
-    BlobStorageClient blobStorageClient;
+    StorageServiceClient storageServiceClient;
     @Resource
-    BlobStorageService blobStorageService;
+    StorageTokenManageService storageTokenManageService;
 
     @Value("${app.access-token-limit}")
     int accessLimit;
@@ -122,7 +122,7 @@ public class DeviceAgentManagementService {
     private void sendAgentMetadata(Session session, AgentUser agentUser, String signalName) {
         agentUser.setBatteryStrategy(AgentUser.BatteryStrategy.valueOf(batteryStrategy));
         AgentMetadata data = new AgentMetadata();
-        data.setBlobSAS(blobStorageService.generateWriteSAS(agentUser.getId()));
+        data.setAccessToken(storageTokenManageService.generateWriteToken(agentUser.getId()));
         data.setAgentUser(agentUser);
         data.setPushgatewayUsername(pushgatewayUsername);
         data.setPushgatewayPassword(pushgatewayPassword);
@@ -675,14 +675,14 @@ public class DeviceAgentManagementService {
     private JSONObject runT2CTest(TestTaskSpec testTaskSpec) {
         // TODO: upgrade to assign task to agent and check the available device count on the agent
         JSONObject result = new JSONObject();
-        BlobFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), BlobFileInfo.FileType.TEST_APP_FILE);
+        StorageFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
         if (testAppFileInfo != null) {
-            File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
+            File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getFileRelPath());
             TestInfo testInfo;
             try {
-                blobStorageClient.downloadFileFromBlob(testApkFile, testAppFileInfo.getBlobContainer(), testAppFileInfo.getBlobPath());
+                storageServiceClient.download(testApkFile, testAppFileInfo);
                 T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
-                String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
+                String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getFileRelPath();
                 testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
             } finally {
                 testApkFile.delete();
@@ -915,8 +915,8 @@ public class DeviceAgentManagementService {
         //check is agent connected
         AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentId);
         Assert.notNull(agentSessionInfoByAgentId, "Agent Offline!");
-        BlobFileInfo packageInfo = blobFileInfoRepository.findById(fileId).get();
-        if (packageInfo == null || !BlobFileInfo.FileType.AGENT_PACKAGE.equals(packageInfo.getFileType())) {
+        StorageFileInfo packageInfo = blobFileInfoRepository.findById(fileId).get();
+        if (packageInfo == null || !StorageFileInfo.FileType.AGENT_PACKAGE.equals(packageInfo.getFileType())) {
             throw new Exception("Error file info!");
         }
         AgentUser agentUser = agentSessionInfoByAgentId.agentUser;

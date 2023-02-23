@@ -4,12 +4,13 @@ package com.microsoft.hydralab.common.management.impl;
 
 import cn.hutool.core.img.ImgUtil;
 import com.android.ddmlib.TimeoutException;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
-import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import com.microsoft.hydralab.t2c.runner.*;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
@@ -47,11 +48,12 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         } catch (IOException e) {
             classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
         }
-        String blobUrl = blobStorageClient.uploadBlobFromFile(pcScreenShotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + pcScreenShotImageFile.getName(), null);
-        if (StringUtils.isBlank(blobUrl)) {
-            classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
+        StorageFileInfo fileInfo = new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl = storageServiceClient.upload(pcScreenShotImageFile, fileInfo).getFileDownloadUrl();
+        if (StringUtils.isBlank(fileDownloadUrl)) {
+            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
-            deviceInfo.setPcScreenshotImageUrl(blobUrl);
+            deviceInfo.setPcScreenshotImageUrl(fileDownloadUrl);
         }
         return pcScreenShotImageFile;
     }

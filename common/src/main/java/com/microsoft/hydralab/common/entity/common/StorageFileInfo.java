@@ -17,15 +17,20 @@ import java.util.Date;
 
 @Entity
 @Data
-public class BlobFileInfo implements Serializable {
+public class StorageFileInfo implements Serializable {
     @Id
     @Column(name = "file_id", nullable = false)
     private String fileId;
     private String fileType;
     private String fileName;
-    private String blobUrl;
-    private String blobPath;
-    private String blobContainer;
+
+    // general storage fields
+    private String storageType;
+    private String fileDownloadUrl;
+    private String storageContainer;
+    // relative to storageContainer
+    private String fileRelPath;
+
     private long fileLen;
     private String md5;
     private String loadDir;
@@ -37,19 +42,37 @@ public class BlobFileInfo implements Serializable {
     private String CDNUrl;
 
 
-    public BlobFileInfo() {
+    public StorageFileInfo() {
 
     }
-    public BlobFileInfo(File file, String relativePath, String fileType,String loadType,String loadDir){
+    public StorageFileInfo(File file, String relativePath, String fileType, String loadType, String loadDir){
         this(file, relativePath, fileType);
         this.loadType = loadType;
         this.loadDir = loadDir;
     }
-    public BlobFileInfo(File file, String relativePath, String fileType) {
+    public StorageFileInfo(File file, String relativePath, String fileType) {
         this.fileType = fileType;
         this.fileName = file.getName();
         this.fileLen = file.length();
-        this.blobPath = relativePath + "/" + file.getName();
+        this.fileRelPath = relativePath + "/" + file.getName();
+
+        try {
+            FileInputStream inputStream = new FileInputStream(file);
+            this.setMd5(DigestUtils.md5DigestAsHex(inputStream));
+            inputStream.close();
+        } catch (FileNotFoundException e) {
+            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generate temp file failed!", e);
+        } catch (IOException e) {
+            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Get the MD5 of temp file failed!", e);
+        }
+    }
+
+    public StorageFileInfo(File file, String relativePath, String fileType, EntityType entityType) {
+        this.fileType = fileType;
+        this.fileName = file.getName();
+        this.fileLen = file.length();
+        this.fileRelPath = relativePath + "/" + file.getName();
+        this.storageContainer = entityType.storageContainer;
 
         try {
             FileInputStream inputStream = new FileInputStream(file);
@@ -69,6 +92,7 @@ public class BlobFileInfo implements Serializable {
         String APP_FILE = "APP";
         String TEST_APP_FILE = "TEST_APP";
         String T2C_JSON_FILE = "T2C_JSON";
+        String SCREENSHOT = "SCREENSHOT";
 
     }
 

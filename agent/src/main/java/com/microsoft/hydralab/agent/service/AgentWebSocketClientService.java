@@ -6,14 +6,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
-import com.microsoft.hydralab.common.entity.center.AgentUser;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
+import com.microsoft.hydralab.common.entity.common.AgentUser;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
+import com.microsoft.hydralab.common.file.AccessToken;
+import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
@@ -47,7 +49,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @Resource
     AgentManageService agentManageService;
     @Resource
-    BlobStorageClient blobStorageClient;
+    private StorageServiceClient storageServiceClient;
     @Resource
     private AppOptions appOptions;
     @Resource
@@ -160,13 +162,19 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
 
     private void heartbeatResponse(Message message) {
         AgentMetadata agentMetadata = (AgentMetadata) message.getBody();
-        blobStorageClient.setSASData(agentMetadata.getBlobSAS());
+
+        storageTypeConsistencyCheck(agentMetadata.getAccessToken());
+        storageServiceClient.updateAccessToken(agentMetadata.getAccessToken());
         syncAgentStatus(agentMetadata.getAgentUser());
-        if (isPrometheusEnabled && !pushGateway.isBasicAuthSet.get()) {
-            pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(agentMetadata.getPushgatewayUsername(), agentMetadata.getPushgatewayPassword()));
-            ThreadUtils.safeSleep(1000);
-            pushGateway.isBasicAuthSet.set(true);
-            log.info("Pushgateway has set basic auth now, data can be pushed correctly.");
+        prometheusPushgatewayInit(agentMetadata);
+    }
+
+    private void storageTypeConsistencyCheck(AccessToken accessToken) {
+        try {
+            storageServiceClient.storageTypeCheck(accessToken);
+        } catch (HydraLabRuntimeException e) {
+            log.error(e.getMessage());
+            System.exit(e.getCode());
         }
     }
 
@@ -176,6 +184,14 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         agentUser.setBatteryStrategy(passedAgent.getBatteryStrategy());
     }
 
+    private void prometheusPushgatewayInit(AgentMetadata agentMetadata) {
+        if (isPrometheusEnabled && !pushGateway.isBasicAuthSet.get()) {
+            pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(agentMetadata.getPushgatewayUsername(), agentMetadata.getPushgatewayPassword()));
+            ThreadUtils.safeSleep(1000);
+            pushGateway.isBasicAuthSet.set(true);
+            log.info("Pushgateway has set basic auth now, data can be pushed correctly.");
+        }
+    }
 
     private void provideAuthInfo(Message message) {
         Message responseAuth = new Message();

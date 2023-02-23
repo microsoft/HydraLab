@@ -9,7 +9,7 @@ import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.*;
-import com.microsoft.hydralab.common.entity.common.BlobFileInfo.ParserKey;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
 import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.PkgUtil.FILE_SUFFIX;
 import org.apache.commons.lang3.StringUtils;
@@ -49,8 +49,6 @@ public class PackageSetController {
     private SysUserService sysUserService;
     @Resource
     private UserTeamManagementService userTeamManagementService;
-    @Resource
-    private BlobStorageService blobStorageService;
 
     /**
      * Authenticated USER:
@@ -108,9 +106,9 @@ public class PackageSetController {
 
             //Save app file to server
             File tempAppFile = attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE});
-            BlobFileInfo appBlobFile = new BlobFileInfo(tempAppFile, relativePath, BlobFileInfo.FileType.APP_FILE);
+            StorageFileInfo appBlobFile = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
             //Upload app file
-            appBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityFileRelation.EntityType.APP_FILE_SET, appBlobFile, tempAppFile, logger);
+            appBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appBlobFile, tempAppFile, logger);
             JSONObject appFileParser = appBlobFile.getFileParser();
             testFileSet.setAppName(appFileParser.getString(ParserKey.APP_NAME));
             testFileSet.setPackageName(appFileParser.getString(ParserKey.PKG_NAME));
@@ -121,9 +119,9 @@ public class PackageSetController {
             if (testAppFile != null && !testAppFile.isEmpty()) {
                 File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE});
 
-                BlobFileInfo testAppBlobFile = new BlobFileInfo(tempTestAppFile, relativePath, BlobFileInfo.FileType.TEST_APP_FILE);
+                StorageFileInfo testAppBlobFile = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
                 //Upload app file
-                testAppBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityFileRelation.EntityType.APP_FILE_SET, testAppBlobFile, tempTestAppFile, logger);
+                testAppBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, testAppBlobFile, tempTestAppFile, logger);
                 testFileSet.getAttachments().add(testAppBlobFile);
             }
 
@@ -213,8 +211,8 @@ public class PackageSetController {
         String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
         try {
             File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
-            BlobFileInfo blobFileInfo = new BlobFileInfo(savedPkg, fileRelativePath, BlobFileInfo.FileType.AGENT_PACKAGE);
-            return Result.ok(attachmentService.addFileInfo(blobFileInfo, savedPkg, EntityFileRelation.EntityType.AGENT_PACKAGE, logger));
+            StorageFileInfo fileInfo = new StorageFileInfo(savedPkg, fileRelativePath, StorageFileInfo.FileType.AGENT_PACKAGE);
+            return Result.ok(attachmentService.saveFileInStorageAndDB(fileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
         } catch (Exception e) {
@@ -268,9 +266,9 @@ public class PackageSetController {
             String newFileName = formatDate.format(testJsonInfo.getIngestTime()) + FILE_SUFFIX.JSON_FILE;
             File savedJson = attachmentService.verifyAndSaveFile(testJsonFile, parentDir, false, newFileName, new String[]{FILE_SUFFIX.JSON_FILE});
             String blobPath = fileRelativePath + "/" + savedJson.getName();
-            testJsonInfo.setBlobPath(blobPath);
+            testJsonInfo.setFileRelPath(blobPath);
 
-            return Result.ok(attachmentService.addTestJsonFile(testJsonInfo, savedJson, EntityFileRelation.EntityType.TEST_JSON, logger));
+            return Result.ok(attachmentService.addTestJsonFile(testJsonInfo, savedJson, EntityType.TEST_JSON, logger));
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
         } catch (Exception e) {
@@ -332,7 +330,7 @@ public class PackageSetController {
     @PostMapping("/api/package/queryAgentPackage")
     public Result queryAgentPackage() {
 
-        return Result.ok(attachmentService.queryBlobFileByType(BlobFileInfo.FileType.AGENT_PACKAGE));
+        return Result.ok(attachmentService.queryBlobFileByType(StorageFileInfo.FileType.AGENT_PACKAGE));
     }
 
     /**
@@ -363,18 +361,18 @@ public class PackageSetController {
 
         String[] limitFileTypes = null;
         switch (fileType) {
-            case BlobFileInfo.FileType.WINDOWS_APP:
+            case StorageFileInfo.FileType.WINDOWS_APP:
                 limitFileTypes = new String[]{FILE_SUFFIX.APPX_FILE};
                 break;
-            case BlobFileInfo.FileType.COMMON_FILE:
+            case StorageFileInfo.FileType.COMMON_FILE:
                 Assert.notNull(loadType, "loadType is required");
                 Assert.notNull(loadDir, "loadDir is required");
                 Assert.isTrue(FileUtil.isLegalFolderPath(loadDir), "illegal loadDir");
-                if (BlobFileInfo.LoadType.UNZIP.equals(loadType)) {
+                if (StorageFileInfo.LoadType.UNZIP.equals(loadType)) {
                     limitFileTypes = new String[]{FILE_SUFFIX.ZIP_FILE};
                 }
                 break;
-            case BlobFileInfo.FileType.T2C_JSON_FILE:
+            case StorageFileInfo.FileType.T2C_JSON_FILE:
                 limitFileTypes = new String[]{FILE_SUFFIX.JSON_FILE};
                 break;
             default:
@@ -386,9 +384,9 @@ public class PackageSetController {
             String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
 
             File savedAttachment = attachmentService.verifyAndSaveFile(attachment, parentDir, false, newFileName, limitFileTypes);
-            BlobFileInfo blobFileInfo = new BlobFileInfo(savedAttachment, fileRelativePath, fileType, loadType, loadDir);
-            attachmentService.addAttachment(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET, blobFileInfo, savedAttachment, logger);
-            testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET));
+            StorageFileInfo fileInfo = new StorageFileInfo(savedAttachment, fileRelativePath, fileType, loadType, loadDir);
+            attachmentService.addAttachment(fileSetId, EntityType.APP_FILE_SET, fileInfo, savedAttachment, logger);
+            testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
             testFileSetService.saveFileSetToMem(testFileSet);
             return Result.ok(testFileSet);
         } catch (HydraLabRuntimeException e) {
@@ -420,17 +418,9 @@ public class PackageSetController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestFileSet doesn't belong to user's Teams");
         }
 
-        attachmentService.removeAttachment(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET, fileId);
-        testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET));
+        attachmentService.removeAttachment(fileSetId, EntityType.APP_FILE_SET, fileId);
+        testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
         testFileSetService.saveFileSetToMem(testFileSet);
         return Result.ok(testFileSet);
-    }
-
-    @GetMapping("/api/package/getSAS")
-    public Result<SASData> generateReadSAS(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
-            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
-        }
-        return Result.ok(blobStorageService.generateReadSAS(requestor.getMailAddress()));
     }
 }

@@ -1,41 +1,25 @@
-@startuml BLOB_storage
-BlobServiceClient -> Center.BlobStorageClient: buildClient(connectionString)
-Center.BlobStorageClient -> Storage.Endpoint: uploadBlobFromFile(screenshot / attachment / agentPackage)
-Center.BlobStorageClient -> Storage.Endpoint: downloadFileFromBlob(jsonFile)
+@startuml storage_sequence
+'(Local, Azure BLOB, ALI Cloud, QINIU Cloud, etc.)
+autonumber 1.1
+StorageService -> Center.StorageServiceClient: buildClient(connectionString)
+Center.StorageServiceClient -> Storage.ServiceEndpoint: upload(screenshot / attachment / agentPackage)
+Storage.ServiceEndpoint --> Center.StorageServiceClient: uploaded file info
+Center.StorageServiceClient -> Storage.ServiceEndpoint: download(jsonFile)
+Storage.ServiceEndpoint --> Center.StorageServiceClient: downloaded file info
 |||
-Center.BlobStorageClient -> Browser: generateReadSAS
-Browser -> Storage.Endpoint: read BLOB files with signature
+autonumber 2.1
+Center.StorageServiceClient -> Browser: generateReadToken
+Browser -> Storage.ServiceEndpoint: read files with token
 |||
-Center.BlobStorageClient -> AgentMetadata: generateWriteSAS
+autonumber 3.1
+Center.StorageServiceClient -> AgentMetadata: generateWriteToken
 activate AgentMetadata
-AgentMetadata -> Agent.BlobStorageClient: heartbeatResponse(sasData)
+AgentMetadata -> Agent.StorageServiceClient: heartbeatResponse(accessToken)
 deactivate AgentMetadata
-BlobServiceClient -> Agent.BlobStorageClient: buildClientBySAS(sasData)
-Agent.BlobStorageClient -> Storage.Endpoint: downloadFileFromBlob(app / testApp / attachment / agentPackage)
-Agent.BlobStorageClient -> Storage.Endpoint: uploadBlobFromFile(deviceTestResult)
-
-@enduml
-
-
-@startuml overall_cloud_storage_design
-'(Azure BLOB, ALI Cloud, QINIU Cloud, etc.)
-StorageServiceClient -> Center.FileStorageClient: buildClient(token)
-Center.FileStorageClient -> Storage.Endpoint: uploadFromFile(screenshot / attachment / agentPackage)
-Storage.Endpoint --> Center.FileStorageClient: uploaded file location
-Center.FileStorageClient -> Storage.Endpoint: downloadToFile(jsonFile)
-Storage.Endpoint --> Center.FileStorageClient: downloaded file
-|||
-Center.FileStorageClient -> Browser: generateTempTokenForRead
-Browser -> Storage.Endpoint: read files with signed token from Center
-|||
-Center.FileStorageClient -> AgentMetadata: generateTempTokenForWrite
-activate AgentMetadata
-AgentMetadata -> Agent.FileStorageClient: heartbeatResponse(tempToken)
-deactivate AgentMetadata
-StorageServiceClient -> Agent.FileStorageClient: buildClientByTempToken(tempToken)
-Agent.FileStorageClient -> Storage.Endpoint: downloadToFile(app / testApp / attachment / agentPackage)
-Storage.Endpoint --> Agent.FileStorageClient: downloaded file
-Agent.FileStorageClient -> Storage.Endpoint: uploadFromFile(deviceTestResult)
-Storage.Endpoint --> Agent.FileStorageClient: uploaded file location
+StorageService -> Agent.StorageServiceClient: buildClient(accessToken)
+Agent.StorageServiceClient -> Storage.ServiceEndpoint: download(app / testApp / attachment / agentPackage)
+Storage.ServiceEndpoint -> Agent.StorageServiceClient: downloaded file info
+Agent.StorageServiceClient -> Storage.ServiceEndpoint: upload(deviceTestResult)
+Storage.ServiceEndpoint -> Agent.StorageServiceClient: uploaded file info
 
 @enduml

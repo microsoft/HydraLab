@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.util.blob;
+package com.microsoft.hydralab.common.file.impl.blob;
 
 import com.azure.core.credential.AzureSasCredential;
 import com.azure.core.util.Context;
@@ -17,10 +17,12 @@ import com.azure.storage.common.sas.AccountSasResourceType;
 import com.azure.storage.common.sas.AccountSasService;
 import com.azure.storage.common.sas.AccountSasSignatureValues;
 import com.google.common.net.MediaType;
-import com.microsoft.hydralab.common.entity.center.BlobProperty;
-import com.microsoft.hydralab.common.entity.common.SASData;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.file.*;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -30,24 +32,22 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
-public class BlobStorageClient {
+public class BlobClientAdapter extends StorageServiceClient {
     private static boolean isAuthedBySAS = true;
     private BlobServiceClient blobServiceClient;
-    Logger classLogger = LoggerFactory.getLogger(BlobStorageClient.class);
+    Logger classLogger = LoggerFactory.getLogger(BlobClientAdapter.class);
     private long SASExpiryUpdate;
     private SASData sasDataInUse = null;
     private SASData sasDataForUpdate = null;
-    public int fileLimitDay;
-    public String cdnUrl;
     private boolean isConnected = false;
 
-    public BlobStorageClient() {
+    public BlobClientAdapter() {
     }
 
-    public BlobStorageClient(BlobProperty blobProperty) {
-        this.SASExpiryUpdate = blobProperty.getSASExpiryUpdate();
-        SASData.SASPermission.Read.setExpiryTime(blobProperty.getSASExpiryTimeFront(), blobProperty.getTimeUnit());
-        SASData.SASPermission.Write.setExpiryTime(blobProperty.getSASExpiryTimeAgent(), blobProperty.getTimeUnit());
+    public BlobClientAdapter(BlobProperty blobProperty) {
+        SASExpiryUpdate = blobProperty.getSASExpiryUpdate();
+        SASPermission.READ.setExpiryTime(blobProperty.getSASExpiryTimeFront(), blobProperty.getTimeUnit());
+        SASPermission.WRITE.setExpiryTime(blobProperty.getSASExpiryTimeAgent(), blobProperty.getTimeUnit());
         blobServiceClient = new BlobServiceClientBuilder().connectionString(blobProperty.getConnection()).buildClient();
         fileLimitDay = blobProperty.getFileLimitDay();
         cdnUrl = blobProperty.getCDNUrl();
@@ -55,12 +55,54 @@ public class BlobStorageClient {
         isConnected = true;
     }
 
-    public void setSASData(SASData sasData) {
+    @Override
+    public void storageTypeCheck(AccessToken token) {
+        if (!(token instanceof SASData)) {
+            throw new HydraLabRuntimeException(HttpStatus.NOT_ACCEPTABLE.value(), "Agent's storage type is inconsistent with Center's, please update your configuration and try again!");
+        }
+    }
+
+    @Override
+    public void updateAccessToken(AccessToken accessToken) {
+        if (!(accessToken instanceof SASData)) {
+            return;
+        }
+        SASData sasData = (SASData) accessToken;
+
         if (sasDataInUse == null) {
             buildClientBySAS(sasData);
         } else if (!StringUtils.isEmpty(sasData.getSignature()) && !sasDataInUse.getSignature().equals(sasData.getSignature())) {
             sasDataForUpdate = sasData;
         }
+    }
+
+    @Override
+    public AccessToken generateAccessToken(String permissionType) {
+        SASPermission permission = SASPermission.valueOf(permissionType);
+
+        return generateSAS(permission);
+    }
+
+    @Override
+    public boolean isAccessTokenExpired(AccessToken accessToken) {
+        Assert.isTrue(accessToken instanceof SASData, "Current accessToken object: " + accessToken + " is not of SASData class!");
+        SASData sasData = (SASData) accessToken;
+        Assert.notNull(sasData, "The sasData can't be null!");
+
+        return sasData.getExpiredTime().isBefore(OffsetDateTime.ofInstant(Instant.now().plus(SASExpiryUpdate, ChronoUnit.MINUTES), ZoneId.systemDefault()));
+    }
+
+    @Override
+    public StorageFileInfo upload(File fileToUpload, StorageFileInfo fileInfo) {
+        String downloadUrl = uploadFileToBlob(fileToUpload, fileInfo.getStorageContainer(), fileInfo.getFileRelPath(), null);
+        fileInfo.setFileDownloadUrl(downloadUrl);
+        return fileInfo;
+    }
+
+    @Override
+    public StorageFileInfo download(File downloadToFile, StorageFileInfo fileInfo) {
+        downloadFileFromBlob(downloadToFile, fileInfo.getStorageContainer(), fileInfo.getFileRelPath());
+        return fileInfo;
     }
 
     private void buildClientBySAS(SASData sasData) {
@@ -72,7 +114,7 @@ public class BlobStorageClient {
         sasDataInUse = sasData;
     }
 
-    private void checkBlobStorageClientUpdate() {
+    private void checkBlobClientUpdate() {
         if (isAuthedBySAS && sasDataForUpdate != null) {
             buildClientBySAS(sasDataForUpdate);
             sasDataForUpdate = null;
@@ -95,7 +137,7 @@ public class BlobStorageClient {
         return blobContainerClient;
     }
 
-    public SASData generateSAS(SASData.SASPermission sasPermission) {
+    public SASData generateSAS(SASPermission sasPermission) {
         Assert.isTrue(!isAuthedBySAS, "The client was init by SAS and can't generate SAS!");
 
         SASData sasData = new SASData();
@@ -116,11 +158,6 @@ public class BlobStorageClient {
         return sasData;
     }
 
-    public Boolean isSASExpired(SASData sasData) {
-        Assert.notNull(sasData, "The sasData can't be null!");
-        return sasData.getExpiredTime().isBefore(OffsetDateTime.ofInstant(Instant.now().plus(SASExpiryUpdate, ChronoUnit.MINUTES), ZoneId.systemDefault()));
-    }
-
     /**
      * Upload a file to the blob container. If the file already exists, overwrite it.
      *
@@ -130,11 +167,11 @@ public class BlobStorageClient {
      * @param logger
      * @return
      */
-    public String uploadBlobFromFile(File uploadFile, String containerName, String blobFilePath, Logger logger) {
+    public String uploadFileToBlob(File uploadFile, String containerName, String blobFilePath, Logger logger) {
         if (!isConnected) {
             return null;
         }
-        checkBlobStorageClientUpdate();
+        checkBlobClientUpdate();
         if (logger == null) {
             logger = classLogger;
         }
@@ -151,7 +188,6 @@ public class BlobStorageClient {
         return blobClient.getBlobUrl();
     }
 
-
     /**
      * Download a file from the blob container. If the file already exists, overwrite it.
      *
@@ -164,10 +200,10 @@ public class BlobStorageClient {
         if (!isConnected) {
             return null;
         }
-        checkBlobStorageClientUpdate();
+        checkBlobClientUpdate();
         File saveDir = downloadToFile.getParentFile();
         if (!saveDir.exists()) {
-            cn.hutool.core.lang.Assert.isTrue(saveDir.mkdirs(), "mkdirs fail in downloadFileFromUrl");
+            Assert.isTrue(saveDir.mkdirs(), "mkdirs fail in downloadFileFromUrl");
         }
         BlobClient blobClient = getContainer(containerName).getBlobClient(blobFilePath);
         return blobClient.downloadToFile(downloadToFile.getAbsolutePath(), true);

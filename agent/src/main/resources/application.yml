@@ -55,6 +55,8 @@ app:
       count-threshold: ${STATE_CHANGE_COUNT_THRESHOLD:12}
       window-time: ${STATE_CHANGE_WINDOW_TIME:5}
       recovery-time: ${STATE_RECOVERY_TIME:3}
+  storage:
+    type: BLOB # LOCAL, BLOB, etc.
   location: ${user.dir}
   device-script:
     commands:

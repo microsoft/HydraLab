@@ -9,6 +9,8 @@ import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
+import com.microsoft.hydralab.common.file.StorageServiceClient;
+import com.microsoft.hydralab.common.file.impl.blob.BlobClientAdapter;
 import com.microsoft.hydralab.common.management.AgentType;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -18,7 +20,6 @@ import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMon
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;
@@ -70,6 +71,8 @@ public class AppConfiguration {
     private Boolean shutdownIfFail;
     @Value("${app.appium.host:}")
     private String appiumServerHost;
+    @Value("${app.storage.type}")
+    private String storageType;
 
     @NotNull
     private File getScreenshotDir() {
@@ -93,7 +96,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceManager initDeviceManager(BlobStorageClient deviceLabBlobClient, ADBOperateUtil adbOperateUtil
+    public DeviceManager initDeviceManager(StorageServiceClient storageServiceClient, ADBOperateUtil adbOperateUtil
             , AppiumServerManager appiumServerManager, DeviceStatusListenerManager deviceStatusListenerManager) {
 
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
@@ -119,7 +122,7 @@ public class AppConfiguration {
             }
         }
         deviceManager.setPreAppDir(preAppDir);
-        deviceManager.setPreInstallPolicy(shutdownIfFail ? Const.PreInstallPolicy.SHUTDOWN : Const.PreInstallPolicy.IGNORE);
+        deviceManager.setPreInstallFailurePolicy(shutdownIfFail ? Const.PreInstallFailurePolicy.SHUTDOWN : Const.PreInstallFailurePolicy.IGNORE);
         deviceManager.setDeviceStatusListenerManager(deviceStatusListenerManager);
         deviceManager.setTestBaseDirUrlMapping(AppOptions.TEST_CASE_RESULT_STORAGE_MAPPING_REL_PATH);
         File deviceLogBaseDir = new File(appOptions.getDeviceLogStorageLocation());
@@ -129,7 +132,7 @@ public class AppConfiguration {
             }
         }
         deviceManager.setDeviceLogBaseDir(deviceLogBaseDir);
-        deviceManager.setBlobStorageClient(deviceLabBlobClient);
+        deviceManager.setStorageServiceClient(storageServiceClient);
 
         deviceManager.setScreenshotDir(getScreenshotDir());
         deviceManager.setDeviceFolderUrlPrefix(AppOptions.DEVICE_STORAGE_MAPPING_REL_PATH);
@@ -168,8 +171,17 @@ public class AppConfiguration {
     }
 
     @Bean
-    public BlobStorageClient blobStorageClient() {
-        return new BlobStorageClient();
+    public StorageServiceClient storageServiceClient() {
+        StorageServiceClient storageServiceClient = null;
+        switch (storageType) {
+            case Const.StorageType.BLOB:
+                storageServiceClient = new BlobClientAdapter();
+                break;
+            default:
+                // todo: local storage system
+                break;
+        }
+        return storageServiceClient;
     }
 
     @Bean
