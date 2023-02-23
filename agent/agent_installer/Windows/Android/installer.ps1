@@ -8,6 +8,27 @@ if ((New-Object Security.Principal.WindowsPrincipal $([Security.Principal.Window
     {
         $E2E = Read-Host "Is E2E(End to End) Test needed in your test? (Y/N)"
     }
+    if (($E2E -eq 'Y') -or ($E2E -eq 'y'))
+    {
+        $taskTrigger = New-ScheduledTaskTrigger -AtLogon
+        $taskAction = New-ScheduledTaskAction -Execute "$CurrentScriptPath\restartAgent.bat"
+        Register-ScheduledTask -TaskName "HydraLabAgentRestart" -Trigger $taskTrigger -Action $taskAction
+        Copy-Item "$CurrentScriptPath\restartAgent_WindowsTaskScheduler.bat" -Destination "$CurrentScriptPath\restartAgent.bat" -Force
+
+        Write-Host "E2E test need to logon Windows automatically, please input Windows User-Name and Password to set Auto-Logon"
+        Write-Host
+
+        $logonRegistryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+        $logonUserName = Read-Host "Windows Logon User-Name: "
+        $logonPassword = Read-Host "Windows Logon Password: "
+        New-ItemProperty -Path $logonRegistryPath -Name "DefaultUserName" -Value $logonUserName -PropertyType String -Force | Out-Null
+        New-ItemProperty -Path $logonRegistryPath -Name "DefaultPassword" -Value $logonPassword -PropertyType String -Force | Out-Null
+        New-ItemProperty -Path $logonRegistryPath -Name "AutoAdminLogon" -Value "1" -PropertyType String -Force | Out-Null
+    }
+    else
+    {
+        Copy-Item "$CurrentScriptPath\restartAgent_WindowsService.bat" -Destination "$CurrentScriptPath\restartAgent.bat" -Force
+    }
 
     $destination = Join-Path (Convert-Path "~") "Downloads"
 
@@ -478,21 +499,6 @@ if ((New-Object Security.Principal.WindowsPrincipal $([Security.Principal.Window
         }
     }
     Write-Host
-
-    Write-Host "9. Setting restart approach"
-    Write-Host
-
-    if (($E2E -eq 'Y') -and ($E2E -eq 'y'))
-    {
-        $taskTrigger = New-ScheduledTaskTrigger -AtLogon
-        $taskAction = New-ScheduledTaskAction -Execute "$CurrentScriptPath\restartAgent.bat"
-        Register-ScheduledTask -TaskName "HydraLabAgentRestart" -Trigger $taskTrigger -Action $taskAction
-        Copy-Item "$CurrentScriptPath\restartAgent_WindowsTaskScheduler.bat" -Destination "$CurrentScriptPath\restartAgent.bat" -Force
-    }
-    else
-    {
-        Copy-Item "$CurrentScriptPath\restartAgent_WindowsService.bat" -Destination "$CurrentScriptPath\restartAgent.bat" -Force
-    }
 
     Write-Host "The agent deployment is complete, please reboot before start the agent"
     Write-Host
