@@ -15,10 +15,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 
 import java.time.Duration;
-import java.util.Map;
 
 public abstract class BaseDriverController {
-    public WebDriver webDriver;
+    protected WebDriver webDriver;
     protected Logger logger;
 
     public BaseDriverController(WebDriver webDriver, Logger logger) {
@@ -142,6 +141,7 @@ public abstract class BaseDriverController {
     public void setClipboard(String text) {
     }
 
+    @Nullable
     public WebElement findElementByAccessibilityId(String accessibilityId) {
         WebElement elementFound = null;
         try {
@@ -159,6 +159,7 @@ public abstract class BaseDriverController {
         return elementFound;
     }
 
+    @Nullable
     public WebElement findElementByXPath(String xpath) {
         WebElement elementFound = null;
         try {
@@ -170,16 +171,32 @@ public abstract class BaseDriverController {
         return elementFound;
     }
 
-    public WebElement findElementByName(String name) {
+    @Nullable
+    public WebElement findElementByText(String text) {
         WebElement elementFound = null;
         try {
             elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
-                    .until(driver -> driver.findElement(AppiumBy.name(name)));
+                    .until(driver -> driver.findElement(AppiumBy.xpath("//*[@text='" + text + "']")));
         } catch (Exception e) {
-            logger.info("Can not find element by name: " + name);
+            logger.info("Can not find element by text: " + text);
         }
         return elementFound;
     }
 
-    public abstract @Nullable WebElement findElementBy(Map<String, String> propertyMap);
+
+    @Nullable
+    public WebElement findElementById(String id) {
+        WebElement elementFound = null;
+        try {
+            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
+                    .until(driver -> driver.findElement(AppiumBy.name(id)));
+        } catch (Exception e) {
+            logger.info("Can not find element by id: " + id);
+        }
+        return elementFound;
+    }
+
+
+    public abstract String getPageSource();
+
 }

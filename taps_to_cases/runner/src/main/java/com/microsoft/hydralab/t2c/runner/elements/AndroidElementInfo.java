@@ -78,7 +78,7 @@ public class AndroidElementInfo extends BaseElementInfo {
     }
 
     @Override
-    public Map<String, String> getBasisSearchedBy() {
+    public Map<String, String> getSearchByProperties() {
         Map<String, String> keyToVal = new HashMap<>();
         keyToVal.put("accessibilityId", accessibilityId);
         keyToVal.put("xpath", xpath);

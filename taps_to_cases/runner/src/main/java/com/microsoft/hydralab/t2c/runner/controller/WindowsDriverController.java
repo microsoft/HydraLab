@@ -3,13 +3,12 @@
 package com.microsoft.hydralab.t2c.runner.controller;
 
 import io.appium.java_client.windows.WindowsDriver;
-import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
 import org.slf4j.Logger;
 
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -17,7 +16,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Map;
 
 public class WindowsDriverController extends BaseDriverController {
     WindowsDriver windowsDriver;
@@ -61,22 +59,10 @@ public class WindowsDriverController extends BaseDriverController {
     }
 
     @Override
-    public @Nullable WebElement findElementBy(Map<String, String> propertyMap) {
-        WebElement elementFound = null;
-        if (propertyMap.get("accessibilityId") != null && propertyMap.get("accessibilityId").length() != 0) {
-            elementFound = findElementByAccessibilityId(propertyMap.get("accessibilityId"));
-            return elementFound;
-        }
-        if (propertyMap.get("text") != null && propertyMap.get("text").length() != 0) {
-            elementFound = findElementByName(propertyMap.get("text"));
-            return elementFound;
-        }
-        if (propertyMap.get("xpath") != null && propertyMap.get("xpath").length() != 0) {
-            elementFound = findElementByXPath(propertyMap.get("xpath"));
-            return elementFound;
-        }
-        return null;
+    public String getPageSource() {
+        return windowsDriver.getPageSource();
     }
+
 
     @Override
     public void paste(WebElement webElement) {

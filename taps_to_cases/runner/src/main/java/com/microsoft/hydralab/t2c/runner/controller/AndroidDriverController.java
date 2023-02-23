@@ -134,54 +134,13 @@ public class AndroidDriverController extends BaseDriverController {
     }
 
     @Override
-    public WebElement findElementByName(String name) {
-        WebElement elementFound = null;
-        try {
-            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
-                    .until(driver -> driver.findElement(AppiumBy.xpath("//*[@text='" + name + "']")));
-        } catch (Exception e) {
-            logger.info("Can not find element by text: " + name);
-        }
-        return elementFound;
-    }
-
-    @Override
-    public WebElement findElementBy(Map<String, String> propertyMap) {
-        WebElement elementFound;
-        if (propertyMap.get("accessibilityId") != null && propertyMap.get("accessibilityId").length() != 0) {
-            elementFound = findElementByAccessibilityId(propertyMap.get("accessibilityId"));
-            return elementFound;
-        }
-        if (propertyMap.get("resource-id") != null && propertyMap.get("resource-id").length() != 0) {
-            elementFound = findElementById(propertyMap.get("resource-id"));
-            return elementFound;
-        }
-        if (propertyMap.get("text") != null && propertyMap.get("text").length() != 0) {
-            elementFound = findElementByName(propertyMap.get("text"));
-            return elementFound;
-        }
-        if (propertyMap.get("xpath") != null && propertyMap.get("xpath").length() != 0) {
-            elementFound = findElementByXPath(propertyMap.get("xpath"));
-            return elementFound;
-        }
-        return null;
-    }
-
-
-    private WebElement findElementById(String id) {
-        WebElement elementFound = null;
-        try {
-            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
-                    .until(driver -> driver.findElement(AppiumBy.name(id)));
-        } catch (Exception e) {
-            logger.info("Can not find element by id: " + id);
-        }
-        return elementFound;
-    }
-
-    @Override
     public void setClipboard(String text) {
         androidDriver.setClipboardText(text);
+    }
+
+    @Override
+    public String getPageSource() {
+        return androidDriver.getPageSource();
     }
 
     @Override
