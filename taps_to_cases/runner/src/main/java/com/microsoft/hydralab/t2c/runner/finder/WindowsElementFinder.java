@@ -16,21 +16,21 @@ public class WindowsElementFinder implements ElementFinder<WindowsElementInfo> {
     @Override
     public WebElement findElement(WindowsElementInfo elementInfo) {
         WebElement elementFound;
-        if (!Strings.isNullOrEmpty(elementInfo.getAccessibilityId())) {
-            elementFound = driverController.findElementByAccessibilityId(elementInfo.getAccessibilityId());
+        if (!Strings.isNullOrEmpty(elementInfo.getAutomationId())) {
+            elementFound = driverController.findElementByAccessibilityId(elementInfo.getAutomationId());
             if (elementFound != null) {
                 return elementFound;
             }
         }
-        if (!Strings.isNullOrEmpty(elementInfo.getXpath())) {
-            elementFound = driverController.findElementByXPath(elementInfo.getXpath());
+        if (!Strings.isNullOrEmpty(elementInfo.getName())) {
+            elementFound = driverController.findElementById(elementInfo.getName());
             if (elementFound != null) {
                 return elementFound;
             }
         }
 
-        if (!Strings.isNullOrEmpty(elementInfo.getText())) {
-            elementFound = driverController.findElementByText(elementInfo.getText());
+        if (!Strings.isNullOrEmpty(elementInfo.getXpath())) {
+            elementFound = driverController.findElementByXPath(elementInfo.getXpath());
             if (elementFound != null) {
                 return elementFound;
             }

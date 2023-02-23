@@ -50,7 +50,7 @@ public class AndroidElementInfo extends BaseElementInfo {
                               String checked, String clickable, String enabled, String focusable, String focused, String long_clickable,
                               String password, String scrollable, String selected, String bounds, String displayed, String xpath,
                               String resourceId) {
-        super(contentDesc,xpath,text);
+        super(xpath);
         this.index = index;
         this.packageName = packageName;
         this.className = className;

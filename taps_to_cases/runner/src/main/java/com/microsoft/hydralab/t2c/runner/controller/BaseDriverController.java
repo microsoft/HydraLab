@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.t2c.runner.controller;
 
+import com.microsoft.hydralab.t2c.runner.elements.AndroidElementInfo;
+import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import org.jetbrains.annotations.Nullable;
@@ -184,6 +186,12 @@ public abstract class BaseDriverController {
     }
 
 
+    /**
+     * In windows, id refers to {@link WindowsElementInfo#getName()}
+     * In android, id refers to {@link AndroidElementInfo#getResourceId()}
+     * @param id
+     * @return
+     */
     @Nullable
     public WebElement findElementById(String id) {
         WebElement elementFound = null;

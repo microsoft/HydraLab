@@ -5,14 +5,10 @@ package com.microsoft.hydralab.t2c.runner.elements;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public abstract class BaseElementInfo {
-    protected final String accessibilityId;
     protected final String xpath;
-    protected final String text;
 
-    public BaseElementInfo(String accessibilityId, String xpath, String text) {
-        this.accessibilityId = accessibilityId;
+    public BaseElementInfo(String xpath) {
         this.xpath = xpath;
-        this.text = text;
     }
 
 
@@ -20,15 +16,9 @@ public abstract class BaseElementInfo {
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public String getAccessibilityId() {
-        return accessibilityId;
-    }
 
     public String getXpath() {
         return xpath;
     }
 
-    public String getText() {
-        return text;
-    }
 }
