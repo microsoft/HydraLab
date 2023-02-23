@@ -4,6 +4,7 @@ package com.microsoft.hydralab.t2c.runner.controller;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.nativekey.AndroidKey;
+import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
@@ -14,8 +15,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 
 import java.time.Duration;
+import java.util.Map;
 
-public class BaseDriverController {
+public abstract class BaseDriverController {
     public WebDriver webDriver;
     protected Logger logger;
 
@@ -178,4 +180,6 @@ public class BaseDriverController {
         }
         return elementFound;
     }
+
+    public abstract @Nullable WebElement findElementBy(Map<String, String> propertyMap);
 }

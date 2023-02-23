@@ -85,7 +85,7 @@ public class T2CJsonParser {
 
             if (elementInfo != null && !elementInfo.isEmpty()) {
                 if (driveIdToTypeMap.get(driverId).equals("android")) {
-                    androidElement = AndroidElementInfo.getAndroidElementFromJson(elementInfo);
+                    androidElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), AndroidElementInfo.class);
                     actionInfo = new ActionInfo(i, androidElement, actionType, arguments, driverId, description, isOptional);
                 }
                 if (driveIdToTypeMap.get(driverId).equals("windows")) {

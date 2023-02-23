@@ -4,6 +4,9 @@ package com.microsoft.hydralab.t2c.runner.elements;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class WindowsElementInfo extends BaseElementInfo {
     private String AcceleratorKey;
     private String AccessKey;
@@ -70,6 +73,15 @@ public class WindowsElementInfo extends BaseElementInfo {
         this.xpath = xpath;
         this.centerX = Integer.parseInt(x)+Integer.parseInt(width)/2;
         this.centerY = Integer.parseInt(y)+Integer.parseInt(height)/2;
+    }
+
+    @Override
+    public Map<String, String> getBasisSearchedBy() {
+        Map<String, String> keyToVal = new HashMap<>();
+        keyToVal.put("accessibilityId", accessibilityId);
+        keyToVal.put("xpath", xpath);
+        keyToVal.put("text", text);
+        return keyToVal;
     }
 
     public String getElementInfo(){

@@ -28,23 +28,9 @@ public class T2CAppiumUtils {
         WebElement elementFinded = null;
         if (element == null) return null;
         Map<String, String> keyToVal = element.getBasisSearchedBy();
-        if (keyToVal.get("accessibilityId") != null && keyToVal.get("accessibilityId").length() != 0) {
-            elementFinded = driver.findElementByAccessibilityId(keyToVal.get("accessibilityId"));
-            if (elementFinded != null) {
-                return elementFinded;
-            }
-        }
-        if (keyToVal.get("text") != null && keyToVal.get("text").length() != 0) {
-            elementFinded = driver.findElementByName(keyToVal.get("text"));
-            if (elementFinded != null) {
-                return elementFinded;
-            }
-        }
-        if (keyToVal.get("xpath") != null && keyToVal.get("xpath").length() != 0) {
-            elementFinded = driver.findElementByXPath(keyToVal.get("xpath"));
-            if (elementFinded != null) {
-                return elementFinded;
-            }
+        elementFinded = driver.findElementBy(keyToVal);
+        if (elementFinded != null) {
+            return elementFinded;
         }
         logger.warn("Page source: " + driver.webDriver.getPageSource());
         throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
@@ -186,7 +172,7 @@ public class T2CAppiumUtils {
                 } else if (toElementStr != null) {
                     BaseElementInfo toElementInfo;
                     if (driver instanceof AndroidDriverController) {
-                        toElementInfo = AndroidElementInfo.getAndroidElementFromJson(JSONObject.parseObject(toElementStr));
+                        toElementInfo = JSON.parseObject(toElementStr, AndroidElementInfo.class);
                     } else if (driver instanceof WindowsDriverController) {
                         toElementInfo = JSON.parseObject(toElementStr, WindowsElementInfo.class);
                     } else if (driver instanceof EdgeDriverController) {

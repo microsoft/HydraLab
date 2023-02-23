@@ -5,6 +5,7 @@ package com.microsoft.hydralab.t2c.runner;
 
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import io.appium.java_client.android.nativekey.AndroidKey;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.*;
@@ -153,6 +154,12 @@ public class MockDriverT2CTest {
 
         public WebElement findElementByName(String name) {
             logger.info("Called " + currentMethodName());
+            return new MockElement();
+        }
+
+        @Override
+        public @Nullable WebElement findElementBy(Map<String, String> propertyMap) {
+            logger.info("FindElementBy, {}", propertyMap.toString());
             return new MockElement();
         }
 

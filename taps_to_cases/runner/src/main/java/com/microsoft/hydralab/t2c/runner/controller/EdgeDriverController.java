@@ -1,6 +1,7 @@
 package com.microsoft.hydralab.t2c.runner.controller;
 
 import io.appium.java_client.windows.WindowsDriver;
+import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.interactions.PointerInput;
@@ -15,6 +16,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Map;
 
 public class EdgeDriverController extends BaseDriverController {
     EdgeDriver edgeDriver;
@@ -47,6 +49,24 @@ public class EdgeDriverController extends BaseDriverController {
         StringSelection selection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, null);
+    }
+
+    @Override
+    public @Nullable WebElement findElementBy(Map<String, String> propertyMap) {
+        WebElement elementFound = null;
+        if (propertyMap.get("accessibilityId") != null && propertyMap.get("accessibilityId").length() != 0) {
+            elementFound = findElementByAccessibilityId(propertyMap.get("accessibilityId"));
+            return elementFound;
+        }
+        if (propertyMap.get("text") != null && propertyMap.get("text").length() != 0) {
+            elementFound = findElementByName(propertyMap.get("text"));
+            return elementFound;
+        }
+        if (propertyMap.get("xpath") != null && propertyMap.get("xpath").length() != 0) {
+            elementFound = findElementByXPath(propertyMap.get("xpath"));
+            return elementFound;
+        }
+        return null;
     }
 
     @Override
