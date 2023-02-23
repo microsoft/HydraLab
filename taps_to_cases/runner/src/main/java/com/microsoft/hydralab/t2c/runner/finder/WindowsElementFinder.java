@@ -9,7 +9,7 @@ public class WindowsElementFinder implements ElementFinder<WindowsElementInfo> {
 
     private final BaseDriverController driverController;
 
-    WindowsElementFinder(BaseDriverController driverController) {
+    public WindowsElementFinder(BaseDriverController driverController) {
         this.driverController = driverController;
     }
 

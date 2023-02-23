@@ -9,7 +9,7 @@ public class EdgeElementFinder implements ElementFinder<EdgeElementInfo>  {
 
     private final BaseDriverController driverController;
 
-    EdgeElementFinder(BaseDriverController driverController) {
+    public EdgeElementFinder(BaseDriverController driverController) {
         this.driverController = driverController;
     }
 

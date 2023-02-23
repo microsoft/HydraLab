@@ -9,7 +9,7 @@ public class AndroidElementFinder implements ElementFinder<AndroidElementInfo> {
 
     private final BaseDriverController driverController;
 
-    AndroidElementFinder(BaseDriverController driverController) {
+    public AndroidElementFinder(BaseDriverController driverController) {
         this.driverController = driverController;
     }
 
