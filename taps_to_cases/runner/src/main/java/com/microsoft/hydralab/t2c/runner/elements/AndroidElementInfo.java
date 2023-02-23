@@ -75,7 +75,7 @@ public class AndroidElementInfo extends BaseElementInfo {
         }
     }
 
-    public void parseCoordinates(String bounds){
+    private void parseCoordinates(String bounds){
         String[] boundsArray = bounds.split("\\[|\\]|,");
         String[] validArr = Arrays.stream(boundsArray).filter(StringUtils::isNotEmpty).toArray(String[]::new);
         int x1 = Integer.parseInt(validArr[0]);
