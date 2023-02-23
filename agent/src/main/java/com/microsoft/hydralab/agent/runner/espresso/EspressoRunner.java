@@ -13,6 +13,7 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -23,8 +24,10 @@ import java.util.Map;
 public class EspressoRunner extends TestRunner {
     final ADBOperateUtil adbOperateUtil;
 
-    public EspressoRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, ADBOperateUtil adbOperateUtil) {
-        super(deviceManager, testTaskRunCallback);
+    public EspressoRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                          PerformanceTestManagementService performanceTestManagementService,
+                          ADBOperateUtil adbOperateUtil) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 

@@ -1,8 +1,5 @@
-package com.microsoft.hydralab.performanc;
+package com.microsoft.hydralab.performance;
 
-import com.microsoft.hydralab.performance.PerformanceInspection;
-import com.microsoft.hydralab.performance.PerformanceInspectionResult;
-import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

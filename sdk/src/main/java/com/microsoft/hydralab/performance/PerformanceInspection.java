@@ -3,10 +3,11 @@
 package com.microsoft.hydralab.performance;
 
 import java.io.File;
+import java.io.Serializable;
 
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.*;
 
-public class PerformanceInspection {
+public class PerformanceInspection implements Serializable {
 
     public final PerformanceInspector.PerformanceInspectorType inspectorType;
     public final String appId;

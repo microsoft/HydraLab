@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -31,6 +32,7 @@ public class AppiumListener extends RunListener {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
     DeviceManager deviceManager;
+    private final PerformanceTestListener performanceTestListener;
     private long recordingStartTimeMillis;
     private int index;
     private File gifFile;
@@ -43,12 +45,14 @@ public class AppiumListener extends RunListener {
     private int currentTestIndex = 0;
 
 
-    public AppiumListener(DeviceManager deviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName, Logger logger) {
+    public AppiumListener(DeviceManager deviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
+                          PerformanceTestListener performanceTestListener, Logger logger) {
         this.deviceManager = deviceManager;
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;
         this.logger = logger;
         this.pkgName = pkgName;
+        this.performanceTestListener = performanceTestListener;
         logcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
         deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
     }
@@ -107,6 +111,7 @@ public class AppiumListener extends RunListener {
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
         logEnter(runName, description.testCount());
+        performanceTestListener.testRunStarted();
     }
 
     @Override
@@ -159,6 +164,7 @@ public class AppiumListener extends RunListener {
                 ioException.printStackTrace();
             }
         }), logger);
+        performanceTestListener.testStarted(ongoingTestUnit.getTitle());
     }
 
     @Override
@@ -167,6 +173,7 @@ public class AppiumListener extends RunListener {
         logEnter("testFailed", testDisplayName, failure.getTrace());
         ongoingTestUnit.setStack(failure.getTrace());
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
+        performanceTestListener.testFailure(ongoingTestUnit.getTitle());
         testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.oneMoreFailure();
     }
@@ -197,6 +204,7 @@ public class AppiumListener extends RunListener {
         ) {
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTestUnit.setSuccess(true);
+            performanceTestListener.testSuccess(ongoingTestUnit.getTitle());
         }
         ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
@@ -230,6 +238,7 @@ public class AppiumListener extends RunListener {
             }
 
         }
+        performanceTestListener.testRunFinished();
 
         logEnter("testRunEnded", elapsedTime, Thread.currentThread().getName());
         synchronized (this) {
