@@ -78,7 +78,9 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         return inspect(performanceInspection, testRun);
     }
 
-    public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection, ITestRun testRun) {
+    private PerformanceInspectionResult inspect(PerformanceInspection performanceInspection, ITestRun testRun) {
+        if (performanceInspection == null || testRun == null) return null;
+
         performanceInspection = getDevicePerformanceInspection(performanceInspection);
         PerformanceInspector.PerformanceInspectorType inspectorType = performanceInspection.inspectorType;
         PerformanceInspector performanceInspector = getInspectorByType(inspectorType);
@@ -139,6 +141,8 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
     @Override
     public PerformanceTestResult parse(PerformanceInspection performanceInspection) {
+        if (performanceInspection == null) return null;
+
         performanceInspection = getDevicePerformanceInspection(performanceInspection);
         Map<String, PerformanceTestResult> testResultMap = testRunPerfResultMap.get(getTestRun().getId());
         Assert.notNull(testResultMap, "Found no matched test result for test run");
@@ -237,11 +241,11 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         //TODO save results to DB
         if (resultList != null && !resultList.isEmpty()) {
             try {
-                FileUtil.writeToFile(new ObjectMapper().writeValueAsString(resultList),
+                FileUtil.writeToFile(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(resultList),
                         new File(getTestRun().getResultFolder(), PerformanceInspection.class.getSimpleName())
                                 + File.separator + "PerformanceReport.json");
             } catch (JsonProcessingException e) {
-                log.error("Failed to save performance test results to file");
+                log.error("Failed to save performance test results to file", e);
             }
         }
     }
