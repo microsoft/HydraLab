@@ -31,7 +31,10 @@ public class PkgUtil {
                     res = analysisApkFile(file);
                 } else if (file.getName().endsWith(FILE_SUFFIX.IPA_FILE)) {
                     res = analysisIpaFile(file);
+                } else if (file.getName().endsWith(FILE_SUFFIX.ZIP_FILE)) {
+                    res = analysisZipFile(file);
                 }
+
                 break;
             case AGENT_PACKAGE:
                 res = getAgentVersionFromJarFile(file);
@@ -123,6 +126,43 @@ public class PkgUtil {
             e.printStackTrace();
         }
         return res;
+    }
+
+    private static JSONObject analysisZipFile(File zip) {
+        JSONObject res = new JSONObject();
+        try {
+            String name, pkgName, version;
+
+            FileUtil.unzipFile(zip.getAbsolutePath(), zip.getAbsolutePath());
+            File app;
+            File zipFile = convertToZipFile(app, FILE_SUFFIX.APP_FILE);
+            Assert.notNull(zipFile, "Convert .ipa file to .zip file failed.");
+            File file = getIpaPlistFile(zipFile, zipFile.getParent());
+            //Need third-party jar package dd-plist
+            Assert.notNull(file, "Analysis .ipa file failed.");
+            NSDictionary rootDict = (NSDictionary) PropertyListParser.parse(file);
+            //Application package name
+            NSString parameters = (NSString) rootDict.objectForKey("CFBundleIdentifier");
+            pkgName = parameters.toString();
+            //Application version
+            parameters = (NSString) rootDict.objectForKey("CFBundleVersion");
+            version = parameters.toString();
+            //Application display name
+            parameters = (NSString) rootDict.objectForKey("CFBundleDisplayName");
+            name = parameters.toString();
+
+            //If necessary, the decompressed files should be deleted
+            file.delete();
+            file.getParentFile().delete();
+
+            res.put(ParserKey.APP_NAME, name);
+            res.put(ParserKey.PKG_NAME, pkgName);
+            res.put(ParserKey.VERSION, version);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
+
     }
 
     private static File getIpaPlistFile(File file, String unzipDirectory) throws Exception {
@@ -225,5 +265,6 @@ public class PkgUtil {
         String ZIP_FILE = ".zip";
         String IPA_FILE = ".ipa";
         String JSON_FILE = ".json";
+        String APP_FILE = ".app";
     }
 }

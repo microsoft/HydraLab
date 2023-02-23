@@ -7,6 +7,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ShellUtils;
@@ -32,10 +33,15 @@ public class XctestRunner extends TestRunner {
     @Override
     protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
         Logger reportLogger = testRun.getLogger();
+        ScreenRecorder deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
+        deviceScreenRecorder.setupDevice();
+        deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
         // Need a location here
         unzipXctestFolder(testTask.getAppFile(), testRun, reportLogger);
         runXctest();
+        deviceScreenRecorder.finishRecording();
         analysisXctestResult();
+
     }
 
     private void unzipXctestFolder(File zipFile, TestRun testRun, Logger reportLogger) {
@@ -43,15 +49,14 @@ public class XctestRunner extends TestRunner {
         zipPath = zipFile.getAbsolutePath() + "/" + Const.SmartTestConfig.ZIP_FOLDER_NAME + "/";
         folderPath = testRun.getResultFolder().getAbsolutePath() + "/" + Const.SmartTestConfig.XCTEST_ZIP_FOLDER_NAME
                 + "/";
-        resultPath = testRun.getResultFolder().getAbsolutePath() + "/" + Const.SmartTestConfig.XCTEST_ZIP_FOLDER_NAME
-                + "/";
+        resultPath = testRun.getResultFolder().getAbsolutePath();
 
         FileUtil.unzipFile(zipFile.getAbsolutePath(), folderPath);
     }
 
     private String runXctest(DeviceInfo deviceInfo, String scope, String suiteName,
                              String testPkgName, String testRunnerName, Logger logger,
-                             IShellOutputReceiver receiver,
+                             IShellOutputReceiver receiver, TestRun testRun,
                              int testTimeOutSec, Map<String, String> instrumentationArgs) {
         if (deviceInfo == null) {
             throw new RuntimeException("No such device: " + deviceInfo);
@@ -62,7 +67,7 @@ public class XctestRunner extends TestRunner {
         }
         StringBuilder argString = new StringBuilder();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
-            instrumentationArgs.forEach((k, v) -> argString.append(" -e ").append(k.replaceAll("\\s|\"", "")).append(" ").append(v.replaceAll("\\s|\"", "")));
+            instrumentationArgs.forEach((k, v) -> argString.append(" ").append(k).append(" ").append(v));
         }
         String commFormat;
         if (StringUtils.isBlank(argString.toString())) {
@@ -72,11 +77,11 @@ public class XctestRunner extends TestRunner {
         }
 
         try {
-            String destination = "name=iPhone 14 Pro";
-            String resultPath = folderPath + "/" + "result";
+            String deviceId = "id=" + deviceInfo.getDeviceId();
+            String resultPath = testRun.getResultFolder().getAbsolutePath() + "/" + "result";
 
-            commFormat += " -destination %s -resultBundlePath %s";
-            String command = String.format(commFormat, destination, resultPath);
+            commFormat += " -destination \"id=%s\" -resultBundlePath %s";
+            String command = String.format(commFormat, deviceId, resultPath);
 
             String result = ShellUtils.execLocalCommandWithResult(command, logger);
             return Const.TaskResult.SUCCESS;
@@ -89,5 +94,6 @@ public class XctestRunner extends TestRunner {
     }
 
     private void analysisXctestResult() {
+
     }
 }
