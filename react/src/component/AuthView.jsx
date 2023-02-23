@@ -174,7 +174,7 @@ export default class AuthView extends BaseView {
             tokenList.forEach((t) => {
                 tokenRows.push(<StyledTableRow key={t.id} id={t.id} hover>
                     <TableCell id={t.id} align="center">
-                        {t.token}&nbsp;
+                        {_.truncate(t.token, {'length': `20`, 'omission': '*****************'})}&nbsp;
                         <IconButton onClick={() => this.copyContent(t.token)}>
                             <span className="material-icons-outlined">content_copy</span>
                         </IconButton>

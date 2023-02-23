@@ -215,8 +215,8 @@ export default class DeviceGroupView extends BaseView {
                 <DialogTitle>Group token generated</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Access Key:
-                        {groupToken}&nbsp;
+                        Access Key:&nbsp;
+                        {_.truncate(groupToken, {'length': `20`, 'omission': '*****************'})}&nbsp;
                         <IconButton onClick={() => {
                             navigator.clipboard.writeText(groupToken)
                         }}>
