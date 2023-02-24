@@ -108,13 +108,13 @@ public class TestDetailController {
 
             JSONObject data = new JSONObject();
             JSONArray videos = new JSONArray();
-            String videoRedirectUrl = testInfo.getVideoBlobUrl();
+            String videoRedirectUrl = testInfo.getVideoDownloadUrl();
 
             //use CDN url to access video
             if (testInfo.getAttachments() != null && testInfo.getAttachments().size() > 0) {
                 String CDNUrl = testInfo.getAttachments().get(0).getCDNUrl();
                 if (CDNUrl != null && !"".equals(CDNUrl)) {
-                    String originDomain = testInfo.getVideoBlobUrl().split("//")[1].split("/")[0];
+                    String originDomain = testInfo.getVideoDownloadUrl().split("//")[1].split("/")[0];
                     videoRedirectUrl = videoRedirectUrl.replace(originDomain, CDNUrl);
                 }
             }
@@ -155,9 +155,9 @@ public class TestDetailController {
             if (testInfo.getAttachments() != null && testInfo.getAttachments().size() > 0) {
                 String CDNUrl = testInfo.getAttachments().get(0).getCDNUrl();
                 if (CDNUrl != null && !"".equals(CDNUrl)) {
-                    String originDomain = testInfo.getVideoBlobUrl().split("//")[1].split("/")[0];
-                    String videoRedirectUrl = testInfo.getVideoBlobUrl().replace(originDomain, CDNUrl);
-                    testInfo.setVideoBlobUrl(videoRedirectUrl);
+                    String originDomain = testInfo.getVideoDownloadUrl().split("//")[1].split("/")[0];
+                    String videoRedirectUrl = testInfo.getVideoDownloadUrl().replace(originDomain, CDNUrl);
+                    testInfo.setVideoDownloadUrl(videoRedirectUrl);
                 }
             }
             return Result.ok(testInfo);

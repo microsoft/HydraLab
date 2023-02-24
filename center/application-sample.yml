@@ -15,6 +15,8 @@ spring:
 app:
   # Mail Address Format
   default-user: ${DEFAULT_USER}
-  blob:
-    connection: ${BLOB_CONNECTION_STR}
-    CDNUrl: ${CDN_URL}
+  storage:
+    type: BLOB
+    blob:
+      connection: ${BLOB_CONNECTION_STR}
+      CDNUrl: ${CDN_URL}

@@ -106,23 +106,23 @@ public class PackageSetController {
 
             //Save app file to server
             File tempAppFile = attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE});
-            StorageFileInfo appBlobFile = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
+            StorageFileInfo appFileInfo = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
             //Upload app file
-            appBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appBlobFile, tempAppFile, logger);
-            JSONObject appFileParser = appBlobFile.getFileParser();
+            appFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appFileInfo, tempAppFile, logger);
+            JSONObject appFileParser = appFileInfo.getFileParser();
             testFileSet.setAppName(appFileParser.getString(ParserKey.APP_NAME));
             testFileSet.setPackageName(appFileParser.getString(ParserKey.PKG_NAME));
             testFileSet.setVersion(appFileParser.getString(ParserKey.VERSION));
-            testFileSet.getAttachments().add(appBlobFile);
+            testFileSet.getAttachments().add(appFileInfo);
 
             //Save test app file to server if exist
             if (testAppFile != null && !testAppFile.isEmpty()) {
                 File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE});
 
-                StorageFileInfo testAppBlobFile = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
+                StorageFileInfo testAppFileInfo = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
                 //Upload app file
-                testAppBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, testAppBlobFile, tempTestAppFile, logger);
-                testFileSet.getAttachments().add(testAppBlobFile);
+                testAppFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, testAppFileInfo, tempTestAppFile, logger);
+                testFileSet.getAttachments().add(testAppFileInfo);
             }
 
             //Save file set info to DB and memory
@@ -265,8 +265,8 @@ public class PackageSetController {
             testJsonInfo.setTeamName(team.getTeamName());
             String newFileName = formatDate.format(testJsonInfo.getIngestTime()) + FILE_SUFFIX.JSON_FILE;
             File savedJson = attachmentService.verifyAndSaveFile(testJsonFile, parentDir, false, newFileName, new String[]{FILE_SUFFIX.JSON_FILE});
-            String blobPath = fileRelativePath + "/" + savedJson.getName();
-            testJsonInfo.setFileRelPath(blobPath);
+            String fileRelPath = fileRelativePath + "/" + savedJson.getName();
+            testJsonInfo.setFileRelPath(fileRelPath);
 
             return Result.ok(attachmentService.addTestJsonFile(testJsonInfo, savedJson, EntityType.TEST_JSON, logger));
         } catch (HydraLabRuntimeException e) {
