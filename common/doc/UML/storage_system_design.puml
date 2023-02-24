@@ -1,0 +1,49 @@
+@startuml
+
+interface AccessToken
+abstract class StorageServiceClient {
++storageTypeCheck(AccessToken)
++updateAccessToken(AccessToken)
++generateAccessToken(String permissionType)
++isAccessTokenExpired(AccessToken)
++upload(File, StorageFileInfo)
++download(File, StorageFileInfo)
+}
+class StorageFileInfo
+
+class BlobClientAdapter
+class BlobProperty
+class SASData
+enum SASPermission {
+READ
+WRITE
+ADMIN
++setExpiryTime(BlobProperty)
+}
+
+class SomeStorageAdapter
+class SomeProperty
+class SomeToken
+enum SomePermission {
+READ
+WRITE
+ADMIN
++setExpiryTime(SomeProperty)
+}
+
+StorageServiceClient --> AccessToken
+StorageServiceClient -> StorageFileInfo
+
+StorageServiceClient <|-- BlobClientAdapter
+AccessToken <|-- SASData
+SASPermission --o SASData
+BlobProperty <-- SASPermission
+BlobProperty <-- BlobClientAdapter
+
+StorageServiceClient <|-- SomeStorageAdapter
+AccessToken <|-- SomeToken
+SomePermission -o SomeToken
+SomeProperty <-- SomePermission
+SomeProperty <-- SomeStorageAdapter
+
+@enduml

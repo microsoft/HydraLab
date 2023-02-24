@@ -1,0 +1,25 @@
+@startuml storage_sequence
+'(Local, Azure BLOB, ALI Cloud, QINIU Cloud, etc.)
+autonumber 1.1
+StorageService.Endpoint -> Center.StorageServiceClient: buildClient(connectionString)
+Center.StorageServiceClient -> StorageService.Endpoint: upload(screenshot / attachment / agentPackage)
+StorageService.Endpoint --> Center.StorageServiceClient: uploaded file info
+Center.StorageServiceClient -> StorageService.Endpoint: download(jsonFile)
+StorageService.Endpoint --> Center.StorageServiceClient: downloaded file info
+|||
+autonumber 2.1
+Center.StorageServiceClient -> Browser: generateReadToken
+Browser -> StorageService.Endpoint: read files with token
+|||
+autonumber 3.1
+Center.StorageServiceClient -> AgentMetadata: generateWriteToken
+activate AgentMetadata
+AgentMetadata -> Agent.StorageServiceClient: heartbeatResponse(accessToken)
+deactivate AgentMetadata
+StorageService.Endpoint -> Agent.StorageServiceClient: buildClient(accessToken)
+Agent.StorageServiceClient -> StorageService.Endpoint: download(app / testApp / attachment / agentPackage)
+StorageService.Endpoint -> Agent.StorageServiceClient: downloaded file info
+Agent.StorageServiceClient -> StorageService.Endpoint: upload(deviceTestResult)
+StorageService.Endpoint -> Agent.StorageServiceClient: uploaded file info
+
+@enduml
