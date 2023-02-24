@@ -3,4 +3,5 @@
 package com.microsoft.hydralab.common.file;
 
 public interface AccessToken {
+    String getToken();
 }

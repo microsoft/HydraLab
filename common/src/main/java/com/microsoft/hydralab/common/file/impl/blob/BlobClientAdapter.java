@@ -71,7 +71,7 @@ public class BlobClientAdapter extends StorageServiceClient {
 
         if (sasDataInUse == null) {
             buildClientBySAS(sasData);
-        } else if (!StringUtils.isEmpty(sasData.getSignature()) && !sasDataInUse.getSignature().equals(sasData.getSignature())) {
+        } else if (!StringUtils.isEmpty(sasData.getToken()) && !sasDataInUse.getToken().equals(sasData.getToken())) {
             sasDataForUpdate = sasData;
         }
     }
@@ -106,7 +106,7 @@ public class BlobClientAdapter extends StorageServiceClient {
     }
 
     private void buildClientBySAS(SASData sasData) {
-        AzureSasCredential azureSasCredential = new AzureSasCredential(sasData.getSignature());
+        AzureSasCredential azureSasCredential = new AzureSasCredential(sasData.getToken());
         blobServiceClient = new BlobServiceClientBuilder().endpoint(sasData.getEndpoint()).credential(azureSasCredential).buildClient();
         fileLimitDay = sasData.getFileLimitDay();
         cdnUrl = sasData.getCdnUrl();
@@ -149,7 +149,7 @@ public class BlobClientAdapter extends StorageServiceClient {
         AccountSasSignatureValues sasSignatureValues = new AccountSasSignatureValues(expiryTime, permissions,
                 services, resourceTypes);
 
-        sasData.setSignature(blobServiceClient.generateAccountSas(sasSignatureValues));
+        sasData.setToken(blobServiceClient.generateAccountSas(sasSignatureValues));
         sasData.setExpiredTime(expiryTime);
         sasData.setEndpoint(blobServiceClient.getAccountUrl());
         sasData.setSasPermission(sasPermission);

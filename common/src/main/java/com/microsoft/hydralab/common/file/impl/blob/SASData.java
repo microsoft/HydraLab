@@ -14,10 +14,14 @@ import java.time.OffsetDateTime;
 
 @Data
 public class SASData implements AccessToken {
+    private String token;
     private String endpoint;
-    private String signature;
     private OffsetDateTime expiredTime;
     private int fileLimitDay;
     private String cdnUrl;
     private SASPermission sasPermission;
+
+    public String getToken() {
+        return token;
+    }
 }

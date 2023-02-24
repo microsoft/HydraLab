@@ -299,9 +299,9 @@ public class HydraLabClientUtils {
             String deviceFileFolderPath = file.getAbsolutePath();
 
             if (deviceTestResult.attachments.size() != 0) {
-                String signature = hydraLabAPIClient.getBlobSAS(apiConfig);
+                String token = hydraLabAPIClient.getStorageToken(apiConfig);
                 for (StorageFileInfo fileInfo : deviceTestResult.attachments) {
-                    String attachmentUrl = fileInfo.fileDownloadUrl + "?" + signature;
+                    String attachmentUrl = fileInfo.fileDownloadUrl + "?" + token;
                     String attachmentFileName = fileInfo.fileName;
 
                     printlnf("Start downloading attachment for device %s, device name: %s, file name: %s, link: %s", deviceTestResult.deviceSerialNumber, deviceTestResult.deviceName, attachmentFileName, attachmentUrl);

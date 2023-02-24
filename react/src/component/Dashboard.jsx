@@ -153,9 +153,9 @@ export default function Dashboard() {
             this.snackBarError(error)
         })
 
-        axios.get('/api/package/getSAS').then(res => {
+        axios.get('/api/storage/getToken').then(res => {
             if (res.data && res.data.code === 200) {
-                ls.set("BlobSignature", res.data.content.signature);
+                ls.set("FileToken", res.data.content);
             } else {
                 this.snackBarFail(res)
             }

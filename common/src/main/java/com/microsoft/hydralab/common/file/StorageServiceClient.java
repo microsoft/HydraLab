@@ -10,7 +10,6 @@ import java.io.File;
 
 @Data
 public abstract class StorageServiceClient {
-    protected String storageType;
     protected int fileLimitDay;
     protected String cdnUrl;
 

@@ -152,7 +152,7 @@ export default class SearchView extends BaseView {
             const details = res.data.content
             if (requestPath === "videos") {
                 for (let i = 0; i < details.videos.length; i++) {
-                    details.videos[i] = details.videos[i] + '?' + require('local-storage').get('BlobSignature');
+                    details.videos[i] = details.videos[i] + '?' + require('local-storage').get('FileToken');
                 }
                 const vList = details.videos
                 const info = details.videoInfo
@@ -193,7 +193,7 @@ export default class SearchView extends BaseView {
                     if (res.data && res.data.code === 200) {
 
 
-                        const vList = [res.data.content.videoBlobUrl + '?' + require('local-storage').get('BlobSignature')]
+                        const vList = [res.data.content.videoBlobUrl + '?' + require('local-storage').get('FileToken')]
                         const info = res.data.content.videoTimeTagArr
                         const properties = []
 

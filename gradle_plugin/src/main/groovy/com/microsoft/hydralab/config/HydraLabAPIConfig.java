@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.config;
 
-import java.util.HashMap;
 import java.util.Locale;
 
 public class HydraLabAPIConfig {
@@ -11,7 +10,7 @@ public class HydraLabAPIConfig {
     public String contextPath = "";
     public String authToken = "";
     public String checkCenterAliveAPIPath = "/api/center/isAlive";
-    public String getBlobSAS = "/api/package/getSAS";
+    public String getStorageTokenAPIPath = "/api/storage/getToken";
     public String uploadAPKAPIPath = "/api/package/add";
     public String addAttachmentAPIPath = "/api/package/addAttachment";
     public String generateAccessKeyAPIPath = "/api/deviceGroup/generate?deviceIdentifier=%s";
@@ -21,8 +20,8 @@ public class HydraLabAPIConfig {
     public String testPortalTaskInfoPath = "/portal/index.html?redirectUrl=/info/task/";
     public String testPortalTaskDeviceVideoPath = "/portal/index.html?redirectUrl=/info/videos/";
 
-    public String getBlobSASUrl() {
-        return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, getBlobSAS);
+    public String getStorageTokenUrl() {
+        return String.format(Locale.US, "%s://%s%s%s", schema, host, contextPath, getStorageTokenAPIPath);
     }
 
     public String checkCenterAliveUrl() {
