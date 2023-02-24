@@ -1,4 +1,4 @@
-package com.microsoft.hydralab.common.entity.common;
+package com.microsoft.hydralab.common.file.blob;
 
 import com.microsoft.hydralab.common.file.impl.blob.SASPermission;
 import com.microsoft.hydralab.common.test.BaseTest;
