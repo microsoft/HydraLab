@@ -54,6 +54,8 @@ public class AppiumMonkeyRunner extends AppiumRunner {
 
         reportLogger.info(ongoingMonkeyTest.getTitle());
 
+        performanceTestManagementService.testRunStarted();
+
         testRun.addNewTimeTag(1 + ". " + ongoingMonkeyTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingMonkeyTest.getTitle());
         File gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
@@ -74,6 +76,9 @@ public class AppiumMonkeyRunner extends AppiumRunner {
             }
         }), reportLogger);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
+
+        performanceTestManagementService.testStarted(ongoingMonkeyTest.getTitle());
+
         deviceManager.runAppiumMonkey(deviceInfo, pkgName, testTask.getMaxStepCount(), reportLogger);
 
         deviceScreenRecorder.finishRecording();
@@ -86,6 +91,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
             ongoingMonkeyTest.setSuccess(false);
             ongoingMonkeyTest.setStack(e.toString());
             testRun.setSuccess(false);
+            performanceTestManagementService.testFailure(ongoingMonkeyTest.getTitle());
             testRun.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         } else {
@@ -93,10 +99,12 @@ public class AppiumMonkeyRunner extends AppiumRunner {
             ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingMonkeyTest.setSuccess(true);
             testRun.setSuccess(true);
+            performanceTestManagementService.testSuccess(ongoingMonkeyTest.getTitle());
         }
 
         // Test finish
         reportLogger.info(ongoingMonkeyTest.getTitle() + ".end");
+        performanceTestManagementService.testRunFinished();
         ongoingMonkeyTest.setEndTimeMillis(System.currentTimeMillis());
         deviceInfo.setRunningTestName(null);
         testRun.addNewTestUnit(ongoingMonkeyTest);
