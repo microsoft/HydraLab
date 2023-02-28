@@ -18,10 +18,12 @@ public class WindowsBatteryParsedData {
             "DisplayEnergyConsumption", "DiskEnergyConsumption", "NetworkEnergyConsumption", "MBBEnergyConsumption",
             "OtherEnergyConsumption", "EmiEnergyConsumption", "CPUEnergyConsumptionWorkOnBehalf",
             "CPUEnergyConsumptionAttributed", "TotalEnergyConsumption"};
+    private final Set<String> AppIdSet = new ConcurrentHashSet<>();
+    private final List<WindowsBatteryMetrics> windowsBatteryMetricsList = new ArrayList<>();
+    private WindowsBatteryMetrics summarizedWindowsBatteryMetrics;
 
     @Data
-    public static class WindowsBatteryMetrics
-    {
+    public static class WindowsBatteryMetrics {
         private long energyLoss;
         private long CPUEnergyConsumption;
         private long socEnergyConsumption;
@@ -37,8 +39,7 @@ public class WindowsBatteryParsedData {
         @NonNull
         private String timeStamp = "";
 
-        public void accumulate(WindowsBatteryMetrics metrics)
-        {
+        public void accumulate(WindowsBatteryMetrics metrics) {
             this.energyLoss += metrics.energyLoss;
             this.CPUEnergyConsumption += metrics.CPUEnergyConsumption;
             this.socEnergyConsumption += metrics.socEnergyConsumption;
@@ -57,8 +58,4 @@ public class WindowsBatteryParsedData {
             }
         }
     }
-
-    private final Set<String> AppIdSet = new ConcurrentHashSet<>();
-    private final List<WindowsBatteryMetrics> windowsBatteryMetricsList = new ArrayList<>();
-    private WindowsBatteryMetrics summarizedWindowsBatteryMetrics;
 }

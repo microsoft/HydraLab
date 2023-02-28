@@ -42,13 +42,13 @@ public class SysUser implements Authentication {
     @Transient
     private boolean teamAdmin = false;
 
-    public void setAuthorities(List<GrantedAuthority> permissions) {
-        this.authorities = permissions;
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
+    }
+
+    public void setAuthorities(List<GrantedAuthority> permissions) {
+        this.authorities = permissions;
     }
 
     @Override

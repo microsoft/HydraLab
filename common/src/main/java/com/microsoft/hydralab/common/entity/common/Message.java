@@ -33,13 +33,6 @@ public class Message {
         return objectMessage;
     }
 
-    public void setBody(Object body) {
-        this.body = body;
-        if (body != null && !(body instanceof JSONObject) && !(body instanceof JSONArray)) {
-            bodyType = body.getClass().getName();
-        }
-    }
-
     public static Message error(Message source, int code, String msg) {
         Message objectMessage = new Message();
         objectMessage.sessionId = source.sessionId;
@@ -63,6 +56,13 @@ public class Message {
         objectMessage.setMethod(HttpMethod.GET.toString());
         objectMessage.setPath(Const.Path.AUTH);
         return objectMessage;
+    }
+
+    public void setBody(Object body) {
+        this.body = body;
+        if (body != null && !(body instanceof JSONObject) && !(body instanceof JSONArray)) {
+            bodyType = body.getClass().getName();
+        }
     }
 
     public enum HttpMethod {

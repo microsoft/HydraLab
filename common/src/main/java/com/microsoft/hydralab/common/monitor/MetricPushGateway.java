@@ -17,6 +17,7 @@ public class MetricPushGateway extends PushGateway {
     public MetricPushGateway(String serverBaseURLStr) {
         super(serverBaseURLStr);
     }
+
     public MetricPushGateway(URL serverBaseURL) {
         super(serverBaseURL);
     }
@@ -24,8 +25,7 @@ public class MetricPushGateway extends PushGateway {
     public void pushAdd(CollectorRegistry registry, String job, Map<String, String> groupingKey) throws IOException {
         try {
             super.pushAdd(registry, job, groupingKey);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // if already get basic auth info from center and still fail
             if (isBasicAuthSet.get()) {
                 throw e;

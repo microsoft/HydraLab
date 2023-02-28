@@ -3,9 +3,9 @@
 package com.microsoft.hydralab.agent.runner.smart;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.agent.SmartTestParam;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -30,7 +30,7 @@ public class SmartTestUtil {
 
         folderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.ZIP_FOLDER_NAME + "/";
         stringFolderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.STRING_FOLDER_NAME
-            + "/";
+                + "/";
 
         try {
             InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(name);

@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 @Service
 public class DeviceStatusListenerManager implements DeviceStatusListener {
-    private List<DeviceStatusListener> listeners = new ArrayList<>();
+    private final List<DeviceStatusListener> listeners = new ArrayList<>();
 
     private <T extends DeviceStatusListener> void notifyEach(List<T> recorders, Consumer<T> consumer) {
         recorders.forEach(recorder -> {

@@ -16,6 +16,7 @@ public class SerializeUtil {
         // add auto type support for following entities
         ParserConfig.getGlobalInstance().addAccept("com.microsoft.hydralab.common.entity.common.");
     }
+
     public static byte[] messageToByteArr(Message message) {
         return ZipUtil.gzip(JSON.toJSONString(message, SerializerFeature.WriteClassName), StandardCharsets.UTF_8.toString());
     }

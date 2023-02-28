@@ -3,8 +3,8 @@
 package com.microsoft.hydralab.common.entity.agent;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
 
 @Data

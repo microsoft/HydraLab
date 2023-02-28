@@ -43,26 +43,12 @@ public abstract class DeviceManager {
     protected File testBaseDir;
     protected File preAppDir;
     protected String preInstallFailurePolicy;
-
-    public String getPreInstallFailurePolicy() {
-        return preInstallFailurePolicy;
-    }
-
-    public void setPreInstallFailurePolicy(String preInstallFailurePolicy) {
-        this.preInstallFailurePolicy = preInstallFailurePolicy;
-    }
-
     protected String testBaseDirUrlMapping;
     protected File deviceLogBaseDir;
     protected File screenshotDir;
     protected String deviceFolderUrlPrefix;
     protected String deviceStoragePath;
     protected DeviceStatusListenerManager deviceStatusListenerManager;
-
-    public void setDeviceStatusListenerManager(DeviceStatusListenerManager deviceStatusListenerManager) {
-        this.deviceStatusListenerManager = deviceStatusListenerManager;
-    }
-
     protected AppiumServerManager appiumServerManager;
 
     public static MobileDeviceState mobileDeviceStateMapping(DeviceState adbState) {
@@ -80,6 +66,18 @@ public abstract class DeviceManager {
             default:
                 return MobileDeviceState.OTHER;
         }
+    }
+
+    public String getPreInstallFailurePolicy() {
+        return preInstallFailurePolicy;
+    }
+
+    public void setPreInstallFailurePolicy(String preInstallFailurePolicy) {
+        this.preInstallFailurePolicy = preInstallFailurePolicy;
+    }
+
+    public void setDeviceStatusListenerManager(DeviceStatusListenerManager deviceStatusListenerManager) {
+        this.deviceStatusListenerManager = deviceStatusListenerManager;
     }
 
     public AppiumServerManager getAppiumServerManager() {

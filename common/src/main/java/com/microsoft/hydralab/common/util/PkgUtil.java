@@ -8,8 +8,8 @@ import com.dd.plist.NSDictionary;
 import com.dd.plist.NSString;
 import com.dd.plist.PropertyListParser;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask.TaskConst;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
 import org.springframework.util.Assert;
@@ -153,7 +153,7 @@ public class PkgUtil {
             while (zipEnum.hasMoreElements()) {
                 //get the current entry
                 entry = zipEnum.nextElement();
-                entryName = new String(entry.getName());
+                entryName = entry.getName();
                 //separate entry names with/
                 names = entryName.split("\\/");
                 length = names.length;

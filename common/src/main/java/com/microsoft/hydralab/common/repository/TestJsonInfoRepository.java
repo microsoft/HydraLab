@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface TestJsonInfoRepository extends JpaRepository<TestJsonInfo, String>, JpaSpecificationExecutor<TestJsonInfo> {
     List<TestJsonInfo> findAllByTeamId(String teamId);
+
     List<TestJsonInfo> findByIsLatest(boolean isLatest);
 
     List<TestJsonInfo> findByIsLatestAndPackageNameAndCaseName(boolean isLatest, String packageName, String caseName);

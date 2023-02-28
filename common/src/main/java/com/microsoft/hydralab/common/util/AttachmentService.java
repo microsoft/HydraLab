@@ -5,8 +5,8 @@ package com.microsoft.hydralab.common.util;
 
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.EntityFileRelationRepository;
+import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.TestJsonInfoRepository;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.io.IOUtils;
@@ -114,8 +114,7 @@ public class AttachmentService {
             spec = new CriteriaTypeUtil<TestJsonInfo>().transferToSpecification(queryParams, true);
 
             testJsonInfoList = testJsonInfoRepository.findAll(spec);
-        }
-        else {
+        } else {
             testJsonInfoList = testJsonInfoRepository.findByIsLatest(true);
         }
 
@@ -140,13 +139,10 @@ public class AttachmentService {
     public boolean compareFileInfo(StorageFileInfo newFileInfo, StorageFileInfo oldFileInfo) {
         if (newFileInfo.getLoadType() == null && oldFileInfo.getLoadType() == null) {
             return true;
-        } else if (newFileInfo.getFileName().equals(oldFileInfo.getFileName())
+        } else return newFileInfo.getFileName().equals(oldFileInfo.getFileName())
                 && newFileInfo.getLoadType().equals(oldFileInfo.getLoadType())
                 && newFileInfo.getLoadDir().equals(oldFileInfo.getLoadDir())
-                && newFileInfo.getBlobContainer().equals(oldFileInfo.getBlobContainer())) {
-            return true;
-        }
-        return false;
+                && newFileInfo.getBlobContainer().equals(oldFileInfo.getBlobContainer());
     }
 
     public List<StorageFileInfo> getAttachments(String entityId, EntityType entityType) {

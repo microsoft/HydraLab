@@ -25,7 +25,7 @@ public class UserTeamRelation implements Serializable {
     private String mailAddress;
     private boolean isTeamAdmin;
 
-    public UserTeamRelation(String teamId, String mailAddress, boolean isTeamAdmin){
+    public UserTeamRelation(String teamId, String mailAddress, boolean isTeamAdmin) {
         this.teamId = teamId;
         this.mailAddress = mailAddress;
         this.isTeamAdmin = isTeamAdmin;

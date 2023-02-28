@@ -5,7 +5,6 @@ package com.microsoft.hydralab.config;
 import com.microsoft.hydralab.entity.DeviceAction;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,7 @@ public class DeviceConfig {
     public Map<String, List<DeviceAction>> deviceActions = new HashMap<>();
     public String deviceActionsStr = "";
 
-    public void extractFromExistingField(){
+    public void extractFromExistingField() {
         if (StringUtils.isBlank(this.deviceActionsStr) && deviceActions.size() != 0) {
             this.deviceActionsStr = GSON.toJson(this.deviceActions);
         }

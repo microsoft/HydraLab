@@ -25,7 +25,7 @@ public enum AgentType {
         }
     };
 
-    private int agentType;
+    private final int agentType;
 
     AgentType(int agentType) {
         this.agentType = agentType;

@@ -21,7 +21,7 @@ import java.io.File;
 
 public class PreInstallListener implements DeviceStatusListener {
     DeviceManager deviceManager;
-    private Logger classLogger = LoggerFactory.getLogger(PreInstallListener.class);
+    private final Logger classLogger = LoggerFactory.getLogger(PreInstallListener.class);
 
     public PreInstallListener(DeviceManager deviceManager) {
         this.deviceManager = deviceManager;

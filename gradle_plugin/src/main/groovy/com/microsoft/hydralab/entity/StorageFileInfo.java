@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.entity;
 
 import com.google.gson.JsonObject;
+
 import java.util.Date;
 
 public class StorageFileInfo {

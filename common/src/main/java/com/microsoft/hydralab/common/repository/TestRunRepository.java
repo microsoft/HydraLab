@@ -13,5 +13,6 @@ import java.util.Optional;
 public interface TestRunRepository extends JpaRepository<TestRun, String> {
 
     List<TestRun> findByTestTaskId(String taskId);
+
     Optional<TestRun> findByCrashStackId(String crashStackId);
 }

@@ -48,7 +48,7 @@ public class TestConfig {
         if (queueTimeOutSeconds == null) {
             this.queueTimeOutSeconds = this.runTimeOutSeconds;
         }
-        HashMap<String, Object> explorationArgs = (HashMap<String, Object>)map.get("exploration");
+        HashMap<String, Object> explorationArgs = (HashMap<String, Object>) map.get("exploration");
         Object maxStepCount = explorationArgs.get("maxStepCount");
         if (maxStepCount != null) {
             this.maxStepCount = Integer.parseInt(maxStepCount.toString());

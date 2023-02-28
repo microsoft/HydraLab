@@ -1,9 +1,11 @@
 package com.microsoft.hydralab.common.entity.common;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;

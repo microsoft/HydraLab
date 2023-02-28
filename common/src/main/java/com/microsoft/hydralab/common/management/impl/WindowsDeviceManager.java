@@ -4,9 +4,9 @@ package com.microsoft.hydralab.common.management.impl;
 
 import cn.hutool.core.img.ImgUtil;
 import com.android.ddmlib.TimeoutException;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;

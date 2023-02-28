@@ -42,7 +42,7 @@ import java.util.TimeZone;
  * Creates a separate XML file per test run.
  *
  * @see <a href="https://svn.jenkins-ci.org/trunk/hudson/dtkit/dtkit-format/dtkit-junit-model/src/main/resources/com/thalesgroup/dtkit/junit/model/xsd/junit-4.xsd">https://svn.jenkins-ci.org/trunk/hudson/dtkit/dtkit-format/dtkit-junit-model/src/main/resources/com/thalesgroup/dtkit/junit/model/xsd/junit-4.xsd</a>
- *
+ * <p>
  * Copy from com.android.ddmlib.testrunner.XmlTestRunListener to use getAbsoluteReportPath() as a public method.
  */
 public class XmlTestRunListener implements ITestRunListener {

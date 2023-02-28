@@ -55,7 +55,7 @@ public class CommonUtils {
         return file.getAbsolutePath();
     }
 
-    public static HashMap<String, String> parseArguments(String argsString){
+    public static HashMap<String, String> parseArguments(String argsString) {
         if (StringUtils.isBlank(argsString)) {
             return null;
         }
@@ -63,7 +63,7 @@ public class CommonUtils {
 
         // quotation marks not support
         String[] argLines = argsString.replace("\"", "").split(",");
-        for (String argLine: argLines) {
+        for (String argLine : argLines) {
             String[] kv = argLine.split("=");
             argsMap.put(kv[0], kv[1]);
         }

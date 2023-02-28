@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * To change the default sampling interval, from an elevated command line, run: `reg add
  * "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SRUM\Parameters" /v Tier1Period /t REG_DWORD /d
  * <seconds> /f`. Then restarting the PC to make it take effect.
- *
+ * <p>
  * NOTE:
  * 1. To minimize the overhead, you should gather data as infrequently as possible for your measurement. Changing the
  * sampling rate affects all SRUM providers and should only be done for testing purposes. Changing Tier1Period to < 10
@@ -46,10 +46,9 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
         boolean baseLineFound = false;
         String baseLine = "";
 
-        for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
-        {
+        for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults) {
             try (ReversedLinesFileReader reversedReader = new ReversedLinesFileReader(inspectionResult.rawResultFile,
-                    StandardCharsets.UTF_8);) {
+                    StandardCharsets.UTF_8)) {
                 WindowsBatteryParsedData windowsBatteryParsedData = new WindowsBatteryParsedData();
                 inspectionResult.parsedData = windowsBatteryParsedData;
                 WindowsBatteryParsedData.WindowsBatteryMetrics summarizedWindowsBatteryMetrics =
@@ -59,22 +58,18 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
                 Map<String, Integer> columnNameToIndexMap = getColumnNameToIndexMap(inspectionResult.rawResultFile);
                 String line;
 
-                while ((line = reversedReader.readLine()) != null)
-                {
-                    if (!line.contains(APP_ID_KEYWORD))
-                    {
+                while ((line = reversedReader.readLine()) != null) {
+                    if (!line.contains(APP_ID_KEYWORD)) {
                         continue;
                     }
 
-                    if (!baseLineFound)
-                    {
+                    if (!baseLineFound) {
                         baseLineFound = true;
                         baseLine = line;
                         break;
                     }
 
-                    if (line.equals(baseLine))
-                    {
+                    if (line.equals(baseLine)) {
                         break;
                     }
 
@@ -96,8 +91,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
         return performanceTestResult;
     }
 
-    private Map<String, Integer> getColumnNameToIndexMap(File file)
-    {
+    private Map<String, Integer> getColumnNameToIndexMap(File file) {
         Map<String, Integer> columnNameToIndexMap = new ConcurrentHashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
@@ -117,8 +111,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
     }
 
     private WindowsBatteryParsedData.WindowsBatteryMetrics getWindowsBatteryMetrics(String[] fieldValues,
-                                                                                    Map<String, Integer>columnNameToIndexMap)
-    {
+                                                                                    Map<String, Integer> columnNameToIndexMap) {
         WindowsBatteryParsedData.WindowsBatteryMetrics windowsBatteryMetrics =
                 new WindowsBatteryParsedData.WindowsBatteryMetrics();
 
@@ -151,8 +144,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
         return windowsBatteryMetrics;
     }
 
-    private long getOneMetric(String[] fieldValues, String metricName, Map<String, Integer>columnNameToIndexMap)
-    {
+    private long getOneMetric(String[] fieldValues, String metricName, Map<String, Integer> columnNameToIndexMap) {
         int index = columnNameToIndexMap.getOrDefault(metricName, -1);
         if (index != -1) {
             try {
@@ -166,11 +158,9 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
     }
 
     @NonNull
-    private String getOneStringField(String[] fieldValues, String fieldName, Map<String, Integer>columnNameToIndexMap)
-    {
+    private String getOneStringField(String[] fieldValues, String fieldName, Map<String, Integer> columnNameToIndexMap) {
         int index = columnNameToIndexMap.getOrDefault(fieldName, -1);
-        if (index != -1)
-        {
+        if (index != -1) {
             return fieldValues[index];
         }
         return "";

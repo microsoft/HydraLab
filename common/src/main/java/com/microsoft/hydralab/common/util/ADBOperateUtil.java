@@ -32,6 +32,7 @@ public class ADBOperateUtil {
     private File mAdbPath;
     private String adbServerHost = DdmPreferences.DEFAULT_ADBHOST_VALUE;
     private AndroidDebugBridge mAndroidDebugBridge;
+
     public void init(AndroidDebugBridge.IDeviceChangeListener mListener) throws IOException {
         mAndroidHome = System.getenv("ANDROID_HOME");
         Assert.notNull(mAndroidHome, "ANDROID_HOME env var must be set and pointing to the home path of Android SDK.");

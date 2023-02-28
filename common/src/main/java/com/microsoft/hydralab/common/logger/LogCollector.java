@@ -4,6 +4,8 @@ package com.microsoft.hydralab.common.logger;
 
 public interface LogCollector {
     String start();
+
     void stopAndAnalyse();
+
     boolean isCrashFound();
 }

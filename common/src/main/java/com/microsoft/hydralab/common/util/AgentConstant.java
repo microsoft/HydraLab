@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class AgentConstant {
     public static final String UNKNOWN_IOS_MODEL = "Unknown iOS Device";
-    public static final Map<String, String> iOSProductModelMap  = new HashMap<String, String>() {{
+    public static final Map<String, String> iOSProductModelMap = new HashMap<String, String>() {{
         put("i386", "iPhone Simulator");
         put("x86_64", "iPhone Simulator");
         put("arm64", "iPhone Simulator");

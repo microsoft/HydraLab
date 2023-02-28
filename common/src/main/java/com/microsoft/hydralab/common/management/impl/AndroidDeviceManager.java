@@ -676,7 +676,7 @@ public class AndroidDeviceManager extends DeviceManager {
         String dump = dumpView(deviceInfo, logger);
         // classLogger.info("Dump on {}: {}", adbDeviceInfo.getSerialNum(), dump);
         if (StringUtils.isBlank(dump)) {
-            logger.error("did not find element with text {} on {}", Arrays.asList(possibleTexts).toString(), deviceInfo.getSerialNum());
+            logger.error("did not find element with text {} on {}", Arrays.asList(possibleTexts), deviceInfo.getSerialNum());
             return false;
         }
         Document viewTree = Jsoup.parse(dump, "", Parser.xmlParser());

@@ -17,12 +17,12 @@ import java.io.File;
 /**
  * WindowsBatteryInspector is only suitable for the Windows devices with battery,
  * since powercfg command runs only on those devices.
- *
+ * <p>
  * Note:
  * powercfg command needs the elevated privileges of powershell, and UAC (User Account Control) dialog may pop up during
  * the elevation process to block the testing. There is a workaround to disable the UAC dialog by setting "Never notify"
  * in the UAC settings panel.
- *
+ * <p>
  * TODO:
  * Need to verify if the agent configured with elevated privileges can bypass the UAC popup without changing the UAC
  * configuration.
@@ -38,8 +38,7 @@ public class WindowsBatteryInspector implements PerformanceInspector {
     @Override
     public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
         ITestRun testRun = TestRunThreadContext.getTestRun();
-        if (testRun == null)
-        {
+        if (testRun == null) {
             classLogger.error("TestRunThreadContext.getTestRun() return null.");
             return null;
         }
@@ -50,8 +49,7 @@ public class WindowsBatteryInspector implements PerformanceInspector {
         PerformanceInspectionResult result = new PerformanceInspectionResult(rawResultFile, performanceInspection);
 
         try {
-            if (process != null && process.waitFor() != 0)
-            {
+            if (process != null && process.waitFor() != 0) {
                 classLogger.error("Exit code: " + process.exitValue());
             }
         } catch (InterruptedException e) {

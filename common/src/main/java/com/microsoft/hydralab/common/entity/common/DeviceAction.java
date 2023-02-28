@@ -18,16 +18,16 @@ public class DeviceAction implements Serializable {
     private List<String> args = new ArrayList<>();
 
 
-    public interface When {
-        String SET_UP = "setUp";
-        String TEAR_DOWN = "tearDown";
-    }
-
     public DeviceAction() {
     }
 
     public DeviceAction(String deviceType, String method) {
         this.deviceType = deviceType;
         this.method = method;
+    }
+
+    public interface When {
+        String SET_UP = "setUp";
+        String TEAR_DOWN = "tearDown";
     }
 }
