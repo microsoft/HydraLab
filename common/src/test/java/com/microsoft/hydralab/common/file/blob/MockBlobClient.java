@@ -3,10 +3,10 @@
 package com.microsoft.hydralab.common.file.blob;
 
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
-import com.microsoft.hydralab.common.file.impl.blob.BlobProperty;
-import com.microsoft.hydralab.common.file.impl.blob.BlobClientAdapter;
-import com.microsoft.hydralab.common.file.impl.blob.SASData;
-import com.microsoft.hydralab.common.file.impl.blob.SASPermission;
+import com.microsoft.hydralab.common.file.impl.azure.BlobProperty;
+import com.microsoft.hydralab.common.file.impl.azure.BlobClientAdapter;
+import com.microsoft.hydralab.common.file.impl.azure.SASData;
+import com.microsoft.hydralab.common.file.impl.azure.SASPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;

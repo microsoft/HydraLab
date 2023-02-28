@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
-import com.microsoft.hydralab.common.file.impl.blob.BlobConstants;
+import com.microsoft.hydralab.common.file.impl.azure.BlobConstants;
 
 public enum EntityType {
     APP_FILE_SET("FILE_SET", BlobConstants.PKG_BLOB_NAME),

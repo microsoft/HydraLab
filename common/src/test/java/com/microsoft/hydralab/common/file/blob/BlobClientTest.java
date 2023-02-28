@@ -4,7 +4,7 @@ import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.file.impl.blob.*;
+import com.microsoft.hydralab.common.file.impl.azure.*;
 import com.microsoft.hydralab.common.test.BaseTest;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.ThreadUtils;

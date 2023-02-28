@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.file.impl.blob;
+package com.microsoft.hydralab.common.file.impl.azure;
 
 public interface BlobConstants {
     String PKG_BLOB_NAME = "pkgstore";

@@ -10,7 +10,7 @@ import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.file.impl.blob.BlobClientAdapter;
+import com.microsoft.hydralab.common.file.impl.azure.BlobClientAdapter;
 import com.microsoft.hydralab.common.management.AgentType;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.DeviceManager;

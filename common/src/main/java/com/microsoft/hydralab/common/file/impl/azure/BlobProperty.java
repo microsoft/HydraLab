@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.file.impl.blob;
+package com.microsoft.hydralab.common.file.impl.azure;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
