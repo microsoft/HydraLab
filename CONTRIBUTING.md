@@ -42,9 +42,10 @@ And you can also trigger the run in the Gradle panel of IDEA:
 *Drafting.* If you are going to apply a huge change to the code, to minimize the possible impact and code review pressure, here are some guide on the general steps we can follow:
 - Create a new PR for UML update to clarify/illustrate the changes on class relations and new interface definitions.
 - Create a PR to check in the interfaces and abstract classes, and create some unit test to define the behavior of the entities/components.
-- Start the PR(s) for implementation and tweak the UT during the process. 
+- Start the PR(s) for implementation and tweak the UT during the process.
 
-Ideally, the above steps could help you win incremental approval from the team and 
+Ideally, the above steps could help you win incremental approval from the team faster and break down your changes into smaller and more manageable tasks.
+Some more instructions you can refer to: [Dealing with large Pull Requests](https://www.soundstep.com/posts/dealing-with-large-pull-requests/) | [Optimal pull request size](https://dev.to/bosepchuk/optimal-pull-request-size-600).
 
 ## Coding style conventions
 
