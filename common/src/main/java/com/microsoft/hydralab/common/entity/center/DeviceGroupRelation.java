@@ -21,9 +21,7 @@ public class DeviceGroupRelation implements Serializable {
     @Id
     private String deviceSerial;
 
-    public DeviceGroupRelation() {
-    }
-
+    public DeviceGroupRelation() {}
     public DeviceGroupRelation(String groupName, String deviceSerial) {
         this.deviceSerial = deviceSerial;
         this.groupName = groupName;

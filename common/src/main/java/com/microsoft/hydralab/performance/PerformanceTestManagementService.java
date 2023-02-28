@@ -48,6 +48,10 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private final Map<String, List<InspectionStrategy>> testLifeCycleStrategyMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, PerformanceTestResult>> testRunPerfResultMap = new ConcurrentHashMap<>();
 
+    public void initialize() {
+        PerformanceInspectionService.getInstance().swapImplementation(this);
+    }
+
     @NotNull
     private static PerformanceTestResult createPerformanceTestResult(PerformanceInspection performanceInspection) {
         PerformanceTestResult performanceTestResult = new PerformanceTestResult();
@@ -58,10 +62,6 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
     private static PerformanceResultParser.PerformanceResultParserType getParserTypeByInspection(PerformanceInspection performanceInspection) {
         return inspectorParserTypeMap.get(performanceInspection.inspectorType);
-    }
-
-    public void initialize() {
-        PerformanceInspectionService.getInstance().swapImplementation(this);
     }
 
     private PerformanceInspector getInspectorByType(PerformanceInspector.PerformanceInspectorType inspectorType) {

@@ -9,8 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
-    protected static final int DEFAULT_TIMEOUT_IN_SECOND = 600;
     static final Logger CLASS_LOGGER = LoggerFactory.getLogger(IOSAppiumScreenRecorder.class);
+
+    protected static final int DEFAULT_TIMEOUT_IN_SECOND = 600;
     static final String INTERRUPT_SCRIPT_PATH = "InterruptProcess.ps1";
     protected DeviceManager deviceManager;
     protected IOSDriver iosDriver;

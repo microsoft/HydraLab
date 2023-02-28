@@ -13,13 +13,13 @@ public class AccessInfo {
     private String key;
     private Date ingestTime;
 
-    public AccessInfo(String name) {
+    public AccessInfo(String name){
         this.name = name;
-        key = UUID.randomUUID().toString().replace("-", "");
+        key = UUID.randomUUID().toString().replace("-","");
         ingestTime = new Date();
     }
 
-    public interface TYPE {
+    public interface TYPE{
         String GROUP = "GROUP";
         String DEVICE = "DEVICE";
     }

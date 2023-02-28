@@ -2,14 +2,11 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.utils;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.microsoft.hydralab.config.DeviceConfig;
 import com.microsoft.hydralab.config.HydraLabAPIConfig;
 import com.microsoft.hydralab.config.TestConfig;
-import com.microsoft.hydralab.entity.AttachmentInfo;
-import com.microsoft.hydralab.entity.TestTask;
+import com.microsoft.hydralab.entity.*;
 import okhttp3.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.hydralab.utils.CommonUtils.*;

@@ -31,6 +31,11 @@ public class AgentUser {
     @Transient
     private BatteryStrategy batteryStrategy;
 
+    public interface DeviceType {
+        int ANDROID = 1;
+        int WINDOWS = 2;
+    }
+
     public enum BatteryStrategy {
         /**
          * Strategy Name
@@ -46,10 +51,5 @@ public class AgentUser {
             this.wakeUpInterval = wakeUpInterval;
             this.screenShotInterval = screenShotInterval;
         }
-    }
-
-    public interface DeviceType {
-        int ANDROID = 1;
-        int WINDOWS = 2;
     }
 }

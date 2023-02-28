@@ -4,6 +4,7 @@ package com.microsoft.hydralab.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.hydralab.config.DeviceConfig;
 import com.microsoft.hydralab.config.HydraLabAPIConfig;
 import com.microsoft.hydralab.config.TestConfig;
 import org.yaml.snakeyaml.Yaml;

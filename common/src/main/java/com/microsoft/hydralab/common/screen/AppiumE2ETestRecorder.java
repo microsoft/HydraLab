@@ -18,7 +18,7 @@ import java.time.Duration;
 import java.util.Base64;
 
 public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
-    private final WindowsDriver windowsDriver;
+    private WindowsDriver windowsDriver;
 
     public AppiumE2ETestRecorder(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
         super(deviceManager, adbOperateUtil, deviceInfo, baseFolder, logger);

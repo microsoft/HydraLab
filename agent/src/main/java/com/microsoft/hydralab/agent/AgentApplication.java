@@ -21,7 +21,7 @@ import java.util.Arrays;
 @EnableWebMvc
 @EnableAsync
 @ComponentScan(basePackages = {"com.microsoft.hydralab"})
-@EnableJpaRepositories(basePackages = {"com.microsoft.hydralab.common.repository", "com.microsoft.hydralab.agent.repository"})
+@EnableJpaRepositories(basePackages = {"com.microsoft.hydralab.common.repository","com.microsoft.hydralab.agent.repository"})
 @EntityScan(basePackages = {"com.microsoft.hydralab.common.entity.agent", "com.microsoft.hydralab.common.entity.common"})
 @PropertySource(value = {"classpath:version.properties"}, encoding = "utf-8")
 @Slf4j

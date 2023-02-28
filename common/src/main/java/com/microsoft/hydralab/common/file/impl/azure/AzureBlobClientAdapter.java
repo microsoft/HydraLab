@@ -18,8 +18,7 @@ import com.azure.storage.common.sas.AccountSasService;
 import com.azure.storage.common.sas.AccountSasSignatureValues;
 import com.google.common.net.MediaType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
-import com.microsoft.hydralab.common.file.AccessToken;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
+import com.microsoft.hydralab.common.file.*;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +34,8 @@ import java.time.temporal.ChronoUnit;
 
 public class AzureBlobClientAdapter extends StorageServiceClient {
     private static boolean isAuthedBySAS = true;
-    Logger classLogger = LoggerFactory.getLogger(AzureBlobClientAdapter.class);
     private BlobServiceClient blobServiceClient;
+    Logger classLogger = LoggerFactory.getLogger(AzureBlobClientAdapter.class);
     private long SASExpiryUpdate;
     private SASData sasDataInUse = null;
     private SASData sasDataForUpdate = null;

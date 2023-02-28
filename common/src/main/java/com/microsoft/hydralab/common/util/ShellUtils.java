@@ -13,7 +13,8 @@ public class ShellUtils {
     public static final String POWER_SHELL_PATH = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
     public static boolean isConnectedToWindowsOS = System.getProperty("os.name").startsWith("Windows");
 
-    private static String[] getFullCommand(String command) {
+    private static String[] getFullCommand(String command)
+    {
         String shellProcess = "";
         String args = "";
 

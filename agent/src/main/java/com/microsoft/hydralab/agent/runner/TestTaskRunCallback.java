@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 
 public interface TestTaskRunCallback {
     void onTaskStart(TestTask testTask);
-
     void onTaskComplete(TestTask testTask);
 
     void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result);

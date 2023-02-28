@@ -41,13 +41,11 @@ public class StorageFileInfo implements Serializable {
     public StorageFileInfo() {
 
     }
-
-    public StorageFileInfo(File file, String relativePath, String fileType, String loadType, String loadDir) {
+    public StorageFileInfo(File file, String relativePath, String fileType, String loadType, String loadDir){
         this(file, relativePath, fileType);
         this.loadType = loadType;
         this.loadDir = loadDir;
     }
-
     public StorageFileInfo(File file, String relativePath, String fileType) {
         this.fileType = fileType;
         this.fileName = file.getName();

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.config;
 
+import java.util.HashMap;
 import java.util.Locale;
 
 public class HydraLabAPIConfig {

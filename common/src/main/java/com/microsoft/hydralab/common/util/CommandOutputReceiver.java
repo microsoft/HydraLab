@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class CommandOutputReceiver extends Thread {
-    private final InputStream inputStream;
-    private final Logger logger;
+    private InputStream inputStream;
+    private Logger logger;
 
     public CommandOutputReceiver(InputStream inputStream, Logger logger) {
         this.inputStream = inputStream;

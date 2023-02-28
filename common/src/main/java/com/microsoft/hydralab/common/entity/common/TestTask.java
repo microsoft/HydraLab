@@ -26,6 +26,8 @@ public class TestTask implements Serializable {
     @Transient
     private static final String defaultRunner = "androidx.test.runner.AndroidJUnitRunner";
     @Transient
+    private List<String> neededPermissions;
+    @Transient
     public transient File appFile;
     // more like test bundle after we support appium jar
     @Transient
@@ -34,8 +36,6 @@ public class TestTask implements Serializable {
     public transient List<File> testJsonFileList = new ArrayList<>();
     @Transient
     public Set<String> agentIds = new HashSet<>();
-    @Transient
-    private List<String> neededPermissions;
     @Id
     private String id = UUID.randomUUID().toString();
     private int testDevicesCount;
@@ -115,7 +115,8 @@ public class TestTask implements Serializable {
         testTask.setDeviceActions(testTaskSpec.deviceActions);
         if (testTaskSpec.instrumentationArgs != null) {
             testTask.setInstrumentationArgs(testTaskSpec.instrumentationArgs);
-        } else {
+        }
+        else {
             testTask.setInstrumentationArgs(testTaskSpec.testRunArgs);
         }
         testTask.setFileSetId(testTaskSpec.fileSetId);

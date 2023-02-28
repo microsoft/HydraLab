@@ -46,7 +46,8 @@ public class WindowsMemoryInspector implements PerformanceInspector {
         initializeIfNeeded(performanceInspection);
 
         ITestRun testRun = TestRunThreadContext.getTestRun();
-        if (testRun == null) {
+        if (testRun == null)
+        {
             classLogger.error("TestRunThreadContext.getTestRun() return null.");
             return null;
         }
@@ -59,7 +60,8 @@ public class WindowsMemoryInspector implements PerformanceInspector {
         PerformanceInspectionResult result = new PerformanceInspectionResult(rawResultFile, performanceInspection);
 
         try {
-            if (process != null && process.waitFor() != 0) {
+            if (process != null && process.waitFor() != 0)
+            {
                 classLogger.error("Exit code: " + process.exitValue());
             }
         } catch (InterruptedException e) {

@@ -4,8 +4,8 @@ package com.microsoft.hydralab.common.screen;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
-import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 

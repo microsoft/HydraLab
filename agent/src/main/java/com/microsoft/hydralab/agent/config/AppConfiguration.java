@@ -213,10 +213,11 @@ public class AppConfiguration {
     @ConditionalOnProperty(prefix = "management.metrics.export.prometheus.pushgateway", name = "enabled", havingValue = "true")
     public MetricPushGateway pushGateway(PrometheusProperties prometheusProperties) throws MalformedURLException {
         String baseUrl = prometheusProperties.getPushgateway().getBaseUrl();
-        if (!baseUrl.startsWith("http")) {
+        if (!baseUrl.startsWith("http")){
             if (baseUrl.startsWith("127.0.0.1") || baseUrl.startsWith("localhost")) {
                 baseUrl = "http://" + baseUrl;
-            } else {
+            }
+            else {
                 baseUrl = "https://" + baseUrl;
             }
         }

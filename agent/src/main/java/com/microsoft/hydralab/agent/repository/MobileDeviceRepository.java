@@ -7,6 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MobileDeviceRepository extends JpaRepository<MobileDevice, String> {
     int countBySerialNum(String serialNum);
-
     MobileDevice getFirstBySerialNum(String serialNum);
 }

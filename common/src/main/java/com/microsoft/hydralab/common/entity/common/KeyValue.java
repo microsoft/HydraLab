@@ -18,11 +18,6 @@ public class KeyValue implements Serializable {
     public KeyValue() {
     }
 
-    public KeyValue(String key, String value) {
-        this.keyid = key;
-        this.value = value;
-    }
-
     public String getKey() {
         return keyid;
     }
@@ -30,15 +25,19 @@ public class KeyValue implements Serializable {
     public void setKey(String key) {
         this.keyid = key;
     }
-
     @Lob
     @Basic(fetch = FetchType.EAGER)
-    @Column(name = "value", columnDefinition = "CLOB", nullable = true)
+    @Column(name="value", columnDefinition="CLOB", nullable=true)
     public String getValue() {
         return value;
     }
 
     public void setValue(String value) {
+        this.value = value;
+    }
+
+    public KeyValue(String key, String value) {
+        this.keyid = key;
         this.value = value;
     }
 }

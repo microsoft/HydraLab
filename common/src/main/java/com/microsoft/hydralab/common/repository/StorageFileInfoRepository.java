@@ -9,8 +9,6 @@ import java.util.List;
 
 public interface StorageFileInfoRepository extends JpaRepository<StorageFileInfo, String> {
     List<StorageFileInfo> queryStorageFileInfoByMd5(String MD5);
-
     List<StorageFileInfo> queryStorageFileInfoByFileType(String fileType);
-
     List<StorageFileInfo> queryStorageFileInfoByFileTypeOrderByCreateTimeDesc(String fileType);
 }

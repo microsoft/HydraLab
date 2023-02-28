@@ -51,7 +51,7 @@ public class IOSLogCollector implements LogCollector {
                 connectedDevice.addCurrentProcess(logProcess);
             }
             infoLogger.info("Start to fetch the system log of iOS device");
-        } catch (Exception e) {
+        }catch (Exception e) {
             infoLogger.info("fail to fetch the system log of iOS device");
         }
         return loggerFilePath;

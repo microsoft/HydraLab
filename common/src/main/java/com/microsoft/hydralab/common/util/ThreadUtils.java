@@ -26,7 +26,7 @@ public class ThreadUtils {
                         try {
                             task.processOne(item, j - start);
                         } catch (Exception e) {
-                            task.onError(item, e);
+                            task.onError(item,e);
                         }
                     }
                     countDownLatch.countDown();
@@ -40,17 +40,17 @@ public class ThreadUtils {
         }
     }
 
+    public interface ParallelTask<T> {
+        void processOne(T item, int innerIndex) throws Exception;
+
+        void onError(T item, Exception e);
+    }
+
     public static void safeSleep(long millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    public interface ParallelTask<T> {
-        void processOne(T item, int innerIndex) throws Exception;
-
-        void onError(T item, Exception e);
     }
 }

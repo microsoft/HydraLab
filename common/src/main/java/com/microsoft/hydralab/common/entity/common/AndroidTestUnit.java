@@ -74,6 +74,22 @@ public class AndroidTestUnit implements Serializable {
         return currentIndexNum + getTestClassShortName() + testName;
     }
 
+    /**
+     * Copied from {@link com.android.ddmlib.testrunner.InstrumentationResultParser} private class StatusCodes
+     * The original constants are inaccessible.
+     */
+    public interface StatusCodes {
+        int START = 1;
+        int IN_PROGRESS = 2;
+
+        // codes used for test completed
+        int ASSUMPTION_FAILURE = -4;
+        int IGNORED = -3;
+        int FAILURE = -2;
+        int ERROR = -1;
+        int OK = 0;
+    }
+
     public String getStatusDesc() {
         switch (statusCode) {
             case StatusCodes.OK:
@@ -118,22 +134,6 @@ public class AndroidTestUnit implements Serializable {
             return "";
         }
         return stack.replace("\n", "<br>");
-    }
-
-    /**
-     * Copied from {@link com.android.ddmlib.testrunner.InstrumentationResultParser} private class StatusCodes
-     * The original constants are inaccessible.
-     */
-    public interface StatusCodes {
-        int START = 1;
-        int IN_PROGRESS = 2;
-
-        // codes used for test completed
-        int ASSUMPTION_FAILURE = -4;
-        int IGNORED = -3;
-        int FAILURE = -2;
-        int ERROR = -1;
-        int OK = 0;
     }
 
 }

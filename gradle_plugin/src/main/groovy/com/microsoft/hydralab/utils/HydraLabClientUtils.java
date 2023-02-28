@@ -2,16 +2,10 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.utils;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.microsoft.hydralab.config.HydraLabAPIConfig;
 import com.microsoft.hydralab.config.TestConfig;
-import com.microsoft.hydralab.entity.AttachmentInfo;
-import com.microsoft.hydralab.entity.DeviceTestResult;
-import com.microsoft.hydralab.entity.StorageFileInfo;
-import com.microsoft.hydralab.entity.TestTask;
+import com.microsoft.hydralab.entity.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -20,16 +14,16 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.hydralab.utils.CommonUtils.*;
 
 public class HydraLabClientUtils {
+    private static HydraLabAPIClient hydraLabAPIClient = new HydraLabAPIClient();
     private static final int waitStartSec = 30;
     private static final int minWaitFinishSec = 15;
-    private static HydraLabAPIClient hydraLabAPIClient = new HydraLabAPIClient();
+
     private static boolean isTestRunningFailed = false;
     private static boolean isTestResultFailed = false;
 

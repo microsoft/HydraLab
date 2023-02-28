@@ -13,7 +13,6 @@ import java.util.UUID;
 @Data
 @Entity
 public class MobileDevice {
-    private final Date ingestTime;
     private String serialNum;
     private String name;
     private String manufacturer;
@@ -25,6 +24,7 @@ public class MobileDevice {
     private Boolean isPrivate = false;
     @Id
     private String id;
+    private final Date ingestTime;
 
     public MobileDevice() {
         id = UUID.randomUUID().toString();
