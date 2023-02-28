@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
+import com.microsoft.hydralab.common.file.impl.azure.SASData;
 import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.PkgUtil.FILE_SUFFIX;
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +50,8 @@ public class PackageSetController {
     private SysUserService sysUserService;
     @Resource
     private UserTeamManagementService userTeamManagementService;
+    @Resource
+    private StorageTokenManageService storageTokenManageService;
 
     /**
      * Authenticated USER:
@@ -422,5 +425,14 @@ public class PackageSetController {
         testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
         testFileSetService.saveFileSetToMem(testFileSet);
         return Result.ok(testFileSet);
+    }
+
+    @Deprecated
+    @GetMapping("/api/package/getSAS")
+    public Result<SASData> generateReadSAS(@CurrentSecurityContext SysUser requestor) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+        return Result.ok((SASData) storageTokenManageService.temporaryGetReadSAS(requestor.getMailAddress()));
     }
 }

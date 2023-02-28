@@ -14,6 +14,8 @@ import java.time.OffsetDateTime;
 
 @Data
 public class SASData implements AccessToken {
+    @Deprecated
+    private String signature;
     private String token;
     private String endpoint;
     private OffsetDateTime expiredTime;
@@ -21,7 +23,14 @@ public class SASData implements AccessToken {
     private String cdnUrl;
     private SASPermission sasPermission;
 
+    @Override
     public String getToken() {
         return token;
+    }
+
+    @Deprecated
+    @Override
+    public void copySignature() {
+        signature = token;
     }
 }

@@ -49,4 +49,18 @@ public class StorageTokenManageService {
         return accessToken;
     }
 
+    @Deprecated
+    public AccessToken temporaryGetReadSAS(String uniqueId) {
+        Assert.notNull(uniqueId, "The key of access token can't be null!");
+        AccessToken accessToken = accessTokenMap.get(uniqueId);
+
+        if (accessToken == null || storageServiceClient.isAccessTokenExpired(accessToken)) {
+            accessToken = storageServiceClient.generateAccessToken(Const.FilePermission.READ);
+            Assert.notNull(accessToken, "Current storage service doesn't config READ permission!");
+            accessTokenMap.put(uniqueId, accessToken);
+        }
+
+        accessToken.copySignature();
+        return accessToken;
+    }
 }
