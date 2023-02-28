@@ -16,6 +16,8 @@ import org.mockito.Mockito;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
@@ -208,9 +210,9 @@ public class ClientUtilsPluginTest {
         when(client.getTestStatus(Mockito.any(HydraLabAPIConfig.class), Mockito.anyString()))
                 .thenReturn(returnTestTask);
 
-        String returnFileToken = "TOKEN";
-        when(client.getStorageToken(Mockito.any(HydraLabAPIConfig.class)))
-                .thenReturn(returnFileToken);
+        String returnBlobSAS = "SAS";
+        when(client.getBlobSAS(Mockito.any(HydraLabAPIConfig.class)))
+                .thenReturn(returnBlobSAS);
 
         HydraLabClientUtils.switchClientInstance(client);
         HydraLabClientUtils.runTestOnDeviceWithApp(reportFolderPath, apiConfig, testConfig);

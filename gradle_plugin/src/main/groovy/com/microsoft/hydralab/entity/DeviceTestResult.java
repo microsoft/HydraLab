@@ -15,7 +15,7 @@ public class DeviceTestResult {
     public String logcatBlobUrl;
     public String testGifBlobUrl;
 
-    public List<StorageFileInfo> attachments;
+    public List<BlobFileInfo> attachments;
 
     public String crashStackId;
     public String errorInProcess;

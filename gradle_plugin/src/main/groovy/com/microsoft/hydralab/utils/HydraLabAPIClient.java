@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.microsoft.hydralab.utils.CommonUtils.*;
@@ -308,10 +309,10 @@ public class HydraLabAPIClient {
         }
     }
 
-    public String getStorageToken(HydraLabAPIConfig apiConfig) {
+    public String getBlobSAS(HydraLabAPIConfig apiConfig) {
         Request req = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + apiConfig.authToken)
-                .url(apiConfig.getStorageTokenUrl())
+                .url(apiConfig.getBlobSASUrl())
                 .build();
         OkHttpClient clientToUse = client;
         Response response = null;
@@ -319,23 +320,23 @@ public class HydraLabAPIClient {
             response = clientToUse.newCall(req).execute();
             int waitingRetry = httpFailureRetryTimes;
             while (!response.isSuccessful() && waitingRetry > 0) {
-                printlnf("##[warning]Get storage token failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
+                printlnf("##[warning]Get Blob SAS failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
                 response = clientToUse.newCall(req).execute();
                 waitingRetry--;
             }
 
-            assertTrue(response.isSuccessful(), "Get storage token", response);
+            assertTrue(response.isSuccessful(), "Get Blob SAS", response);
             ResponseBody body = response.body();
 
-            assertNotNull(body, response + ": storage token");
+            assertNotNull(body, response + ": Blob SAS");
             JsonObject jsonObject = GSON.fromJson(body.string(), JsonObject.class);
 
             int resultCode = jsonObject.get("code").getAsInt();
             assertTrue(resultCode == 200, "Server returned code: " + resultCode, jsonObject);
 
-            return jsonObject.getAsJsonObject("content").getAsString();
+            return jsonObject.getAsJsonObject("content").get("signature").getAsString();
         } catch (Exception e) {
-            throw new RuntimeException("Get storage token fail: " + e.getMessage(), e);
+            throw new RuntimeException("Get Blob SAS fail: " + e.getMessage(), e);
         } finally {
             response.close();
         }
