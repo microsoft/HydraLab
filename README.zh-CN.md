@@ -125,13 +125,13 @@ java -jar agent/build/libs/agent.jar
 ![Tech Architecture](docs/images/technical_architecture.png)
 
 <span id="for-user"></span>
-### For Hydra Lab User:
+### 对于Hydra Lab用户:
 
 - [Trigger a test task run in the Hydra Lab test service](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
 - [Deploy a test agent service](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
 - [Create an Appium UI Test Automation Project](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
 
-> Note: If you are a Microsoft FTE and want to onboard to the internal Hydra Lab testing service, please visit [our SharePoint site](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) to learn more about the internal service instance.
+> 注意：如果您是Microsoft FTE并希望加入内部Hydra Lab测试服务，请访问 [我们的SharePoint网站](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) 以了解有关内部服务实例的详细信息。
 
 <span id="for-contributor"></span>
 ### 参与贡献Hydra Lab:
