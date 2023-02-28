@@ -61,7 +61,7 @@ public class TestRun implements Serializable, ITestRun {
     @Transient
     private JSONArray videoTimeTagArr = new JSONArray();
     @Transient
-    private String videoDownloadUrl;
+    private String videoBlobUrl;
     @Transient
     private List<StorageFileInfo> attachments;
 
@@ -151,8 +151,8 @@ public class TestRun implements Serializable, ITestRun {
         return getBlobUrlStr(testGifPath);
     }
 
-    public void setVideoDownloadUrl() {
-        videoDownloadUrl = deviceTestResultFolderUrl + "/" + Const.ScreenRecoderConfig.DEFAULT_FILE_NAME;
+    public void setVideoBlobUrl() {
+        videoBlobUrl = deviceTestResultFolderUrl + "/" + Const.ScreenRecoderConfig.DEFAULT_FILE_NAME;
     }
 
     private String getBlobUrlStr(String path) {

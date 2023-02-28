@@ -55,7 +55,7 @@ public class MockAzureBlobClient extends AzureBlobClientAdapter {
 
     @Override
     public StorageFileInfo upload(File uploadFile, StorageFileInfo fileInfo) {
-        fileInfo.setFileDownloadUrl("downloadUrl");
+        fileInfo.setBlobUrl("downloadUrl");
         classLogger.info("Upload blob client successfully!");
         return fileInfo;
     }

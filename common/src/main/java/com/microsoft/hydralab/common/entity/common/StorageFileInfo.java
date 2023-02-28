@@ -8,15 +8,13 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.DigestUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.*;
 import java.util.Date;
 
 @Entity
 @Data
+@Table(name = "blob_file_info")
 public class StorageFileInfo implements Serializable {
     @Id
     @Column(name = "file_id", nullable = false)
@@ -24,10 +22,10 @@ public class StorageFileInfo implements Serializable {
     private String fileType;
     private String fileName;
 
-    private String fileDownloadUrl;
-    private String storageContainer;
-    // relative to storageContainer
-    private String fileRelPath;
+    private String blobUrl;
+    private String blobContainer;
+    // relative to blobContainer
+    private String blobPath;
 
     private long fileLen;
     private String md5;
@@ -52,7 +50,7 @@ public class StorageFileInfo implements Serializable {
         this.fileType = fileType;
         this.fileName = file.getName();
         this.fileLen = file.length();
-        this.fileRelPath = relativePath + "/" + file.getName();
+        this.blobPath = relativePath + "/" + file.getName();
 
         try {
             FileInputStream inputStream = new FileInputStream(file);
@@ -69,8 +67,8 @@ public class StorageFileInfo implements Serializable {
         this.fileType = fileType;
         this.fileName = file.getName();
         this.fileLen = file.length();
-        this.fileRelPath = relativePath + "/" + file.getName();
-        this.storageContainer = entityType.storageContainer;
+        this.blobPath = relativePath + "/" + file.getName();
+        this.blobContainer = entityType.storageContainer;
 
         try {
             FileInputStream inputStream = new FileInputStream(file);

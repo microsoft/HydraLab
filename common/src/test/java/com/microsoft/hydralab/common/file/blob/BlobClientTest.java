@@ -50,8 +50,8 @@ class BlobClientTest extends BaseTest {
     @Order(1)
     void uploadFile() {
         StorageFileInfo fileInfo = new StorageFileInfo(sampleFile, "test/unit/" + sampleFile.getName(), StorageFileInfo.FileType.APP_FILE, EntityType.APP_FILE_SET);
-        fileInfo.setStorageContainer(property.getAppFileContainerName());
-        String downloadUrl = storageServiceClient.upload(sampleFile, fileInfo).getFileDownloadUrl();
+        fileInfo.setBlobContainer(property.getAppFileContainerName());
+        String downloadUrl = storageServiceClient.upload(sampleFile, fileInfo).getBlobUrl();
         logger.info("Upload sample file finished, blobUrl: " + downloadUrl);
         Assertions.assertNotNull(downloadUrl, "Upload File Failed!");
     }
@@ -65,8 +65,8 @@ class BlobClientTest extends BaseTest {
             fileInfo.setFileType(StorageFileInfo.FileType.APP_FILE);
             fileInfo.setFileName(sampleFile_copy.getName());
             fileInfo.setFileLen(sampleFile_copy.length());
-            fileInfo.setFileRelPath("test/unit/" + sampleFile.getName());
-            fileInfo.setStorageContainer(property.getAppFileContainerName());
+            fileInfo.setBlobPath("test/unit/" + sampleFile.getName());
+            fileInfo.setBlobContainer(property.getAppFileContainerName());
             StorageFileInfo properties = storageServiceClient.download(sampleFile_copy, fileInfo);
             logger.info("Download sample file finished, properties: " + properties);
             Assertions.assertNotNull(properties, "Download File Failed!");

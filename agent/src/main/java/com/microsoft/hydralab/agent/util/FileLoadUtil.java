@@ -79,7 +79,7 @@ public class FileLoadUtil {
     public void installWinApp(StorageFileInfo attachment) {
         try {
             Runtime runtime = Runtime.getRuntime();
-            File attachmentFile = downloadFile(attachment, appOptions.getTestPackageLocation(), attachment.getFileRelPath());
+            File attachmentFile = downloadFile(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
             String installCommand = "& { Add-AppxPackage -ForceApplicationShutdown -forceupdatefromanyversion -Path '" +
                     attachmentFile.getAbsolutePath() + "' }";
             String[] command = new String[]{"Powershell.exe", "-Command", installCommand};
@@ -115,7 +115,7 @@ public class FileLoadUtil {
 
     private File downloadFile(StorageFileInfo attachment, String location, String targetFilePath) throws IOException {
         File file = new File(location, targetFilePath);
-        log.debug("download file from {} to {}", attachment.getFileDownloadUrl(), file.getAbsolutePath());
+        log.debug("download file from {} to {}", attachment.getBlobUrl(), file.getAbsolutePath());
         storageServiceClient.download(file, attachment);
         return file;
     }
@@ -123,7 +123,7 @@ public class FileLoadUtil {
     private File downloadFile(StorageFileInfo attachment) {
         File file = null;
         try {
-            file = downloadFile(attachment, appOptions.getTestPackageLocation(), attachment.getFileRelPath());
+            file = downloadFile(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
             log.info("Download file success");
         } catch (IOException e) {
             log.error("Download file failed", e);

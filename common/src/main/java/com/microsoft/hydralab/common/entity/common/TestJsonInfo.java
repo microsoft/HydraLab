@@ -18,9 +18,9 @@ public class TestJsonInfo {
     private long id;
     private String packageName;
     private String caseName;
-    private String storageContainer;
-    private String fileRelPath;
-    private String fileDownloadUrl;
+    private String blobContainer;
+    private String blobPath;
+    private String blobUrl;
     private boolean isLatest;
     @Column(name = "team_id")
     private String teamId;

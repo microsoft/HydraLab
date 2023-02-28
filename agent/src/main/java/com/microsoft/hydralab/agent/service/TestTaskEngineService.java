@@ -215,7 +215,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
         Assert.isTrue(result.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
-        String deviceTestResultBlobUrl = result.getAttachments().get(0).getFileDownloadUrl();
+        String deviceTestResultBlobUrl = result.getAttachments().get(0).getBlobUrl();
         String fileName = result.getAttachments().get(0).getFileName();
         log.info("deviceTestResultBlobUrl is {}", deviceTestResultBlobUrl);
 

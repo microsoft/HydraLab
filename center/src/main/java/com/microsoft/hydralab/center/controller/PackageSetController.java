@@ -269,7 +269,7 @@ public class PackageSetController {
             String newFileName = formatDate.format(testJsonInfo.getIngestTime()) + FILE_SUFFIX.JSON_FILE;
             File savedJson = attachmentService.verifyAndSaveFile(testJsonFile, parentDir, false, newFileName, new String[]{FILE_SUFFIX.JSON_FILE});
             String fileRelPath = fileRelativePath + "/" + savedJson.getName();
-            testJsonInfo.setFileRelPath(fileRelPath);
+            testJsonInfo.setBlobPath(fileRelPath);
 
             return Result.ok(attachmentService.addTestJsonFile(testJsonInfo, savedJson, EntityType.TEST_JSON, logger));
         } catch (HydraLabRuntimeException e) {

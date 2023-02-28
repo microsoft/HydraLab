@@ -39,7 +39,7 @@ public class AttachmentService {
     public StorageFileInfo addAttachment(String entityId, EntityType entityType, StorageFileInfo fileInfo, File file, Logger logger) {
         boolean recordExists = false;
 
-        fileInfo.setStorageContainer(entityType.storageContainer);
+        fileInfo.setBlobContainer(entityType.storageContainer);
         List<StorageFileInfo> tempFileInfos = storageFileInfoRepository.queryStorageFileInfoByMd5(fileInfo.getMd5());
         for (StorageFileInfo tempFileInfo : tempFileInfos) {
             if (compareFileInfo(fileInfo, tempFileInfo)) {
@@ -66,9 +66,9 @@ public class AttachmentService {
         fileInfo.setFileParser(PkgUtil.analysisFile(file, entityType));
         fileInfo.setCreateTime(new Date());
         fileInfo.setUpdateTime(new Date());
-        fileInfo.setStorageContainer(entityType.storageContainer);
+        fileInfo.setBlobContainer(entityType.storageContainer);
         fileInfo.setCDNUrl(storageServiceClient.getCdnUrl());
-        fileInfo.setFileDownloadUrl(saveFileInStorage(file, fileInfo, logger));
+        fileInfo.setBlobUrl(saveFileInStorage(file, fileInfo, logger));
         storageFileInfoRepository.save(fileInfo);
         return fileInfo;
     }
@@ -77,18 +77,18 @@ public class AttachmentService {
         int days = (int) ((new Date().getTime() - oldFileInfo.getUpdateTime().getTime()) / 1000 / 60 / 60 / 24);
         if (days >= storageServiceClient.getFileLimitDay()) {
             oldFileInfo.setUpdateTime(new Date());
-            oldFileInfo.setStorageContainer(entityType.storageContainer);
+            oldFileInfo.setBlobContainer(entityType.storageContainer);
             oldFileInfo.setCDNUrl(storageServiceClient.getCdnUrl());
-            oldFileInfo.setFileDownloadUrl(saveFileInStorage(file, oldFileInfo, logger));
+            oldFileInfo.setBlobUrl(saveFileInStorage(file, oldFileInfo, logger));
             storageFileInfoRepository.save(oldFileInfo);
         }
         return oldFileInfo;
     }
 
     public TestJsonInfo addTestJsonFile(TestJsonInfo testJsonInfo, File file, EntityType entityType, Logger logger) {
-        StorageFileInfo fileInfo = new StorageFileInfo(file, testJsonInfo.getFileRelPath(), StorageFileInfo.FileType.T2C_JSON_FILE, entityType);
-        testJsonInfo.setFileDownloadUrl(saveFileInStorage(file, fileInfo, logger));
-        testJsonInfo.setStorageContainer(entityType.storageContainer);
+        StorageFileInfo fileInfo = new StorageFileInfo(file, testJsonInfo.getBlobPath(), StorageFileInfo.FileType.T2C_JSON_FILE, entityType);
+        testJsonInfo.setBlobUrl(saveFileInStorage(file, fileInfo, logger));
+        testJsonInfo.setBlobContainer(entityType.storageContainer);
         List<TestJsonInfo> oldJsonInfoList = testJsonInfoRepository.findByIsLatestAndPackageNameAndCaseName(true, testJsonInfo.getPackageName(), testJsonInfo.getCaseName());
         if (oldJsonInfoList != null) {
             for (TestJsonInfo json : oldJsonInfoList) {
@@ -143,7 +143,7 @@ public class AttachmentService {
         } else if (newFileInfo.getFileName().equals(oldFileInfo.getFileName())
                 && newFileInfo.getLoadType().equals(oldFileInfo.getLoadType())
                 && newFileInfo.getLoadDir().equals(oldFileInfo.getLoadDir())
-                && newFileInfo.getStorageContainer().equals(oldFileInfo.getStorageContainer())) {
+                && newFileInfo.getBlobContainer().equals(oldFileInfo.getBlobContainer())) {
             return true;
         }
         return false;
@@ -195,12 +195,12 @@ public class AttachmentService {
 
     private String saveFileInStorage(File file, StorageFileInfo fileInfo, Logger logger) {
         storageServiceClient.upload(file, fileInfo);
-        if (StringUtils.isBlank(fileInfo.getFileDownloadUrl())) {
-            logger.warn("Download URL is empty for file {}", fileInfo.getFileRelPath());
+        if (StringUtils.isBlank(fileInfo.getBlobUrl())) {
+            logger.warn("Download URL is empty for file {}", fileInfo.getBlobPath());
         } else {
-            logger.info("upload file {} success: {}", fileInfo.getFileRelPath(), fileInfo.getFileDownloadUrl());
+            logger.info("upload file {} success: {}", fileInfo.getBlobPath(), fileInfo.getBlobUrl());
         }
-        return fileInfo.getFileDownloadUrl();
+        return fileInfo.getBlobUrl();
     }
 
     public List<StorageFileInfo> queryFileInfoByFileType(String fileType) {

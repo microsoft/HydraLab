@@ -677,12 +677,12 @@ public class DeviceAgentManagementService {
         JSONObject result = new JSONObject();
         StorageFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
         if (testAppFileInfo != null) {
-            File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getFileRelPath());
+            File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
             TestInfo testInfo;
             try {
                 storageServiceClient.download(testApkFile, testAppFileInfo);
                 T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
-                String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getFileRelPath();
+                String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
                 testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
             } finally {
                 testApkFile.delete();

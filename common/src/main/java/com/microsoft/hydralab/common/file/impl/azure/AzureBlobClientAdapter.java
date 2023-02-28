@@ -94,14 +94,14 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
 
     @Override
     public StorageFileInfo upload(File fileToUpload, StorageFileInfo fileInfo) {
-        String downloadUrl = uploadFileToBlob(fileToUpload, fileInfo.getStorageContainer(), fileInfo.getFileRelPath(), null);
-        fileInfo.setFileDownloadUrl(downloadUrl);
+        String downloadUrl = uploadFileToBlob(fileToUpload, fileInfo.getBlobContainer(), fileInfo.getBlobPath(), null);
+        fileInfo.setBlobUrl(downloadUrl);
         return fileInfo;
     }
 
     @Override
     public StorageFileInfo download(File downloadToFile, StorageFileInfo fileInfo) {
-        downloadFileFromBlob(downloadToFile, fileInfo.getStorageContainer(), fileInfo.getFileRelPath());
+        downloadFileFromBlob(downloadToFile, fileInfo.getBlobContainer(), fileInfo.getBlobPath());
         return fileInfo;
     }
 

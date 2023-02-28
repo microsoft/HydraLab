@@ -215,7 +215,7 @@ public class TestDataService {
         TestRun testRun = testRunRepository.getOne(dttId);
         JSONArray deviceTestResInfo = keyValueRepository.getDeviceTestResInfo(dttId);
         testRun.setVideoTimeTagArr(deviceTestResInfo);
-        testRun.setVideoDownloadUrl();
+        testRun.setVideoBlobUrl();
         testRun.setAttachments(attachmentService.getAttachments(dttId, EntityType.TEST_RESULT));
         return testRun;
     }
