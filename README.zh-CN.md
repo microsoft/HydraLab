@@ -127,64 +127,63 @@ java -jar agent/build/libs/agent.jar
 <span id="for-user"></span>
 ### 对于Hydra Lab用户:
 
-- [Trigger a test task run in the Hydra Lab test service](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
-- [Deploy a test agent service](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
-- [Create an Appium UI Test Automation Project](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
+- [触发Hydra Lab测试服务中的测试任务运行](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
+- [部署测试代理服务](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
+- [创建Appium UI测试自动化项目](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
 
 > 注意：如果您是Microsoft FTE并希望加入内部Hydra Lab测试服务，请访问 [我们的SharePoint网站](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) 以了解有关内部服务实例的详细信息。
 
 <span id="for-contributor"></span>
 ### 参与贡献Hydra Lab:
 
-- [Contribute to the Hydra Lab GitHub Project](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
+- [为Hydra Lab GitHub项目贡献力量](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
 <span id="who-use-it"></span>
 ## 谁在使用Hydra Lab?
 
-It's already powering the UI test automation of the following Microsoft products:
-- Microsoft Phone Link (Windows UWP app) and Link to Windows (Android app)
+它已经支持以下Microsoft产品的UI测试自动化：
+- Microsoft Phone Link（Windows UWP应用程序）和 Link to Windows（Android应用程序）
 - Microsoft Launcher (Android)
 - Microsoft Outlook/Edge (Android/iOS)
 - Microsoft Fluent UI Android/Yammer Android
 
 <span id="contribute"></span>
-## Contribute
+## 贡献
 
-Your contribution to Hydra Lab will make a difference for the entire test automation ecosystem. Please refer to **[CONTRIBUTING.md](CONTRIBUTING.md)** for contribution instructions.
-
-### Contributor Hero Wall:
+您对Hydra Lab的贡献将使整个测试自动化生态系统发生变化。请参阅贡献指引 **[CONTRIBUTING.md](CONTRIBUTING.md)** 。
+### 贡献者英雄墙：
 
 <a href="https://github.com/Microsoft/hydralab/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Microsoft/hydralab" />
 </a>
 
 <span id="contact"></span>
-## Contact Us
+## 联系我们
 
-Feel free to dive in! If you have questions about Hydra Lab, or you would like to reach out to us about an issue you're having, you can reach us as follows:
-- [Open an issue](https://github.com/microsoft/HydraLab/issues/new) or submit PRs.
-- Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
+请尽情投入吧!如果您对Hydra Lab有任何疑问，或者您想就您遇到的问题与我们联系，您可以通过以下方式联系我们：
+- [打开 issue](https://github.com/microsoft/HydraLab/issues/new) 或提交 PRs.
+- 用邮件联系我们: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
 
 <span id="links"></span>
-## Links
+## 链接
 
 - [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
 - [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
 - [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
 
 <span id="ms-give"></span>
-## Microsoft Give Sponsors
+## 微软赞助商
 
-Thank you for your contribution to [Microsoft employee giving program](https://aka.ms/msgive) in the name of Hydra Lab:
+感谢您以Hydra Lab的名义为 [微软员工捐赠计划](https://aka.ms/msgive) 做出的贡献：
 
 [@Germey(崔庆才)](https://github.com/Germey), [@SpongeOnline(王创)](https://github.com/SpongeOnline), [@ellie-mac(陈佳佩)](https://github.com/ellie-mac), [@Yawn(刘俊钦)](https://github.com/Aqinqin48), [@White(刘子凡)](https://github.com/jkfhklh), [@597(姜志鹏)](https://github.com/JZP1996)
 
 ![Microsoft Give](docs/images/Give_WebBanner.png)
 
 <span id="license-trademarks"></span>
-## License & Trademarks
+## 许可证和商标
 
-The entire codebase is under [MIT license](https://github.com/microsoft/HydraLab/blob/main/LICENSE).
+整个代码库都在 [MIT许可证](https://github.com/microsoft/HydraLab/blob/main/LICENSE)下。
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft’s Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
+此项目可能包含项目、产品或服务的商标或徽标。对Microsoft商标或徽标的授权使用受 [Microsoft的商标和品牌准则](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). 的约束，并且必须遵循该准则。在本项目的修改版本中使用Microsoft商标或徽标不得引起混淆或暗示Microsoft的赞助。对第三方商标或徽标的任何使用均受这些第三方政策的约束。
 
