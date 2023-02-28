@@ -14,6 +14,7 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -35,6 +36,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
     private final DeviceManager deviceManager;
+    private final PerformanceTestListener performanceTestListener;
     ADBOperateUtil adbOperateUtil;
     private long recordingStartTimeMillis;
     private int index;
@@ -45,13 +47,16 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private int pid;
     private int addedFrameCount;
 
-    public EspressoTestInfoProcessorListener(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, TestRun testRun, String pkgName) {
+    public EspressoTestInfoProcessorListener(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil,
+                                             DeviceInfo deviceInfo, TestRun testRun, String pkgName,
+                                             PerformanceTestListener performanceTestListener) {
         this.deviceManager = deviceManager;
         this.adbOperateUtil = adbOperateUtil;
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;
         this.logger = testRun.getLogger();
         this.pkgName = pkgName;
+        this.performanceTestListener = performanceTestListener;
         adbLogcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
         adbDeviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
         setReportDir(testRun.getResultFolder());
@@ -90,6 +95,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         super.testRunStarted(runName, numTests);
         logEnter(runName, numTests);
         startTools(runName);
+        performanceTestListener.testRunStarted();
     }
 
 
@@ -158,6 +164,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
                 ioException.printStackTrace();
             }
         }), logger);
+
+        performanceTestListener.testStarted(ongoingTestUnit.getTitle());
     }
 
     @Override
@@ -166,6 +174,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         super.testFailed(test, trace);
         ongoingTestUnit.setStack(trace);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
+        performanceTestListener.testFailure(ongoingTestUnit.getTitle());
         testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.oneMoreFailure();
     }
@@ -197,6 +206,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         ) {
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTestUnit.setSuccess(true);
+            performanceTestListener.testSuccess(ongoingTestUnit.getTitle());
         }
         ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
@@ -240,6 +250,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             if (alreadyEnd) {
                 return;
             }
+            performanceTestListener.testRunFinished();
             testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
             super.testRunEnded(elapsedTime, runMetrics);
             testRun.onTestEnded();

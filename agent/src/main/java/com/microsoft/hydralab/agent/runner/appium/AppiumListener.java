@@ -238,13 +238,13 @@ public class AppiumListener extends RunListener {
             }
 
         }
-        performanceTestListener.testRunFinished();
 
         logEnter("testRunEnded", elapsedTime, Thread.currentThread().getName());
         synchronized (this) {
             if (alreadyEnd) {
                 return;
             }
+            performanceTestListener.testRunFinished();
             testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.onTestEnded();
             deviceInfo.setRunningTestName(null);

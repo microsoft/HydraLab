@@ -39,7 +39,8 @@ public class EspressoRunner extends TestRunner {
         try {
             /** xml report: parse listener */
             reportLogger.info("Start xml report: parse listener");
-            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(deviceManager, adbOperateUtil, deviceInfo, testRun, testTask.getPkgName());
+            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(deviceManager,
+                    adbOperateUtil, deviceInfo, testRun, testTask.getPkgName(), performanceTestManagementService);
             instrumentationResultParser = new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
                 @Override
                 public boolean isCancelled() {
