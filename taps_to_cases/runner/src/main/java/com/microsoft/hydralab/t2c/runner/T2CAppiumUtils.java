@@ -3,7 +3,6 @@
 package com.microsoft.hydralab.t2c.runner;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
@@ -12,6 +11,8 @@ import com.microsoft.hydralab.t2c.runner.elements.AndroidElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.EdgeElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
+import com.microsoft.hydralab.t2c.runner.finder.ElementFinder;
+import com.microsoft.hydralab.t2c.runner.finder.ElementFinderFactory;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.WebElement;
@@ -25,28 +26,14 @@ public class T2CAppiumUtils {
     private static boolean isSelfTesting = false;
 
     public static WebElement findElement(BaseDriverController driver, BaseElementInfo element, Logger logger) {
-        WebElement elementFinded = null;
+        WebElement elementFound = null;
         if (element == null) return null;
-        Map<String, String> keyToVal = element.getBasisSearchedBy();
-        if (keyToVal.get("accessibilityId") != null && keyToVal.get("accessibilityId").length() != 0) {
-            elementFinded = driver.findElementByAccessibilityId(keyToVal.get("accessibilityId"));
-            if (elementFinded != null) {
-                return elementFinded;
-            }
+        ElementFinder<BaseElementInfo> finder = ElementFinderFactory.createElementFinder(driver);
+        elementFound = finder.findElement(element);
+        if (elementFound != null) {
+            return elementFound;
         }
-        if (keyToVal.get("text") != null && keyToVal.get("text").length() != 0) {
-            elementFinded = driver.findElementByName(keyToVal.get("text"));
-            if (elementFinded != null) {
-                return elementFinded;
-            }
-        }
-        if (keyToVal.get("xpath") != null && keyToVal.get("xpath").length() != 0) {
-            elementFinded = driver.findElementByXPath(keyToVal.get("xpath"));
-            if (elementFinded != null) {
-                return elementFinded;
-            }
-        }
-        logger.warn("Page source: " + driver.webDriver.getPageSource());
+        logger.warn("Page source: " + driver.getPageSource());
         throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
     }
 
@@ -57,9 +44,11 @@ public class T2CAppiumUtils {
         } catch (Exception e) {
             e.printStackTrace();
             int index = actionInfo.getId();
-            logger.error("doAction at step " + index + "with exception: " + e.getMessage());
+            String description = actionInfo.getDescription();
+            logger.error("doAction at " + index + ", description: " + description + ", with exception: " + e.getMessage());
             if (!isOption) {
-                throw new IllegalStateException("Failed at step " + index + ": " + e.getMessage(), e);
+                throw new IllegalStateException("Failed at " + index + ", description: " + description + ", " + e.getMessage()
+                        + ", page source: \n" + driver.getPageSource(), e);
             }
         }
     }
@@ -91,7 +80,7 @@ public class T2CAppiumUtils {
                     content = (String) arguments.get("content");
                 }
                 if (content == null) {
-                    throw new IllegalArgumentException("Trying to input a null String. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Trying to input a null String. action index: " + actionInfo.getId());
                 }
                 if (webElement == null) {
                     driver.sendKeys(content);
@@ -105,14 +94,14 @@ public class T2CAppiumUtils {
             case "activateApp":
                 String appPackageName = (String) arguments.get("appPackageName");
                 if (appPackageName == null) {
-                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. action index: " + actionInfo.getId());
                 }
                 driver.activateApp(appPackageName);
                 break;
             case "terminateApp":
                 String removeAppPackageName = (String) arguments.get("appPackageName");
                 if (removeAppPackageName == null) {
-                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. action index: " + actionInfo.getId());
                 }
                 driver.terminateApp(removeAppPackageName);
                 break;
@@ -130,7 +119,7 @@ public class T2CAppiumUtils {
                 Object xVector = arguments.get("xVector");
                 Object yVector = arguments.get("yVector");
                 if (xVector == null || yVector == null) {
-                    throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' and 'yVector' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' and 'yVector' in the json. action index: " + actionInfo.getId());
                 }
                 int xVectorInt = xVector instanceof Integer ? (Integer) xVector : Integer.getInteger((String) xVector);
                 int yVectorInt = yVector instanceof Integer ? (Integer) yVector : Integer.getInteger((String) yVector);
@@ -139,14 +128,14 @@ public class T2CAppiumUtils {
             case "swipe":
                 String direction = (String) arguments.get("direction");
                 if (direction == null) {
-                    throw new IllegalArgumentException("Direction is not defined. Please add argument 'direction' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Direction is not defined. Please add argument 'direction' in the json. action index: " + actionInfo.getId());
                 }
                 driver.swipe(direction);
                 break;
             case "longClick":
                 Object durationObj = arguments.get("duration");
                 if (durationObj == null) {
-                    throw new IllegalArgumentException("Duration is not defined. Please add argument 'duration' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Duration is not defined. Please add argument 'duration' in the json. action index: " + actionInfo.getId());
                 }
                 int duration = durationObj instanceof Integer ? (Integer) durationObj : Integer.getInteger((String) durationObj);
                 driver.longClick(duration, webElement);
@@ -155,7 +144,7 @@ public class T2CAppiumUtils {
                 String attribute = (String) arguments.get("attribute");
                 String expectedValue = (String) arguments.get("expectedValue");
                 if (attribute == null || expectedValue == null) {
-                    throw new IllegalArgumentException("Assert info is not defined. Please add argument 'attribute' and 'expectedValue' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Assert info is not defined. Please add argument 'attribute' and 'expectedValue' in the json. action index: " + actionInfo.getId());
                 }
                 driver.assertElementAttribute(webElement, attribute, expectedValue);
                 break;
@@ -168,7 +157,7 @@ public class T2CAppiumUtils {
                 String attributeKey = (String) arguments.get("attribute");
                 String id = (String) arguments.get("id");
                 if (attributeKey == null || id == null) {
-                    throw new IllegalArgumentException("Assert info is not defined. Please add argument 'attribute' and 'id' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Assert info is not defined. Please add argument 'attribute' and 'id' in the json. action index: " + actionInfo.getId());
                 }
                 String info = driver.getInfo(webElement, attributeKey);
                 keyToInfoMap.put(id, info);
@@ -184,25 +173,25 @@ public class T2CAppiumUtils {
                 } else if (toElementStr != null) {
                     BaseElementInfo toElementInfo;
                     if (driver instanceof AndroidDriverController) {
-                        toElementInfo = AndroidElementInfo.getAndroidElementFromJson(JSONObject.parseObject(toElementStr));
+                        toElementInfo = JSON.parseObject(toElementStr, AndroidElementInfo.class);
                     } else if (driver instanceof WindowsDriverController) {
                         toElementInfo = JSON.parseObject(toElementStr, WindowsElementInfo.class);
                     } else if (driver instanceof EdgeDriverController) {
                         toElementInfo = JSON.parseObject(toElementStr, EdgeElementInfo.class);
                     } else {
-                        throw new IllegalArgumentException("Fail to parse the 'toElement' in the json. actionId: " + actionInfo.getId());
+                        throw new IllegalArgumentException("Fail to parse the 'toElement' in the json. action index: " + actionInfo.getId());
                     }
                     WebElement toElement = findElement(driver, toElementInfo, logger);
                     driver.dragAndDrop(webElement, toElement);
                 } else {
-                    throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' & 'yVector' or 'toElement' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' & 'yVector' or 'toElement' in the json. action index: " + actionInfo.getId());
                 }
                 break;
             case "switchToUrl":
                 String url = (String) arguments.get("url");
                 driver.switchToUrl(url);
                 if (url == null) {
-                    throw new IllegalArgumentException("Url is not defined. Please add argument 'url' and 'id' in the json. actionId: " + actionInfo.getId());
+                    throw new IllegalArgumentException("Url is not defined. Please add argument 'url' and 'id' in the json. action index: " + actionInfo.getId());
                 }
                 break;
             case "copy":
@@ -220,7 +209,7 @@ public class T2CAppiumUtils {
                 throw new IllegalStateException("action fail" +
                         "" +
                         "" +
-                        "ed. actionId:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
+                        "ed. action index:" + actionInfo.getId() + "/t" + "actionType:" + actionInfo.getActionType());
 
         }
         // Safe wait if no element required after doing this action to ensure the action is finished

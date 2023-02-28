@@ -52,7 +52,7 @@ const StyledTableRow = withStyles((theme) => ({
     },
 }))(TableRow);
 
-export default class GroupManageView extends BaseView {
+export default class DeviceGroupView extends BaseView {
 
     state = {
         hideSkeleton: true,
@@ -174,7 +174,7 @@ export default class GroupManageView extends BaseView {
                             <TableRow>
                                 <TableCell colSpan="4">
                                     <Typography variant="h4" className="mt-2 mb-2">
-                                        Group Management</Typography>
+                                        Device Group</Typography>
                                 </TableCell>
                                 <TableCell colSpan="2">
                                     <Stack direction="row" spacing={2}
@@ -215,8 +215,8 @@ export default class GroupManageView extends BaseView {
                 <DialogTitle>Group token generated</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Access Key:
-                        {groupToken}&nbsp;
+                        Access Key:&nbsp;
+                        {_.truncate(groupToken, {'length': `20`, 'omission': '*****************'})}&nbsp;
                         <IconButton onClick={() => {
                             navigator.clipboard.writeText(groupToken)
                         }}>
@@ -271,7 +271,7 @@ export default class GroupManageView extends BaseView {
             <Dialog open={deviceList !== null}
                     fullWidth={true}
                     onClose={() => this.handleStatus("deviceList", null)}>
-                <DialogTitle>Group management
+                <DialogTitle>Device Group
                     <Stack direction="row" spacing={2}
                            justifyContent="flex-end">
                         <Button onClick={() => {

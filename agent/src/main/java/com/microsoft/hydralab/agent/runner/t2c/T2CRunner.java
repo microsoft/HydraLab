@@ -13,6 +13,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -29,8 +30,9 @@ public class T2CRunner extends AppiumRunner {
     String agentName;
     private int currentIndex = 0;
 
-    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName) {
-        super(deviceManager, testTaskRunCallback);
+    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                     PerformanceTestManagementService performanceTestManagementService, String agentName) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.agentName = agentName;
     }
 
@@ -51,6 +53,9 @@ public class T2CRunner extends AppiumRunner {
         testRun.setTotalCount(testTask.testJsonFileList.size() + (initialJsonFile == null ? 0 : 1));
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
+
+        performanceTestManagementService.testRunStarted();
+
         deviceInfo.setRunningTestName(pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
         currentIndex = 0;
 
@@ -69,6 +74,7 @@ public class T2CRunner extends AppiumRunner {
 
         // Test finish
         reportLogger.info(pkgName + ".end");
+        performanceTestManagementService.testRunFinished();
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         deviceInfo.setRunningTestName(null);
@@ -101,6 +107,8 @@ public class T2CRunner extends AppiumRunner {
         testRun.addNewTimeTag(currentIndex + ". " + ongoingTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.addNewTestUnit(ongoingTest);
 
+        performanceTestManagementService.testStarted(ongoingTest.getTitle());
+
         deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
             if (imagePNGFile == null) {
                 return;
@@ -118,6 +126,7 @@ public class T2CRunner extends AppiumRunner {
         // Run Test
         try {
             deviceManager.runAppiumT2CTest(deviceInfo, jsonFile, reportLogger);
+            performanceTestManagementService.testSuccess(ongoingTest.getTitle());
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTest.setSuccess(true);
         } catch (Exception e) {
@@ -125,6 +134,7 @@ public class T2CRunner extends AppiumRunner {
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingTest.setSuccess(false);
             ongoingTest.setStack(e.toString());
+            performanceTestManagementService.testFailure(ongoingTest.getTitle());
             testRun.addNewTimeTag(ongoingTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         }

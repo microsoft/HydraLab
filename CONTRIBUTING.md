@@ -26,6 +26,17 @@ to group your changes into a small number of commits which we can review one at 
 When completing a pull request, we will generally squash your changes into a single commit. Please
 let us know if your pull request needs to be merged as separate commits.
 
+### Technical design practice
+
+We use the [PlantUML](https://github.com/plantuml/plantuml) generation tool to provide planning solution and clarity for the architecture design of Hydra Lab, and most of the designs are documented in `*.puml` files, and running the following [Gradle task]([build.gradle](https://github.com/microsoft/HydraLab/blob/bc1471a9f1385664adb9bc26a204670e24917751/build.gradle#L94)) will generate the UML images in folder [docs/images/UML](docs/images/UML):
+
+```bash
+./gradlew generateUMLImage
+```
+And you can also trigger the run in the Gradle panel of IDEA:
+
+![image](https://user-images.githubusercontent.com/8344245/220255351-8bd2db47-9e4b-407c-9444-ac982173f77b.png)
+
 ## Coding style conventions
 
 Under most cases, new file/folder name should follow the [snake case](https://en.wikipedia.org/wiki/Snake_case) style patterns. A fully capitalized name should come with a reasonable justification.
@@ -35,6 +46,14 @@ Under most cases, new file/folder name should follow the [snake case](https://en
 We are aligned on the [Fail Fast](https://www.techtarget.com/whatis/definition/fail-fast) principles for the project, and will avoid any inappropriate practice that will bury an exception in long log or ignoed code comment, please refer to [Java-Exception-handling-best-practices](https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Java-Exception-handling-best-practices)|[中文版](https://xie.infoq.cn/article/e1acf36fa0655c321f673c230) to learn about it first.
 
 And please leverage the `Assert` API to save if conditions, for example: [Spring Assert API](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/util/Assert.html)
+
+In a nutshell:
+
+<p align="center"><b>
+  DO NOT SWALLOW THE EXCEPTIONS
+</b></p>
+
+You can try `logging it with a proper logger`, `rethrowing it to bubble up`, `letting upper call stack handle it by declaring it`, and `handling it in the codeflow`, or `recording the info in an entity`.
 
 ## Review Process
 

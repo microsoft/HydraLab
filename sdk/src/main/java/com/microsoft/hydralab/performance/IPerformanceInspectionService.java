@@ -5,7 +5,7 @@ package com.microsoft.hydralab.performance;
 public interface IPerformanceInspectionService {
     PerformanceInspectionResult inspect(PerformanceInspection performanceInspection);
 
-    void inspectWithStrategy(PerformanceInspection performanceInspection, InspectionStrategy inspectionStrategy);
+    void inspectWithStrategy(InspectionStrategy inspectionStrategy);
 
     PerformanceTestResult parse(PerformanceInspection performanceInspection);
 

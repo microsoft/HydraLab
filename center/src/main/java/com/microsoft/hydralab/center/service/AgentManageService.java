@@ -132,12 +132,12 @@ public class AgentManageService {
          agentUserRepository.saveAll(agents);
     }
 
-    public File generateAgentConfigFile(String agentId) {
+    public File generateAgentConfigFile(String agentId, String host) {
         AgentUser agentUser = getAgent(agentId);
         if (agentUser != null) {
             try {
                 File tempFolder = new File(CenterConstant.CENTER_TEMP_FILE_DIR);
-                if (!tempFolder.exists()){
+                if (!tempFolder.exists()) {
                     if (!tempFolder.mkdirs()) {
                         throw new RuntimeException("mkdirs fail for: " + tempFolder);
                     }
@@ -152,7 +152,7 @@ public class AgentManageService {
                         "  # register to Hydra Lab Center\n" +
                         "  registry:\n" +
                         "    # The server hostname:port of Hydra Lab Center. If nginx enabled, switch to port of nginx\n" +
-                        "    server: 'localhost:9886'\n" +
+                        "    server: '" + host + "'\n" +
                         "    # The Agent info registered in Hydra Lab Center, for instance if it's running on localhost, the URL would be: http://localhost:9886/portal/index.html#/auth\n" +
                         "    name: " + agentUser.getName() + "\n" +
                         "    id: " + agentUser.getId() + "\n" +

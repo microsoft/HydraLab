@@ -104,14 +104,13 @@ public class FileLoadUtil {
             Assert.isTrue(!loadFolder.exists(), "Load file error : folder has been existed!");
             log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
             File attachmentFile = downloadFile(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
-            if (StorageFileInfo.LoadType.UNZIP.equals(attachment.getLoadType())) {
+            if (StorageFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {
                 FileUtil.unzipFile(attachmentFile.getAbsolutePath(), loadFolder.getAbsolutePath());
             }
             log.info("Load common file success");
         } catch (Exception e) {
             log.error("Load common file start failed", e);
         }
-
     }
 
     private File downloadFile(StorageFileInfo attachment, String location, String targetFilePath) throws IOException {

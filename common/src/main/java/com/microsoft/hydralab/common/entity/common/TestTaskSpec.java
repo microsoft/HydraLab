@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
+import com.microsoft.hydralab.performance.InspectionStrategy;
 import lombok.ToString;
 
 import java.util.HashSet;
@@ -44,4 +45,5 @@ public class TestTaskSpec {
     public String testScope;
     public String testSuiteClass;
     public Map<String, List<DeviceAction>> deviceActions;
+    public List<InspectionStrategy> inspectionStrategies;
 }

@@ -134,20 +134,13 @@ public class AndroidDriverController extends BaseDriverController {
     }
 
     @Override
-    public WebElement findElementByName(String name) {
-        WebElement elementFound = null;
-        try {
-            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
-                    .until(driver -> driver.findElement(AppiumBy.xpath("//*[@text='" + name + "']")));
-        } catch (Exception e) {
-            logger.info("Can not find element by text: " + name);
-        }
-        return elementFound;
+    public void setClipboard(String text) {
+        androidDriver.setClipboardText(text);
     }
 
     @Override
-    public void setClipboard(String text) {
-        androidDriver.setClipboardText(text);
+    public String getPageSource() {
+        return androidDriver.getPageSource();
     }
 
     @Override
