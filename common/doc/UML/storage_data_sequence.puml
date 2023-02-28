@@ -1,4 +1,4 @@
-@startuml storage_sequence
+@startuml
 '(Local, Azure BLOB, ALI Cloud, QINIU Cloud, etc.)
 autonumber 1.1
 StorageService.Endpoint -> Center.StorageServiceClient: buildClient(connectionString)
