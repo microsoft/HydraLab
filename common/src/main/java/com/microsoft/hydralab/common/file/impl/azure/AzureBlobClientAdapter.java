@@ -32,25 +32,25 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
-public class BlobClientAdapter extends StorageServiceClient {
+public class AzureBlobClientAdapter extends StorageServiceClient {
     private static boolean isAuthedBySAS = true;
     private BlobServiceClient blobServiceClient;
-    Logger classLogger = LoggerFactory.getLogger(BlobClientAdapter.class);
+    Logger classLogger = LoggerFactory.getLogger(AzureBlobClientAdapter.class);
     private long SASExpiryUpdate;
     private SASData sasDataInUse = null;
     private SASData sasDataForUpdate = null;
     private boolean isConnected = false;
 
-    public BlobClientAdapter() {
+    public AzureBlobClientAdapter() {
     }
 
-    public BlobClientAdapter(BlobProperty blobProperty) {
-        SASExpiryUpdate = blobProperty.getSASExpiryUpdate();
-        SASPermission.READ.setExpiryTime(blobProperty.getSASExpiryTimeFront(), blobProperty.getTimeUnit());
-        SASPermission.WRITE.setExpiryTime(blobProperty.getSASExpiryTimeAgent(), blobProperty.getTimeUnit());
-        blobServiceClient = new BlobServiceClientBuilder().connectionString(blobProperty.getConnection()).buildClient();
-        fileLimitDay = blobProperty.getFileLimitDay();
-        cdnUrl = blobProperty.getCDNUrl();
+    public AzureBlobClientAdapter(AzureBlobProperty azureBlobProperty) {
+        SASExpiryUpdate = azureBlobProperty.getSASExpiryUpdate();
+        SASPermission.READ.setExpiryTime(azureBlobProperty.getSASExpiryTimeFront(), azureBlobProperty.getTimeUnit());
+        SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSASExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
+        blobServiceClient = new BlobServiceClientBuilder().connectionString(azureBlobProperty.getConnection()).buildClient();
+        fileLimitDay = azureBlobProperty.getFileLimitDay();
+        cdnUrl = azureBlobProperty.getCDNUrl();
         isAuthedBySAS = false;
         isConnected = true;
     }

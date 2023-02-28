@@ -7,9 +7,9 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.file.impl.azure.BlobClientAdapter;
+import com.microsoft.hydralab.common.file.impl.azure.AzureBlobClientAdapter;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
-import com.microsoft.hydralab.common.file.impl.azure.BlobProperty;
+import com.microsoft.hydralab.common.file.impl.azure.AzureBlobProperty;
 import com.microsoft.hydralab.common.util.Const;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
@@ -70,8 +70,8 @@ public class AppConfig {
         StorageServiceClient storageServiceClient = null;
         switch (storageType) {
             case Const.StorageType.BLOB:
-                BlobProperty blobProperty = applicationContext.getBean(Const.StoragePropertyBean.BLOB, BlobProperty.class);
-                storageServiceClient = new BlobClientAdapter(blobProperty);
+                AzureBlobProperty azureBlobProperty = applicationContext.getBean(Const.StoragePropertyBean.AZURE, AzureBlobProperty.class);
+                storageServiceClient = new AzureBlobClientAdapter(azureBlobProperty);
                 break;
             default:
                 // todo: local storage system

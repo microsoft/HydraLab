@@ -3,8 +3,8 @@
 package com.microsoft.hydralab.common.file.blob;
 
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
-import com.microsoft.hydralab.common.file.impl.azure.BlobProperty;
-import com.microsoft.hydralab.common.file.impl.azure.BlobClientAdapter;
+import com.microsoft.hydralab.common.file.impl.azure.AzureBlobProperty;
+import com.microsoft.hydralab.common.file.impl.azure.AzureBlobClientAdapter;
 import com.microsoft.hydralab.common.file.impl.azure.SASData;
 import com.microsoft.hydralab.common.file.impl.azure.SASPermission;
 import org.slf4j.Logger;
@@ -21,18 +21,18 @@ import java.time.ZoneId;
  * @date 11/30/2022
  */
 
-public class MockBlobClient extends BlobClientAdapter {
+public class MockAzureBlobClient extends AzureBlobClientAdapter {
     private static boolean isAuthedBySAS = true;
     private static boolean isConnected = true;
-    Logger classLogger = LoggerFactory.getLogger(MockBlobClient.class);
+    Logger classLogger = LoggerFactory.getLogger(MockAzureBlobClient.class);
     private long SASExpiryUpdate;
 
-    public MockBlobClient(BlobProperty blobProperty) {
-        this.SASExpiryUpdate = blobProperty.getSASExpiryUpdate();
-        SASPermission.READ.setExpiryTime(blobProperty.getSASExpiryTimeFront(), blobProperty.getTimeUnit());
-        SASPermission.WRITE.setExpiryTime(blobProperty.getSASExpiryTimeAgent(), blobProperty.getTimeUnit());
-        fileLimitDay = blobProperty.getFileLimitDay();
-        cdnUrl = blobProperty.getCDNUrl();
+    public MockAzureBlobClient(AzureBlobProperty azureBlobProperty) {
+        this.SASExpiryUpdate = azureBlobProperty.getSASExpiryUpdate();
+        SASPermission.READ.setExpiryTime(azureBlobProperty.getSASExpiryTimeFront(), azureBlobProperty.getTimeUnit());
+        SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSASExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
+        fileLimitDay = azureBlobProperty.getFileLimitDay();
+        cdnUrl = azureBlobProperty.getCDNUrl();
         isAuthedBySAS = false;
         isConnected = true;
         classLogger.info("Init blob client successfully!");

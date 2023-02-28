@@ -11,14 +11,14 @@ abstract class StorageServiceClient {
 }
 class StorageFileInfo
 
-class BlobClientAdapter
-class BlobProperty
+class AzureBlobClientAdapter
+class AzureBlobProperty
 class SASData
 enum SASPermission {
 READ
 WRITE
 ADMIN
-+setExpiryTime(BlobProperty)
++setExpiryTime(AzureBlobProperty)
 }
 
 class SomeStorageAdapter
@@ -34,11 +34,11 @@ ADMIN
 StorageServiceClient --> AccessToken
 StorageServiceClient -> StorageFileInfo
 
-StorageServiceClient <|-- BlobClientAdapter
+StorageServiceClient <|-- AzureBlobClientAdapter
 AccessToken <|-- SASData
 SASPermission --o SASData
-BlobProperty <-- SASPermission
-BlobProperty <-- BlobClientAdapter
+AzureBlobProperty <-- SASPermission
+AzureBlobProperty <-- AzureBlobClientAdapter
 
 StorageServiceClient <|-- SomeStorageAdapter
 AccessToken <|-- SomeToken

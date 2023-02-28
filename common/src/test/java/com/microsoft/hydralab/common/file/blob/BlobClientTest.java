@@ -19,7 +19,7 @@ import java.io.File;
 class BlobClientTest extends BaseTest {
     StorageServiceClient storageServiceClient;
     File sampleFile = new File("src/test/resources/uitestsample.ipa");
-    BlobProperty property = new BlobProperty();
+    AzureBlobProperty property = new AzureBlobProperty();
 
     @BeforeAll
     void initBlob() {
@@ -40,9 +40,9 @@ class BlobClientTest extends BaseTest {
         property.setTimeUnit("SECONDS");
 
         if (StringUtils.isBlank(connectionString)) {
-            storageServiceClient = new MockBlobClient(property);
+            storageServiceClient = new MockAzureBlobClient(property);
         } else {
-            storageServiceClient = new BlobClientAdapter(property);
+            storageServiceClient = new AzureBlobClientAdapter(property);
         }
     }
 
@@ -58,7 +58,7 @@ class BlobClientTest extends BaseTest {
     @Test
     @Order(2)
     void downloadFile() {
-        if (!(storageServiceClient instanceof MockBlobClient)) {
+        if (!(storageServiceClient instanceof MockAzureBlobClient)) {
             File sampleFile_copy = new File("src/test/resources/uitestsample_1.ipa");
             StorageFileInfo fileInfo = new StorageFileInfo();
             fileInfo.setFileType(StorageFileInfo.FileType.APP_FILE);

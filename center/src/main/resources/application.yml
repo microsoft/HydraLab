@@ -52,7 +52,7 @@ app:
   # Mail Address Format
   default-user: ${DEFAULT_USER:default@hydralab.com}
   storage:
-    type: BLOB # LOCAL, BLOB, etc.
+    type: AZURE # LOCAL, AZURE, ALICLOUD, etc.
     blob:
       connection: ${BLOB_CONNECTION_STR}
       fileLimitDay: 6

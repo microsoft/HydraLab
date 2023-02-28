@@ -56,7 +56,7 @@ app:
       window-time: ${STATE_CHANGE_WINDOW_TIME:5}
       recovery-time: ${STATE_RECOVERY_TIME:3}
   storage:
-    type: BLOB # LOCAL, BLOB, etc.
+    type: AZURE # LOCAL, AZURE, ALICLOUD, etc.
   location: ${user.dir}
   device-script:
     commands:

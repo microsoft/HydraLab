@@ -16,7 +16,7 @@ app:
   # Mail Address Format
   default-user: ${DEFAULT_USER}
   storage:
-    type: BLOB
+    type: AZURE # LOCAL, AZURE, ALICLOUD, etc.
     blob:
       connection: ${BLOB_CONNECTION_STR}
       CDNUrl: ${CDN_URL}

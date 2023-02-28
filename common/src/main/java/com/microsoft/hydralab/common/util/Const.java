@@ -153,6 +153,6 @@ public interface Const {
 
     interface StoragePropertyBean {
         String LOCAL = "localProperty";
-        String BLOB = "blobProperty";
+        String AZURE = "azureBlobProperty";
     }
 }
