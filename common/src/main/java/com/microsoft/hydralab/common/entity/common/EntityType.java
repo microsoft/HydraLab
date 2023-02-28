@@ -2,20 +2,27 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
-import com.microsoft.hydralab.common.file.impl.azure.AzureBlobConstants;
+import com.microsoft.hydralab.common.file.ContainerConstants;
 
 public enum EntityType {
-    APP_FILE_SET("FILE_SET", AzureBlobConstants.PKG_BLOB_NAME),
-    TEST_RESULT("TEST_RES", AzureBlobConstants.TEST_RESULT_BLOB_NAME),
-    AGENT_PACKAGE("AGENT_PKG", AzureBlobConstants.PKG_BLOB_NAME),
-    TEST_JSON("TEST_JSON", AzureBlobConstants.TEST_JSON),
-    SCREENSHOT("SCREENSHOT", AzureBlobConstants.IMAGES_BLOB_NAME);
+    SCREENSHOT("SCREENSHOT"),
+    APP_FILE_SET("FILE_SET"),
+    TEST_RESULT("TEST_RES"),
+    AGENT_PACKAGE("AGENT_PKG"),
+    TEST_JSON("TEST_JSON");
 
     public String typeName;
     public String storageContainer;
 
-    EntityType(String typeName, String storageContainer) {
+    EntityType(String typeName) {
         this.typeName = typeName;
-        this.storageContainer = storageContainer;
+    }
+
+    public static void setInstanceContainer(ContainerConstants constant) {
+        SCREENSHOT.storageContainer = constant.getScreenshotContainerName();
+        APP_FILE_SET.storageContainer = constant.getAppFileContainerName();
+        TEST_RESULT.storageContainer = constant.getTestResultContainerName();
+        AGENT_PACKAGE.storageContainer = constant.getAgentPackageContainerName();
+        TEST_JSON.storageContainer = constant.getTestJsonContainerName();
     }
 }

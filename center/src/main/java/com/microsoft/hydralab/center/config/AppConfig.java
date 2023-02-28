@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.file.impl.azure.AzureBlobClientAdapter;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
@@ -69,9 +70,10 @@ public class AppConfig {
 
         StorageServiceClient storageServiceClient = null;
         switch (storageType) {
-            case Const.StorageType.BLOB:
+            case Const.StorageType.AZURE:
                 AzureBlobProperty azureBlobProperty = applicationContext.getBean(Const.StoragePropertyBean.AZURE, AzureBlobProperty.class);
                 storageServiceClient = new AzureBlobClientAdapter(azureBlobProperty);
+                EntityType.setInstanceContainer(azureBlobProperty);
                 break;
             default:
                 // todo: local storage system

@@ -148,7 +148,7 @@ public interface Const {
 
     interface StorageType {
         String LOCAL = "LOCAL";
-        String BLOB = "BLOB";
+        String AZURE = "AZURE";
     }
 
     interface StoragePropertyBean {

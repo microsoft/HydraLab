@@ -9,8 +9,10 @@ import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
+import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.file.impl.azure.AzureBlobClientAdapter;
+import com.microsoft.hydralab.common.file.impl.azure.AzureBlobProperty;
 import com.microsoft.hydralab.common.management.AgentType;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -33,6 +35,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus.
 import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -73,6 +76,8 @@ public class AppConfiguration {
     private String appiumServerHost;
     @Value("${app.storage.type}")
     private String storageType;
+    @Resource
+    ApplicationContext applicationContext;
 
     @NotNull
     private File getScreenshotDir() {
@@ -174,8 +179,10 @@ public class AppConfiguration {
     public StorageServiceClient storageServiceClient() {
         StorageServiceClient storageServiceClient = null;
         switch (storageType) {
-            case Const.StorageType.BLOB:
+            case Const.StorageType.AZURE:
                 storageServiceClient = new AzureBlobClientAdapter();
+                AzureBlobProperty azureBlobProperty = applicationContext.getBean(Const.StoragePropertyBean.AZURE, AzureBlobProperty.class);
+                EntityType.setInstanceContainer(azureBlobProperty);
                 break;
             default:
                 // todo: local storage system
