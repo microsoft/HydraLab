@@ -187,10 +187,9 @@ if (-Not((New-Object Security.Principal.WindowsPrincipal $([Security.Principal.W
 # =======================================
 # Check No HydraLab Folder exists
 # =======================================
-Remove-Item $RootPath -Recurse
 if (Test-Path -Path $RootPath)
 {
-    throw "HydraLab folder already exists, remove it and retry"
+    Remove-Item $RootPath -Recurse
 }
 [void](New-Item -Path $RootPath -ItemType Directory)
 
