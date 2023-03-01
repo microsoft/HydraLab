@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.command;
 
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
@@ -28,7 +29,8 @@ public class DeviceScriptCommandLoader {
         List<DeviceScriptCommand> filteredCommands = filterCommands(testTask.getTestSuite());
         for (DeviceScriptCommand deviceCommand : filteredCommands) {
             List<DeviceAction> actions = command2Action(deviceCommand);
-            List<DeviceAction> originActions = testTask.getDeviceActions().getOrDefault(deviceCommand.getWhen(), new ArrayList<>());
+            List<DeviceAction> originActions =
+                    testTask.getDeviceActions().getOrDefault(deviceCommand.getWhen(), new ArrayList<>());
             originActions.addAll(actions);
             testTask.getDeviceActions().put(deviceCommand.getWhen(), originActions);
         }

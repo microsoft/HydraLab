@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.service;
 
 import com.alibaba.fastjson.JSONObject;
@@ -23,13 +24,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 @Service
 public class DeviceControlService {
 
+    @SuppressWarnings("constantname")
     static final Logger log = LoggerFactory.getLogger(DeviceControlService.class);
     @Resource
     DeviceManager deviceManager;
@@ -58,7 +64,8 @@ public class DeviceControlService {
         message.setPath(Const.Path.DEVICE_LIST);
         message.setBody(deviceInfos);
         agentWebSocketClientService.send(message);
-        log.info("/api/device/list device SN: {}", deviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
+        log.info("/api/device/list device SN: {}",
+                deviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
     }
 
     public void captureAllScreensSync(AgentUser.BatteryStrategy batteryStrategy) {
@@ -69,11 +76,13 @@ public class DeviceControlService {
         captureDevicesScreenSync(allConnectedDevices, false, batteryStrategy);
     }
 
-    private void captureDevicesScreenSync(Collection<DeviceInfo> allDevices, boolean logging, AgentUser.BatteryStrategy batteryStrategy) {
-        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
-            deviceManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
-            return true;
-        }, null, logging, true);
+    private void captureDevicesScreenSync(Collection<DeviceInfo> allDevices, boolean logging,
+                                          AgentUser.BatteryStrategy batteryStrategy) {
+        DeviceTaskControl deviceTaskControl =
+                deviceTaskControlExecutor.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
+                    deviceManager.getScreenShotWithStrategy(deviceInfo, DeviceControlService.log, batteryStrategy);
+                    return true;
+                }, null, logging, true);
 
         if (deviceTaskControl == null) {
             return;

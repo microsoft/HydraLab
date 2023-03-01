@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.config;
 
 import com.microsoft.hydralab.agent.command.DeviceScriptCommand;
@@ -29,7 +30,8 @@ import java.util.Map;
 public class TestRunnerConfig {
     @Value("${app.registry.name}")
     String agentName;
-    public static Map<String, String> TestRunnerMap = Map.of(
+    @SuppressWarnings("visibilitymodifier")
+    public static Map<String, String> testRunnerMap = Map.of(
             TestTask.TestRunningType.INSTRUMENTATION, "espressoRunner",
             TestTask.TestRunningType.APPIUM, "appiumRunner",
             TestTask.TestRunningType.APPIUM_CROSS, "appiumCrossRunner",
@@ -50,18 +52,21 @@ public class TestRunnerConfig {
     public EspressoRunner espressoRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
                                          PerformanceTestManagementService performanceTestManagementService,
                                          ADBOperateUtil adbOperateUtil) {
-        return new EspressoRunner(deviceManager, testTaskEngineService, performanceTestManagementService, adbOperateUtil);
+        return new EspressoRunner(deviceManager, testTaskEngineService, performanceTestManagementService,
+                adbOperateUtil);
     }
 
     @Bean
     public AdbMonkeyRunner adbMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
                                            PerformanceTestManagementService performanceTestManagementService,
                                            ADBOperateUtil adbOperateUtil) {
-        return new AdbMonkeyRunner(deviceManager, testTaskEngineService, performanceTestManagementService, adbOperateUtil);
+        return new AdbMonkeyRunner(deviceManager, testTaskEngineService, performanceTestManagementService,
+                adbOperateUtil);
     }
 
     @Bean
-    public AppiumMonkeyRunner appiumMonkeyRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
+    public AppiumMonkeyRunner appiumMonkeyRunner(DeviceManager deviceManager,
+                                                 TestTaskEngineService testTaskEngineService,
                                                  PerformanceTestManagementService performanceTestManagementService) {
         return new AppiumMonkeyRunner(deviceManager, testTaskEngineService, performanceTestManagementService);
     }
@@ -73,16 +78,19 @@ public class TestRunnerConfig {
     }
 
     @Bean
-    public AppiumCrossRunner appiumCrossRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
+    public AppiumCrossRunner appiumCrossRunner(DeviceManager deviceManager,
+                                               TestTaskEngineService testTaskEngineService,
                                                PerformanceTestManagementService performanceTestManagementService) {
-        return new AppiumCrossRunner(deviceManager, testTaskEngineService, performanceTestManagementService, agentName);
+        return new AppiumCrossRunner(deviceManager, testTaskEngineService, performanceTestManagementService,
+                agentName);
     }
 
     @Bean
     public SmartRunner smartRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
                                    PerformanceTestManagementService performanceTestManagementService,
                                    SmartTestUtil smartTestUtil) {
-        return new SmartRunner(deviceManager, testTaskEngineService, performanceTestManagementService, smartTestUtil);
+        return new SmartRunner(deviceManager, testTaskEngineService, performanceTestManagementService,
+                smartTestUtil);
     }
 
     @Bean
@@ -93,7 +101,7 @@ public class TestRunnerConfig {
 
     @ConfigurationProperties(prefix = "app.device-script.commands")
     @Bean(name = "DeviceCommandProperty")
-    public List<DeviceScriptCommand> DeviceCommandProperty() {
+    public List<DeviceScriptCommand> deviceCommandProperty() {
         return new ArrayList<>();
     }
 }

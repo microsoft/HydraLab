@@ -24,6 +24,11 @@ task copyRequirementsFile(type: Copy, group: 'docker',
 // TODO Comment this first, so that with the absense of smart test module, there won't be any build break.
 // bootJar.dependsOn("copyRequirementsFile")
 
+bootJar.dependsOn("checkstyleMain")
+bootJar.dependsOn("checkstyleTest")
+classes.finalizedBy checkstyleMain
+testClasses.finalizedBy checkstyleTest
+
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }

@@ -9,8 +9,12 @@ import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
 import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
-import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
@@ -25,7 +29,13 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service("TestTaskEngineService")
@@ -34,6 +44,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     FileLoadUtil fileLoadUtil;
     @Resource
     TestDataService testDataService;
+    @SuppressWarnings("constantname")
     static final Logger log = LoggerFactory.getLogger(TestTaskEngineService.class);
     @Resource
     ApplicationContext applicationContext;
@@ -55,7 +66,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
         setupTestDir(testTask);
 
-        String beanName = TestRunnerConfig.TestRunnerMap.get(testTaskSpec.runningType);
+        String beanName = TestRunnerConfig.testRunnerMap.get(testTaskSpec.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
 
         Set<DeviceInfo> chosenDevices = chooseDevices(testTaskSpec, runner);
@@ -115,7 +126,9 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                     .collect(Collectors.toSet());
         }
 
-        return allActiveConnectedDevice.stream().filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum())).collect(Collectors.toSet());
+        return allActiveConnectedDevice.stream()
+                .filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum()))
+                .collect(Collectors.toSet());
     }
 
     public void setupTestDir(TestTask testTask) {
@@ -189,7 +202,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         Assert.notNull(files, "should have result file to upload");
         for (File file : files) {
             if (file.isDirectory()) {
-                File zipFile = FileUtil.zipFile(file.getAbsolutePath(), deviceTestResultFolder + "/" + file.getName() + ".zip");
+                File zipFile = FileUtil.zipFile(file.getAbsolutePath(),
+                        deviceTestResultFolder + "/" + file.getName() + ".zip");
                 attachments.add(saveFileToBlob(zipFile, deviceTestResultFolder, logger));
                 continue;
             }
@@ -209,8 +223,11 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     private StorageFileInfo saveFileToBlob(File file, File folder, Logger logger) {
-        StorageFileInfo storageFileInfo = new StorageFileInfo(file, "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(), StorageFileInfo.FileType.COMMON_FILE);
-        return attachmentService.addFileInfo(storageFileInfo, file, EntityType.TEST_RESULT, logger);
+        StorageFileInfo storageFileInfo = new StorageFileInfo(file,
+                "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(),
+                StorageFileInfo.FileType.COMMON_FILE);
+        return attachmentService.addFileInfo(storageFileInfo, file, EntityType.TEST_RESULT,
+                logger);
     }
 
     private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
