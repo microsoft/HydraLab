@@ -18,7 +18,7 @@ public class ActionInfo {
     private final Map<String, Object> arguments;
     private final boolean isOptional;
 
-    public ActionInfo(@Deprecated int id,
+    public ActionInfo(int id,
                       @Nullable BaseElementInfo testElement,
                       @NotNull String actionType,
                       @NotNull Map<String, Object> arguments,
@@ -34,7 +34,6 @@ public class ActionInfo {
         this.arguments = arguments;
     }
 
-    @Deprecated
     public Integer getId() {
         return id;
     }

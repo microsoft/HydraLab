@@ -1,0 +1,20 @@
+apply plugin: 'checkstyle'
+
+checkstyle {
+    toolVersion = '8.17'
+    ignoreFailures = false
+    configFile file("${project.rootDir}/quality/checkstyle-ruleset.xml")
+    configProperties.checkstyleSuppressionsPath = file("${project.rootDir}/quality/checkstyle-suppressions.xml").absolutePath
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+        html {
+            destination file("${project.buildDir}/reports/checkstyle-result.html")
+        }
+    }
+}
+
+task('checkstyle')

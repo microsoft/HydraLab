@@ -1,6 +1,7 @@
 plugins {
     id 'org.springframework.boot'
 }
+apply from: "${project.rootDir}/quality/checkstyle.gradle"
 
 group = 'com.microsoft.hydralab'
 version = hydraLabVersion
