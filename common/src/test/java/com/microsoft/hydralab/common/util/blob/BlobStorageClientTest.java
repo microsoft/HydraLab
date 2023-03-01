@@ -46,7 +46,7 @@ class BlobStorageClientTest extends BaseTest {
     @Test
     @Order(1)
     void uploadBlobFromFile() {
-        String blobUrl = blobStorageClient.uploadBlobFromFile(sampleFile, DeviceNetworkBlobConstants.PKG_BLOB_NAME, "test/unit/" + sampleFile.getName(), logger);
+        String blobUrl = blobStorageClient.uploadBlobFromFile(sampleFile, DeviceNetworkBlobConstants.APP_FILE_CONTAINER_NAME, "test/unit/" + sampleFile.getName(), logger);
         logger.info("Upload sample file finished, blobUrl: " + blobUrl);
         Assertions.assertNotNull(blobUrl, "Upload File Failed!");
     }
@@ -56,7 +56,7 @@ class BlobStorageClientTest extends BaseTest {
     void downloadFileFromBlob() {
         if (!(blobStorageClient instanceof MockBlobStorageClient)) {
             File sampleFile_copy = new File("src/test/resources/uitestsample_1.ipa");
-            BlobProperties properties = blobStorageClient.downloadFileFromBlob(sampleFile_copy, DeviceNetworkBlobConstants.PKG_BLOB_NAME, "test/unit/" + sampleFile.getName());
+            BlobProperties properties = blobStorageClient.downloadFileFromBlob(sampleFile_copy, DeviceNetworkBlobConstants.APP_FILE_CONTAINER_NAME, "test/unit/" + sampleFile.getName());
             logger.info("Download sample file finished, properties: " + properties);
             Assertions.assertNotNull(properties, "Download File Failed!");
             Assertions.assertTrue(sampleFile_copy.exists(), "Download File Failed!");

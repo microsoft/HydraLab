@@ -405,7 +405,7 @@ public class AndroidDeviceManager extends DeviceManager {
         deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
         sendKeyEvent(deviceInfo, KEYCODE_WAKEUP, logger);
         screenCapture(deviceInfo, screenshotImageFile.getAbsolutePath(), null);
-        String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);
+        String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.SCREENSHOT_CONTAINER_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);
         if (StringUtils.isBlank(blobUrl)) {
             classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
         } else {

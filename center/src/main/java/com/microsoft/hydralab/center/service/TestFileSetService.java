@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
-import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
+import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.repository.TestFileSetRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -45,7 +45,7 @@ public class TestFileSetService {
         }
         testFileSet = testFileSetRepository.findById(fileSetId).orElse(null);
         if (testFileSet != null) {
-            testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET));
+            testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
             saveFileSetToMem(testFileSet);
         }
         return testFileSet;

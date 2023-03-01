@@ -110,7 +110,7 @@ public class PackageSetController {
             File tempAppFile = attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE});
             StorageFileInfo appBlobFile = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
             //Upload app file
-            appBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityFileRelation.EntityType.APP_FILE_SET, appBlobFile, tempAppFile, logger);
+            appBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appBlobFile, tempAppFile, logger);
             JSONObject appFileParser = appBlobFile.getFileParser();
             testFileSet.setAppName(appFileParser.getString(ParserKey.APP_NAME));
             testFileSet.setPackageName(appFileParser.getString(ParserKey.PKG_NAME));
@@ -123,7 +123,7 @@ public class PackageSetController {
 
                 StorageFileInfo testAppBlobFile = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
                 //Upload app file
-                testAppBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityFileRelation.EntityType.APP_FILE_SET, testAppBlobFile, tempTestAppFile, logger);
+                testAppBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, testAppBlobFile, tempTestAppFile, logger);
                 testFileSet.getAttachments().add(testAppBlobFile);
             }
 
@@ -214,7 +214,7 @@ public class PackageSetController {
         try {
             File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
             StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativePath, StorageFileInfo.FileType.AGENT_PACKAGE);
-            return Result.ok(attachmentService.addFileInfo(storageFileInfo, savedPkg, EntityFileRelation.EntityType.AGENT_PACKAGE, logger));
+            return Result.ok(attachmentService.addFileInfo(storageFileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
         } catch (Exception e) {
@@ -270,7 +270,7 @@ public class PackageSetController {
             String blobPath = fileRelativePath + "/" + savedJson.getName();
             testJsonInfo.setBlobPath(blobPath);
 
-            return Result.ok(attachmentService.addTestJsonFile(testJsonInfo, savedJson, EntityFileRelation.EntityType.TEST_JSON, logger));
+            return Result.ok(attachmentService.addTestJsonFile(testJsonInfo, savedJson, EntityType.TEST_JSON, logger));
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
         } catch (Exception e) {
@@ -387,8 +387,8 @@ public class PackageSetController {
 
             File savedAttachment = attachmentService.verifyAndSaveFile(attachment, parentDir, false, newFileName, limitFileTypes);
             StorageFileInfo storageFileInfo = new StorageFileInfo(savedAttachment, fileRelativePath, fileType, loadType, loadDir);
-            attachmentService.addAttachment(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET, storageFileInfo, savedAttachment, logger);
-            testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET));
+            attachmentService.addAttachment(fileSetId, EntityType.APP_FILE_SET, storageFileInfo, savedAttachment, logger);
+            testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
             testFileSetService.saveFileSetToMem(testFileSet);
             return Result.ok(testFileSet);
         } catch (HydraLabRuntimeException e) {
@@ -420,8 +420,8 @@ public class PackageSetController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestFileSet doesn't belong to user's Teams");
         }
 
-        attachmentService.removeAttachment(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET, fileId);
-        testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityFileRelation.EntityType.APP_FILE_SET));
+        attachmentService.removeAttachment(fileSetId, EntityType.APP_FILE_SET, fileId);
+        testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
         testFileSetService.saveFileSetToMem(testFileSet);
         return Result.ok(testFileSet);
     }

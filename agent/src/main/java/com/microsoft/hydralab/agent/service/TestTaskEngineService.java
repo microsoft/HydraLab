@@ -10,7 +10,7 @@ import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
+import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -226,7 +226,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         StorageFileInfo storageFileInfo = new StorageFileInfo(file,
                 "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(),
                 StorageFileInfo.FileType.COMMON_FILE);
-        return attachmentService.addFileInfo(storageFileInfo, file, EntityFileRelation.EntityType.TEST_RESULT,
+        return attachmentService.addFileInfo(storageFileInfo, file, EntityType.TEST_RESULT,
                 logger);
     }
 
