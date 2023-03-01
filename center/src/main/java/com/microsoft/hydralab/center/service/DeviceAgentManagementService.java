@@ -11,7 +11,7 @@ import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.*;
 import com.microsoft.hydralab.common.entity.common.*;
-import com.microsoft.hydralab.common.repository.BlobFileInfoRepository;
+import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
@@ -73,7 +73,7 @@ public class DeviceAgentManagementService {
     @Resource
     TestTaskService testTaskService;
     @Resource
-    BlobFileInfoRepository blobFileInfoRepository;
+    StorageFileInfoRepository storageFileInfoRepository;
     @Resource
     AttachmentService attachmentService;
     @Resource
@@ -675,7 +675,7 @@ public class DeviceAgentManagementService {
     private JSONObject runT2CTest(TestTaskSpec testTaskSpec) {
         // TODO: upgrade to assign task to agent and check the available device count on the agent
         JSONObject result = new JSONObject();
-        BlobFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), BlobFileInfo.FileType.TEST_APP_FILE);
+        StorageFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
         if (testAppFileInfo != null) {
             File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
             TestInfo testInfo;
@@ -915,8 +915,8 @@ public class DeviceAgentManagementService {
         //check is agent connected
         AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentId);
         Assert.notNull(agentSessionInfoByAgentId, "Agent Offline!");
-        BlobFileInfo packageInfo = blobFileInfoRepository.findById(fileId).get();
-        if (packageInfo == null || !BlobFileInfo.FileType.AGENT_PACKAGE.equals(packageInfo.getFileType())) {
+        StorageFileInfo packageInfo = storageFileInfoRepository.findById(fileId).get();
+        if (packageInfo == null || !StorageFileInfo.FileType.AGENT_PACKAGE.equals(packageInfo.getFileType())) {
             throw new Exception("Error file info!");
         }
         AgentUser agentUser = agentSessionInfoByAgentId.agentUser;

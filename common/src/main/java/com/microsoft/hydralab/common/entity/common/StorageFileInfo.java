@@ -8,16 +8,14 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.DigestUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.*;
 import java.util.Date;
 
 @Entity
 @Data
-public class BlobFileInfo implements Serializable {
+@Table(name = "blob_file_info")
+public class StorageFileInfo implements Serializable {
     @Id
     @Column(name = "file_id", nullable = false)
     private String fileId;
@@ -37,15 +35,15 @@ public class BlobFileInfo implements Serializable {
     private String CDNUrl;
 
 
-    public BlobFileInfo() {
+    public StorageFileInfo() {
 
     }
-    public BlobFileInfo(File file, String relativePath, String fileType,String loadType,String loadDir){
+    public StorageFileInfo(File file, String relativePath, String fileType, String loadType, String loadDir){
         this(file, relativePath, fileType);
         this.loadType = loadType;
         this.loadDir = loadDir;
     }
-    public BlobFileInfo(File file, String relativePath, String fileType) {
+    public StorageFileInfo(File file, String relativePath, String fileType) {
         this.fileType = fileType;
         this.fileName = file.getName();
         this.fileLen = file.length();
