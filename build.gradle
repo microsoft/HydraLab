@@ -54,8 +54,16 @@ allprojects {
     }
     gradle.projectsEvaluated {
         tasks.withType(JavaCompile) {
-            // Official document for lint options: https://docs.oracle.com/javase/7/docs/technotes/tools/solaris/javac.html#xlintwarnings
-            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "-Xlint:fallthrough" << "-Xlint:static" << "-Xlint:try" << "-Xlint:varargs" << "-Xlint:finally"
+            options.compilerArgs += [
+                    "-Xlint:unchecked",
+                    "-Xlint:deprecation",
+                    "-Xlint:fallthrough",
+                    "-Xlint:static",
+                    "-Xlint:try",
+                    "-Xlint:varargs",
+                    "-Xlint:finally",
+                    "-Werror"
+            ]
         }
     }
 }

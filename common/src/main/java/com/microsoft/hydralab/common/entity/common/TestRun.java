@@ -63,7 +63,7 @@ public class TestRun implements Serializable, ITestRun {
     @Transient
     private String videoBlobUrl;
     @Transient
-    private List<BlobFileInfo> attachments;
+    private List<StorageFileInfo> attachments;
 
     @Transient
     private transient List<CommandlineAndTime> commandlineAndTimeList = new ArrayList<>();

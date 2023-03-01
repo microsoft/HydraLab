@@ -27,7 +27,7 @@ public class TestFileSet implements Serializable {
     private String commitCount;
     private Date ingestTime;
     @Transient
-    private List<BlobFileInfo> attachments = new ArrayList<>();
+    private List<StorageFileInfo> attachments = new ArrayList<>();
     @Column(name = "team_id")
     private String teamId;
     private String teamName;

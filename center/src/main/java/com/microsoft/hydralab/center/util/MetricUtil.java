@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.center.util;
 
 import com.microsoft.hydralab.center.service.DeviceAgentManagementService;
-import com.microsoft.hydralab.common.entity.center.AgentUser;
+import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.util.GlobalConstant;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;

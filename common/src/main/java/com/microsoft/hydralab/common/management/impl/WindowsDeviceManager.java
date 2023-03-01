@@ -48,7 +48,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         } catch (IOException e) {
             classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
         }
-        String blobUrl = blobStorageClient.uploadBlobFromFile(pcScreenShotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + pcScreenShotImageFile.getName(), null);
+        String blobUrl = blobStorageClient.uploadBlobFromFile(pcScreenShotImageFile, DeviceNetworkBlobConstants.SCREENSHOT_CONTAINER_NAME, "device/screenshots/" + pcScreenShotImageFile.getName(), null);
         if (StringUtils.isBlank(blobUrl)) {
             classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
         } else {

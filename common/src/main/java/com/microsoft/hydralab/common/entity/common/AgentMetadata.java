@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
-import com.microsoft.hydralab.common.entity.center.AgentUser;
 import lombok.Data;
 
 /**

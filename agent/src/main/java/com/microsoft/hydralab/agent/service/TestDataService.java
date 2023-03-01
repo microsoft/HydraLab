@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.service;
 
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.TestRun;
-import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
-import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
+import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import org.slf4j.Logger;
@@ -44,7 +45,8 @@ public class TestDataService {
 
         List<AndroidTestUnit> list = new ArrayList<>();
         for (TestRun testRun : testRuns) {
-            attachmentService.saveRelations(testRun.getId(), EntityFileRelation.EntityType.TEST_RESULT, testRun.getAttachments());
+            attachmentService.saveRelations(testRun.getId(), EntityType.TEST_RESULT,
+                    testRun.getAttachments());
 
             List<AndroidTestUnit> testUnitList = testRun.getTestUnitList();
             list.addAll(testUnitList);
