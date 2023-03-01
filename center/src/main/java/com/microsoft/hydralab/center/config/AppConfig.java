@@ -6,12 +6,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
-import com.microsoft.hydralab.common.entity.common.EntityType;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.file.impl.azure.AzureBlobClientAdapter;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
-import com.microsoft.hydralab.common.file.impl.azure.AzureBlobProperty;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.StorageManageService;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import io.prometheus.client.exporter.PushGateway;
@@ -28,7 +25,6 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
-import javax.annotation.Resource;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -37,8 +33,6 @@ import java.util.Map;
 @Configuration
 @ComponentScan(basePackages = {"com.microsoft.hydralab"})
 public class AppConfig {
-    @Resource
-    ApplicationContext applicationContext;
     @Value("${management.metrics.export.prometheus.pushgateway.username}")
     private String pushgatewayUsername;
     @Value("${management.metrics.export.prometheus.pushgateway.password}")
@@ -63,23 +57,15 @@ public class AppConfig {
     }
 
     @Bean
-    public StorageServiceClient storageServiceClient() {
+    public StorageManageService storageManageService(ApplicationContext applicationContext) {
         if (storageType == null) {
             storageType = Const.StorageType.LOCAL;
         }
 
-        StorageServiceClient storageServiceClient = null;
-        switch (storageType) {
-            case Const.StorageType.AZURE:
-                AzureBlobProperty azureBlobProperty = applicationContext.getBean(Const.StoragePropertyBean.AZURE, AzureBlobProperty.class);
-                storageServiceClient = new AzureBlobClientAdapter(azureBlobProperty);
-                EntityType.setInstanceContainer(azureBlobProperty);
-                break;
-            default:
-                // todo: local storage system
-                break;
-        }
-        return storageServiceClient;
+        StorageManageService storageManageService = new StorageManageService(applicationContext);
+        storageManageService.initCenterStorageClient(storageType);
+
+        return storageManageService;
     }
 
     @Bean

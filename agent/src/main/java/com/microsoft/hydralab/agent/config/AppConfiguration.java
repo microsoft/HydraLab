@@ -9,10 +9,6 @@ import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
-import com.microsoft.hydralab.common.entity.common.EntityType;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.file.impl.azure.AzureBlobClientAdapter;
-import com.microsoft.hydralab.common.file.impl.azure.AzureBlobProperty;
 import com.microsoft.hydralab.common.management.AgentType;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -22,6 +18,7 @@ import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMon
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.StorageManageService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;
@@ -74,10 +71,6 @@ public class AppConfiguration {
     private Boolean shutdownIfFail;
     @Value("${app.appium.host:}")
     private String appiumServerHost;
-    @Value("${app.storage.type}")
-    private String storageType;
-    @Resource
-    ApplicationContext applicationContext;
 
     @NotNull
     private File getScreenshotDir() {
@@ -101,9 +94,8 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceManager initDeviceManager(StorageServiceClient storageServiceClient, ADBOperateUtil adbOperateUtil
+    public DeviceManager initDeviceManager(StorageManageService storageManageService, ADBOperateUtil adbOperateUtil
             , AppiumServerManager appiumServerManager, DeviceStatusListenerManager deviceStatusListenerManager) {
-
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
         if (deviceManager instanceof AndroidDeviceManager) {
@@ -137,7 +129,7 @@ public class AppConfiguration {
             }
         }
         deviceManager.setDeviceLogBaseDir(deviceLogBaseDir);
-        deviceManager.setStorageServiceClient(storageServiceClient);
+        deviceManager.setStorageManageService(storageManageService);
 
         deviceManager.setScreenshotDir(getScreenshotDir());
         deviceManager.setDeviceFolderUrlPrefix(AppOptions.DEVICE_STORAGE_MAPPING_REL_PATH);
@@ -176,22 +168,6 @@ public class AppConfiguration {
     }
 
     @Bean
-    public StorageServiceClient storageServiceClient() {
-        StorageServiceClient storageServiceClient = null;
-        switch (storageType) {
-            case Const.StorageType.AZURE:
-                storageServiceClient = new AzureBlobClientAdapter();
-                AzureBlobProperty azureBlobProperty = applicationContext.getBean(Const.StoragePropertyBean.AZURE, AzureBlobProperty.class);
-                EntityType.setInstanceContainer(azureBlobProperty);
-                break;
-            default:
-                // todo: local storage system
-                break;
-        }
-        return storageServiceClient;
-    }
-
-    @Bean
     public SmartTestUtil smartTestUtil() {
         return new SmartTestUtil(appOptions.getLocation());
     }
@@ -213,11 +189,10 @@ public class AppConfiguration {
     @ConditionalOnProperty(prefix = "management.metrics.export.prometheus.pushgateway", name = "enabled", havingValue = "true")
     public MetricPushGateway pushGateway(PrometheusProperties prometheusProperties) throws MalformedURLException {
         String baseUrl = prometheusProperties.getPushgateway().getBaseUrl();
-        if (!baseUrl.startsWith("http")){
+        if (!baseUrl.startsWith("http")) {
             if (baseUrl.startsWith("127.0.0.1") || baseUrl.startsWith("localhost")) {
                 baseUrl = "http://" + baseUrl;
-            }
-            else {
+            } else {
                 baseUrl = "https://" + baseUrl;
             }
         }
@@ -237,5 +212,10 @@ public class AppConfiguration {
 
         return new PrometheusPushGatewayManager(pushGateway, registry,
                 pushRate, job, groupingKey, shutdownOperation);
+    }
+
+    @Bean
+    public StorageManageService storageManageService(ApplicationContext applicationContext){
+        return new StorageManageService(applicationContext);
     }
 }

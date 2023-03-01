@@ -14,12 +14,10 @@ import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
-import com.microsoft.hydralab.common.file.AccessToken;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
-import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
+import com.microsoft.hydralab.common.util.StorageManageService;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
@@ -54,7 +52,8 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @Resource
     AgentManageService agentManageService;
     @Resource
-    private StorageServiceClient storageServiceClient;
+    private StorageManageService storageManageService;
+    private boolean isStorageClientInit = false;
     @Resource
     private AppOptions appOptions;
     @Resource
@@ -168,19 +167,13 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     private void heartbeatResponse(Message message) {
         AgentMetadata agentMetadata = (AgentMetadata) message.getBody();
 
-        storageTypeConsistencyCheck(agentMetadata.getAccessToken());
-        storageServiceClient.updateAccessToken(agentMetadata.getAccessToken());
+        if (!isStorageClientInit){
+            storageManageService.initAgentStorageClient(agentMetadata.getStorageType());
+            isStorageClientInit = true;
+        }
+        storageManageService.updateAccessToken(agentMetadata.getAccessToken());
         syncAgentStatus(agentMetadata.getAgentUser());
         prometheusPushgatewayInit(agentMetadata);
-    }
-
-    private void storageTypeConsistencyCheck(AccessToken accessToken) {
-        try {
-            storageServiceClient.storageTypeCheck(accessToken);
-        } catch (HydraLabRuntimeException e) {
-            log.error(e.getMessage());
-            System.exit(e.getCode());
-        }
     }
 
     private void syncAgentStatus(AgentUser passedAgent) {

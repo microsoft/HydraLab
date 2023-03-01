@@ -14,7 +14,6 @@ public abstract class StorageServiceClient {
     // CDN endpoint
     protected String cdnUrl;
 
-    public abstract void storageTypeCheck(AccessToken token);
     public abstract void updateAccessToken(AccessToken token);
     public abstract AccessToken generateAccessToken(String permissionType);
     public abstract boolean isAccessTokenExpired(AccessToken token);

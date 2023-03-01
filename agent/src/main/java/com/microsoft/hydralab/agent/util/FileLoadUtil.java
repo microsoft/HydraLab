@@ -5,9 +5,9 @@ package com.microsoft.hydralab.agent.util;
 import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.FileUtil;
+import com.microsoft.hydralab.common.util.StorageManageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class FileLoadUtil {
     @Resource
     private AppOptions appOptions;
     @Resource
-    StorageServiceClient storageServiceClient;
+    StorageManageService storageManageService;
 
     public void clearAttachments(TestTask testTask) {
         List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
@@ -116,7 +116,7 @@ public class FileLoadUtil {
     private File downloadFile(StorageFileInfo attachment, String location, String targetFilePath) throws IOException {
         File file = new File(location, targetFilePath);
         log.debug("download file from {} to {}", attachment.getBlobUrl(), file.getAbsolutePath());
-        storageServiceClient.download(file, attachment);
+        storageManageService.download(file, attachment);
         return file;
     }
 

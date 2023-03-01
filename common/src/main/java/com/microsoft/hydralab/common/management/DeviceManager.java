@@ -10,7 +10,6 @@ import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
@@ -39,7 +38,7 @@ import static com.android.ddmlib.IDevice.DeviceState;
 public abstract class DeviceManager {
     public static final String LOGGER_PREFIX = "logger.devices.";
     static final Logger classLogger = LoggerFactory.getLogger(DeviceManager.class);
-    protected StorageServiceClient storageServiceClient;
+    protected StorageManageService storageManageService;
     protected File testBaseDir;
     protected File preAppDir;
     protected String preInstallFailurePolicy;
@@ -91,12 +90,12 @@ public abstract class DeviceManager {
     }
 
 
-    public StorageServiceClient getStorageServiceClient() {
-        return storageServiceClient;
+    public StorageManageService getStorageManageService() {
+        return storageManageService;
     }
 
-    public void setStorageServiceClient(StorageServiceClient storageServiceClient) {
-        this.storageServiceClient = storageServiceClient;
+    public void setStorageManageService(StorageManageService storageManageService) {
+        this.storageManageService = storageManageService;
     }
 
     public File getTestBaseDir() {

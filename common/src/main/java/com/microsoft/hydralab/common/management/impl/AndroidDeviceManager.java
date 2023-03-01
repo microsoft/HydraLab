@@ -407,7 +407,7 @@ public class AndroidDeviceManager extends DeviceManager {
         sendKeyEvent(deviceInfo, KEYCODE_WAKEUP, logger);
         screenCapture(deviceInfo, screenshotImageFile.getAbsolutePath(), null);
         StorageFileInfo fileInfo = new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
-        String fileDownloadUrl = storageServiceClient.upload(screenshotImageFile, fileInfo).getBlobUrl();
+        String fileDownloadUrl = storageManageService.upload(screenshotImageFile, fileInfo).getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
             classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {

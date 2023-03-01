@@ -11,7 +11,6 @@ import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.*;
 import com.microsoft.hydralab.common.entity.common.*;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.util.*;
@@ -79,9 +78,11 @@ public class DeviceAgentManagementService {
     @Resource
     AgentManageService agentManageService;
     @Resource
-    StorageServiceClient storageServiceClient;
+    StorageManageService storageManageService;
     @Resource
     StorageTokenManageService storageTokenManageService;
+    @Value("${app.storage.type}")
+    private String storageType;
 
     @Value("${app.access-token-limit}")
     int accessLimit;
@@ -122,6 +123,8 @@ public class DeviceAgentManagementService {
     private void sendAgentMetadata(Session session, AgentUser agentUser, String signalName) {
         agentUser.setBatteryStrategy(AgentUser.BatteryStrategy.valueOf(batteryStrategy));
         AgentMetadata data = new AgentMetadata();
+
+        data.setStorageType(storageType);
         data.setAccessToken(storageTokenManageService.generateWriteToken(agentUser.getId()));
         data.setAgentUser(agentUser);
         data.setPushgatewayUsername(pushgatewayUsername);
@@ -680,7 +683,7 @@ public class DeviceAgentManagementService {
             File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
             TestInfo testInfo;
             try {
-                storageServiceClient.download(testApkFile, testAppFileInfo);
+                storageManageService.download(testApkFile, testAppFileInfo);
                 T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
                 String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
                 testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);

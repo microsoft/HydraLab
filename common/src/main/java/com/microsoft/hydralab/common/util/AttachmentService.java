@@ -7,7 +7,6 @@ import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestJsonInfo;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.repository.EntityFileRelationRepository;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.TestJsonInfoRepository;
@@ -41,7 +40,7 @@ public class AttachmentService {
     @Resource
     EntityFileRelationRepository entityFileRelationRepository;
     @Resource
-    StorageServiceClient storageServiceClient;
+    StorageManageService storageManageService;
 
     public StorageFileInfo addAttachment(String entityId, EntityType entityType, StorageFileInfo fileInfo, File file, Logger logger) {
         boolean recordExists = false;
@@ -81,7 +80,7 @@ public class AttachmentService {
 
     public StorageFileInfo updateFileInStorageAndDB(StorageFileInfo oldFileInfo, File file, EntityType entityType, Logger logger) {
         int days = (int) ((new Date().getTime() - oldFileInfo.getUpdateTime().getTime()) / 1000 / 60 / 60 / 24);
-        if (days >= storageServiceClient.getFileLimitDay()) {
+        if (days >= storageManageService.getStorageFileLimitDay()) {
             oldFileInfo.setUpdateTime(new Date());
             oldFileInfo.setBlobContainer(entityType.storageContainer);
             oldFileInfo.setBlobUrl(saveFileInStorage(file, oldFileInfo, logger));
@@ -198,7 +197,7 @@ public class AttachmentService {
     }
 
     private String saveFileInStorage(File file, StorageFileInfo fileInfo, Logger logger) {
-        storageServiceClient.upload(file, fileInfo);
+        storageManageService.upload(file, fileInfo);
         if (StringUtils.isBlank(fileInfo.getBlobUrl())) {
             logger.warn("Download URL is empty for file {}", fileInfo.getBlobPath());
         } else {

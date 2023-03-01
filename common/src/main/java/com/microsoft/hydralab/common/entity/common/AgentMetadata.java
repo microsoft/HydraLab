@@ -12,6 +12,7 @@ import lombok.Data;
 @Data
 public class AgentMetadata {
     AccessToken accessToken;
+    String storageType;
     AgentUser agentUser;
     String pushgatewayUsername;
     String pushgatewayPassword;

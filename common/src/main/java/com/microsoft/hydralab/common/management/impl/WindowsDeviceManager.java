@@ -50,7 +50,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
             classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
         }
         StorageFileInfo fileInfo = new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
-        String fileDownloadUrl = storageServiceClient.upload(pcScreenShotImageFile, fileInfo).getBlobUrl();
+        String fileDownloadUrl = storageManageService.upload(pcScreenShotImageFile, fileInfo).getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
             classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {

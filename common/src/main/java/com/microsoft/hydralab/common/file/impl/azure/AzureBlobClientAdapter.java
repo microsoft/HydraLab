@@ -20,10 +20,8 @@ import com.google.common.net.MediaType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -54,13 +52,6 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         cdnUrl = azureBlobProperty.getCDNUrl();
         isAuthedBySAS = false;
         isConnected = true;
-    }
-
-    @Override
-    public void storageTypeCheck(AccessToken token) {
-        if (!(token instanceof SASData)) {
-            throw new HydraLabRuntimeException(HttpStatus.NOT_ACCEPTABLE.value(), "Agent's storage type is inconsistent with Center's, please update your configuration and try again!");
-        }
     }
 
     @Override

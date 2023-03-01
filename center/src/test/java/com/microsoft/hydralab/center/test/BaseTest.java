@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.center.test;
 
 import com.microsoft.hydralab.center.util.AuthUtil;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
+import com.microsoft.hydralab.common.util.StorageManageService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ import javax.transaction.Transactional;
 public class BaseTest {
     protected Logger baseLogger = LoggerFactory.getLogger(BaseTest.class);
     @MockBean
-    StorageServiceClient storageServiceClient;
+    StorageManageService storageManageService;
     @MockBean
     AuthUtil authUtil;
 }
