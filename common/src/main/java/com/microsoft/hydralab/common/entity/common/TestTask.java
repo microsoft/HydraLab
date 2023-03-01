@@ -101,6 +101,7 @@ public class TestTask implements Serializable {
     public TestTask() {
     }
 
+    @SuppressWarnings("deprecation")
     public static TestTask convertToTestTask(TestTaskSpec testTaskSpec) {
         TestTask testTask = new TestTask();
         testTask.setId(testTaskSpec.testTaskId);
@@ -150,6 +151,7 @@ public class TestTask implements Serializable {
         return testTask;
     }
 
+    @SuppressWarnings("deprecation")
     public static TestTaskSpec convertToTestTaskSpec(TestTask testTask) {
         TestTaskSpec testTaskSpec = new TestTaskSpec();
         testTaskSpec.testTaskId = testTask.getId();
