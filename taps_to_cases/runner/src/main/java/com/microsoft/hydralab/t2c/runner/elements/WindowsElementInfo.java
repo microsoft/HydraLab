@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.t2c.runner.elements;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 public class WindowsElementInfo extends BaseElementInfo {
     private String AcceleratorKey;
     private String AccessKey;
@@ -41,7 +39,7 @@ public class WindowsElementInfo extends BaseElementInfo {
                               String isPassword, String isRequiredForForm, String itemStatus, String itemType,
                               String localizedControlType, String name, String orientation, String processId,
                               String runtimeId, String x, String y, String width, String height, String xpath){
-        super(automationId,xpath,name);
+        super(xpath);
         this.AcceleratorKey = acceleratorKey;
         this.AccessKey = accessKey;
         this.AutomationId = automationId;
@@ -72,9 +70,6 @@ public class WindowsElementInfo extends BaseElementInfo {
         this.centerY = Integer.parseInt(y)+Integer.parseInt(height)/2;
     }
 
-    public String getElementInfo(){
-        return ToStringBuilder.reflectionToString(this);
-    }
     public String getAcceleratorKey() {
         return AcceleratorKey;
     }

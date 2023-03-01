@@ -16,6 +16,7 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class AdbMonkeyRunner extends TestRunner {
+    private static final String TEST_RUN_NAME = "ADB monkey test";
     static final Logger classLogger = LoggerFactory.getLogger(AdbMonkeyRunner.class);
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     final ADBOperateUtil adbOperateUtil;
@@ -38,8 +40,9 @@ public class AdbMonkeyRunner extends TestRunner {
     private File gifFile;
     private AndroidTestUnit ongoingMonkeyTest;
 
-    public AdbMonkeyRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, ADBOperateUtil adbOperateUtil) {
-        super(agentManagementService, testTaskRunCallback);
+    public AdbMonkeyRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                           PerformanceTestManagementService performanceTestManagementService, ADBOperateUtil adbOperateUtil) {
+        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 
@@ -56,9 +59,11 @@ public class AdbMonkeyRunner extends TestRunner {
         startRecording(deviceInfo, testRun, testTask.getTimeOutSecond(), reportLogger);
 
         /** run the test */
-        reportLogger.info("Start monkey test");
+        reportLogger.info("Start " + TEST_RUN_NAME);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        performanceTestManagementService.testRunStarted();
         checkTestTaskCancel(testTask);
+        performanceTestManagementService.testStarted(TEST_RUN_NAME);
         long checkTime = runMonkeyTestOnce(deviceInfo, testRun, reportLogger, testTask.getInstrumentationArgs(), testTask.getMaxStepCount());
         if (checkTime > 0) {
             String crashStack = testRun.getCrashStack();
@@ -66,10 +71,14 @@ public class AdbMonkeyRunner extends TestRunner {
                 ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
                 ongoingMonkeyTest.setSuccess(false);
                 ongoingMonkeyTest.setStack(crashStack);
+                performanceTestManagementService.testFailure(ongoingMonkeyTest.getTitle());
                 testRun.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", checkTime);
                 testRun.oneMoreFailure();
+            } else {
+                performanceTestManagementService.testSuccess(ongoingMonkeyTest.getTitle());
             }
         }
+        performanceTestManagementService.testRunFinished();
         testRunEnded(deviceInfo, testRun);
 
         /** set paths */

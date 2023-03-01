@@ -20,4 +20,14 @@ public class PerformanceInspectionResult {
     }
 
     //TODO: overwrite equals, toString, and hashcode methods
+
+    @Override
+    public String toString() {
+        return "PerformanceInspectionResult{" +
+                "timestamp=" + timestamp +
+                ", inspection=" + inspection +
+                ", rawResultFile=" + rawResultFile.getAbsolutePath() +
+                ", parsedData=" + parsedData +
+                '}';
+    }
 }

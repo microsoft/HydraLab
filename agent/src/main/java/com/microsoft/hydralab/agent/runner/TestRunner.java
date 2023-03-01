@@ -14,6 +14,8 @@ import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
+import com.microsoft.hydralab.performance.InspectionStrategy;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,13 +32,16 @@ public abstract class TestRunner {
     protected final Logger log = LoggerFactory.getLogger(TestDeviceManager.class);
     protected final AgentManagementService agentManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
+    protected final PerformanceTestManagementService performanceTestManagementService;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
     protected final ActionExecutor actionExecutor = new ActionExecutor();
     protected TestDeviceManager testDeviceManager;
 
-    public TestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback) {
+    public TestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                      PerformanceTestManagementService performanceTestManagementService) {
         this.agentManagementService = agentManagementService;
         this.testTaskRunCallback = testTaskRunCallback;
+        this.performanceTestManagementService = performanceTestManagementService;
     }
 
     public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
@@ -55,7 +60,6 @@ public abstract class TestRunner {
             testRun.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(testRun, e);
         } finally {
-            //TODO: tearDown for performance testing. Android battery: adb shell dumpsys battery reset
             tearDown(deviceInfo, testTask, testRun);
         }
     }
@@ -143,11 +147,22 @@ public abstract class TestRunner {
 
         checkTestTaskCancel(testTask);
         testDeviceManager.getScreenShot(deviceInfo, testRun.getLogger());
+
+        if (performanceTestManagementService != null && testTask.getInspectionStrategies() != null) {
+            for (InspectionStrategy strategy : testTask.getInspectionStrategies()) {
+                performanceTestManagementService.inspectWithStrategy(strategy);
+            }
+        }
     }
 
     protected abstract void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception;
 
     protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
+        // stop performance test
+        if (performanceTestManagementService != null) {
+            performanceTestManagementService.testTearDown(deviceInfo, log);
+        }
+
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");

@@ -15,6 +15,7 @@ import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -39,9 +40,17 @@ public class TestRunnerConfig {
     );
 
     @Bean
+    public PerformanceTestManagementService performanceTestManagementService() {
+        PerformanceTestManagementService performanceTestManagementService = new PerformanceTestManagementService();
+        performanceTestManagementService.initialize();
+        return performanceTestManagementService;
+    }
+
+    @Bean
     public EspressoRunner espressoRunner(AgentManagementService agentManagementService, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil) {
         return new EspressoRunner(agentManagementService, testTaskEngineService, adbOperateUtil);
     }
+
 
     @Bean
     public AdbMonkeyRunner adbMonkeyRunner(AgentManagementService agentManagementService, TestTaskEngineService testTaskEngineService, ADBOperateUtil adbOperateUtil) {

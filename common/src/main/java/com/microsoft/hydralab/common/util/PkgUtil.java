@@ -8,7 +8,7 @@ import com.dd.plist.NSDictionary;
 import com.dd.plist.NSString;
 import com.dd.plist.PropertyListParser;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask.TaskConst;
-import com.microsoft.hydralab.common.entity.common.BlobFileInfo.ParserKey;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
 import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;

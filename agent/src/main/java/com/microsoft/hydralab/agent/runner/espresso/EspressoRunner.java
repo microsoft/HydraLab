@@ -13,6 +13,7 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -23,8 +24,9 @@ import java.util.Map;
 public class EspressoRunner extends TestRunner {
     final ADBOperateUtil adbOperateUtil;
 
-    public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, ADBOperateUtil adbOperateUtil) {
-        super(agentManagementService, testTaskRunCallback);
+    public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                          PerformanceTestManagementService performanceTestManagementService, ADBOperateUtil adbOperateUtil) {
+        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 
@@ -36,7 +38,8 @@ public class EspressoRunner extends TestRunner {
         try {
             /** xml report: parse listener */
             reportLogger.info("Start xml report: parse listener");
-            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(agentManagementService, adbOperateUtil, deviceInfo, testRun, testTask.getPkgName());
+            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(agentManagementService,
+                    adbOperateUtil, deviceInfo, testRun, testTask.getPkgName(), performanceTestManagementService);
             instrumentationResultParser = new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
                 @Override
                 public boolean isCancelled() {

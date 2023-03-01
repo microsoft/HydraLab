@@ -15,6 +15,7 @@ import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -37,6 +38,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private final String pkgName;
     private final AgentManagementService agentManagementService;
     private final TestDeviceManager testDeviceManager;
+    private final PerformanceTestListener performanceTestListener;
     ADBOperateUtil adbOperateUtil;
     private long recordingStartTimeMillis;
     private int index;
@@ -47,7 +49,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private int pid;
     private int addedFrameCount;
 
-    public EspressoTestInfoProcessorListener(AgentManagementService agentManagementService, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, TestRun testRun, String pkgName) {
+    public EspressoTestInfoProcessorListener(AgentManagementService agentManagementService, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
+                                             PerformanceTestListener performanceTestListener) {
         this.agentManagementService = agentManagementService;
         this.testDeviceManager = deviceInfo.getTestDeviceManager();
         this.adbOperateUtil = adbOperateUtil;
@@ -55,6 +58,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         this.testRun = testRun;
         this.logger = testRun.getLogger();
         this.pkgName = pkgName;
+        this.performanceTestListener = performanceTestListener;
         adbLogcatCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
         adbDeviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
         setReportDir(testRun.getResultFolder());
@@ -93,6 +97,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         super.testRunStarted(runName, numTests);
         logEnter(runName, numTests);
         startTools(runName);
+        performanceTestListener.testRunStarted();
     }
 
 
@@ -161,6 +166,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
                 ioException.printStackTrace();
             }
         }), logger);
+
+        performanceTestListener.testStarted(ongoingTestUnit.getTitle());
     }
 
     @Override
@@ -169,6 +176,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         super.testFailed(test, trace);
         ongoingTestUnit.setStack(trace);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
+        performanceTestListener.testFailure(ongoingTestUnit.getTitle());
         testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.oneMoreFailure();
     }
@@ -200,6 +208,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         ) {
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTestUnit.setSuccess(true);
+            performanceTestListener.testSuccess(ongoingTestUnit.getTitle());
         }
         ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
@@ -243,6 +252,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             if (alreadyEnd) {
                 return;
             }
+            performanceTestListener.testRunFinished();
             testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
             super.testRunEnded(elapsedTime, runMetrics);
             testRun.onTestEnded();

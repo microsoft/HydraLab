@@ -18,6 +18,7 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -36,8 +37,9 @@ public class SmartRunner extends TestRunner {
     private File gifFile;
     private SmartTestParam smartTestParam;
 
-    public SmartRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, SmartTestUtil smartTestUtil) {
-        super(agentManagementService, testTaskRunCallback);
+    public SmartRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                       PerformanceTestManagementService performanceTestManagementService, SmartTestUtil smartTestUtil) {
+        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
         this.smartTestUtil = smartTestUtil;
     }
 
@@ -58,6 +60,7 @@ public class SmartRunner extends TestRunner {
         reportLogger.info("Start Smart test");
         checkTestTaskCancel(testTask);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        performanceTestManagementService.testRunStarted();
 
         /** init smart_test arg */
         //TODO choose model before starting test task
@@ -136,6 +139,9 @@ public class SmartRunner extends TestRunner {
                 ioException.printStackTrace();
             }
         }), logger);
+
+        performanceTestManagementService.testStarted(ongoingSmartTest.getTitle());
+
         Boolean isSuccess = false;
         JSONObject res = new JSONObject();
         JSONObject analysisRes = new JSONObject();
@@ -154,18 +160,21 @@ public class SmartRunner extends TestRunner {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(res.getString(Const.SmartTestConfig.TASK_EXP_TAG));
+            performanceTestManagementService.testFailure(ongoingSmartTest.getTitle());
             testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         } else if (crashStack != null && crashStack.size() > 0) {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(crashStack.toJSONString());
+            performanceTestManagementService.testFailure(ongoingSmartTest.getTitle());
             testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         } else {
             analysisRes = smartTestUtil.analysisRes(res);
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingSmartTest.setSuccess(true);
+            performanceTestManagementService.testSuccess(ongoingSmartTest.getTitle());
         }
         ongoingSmartTest.setEndTimeMillis(System.currentTimeMillis());
         logger.info(ongoingSmartTest.getTitle() + ".end");
@@ -179,6 +188,7 @@ public class SmartRunner extends TestRunner {
     }
 
     public void testRunEnded(DeviceInfo deviceInfo, TestRun testRun) {
+        performanceTestManagementService.testRunFinished();
 
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();

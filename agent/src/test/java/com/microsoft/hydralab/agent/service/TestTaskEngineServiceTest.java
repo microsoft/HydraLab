@@ -4,7 +4,7 @@ import com.microsoft.hydralab.agent.config.TestRunnerConfig;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
 import com.microsoft.hydralab.agent.test.BaseTest;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import org.junit.jupiter.api.Assertions;

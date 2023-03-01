@@ -3,7 +3,6 @@
 package com.microsoft.hydralab.t2c.runner;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
@@ -12,6 +11,8 @@ import com.microsoft.hydralab.t2c.runner.elements.AndroidElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.EdgeElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
+import com.microsoft.hydralab.t2c.runner.finder.ElementFinder;
+import com.microsoft.hydralab.t2c.runner.finder.ElementFinderFactory;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.WebElement;
@@ -25,28 +26,14 @@ public class T2CAppiumUtils {
     private static boolean isSelfTesting = false;
 
     public static WebElement findElement(BaseDriverController driver, BaseElementInfo element, Logger logger) {
-        WebElement elementFinded = null;
+        WebElement elementFound = null;
         if (element == null) return null;
-        Map<String, String> keyToVal = element.getBasisSearchedBy();
-        if (keyToVal.get("accessibilityId") != null && keyToVal.get("accessibilityId").length() != 0) {
-            elementFinded = driver.findElementByAccessibilityId(keyToVal.get("accessibilityId"));
-            if (elementFinded != null) {
-                return elementFinded;
-            }
+        ElementFinder<BaseElementInfo> finder = ElementFinderFactory.createElementFinder(driver);
+        elementFound = finder.findElement(element);
+        if (elementFound != null) {
+            return elementFound;
         }
-        if (keyToVal.get("text") != null && keyToVal.get("text").length() != 0) {
-            elementFinded = driver.findElementByName(keyToVal.get("text"));
-            if (elementFinded != null) {
-                return elementFinded;
-            }
-        }
-        if (keyToVal.get("xpath") != null && keyToVal.get("xpath").length() != 0) {
-            elementFinded = driver.findElementByXPath(keyToVal.get("xpath"));
-            if (elementFinded != null) {
-                return elementFinded;
-            }
-        }
-        logger.warn("Page source: " + driver.webDriver.getPageSource());
+        logger.warn("Page source: " + driver.getPageSource());
         throw new IllegalArgumentException("Element can not be found in current UI. Element info is " + element.getElementInfo());
     }
 
@@ -61,7 +48,7 @@ public class T2CAppiumUtils {
             logger.error("doAction at " + index + ", description: " + description + ", with exception: " + e.getMessage());
             if (!isOption) {
                 throw new IllegalStateException("Failed at " + index + ", description: " + description + ", " + e.getMessage()
-                        + ", page source: \n" + driver.webDriver.getPageSource(), e);
+                        + ", page source: \n" + driver.getPageSource(), e);
             }
         }
     }
@@ -186,7 +173,7 @@ public class T2CAppiumUtils {
                 } else if (toElementStr != null) {
                     BaseElementInfo toElementInfo;
                     if (driver instanceof AndroidDriverController) {
-                        toElementInfo = AndroidElementInfo.getAndroidElementFromJson(JSONObject.parseObject(toElementStr));
+                        toElementInfo = JSON.parseObject(toElementStr, AndroidElementInfo.class);
                     } else if (driver instanceof WindowsDriverController) {
                         toElementInfo = JSON.parseObject(toElementStr, WindowsElementInfo.class);
                     } else if (driver instanceof EdgeDriverController) {

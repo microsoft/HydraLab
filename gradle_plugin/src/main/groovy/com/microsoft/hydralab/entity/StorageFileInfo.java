@@ -5,7 +5,7 @@ package com.microsoft.hydralab.entity;
 import com.google.gson.JsonObject;
 import java.util.Date;
 
-public class BlobFileInfo {
+public class StorageFileInfo {
     public String fileId;
     public String fileType;
     public String fileName;

@@ -9,7 +9,7 @@ import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
 import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.*;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -185,7 +185,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         File deviceTestResultFolder = result.getResultFolder();
 
         File[] files = deviceTestResultFolder.listFiles();
-        List<BlobFileInfo> attachments = new ArrayList<>();
+        List<StorageFileInfo> attachments = new ArrayList<>();
         Assert.notNull(files, "should have result file to upload");
         for (File file : files) {
             if (file.isDirectory()) {
@@ -208,9 +208,9 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         log.warn("device disconnected, test task {} will be re-queue, no data will be saved", testTask.getId());
     }
 
-    private BlobFileInfo saveFileToBlob(File file, File folder, Logger logger) {
-        BlobFileInfo blobFileInfo = new BlobFileInfo(file, "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(), BlobFileInfo.FileType.COMMON_FILE);
-        return attachmentService.addFileInfo(blobFileInfo, file, EntityFileRelation.EntityType.TEST_RESULT, logger);
+    private StorageFileInfo saveFileToBlob(File file, File folder, Logger logger) {
+        StorageFileInfo storageFileInfo = new StorageFileInfo(file, "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(), StorageFileInfo.FileType.COMMON_FILE);
+        return attachmentService.addFileInfo(storageFileInfo, file, EntityFileRelation.EntityType.TEST_RESULT, logger);
     }
 
     private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
