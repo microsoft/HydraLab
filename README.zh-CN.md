@@ -161,7 +161,7 @@ java -jar agent/build/libs/agent.jar
 ## 联系我们
 
 如果您对Hydra Lab有任何疑问，您可以通过以下方式联系我们：
-- [打开 issue](https://github.com/microsoft/HydraLab/issues/new) 或提交 PRs.
+- [创建 issue](https://github.com/microsoft/HydraLab/issues/new) 或提交 PRs.
 - 发送邮件到: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
 
 <span id="links"></span>
