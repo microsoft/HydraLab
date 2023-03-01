@@ -17,7 +17,11 @@ import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
-import com.microsoft.hydralab.t2c.runner.*;
+import com.microsoft.hydralab.t2c.runner.ActionInfo;
+import com.microsoft.hydralab.t2c.runner.DriverInfo;
+import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
+import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
+import com.microsoft.hydralab.t2c.runner.TestInfo;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
@@ -89,7 +93,9 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
         } catch (IOException e) {
             classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
         }
-        String blobUrl = agentManagementService.getBlobStorageClient().uploadBlobFromFile(screenShotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + screenShotImageFile.getName(), null);
+        String blobUrl = agentManagementService.getBlobStorageClient()
+                .uploadBlobFromFile(screenShotImageFile, DeviceNetworkBlobConstants.SCREENSHOT_CONTAINER_NAME,
+                        "device/screenshots/" + screenShotImageFile.getName(), null);
         if (StringUtils.isBlank(blobUrl)) {
             classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
         } else {

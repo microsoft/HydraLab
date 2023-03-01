@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner;
 
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
@@ -11,7 +12,12 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
@@ -52,22 +58,27 @@ public class XmlBuilder {
         Element testSuite = buildTestSuite(document, testTask, testRun);
         document.appendChild(testSuite);
 
-        File xmlFile = File.createTempFile(TEST_RESULT_FILE_PREFIX, TEST_RESULT_FILE_SUFFIX, testRun.getResultFolder());
+        File xmlFile =
+                File.createTempFile(TEST_RESULT_FILE_PREFIX, TEST_RESULT_FILE_SUFFIX, testRun.getResultFolder());
         transferToFile(document, xmlFile);
         return xmlFile.getAbsolutePath();
     }
 
-    private Element buildTestSuite(Document document, TestTask testTask, TestRun testRun) throws UnknownHostException {
+    private Element buildTestSuite(Document document, TestTask testTask, TestRun testRun)
+            throws UnknownHostException {
         Element testSuite = document.createElement(TESTSUITE);
 
         testSuite.setAttribute(ATTR_NAME, testTask.getTestSuite());
         testSuite.setAttribute(ATTR_TESTS, String.valueOf(testRun.getTotalCount()));
         testSuite.setAttribute(ATTR_FAILURES, String.valueOf(testRun.getFailCount()));
-        testSuite.setAttribute(ATTR_TIME, Double.toString((double) (testRun.getTestEndTimeMillis() - testRun.getTestStartTimeMillis()) / 1000.f));
-        testSuite.setAttribute(TIMESTAMP, DateUtil.appCenterFormat2.format(DateUtil.localToUTC(new Date(testRun.getTestStartTimeMillis()))));
+        testSuite.setAttribute(ATTR_TIME, Double.toString(
+                (double) (testRun.getTestEndTimeMillis() - testRun.getTestStartTimeMillis()) / 1000.f));
+        testSuite.setAttribute(TIMESTAMP,
+                DateUtil.appCenterFormat2.format(DateUtil.localToUTC(new Date(testRun.getTestStartTimeMillis()))));
         testSuite.setAttribute(HOSTNAME, InetAddress.getLocalHost().getHostName());
         if (testRun.getTestUnitList() != null) {
-            testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(testRun.getTotalCount() - testRun.getTestUnitList().size()));
+            testSuite.setAttribute(ATTR_SKIPPED,
+                    String.valueOf(testRun.getTotalCount() - testRun.getTestUnitList().size()));
             for (AndroidTestUnit unitTest : testRun.getTestUnitList()) {
                 Element testCase = buildTestCase(document, unitTest);
                 testSuite.appendChild(testCase);
@@ -82,7 +93,8 @@ public class XmlBuilder {
         Element testCase = document.createElement(TESTCASE);
         testCase.setAttribute(ATTR_NAME, unitTest.getTestName());
         testCase.setAttribute(ATTR_CLASSNAME, unitTest.getTestedClass());
-        testCase.setAttribute(ATTR_TIME, Double.toString((double) (unitTest.getEndTimeMillis() - unitTest.getStartTimeMillis()) / 1000.f));
+        testCase.setAttribute(ATTR_TIME,
+                Double.toString((double) (unitTest.getEndTimeMillis() - unitTest.getStartTimeMillis()) / 1000.f));
         if (!unitTest.isSuccess()) {
             Element failure = document.createElement(FAILURE);
             failure.setTextContent(unitTest.getStack());
@@ -93,7 +105,8 @@ public class XmlBuilder {
 
     private void transferToFile(Document document, File xmlFile) throws TransformerException {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        transformerFactory.setAttribute(TEST_RESULT_FILE_FORMAT_PROPERTY, Integer.valueOf(TEST_RESULT_FILE_FORMAT_VALUE));
+        transformerFactory.setAttribute(TEST_RESULT_FILE_FORMAT_PROPERTY,
+                Integer.valueOf(TEST_RESULT_FILE_FORMAT_VALUE));
         Source xmlSource = new DOMSource(document);
         Result outputTarget = new StreamResult(xmlFile);
 

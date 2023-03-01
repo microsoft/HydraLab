@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner.appium;
 
 import com.microsoft.hydralab.agent.runner.TestRunner;
@@ -43,7 +44,9 @@ public class AppiumRunner extends TestRunner {
 
         Logger reportLogger = testRun.getLogger();
         try {
-            File gifFile = runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testRun, testRun.getResultFolder(), reportLogger);
+            File gifFile =
+                    runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testRun,
+                            testRun.getResultFolder(), reportLogger);
             if (gifFile != null && gifFile.exists() && gifFile.length() > 0) {
                 testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
             }
@@ -63,20 +66,27 @@ public class AppiumRunner extends TestRunner {
         testDeviceManager.quitMobileAppiumDriver(deviceInfo, reportLogger);
     }
 
-    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
+    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask,
+                                TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         //set appium test property
         reportLogger.info("Start set appium test property");
         Map<String, String> instrumentationArgs = testTask.getInstrumentationArgs();
         if (instrumentationArgs == null) {
             instrumentationArgs = new HashMap<>();
         }
-        AppiumParam appiumParam = new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(), IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger), testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
+        AppiumParam appiumParam =
+                new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(),
+                        IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger),
+                        testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
         ThreadParam.init(appiumParam, instrumentationArgs);
-        reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam, LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
+        reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam,
+                LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
         File gifFile = null;
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");
-            Junit5Listener junit5Listener = new Junit5Listener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(), performanceTestManagementService, reportLogger);
+            Junit5Listener junit5Listener =
+                    new Junit5Listener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(),
+                            performanceTestManagementService, reportLogger);
 
             /** run the test */
             reportLogger.info("Start appium test with junit5");
@@ -88,7 +98,9 @@ public class AppiumRunner extends TestRunner {
         } else {
             /** xml report: parse listener */
             reportLogger.info("Start init listener");
-            AppiumListener listener = new AppiumListener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(), performanceTestManagementService, reportLogger);
+            AppiumListener listener =
+                    new AppiumListener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(),
+                            performanceTestManagementService, reportLogger);
 
             /** run the test */
             reportLogger.info("Start appium test with junit4");
@@ -114,7 +126,8 @@ public class AppiumRunner extends TestRunner {
         } catch (MalformedURLException e) {
             logger.error("runAppiumTest error", e);
         }
-        URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
+        URLClassLoader urlClassLoader =
+                new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
         Class<?> myClass;
         try {
             myClass = urlClassLoader.loadClass(appiumCommand);
@@ -126,7 +139,8 @@ public class AppiumRunner extends TestRunner {
         }
     }
 
-    public boolean startJunit5(File appiumJarFile, String appiumCommand, TestExecutionListener listener, Logger logger) {
+    public boolean startJunit5(File appiumJarFile, String appiumCommand, TestExecutionListener listener,
+                               Logger logger) {
         Launcher launcher = LauncherFactory.create();
 
         URL url = null;
@@ -135,7 +149,8 @@ public class AppiumRunner extends TestRunner {
         } catch (MalformedURLException e) {
             logger.error("runAppiumTest error", e);
         }
-        URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
+        URLClassLoader urlClassLoader =
+                new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
         Class<?> myClass;
         try {
             myClass = urlClassLoader.loadClass(appiumCommand);

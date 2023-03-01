@@ -32,7 +32,7 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForGroupDevice.groupDevices = "TestDeviceSerial1,TestDeviceSerial2";
         taskSpecForGroupDevice.pkgName = "com.microsoft.test";
 
-        String beanName = TestRunnerConfig.TestRunnerMap.get(taskSpecForGroupDevice.runningType);
+        String beanName = TestRunnerConfig.testRunnerMap.get(taskSpecForGroupDevice.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
         baseLogger.info("Try to get bean by name: " + taskSpecForGroupDevice);
 

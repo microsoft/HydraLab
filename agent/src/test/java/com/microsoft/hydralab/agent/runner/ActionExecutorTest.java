@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner;
 
 import com.alibaba.fastjson.JSONObject;
@@ -42,7 +43,8 @@ class ActionExecutorTest extends BaseTest {
         List<DeviceAction> actions = new ArrayList<>();
         actions.add(action1);
         actions.add(action2);
-        List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
+        List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, baseLogger,
+                Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
         Assertions.assertTrue(exceptions.size() == 0, () -> exceptions.get(0).getMessage());
         verify(deviceManager, times(2)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
         verify(deviceManager, times(1)).changeGlobalSetting(deviceInfo, args2.get(0), args2.get(1), baseLogger);

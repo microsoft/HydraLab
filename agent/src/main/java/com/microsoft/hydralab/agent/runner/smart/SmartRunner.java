@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner.smart;
 
 import cn.hutool.core.img.ImgUtil;
@@ -38,7 +39,8 @@ public class SmartRunner extends TestRunner {
     private SmartTestParam smartTestParam;
 
     public SmartRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
-                       PerformanceTestManagementService performanceTestManagementService, SmartTestUtil smartTestUtil) {
+                       PerformanceTestManagementService performanceTestManagementService,
+                       SmartTestUtil smartTestUtil) {
         super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
         this.smartTestUtil = smartTestUtil;
     }
@@ -53,7 +55,8 @@ public class SmartRunner extends TestRunner {
 
         /** start Record **/
         logCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
-        deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
+        deviceScreenRecorder =
+                testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
         startRecording(deviceInfo, testRun, testTask.getTimeOutSecond(), reportLogger);
 
         /** run the test */
@@ -64,7 +67,8 @@ public class SmartRunner extends TestRunner {
 
         /** init smart_test arg */
         //TODO choose model before starting test task
-        smartTestParam = new SmartTestParam(testTask.getAppFile().getAbsolutePath(), deviceInfo, "0", "0", testTask.getMaxStepCount(), smartTestUtil.getFolderPath(), smartTestUtil.getStringFolderPath());
+        smartTestParam = new SmartTestParam(testTask.getAppFile().getAbsolutePath(), deviceInfo, "0", "0",
+                testTask.getMaxStepCount(), smartTestUtil.getFolderPath(), smartTestUtil.getStringFolderPath());
 
         for (int i = 1; i <= testTask.getDeviceTestCount(); i++) {
             checkTestTaskCancel(testTask);
@@ -123,22 +127,24 @@ public class SmartRunner extends TestRunner {
         ongoingSmartTest.setDeviceTestResultId(testRun.getId());
         ongoingSmartTest.setTestTaskId(testRun.getTestTaskId());
 
-        testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(),
+                System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingSmartTest.getTitle());
         logger.info(ongoingSmartTest.getTitle());
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), logger);
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1),
+                (imagePNGFile -> {
+                    if (imagePNGFile == null) {
+                        return;
+                    }
+                    if (!e.isStarted()) {
+                        return;
+                    }
+                    try {
+                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }), logger);
 
         performanceTestManagementService.testStarted(ongoingSmartTest.getTitle());
 
@@ -161,14 +167,16 @@ public class SmartRunner extends TestRunner {
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(res.getString(Const.SmartTestConfig.TASK_EXP_TAG));
             performanceTestManagementService.testFailure(ongoingSmartTest.getTitle());
-            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail",
+                    System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         } else if (crashStack != null && crashStack.size() > 0) {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(crashStack.toJSONString());
             performanceTestManagementService.testFailure(ongoingSmartTest.getTitle());
-            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail",
+                    System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         } else {
             analysisRes = smartTestUtil.analysisRes(res);
@@ -180,9 +188,11 @@ public class SmartRunner extends TestRunner {
         logger.info(ongoingSmartTest.getTitle() + ".end");
         deviceInfo.setRunningTestName(null);
         testRun.addNewTestUnit(ongoingSmartTest);
-        testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".end",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         if (ongoingSmartTest.isSuccess()) {
-            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".res" + ":" + analysisRes, System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".res" + ":" + analysisRes,
+                    System.currentTimeMillis() - recordingStartTimeMillis);
         }
 
     }

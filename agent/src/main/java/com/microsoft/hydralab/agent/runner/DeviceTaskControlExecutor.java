@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner;
 
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
@@ -19,17 +20,21 @@ import java.util.concurrent.CountDownLatch;
 
 @Service
 public class DeviceTaskControlExecutor {
+    @SuppressWarnings("constantname")
     static final Logger log = LoggerFactory.getLogger(DeviceTaskControlExecutor.class);
     @Resource
     AgentManagementService agentManagementService;
 
     @Nullable
-    public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task, TaskCompletion taskCompletion) {
+    public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task,
+                                                  TaskCompletion taskCompletion) {
         //the status of device will be controlled by master, so the task will run no matter what the status saved in agent is
         return runForAllDeviceAsync(allDevices, task, taskCompletion, true, true);
     }
 
-    public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task, TaskCompletion taskCompletion, boolean logging, boolean forceForTesting) {
+    public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task,
+                                                  TaskCompletion taskCompletion, boolean logging,
+                                                  boolean forceForTesting) {
         int activeDevice = 0;
         log.warn("All device count {}", allDevices.size());
         for (DeviceInfo device : allDevices) {
@@ -74,11 +79,11 @@ public class DeviceTaskControlExecutor {
             Runnable run = () -> {
                 try {
                     if (logging) {
-                        log.info("start do task: {}", device.getName());
+                        DeviceTaskControlExecutor.log.info("start do task: {}", device.getName());
                     }
                     task.doTask(device, fLogger);
                 } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+                    DeviceTaskControlExecutor.log.error(e.getMessage(), e);
                 } finally {
                     count.countDown();
                     if (count.getCount() <= 0 && taskCompletion != null) {

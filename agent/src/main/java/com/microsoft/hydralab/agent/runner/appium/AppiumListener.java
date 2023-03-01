@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner.appium;
 
 import cn.hutool.core.img.ImgUtil;
@@ -32,9 +33,9 @@ public class AppiumListener extends RunListener {
     private final Logger logger;
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
+    private final PerformanceTestListener performanceTestListener;
     TestDeviceManager testDeviceManager;
     AgentManagementService agentManagementService;
-    private final PerformanceTestListener performanceTestListener;
     private long recordingStartTimeMillis;
     private int index;
     private File gifFile;
@@ -46,8 +47,8 @@ public class AppiumListener extends RunListener {
     private String currentTestName = "";
     private int currentTestIndex = 0;
 
-
-    public AppiumListener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
+    public AppiumListener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun,
+                          String pkgName,
                           PerformanceTestListener performanceTestListener, Logger logger) {
         this.agentManagementService = agentManagementService;
         this.testDeviceManager = deviceInfo.getTestDeviceManager();
@@ -145,7 +146,8 @@ public class AppiumListener extends RunListener {
 
         ongoingTestUnit.setTestedClass(testClassName);
 
-        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(),
+                System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingTestUnit.getTitle());
 
         ongoingTestUnit.setDeviceTestResultId(testRun.getId());
@@ -177,7 +179,8 @@ public class AppiumListener extends RunListener {
         ongoingTestUnit.setStack(failure.getTrace());
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
         performanceTestListener.testFailure(ongoingTestUnit.getTitle());
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.oneMoreFailure();
     }
 
@@ -187,7 +190,8 @@ public class AppiumListener extends RunListener {
         logEnter("testAssumptionFailure", testDisplayName, failure.getTrace());
         ongoingTestUnit.setStack(failure.getTrace());
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.oneMoreFailure();
     }
 
@@ -200,7 +204,8 @@ public class AppiumListener extends RunListener {
     @Override
     public void testFinished(Description description) {
         logEnter("testEnded", description.getDisplayName());
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         if (ongoingTestUnit.getStatusCode() == 0
                 || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE
                 || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.IGNORED

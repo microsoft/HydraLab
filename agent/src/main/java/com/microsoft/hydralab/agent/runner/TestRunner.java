@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner;
 
 import cn.hutool.core.lang.Assert;
@@ -42,6 +43,14 @@ public abstract class TestRunner {
         this.agentManagementService = agentManagementService;
         this.testTaskRunCallback = testTaskRunCallback;
         this.performanceTestManagementService = performanceTestManagementService;
+    }
+
+    private static void saveErrorSummary(TestRun testRun, Exception e) {
+        String errorStr = e.getClass().getName() + ": " + e.getMessage();
+        if (errorStr.length() > 255) {
+            errorStr = errorStr.substring(0, 254);
+        }
+        testRun.setErrorInProcess(errorStr);
     }
 
     public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
@@ -92,14 +101,6 @@ public abstract class TestRunner {
         TestRunThreadContext.init(testRun);
     }
 
-    private static void saveErrorSummary(TestRun testRun, Exception e) {
-        String errorStr = e.getClass().getName() + ": " + e.getMessage();
-        if (errorStr.length() > 255) {
-            errorStr = errorStr.substring(0, 254);
-        }
-        testRun.setErrorInProcess(errorStr);
-    }
-
     protected void checkTestTaskCancel(TestTask testTask) {
         Assert.isFalse(testTask.isCanceled(), "Task {} is canceled", testTask.getId());
     }
@@ -138,7 +139,9 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing setUp actions.");
-            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.SET_UP);
+            List<Exception> exceptions =
+                    actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
+                            testTask.getDeviceActions(), DeviceAction.When.SET_UP);
             Assert.isTrue(exceptions.size() == 0, () -> exceptions.get(0));
         }
 
@@ -166,7 +169,9 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
-            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+            List<Exception> exceptions =
+                    actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
+                            testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
             if (exceptions.size() > 0) {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
@@ -177,7 +182,8 @@ public abstract class TestRunner {
         if (testRun.getTotalCount() > 0) {
             try {
                 String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
-                testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+                testRun.setTestXmlReportPath(
+                        agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
             } catch (Exception e) {
                 testRun.getLogger().error("Error in buildTestResultXml", e);
             }
@@ -205,7 +211,8 @@ public abstract class TestRunner {
         testDeviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
     }
 
-    protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
+    protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger)
+            throws Exception {
         if (!shouldInstallTestPackageAsApp()) {
             return;
         }
@@ -237,7 +244,9 @@ public abstract class TestRunner {
         File instrumentLogFile = new File(testRun.getResultFolder(), loggerNamePrefix + "_" + dateInfo + ".log");
         // make sure it's a child logger of the parentLogger
         String loggerName = parentLogger.getName() + ".test." + dateInfo;
-        Logger reportLogger = LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(), "%d %p -- %m%n");
+        Logger reportLogger =
+                LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(),
+                        "%d %p -- %m%n");
         // TODO the getTestBaseRelPathInUrl method shouldn't be in deviceManager, testBaseDir should be managed by agent
         testRun.setInstrumentReportPath(agentManagementService.getTestBaseRelPathInUrl(instrumentLogFile));
 

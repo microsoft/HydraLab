@@ -34,13 +34,19 @@ class CommandActionLoaderTest extends BaseTest {
         ActionExecutor actionExecutor = new ActionExecutor();
         DeviceInfo deviceInfo = new DeviceInfo(deviceManager);
 
-        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, testTask.getDeviceActions(), DeviceAction.When.SET_UP);
-        verify(deviceManager, times(3)).execCommandOnDevice(Mockito.any(DeviceInfo.class), Mockito.anyString(), Mockito.any(Logger.class));
-        verify(deviceManager, times(1)).execCommandOnAgent(Mockito.any(DeviceInfo.class), Mockito.anyString(), Mockito.any(Logger.class));
+        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, testTask.getDeviceActions(),
+                DeviceAction.When.SET_UP);
+        verify(deviceManager, times(3)).execCommandOnDevice(Mockito.any(DeviceInfo.class), Mockito.anyString(),
+                Mockito.any(Logger.class));
+        verify(deviceManager, times(1)).execCommandOnAgent(Mockito.any(DeviceInfo.class), Mockito.anyString(),
+                Mockito.any(Logger.class));
 
-        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
-        verify(deviceManager, times(4)).execCommandOnDevice(Mockito.any(DeviceInfo.class), Mockito.anyString(), Mockito.any(Logger.class));
-        verify(deviceManager, times(3)).execCommandOnAgent(Mockito.any(DeviceInfo.class), Mockito.anyString(), Mockito.any(Logger.class));
+        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, testTask.getDeviceActions(),
+                DeviceAction.When.TEAR_DOWN);
+        verify(deviceManager, times(4)).execCommandOnDevice(Mockito.any(DeviceInfo.class), Mockito.anyString(),
+                Mockito.any(Logger.class));
+        verify(deviceManager, times(3)).execCommandOnAgent(Mockito.any(DeviceInfo.class), Mockito.anyString(),
+                Mockito.any(Logger.class));
 
     }
 }

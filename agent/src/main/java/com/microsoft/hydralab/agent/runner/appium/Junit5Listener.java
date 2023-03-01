@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.agent.runner.appium;
 
+package com.microsoft.hydralab.agent.runner.appium;
 
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
@@ -204,7 +204,8 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         ongoingTestUnit.setTestedClass(testClassName);
 
-        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(),
+                System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingTestUnit.getTitle());
 
         ongoingTestUnit.setDeviceTestResultId(testRun.getId());
@@ -254,13 +255,15 @@ public class Junit5Listener extends SummaryGeneratingListener {
             logEnter("testFailed", testDisplayName, getTrace(throwable));
             ongoingTestUnit.setStack(getTrace(throwable));
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
-            testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail",
+                    System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
             performanceTestListener.testFailure(ongoingTestUnit.getTestName());
         }
         ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end",
+                System.currentTimeMillis() - recordingStartTimeMillis);
     }
 
     private void releaseResource() {

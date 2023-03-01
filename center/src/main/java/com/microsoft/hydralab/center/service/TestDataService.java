@@ -98,7 +98,7 @@ public class TestDataService {
         for (TestRun deviceTestResult : byTestTaskId) {
             List<AndroidTestUnit> byDeviceTestResultId = androidTestUnitRepository.findByDeviceTestResultId(deviceTestResult.getId());
             deviceTestResult.getTestUnitList().addAll(byDeviceTestResultId);
-            deviceTestResult.setAttachments(attachmentService.getAttachments(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT));
+            deviceTestResult.setAttachments(attachmentService.getAttachments(deviceTestResult.getId(), EntityType.TEST_RESULT));
         }
         return testTask;
     }
@@ -185,7 +185,7 @@ public class TestDataService {
 
         List<AndroidTestUnit> list = new ArrayList<>();
         for (TestRun deviceTestResult : deviceTestResults) {
-            attachmentService.saveAttachments(deviceTestResult.getId(), EntityFileRelation.EntityType.TEST_RESULT, deviceTestResult.getAttachments());
+            attachmentService.saveAttachments(deviceTestResult.getId(), EntityType.TEST_RESULT, deviceTestResult.getAttachments());
 
             List<AndroidTestUnit> testUnitList = deviceTestResult.getTestUnitList();
             list.addAll(testUnitList);
@@ -216,7 +216,7 @@ public class TestDataService {
         JSONArray deviceTestResInfo = keyValueRepository.getDeviceTestResInfo(dttId);
         testRun.setVideoTimeTagArr(deviceTestResInfo);
         testRun.setVideoBlobUrl();
-        testRun.setAttachments(attachmentService.getAttachments(dttId, EntityFileRelation.EntityType.TEST_RESULT));
+        testRun.setAttachments(attachmentService.getAttachments(dttId, EntityType.TEST_RESULT));
         return testRun;
     }
 

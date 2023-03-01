@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner.monkey;
 
 import cn.hutool.core.img.ImgUtil;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AdbMonkeyRunner extends TestRunner {
     private static final String TEST_RUN_NAME = "ADB monkey test";
+    @SuppressWarnings("constantname")
     static final Logger classLogger = LoggerFactory.getLogger(AdbMonkeyRunner.class);
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     final ADBOperateUtil adbOperateUtil;
@@ -41,11 +43,11 @@ public class AdbMonkeyRunner extends TestRunner {
     private AndroidTestUnit ongoingMonkeyTest;
 
     public AdbMonkeyRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
-                           PerformanceTestManagementService performanceTestManagementService, ADBOperateUtil adbOperateUtil) {
+                           PerformanceTestManagementService performanceTestManagementService,
+                           ADBOperateUtil adbOperateUtil) {
         super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
-
 
     @Override
     protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
@@ -64,7 +66,8 @@ public class AdbMonkeyRunner extends TestRunner {
         performanceTestManagementService.testRunStarted();
         checkTestTaskCancel(testTask);
         performanceTestManagementService.testStarted(TEST_RUN_NAME);
-        long checkTime = runMonkeyTestOnce(deviceInfo, testRun, reportLogger, testTask.getInstrumentationArgs(), testTask.getMaxStepCount());
+        long checkTime = runMonkeyTestOnce(deviceInfo, testRun, reportLogger, testTask.getInstrumentationArgs(),
+                testTask.getMaxStepCount());
         if (checkTime > 0) {
             String crashStack = testRun.getCrashStack();
             if (crashStack != null && !"".equals(crashStack)) {
@@ -90,7 +93,6 @@ public class AdbMonkeyRunner extends TestRunner {
         }
 
     }
-
 
     public void startRecording(DeviceInfo deviceInfo, TestRun testRun, int maxTime, Logger logger) {
         startTools(testRun, logger);
@@ -119,7 +121,8 @@ public class AdbMonkeyRunner extends TestRunner {
         return gifFile;
     }
 
-    public long runMonkeyTestOnce(DeviceInfo deviceInfo, TestRun testRun, Logger logger, Map<String, String> instrumentationArgs, int maxStepCount) {
+    public long runMonkeyTestOnce(DeviceInfo deviceInfo, TestRun testRun, Logger logger,
+                                  Map<String, String> instrumentationArgs, int maxStepCount) {
         long checkTime = 0;
         final int unitIndex = ++index;
         String title = "Monkey_Test";
@@ -149,7 +152,8 @@ public class AdbMonkeyRunner extends TestRunner {
             }
         }), logger);
         //run monkey test
-        testRun.addNewTimeTag(unitIndex + ". " + ongoingMonkeyTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingMonkeyTest.getTitle(),
+                System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingMonkeyTest.getTitle());
         StringBuilder argString = new StringBuilder();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
@@ -165,7 +169,8 @@ public class AdbMonkeyRunner extends TestRunner {
             String command = String.format(commFormat, pkgName, maxStepCount);
             // make sure pass is not printed
             logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), LogUtils.scrubSensitiveArgs(command));
-            adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, new MultiLineNoCancelLoggingReceiver(logger), -1);
+            adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command,
+                    new MultiLineNoCancelLoggingReceiver(logger), -1);
             checkTime = System.currentTimeMillis() - recordingStartTimeMillis;
             ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingMonkeyTest.setSuccess(true);
@@ -176,7 +181,8 @@ public class AdbMonkeyRunner extends TestRunner {
             ongoingMonkeyTest.setSuccess(false);
             ongoingMonkeyTest.setStack(e.toString());
             testRun.setSuccess(false);
-            testRun.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail",
+                    System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         }
 
@@ -184,7 +190,8 @@ public class AdbMonkeyRunner extends TestRunner {
         ongoingMonkeyTest.setEndTimeMillis(System.currentTimeMillis());
         deviceInfo.setRunningTestName(null);
         testRun.addNewTestUnit(ongoingMonkeyTest);
-        testRun.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         return checkTime;
     }
 
