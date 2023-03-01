@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.agent.util;
 
 import com.microsoft.hydralab.agent.config.AppOptions;
-import com.microsoft.hydralab.common.entity.common.BlobFileInfo;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.FileUtil;
@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -30,12 +29,12 @@ public class FileLoadUtil {
     BlobStorageClient blobStorageClient;
 
     public void clearAttachments(TestTask testTask) {
-        List<BlobFileInfo> attachments = testTask.getTestFileSet().getAttachments();
+        List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
         if (attachments == null) {
             return;
         }
-        for (BlobFileInfo attachment : attachments) {
-            if (BlobFileInfo.FileType.COMMON_FILE.equals(attachment.getFileType())) {
+        for (StorageFileInfo attachment : attachments) {
+            if (StorageFileInfo.FileType.COMMON_FILE.equals(attachment.getFileType())) {
                 File loadFolder = new File(appOptions.getLocation() + "/" + attachment.getLoadDir());
                 FileUtil.deleteFile(loadFolder);
             }
@@ -44,29 +43,29 @@ public class FileLoadUtil {
     }
 
     public void loadAttachments(TestTask testTask) {
-        List<BlobFileInfo> attachments = testTask.getTestFileSet().getAttachments();
+        List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
         if (attachments == null) {
             return;
         }
-        for (BlobFileInfo attachment : attachments) {
+        for (StorageFileInfo attachment : attachments) {
             switch (attachment.getFileType()) {
-                case BlobFileInfo.FileType.WINDOWS_APP:
+                case StorageFileInfo.FileType.WINDOWS_APP:
                     installWinApp(attachment);
                     break;
-                case BlobFileInfo.FileType.COMMON_FILE:
+                case StorageFileInfo.FileType.COMMON_FILE:
                     loadCommonFile(attachment);
                     break;
-                case BlobFileInfo.FileType.APP_FILE:
+                case StorageFileInfo.FileType.APP_FILE:
                     File appFile = downloadFromBlob(attachment);
                     Assert.isTrue(appFile != null && appFile.exists(), "Download app file failed!");
                     testTask.setAppFile(appFile);
                     break;
-                case BlobFileInfo.FileType.TEST_APP_FILE:
+                case StorageFileInfo.FileType.TEST_APP_FILE:
                     File testAppFile = downloadFromBlob(attachment);
                     Assert.isTrue(testAppFile != null && testAppFile.exists(), "Download test app file failed!");
                     testTask.setTestAppFile(testAppFile);
                     break;
-                case BlobFileInfo.FileType.T2C_JSON_FILE:
+                case StorageFileInfo.FileType.T2C_JSON_FILE:
                     File testJsonFile = downloadFromBlob(attachment);
                     Assert.isTrue(testJsonFile != null && testJsonFile.exists(), "Download test json file failed!");
                     testTask.addTestJsonFile(testJsonFile);
@@ -77,7 +76,7 @@ public class FileLoadUtil {
         }
     }
 
-    public void installWinApp(BlobFileInfo attachment) {
+    public void installWinApp(StorageFileInfo attachment) {
         try {
             Runtime runtime = Runtime.getRuntime();
             File attachmentFile = downloadFromBlob(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
@@ -99,13 +98,13 @@ public class FileLoadUtil {
 
     }
 
-    public void loadCommonFile(BlobFileInfo attachment) {
+    public void loadCommonFile(StorageFileInfo attachment) {
         try {
             File loadFolder = new File(appOptions.getLocation() + "/" + attachment.getLoadDir());
             Assert.isTrue(!loadFolder.exists(), "Load file error : folder has been existed!");
             log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
             File attachmentFile = downloadFromBlob(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
-            if (BlobFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {
+            if (StorageFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {
                 FileUtil.unzipFile(attachmentFile.getAbsolutePath(), loadFolder.getAbsolutePath());
             }
             log.info("Load common file success");
@@ -114,14 +113,14 @@ public class FileLoadUtil {
         }
     }
 
-    private File downloadFromBlob(BlobFileInfo attachment, String location, String targetFilePath) throws IOException {
+    private File downloadFromBlob(StorageFileInfo attachment, String location, String targetFilePath) throws IOException {
         File file = new File(location, targetFilePath);
         log.debug("download file from {} to {}", attachment.getBlobUrl(), file.getAbsolutePath());
         blobStorageClient.downloadFileFromBlob(file, attachment.getBlobContainer(), attachment.getBlobPath());
         return file;
     }
 
-    private File downloadFromBlob(BlobFileInfo attachment) {
+    private File downloadFromBlob(StorageFileInfo attachment) {
         File file = null;
         try {
             file = downloadFromBlob(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());

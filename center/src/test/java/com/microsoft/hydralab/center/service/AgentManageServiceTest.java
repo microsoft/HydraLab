@@ -1,6 +1,6 @@
 package com.microsoft.hydralab.center.service;
 
-import com.microsoft.hydralab.common.entity.center.AgentUser;
+import com.microsoft.hydralab.common.entity.common.AgentUser;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
