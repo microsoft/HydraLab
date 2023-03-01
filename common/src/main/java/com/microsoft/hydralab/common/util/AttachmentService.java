@@ -8,8 +8,8 @@ import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestJsonInfo;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
-import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.EntityFileRelationRepository;
+import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.TestJsonInfoRepository;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.io.IOUtils;
@@ -26,7 +26,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AttachmentService {
@@ -115,8 +119,7 @@ public class AttachmentService {
             spec = new CriteriaTypeUtil<TestJsonInfo>().transferToSpecification(queryParams, true);
 
             testJsonInfoList = testJsonInfoRepository.findAll(spec);
-        }
-        else {
+        } else {
             testJsonInfoList = testJsonInfoRepository.findByIsLatest(true);
         }
 
@@ -163,11 +166,11 @@ public class AttachmentService {
         return result;
     }
 
-    public void saveRelation(String entityId, EntityType entityType, StorageFileInfo fileInfo) {
+    public void saveRelation(String entityId, EntityType entityType, StorageFileInfo storageFileInfo) {
         EntityFileRelation entityFileRelation = new EntityFileRelation();
         entityFileRelation.setEntityId(entityId);
         entityFileRelation.setEntityType(entityType.typeName);
-        entityFileRelation.setFileId(fileInfo.getFileId());
+        entityFileRelation.setFileId(storageFileInfo.getFileId());
         entityFileRelationRepository.save(entityFileRelation);
     }
 
