@@ -210,7 +210,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     private StorageFileInfo saveFileToBlob(File file, File folder, Logger logger) {
         StorageFileInfo storageFileInfo = new StorageFileInfo(file, "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(), StorageFileInfo.FileType.COMMON_FILE);
-        return attachmentService.addFileInfo(storageFileInfo, file, EntityFileRelation.EntityType.TEST_RESULT, logger);
+        return attachmentService.addFileInfo(storageFileInfo, file, EntityType.TEST_RESULT, logger);
     }
 
     private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {

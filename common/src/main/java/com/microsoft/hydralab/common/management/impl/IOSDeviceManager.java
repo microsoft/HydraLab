@@ -107,7 +107,7 @@ public class IOSDeviceManager extends DeviceManager {
         }
         IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), screenshotImageFile.getAbsolutePath(), classLogger);
         deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
-        String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);
+        String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.SCREENSHOT_CONTAINER_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);
         if (StringUtils.isBlank(blobUrl)) {
             classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
         } else {
