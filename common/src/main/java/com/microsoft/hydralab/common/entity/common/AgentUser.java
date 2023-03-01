@@ -21,7 +21,6 @@ public class AgentUser {
     private String os;
     private String versionName;
     private String versionCode;
-    private int deviceType;
     private int capabilities;
     private int status;
     private String role;
@@ -30,11 +29,6 @@ public class AgentUser {
     private String teamName;
     @Transient
     private BatteryStrategy batteryStrategy;
-
-    public interface DeviceType {
-        int ANDROID = 1;
-        int WINDOWS = 2;
-    }
 
     public enum BatteryStrategy {
         /**

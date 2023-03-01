@@ -43,6 +43,7 @@ public class TestRunnerConfig {
     public PerformanceTestManagementService performanceTestManagementService() {
         PerformanceTestManagementService performanceTestManagementService = new PerformanceTestManagementService();
         performanceTestManagementService.initialize();
+
         return performanceTestManagementService;
     }
 

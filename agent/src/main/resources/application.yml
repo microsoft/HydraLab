@@ -47,8 +47,6 @@ app:
     id: ${AGENT_ID}
     secret: ${AGENT_SECRET}
     name: ${AGENT_NAME:default}
-    # Agent Type {1 : 1*WINDOWS + n*ANDROIDS , 2 : 1*WINDOWS+1*ANDROID , 3 : iOS}
-    agent-type: ${AGENT_TYPE:1}
   # Device Stability Monitor Configuration
   device:
     monitor:

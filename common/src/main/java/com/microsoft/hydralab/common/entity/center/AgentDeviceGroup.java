@@ -23,7 +23,6 @@ public class AgentDeviceGroup {
     private String userName;
     private String hostname;
     private String ip;
-    private int agentDeviceType;
     private List<DeviceInfo> devices;
 
     public void initWithAgentUser(AgentUser agentUser) {
@@ -31,7 +30,6 @@ public class AgentDeviceGroup {
         agentName = agentUser.getName();
         agentOS = agentUser.getOs();
         agentRole = agentUser.getRole();
-        agentDeviceType = agentUser.getDeviceType();
         teamId = agentUser.getTeamId();
         teamName = agentUser.getTeamName();
         userName = agentUser.getMailAddress();

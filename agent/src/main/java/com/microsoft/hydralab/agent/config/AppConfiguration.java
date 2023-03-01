@@ -45,8 +45,6 @@ import java.util.Map;
  */
 @Configuration
 public class AppConfiguration {
-    @Value("${app.registry.agent-type}")
-    public int agentTypeValue;
     Logger logger = LoggerFactory.getLogger(getClass());
     @Resource
     private AppOptions appOptions;

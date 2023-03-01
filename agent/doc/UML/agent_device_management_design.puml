@@ -12,13 +12,13 @@ class AgentManagementService {
     File testBaseDir
     File deviceLogBaseDir
     Map<String,TestDevice> testDevices
-    getTestDeviceManager(TestDevice.type)
 }
 class TestDevice{
     String type
     String serialNumber
     String status
     List<Process> processList
+    TestDeviceManager testDeviceManager;
 }
 abstract class TestDeviceManager{
     AgentManagementService agentManagementService;

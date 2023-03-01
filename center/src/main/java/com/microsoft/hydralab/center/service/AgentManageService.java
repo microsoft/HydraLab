@@ -35,7 +35,6 @@ public class AgentManageService {
         agentUserInfo.setMailAddress(mailAddress);
         agentUserInfo.setOs(os);
         agentUserInfo.setName(name);
-        agentUserInfo.setDeviceType(AgentUser.DeviceType.ANDROID);
         agentUserInfo.setTeamId(teamId);
         agentUserInfo.setTeamName(teamName);
 

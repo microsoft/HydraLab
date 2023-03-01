@@ -9,10 +9,13 @@ import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
-import com.microsoft.hydralab.common.entity.center.*;
+import com.microsoft.hydralab.common.entity.center.AgentDeviceGroup;
+import com.microsoft.hydralab.common.entity.center.DeviceGroup;
+import com.microsoft.hydralab.common.entity.center.DeviceGroupRelation;
+import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.*;
-import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
+import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.util.*;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
@@ -553,7 +556,6 @@ public class DeviceAgentManagementService {
         if (!user.getSecret().equals(agentUser.getSecret()) || !user.getName().equals(agentUser.getName())) {
             return null;
         }
-        user.setDeviceType(agentUser.getDeviceType());
         user.setHostname(agentUser.getHostname());
         user.setIp(agentUser.getIp());
         user.setVersionName(agentUser.getVersionName());
@@ -641,11 +643,12 @@ public class DeviceAgentManagementService {
         Set<String> keys = agentDeviceGroups.keySet();
         for (String key : keys) {
             AgentDeviceGroup agent = agentDeviceGroups.get(key);
-            if (agent.getAgentDeviceType() != AgentUser.DeviceType.WINDOWS) {
-                continue;
-            }
+            // todo workaround for E2E agent
             List<DeviceInfo> devices = agent.getDevices();
-            if (devices.size() != 1 || !devices.get(0).isAlive()) {
+            long PC_COUNT = devices.stream()
+                    .filter(deviceInfo -> DeviceInfo.DeviceType.WINDOWS.toString().equals(deviceInfo.getType()))
+                    .count();
+            if (PC_COUNT == 0 || devices.size() != 2 || !devices.get(0).isAlive() || !devices.get(1).isAlive()) {
                 continue;
             }
             res.add(agent);
@@ -707,33 +710,7 @@ public class DeviceAgentManagementService {
         }
 
         // Todo: leveraged current E2E agent, need to update to agent level test
-        AgentDeviceGroup agentDeviceGroup = agentDeviceGroups.get(testTaskSpec.deviceIdentifier);
-        Assert.notNull(agentDeviceGroup, "Error identifier or agent offline");
-        List<DeviceInfo> devices = agentDeviceGroup.getDevices();
-        Assert.notNull(devices, "Agent has no device");
-        Assert.isTrue(devices.size() == 1, "The number of device is not suitable");
-        DeviceInfo device = devices.get(0);
-        Assert.isTrue(device.isAlive(), "Device offline");
-
-        if (device.isTesting()) {
-            return result;
-        }
-
-        Message message = new Message();
-        message.setBody(testTaskSpec);
-        message.setPath(Const.Path.TEST_TASK_RUN);
-
-        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(testTaskSpec.deviceIdentifier);
-        Assert.notNull(agentSessionInfoByAgentId, "Device/Agent Offline!");
-        if (isAgentUpdating(agentSessionInfoByAgentId.agentUser.getId())) {
-            return result;
-        }
-        updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
-        testTaskSpec.agentIds.add(testTaskSpec.deviceIdentifier);
-        sendMessageToSession(agentSessionInfoByAgentId.session, message);
-        result.put(Const.Param.TEST_DEVICE_SN, device.getSerialNum());
-
-        return result;
+        return runAppiumTestTask(testTaskSpec);
     }
 
     private JSONObject runAppiumTestTask(TestTaskSpec testTaskSpec) {
@@ -743,12 +720,18 @@ public class DeviceAgentManagementService {
         Assert.notNull(agentDeviceGroup, "Error identifier or agent offline");
         List<DeviceInfo> devices = agentDeviceGroup.getDevices();
         Assert.notNull(devices, "Agent has no device");
-        Assert.isTrue(devices.size() == 1, "The number of device is not suitable");
-        DeviceInfo device = devices.get(0);
-        Assert.isTrue(device.isAlive(), "Device offline");
 
-        if (device.isTesting()) {
-            return result;
+        // todo workaround for E2E agent
+        Assert.isTrue(devices.size() == 2, "The number of device is not suitable");
+        DeviceInfo phoneDevice = null;
+        for (DeviceInfo device : devices) {
+            Assert.isTrue(device.isAlive(), "Device offline");
+            if (device.isTesting()) {
+                return result;
+            }
+            if (device.getType().equals(DeviceInfo.DeviceType.ANDROID.toString())) {
+                phoneDevice = device;
+            }
         }
 
         Message message = new Message();
@@ -760,10 +743,13 @@ public class DeviceAgentManagementService {
         if (isAgentUpdating(agentSessionInfoByAgentId.agentUser.getId())) {
             return result;
         }
-        updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
+        // todo workaround for E2E agent
+        for (DeviceInfo device : devices) {
+            updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
+        }
         testTaskSpec.agentIds.add(testTaskSpec.deviceIdentifier);
         sendMessageToSession(agentSessionInfoByAgentId.session, message);
-        result.put(Const.Param.TEST_DEVICE_SN, device.getSerialNum());
+        result.put(Const.Param.TEST_DEVICE_SN, phoneDevice.getSerialNum());
 
         return result;
     }

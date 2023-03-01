@@ -32,8 +32,6 @@ import java.net.UnknownHostException;
 @Service("WebSocketClient")
 @Slf4j
 public class AgentWebSocketClientService implements TestTaskRunCallback {
-    @Value("${app.registry.agent-type}")
-    public int agentTypeValue;
     @Value("${app.registry.name}")
     String agentName;
     @Value("${app.registry.id}")
@@ -198,7 +196,6 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         agentUser.setOs(System.getProperties().getProperty("os.name"));
         agentUser.setVersionName(versionName);
         agentUser.setVersionCode(versionCode);
-        agentUser.setDeviceType(agentTypeValue);
         responseAuth.setBody(agentUser);
         responseAuth.setPath(message.getPath());
         send(responseAuth);
