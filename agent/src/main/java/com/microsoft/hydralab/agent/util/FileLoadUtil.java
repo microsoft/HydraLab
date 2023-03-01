@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.util;
 
 import com.microsoft.hydralab.agent.config.AppOptions;
@@ -18,11 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class FileLoadUtil {
+    @SuppressWarnings("constantname")
     static final Logger log = LoggerFactory.getLogger(FileLoadUtil.class);
     @Resource
     private AppOptions appOptions;
@@ -80,9 +81,11 @@ public class FileLoadUtil {
     public void installWinApp(BlobFileInfo attachment) {
         try {
             Runtime runtime = Runtime.getRuntime();
-            File attachmentFile = downloadFromBlob(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
-            String installCommand = "& { Add-AppxPackage -ForceApplicationShutdown -forceupdatefromanyversion -Path '" +
-                    attachmentFile.getAbsolutePath() + "' }";
+            File attachmentFile =
+                    downloadFromBlob(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
+            String installCommand =
+                    "& { Add-AppxPackage -ForceApplicationShutdown -forceupdatefromanyversion -Path '" +
+                            attachmentFile.getAbsolutePath() + "' }";
             String[] command = new String[]{"Powershell.exe", "-Command", installCommand};
 
             log.info("Install Win-App start command array: {}", Arrays.asList(command));
@@ -103,8 +106,10 @@ public class FileLoadUtil {
         try {
             File loadFolder = new File(appOptions.getLocation() + "/" + attachment.getLoadDir());
             Assert.isTrue(!loadFolder.exists(), "Load file error : folder has been existed!");
-            log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
-            File attachmentFile = downloadFromBlob(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
+            log.info("Load common file start filename:{} path:{}", attachment.getFileName(),
+                    loadFolder.getAbsolutePath());
+            File attachmentFile = downloadFromBlob(attachment, appOptions.getLocation(),
+                    attachment.getLoadDir() + "/" + attachment.getFileName());
             if (BlobFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {
                 FileUtil.unzipFile(attachmentFile.getAbsolutePath(), loadFolder.getAbsolutePath());
             }
@@ -114,7 +119,8 @@ public class FileLoadUtil {
         }
     }
 
-    private File downloadFromBlob(BlobFileInfo attachment, String location, String targetFilePath) throws IOException {
+    private File downloadFromBlob(BlobFileInfo attachment, String location, String targetFilePath)
+            throws IOException {
         File file = new File(location, targetFilePath);
         log.debug("download file from {} to {}", attachment.getBlobUrl(), file.getAbsolutePath());
         blobStorageClient.downloadFileFromBlob(file, attachment.getBlobContainer(), attachment.getBlobPath());

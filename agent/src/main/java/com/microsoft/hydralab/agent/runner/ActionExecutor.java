@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner;
 
 import com.alibaba.fastjson.JSONObject;
@@ -14,7 +15,11 @@ import org.springframework.http.HttpStatus;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -26,14 +31,19 @@ public class ActionExecutor {
     /**
      * the implementation of supported actions should not be overload
      */
-    private Set<String> actionTypes = Set.of("setProperty", "setDefaultLauncher", "backToHome", "changeGlobalSetting",
-            "changeSystemSetting", "execCommandOnDevice", "execCommandOnAgent", "pushFileToDevice", "pullFileFromDevice");
+    private Set<String> actionTypes =
+            Set.of("setProperty", "setDefaultLauncher", "backToHome", "changeGlobalSetting",
+                    "changeSystemSetting", "execCommandOnDevice", "execCommandOnAgent", "pushFileToDevice",
+                    "pullFileFromDevice");
 
-    public List<Exception> doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
+    public List<Exception> doActions(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo,
+                                     @NotNull Logger logger,
                                      @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
         List<Exception> exceptions = new ArrayList<>();
         //filter todoActions
-        List<DeviceAction> todoActions = actions.getOrDefault(when, new ArrayList<>()).stream().filter(deviceAction -> actionTypes.contains(deviceAction.getMethod())).collect(Collectors.toList());
+        List<DeviceAction> todoActions = actions.getOrDefault(when, new ArrayList<>()).stream()
+                .filter(deviceAction -> actionTypes.contains(deviceAction.getMethod()))
+                .collect(Collectors.toList());
 
         logger.info("Start to execute actions! Current timing is {}, action size is {}", when, todoActions.size());
         for (DeviceAction deviceAction : todoActions) {
@@ -49,8 +59,10 @@ public class ActionExecutor {
         return exceptions;
     }
 
-    public void doAction(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
-                         @NotNull DeviceAction deviceAction) throws InvocationTargetException, IllegalAccessException {
+    public void doAction(@NotNull DeviceManager deviceManager, @NotNull DeviceInfo deviceInfo,
+                         @NotNull Logger logger,
+                         @NotNull DeviceAction deviceAction)
+            throws InvocationTargetException, IllegalAccessException {
         if (!actionTypes.contains(deviceAction.getMethod())) {
             return;
         }
@@ -76,8 +88,9 @@ public class ActionExecutor {
         method.invoke(deviceManager, methodArgs);
     }
 
-
-    private Object[] convertArgs(@NotNull DeviceInfo deviceInfo, @NotNull Logger logger, @NotNull List<String> actionArgs, Class<?>[] parameterTypes) throws HydraLabRuntimeException {
+    private Object[] convertArgs(@NotNull DeviceInfo deviceInfo, @NotNull Logger logger,
+                                 @NotNull List<String> actionArgs, Class<?>[] parameterTypes)
+            throws HydraLabRuntimeException {
         Object[] methodArgs = new Object[actionArgs.size() + 2];
 
         methodArgs[0] = deviceInfo;
@@ -92,7 +105,8 @@ public class ActionExecutor {
                 try {
                     methodArgs[i + 1] = JSONObject.parseObject(actionArgs.get(i), DeviceAction.class);
                 } catch (Exception e1) {
-                    throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Convert arg failed!", e1);
+                    throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "Convert arg failed!", e1);
                 }
             }
         }

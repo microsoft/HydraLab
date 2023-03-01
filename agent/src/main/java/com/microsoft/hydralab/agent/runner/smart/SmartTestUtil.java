@@ -1,21 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner.smart;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.agent.SmartTestParam;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 import java.util.Set;
-
 
 public class SmartTestUtil {
     private static String filePath = "";
@@ -30,7 +34,7 @@ public class SmartTestUtil {
 
         folderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.ZIP_FOLDER_NAME + "/";
         stringFolderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.STRING_FOLDER_NAME
-            + "/";
+                + "/";
 
         try {
             InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(name);
@@ -124,7 +128,6 @@ public class SmartTestUtil {
         result.put("element", visitedElement + "/" + visitedElement);
         return result;
     }
-
 
     public void initStringPool() {
         File stringDir = new File(stringFolderPath);

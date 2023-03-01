@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.config;
 
 import com.alibaba.fastjson.JSON;
@@ -49,6 +50,7 @@ import java.util.Map;
  */
 @Configuration
 public class AppConfiguration {
+    @SuppressWarnings("visibilitymodifier")
     @Value("${app.registry.agent-type}")
     public int agentTypeValue;
     Logger logger = LoggerFactory.getLogger(getClass());
@@ -84,17 +86,20 @@ public class AppConfiguration {
     }
 
     @Bean
-    public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService) throws Exception {
+    public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService)
+            throws Exception {
         String wsUrl = String.format("ws://%s/agent/connect", registryServer);
         logger.info("connect to {}", wsUrl);
-        AgentWebSocketClient agentWebSocketClient = new AgentWebSocketClient(new URI(wsUrl), agentWebSocketClientService);
+        AgentWebSocketClient agentWebSocketClient =
+                new AgentWebSocketClient(new URI(wsUrl), agentWebSocketClientService);
         agentWebSocketClient.connect();
         return agentWebSocketClient;
     }
 
     @Bean
-    public DeviceManager initDeviceManager(BlobStorageClient deviceLabBlobClient, ADBOperateUtil adbOperateUtil
-            , AppiumServerManager appiumServerManager, DeviceStatusListenerManager deviceStatusListenerManager) {
+    public DeviceManager initDeviceManager(BlobStorageClient deviceLabBlobClient, ADBOperateUtil adbOperateUtil,
+                                           AppiumServerManager appiumServerManager,
+                                           DeviceStatusListenerManager deviceStatusListenerManager) {
 
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
@@ -119,7 +124,8 @@ public class AppConfiguration {
             }
         }
         deviceManager.setPreAppDir(preAppDir);
-        deviceManager.setPreInstallPolicy(shutdownIfFail ? Const.PreInstallPolicy.SHUTDOWN : Const.PreInstallPolicy.IGNORE);
+        deviceManager.setPreInstallPolicy(
+                shutdownIfFail ? Const.PreInstallPolicy.SHUTDOWN : Const.PreInstallPolicy.IGNORE);
         deviceManager.setDeviceStatusListenerManager(deviceStatusListenerManager);
         deviceManager.setTestBaseDirUrlMapping(AppOptions.TEST_CASE_RESULT_STORAGE_MAPPING_REL_PATH);
         File deviceLogBaseDir = new File(appOptions.getDeviceLogStorageLocation());
@@ -144,7 +150,6 @@ public class AppConfiguration {
         deviceManager.setAppiumServerManager(appiumServerManager);
         return deviceManager;
     }
-
 
     @Bean
     public OkHttpClient okHttpClient() {
@@ -194,11 +199,10 @@ public class AppConfiguration {
     @ConditionalOnProperty(prefix = "management.metrics.export.prometheus.pushgateway", name = "enabled", havingValue = "true")
     public MetricPushGateway pushGateway(PrometheusProperties prometheusProperties) throws MalformedURLException {
         String baseUrl = prometheusProperties.getPushgateway().getBaseUrl();
-        if (!baseUrl.startsWith("http")){
+        if (!baseUrl.startsWith("http")) {
             if (baseUrl.startsWith("127.0.0.1") || baseUrl.startsWith("localhost")) {
                 baseUrl = "http://" + baseUrl;
-            }
-            else {
+            } else {
                 baseUrl = "https://" + baseUrl;
             }
         }
@@ -209,7 +213,9 @@ public class AppConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "management.metrics.export.prometheus.pushgateway", name = "enabled", havingValue = "true")
-    public PrometheusPushGatewayManager monitorPrometheusPushGatewayManager(PushGateway pushGateway, PrometheusProperties prometheusProperties, CollectorRegistry registry) {
+    public PrometheusPushGatewayManager monitorPrometheusPushGatewayManager(PushGateway pushGateway,
+                                                                            PrometheusProperties prometheusProperties,
+                                                                            CollectorRegistry registry) {
         PrometheusProperties.Pushgateway properties = prometheusProperties.getPushgateway();
         Duration pushRate = properties.getPushRate();
         String job = properties.getJob();

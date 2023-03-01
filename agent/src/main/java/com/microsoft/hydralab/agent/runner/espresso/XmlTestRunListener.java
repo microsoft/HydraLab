@@ -28,7 +28,11 @@ import com.microsoft.hydralab.common.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.kxml2.io.KXmlSerializer;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -41,8 +45,7 @@ import java.util.TimeZone;
  * <p>
  * Creates a separate XML file per test run.
  *
- * @see <a href="https://svn.jenkins-ci.org/trunk/hudson/dtkit/dtkit-format/dtkit-junit-model/src/main/resources/com/thalesgroup/dtkit/junit/model/xsd/junit-4.xsd">https://svn.jenkins-ci.org/trunk/hudson/dtkit/dtkit-format/dtkit-junit-model/src/main/resources/com/thalesgroup/dtkit/junit/model/xsd/junit-4.xsd</a>
- *
+ * @see <a href="https://svn.jenkins-ci.org/trunk/hudson/dtkit/dtkit-format/dtkit-junit-model/src/main/resources/com/thalesgroup/dtkit/junit/model/xsd/junit-4.xsd">junit-4.xsd</a>
  * Copy from com.android.ddmlib.testrunner.XmlTestRunListener to use getAbsoluteReportPath() as a public method.
  */
 public class XmlTestRunListener implements ITestRunListener {
@@ -76,6 +79,7 @@ public class XmlTestRunListener implements ITestRunListener {
     /**
      * the XML namespace
      */
+    @SuppressWarnings("constantname")
     private static final String ns = null;
 
     private String mHostName = "localhost";
@@ -324,6 +328,8 @@ public class XmlTestRunListener implements ITestRunListener {
             case IGNORED:
                 serializer.startTag(ns, SKIPPED_TAG);
                 serializer.endTag(ns, SKIPPED_TAG);
+                break;
+            default:
                 break;
         }
 
