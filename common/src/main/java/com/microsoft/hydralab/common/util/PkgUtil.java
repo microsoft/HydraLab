@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.common.util;
 
 import cn.hutool.core.util.ZipUtil;
+
 import com.alibaba.fastjson.JSONObject;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSString;
@@ -10,8 +11,10 @@ import com.dd.plist.PropertyListParser;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask.TaskConst;
 import com.microsoft.hydralab.common.entity.common.BlobFileInfo.ParserKey;
 import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
+
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
+
 import org.springframework.util.Assert;
 
 import java.io.*;
@@ -133,9 +136,10 @@ public class PkgUtil {
         try {
             String name, pkgName, version;
 
-            FileUtil.unzipFile(zip.getAbsolutePath(), zip.getAbsolutePath());
-            File app;
-            File zipFile = convertToZipFile(app, FILE_SUFFIX.APP_FILE);
+            File unzipFolder = FileUtil.unzipFile(zip.getAbsolutePath(),
+                    zip.getParent() + "/" + zip.getName().substring(0, zip.getName().lastIndexOf(".")));
+            File appFile = getAppFile(zip, zip.getParent());
+            File zipFile = convertToZipFile(appFile, FILE_SUFFIX.APP_FILE);
             Assert.notNull(zipFile, "Convert .ipa file to .zip file failed.");
             File file = getIpaPlistFile(zipFile, zipFile.getParent());
             //Need third-party jar package dd-plist
@@ -166,6 +170,75 @@ public class PkgUtil {
     }
 
     private static File getIpaPlistFile(File file, String unzipDirectory) throws Exception {
+        //Define input and output stream objects
+        InputStream input = null;
+        OutputStream output = null;
+        File result = null;
+        File unzipFile = null;
+        ZipFile zipFile = null;
+        try {
+            //Create zip file object
+            zipFile = new ZipFile(file);
+            //Create this zip file decompression directory
+            String name = file.getName().substring(0, file.getName().lastIndexOf("."));
+            unzipFile = new File(unzipDirectory + "/" + name);
+            if (unzipFile.exists()) {
+                unzipFile.delete();
+            }
+            unzipFile.mkdir();
+            //Get zip file entry enumeration object
+            Enumeration<? extends ZipEntry> zipEnum = zipFile.entries();
+            //define object
+            ZipEntry entry = null;
+            String entryName = null;
+            String[] names = null;
+            int length;
+            //loop reading entries
+            while (zipEnum.hasMoreElements()) {
+                //get the current entry
+                entry = zipEnum.nextElement();
+                entryName = new String(entry.getName());
+                //separate entry names with/
+                names = entryName.split("\\/");
+                length = names.length;
+                for (int v = 0; v < length; v++) {
+                    if (entryName.endsWith(".app/Info.plist")) {//is Info.plist file, then output to file
+                        input = zipFile.getInputStream(entry);
+                        result = new File(unzipFile.getAbsolutePath() + "/Info.plist");
+                        output = Files.newOutputStream(result.toPath());
+                        byte[] buffer = new byte[1024 * 8];
+                        int readLen = 0;
+                        while ((readLen = input.read(buffer, 0, 1024 * 8)) != -1) {
+                            output.write(buffer, 0, readLen);
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (input != null) {
+                input.close();
+            }
+            if (output != null) {
+                output.flush();
+                output.close();
+            }
+            //The stream must be closed, otherwise the file cannot be deleted
+            if (zipFile != null) {
+                zipFile.close();
+            }
+        }
+
+        //Delete extra files if necessary
+        if (file.exists()) {
+            file.delete();
+        }
+        return result;
+    }
+
+    private static File getAppFile(File file, String unzipDirectory) throws Exception {
         //Define input and output stream objects
         InputStream input = null;
         OutputStream output = null;
