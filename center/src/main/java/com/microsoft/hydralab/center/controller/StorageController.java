@@ -7,7 +7,9 @@ import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
@@ -18,7 +20,6 @@ import javax.annotation.Resource;
 
 @RestController
 @RequestMapping
-// Used only for agent to push to / pull from local storage in Center, when no external storage is configured.
 public class StorageController {
     @Resource
     private StorageTokenManageService storageTokenManageService;
