@@ -178,7 +178,6 @@ if (-Not((New-Object Security.Principal.WindowsPrincipal $([Security.Principal.W
     $Arguments += "-elevated"
 
     Write-Host "Will run as administrator in a new window"
-    Write-Host
 
     Start-Process powershell.exe -Verb RunAs -ArgumentList $Arguments
     return
@@ -196,7 +195,7 @@ if (Test-Path -Path $RootPath)
 # =======================================
 # Download HydraLab
 # =======================================
-$filesToDownload = $null # "agent.jar", "Hydra_Agent_Installer_Windows.zip"
+$filesToDownload = "agent.jar", "Hydra_Agent_Installer_Windows.zip"
 $release = Invoke-RestMethod -Uri https://api.github.com/repos/microsoft/HydraLab/releases/latest
 foreach ($ast in $release.assets)
 {
@@ -224,7 +223,6 @@ Add-EnvironmentVar -Key "PATH" -Val $PythonRoot
 # Node.js
 # =======================================
 Write-Host "Install Node.js..."
-Write-Host
 Get-File -Url $Urls["Nodejs"] -Path $PackagesPath
 $NODE_Root = Find-Folder -Parent $PackagesPath -Substr "node"
 $NODE_Root = Find-Folder -Parent $NODE_Root    -Substr "node"
@@ -238,7 +236,6 @@ Add-EnvironmentVar -Key "PATH" -Val $NODE_Path
 # Appium
 # =======================================
 Write-Host "Install Appium..."
-Write-Host
 $NpmPath = Find-file -Parent $NODE_Root -Substr "npm.cmd"
 $Arguments = @()
 $Arguments += "install"
@@ -250,7 +247,6 @@ $proc.waitForExit()
 # WinAppDriver
 # =======================================
 Write-Host "Install WinAppDriver..."
-Write-Host
 Get-File -Url $Urls["WinAppDriver"] -Path $PackagesPath
 $WindowsAppDriverPath = Find-File -Parent $PackagesPath -Substr "WindowsApplicationDriver"
 $proc = Start-Process -FilePath $WindowsAppDriverPath -ArgumentList "/s" -Wait -PassThru
@@ -260,7 +256,6 @@ $proc.waitForExit()
 # FFmpeg
 # =======================================
 Write-Host "Install FFmpeg..."
-Write-Host
 Get-File -Url $Urls["FFmpeg"] -Path $PackagesPath
 $FFmpegPath = Find-Folder -Parent $PackagesPath -Substr "ffmpeg"
 $FFmpegPath = Find-Folder -Parent $FFmpegPath   -Substr "ffmpeg"
@@ -271,7 +266,6 @@ Add-EnvironmentVar -Key "PATH" -Val $FFmpegPath
 # Java SDK
 # =======================================
 Write-Host "Install Java SDK..."
-Write-Host
 Get-File -Url $Urls["JDK"] -Path $PackagesPath
 $JDK_Root = Find-Folder -Parent $PackagesPath -Substr "jdk"
 $JDK_Root = Find-Folder -Parent $JDK_Root     -Substr "jdk"
@@ -282,7 +276,6 @@ Add-EnvironmentVar -Key "PATH"      -Val "%JAVA_HOME%\bin;"
 # Android command-line-tools and platform-tools
 # =======================================
 Write-Host "Install Android command line tools and platform tools..."
-Write-Host
 [void](New-Item -Path $AndroidRoot -ItemType Directory)
 Get-File -Url $Urls["Commandlinetools"] -Path $AndroidRoot
 $CmdlineToolsPath = Find-Folder -Parent $AndroidRoot -Substr "commandlinetools"
@@ -292,7 +285,7 @@ $Arguments += "platform-tools"
 $Arguments += "emulator"
 $Arguments += "build-tools;33.0.0"
 $Arguments += "platforms;android-33"
-$proc = Start-Process cmd.exe -FilePath "$CmdlineToolsPath/cmdline-tools/bin/sdkmanager.bat" -ArgumentList $Arguments -Wait -PassThru
+$proc = Start-Process -FilePath "$CmdlineToolsPath/cmdline-tools/bin/sdkmanager.bat" -ArgumentList $Arguments -Wait -PassThru
 $proc.waitForExit()
 
 Set-EnvironmentVar -Key "ANDROID_HOME"             -Val $AndroidRoot
