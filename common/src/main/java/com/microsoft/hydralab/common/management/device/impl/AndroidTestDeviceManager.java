@@ -18,10 +18,12 @@ import com.microsoft.hydralab.common.logger.MultiLineNoCancelReceiver;
 import com.microsoft.hydralab.common.logger.impl.ADBLogcatCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
+import com.microsoft.hydralab.common.management.device.DeviceManagerProperty;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import net.dongliu.apk.parser.ApkFile;
@@ -128,7 +130,12 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
 
     @Override
     public void init() {
-        adbOperateUtil.init(mListener);
+        try {
+            adbOperateUtil.init(mListener);
+        } catch (Exception e) {
+            classLogger.error("init adbOperateUtil failed", e);
+            throw new HydraLabRuntimeException(500, "adbOperateUtil init failed", e);
+        }
     }
 
     @Override
@@ -434,7 +441,7 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     }
 
     private DeviceInfo getADBDeviceInfoFromDevice(IDevice device) {
-        DeviceInfo adbDevice = new DeviceInfo();
+        DeviceInfo adbDevice = new DeviceInfo(this);
         updateADBDeviceInfoByDevice(device, adbDevice);
         return adbDevice;
     }

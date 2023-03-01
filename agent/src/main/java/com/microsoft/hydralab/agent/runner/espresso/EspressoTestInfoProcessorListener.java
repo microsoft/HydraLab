@@ -49,7 +49,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     public EspressoTestInfoProcessorListener(AgentManagementService agentManagementService, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, TestRun testRun, String pkgName) {
         this.agentManagementService = agentManagementService;
-        this.testDeviceManager = agentManagementService.getDeviceManager(deviceInfo);
+        this.testDeviceManager = deviceInfo.getTestDeviceManager();
         this.adbOperateUtil = adbOperateUtil;
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;

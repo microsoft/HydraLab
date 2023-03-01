@@ -50,7 +50,7 @@ public class PreInstallListener implements DeviceStatusListener {
                 continue;
             }
             try {
-                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> agentManagementService.getDeviceManager(deviceInfo).installApp(deviceInfo, appFile.getAbsolutePath(), classLogger));
+                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> deviceInfo.getTestDeviceManager().installApp(deviceInfo, appFile.getAbsolutePath(), classLogger));
                 classLogger.info("Pre-Install {} successfully", appFile.getAbsolutePath());
                 break;
             } catch (Exception e) {

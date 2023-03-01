@@ -11,28 +11,29 @@ import java.util.List;
 public enum DevicePairRule {
     SINGLE_PHONE() {
         @Override
-        public List<DeviceDefine> getDeviceDefine() {
+        public List<DeviceRequirement> getDeviceDefine() {
+            new DeviceRequirement().type="Android";
             return null;
         }
     },
     SINGLE_PC() {
         @Override
-        public List<DeviceDefine> getDeviceDefine() {
+        public List<DeviceRequirement> getDeviceDefine() {
             return null;
         }
     },
     PC_TO_PHONE() {
         @Override
-        public List<DeviceDefine> getDeviceDefine() {
+        public List<DeviceRequirement> getDeviceDefine() {
             return null;
         }
     },
     PHONE_TO_PHONE() {
         @Override
-        public List<DeviceDefine> getDeviceDefine() {
+        public List<DeviceRequirement> getDeviceDefine() {
             return null;
         }
     };
 
-    public abstract List<DeviceDefine> getDeviceDefine();
+    public abstract List<DeviceRequirement> getDeviceDefine();
 }

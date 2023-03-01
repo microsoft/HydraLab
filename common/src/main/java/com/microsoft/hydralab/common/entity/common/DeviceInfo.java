@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.common.entity.common;
 
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -24,6 +25,7 @@ public class DeviceInfo extends MobileDevice {
     private final transient Map<Thread, Process> currentProcess = new HashMap<>();
     private final transient Map<Thread, TestTask> currentTask = new HashMap<>();
     private final transient Object lock = new Object();
+    private final transient TestDeviceManager testDeviceManager;
     private String status;
     private String imageRelPath;
     private String screenshotImageUrl;
@@ -40,6 +42,14 @@ public class DeviceInfo extends MobileDevice {
     private transient File screenshotImageFile;
     private transient boolean adbTimeout = false;
     private String type;
+
+    public DeviceInfo() {
+        this.testDeviceManager = null;
+    }
+
+    public DeviceInfo(TestDeviceManager testDeviceManager) {
+        this.testDeviceManager = testDeviceManager;
+    }
 
     public void setStatus(String status) {
         this.status = status;

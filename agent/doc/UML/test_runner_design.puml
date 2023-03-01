@@ -164,3 +164,18 @@ TestTaskSpec -- TargetedTestDeviceList: contains a list of
 TestTask *--> DeviceTestResult: contain a list of
 DeviceTestResult *--> TestUnitResult: contain a list of
 @enduml
+
+@startuml test_device_design
+
+interface TestDevice{
+   String TAG
+   TestDevice getPrimaryDevice()
+   DeviceManager getDeviceManager()
+}
+
+interface DeviceCombo extends TestDevice{
+   List<TestDevice> getDevices()
+   TestDevice getPrimaryDevice()
+   getByTag(String tag)
+}
+@enduml

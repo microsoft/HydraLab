@@ -49,7 +49,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
     public Junit5Listener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun, String pkgName, Logger logger) {
         this.agentManagementService = agentManagementService;
-        this.testDeviceManager = agentManagementService.getDeviceManager(deviceInfo);
+        this.testDeviceManager = deviceInfo.getTestDeviceManager();
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;
         this.logger = logger;

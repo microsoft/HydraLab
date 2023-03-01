@@ -67,7 +67,7 @@ public class DeviceTaskControlExecutor {
             }
             Logger logger = null;
             if (logging) {
-                logger = agentManagementService.getDeviceManager(device).getDeviceLogger(device);
+                logger = device.getTestDeviceManager().getDeviceLogger(device);
             }
             final Logger fLogger = logger;
             devices.add(device);

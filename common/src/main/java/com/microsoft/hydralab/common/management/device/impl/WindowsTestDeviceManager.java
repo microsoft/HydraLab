@@ -13,6 +13,7 @@ import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.screen.WindowsScreenRecorder;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
@@ -54,7 +55,7 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
             WindowsDriver windowsDriver = appiumServerManager.getWindowsRootDriver(classLogger);
             windowsDriver.getScreenshotAs(OutputType.FILE);
             InetAddress localHost = InetAddress.getLocalHost();
-            DeviceInfo deviceInfo = new DeviceInfo();
+            DeviceInfo deviceInfo = new DeviceInfo(this);
             String udid = UUID.randomUUID().toString();
             deviceInfo.setSerialNum(localHost.getHostName());
             deviceInfo.setDeviceId(udid);
@@ -69,6 +70,7 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
             agentManagementService.getDeviceStatusListenerManager().onDeviceConnected(deviceInfo);
         } catch (Exception e) {
             classLogger.error("WindowsDeviceManager init failed", e);
+            throw new HydraLabRuntimeException(500, "WindowsDeviceManager init failed", e);
         }
     }
 

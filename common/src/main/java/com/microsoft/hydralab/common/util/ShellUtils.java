@@ -125,7 +125,6 @@ public class ShellUtils {
             err.start();
             out.start();
             process.waitFor();
-            process = null;
 
             classLogger.info("Successfully run: " + String.join(" ", fullCommand));
         } catch (Exception e) {

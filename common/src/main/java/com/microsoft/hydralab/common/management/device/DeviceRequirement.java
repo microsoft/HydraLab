@@ -7,8 +7,8 @@ package com.microsoft.hydralab.common.management.device;
  * @date 02/20/2023
  */
 
-public class DeviceDefine {
+public class DeviceRequirement {
     String tag;
     String type;
-    String isRequired;
+    boolean isRequired;
 }

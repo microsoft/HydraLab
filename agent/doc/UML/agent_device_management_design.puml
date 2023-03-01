@@ -12,6 +12,7 @@ class AgentManagementService {
     File testBaseDir
     File deviceLogBaseDir
     Map<String,TestDevice> testDevices
+    getTestDeviceManager(TestDevice.type)
 }
 class TestDevice{
     String type
@@ -21,7 +22,7 @@ class TestDevice{
 }
 abstract class TestDeviceManager{
     AgentManagementService agentManagementService;
-    updateTestDevices()
+    DeviceListener deviceListener;
 }
 class AndroidTestDeviceManager
 class IOSTestDeviceManager
@@ -46,7 +47,6 @@ class TestRunner{
     static final DevicePairRule devicePairRule;
     Map<String,TestDevice> usedDevices;
     runTest(Map<String,TestDevice> usedDevices, ITestRun testRun)
-    TestDeviceManager getTestDeviceManager(TestDevice.type);
 }
 
 TestRunner -r-> TestDeviceManager

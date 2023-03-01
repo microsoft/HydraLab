@@ -6,6 +6,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,11 +37,6 @@ public class AgentManagementService {
     protected String deviceFolderUrlPrefix;
     protected String deviceStoragePath;
     protected BlobStorageClient blobStorageClient;
-    protected ApplicationContext applicationContext;
-
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-    }
 
     public BlobStorageClient getBlobStorageClient() {
         return blobStorageClient;
@@ -184,14 +180,6 @@ public class AgentManagementService {
         synchronized (deviceInfo) {
             deviceInfo.reset();
         }
-    }
-
-    public void initDeviceManager() {
-        applicationContext.getBeansOfType(TestDeviceManager.class).values().forEach(TestDeviceManager::init);
-    }
-
-    public TestDeviceManager getDeviceManager(DeviceInfo deviceInfo) {
-        return applicationContext.getBean(DeviceInfo.DeviceType.valueOf(deviceInfo.getType()).getBeanName(), TestDeviceManager.class);
     }
 
     public void updateIsPrivateByDeviceSerial(String deviceSerial, Boolean isPrivate) {

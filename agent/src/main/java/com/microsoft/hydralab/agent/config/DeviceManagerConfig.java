@@ -4,6 +4,7 @@ package com.microsoft.hydralab.agent.config;
 
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
+import com.microsoft.hydralab.common.management.device.DeviceManagerProperty;
 import com.microsoft.hydralab.common.management.device.impl.AndroidTestDeviceManager;
 import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
 import com.microsoft.hydralab.common.management.device.impl.WindowsTestDeviceManager;
@@ -12,8 +13,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author zhoule
@@ -61,5 +66,11 @@ public class DeviceManagerConfig {
     @Bean(name = "windowsDeviceManager")
     public WindowsTestDeviceManager windowsDeviceManager(AgentManagementService agentManagementService, AppiumServerManager appiumServerManager) {
         return new WindowsTestDeviceManager(agentManagementService, appiumServerManager);
+    }
+
+    @ConfigurationProperties(prefix = "app.device.monitor")
+    @Bean(name = "deviceManagerProperty")
+    public List<DeviceManagerProperty> DeviceManagerProperty() {
+        return new ArrayList<>();
     }
 }

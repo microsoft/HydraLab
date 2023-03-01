@@ -64,6 +64,7 @@ public class IOSUtils {
             logger.info("Successfully run: " + command);
         } catch (Exception e) {
             logger.error("Fail to run: " + command, e);
+            throw new RuntimeException(e);
         }
     }
 

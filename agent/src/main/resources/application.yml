@@ -51,6 +51,13 @@ app:
     agent-type: ${AGENT_TYPE:1}
   # Device Stability Monitor Configuration
   device:
+    monitor:
+      - type: WINDOWS
+        enabled: false
+      - type: ANDROID
+        enabled: true
+      - type: IOS
+        enabled: true
     state-change:
       count-threshold: ${STATE_CHANGE_COUNT_THRESHOLD:12}
       window-time: ${STATE_CHANGE_WINDOW_TIME:5}

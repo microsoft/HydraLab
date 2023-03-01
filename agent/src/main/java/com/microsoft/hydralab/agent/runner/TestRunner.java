@@ -40,7 +40,7 @@ public abstract class TestRunner {
     }
 
     public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
-        testDeviceManager = agentManagementService.getDeviceManager(deviceInfo);
+        testDeviceManager = deviceInfo.getTestDeviceManager();
         checkTestTaskCancel(testTask);
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 

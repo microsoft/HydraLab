@@ -86,6 +86,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                 registerAgentMetrics();
                 deviceControlService.deviceManagerInit();
                 deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
+                deviceControlService.capabilityScan();
                 return;
             case Const.Path.HEARTBEAT:
                 if (!(message.getBody() instanceof AgentMetadata)) {

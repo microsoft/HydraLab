@@ -116,7 +116,6 @@ public class AppConfiguration {
         agentManagementService.setScreenshotDir(getScreenshotDir());
         agentManagementService.setDeviceFolderUrlPrefix(AppOptions.DEVICE_STORAGE_MAPPING_REL_PATH);
         agentManagementService.setDeviceStoragePath(appOptions.getDeviceStorageLocation());
-        agentManagementService.setApplicationContext(applicationContext);
 
         return agentManagementService;
     }

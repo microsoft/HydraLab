@@ -16,6 +16,7 @@ import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForMac;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForWindows;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.AgentConstant;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
@@ -64,7 +65,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
             ShellUtils.killProcessByCommandStr("tidevice", classLogger);
             IOSUtils.startIOSDeviceWatcher(classLogger, this);
         } catch (Exception e) {
-            classLogger.error("IOSDeviceManager init failed", e);
+            throw new HydraLabRuntimeException(500, "IOSDeviceManager init failed", e);
         }
     }
 
@@ -225,7 +226,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     public DeviceInfo parseJsonToDevice(JSONObject deviceObject) {
-        DeviceInfo deviceInfo = new DeviceInfo();
+        DeviceInfo deviceInfo = new DeviceInfo(this);
         String udid = deviceObject.getString("udid");
         deviceInfo.setSerialNum(udid);
         deviceInfo.setDeviceId(udid);

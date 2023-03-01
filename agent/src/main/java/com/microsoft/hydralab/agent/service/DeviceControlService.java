@@ -11,13 +11,17 @@ import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.DeviceManagerProperty;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.listener.impl.PreInstallListener;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -41,6 +45,10 @@ public class DeviceControlService {
     DeviceStabilityMonitor deviceStabilityMonitor;
     @Resource
     DeviceStatusListenerManager deviceStatusListenerManager;
+    @Resource
+    ApplicationContext applicationContext;
+    @Resource(name = "deviceManagerProperty")
+    List<DeviceManagerProperty> deviceManagerProperties;
 
     public Set<DeviceInfo> getAllConnectedDevice() {
         updateAllDeviceScope();
@@ -66,7 +74,7 @@ public class DeviceControlService {
 
     private void captureDevicesScreenSync(Collection<DeviceInfo> allDevices, boolean logging, AgentUser.BatteryStrategy batteryStrategy) {
         DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
-            agentManagementService.getDeviceManager(deviceInfo).getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
+            deviceInfo.getTestDeviceManager().getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
             return true;
         }, null, logging, true);
 
@@ -152,6 +160,31 @@ public class DeviceControlService {
         });
         deviceStatusListenerManager.registerListener(new PreInstallListener(agentManagementService));
         deviceStatusListenerManager.registerListener(deviceStabilityMonitor);
-        agentManagementService.initDeviceManager();
+        initDeviceManager();
+    }
+
+    public void initDeviceManager() {
+        boolean isAllFailed = true;
+        for (DeviceManagerProperty deviceManagerProperty : deviceManagerProperties) {
+            DeviceInfo.DeviceType deviceType = DeviceInfo.DeviceType.valueOf(deviceManagerProperty.getType());
+            if (!deviceManagerProperty.isEnabled() || deviceType == null) {
+                continue;
+            }
+            try {
+                log.info("Try to init device manager: {}", deviceType.getBeanName());
+                applicationContext.getBean(deviceType.getBeanName(), TestDeviceManager.class).init();
+                deviceManagerProperty.setStatus(true);
+                isAllFailed = false;
+            } catch (HydraLabRuntimeException e) {
+                log.error("Init device manager failed: {}", deviceType.getBeanName(), e);
+            }
+        }
+        if (isAllFailed) {
+            System.exit(500);
+        }
+    }
+
+    public void capabilityScan() {
+        //TODO: add capability scan
     }
 }
