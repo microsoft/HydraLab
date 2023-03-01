@@ -30,19 +30,4 @@ public class EntityFileRelation implements Serializable {
         this.entityType = entityType;
         this.fileId = fileId;
     }
-
-    public enum EntityType {
-        APP_FILE_SET("FILE_SET", DeviceNetworkBlobConstants.PKG_BLOB_NAME),
-        TEST_RESULT("TEST_RES", DeviceNetworkBlobConstants.TEST_RESULT_BLOB_NAME),
-        AGENT_PACKAGE("AGENT_PKG", DeviceNetworkBlobConstants.PKG_BLOB_NAME),
-        TEST_JSON("TEST_JSON", DeviceNetworkBlobConstants.TEST_JSON);
-
-        public String typeName;
-        public String blobConstant;
-
-        EntityType(String typeName, String blobConstant) {
-            this.typeName = typeName;
-            this.blobConstant = blobConstant;
-        }
-    }
 }

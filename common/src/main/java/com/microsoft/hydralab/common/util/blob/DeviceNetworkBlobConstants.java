@@ -3,9 +3,10 @@
 package com.microsoft.hydralab.common.util.blob;
 
 public interface DeviceNetworkBlobConstants {
-    String PKG_BLOB_NAME = "pkgstore";
-    String IMAGES_BLOB_NAME = "images";
-    String TEST_SUITE_BLOB_NAME = "testsuitestore";
-    String TEST_RESULT_BLOB_NAME = "testresults";
-    String TEST_JSON = "testjson";
+    String SCREENSHOT_CONTAINER_NAME = "images";
+    String APP_FILE_CONTAINER_NAME = "pkgstore";
+    String TEST_RESULT_CONTAINER_NAME = "testresults";
+    String AGENT_PACKAGE_CONTAINER_NAME = "pkgstore";
+    String TEST_JSON_CONTAINER_NAME = "testjson";
+    String TEST_SUITE_CONTAINER_NAME = "testsuitestore";
 }
