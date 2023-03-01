@@ -172,7 +172,7 @@ java -jar agent/build/libs/agent.jar
 - [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
 
 <span id="ms-give"></span>
-## 微软赞助商
+## 微软Give员工捐赠活动
 
 感谢您以Hydra Lab的名义为 [微软员工捐赠计划](https://aka.ms/msgive) 做出的贡献：
 
