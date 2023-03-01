@@ -160,7 +160,7 @@ java -jar agent/build/libs/agent.jar
 <span id="contact"></span>
 ## 联系我们
 
-请尽情投入吧!如果您对Hydra Lab有任何疑问，或者您想就您遇到的问题与我们联系，您可以通过以下方式联系我们：
+如果您对Hydra Lab有任何疑问，您可以通过以下方式联系我们：
 - [打开 issue](https://github.com/microsoft/HydraLab/issues/new) 或提交 PRs.
 - 用邮件联系我们: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
 
