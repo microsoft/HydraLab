@@ -97,7 +97,7 @@ export default class TestJsonView extends BaseView {
                         {t.displayIngestTime}
                     </TableCell>
                     <TableCell id={t.id} align="center">
-                        <a href={t.blobUrl + '?' + require('local-storage').get('FileToken')}> Download URL</a>
+                        <a href={t.blobUrl + '?' + require('local-storage').get('BlobSignature')}> Download URL</a>
                     </TableCell>
                     <TableCell id={t.id} align="center">
                         <IconButton onClick={() => this.getJsonHistory(t.packageName, t.caseName)}>
@@ -122,7 +122,7 @@ export default class TestJsonView extends BaseView {
                         {t.displayIngestTime}
                     </TableCell>
                     <TableCell id={t.id} align="center">
-                        <a href={t.blobUrl + '?' + require('local-storage').get('FileToken')}> Download URL</a>
+                        <a href={t.blobUrl + '?' + require('local-storage').get('BlobSignature')}> Download URL</a>
                     </TableCell>
                 </StyledTableRow>)
             })
