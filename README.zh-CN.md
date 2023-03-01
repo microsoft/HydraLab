@@ -125,7 +125,7 @@ java -jar agent/build/libs/agent.jar
 ![Tech Architecture](docs/images/technical_architecture.png)
 
 <span id="for-user"></span>
-### 对于Hydra Lab用户:
+### 对于Hydra Lab的使用者:
 
 - [触发Hydra Lab测试服务中的测试任务运行](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
 - [部署测试代理服务](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
