@@ -67,7 +67,6 @@ public class AttachmentService {
         fileInfo.setCreateTime(new Date());
         fileInfo.setUpdateTime(new Date());
         fileInfo.setBlobContainer(entityType.storageContainer);
-        fileInfo.setCDNUrl(storageServiceClient.getCdnUrl());
         fileInfo.setBlobUrl(saveFileInStorage(file, fileInfo, logger));
         storageFileInfoRepository.save(fileInfo);
         return fileInfo;
@@ -78,7 +77,6 @@ public class AttachmentService {
         if (days >= storageServiceClient.getFileLimitDay()) {
             oldFileInfo.setUpdateTime(new Date());
             oldFileInfo.setBlobContainer(entityType.storageContainer);
-            oldFileInfo.setCDNUrl(storageServiceClient.getCdnUrl());
             oldFileInfo.setBlobUrl(saveFileInStorage(file, oldFileInfo, logger));
             storageFileInfoRepository.save(oldFileInfo);
         }

@@ -18,7 +18,8 @@ import com.azure.storage.common.sas.AccountSasService;
 import com.azure.storage.common.sas.AccountSasSignatureValues;
 import com.google.common.net.MediaType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
-import com.microsoft.hydralab.common.file.*;
+import com.microsoft.hydralab.common.file.AccessToken;
+import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +96,7 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
     @Override
     public StorageFileInfo upload(File fileToUpload, StorageFileInfo fileInfo) {
         String downloadUrl = uploadFileToBlob(fileToUpload, fileInfo.getBlobContainer(), fileInfo.getBlobPath(), null);
-        fileInfo.setBlobUrl(downloadUrl);
+        setFileUrls(fileInfo, downloadUrl);
         return fileInfo;
     }
 
@@ -207,5 +208,15 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         }
         BlobClient blobClient = getContainer(containerName).getBlobClient(blobFilePath);
         return blobClient.downloadToFile(downloadToFile.getAbsolutePath(), true);
+    }
+
+    public void setFileUrls(StorageFileInfo storageFileInfo, String downloadUrl) {
+        storageFileInfo.setBlobUrl(downloadUrl);
+        if (StringUtils.isEmpty(this.cdnUrl)) {
+            storageFileInfo.setCDNUrl(downloadUrl);
+        } else {
+            String originDomain = downloadUrl.split("//")[1].split("/")[0];
+            storageFileInfo.setCDNUrl(downloadUrl.replace(originDomain, this.cdnUrl));
+        }
     }
 }

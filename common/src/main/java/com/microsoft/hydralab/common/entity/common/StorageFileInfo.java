@@ -35,6 +35,7 @@ public class StorageFileInfo implements Serializable {
     private JSONObject fileParser;
     private Date createTime;
     private Date updateTime;
+    // CDN download URL (absolute path)
     private String CDNUrl;
 
 

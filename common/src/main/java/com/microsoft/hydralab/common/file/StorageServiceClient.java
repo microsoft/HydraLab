@@ -11,6 +11,7 @@ import java.io.File;
 @Data
 public abstract class StorageServiceClient {
     protected int fileLimitDay;
+    // CDN endpoint
     protected String cdnUrl;
 
     public abstract void storageTypeCheck(AccessToken token);
