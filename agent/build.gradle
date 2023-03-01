@@ -26,6 +26,8 @@ task copyRequirementsFile(type: Copy, group: 'docker',
 
 bootJar.dependsOn("checkstyleMain")
 bootJar.dependsOn("checkstyleTest")
+classes.finalizedBy checkstyleMain
+testClasses.finalizedBy checkStyleTest
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
