@@ -4,7 +4,6 @@ package com.microsoft.hydralab.common.entity.common;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.annotation.JSONField;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.performance.InspectionStrategy;
 import lombok.Data;

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.entity.center;
+package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
 
@@ -12,24 +12,24 @@ import java.util.UUID;
 @Table(indexes = {@Index(columnList = "team_id")})
 public class AgentUser {
     @Id
-    String id = UUID.randomUUID().toString();
-    String name;
-    String mailAddress;
-    String secret;
-    String hostname;
-    String ip;
-    String os;
-    String versionName;
-    String versionCode;
-    int deviceType;
-    int capabilities;
-    int status;
-    String role;
+    private String id = UUID.randomUUID().toString();
+    private String name;
+    private String mailAddress;
+    private String secret;
+    private String hostname;
+    private String ip;
+    private String os;
+    private String versionName;
+    private String versionCode;
+    private int deviceType;
+    private int capabilities;
+    private int status;
+    private String role;
     @Column(name = "team_id")
-    String teamId;
-    String teamName;
+    private String teamId;
+    private String teamName;
     @Transient
-    BatteryStrategy batteryStrategy;
+    private BatteryStrategy batteryStrategy;
 
     public interface DeviceType {
         int ANDROID = 1;

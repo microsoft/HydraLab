@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.center;
 
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import lombok.Data;
 
 @Data
