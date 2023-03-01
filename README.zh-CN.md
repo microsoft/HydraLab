@@ -136,7 +136,7 @@ java -jar agent/build/libs/agent.jar
 <span id="for-contributor"></span>
 ### 参与贡献Hydra Lab:
 
-- [为Hydra Lab GitHub项目贡献力量](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
+- [如何参与并为Hydra Lab GitHub项目做出贡献？](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
 
 <span id="who-use-it"></span>
 ## 谁在使用Hydra Lab?
