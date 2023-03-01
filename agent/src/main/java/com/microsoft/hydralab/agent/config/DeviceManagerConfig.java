@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.config;
 
 import com.microsoft.hydralab.common.management.AgentManagementService;
@@ -70,7 +71,7 @@ public class DeviceManagerConfig {
 
     @ConfigurationProperties(prefix = "app.device.monitor")
     @Bean(name = "deviceManagerProperty")
-    public List<DeviceManagerProperty> DeviceManagerProperty() {
+    public List<DeviceManagerProperty> deviceManagerProperty() {
         return new ArrayList<>();
     }
 }

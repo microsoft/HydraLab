@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
@@ -65,11 +66,12 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5),
+                (imagePNGFile -> {
+                    if (imagePNGFile == null) {
+                        return;
+                    }
+                    if (!e.isStarted()) {
                 return;
             }
             try {
