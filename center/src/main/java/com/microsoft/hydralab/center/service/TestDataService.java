@@ -1,15 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.microsoft.hydralab.center.repository.StabilityDataRepository;
 import com.microsoft.hydralab.common.entity.center.StabilityData;
 import com.microsoft.hydralab.common.entity.center.SysUser;
-import com.microsoft.hydralab.common.entity.common.*;
+import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.CriteriaType;
+import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
-import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
+import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
@@ -43,9 +48,6 @@ public class TestDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDataService.class);
     private final Sort sortByStartMillis = Sort.by(Sort.Direction.DESC, "startTimeMillis");
     private final Sort sortByStartDate = Sort.by(Sort.Direction.DESC, "startDate");
-    @Lazy
-    @Resource
-    private TestDataService testDataServiceCache;
     @Resource
     TestTaskRepository testTaskRepository;
     @Resource
@@ -64,6 +66,9 @@ public class TestDataService {
     UserTeamManagementService userTeamManagementService;
     @Resource
     EntityManager entityManager;
+    @Lazy
+    @Resource
+    private TestDataService testDataServiceCache;
 
     public List<AndroidTestUnit> getAllTestUnit(int page, int size) {
         List<AndroidTestUnit> testUnits = androidTestUnitRepository.findBySuccess(false, PageRequest.of(page, size, sortByStartMillis)).getContent();

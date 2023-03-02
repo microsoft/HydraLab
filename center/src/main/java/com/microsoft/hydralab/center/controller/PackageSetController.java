@@ -1,16 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.center.service.*;
+import com.microsoft.hydralab.center.service.BlobStorageService;
+import com.microsoft.hydralab.center.service.SysTeamService;
+import com.microsoft.hydralab.center.service.SysUserService;
+import com.microsoft.hydralab.center.service.TestFileSetService;
+import com.microsoft.hydralab.center.service.UserTeamManagementService;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.entity.center.SysUser;
-import com.microsoft.hydralab.common.entity.common.*;
+import com.microsoft.hydralab.common.entity.common.CriteriaType;
+import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.SASData;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
-import com.microsoft.hydralab.common.util.*;
+import com.microsoft.hydralab.common.entity.common.TestFileSet;
+import com.microsoft.hydralab.common.entity.common.TestJsonInfo;
+import com.microsoft.hydralab.common.util.AttachmentService;
+import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.FileUtil;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
+import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.PkgUtil.FILE_SUFFIX;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -22,7 +36,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -69,7 +88,7 @@ public class PackageSetController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        if (StringUtils.isEmpty(teamName)){
+        if (StringUtils.isEmpty(teamName)) {
             teamName = requestor.getDefaultTeamName();
         }
         SysTeam team = sysTeamService.queryTeamByName(teamName);
@@ -93,7 +112,8 @@ public class PackageSetController {
         if (commitMessage.length() > message_length) {
             commitMessage = commitMessage.substring(0, message_length);
         }
-        logger.info("commitId: {}, commitMessage: {}, buildType: {}, commitCount: {}", commitId, commitMessage, buildType, commitCountInt);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
+        logger.info("commitId: {}, commitMessage: {}, buildType: {}, commitCount: {}", commitId, commitMessage, buildType,
+                commitCountInt);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
 
         try {
             String relativePath = FileUtil.getPathForToday();
@@ -107,7 +127,8 @@ public class PackageSetController {
             testFileSet.setTeamName(team.getTeamName());
 
             //Save app file to server
-            File tempAppFile = attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE});
+            File tempAppFile =
+                    attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE});
             StorageFileInfo appBlobFile = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
             //Upload app file
             appBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appBlobFile, tempAppFile, logger);
@@ -119,7 +140,8 @@ public class PackageSetController {
 
             //Save test app file to server if exist
             if (testAppFile != null && !testAppFile.isEmpty()) {
-                File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE});
+                File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativePath, false, null,
+                        new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE});
 
                 StorageFileInfo testAppBlobFile = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
                 //Upload app file
@@ -241,7 +263,7 @@ public class PackageSetController {
         if (!LogUtils.isLegalStr(packageName, Const.RegexString.PACKAGE_NAME, false)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "The packagename is illegal");
         }
-        if (StringUtils.isEmpty(teamName)){
+        if (StringUtils.isEmpty(teamName)) {
             teamName = requestor.getDefaultTeamName();
         }
         SysTeam team = sysTeamService.queryTeamByName(teamName);
@@ -313,7 +335,8 @@ public class PackageSetController {
      */
     @Deprecated
     // @GetMapping("/api/package/testJsonHistory/{packageName}/{caseName}")
-    public Result<List<TestJsonInfo>> testJsonHistory(@CurrentSecurityContext SysUser requestor, @PathVariable("packageName") String packageName, @PathVariable("caseName") String caseName) {
+    public Result<List<TestJsonInfo>> testJsonHistory(@CurrentSecurityContext SysUser requestor, @PathVariable("packageName") String packageName,
+                                                      @PathVariable("caseName") String caseName) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }

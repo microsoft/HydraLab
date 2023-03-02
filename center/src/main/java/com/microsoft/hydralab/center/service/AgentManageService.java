@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.CenterConstant;
 import com.microsoft.hydralab.center.util.SecretGenerator;
-import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.center.SysUser;
+import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -125,11 +126,11 @@ public class AgentManageService {
         return userTeamManagementService.checkRequestorTeamAdmin(requestor, agentUser.getTeamId());
     }
 
-    public void updateAgentTeam(String teamId, String teamName){
-         List<AgentUser> agents = getAgentsByTeamId(teamId);
-         agents.forEach(agent -> agent.setTeamName(teamName));
+    public void updateAgentTeam(String teamId, String teamName) {
+        List<AgentUser> agents = getAgentsByTeamId(teamId);
+        agents.forEach(agent -> agent.setTeamName(teamName));
 
-         agentUserRepository.saveAll(agents);
+        agentUserRepository.saveAll(agents);
     }
 
     public File generateAgentConfigFile(String agentId, String host) {

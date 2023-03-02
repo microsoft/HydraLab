@@ -1,18 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.microsoft.hydralab.center.repository.UserTeamRelationRepository;
+import com.microsoft.hydralab.common.entity.center.SysRole;
+import com.microsoft.hydralab.common.entity.center.SysTeam;
+import com.microsoft.hydralab.common.entity.center.SysUser;
+import com.microsoft.hydralab.common.entity.center.UserTeamRelation;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.entity.center.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -131,8 +139,7 @@ public class UserTeamManagementService {
             allUsers.forEach(user -> {
                 if (teamAdminSet.contains(user.getMailAddress())) {
                     user.setTeamAdmin(true);
-                }
-                else {
+                } else {
                     user.setTeamAdmin(false);
                 }
             });

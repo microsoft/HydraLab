@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.repository;
 
 import com.microsoft.hydralab.common.entity.center.RolePermissionRelation;
@@ -12,6 +13,8 @@ import java.util.Optional;
 @Repository
 public interface RolePermissionRelationRepository extends JpaRepository<RolePermissionRelation, RolePermissionRelationId> {
     void deleteAllByPermissionId(String permissionId);
+
     void deleteAllByRoleId(String roleId);
+
     Optional<RolePermissionRelation> findByRoleIdAndPermissionId(String roleId, String permissionId);
 }
