@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.performance;
 
 import java.io.Serializable;
@@ -7,10 +8,15 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class InspectionStrategy implements Serializable {
+    @SuppressWarnings("visibilitymodifier")
     public StrategyType strategyType;
+    @SuppressWarnings("visibilitymodifier")
     public List<WhenType> when;
+    @SuppressWarnings("visibilitymodifier")
     public long interval;
+    @SuppressWarnings("visibilitymodifier")
     public TimeUnit intervalUnit;
+    @SuppressWarnings("visibilitymodifier")
     public PerformanceInspection inspection;
 
     enum StrategyType {

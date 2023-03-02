@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.appium;
 
 public class AppiumParam {
@@ -11,6 +12,15 @@ public class AppiumParam {
     String outputDir = null;
 
     public AppiumParam() {
+    }
+
+    public AppiumParam(String deviceId, String deviceName, String osVersion, int wdaPort, String apkPath, String outputDir) {
+        this.deviceId = deviceId;
+        this.deviceName = deviceName;
+        this.osVersion = osVersion;
+        this.wdaPort = wdaPort;
+        this.apkPath = apkPath;
+        this.outputDir = outputDir;
     }
 
     @Override
@@ -25,27 +35,22 @@ public class AppiumParam {
                 '}';
     }
 
-    public AppiumParam(String deviceId, String deviceName, String osVersion, int wdaPort, String apkPath, String outputDir) {
-        this.deviceId = deviceId;
-        this.deviceName = deviceName;
-        this.osVersion = osVersion;
-        this.wdaPort = wdaPort;
-        this.apkPath = apkPath;
-        this.outputDir = outputDir;
-    }
-
     public String getDeviceId() {
         return deviceId;
     }
+
     public String getDeviceName() {
         return deviceName;
     }
+
     public String getDeviceOsVersion() {
         return osVersion;
     }
+
     public int getWdaPort() {
         return wdaPort;
     }
+
     public String getApkPath() {
         return apkPath;
     }
