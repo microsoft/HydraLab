@@ -19,7 +19,7 @@ import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMon
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.StorageManageService;
+import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;
@@ -98,7 +98,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceManager initDeviceManager(StorageManageService storageManageService, ADBOperateUtil adbOperateUtil
+    public DeviceManager initDeviceManager(StorageServiceClientProxy storageServiceClientProxy, ADBOperateUtil adbOperateUtil
             , AppiumServerManager appiumServerManager, DeviceStatusListenerManager deviceStatusListenerManager) {
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
@@ -134,7 +134,7 @@ public class AppConfiguration {
             }
         }
         deviceManager.setDeviceLogBaseDir(deviceLogBaseDir);
-        deviceManager.setStorageManageService(storageManageService);
+        deviceManager.setStorageServiceClientProxy(storageServiceClientProxy);
 
         deviceManager.setScreenshotDir(getScreenshotDir());
         deviceManager.setDeviceFolderUrlPrefix(AppOptions.DEVICE_STORAGE_MAPPING_REL_PATH);
@@ -221,7 +221,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public StorageManageService storageManageService(ApplicationContext applicationContext){
-        return new StorageManageService(applicationContext);
+    public StorageServiceClientProxy storageManageService(ApplicationContext applicationContext){
+        return new StorageServiceClientProxy(applicationContext);
     }
 }

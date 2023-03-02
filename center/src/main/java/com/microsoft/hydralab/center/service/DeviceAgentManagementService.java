@@ -78,7 +78,7 @@ public class DeviceAgentManagementService {
     @Resource
     AgentManageService agentManageService;
     @Resource
-    StorageManageService storageManageService;
+    StorageServiceClientProxy storageServiceClientProxy;
     @Resource
     StorageTokenManageService storageTokenManageService;
     @Value("${app.storage.type}")
@@ -683,7 +683,7 @@ public class DeviceAgentManagementService {
             File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
             TestInfo testInfo;
             try {
-                storageManageService.download(testApkFile, testAppFileInfo);
+                storageServiceClientProxy.download(testApkFile, testAppFileInfo);
                 T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
                 String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
                 testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);

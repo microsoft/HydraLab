@@ -40,7 +40,7 @@ public class AttachmentService {
     @Resource
     EntityFileRelationRepository entityFileRelationRepository;
     @Resource
-    StorageManageService storageManageService;
+    StorageServiceClientProxy storageServiceClientProxy;
 
     public StorageFileInfo addAttachment(String entityId, EntityType entityType, StorageFileInfo fileInfo, File file, Logger logger) {
         boolean recordExists = false;
@@ -80,7 +80,7 @@ public class AttachmentService {
 
     public StorageFileInfo updateFileInStorageAndDB(StorageFileInfo oldFileInfo, File file, EntityType entityType, Logger logger) {
         int days = (int) ((new Date().getTime() - oldFileInfo.getUpdateTime().getTime()) / 1000 / 60 / 60 / 24);
-        if (days >= storageManageService.getStorageFileLimitDay()) {
+        if (days >= storageServiceClientProxy.getStorageFileLimitDay()) {
             oldFileInfo.setUpdateTime(new Date());
             oldFileInfo.setBlobContainer(entityType.storageContainer);
             oldFileInfo.setBlobUrl(saveFileInStorage(file, oldFileInfo, logger));
@@ -197,7 +197,7 @@ public class AttachmentService {
     }
 
     private String saveFileInStorage(File file, StorageFileInfo fileInfo, Logger logger) {
-        storageManageService.upload(file, fileInfo);
+        storageServiceClientProxy.upload(file, fileInfo);
         if (StringUtils.isBlank(fileInfo.getBlobUrl())) {
             logger.warn("Download URL is empty for file {}", fileInfo.getBlobPath());
         } else {

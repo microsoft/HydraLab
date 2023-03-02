@@ -10,7 +10,7 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.StorageManageService;
+import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +32,13 @@ public class AgentManageService {
     @Resource
     private AppOptions appOptions;
     @Resource
-    StorageManageService storageManageService;
+    StorageServiceClientProxy storageServiceClientProxy;
 
     public void updateAgentPackage(AgentUpdateTask updateTask, String path) {
         Runnable run = () -> {
             sendMessageToCenter(true, "Download package file.", "", path);
             File downloadToFile = new File(appOptions.getLocation(), updateTask.getPackageInfo().getFileName());
-            storageManageService.download(downloadToFile, updateTask.getPackageInfo());
+            storageServiceClientProxy.download(downloadToFile, updateTask.getPackageInfo());
             sendMessageToCenter(true, "Download Package Success!", "", path);
 
             restartAgent(updateTask.getPackageInfo().getFileName(), path);

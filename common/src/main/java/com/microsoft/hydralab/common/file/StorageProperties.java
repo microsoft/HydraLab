@@ -1,6 +1,6 @@
 package com.microsoft.hydralab.common.file;
 
-public interface ContainerConstants {
+public interface StorageProperties {
     String getScreenshotContainerName();
     String getAppFileContainerName();
     String getTestResultContainerName();

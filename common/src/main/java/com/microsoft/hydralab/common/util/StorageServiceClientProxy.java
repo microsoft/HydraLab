@@ -17,11 +17,11 @@ import java.io.File;
  * @date 3/1/2023
  */
 
-public class StorageManageService extends StorageServiceClient {
+public class StorageServiceClientProxy extends StorageServiceClient {
     private StorageServiceClient storageServiceClient;
     private ApplicationContext applicationContext;
 
-    public StorageManageService(ApplicationContext applicationContext) {
+    public StorageServiceClientProxy(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 

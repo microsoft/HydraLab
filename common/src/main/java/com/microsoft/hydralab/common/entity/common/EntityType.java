@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
-import com.microsoft.hydralab.common.file.ContainerConstants;
+import com.microsoft.hydralab.common.file.StorageProperties;
 
 public enum EntityType {
     SCREENSHOT("SCREENSHOT"),
@@ -18,11 +18,11 @@ public enum EntityType {
         this.typeName = typeName;
     }
 
-    public static void setInstanceContainer(ContainerConstants constant) {
-        SCREENSHOT.storageContainer = constant.getScreenshotContainerName();
-        APP_FILE_SET.storageContainer = constant.getAppFileContainerName();
-        TEST_RESULT.storageContainer = constant.getTestResultContainerName();
-        AGENT_PACKAGE.storageContainer = constant.getAgentPackageContainerName();
-        TEST_JSON.storageContainer = constant.getTestJsonContainerName();
+    public static void setInstanceContainer(StorageProperties storageProperties) {
+        SCREENSHOT.storageContainer = storageProperties.getScreenshotContainerName();
+        APP_FILE_SET.storageContainer = storageProperties.getAppFileContainerName();
+        TEST_RESULT.storageContainer = storageProperties.getTestResultContainerName();
+        AGENT_PACKAGE.storageContainer = storageProperties.getAgentPackageContainerName();
+        TEST_JSON.storageContainer = storageProperties.getTestJsonContainerName();
     }
 }

@@ -38,7 +38,7 @@ import static com.android.ddmlib.IDevice.DeviceState;
 public abstract class DeviceManager {
     public static final String LOGGER_PREFIX = "logger.devices.";
     static final Logger classLogger = LoggerFactory.getLogger(DeviceManager.class);
-    protected StorageManageService storageManageService;
+    protected StorageServiceClientProxy storageServiceClientProxy;
     protected File testBaseDir;
     protected File preAppDir;
     protected String preInstallFailurePolicy;
@@ -90,12 +90,12 @@ public abstract class DeviceManager {
     }
 
 
-    public StorageManageService getStorageManageService() {
-        return storageManageService;
+    public StorageServiceClientProxy getStorageServiceClientProxy() {
+        return storageServiceClientProxy;
     }
 
-    public void setStorageManageService(StorageManageService storageManageService) {
-        this.storageManageService = storageManageService;
+    public void setStorageServiceClientProxy(StorageServiceClientProxy storageServiceClientProxy) {
+        this.storageServiceClientProxy = storageServiceClientProxy;
     }
 
     public File getTestBaseDir() {

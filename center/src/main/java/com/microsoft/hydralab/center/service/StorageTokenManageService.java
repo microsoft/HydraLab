@@ -4,7 +4,7 @@ package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.StorageManageService;
+import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -20,15 +20,15 @@ import java.util.concurrent.ConcurrentMap;
 @Service
 public class StorageTokenManageService {
     @Resource
-    StorageManageService storageManageService;
+    StorageServiceClientProxy storageServiceClientProxy;
     private final ConcurrentMap<String, AccessToken> accessTokenMap = new ConcurrentHashMap<>();
 
     public AccessToken generateReadToken(String uniqueId) {
         Assert.notNull(uniqueId, "The key of access token can't be null!");
         AccessToken accessToken = accessTokenMap.get(uniqueId);
 
-        if (accessToken == null || storageManageService.isAccessTokenExpired(accessToken)) {
-            accessToken = storageManageService.generateAccessToken(Const.FilePermission.READ);
+        if (accessToken == null || storageServiceClientProxy.isAccessTokenExpired(accessToken)) {
+            accessToken = storageServiceClientProxy.generateAccessToken(Const.FilePermission.READ);
             Assert.notNull(accessToken, "Current storage service doesn't config READ permission!");
             accessTokenMap.put(uniqueId, accessToken);
         }
@@ -40,8 +40,8 @@ public class StorageTokenManageService {
         Assert.notNull(uniqueId, "The key of access token can't be null!");
         AccessToken accessToken = accessTokenMap.get(uniqueId);
 
-        if (accessToken == null || storageManageService.isAccessTokenExpired(accessToken)) {
-            accessToken = storageManageService.generateAccessToken(Const.FilePermission.WRITE);
+        if (accessToken == null || storageServiceClientProxy.isAccessTokenExpired(accessToken)) {
+            accessToken = storageServiceClientProxy.generateAccessToken(Const.FilePermission.WRITE);
             Assert.notNull(accessToken, "Current storage service doesn't config WRITE permission!");
             accessTokenMap.put(uniqueId, accessToken);
         }
@@ -54,8 +54,8 @@ public class StorageTokenManageService {
         Assert.notNull(uniqueId, "The key of access token can't be null!");
         AccessToken accessToken = accessTokenMap.get(uniqueId);
 
-        if (accessToken == null || storageManageService.isAccessTokenExpired(accessToken)) {
-            accessToken = storageManageService.generateAccessToken(Const.FilePermission.READ);
+        if (accessToken == null || storageServiceClientProxy.isAccessTokenExpired(accessToken)) {
+            accessToken = storageServiceClientProxy.generateAccessToken(Const.FilePermission.READ);
             Assert.notNull(accessToken, "Current storage service doesn't config READ permission!");
             accessTokenMap.put(uniqueId, accessToken);
         }

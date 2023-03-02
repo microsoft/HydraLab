@@ -8,7 +8,7 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.StorageManageService;
+import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import io.prometheus.client.exporter.PushGateway;
@@ -57,15 +57,15 @@ public class AppConfig {
     }
 
     @Bean
-    public StorageManageService storageManageService(ApplicationContext applicationContext) {
+    public StorageServiceClientProxy storageManageService(ApplicationContext applicationContext) {
         if (storageType == null) {
             storageType = Const.StorageType.LOCAL;
         }
 
-        StorageManageService storageManageService = new StorageManageService(applicationContext);
-        storageManageService.initCenterStorageClient(storageType);
+        StorageServiceClientProxy storageServiceClientProxy = new StorageServiceClientProxy(applicationContext);
+        storageServiceClientProxy.initCenterStorageClient(storageType);
 
-        return storageManageService;
+        return storageServiceClientProxy;
     }
 
     @Bean

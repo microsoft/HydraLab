@@ -18,7 +18,7 @@ import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
-import com.microsoft.hydralab.common.util.StorageManageService;
+import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
@@ -57,7 +57,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     MeterRegistry meterRegistry;
     AgentUser agentUser;
     @Resource
-    private StorageManageService storageManageService;
+    private StorageServiceClientProxy storageServiceClientProxy;
     private boolean isStorageClientInit = false;
     @Resource
     private AppOptions appOptions;
@@ -172,10 +172,10 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         AgentMetadata agentMetadata = (AgentMetadata) message.getBody();
 
         if (!isStorageClientInit) {
-            storageManageService.initAgentStorageClient(agentMetadata.getStorageType());
+            storageServiceClientProxy.initAgentStorageClient(agentMetadata.getStorageType());
             isStorageClientInit = true;
         }
-        storageManageService.updateAccessToken(agentMetadata.getAccessToken());
+        storageServiceClientProxy.updateAccessToken(agentMetadata.getAccessToken());
         syncAgentStatus(agentMetadata.getAgentUser());
         prometheusPushgatewayInit(agentMetadata);
     }
