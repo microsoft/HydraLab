@@ -136,7 +136,7 @@ public interface Const {
         String AUTHORITY = "AUTHORITY";
     }
 
-    interface PreInstallPolicy{
+    interface PreInstallFailurePolicy {
         String SHUTDOWN = "SHUTDOWN";
         String IGNORE = "IGNORE";
     }
