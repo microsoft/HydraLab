@@ -4,6 +4,7 @@ $PackagesPath = $RootPath + "\Packages"
 $AndroidRoot = $PackagesPath + "\Android"
 $Urls = @{}
 $Arch = $null
+$AgentServiceName = "Hydra Lab Agent Service"
 
 # =======================================
 # Functions
@@ -198,7 +199,6 @@ if (Test-Path -Path $RootPath)
 {
     Remove-Item $RootPath -Recurse
 }
-[void](New-Item -Path $RootPath -ItemType Directory)
 
 # =======================================
 # Copy Configuration File
@@ -207,6 +207,7 @@ if (-Not(Test-Path -Path "$CurrentPath\application.yml"))
 {
     throw "Not found configuration file $CurrentPath\application.yml"
 }
+[void](New-Item -Path $RootPath -ItemType Directory)
 Copy-Item "$CurrentPath\application.yml" -Destination "$RootPath\application.yml"
 
 # =======================================
@@ -311,3 +312,12 @@ Set-EnvironmentVar -Key "ANDROID_PLATFORM_TOOLS"   -Val "%ANDROID_HOME%\platform
 Add-EnvironmentVar -Key "PATH"                     -Val "%ANDROID_HOME%"
 Add-EnvironmentVar -Key "PATH"                     -Val "%ANDROID_CMDLINE_TOOLS%"
 Add-EnvironmentVar -Key "PATH"                     -Val "%ANDROID_PLATFORM_TOOLS%"
+
+$AgentServiceXml = Get-Content -Path "$RootPath\AgentService.xml"
+$AgentServiceXml = $AgentServiceXml -replace "java","$JDK_Root\bin\java.exe"
+$AgentServiceXml = $AgentServiceXml -replace "{LOG_FILE_LOCATION}","Logs"
+$AgentServiceXml | Set-Content -Path "$RootPath\AgentService.xml"
+
+sc.exe delete $AgentServiceName
+New-Service -Name $AgentServiceName -BinaryPathName "$RootPath\AgentService.exe"
+Start-Service -Name $AgentServiceName
