@@ -30,7 +30,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/portal/").setViewName("forward:"+ Const.FrontPath.INDEX_PATH);
+        registry.addViewController("/portal/").setViewName("forward:"+ Const.FrontEndPath.INDEX_PATH);
     }
 
     @Override

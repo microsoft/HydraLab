@@ -45,7 +45,7 @@ public class AuthController {
      */
     @GetMapping(value = {"/api/auth"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public void getAccessToken(@RequestParam("code") String code, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String redirectUrl = Const.FrontPath.INDEX_PATH;
+        String redirectUrl = Const.FrontEndPath.INDEX_PATH;
         String accessToken = authUtil.verifyCode(code);
         if (accessToken == null) {
             response.sendRedirect(authUtil.getLoginUrl());
@@ -55,7 +55,7 @@ public class AuthController {
         securityUserService.addSessionAndUserAuth(authUtil.getLoginUserName(accessToken), accessToken, request.getSession());
 
         String state = request.getParameter("state");
-        String prefix = Const.FrontPath.INDEX_PATH + "?" + Const.FrontPath.REDIRECT_PARAM + "=";
+        String prefix = Const.FrontEndPath.INDEX_PATH + "?" + Const.FrontEndPath.REDIRECT_PARAM + "=";
 
         if (StringUtils.isNotEmpty(state) && state.startsWith(prefix)) {
             String newUrl = state.replace(prefix, "");

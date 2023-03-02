@@ -77,11 +77,11 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
             }
             //invoke by browser
             if (StringUtils.isEmpty(token) || !authUtil.verifyToken(token)) {
-                if (requestURI.contains(Const.FrontPath.PREFIX_PATH)) {
+                if (requestURI.contains(Const.FrontEndPath.PREFIX_PATH)) {
                     String queryString = request.getQueryString();
                     if (StringUtils.isNotEmpty(queryString)
-                            && queryString.startsWith(Const.FrontPath.REDIRECT_PARAM)
-                            && LogUtils.isLegalStr(queryString.replace(Const.FrontPath.REDIRECT_PARAM + "=", ""), Const.RegexString.URL, false)
+                            && queryString.startsWith(Const.FrontEndPath.REDIRECT_PARAM)
+                            && LogUtils.isLegalStr(queryString.replace(Const.FrontEndPath.REDIRECT_PARAM + "=", ""), Const.RegexString.URL, false)
                             && LogUtils.isLegalStr(requestURI, Const.RegexString.URL, true)
                     ) {
                         response.sendRedirect(authUtil.getLoginUrl(requestURI, queryString));// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
@@ -95,9 +95,9 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
                 return false;
             }
             //redirect
-            String redirectUrl = request.getParameter(Const.FrontPath.REDIRECT_PARAM);
+            String redirectUrl = request.getParameter(Const.FrontEndPath.REDIRECT_PARAM);
             if (StringUtils.isNotEmpty(redirectUrl) && LogUtils.isLegalStr(redirectUrl, Const.RegexString.URL, false)) {
-                response.sendRedirect(Const.FrontPath.INDEX_PATH + Const.FrontPath.ANCHOR + redirectUrl);// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
+                response.sendRedirect(Const.FrontEndPath.INDEX_PATH + Const.FrontEndPath.ANCHOR + redirectUrl);// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
                 return false;
             }
         }

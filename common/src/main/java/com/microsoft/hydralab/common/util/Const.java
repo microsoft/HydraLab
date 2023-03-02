@@ -88,7 +88,7 @@ public interface Const {
         String BEHAVIOUR_DISCONNECT = "disconnected";
     }
 
-    interface FrontPath {
+    interface FrontEndPath {
         String PREFIX_PATH = "/portal";
         String INDEX_PATH = "/portal/index.html";
         String ANCHOR = "#";
