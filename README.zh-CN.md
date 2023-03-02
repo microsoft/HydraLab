@@ -127,7 +127,7 @@ java -jar agent/build/libs/agent.jar
 <span id="for-user"></span>
 ### 对于Hydra Lab的使用者:
 
-- [触发Hydra Lab测试服务中的测试任务运行](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
+- [在Hydra Lab测试服务中触发一次测试任务](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
 - [部署测试代理服务](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
 - [创建Appium UI测试自动化项目](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
 
@@ -185,5 +185,5 @@ java -jar agent/build/libs/agent.jar
 
 整个代码库遵循 [MIT许可协议](https://github.com/microsoft/HydraLab/blob/main/LICENSE)。
 
-此项目可能包含项目、产品或服务的商标或徽标。对Microsoft商标或徽标的授权使用受 [Microsoft的商标和品牌准则](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general)的约束，并且必须遵循该准则。在本项目的修改版本中使用Microsoft商标或徽标不得引起混淆或暗示Microsoft的赞助。对第三方商标或徽标的任何使用均受这些第三方政策的约束。
+该项目可能包含一些项目、产品或服务的商标或标识。使用 Microsoft 商标或标识需遵循 [Microsoft的商标和品牌准则](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general)并经授权。在此项目的修改版本中使用 Microsoft 商标或标识不得混淆或暗示 Microsoft 的赞助。任何使用第三方商标或标识的行为均需遵守相关第三方政策。
 
