@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.t2c.runner;
 
 import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
@@ -37,7 +38,6 @@ public class ActionInfo {
     public Integer getId() {
         return id;
     }
-
 
     public String getDescription() {
         return description;

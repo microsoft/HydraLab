@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.t2c.runner.controller;
 
 import com.microsoft.hydralab.t2c.runner.elements.AndroidElementInfo;
@@ -33,6 +34,7 @@ public abstract class BaseDriverController {
 
     /**
      * Send content via keyboard, this will send the string directly to the current focus element
+     *
      * @param content string you want to input with
      */
     public void sendKeys(String content) {
@@ -189,6 +191,7 @@ public abstract class BaseDriverController {
     /**
      * In windows, id refers to {@link WindowsElementInfo#getName()}
      * In android, id refers to {@link AndroidElementInfo#getResourceId()}
+     *
      * @param id
      * @return
      */
@@ -203,7 +206,6 @@ public abstract class BaseDriverController {
         }
         return elementFound;
     }
-
 
     public abstract String getPageSource();
 

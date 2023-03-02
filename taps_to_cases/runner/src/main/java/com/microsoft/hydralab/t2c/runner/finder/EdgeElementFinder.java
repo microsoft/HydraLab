@@ -5,7 +5,7 @@ import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.elements.EdgeElementInfo;
 import org.openqa.selenium.WebElement;
 
-public class EdgeElementFinder implements ElementFinder<EdgeElementInfo>  {
+public class EdgeElementFinder implements ElementFinder<EdgeElementInfo> {
 
     private final BaseDriverController driverController;
 

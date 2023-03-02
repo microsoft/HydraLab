@@ -1,9 +1,12 @@
 group 'org.example'
 version '1.0-SNAPSHOT'
+apply from: "${project.rootDir}/quality/checkstyle.gradle"
 
 repositories {
     mavenCentral()
 }
+
+classes.finalizedBy checkstyleMain
 
 dependencies {
     implementation "com.google.guava:guava:30.1.1-jre"
