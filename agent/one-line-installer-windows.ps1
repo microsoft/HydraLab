@@ -8,7 +8,7 @@ $Arch = $null
 # =======================================
 # Functions
 # =======================================
-Function Get-File ($Url, $Path)
+Function Get-File ($Url, $Path, $ExtractCurrent=$false)
 {
     $fileName = $Url.Substring($Url.LastIndexOf('/') + 1)
     if ($Path.EndsWith('/') -or $Path.EndsWith('\'))
@@ -208,7 +208,7 @@ foreach ($ast in $release.assets)
 {
     if ($filesToDownload -contains $ast.name)
     {
-        Get-File -Url $ast.browser_download_url -Path $RootPath
+        Get-File -Url $ast.browser_download_url -Path $RootPath -ExtractCurrent $true
     }
 }
 
