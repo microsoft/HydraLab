@@ -5,6 +5,7 @@ package com.microsoft.hydralab.agent.runner;
 
 import cn.hutool.core.lang.Assert;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
+import com.microsoft.hydralab.common.entity.common.DeviceCombo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -107,6 +108,15 @@ public abstract class TestRunner {
 
     protected TestRun createTestRun(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
         TestRun testRun = new TestRun(deviceInfo.getSerialNum(), deviceInfo.getName(), testTask.getId());
+
+        // todo workaround for E2E agent
+        if (deviceInfo instanceof DeviceCombo) {
+            testRun.setDeviceSerialNumber(deviceInfo.getSerialNum() + "," +
+                    ((DeviceCombo) deviceInfo).getLinkedDeviceInfo().getSerialNum());
+            testRun.setDeviceName(deviceInfo.getName() + "-" + System.getProperties().getProperty("os.name") + "-" +
+                    ((DeviceCombo) deviceInfo).getLinkedDeviceInfo().getName());
+        }
+
         File testRunResultFolder = new File(testTask.getResourceDir(), deviceInfo.getSerialNum());
         parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
         if (!testRunResultFolder.exists()) {

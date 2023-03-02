@@ -86,9 +86,6 @@ public class T2CRunner extends AppiumRunner {
     @Override
     public TestRun createTestRun(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
         TestRun testRun = super.createTestRun(deviceInfo, testTask, parentLogger);
-        String deviceName =
-                System.getProperties().getProperty("os.name") + "-" + agentName + "-" + deviceInfo.getName();
-        testRun.setDeviceName(deviceName);
         return testRun;
     }
 
