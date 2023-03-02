@@ -57,7 +57,7 @@ public class AppConfig {
     }
 
     @Bean
-    public StorageServiceClientProxy storageManageService(ApplicationContext applicationContext) {
+    public StorageServiceClientProxy storageServiceClientProxy(ApplicationContext applicationContext) {
         if (storageType == null) {
             storageType = Const.StorageType.LOCAL;
         }

@@ -221,7 +221,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public StorageServiceClientProxy storageManageService(ApplicationContext applicationContext) {
+    public StorageServiceClientProxy storageServiceClientProxy(ApplicationContext applicationContext) {
         return new StorageServiceClientProxy(applicationContext);
     }
 }
