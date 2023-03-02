@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.t2c.runner.controller;
 
 import io.appium.java_client.windows.WindowsDriver;
@@ -62,7 +63,6 @@ public class WindowsDriverController extends BaseDriverController {
     public String getPageSource() {
         return windowsDriver.getPageSource();
     }
-
 
     @Override
     public void paste(WebElement webElement) {

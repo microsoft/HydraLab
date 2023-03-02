@@ -1,6 +1,7 @@
 package com.microsoft.hydralab.t2c.runner.elements;
 
 public class EdgeElementInfo extends WindowsElementInfo {
+    @SuppressWarnings("ParameterNumber")
     public EdgeElementInfo(String acceleratorKey, String accessKey, String automationId, String className,
                            String frameworkId, String hasKeyboardFocus, String helpText, String isContentElement,
                            String isControlElement, String isEnabled, String isKeyboardFocusable, String isOffscreen,

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.t2c.runner;
 
 import com.alibaba.fastjson.JSON;
@@ -21,13 +22,19 @@ import org.slf4j.Logger;
 import java.util.HashMap;
 import java.util.Map;
 
-public class T2CAppiumUtils {
+public final class T2CAppiumUtils {
     static HashMap<String, String> keyToInfoMap = new HashMap<>();
     private static boolean isSelfTesting = false;
 
+    private T2CAppiumUtils() {
+
+    }
+
     public static WebElement findElement(BaseDriverController driver, BaseElementInfo element, Logger logger) {
         WebElement elementFound = null;
-        if (element == null) return null;
+        if (element == null) {
+            return null;
+        }
         ElementFinder<BaseElementInfo> finder = ElementFinderFactory.createElementFinder(driver);
         elementFound = finder.findElement(element);
         if (elementFound != null) {
@@ -53,8 +60,10 @@ public class T2CAppiumUtils {
         }
     }
 
+    @SuppressWarnings("methodlength")
+
     public static void chooseActionType(BaseDriverController driver, ActionInfo actionInfo, Logger logger) {
-        String ActionType = actionInfo.getActionType();
+        String actionType = actionInfo.getActionType();
         BaseElementInfo element = actionInfo.getTestElement();
         WebElement webElement = findElement(driver, element, logger);
         Map<String, Object> arguments = actionInfo.getArguments();
@@ -62,7 +71,7 @@ public class T2CAppiumUtils {
         if (webElement == null && !isSelfTesting) {
             safeSleep(3000);
         }
-        switch (ActionType) {
+        switch (actionType) {
             case "click":
                 driver.click(webElement);
                 break;
@@ -94,14 +103,16 @@ public class T2CAppiumUtils {
             case "activateApp":
                 String appPackageName = (String) arguments.get("appPackageName");
                 if (appPackageName == null) {
-                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. action index: " + actionInfo.getId());
+                    throw new IllegalArgumentException(
+                            "App package name should not be null. Please add argument 'appPackageName' in the json. action index: " + actionInfo.getId());
                 }
                 driver.activateApp(appPackageName);
                 break;
             case "terminateApp":
                 String removeAppPackageName = (String) arguments.get("appPackageName");
                 if (removeAppPackageName == null) {
-                    throw new IllegalArgumentException("App package name should not be null. Please add argument 'appPackageName' in the json. action index: " + actionInfo.getId());
+                    throw new IllegalArgumentException(
+                            "App package name should not be null. Please add argument 'appPackageName' in the json. action index: " + actionInfo.getId());
                 }
                 driver.terminateApp(removeAppPackageName);
                 break;
@@ -144,7 +155,8 @@ public class T2CAppiumUtils {
                 String attribute = (String) arguments.get("attribute");
                 String expectedValue = (String) arguments.get("expectedValue");
                 if (attribute == null || expectedValue == null) {
-                    throw new IllegalArgumentException("Assert info is not defined. Please add argument 'attribute' and 'expectedValue' in the json. action index: " + actionInfo.getId());
+                    throw new IllegalArgumentException(
+                            "Assert info is not defined. Please add argument 'attribute' and 'expectedValue' in the json. action index: " + actionInfo.getId());
                 }
                 driver.assertElementAttribute(webElement, attribute, expectedValue);
                 break;
@@ -184,7 +196,8 @@ public class T2CAppiumUtils {
                     WebElement toElement = findElement(driver, toElementInfo, logger);
                     driver.dragAndDrop(webElement, toElement);
                 } else {
-                    throw new IllegalArgumentException("Destination is not defined. Please add argument 'xVector' & 'yVector' or 'toElement' in the json. action index: " + actionInfo.getId());
+                    throw new IllegalArgumentException(
+                            "Destination is not defined. Please add argument 'xVector' & 'yVector' or 'toElement' in the json. action index: " + actionInfo.getId());
                 }
                 break;
             case "switchToUrl":

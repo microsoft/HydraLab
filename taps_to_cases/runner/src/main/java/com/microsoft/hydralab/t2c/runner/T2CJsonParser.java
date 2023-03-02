@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.t2c.runner;
 
 import com.alibaba.fastjson.JSON;
@@ -13,7 +14,9 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class T2CJsonParser {
     private final Map<String, String> driveIdToTypeMap = new HashMap<>();
