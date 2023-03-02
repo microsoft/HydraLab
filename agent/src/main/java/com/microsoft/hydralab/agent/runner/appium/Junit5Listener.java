@@ -6,12 +6,15 @@ package com.microsoft.hydralab.agent.runner.appium;
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.DeviceCombo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.screen.FFmpegConcatUtil;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -49,7 +52,13 @@ public class Junit5Listener extends SummaryGeneratingListener {
     private String currentTestName = "";
     private int currentTestIndex = 0;
 
-    public Junit5Listener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
+    // todo workaround for E2E agent
+    TestDeviceManager comboDeviceManager;
+    ScreenRecorder comboDeviceScreenRecorder;
+    DeviceInfo comboDeviceInfo;
+
+    public Junit5Listener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun,
+                          String pkgName,
                           PerformanceTestListener performanceTestListener, Logger logger) {
         this.agentManagementService = agentManagementService;
         this.testDeviceManager = deviceInfo.getTestDeviceManager();
@@ -60,6 +69,14 @@ public class Junit5Listener extends SummaryGeneratingListener {
         this.performanceTestListener = performanceTestListener;
         logcatCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
         deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
+
+        //todo workaround for E2E agent
+        if (deviceInfo instanceof DeviceCombo) {
+            comboDeviceInfo = ((DeviceCombo) deviceInfo).getLinkedDeviceInfo();
+            comboDeviceManager = comboDeviceInfo.getTestDeviceManager();
+            comboDeviceScreenRecorder =
+                    comboDeviceManager.getScreenRecorder(comboDeviceInfo, testRun.getResultFolder(), logger);
+        }
     }
 
     public File getGifFile() {
@@ -81,6 +98,11 @@ public class Junit5Listener extends SummaryGeneratingListener {
         logger.info("Start record screen");
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(maxTime <= 0 ? 30 * 60 : maxTime);
+        // todo workaround for E2E agent
+        if (comboDeviceScreenRecorder != null) {
+            comboDeviceScreenRecorder.setupDevice();
+            comboDeviceScreenRecorder.startRecord(maxTime <= 0 ? 30 * 60 : maxTime);
+        }
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
         deviceInfo.setRunningTestName(initializing);
@@ -133,12 +155,15 @@ public class Junit5Listener extends SummaryGeneratingListener {
                 }
             }
             if (e.isStarted() && addedFrameCount < 2) {
-                try {
-                    File imagePNGFile = testDeviceManager.getScreenShot(deviceInfo, logger);
-                    e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                } catch (Exception exception) {
-                    logger.error(exception.getMessage(), e);
-                }
+                testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(0),
+                        (imagePNGFile -> {
+                            try {
+                                e.addFrame(
+                                        ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
+                        }), logger);
             }
 
         }
@@ -213,20 +238,21 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                addedFrameCount++;
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), logger);
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15),
+                (imagePNGFile -> {
+                    if (imagePNGFile == null) {
+                        return;
+                    }
+                    if (!e.isStarted()) {
+                        return;
+                    }
+                    try {
+                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                        addedFrameCount++;
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }), logger);
 
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
 
@@ -269,6 +295,25 @@ public class Junit5Listener extends SummaryGeneratingListener {
     private void releaseResource() {
         e.finish();
         deviceScreenRecorder.finishRecording();
+        // todo workaround for E2E agent
+        if (comboDeviceScreenRecorder != null) {
+            comboDeviceScreenRecorder.finishRecording();
+            File phoneVideoFile = new File(testRun.getResultFolder().getAbsolutePath(),
+                    Const.ScreenRecoderConfig.DEFAULT_FILE_NAME);
+            File pcVideoFile =
+                    new File(testRun.getResultFolder().getAbsolutePath(), Const.ScreenRecoderConfig.PC_FILE_NAME);
+            if (pcVideoFile.exists() && phoneVideoFile.exists()) {
+                // Rename phone video file
+                phoneVideoFile.renameTo(new File(testRun.getResultFolder().getAbsolutePath(),
+                        Const.ScreenRecoderConfig.PHONE_FILE_NAME));
+                // Merge two videos side-by-side if exist
+                System.out.println("-------------Merge two videos side-by-side-------------");
+                String mergeDestinationPath = new File(testRun.getResultFolder().getAbsolutePath(),
+                        Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();
+                FFmpegConcatUtil.mergeVideosSideBySide(phoneVideoFile.getAbsolutePath(),
+                        pcVideoFile.getAbsolutePath(), mergeDestinationPath, logger);
+            }
+        }
         logcatCollector.stopAndAnalyse();
     }
 

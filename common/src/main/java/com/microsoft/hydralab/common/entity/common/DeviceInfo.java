@@ -9,7 +9,11 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -49,6 +53,26 @@ public class DeviceInfo extends MobileDevice {
 
     public DeviceInfo(TestDeviceManager testDeviceManager) {
         this.testDeviceManager = testDeviceManager;
+    }
+
+    public DeviceInfo(DeviceInfo deviceInfo) {
+        this.testDeviceManager = deviceInfo.testDeviceManager;
+        this.status = deviceInfo.status;
+        this.imageRelPath = deviceInfo.imageRelPath;
+        this.screenshotImageUrl = deviceInfo.screenshotImageUrl;
+        this.brand = deviceInfo.brand;
+        this.abiList = deviceInfo.abiList;
+        this.recordVideoPath = deviceInfo.recordVideoPath;
+        this.deviceId = deviceInfo.deviceId;
+        this.runningTaskId = deviceInfo.runningTaskId;
+        this.runningTestName = deviceInfo.runningTestName;
+        this.agentId = deviceInfo.agentId;
+        this.deviceGroup = deviceInfo.deviceGroup;
+        this.supportScreenRecording = deviceInfo.supportScreenRecording;
+        this.screenshotUpdateTimeMilli = deviceInfo.screenshotUpdateTimeMilli;
+        this.screenshotImageFile = deviceInfo.screenshotImageFile;
+        this.adbTimeout = deviceInfo.adbTimeout;
+        this.type = deviceInfo.type;
     }
 
     public void setStatus(String status) {

@@ -9,6 +9,7 @@ import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
 import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
+import com.microsoft.hydralab.common.entity.common.DeviceCombo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,10 +111,19 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     protected Set<DeviceInfo> chooseDevices(TestTaskSpec testTaskSpec, TestRunner runner) {
+        // todo workaround for E2E agent
         if ((runner instanceof AppiumCrossRunner) || (runner instanceof T2CRunner)) {
             Set<DeviceInfo> activeDeviceList = agentManagementService.getActiveDeviceList(log);
-            Assert.isTrue(activeDeviceList == null || activeDeviceList.size() <= 1, "No connected device!");
-            return activeDeviceList;
+            Assert.isTrue(activeDeviceList.size() == 2, "No connected device!");
+            DeviceInfo phoneDevice = activeDeviceList.stream()
+                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceInfo.DeviceType.ANDROID)).findFirst()
+                    .get();
+            DeviceInfo pcDevice = activeDeviceList.stream()
+                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceInfo.DeviceType.WINDOWS)).findFirst()
+                    .get();
+            Set<DeviceInfo> deviceCombo = new HashSet<>();
+            deviceCombo.add(new DeviceCombo(phoneDevice, pcDevice));
+            return deviceCombo;
         }
 
         String identifier = testTaskSpec.deviceIdentifier;

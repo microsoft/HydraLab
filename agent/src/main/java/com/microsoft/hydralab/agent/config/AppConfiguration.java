@@ -85,7 +85,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public AgentManagementService agentManager(BlobStorageClient deviceLabBlobClient,
+    public AgentManagementService agentManagementService(BlobStorageClient deviceLabBlobClient,
                                                DeviceStatusListenerManager deviceStatusListenerManager) {
         AgentManagementService agentManagementService = new AgentManagementService();
         File testBaseDir = new File(appOptions.getTestCaseResultLocation());

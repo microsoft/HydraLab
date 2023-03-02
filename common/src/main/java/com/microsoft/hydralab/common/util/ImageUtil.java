@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import javax.imageio.ImageIO;
@@ -9,7 +10,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class ImageUtil {
+public final class ImageUtil {
+
+    private ImageUtil() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     public static BufferedImage scaleBufferedImage(BufferedImage before, double ratio) {
         int w = before.getWidth();
         int h = before.getHeight();
@@ -27,5 +33,33 @@ public class ImageUtil {
             foundWriter = ImageIO.write(image, "png", outputFile);
         }
         return foundWriter;
+    }
+
+    public static File joinImages(File firstFile, File secondFile, File outputFile) {
+        try {
+            BufferedImage imageF = ImageIO.read(firstFile);
+            int widthF = imageF.getWidth();
+            int heightF = imageF.getHeight();
+            int[] imageArrayF = new int[widthF * heightF];
+            imageArrayF = imageF.getRGB(0, 0, widthF, heightF, imageArrayF, 0, widthF);
+
+            BufferedImage imageS = ImageIO.read(secondFile);
+            int widthS = imageS.getWidth();
+            int heightS = imageS.getHeight();
+            int[] imageArrayS = new int[widthS * heightS];
+            imageArrayS = imageS.getRGB(0, 0, widthS, heightS, imageArrayS, 0, widthS);
+
+            int heightNew = Math.max(heightF, heightS);
+            BufferedImage imageNew =
+                    new BufferedImage(widthF + widthS, heightNew, BufferedImage.TYPE_INT_RGB);
+            imageNew.setRGB(0, 0, widthF, heightF, imageArrayF, 0, widthF);
+            imageNew.setRGB(widthF, 0, widthS, heightS, imageArrayS, 0, widthS);
+
+            ImageIO.write(imageNew, "jpg", outputFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return firstFile;
+        }
+        return outputFile;
     }
 }

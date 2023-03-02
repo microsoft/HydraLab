@@ -4,7 +4,6 @@ package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
 import com.android.ddmlib.InstallException;
-import com.android.ddmlib.TimeoutException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
@@ -14,7 +13,6 @@ import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.screen.WindowsScreenRecorder;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
-import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import com.microsoft.hydralab.t2c.runner.ActionInfo;
@@ -149,33 +147,6 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
 
     }
 
-    public File getPairScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
-        getScreenShot(deviceInfo, logger);
-        File deviceFile = deviceInfo.getScreenshotImageFile();
-        File pcScreenShotImageFile = deviceInfo.getScreenshotImageFile();
-        return joinImages(pcScreenShotImageFile, deviceFile, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "comb" + ".jpg");
-    }
-
-    @Override
-    public void updateScreenshotImageAsyncDelay(@NotNull DeviceInfo deviceInfo, long delayMillis, @NotNull FileAvailableCallback fileAvailableCallback, @NotNull Logger logger) {
-        ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ThreadUtils.safeSleep(delayMillis);
-                    File imageFile = getPairScreenShot(deviceInfo, logger);
-                    if (fileAvailableCallback != null) {
-                        fileAvailableCallback.onFileReady(imageFile);
-                    }
-                } catch (TimeoutException te) {
-                    classLogger.error("{}: {}, updateScreenshotImageAsyncDelay", te.getClass().getSimpleName(), te.getMessage());
-                } catch (Exception e) {
-                    classLogger.error(e.getMessage(), e);
-                }
-            }
-        });
-    }
-
     @Override
     public LogCollector getLogCollector(@NotNull DeviceInfo deviceInfo, @NotNull String pkgName, @NotNull TestRun testRun, @NotNull Logger logger) {
         return null;
@@ -240,34 +211,6 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
     @Override
     public ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder, Logger logger) {
         return new WindowsScreenRecorder(this, deviceInfo, folder, logger);
-    }
-
-    public File joinImages(File PCFile, File PhoneFile, String outFileName) {
-        File outFile = new File(agentManagementService.getScreenshotDir(), outFileName);
-        try {
-            BufferedImage image_pc = ImageIO.read(PCFile);
-            int width_pc = image_pc.getWidth();
-            int height_pc = image_pc.getHeight();
-            int[] imageArrayPC = new int[width_pc * height_pc];
-            imageArrayPC = image_pc.getRGB(0, 0, width_pc, height_pc, imageArrayPC, 0, width_pc);
-
-            BufferedImage image_phone = ImageIO.read(PhoneFile);
-            int width_phone = image_phone.getWidth();
-            int height_phone = image_phone.getHeight();
-            int[] ImageArrayPhone = new int[width_phone * height_phone];
-            ImageArrayPhone = image_phone.getRGB(0, 0, width_phone, height_phone, ImageArrayPhone, 0, width_phone);
-
-            int height_new = Math.max(height_pc, height_phone);
-            BufferedImage imageNew = new BufferedImage(width_pc + width_phone, height_new, BufferedImage.TYPE_INT_RGB);
-            imageNew.setRGB(0, 0, width_pc, height_pc, imageArrayPC, 0, width_pc);
-            imageNew.setRGB(width_pc, 0, width_phone, height_phone, ImageArrayPhone, 0, width_phone);
-
-            ImageIO.write(imageNew, "jpg", outFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return PCFile;
-        }
-        return outFile;
     }
 
     @Override

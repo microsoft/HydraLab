@@ -6,17 +6,32 @@ import com.android.ddmlib.InstallException;
 import com.android.ddmlib.TimeoutException;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
-import com.microsoft.hydralab.common.entity.common.*;
+import com.microsoft.hydralab.common.entity.common.AgentUser;
+import com.microsoft.hydralab.common.entity.common.DeviceCombo;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.MobileDeviceState;
+import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
-import com.microsoft.hydralab.common.util.*;
+import com.microsoft.hydralab.common.util.IOSUtils;
+import com.microsoft.hydralab.common.util.ImageUtil;
+import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.common.util.ShellUtils;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.appium.java_client.appmanagement.ApplicationState;
 import io.appium.java_client.ios.IOSDriver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.ElementNotInteractableException;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -118,20 +133,35 @@ public abstract class TestDeviceManager {
 
 
     public void updateScreenshotImageAsyncDelay(@NotNull DeviceInfo deviceInfo, long delayMillis, @NotNull FileAvailableCallback fileAvailableCallback, @NotNull Logger logger) {
-        ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ThreadUtils.safeSleep(delayMillis);
-                    File imageFile = getScreenShot(deviceInfo, logger);
-                    if (fileAvailableCallback != null) {
-                        fileAvailableCallback.onFileReady(imageFile);
+        ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(() -> {
+            try {
+                ThreadUtils.safeSleep(delayMillis);
+                // todo workaround for E2E agent
+                File imageFile = null;
+                if (deviceInfo instanceof DeviceCombo) {
+                    DeviceInfo linkedDeviceInfo = ((DeviceCombo) deviceInfo).getLinkedDeviceInfo();
+                    imageFile = new File(agentManagementService.getScreenshotDir().getAbsolutePath() + "/" +
+                            deviceInfo.getName() + "-" + deviceInfo.getSerialNum() +
+                            linkedDeviceInfo.getName() + "-" + linkedDeviceInfo.getSerialNum() +
+                            "-" + "comb" + ".jpg");
+                    getScreenShot(deviceInfo, logger);
+                    if (linkedDeviceInfo != null) {
+                        linkedDeviceInfo.getTestDeviceManager().getScreenShot(linkedDeviceInfo, logger);
                     }
-                } catch (TimeoutException te) {
-                    classLogger.error("{}: {}, updateScreenshotImageAsyncDelay", te.getClass().getSimpleName(), te.getMessage());
-                } catch (Exception e) {
-                    classLogger.error(e.getMessage(), e);
+                    File deviceFile = deviceInfo.getScreenshotImageFile();
+                    File linkedDeviceFile = linkedDeviceInfo.getScreenshotImageFile();
+                    ImageUtil.joinImages(deviceFile, linkedDeviceFile, imageFile);
+                } else {
+                    imageFile = getScreenShot(deviceInfo, logger);
                 }
+                if (fileAvailableCallback != null) {
+                    fileAvailableCallback.onFileReady(imageFile);
+                }
+            } catch (TimeoutException te) {
+                classLogger.error("{}: {}, updateScreenshotImageAsyncDelay", te.getClass().getSimpleName(),
+                        te.getMessage());
+            } catch (Exception e) {
+                classLogger.error(e.getMessage(), e);
             }
         });
     }
