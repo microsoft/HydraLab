@@ -1,16 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
-import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 
 import java.io.File;
 import java.util.HashMap;
@@ -32,11 +30,19 @@ public class AgentManagementService {
     protected File deviceLogBaseDir;
     protected File screenshotDir;
     protected File preAppDir;
-    protected String preInstallPolicy;
     protected DeviceStatusListenerManager deviceStatusListenerManager;
     protected String deviceFolderUrlPrefix;
     protected String deviceStoragePath;
     protected BlobStorageClient blobStorageClient;
+    protected String preInstallFailurePolicy;
+
+    public String getPreInstallFailurePolicy() {
+        return preInstallFailurePolicy;
+    }
+
+    public void setPreInstallFailurePolicy(String preInstallFailurePolicy) {
+        this.preInstallFailurePolicy = preInstallFailurePolicy;
+    }
 
     public BlobStorageClient getBlobStorageClient() {
         return blobStorageClient;
@@ -64,14 +70,6 @@ public class AgentManagementService {
             }
         });
         this.deviceStatusListenerManager = deviceStatusListenerManager;
-    }
-
-    public String getPreInstallPolicy() {
-        return preInstallPolicy;
-    }
-
-    public void setPreInstallPolicy(String preInstallPolicy) {
-        this.preInstallPolicy = preInstallPolicy;
     }
 
     public File getPreAppDir() {
@@ -128,7 +126,8 @@ public class AgentManagementService {
     }
 
     public String getTestBaseRelPathInUrl(File report) {
-        return report.getAbsolutePath().replace(testBaseDir.getAbsolutePath(), testBaseDirUrlMapping).replace(File.separator, "/");
+        return report.getAbsolutePath().replace(testBaseDir.getAbsolutePath(), testBaseDirUrlMapping)
+                .replace(File.separator, "/");
     }
 
     public Set<DeviceInfo> getDeviceList(Logger log) {
