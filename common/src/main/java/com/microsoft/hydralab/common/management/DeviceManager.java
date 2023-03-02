@@ -42,14 +42,14 @@ public abstract class DeviceManager {
     protected BlobStorageClient blobStorageClient;
     protected File testBaseDir;
     protected File preAppDir;
-    protected String preInstallPolicy;
+    protected String preInstallFailurePolicy;
 
-    public String getPreInstallPolicy() {
-        return preInstallPolicy;
+    public String getPreInstallFailurePolicy() {
+        return preInstallFailurePolicy;
     }
 
-    public void setPreInstallPolicy(String preInstallPolicy) {
-        this.preInstallPolicy = preInstallPolicy;
+    public void setPreInstallFailurePolicy(String preInstallFailurePolicy) {
+        this.preInstallFailurePolicy = preInstallFailurePolicy;
     }
 
     protected String testBaseDirUrlMapping;
