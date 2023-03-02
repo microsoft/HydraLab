@@ -1,28 +1,33 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner;
 
 /**
  * We will gradually deprecate ThreadParam and AppiumParam, and migrate to this.
- *
  */
-public class TestRunThreadContext {
-    private static final InheritableThreadLocal<ITestRun> testRunThreadLocal = new InheritableThreadLocal<>();
+public final class TestRunThreadContext {
+    private static final InheritableThreadLocal<ITestRun> TEST_RUN_INHERITABLE_THREAD_LOCAL = new InheritableThreadLocal<>();
+
+    private TestRunThreadContext() {
+
+    }
 
     /**
      * Should be called in the TestRunner setup lifecycle
+     *
      * @param testRun
      */
     static void init(ITestRun testRun) {
         clean();
-        testRunThreadLocal.set(testRun);
+        TEST_RUN_INHERITABLE_THREAD_LOCAL.set(testRun);
     }
 
     public static void clean() {
-        testRunThreadLocal.remove();
+        TEST_RUN_INHERITABLE_THREAD_LOCAL.remove();
     }
 
     public static ITestRun getTestRun() {
-        return testRunThreadLocal.get();
+        return TEST_RUN_INHERITABLE_THREAD_LOCAL.get();
     }
 }
