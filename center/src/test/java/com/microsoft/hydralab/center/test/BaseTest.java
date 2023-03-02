@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.test;
 
 import com.microsoft.hydralab.center.util.AuthUtil;
-import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;

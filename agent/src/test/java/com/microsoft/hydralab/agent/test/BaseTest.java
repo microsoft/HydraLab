@@ -5,7 +5,7 @@ package com.microsoft.hydralab.agent.test;
 
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
-import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;

@@ -19,7 +19,7 @@ import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMon
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;

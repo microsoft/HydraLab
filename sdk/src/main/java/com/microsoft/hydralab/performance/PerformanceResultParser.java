@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.performance;
 
 public interface PerformanceResultParser {
+    PerformanceTestResult parse(PerformanceTestResult performanceTestResult);
+
     enum PerformanceResultParserType {
         PARSER_ANDROID_MEMORY_DUMP,
         PARSER_ANDROID_MEMORY_INFO,
@@ -10,6 +13,4 @@ public interface PerformanceResultParser {
         PARSER_WIN_BATTERY,
         PARSER_WIN_MEMORY
     }
-
-    PerformanceTestResult parse(PerformanceTestResult performanceTestResult);
 }

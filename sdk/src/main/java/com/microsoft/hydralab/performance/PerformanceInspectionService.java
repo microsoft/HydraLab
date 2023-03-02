@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.performance;
 
 public enum PerformanceInspectionService implements IPerformanceInspectionService {
     INSTANCE;
-
-    public static PerformanceInspectionService getInstance() {
-        return INSTANCE;
-    }
 
     private IPerformanceInspectionService serviceImplementation = new IPerformanceInspectionService() {
         @Override
@@ -24,6 +21,10 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
             return null;
         }
     };
+
+    public static PerformanceInspectionService getInstance() {
+        return INSTANCE;
+    }
 
     void swapImplementation(IPerformanceInspectionService serviceImplementation) {
         this.serviceImplementation = serviceImplementation;

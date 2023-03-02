@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.center.repository.AuthTokenRepository;
@@ -59,7 +60,9 @@ public class AuthTokenService {
             }
             SecurityContextHolder.getContext().setAuthentication(authObj);
             return true;
-        } else return false;
+        } else {
+            return false;
+        }
     }
 
     public void loadDefaultUser(HttpSession session) {

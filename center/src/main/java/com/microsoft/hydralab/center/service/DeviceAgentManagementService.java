@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -9,11 +10,29 @@ import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
-import com.microsoft.hydralab.common.entity.center.*;
-import com.microsoft.hydralab.common.entity.common.*;
-import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
+import com.microsoft.hydralab.common.entity.center.AgentDeviceGroup;
+import com.microsoft.hydralab.common.entity.center.DeviceGroup;
+import com.microsoft.hydralab.common.entity.center.DeviceGroupRelation;
+import com.microsoft.hydralab.common.entity.center.SysUser;
+import com.microsoft.hydralab.common.entity.common.AccessInfo;
+import com.microsoft.hydralab.common.entity.common.AgentMetadata;
+import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
+import com.microsoft.hydralab.common.entity.common.AgentUser;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.Message;
+import com.microsoft.hydralab.common.entity.common.StatisticData;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
-import com.microsoft.hydralab.common.util.*;
+import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
+import com.microsoft.hydralab.common.util.AttachmentService;
+import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.GlobalConstant;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
+import com.microsoft.hydralab.common.util.SerializeUtil;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
 import com.microsoft.hydralab.t2c.runner.TestInfo;
@@ -31,7 +50,15 @@ import javax.websocket.Session;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -222,7 +249,8 @@ public class DeviceAgentManagementService {
             case Const.Path.DEVICE_STATUS:
                 if (message.getBody() instanceof JSONObject) {
                     JSONObject data = (JSONObject) message.getBody();
-                    updateDeviceStatus(data.getString(Const.AgentConfig.SERIAL_PARAM), data.getString(Const.AgentConfig.STATUS_PARAM), data.getString(Const.AgentConfig.TASK_ID_PARAM));
+                    updateDeviceStatus(data.getString(Const.AgentConfig.SERIAL_PARAM), data.getString(Const.AgentConfig.STATUS_PARAM),
+                            data.getString(Const.AgentConfig.TASK_ID_PARAM));
                 }
                 break;
             case Const.Path.ACCESS_INFO:
@@ -340,7 +368,8 @@ public class DeviceAgentManagementService {
             newAgentDeviceGroup.initWithAgentUser(savedSession.agentUser);
             newAgentDeviceGroup.setDevices(new ArrayList<>(latestDeviceInfos));
             agentDeviceGroups.put(savedSession.agentUser.getId(), newAgentDeviceGroup);
-            log.info("Adding info of new agent: {}, device SN: {}", newAgentDeviceGroup.getAgentName(), latestDeviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
+            log.info("Adding info of new agent: {}, device SN: {}", newAgentDeviceGroup.getAgentName(),
+                    latestDeviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
         }
     }
 
@@ -415,7 +444,7 @@ public class DeviceAgentManagementService {
         return new HashSet<>(serials);
     }
 
-    public List<DeviceInfo> queryDeviceInfoByGroup(String groupName){
+    public List<DeviceInfo> queryDeviceInfoByGroup(String groupName) {
         List<DeviceInfo> devices = new ArrayList<>();
         Set<String> serials = deviceGroupListMap.get(groupName);
         serials.forEach(serial -> devices.add(deviceListMap.get(serial)));
@@ -483,7 +512,7 @@ public class DeviceAgentManagementService {
         return deviceListMap.get(serialNum) != null;
     }
 
-    public boolean checkDeviceAuthorization(SysUser requestor, String serialNum) throws IllegalArgumentException{
+    public boolean checkDeviceAuthorization(SysUser requestor, String serialNum) throws IllegalArgumentException {
         DeviceInfo deviceInfo = deviceListMap.get(serialNum);
         if (deviceInfo == null) {
             throw new IllegalArgumentException("deviceIdentifier is incorrect");
@@ -779,9 +808,6 @@ public class DeviceAgentManagementService {
         Assert.isTrue(deviceSerials.size() > 0, "error deviceIdentifier or there is no devices in the group!");
         DeviceGroup deviceGroup = deviceGroupService.getGroupByName(testTaskSpec.deviceIdentifier);
         Assert.notNull(deviceGroup, "error deviceIdentifier !");
-        if (deviceGroup.getIsPrivate()) {
-            checkAccessInfo(testTaskSpec.deviceIdentifier, testTaskSpec.accessKey);
-        }
         Map<String, List<String>> testAgentDevicesMap = new HashMap<>();
         boolean isSingle = Const.DeviceGroup.SINGLE_TYPE.equals(testTaskSpec.groupTestType);
         boolean isAll = Const.DeviceGroup.ALL_TYPE.equals(testTaskSpec.groupTestType);
@@ -840,9 +866,6 @@ public class DeviceAgentManagementService {
         Message message = new Message();
         message.setBody(testTaskSpec);
         message.setPath(Const.Path.TEST_TASK_RUN);
-        if (device.getIsPrivate()) {
-            checkAccessInfo(device.getSerialNum(), testTaskSpec.accessKey);
-        }
         Assert.isTrue(device.isAlive(), "Device/Agent Offline!");
         if (device.isTesting()) {
             return result;
@@ -979,11 +1002,11 @@ public class DeviceAgentManagementService {
         }
     }
 
-    public int getAliveAgentNum(){
+    public int getAliveAgentNum() {
         return agentSessionMap.size();
     }
 
-    public int getAliveDeviceNum(){
+    public int getAliveDeviceNum() {
         return (int) deviceListMap.values().stream().filter(DeviceInfo::isAlive).count();
     }
 

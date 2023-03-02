@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.config;
 
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -23,22 +24,8 @@ import java.security.NoSuchAlgorithmException;
 @Configuration
 public class RestTemplateConfig {
 
-    @Bean
-    public RestTemplate restTemplate(ClientHttpRequestFactory factory){
-        return new RestTemplate(factory);
-    }
-
-    @Bean
-    public ClientHttpRequestFactory simpleClientHttpRequestFactory(){
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectTimeout(15000);
-        factory.setReadTimeout(5000);
-        return factory;
-    }
-
     public static HttpComponentsClientHttpRequestFactory generateHttpRequestFactory()
-            throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException
-    {
+            throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
         TrustStrategy acceptingTrustStrategy = (x509Certificates, authType) -> true;
         SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
         SSLConnectionSocketFactory connectionSocketFactory = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
@@ -48,6 +35,19 @@ public class RestTemplateConfig {
         CloseableHttpClient httpClient = httpClientBuilder.build();
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
         factory.setHttpClient(httpClient);
+        return factory;
+    }
+
+    @Bean
+    public RestTemplate restTemplate(ClientHttpRequestFactory factory) {
+        return new RestTemplate(factory);
+    }
+
+    @Bean
+    public ClientHttpRequestFactory simpleClientHttpRequestFactory() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setConnectTimeout(15000);
+        factory.setReadTimeout(5000);
         return factory;
     }
 }

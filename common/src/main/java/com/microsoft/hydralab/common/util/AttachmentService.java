@@ -7,6 +7,7 @@ import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestJsonInfo;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.repository.EntityFileRelationRepository;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.TestJsonInfoRepository;

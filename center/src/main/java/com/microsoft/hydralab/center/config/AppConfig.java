@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.config;
 
 import com.alibaba.fastjson.JSON;
@@ -8,7 +9,7 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import io.prometheus.client.exporter.PushGateway;

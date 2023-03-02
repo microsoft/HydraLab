@@ -1,29 +1,50 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.t2c.runner.elements;
 
 public class WindowsElementInfo extends BaseElementInfo {
+    @SuppressWarnings("MemberName")
     private String AcceleratorKey;
+    @SuppressWarnings("MemberName")
     private String AccessKey;
+    @SuppressWarnings("MemberName")
     private String AutomationId;
+    @SuppressWarnings("MemberName")
     private String ClassName;
+    @SuppressWarnings("MemberName")
     private String FrameworkId;
+    @SuppressWarnings("MemberName")
     private String HasKeyboardFocus;
-
+    @SuppressWarnings("MemberName")
     private String HelpText;
+    @SuppressWarnings("MemberName")
     private String IsContentElement;
+    @SuppressWarnings("MemberName")
     private String IsControlElement;
+    @SuppressWarnings("MemberName")
     private String IsEnabled;
+    @SuppressWarnings("MemberName")
     private String IsKeyboardFocusable;
+    @SuppressWarnings("MemberName")
     private String IsOffscreen;
+    @SuppressWarnings("MemberName")
     private String IsPassword;
+    @SuppressWarnings("MemberName")
     private String IsRequiredForForm;
+    @SuppressWarnings("MemberName")
     private String ItemStatus;
+    @SuppressWarnings("MemberName")
     private String ItemType;
+    @SuppressWarnings("MemberName")
     private String LocalizedControlType;
+    @SuppressWarnings("MemberName")
     private String Name;
+    @SuppressWarnings("MemberName")
     private String Orientation;
+    @SuppressWarnings("MemberName")
     private String ProcessId;
+    @SuppressWarnings("MemberName")
     private String RuntimeId;
     private String x;
     private String y;
@@ -33,12 +54,13 @@ public class WindowsElementInfo extends BaseElementInfo {
     private Integer centerX;
     private Integer centerY;
 
+    @SuppressWarnings("ParameterNumber")
     public WindowsElementInfo(String acceleratorKey, String accessKey, String automationId, String className,
                               String frameworkId, String hasKeyboardFocus, String helpText, String isContentElement,
                               String isControlElement, String isEnabled, String isKeyboardFocusable, String isOffscreen,
                               String isPassword, String isRequiredForForm, String itemStatus, String itemType,
                               String localizedControlType, String name, String orientation, String processId,
-                              String runtimeId, String x, String y, String width, String height, String xpath){
+                              String runtimeId, String x, String y, String width, String height, String xpath) {
         super(xpath);
         this.AcceleratorKey = acceleratorKey;
         this.AccessKey = accessKey;
@@ -66,8 +88,8 @@ public class WindowsElementInfo extends BaseElementInfo {
         this.width = width;
         this.height = height;
         this.xpath = xpath;
-        this.centerX = Integer.parseInt(x)+Integer.parseInt(width)/2;
-        this.centerY = Integer.parseInt(y)+Integer.parseInt(height)/2;
+        this.centerX = Integer.parseInt(x) + Integer.parseInt(width) / 2;
+        this.centerY = Integer.parseInt(y) + Integer.parseInt(height) / 2;
     }
 
     public String getAcceleratorKey() {

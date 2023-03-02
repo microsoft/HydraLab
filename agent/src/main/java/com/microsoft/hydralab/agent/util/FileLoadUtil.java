@@ -8,7 +8,7 @@ import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.FileUtil;
-import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

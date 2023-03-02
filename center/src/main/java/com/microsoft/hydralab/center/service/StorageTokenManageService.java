@@ -4,7 +4,7 @@ package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 

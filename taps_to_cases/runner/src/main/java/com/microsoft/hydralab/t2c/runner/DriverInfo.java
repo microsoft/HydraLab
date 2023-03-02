@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.t2c.runner;
 
 public class DriverInfo {
@@ -8,7 +9,7 @@ public class DriverInfo {
     private final String launcherApp;
     private final String initURL;
 
-    public DriverInfo(String id, String platform, String launcherApp, String initURL){
+    public DriverInfo(String id, String platform, String launcherApp, String initURL) {
         this.id = id;
         this.platform = platform;
         this.launcherApp = launcherApp;

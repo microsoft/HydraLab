@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.config;
 
 
@@ -23,11 +24,11 @@ import javax.servlet.ServletContext;
 @Slf4j
 public class ContextStartup implements ApplicationRunner, ServletContextAware {
 
-    private ServletContext servletContext;
     @Resource
     MetricUtil metricUtil;
     @Resource
     DeviceAgentManagementService deviceAgentManagementService;
+    private ServletContext servletContext;
 
     @Override
     public void run(ApplicationArguments applicationArguments) {

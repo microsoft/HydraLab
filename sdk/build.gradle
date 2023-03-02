@@ -2,6 +2,10 @@ group = 'com.microsoft.hydralab'
 version '2.2'
 sourceCompatibility = 11
 targetCompatibility = 11
+apply from: "${project.rootDir}/quality/checkstyle.gradle"
+
+classes.finalizedBy checkstyleMain
+
 repositories {
     mavenCentral()
 }

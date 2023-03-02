@@ -54,7 +54,6 @@ public class EdgeDriverController extends BaseDriverController {
         return "Windows page: \n" + windowsDriver.getPageSource() + "\n Edge source: " + edgeDriver.getPageSource();
     }
 
-
     @Override
     public void paste(WebElement webElement) {
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();

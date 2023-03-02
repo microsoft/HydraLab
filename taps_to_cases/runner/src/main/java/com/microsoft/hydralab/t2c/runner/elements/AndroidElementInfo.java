@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.t2c.runner.elements;
 
 import com.alibaba.fastjson.annotation.JSONField;
@@ -46,8 +47,9 @@ public class AndroidElementInfo extends BaseElementInfo {
     @JSONField(name = "resource-id")
     private String resourceId;
 
+    @SuppressWarnings("ParameterNumber")
     public AndroidElementInfo(String index, String packageName, String className, String text, String contentDesc, String checkable,
-                              String checked, String clickable, String enabled, String focusable, String focused, String long_clickable,
+                              String checked, String clickable, String enabled, String focusable, String focused, String longClickable,
                               String password, String scrollable, String selected, String bounds, String displayed, String xpath,
                               String resourceId) {
         super(xpath);
@@ -62,7 +64,7 @@ public class AndroidElementInfo extends BaseElementInfo {
         this.enabled = enabled;
         this.focusable = focusable;
         this.focused = focused;
-        this.longClickable = long_clickable;
+        this.longClickable = longClickable;
         this.password = password;
         this.scrollable = scrollable;
         this.selected = selected;
@@ -70,12 +72,12 @@ public class AndroidElementInfo extends BaseElementInfo {
         this.displayed = displayed;
         this.xpath = xpath;
         this.resourceId = resourceId;
-        if(bounds != null){
+        if (bounds != null) {
             parseCoordinates(bounds);
         }
     }
 
-    private void parseCoordinates(String bounds){
+    private void parseCoordinates(String bounds) {
         String[] boundsArray = bounds.split("\\[|\\]|,");
         String[] validArr = Arrays.stream(boundsArray).filter(StringUtils::isNotEmpty).toArray(String[]::new);
         int x1 = Integer.parseInt(validArr[0]);
@@ -84,10 +86,10 @@ public class AndroidElementInfo extends BaseElementInfo {
         int y2 = Integer.parseInt(validArr[3]);
         top = y1;
         left = x1;
-        width = x2-x1;
-        height = y2-y1;
-        centerX = x1 + width/2;
-        centerY = y1 + height/2;
+        width = x2 - x1;
+        height = y2 - y1;
+        centerX = x1 + width / 2;
+        centerY = y1 + height / 2;
     }
 
     public String getIndex() {
@@ -106,10 +108,9 @@ public class AndroidElementInfo extends BaseElementInfo {
         return contentDesc;
     }
 
-    public String getText(){
+    public String getText() {
         return text;
     }
-
 
     public String getXpath() {
         return xpath;
@@ -142,7 +143,6 @@ public class AndroidElementInfo extends BaseElementInfo {
     public String getResourceId() {
         return resourceId;
     }
-
 
     public boolean isCheckable() {
         return Boolean.parseBoolean(checkable);
