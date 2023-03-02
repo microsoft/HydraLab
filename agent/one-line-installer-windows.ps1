@@ -23,7 +23,14 @@ Function Get-File ($Url, $Path)
     Start-BitsTransfer -Source $url -Destination $Path
     if ($Path.EndsWith(".zip"))
     {
-        Expand-Archive $Path -DestinationPath $Path.Substring(0, $Path.Length - ".zip".Length)
+        if ($ExtractCurrent)
+        {
+            Expand-Archive $Path -DestinationPath (Get-Item $Path).Directory.parent
+        }
+        else
+        {
+            Expand-Archive $Path -DestinationPath $Path.Substring(0, $Path.Length - ".zip".Length)
+        }
         Remove-Item $Path
     }
 }
