@@ -29,13 +29,7 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("TestTaskEngineService")
@@ -226,10 +220,6 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
         Assert.isTrue(result.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
         String deviceTestResultBlobUrl = result.getAttachments().get(0).getCDNUrl();
-        // todo: @Deprecated after 7 days when the change is released (approximately 2023-03-1x + 7 days)
-        if (StringUtils.isBlank(deviceTestResultBlobUrl)) {
-            deviceTestResultBlobUrl = result.getAttachments().get(0).getBlobUrl();
-        }
         String fileName = result.getAttachments().get(0).getFileName();
         log.info("deviceTestResultBlobUrl is {}", deviceTestResultBlobUrl);
 
