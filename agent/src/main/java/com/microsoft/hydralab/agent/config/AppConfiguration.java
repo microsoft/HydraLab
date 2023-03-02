@@ -98,8 +98,8 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceManager initDeviceManager(StorageServiceClientProxy storageServiceClientProxy, ADBOperateUtil adbOperateUtil
-            , AppiumServerManager appiumServerManager, DeviceStatusListenerManager deviceStatusListenerManager) {
+    public DeviceManager initDeviceManager(StorageServiceClientProxy storageServiceClientProxy, ADBOperateUtil adbOperateUtil, AppiumServerManager appiumServerManager,
+                                           DeviceStatusListenerManager deviceStatusListenerManager) {
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
         if (deviceManager instanceof AndroidDeviceManager) {
@@ -221,7 +221,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public StorageServiceClientProxy storageManageService(ApplicationContext applicationContext){
+    public StorageServiceClientProxy storageManageService(ApplicationContext applicationContext) {
         return new StorageServiceClientProxy(applicationContext);
     }
 }
