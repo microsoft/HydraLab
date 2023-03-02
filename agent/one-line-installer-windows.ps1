@@ -203,6 +203,10 @@ if (Test-Path -Path $RootPath)
 # =======================================
 # Copy Configuration File
 # =======================================
+if (!("$CurrentPath\application.yml"))
+{
+    throw "Not found configuration file $CurrentPath\application.yml"
+}
 Copy-Item "$CurrentPath\application.yml" -Destination "$RootPath\application.yml"
 
 # =======================================
