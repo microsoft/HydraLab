@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.service;
 
 import com.alibaba.fastjson.JSONObject;
@@ -37,6 +38,7 @@ import java.net.UnknownHostException;
 @Service("WebSocketClient")
 @Slf4j
 public class AgentWebSocketClientService implements TestTaskRunCallback {
+    @SuppressWarnings("visibilitymodifier")
     @Value("${app.registry.agent-type}")
     public int agentTypeValue;
     @Value("${app.registry.name}")
@@ -52,15 +54,15 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @Resource
     AgentManageService agentManageService;
     @Resource
+    MeterRegistry meterRegistry;
+    AgentUser agentUser;
+    @Resource
     private StorageManageService storageManageService;
     private boolean isStorageClientInit = false;
     @Resource
     private AppOptions appOptions;
     @Resource
     private AgentWebSocketClient agentWebSocketClient;
-    @Resource
-    MeterRegistry meterRegistry;
-    AgentUser agentUser;
     @Value("${agent.version}")
     private String versionName;
     @Value("${agent.versionCode}")
@@ -105,7 +107,9 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                     break;
                 }
                 JSONObject deviceData = (JSONObject) message.getBody();
-                DeviceInfo device = deviceControlService.updateDeviceScope(deviceData.getString(Const.AgentConfig.SERIAL_PARAM), deviceData.getBoolean(Const.AgentConfig.SCOPE_PARAM));
+                DeviceInfo device =
+                        deviceControlService.updateDeviceScope(deviceData.getString(Const.AgentConfig.SERIAL_PARAM),
+                                deviceData.getBoolean(Const.AgentConfig.SCOPE_PARAM));
                 response = new Message();
                 response.setPath(message.getPath());
                 response.setSessionId(message.getSessionId());
@@ -167,7 +171,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     private void heartbeatResponse(Message message) {
         AgentMetadata agentMetadata = (AgentMetadata) message.getBody();
 
-        if (!isStorageClientInit){
+        if (!isStorageClientInit) {
             storageManageService.initAgentStorageClient(agentMetadata.getStorageType());
             isStorageClientInit = true;
         }
@@ -249,7 +253,9 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     }
 
     public void registerAgentMetrics() {
-        meterRegistry.config().commonTags("computerName", agentUser.getHostname(), "agentName", agentUser.getName(), "teamName", agentUser.getTeamName());
+        meterRegistry.config()
+                .commonTags("computerName", agentUser.getHostname(), "agentName", agentUser.getName(), "teamName",
+                        agentUser.getTeamName());
 
         registerAgentDiskUsageRatio();
         registerAgentReconnectRetryTimes();

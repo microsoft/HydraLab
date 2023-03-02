@@ -16,5 +16,3 @@ tasks.withType(Checkstyle) {
         }
     }
 }
-
-task('checkstyle')

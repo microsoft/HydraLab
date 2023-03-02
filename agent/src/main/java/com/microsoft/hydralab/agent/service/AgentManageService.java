@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.service;
 
 import com.microsoft.hydralab.agent.config.AppOptions;
@@ -61,13 +62,14 @@ public class AgentManageService {
 
         sendMessageToCenter(true, "Init command Arr and check restart script exists or not.", "", path);
 
-        packageFileName = packageFileName == null ? "" : packageFileName;
-        if (deviceManager instanceof IOSDeviceManager && !((IOSDeviceManager) deviceManager).isDeviceConnectedToWindows()) {
+        String packageName = packageFileName == null ? "" : packageFileName;
+        if (deviceManager instanceof IOSDeviceManager &&
+                !((IOSDeviceManager) deviceManager).isDeviceConnectedToWindows()) {
             scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.RESTART_FILE_MAC;
-            restartArgs = new String[]{"sh", scriptPath, packageFileName};
+            restartArgs = new String[]{"sh", scriptPath, packageName};
         } else {
             scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.RESTART_FILE_WIN;
-            restartArgs = new String[]{"cmd.exe", "/c", "Start", scriptPath, packageFileName};
+            restartArgs = new String[]{"cmd.exe", "/c", "Start", scriptPath, packageName};
         }
         File scriptFile = new File(scriptPath);
         if (scriptFile.exists()) {
@@ -90,7 +92,8 @@ public class AgentManageService {
             sendMessageToCenter(true, "Restart Agent Success! Check The Agent Log For Detail!", "", path);
         } catch (Exception e) {
             e.printStackTrace();
-            sendMessageToCenter(false, "Exec Command Failed! Check The Agent Log For Detail!", e.getMessage(), path);
+            sendMessageToCenter(false, "Exec Command Failed! Check The Agent Log For Detail!", e.getMessage(),
+                    path);
         }
     }
 }

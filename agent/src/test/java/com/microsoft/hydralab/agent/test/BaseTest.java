@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.test;
 
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
@@ -31,7 +32,7 @@ public class BaseTest {
     @MockBean
     StorageManageService storageManageService;
     @MockBean
-    AgentWebSocketClient AgentWebSocketClient;
+    AgentWebSocketClient agentWebSocketClient;
     @MockBean
     AgentWebSocketClientService agentWebSocketClientService;
 }

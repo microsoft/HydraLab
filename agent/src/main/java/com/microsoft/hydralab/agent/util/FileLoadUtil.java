@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.util;
 
 import com.microsoft.hydralab.agent.config.AppOptions;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class FileLoadUtil {
+    @SuppressWarnings("constantname")
     static final Logger log = LoggerFactory.getLogger(FileLoadUtil.class);
     @Resource
     private AppOptions appOptions;

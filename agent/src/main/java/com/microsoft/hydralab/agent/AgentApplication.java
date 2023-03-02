@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent;
 
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +22,13 @@ import java.util.Arrays;
 @EnableWebMvc
 @EnableAsync
 @ComponentScan(basePackages = {"com.microsoft.hydralab"})
-@EnableJpaRepositories(basePackages = {"com.microsoft.hydralab.common.repository","com.microsoft.hydralab.agent.repository"})
-@EntityScan(basePackages = {"com.microsoft.hydralab.common.entity.agent", "com.microsoft.hydralab.common.entity.common"})
+@EnableJpaRepositories(basePackages = {"com.microsoft.hydralab.common.repository",
+        "com.microsoft.hydralab.agent.repository"})
+@EntityScan(basePackages = {"com.microsoft.hydralab.common.entity.agent",
+        "com.microsoft.hydralab.common.entity.common"})
 @PropertySource(value = {"classpath:version.properties"}, encoding = "utf-8")
 @Slf4j
+@SuppressWarnings("hideutilityclassconstructor")
 public class AgentApplication {
 
     public static void main(String[] args) {
@@ -33,7 +37,8 @@ public class AgentApplication {
         ConfigurableApplicationContext context = new SpringApplicationBuilder(AgentApplication.class)
                 .headless(headless)
                 .run(args);
-        log.info("*************************\nDevice Agent Startup success in %s\n*************************\n {}", System.currentTimeMillis() - time);
+        log.info("*************************\nDevice Agent Startup success in %s\n*************************\n {}",
+                System.currentTimeMillis() - time);
     }
 
     private static boolean decideHeadlessFromArguments(String[] args) {
@@ -45,7 +50,9 @@ public class AgentApplication {
             }
             System.setProperty("java.awt.headless", "true");
             headless = true;
-            log.info("We are in the Docker environment, we will switch to headless mode, and the Windows App UI testing may have restricted support.");
+            log.info(
+                    "We are in the Docker environment, we will switch to headless mode, " +
+                            "and the Windows App UI testing may have restricted support.");
             break;
         }
         return headless;

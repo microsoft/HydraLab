@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.config;
 
 import com.alibaba.fastjson.JSON;
@@ -50,6 +51,7 @@ import java.util.Map;
  */
 @Configuration
 public class AppConfiguration {
+    @SuppressWarnings("visibilitymodifier")
     @Value("${app.registry.agent-type}")
     public int agentTypeValue;
     Logger logger = LoggerFactory.getLogger(getClass());
@@ -85,10 +87,12 @@ public class AppConfiguration {
     }
 
     @Bean
-    public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService) throws Exception {
+    public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService)
+            throws Exception {
         String wsUrl = String.format("ws://%s/agent/connect", registryServer);
         logger.info("connect to {}", wsUrl);
-        AgentWebSocketClient agentWebSocketClient = new AgentWebSocketClient(new URI(wsUrl), agentWebSocketClientService);
+        AgentWebSocketClient agentWebSocketClient =
+                new AgentWebSocketClient(new URI(wsUrl), agentWebSocketClientService);
         agentWebSocketClient.connect();
         return agentWebSocketClient;
     }
@@ -119,7 +123,8 @@ public class AppConfiguration {
             }
         }
         deviceManager.setPreAppDir(preAppDir);
-        deviceManager.setPreInstallFailurePolicy(shutdownIfFail ? Const.PreInstallFailurePolicy.SHUTDOWN : Const.PreInstallFailurePolicy.IGNORE);
+        deviceManager.setPreInstallFailurePolicy(
+                shutdownIfFail ? Const.PreInstallFailurePolicy.SHUTDOWN : Const.PreInstallFailurePolicy.IGNORE);
         deviceManager.setDeviceStatusListenerManager(deviceStatusListenerManager);
         deviceManager.setTestBaseDirUrlMapping(AppOptions.TEST_CASE_RESULT_STORAGE_MAPPING_REL_PATH);
         File deviceLogBaseDir = new File(appOptions.getDeviceLogStorageLocation());
@@ -144,7 +149,6 @@ public class AppConfiguration {
         deviceManager.setAppiumServerManager(appiumServerManager);
         return deviceManager;
     }
-
 
     @Bean
     public OkHttpClient okHttpClient() {
@@ -203,7 +207,9 @@ public class AppConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "management.metrics.export.prometheus.pushgateway", name = "enabled", havingValue = "true")
-    public PrometheusPushGatewayManager monitorPrometheusPushGatewayManager(PushGateway pushGateway, PrometheusProperties prometheusProperties, CollectorRegistry registry) {
+    public PrometheusPushGatewayManager monitorPrometheusPushGatewayManager(PushGateway pushGateway,
+                                                                            PrometheusProperties prometheusProperties,
+                                                                            CollectorRegistry registry) {
         PrometheusProperties.Pushgateway properties = prometheusProperties.getPushgateway();
         Duration pushRate = properties.getPushRate();
         String job = properties.getJob();

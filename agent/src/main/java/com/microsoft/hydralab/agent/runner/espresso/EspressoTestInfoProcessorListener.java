@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner.espresso;
 
 import cn.hutool.core.img.ImgUtil;
@@ -78,7 +79,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         logger.info("Start record screen");
         adbDeviceScreenRecorder.setupDevice();
         adbDeviceScreenRecorder.startRecord(maxTime <= 0 ? 30 * 60 : maxTime);
-        recordingStartTimeMillis = System.currentTimeMillis() + adbDeviceScreenRecorder.getPreSleepSeconds() * 1000L;
+        recordingStartTimeMillis =
+                System.currentTimeMillis() + adbDeviceScreenRecorder.getPreSleepSeconds() * 1000L;
         final String initializing = "Initializing";
         deviceInfo.setRunningTestName(initializing);
         testRun.addNewTimeTag(initializing, 0);
@@ -97,7 +99,6 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         startTools(runName);
         performanceTestListener.testRunStarted();
     }
-
 
     private void startTools(String runName) {
         try {
@@ -142,7 +143,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         }
         ongoingTestUnit.setTestedClass(test.getClassName());
 
-        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(),
+                System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingTestUnit.getTitle());
 
         ongoingTestUnit.setDeviceTestResultId(testRun.getId());
@@ -175,7 +177,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         ongoingTestUnit.setStack(trace);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
         performanceTestListener.testFailure(ongoingTestUnit.getTitle());
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.oneMoreFailure();
     }
 
@@ -184,7 +187,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         logEnter("testAssumptionFailure", test, trace);
         super.testAssumptionFailure(test, trace);
         ongoingTestUnit.setStack(trace);
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE);
     }
 
@@ -198,7 +202,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     @Override
     public void testEnded(TestIdentifier test, Map<String, String> testMetrics) {
         logEnter("testEnded", test, testMetrics);
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         super.testEnded(test, testMetrics);
         if (ongoingTestUnit.getStatusCode() == 0
                 || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE
