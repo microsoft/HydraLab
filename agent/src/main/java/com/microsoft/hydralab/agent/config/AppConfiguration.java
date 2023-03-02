@@ -19,7 +19,7 @@ import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMon
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;
@@ -33,6 +33,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus.
 import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -97,10 +98,8 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceManager initDeviceManager(BlobStorageClient deviceLabBlobClient, ADBOperateUtil adbOperateUtil,
-                                           AppiumServerManager appiumServerManager,
+    public DeviceManager initDeviceManager(StorageServiceClientProxy storageServiceClientProxy, ADBOperateUtil adbOperateUtil, AppiumServerManager appiumServerManager,
                                            DeviceStatusListenerManager deviceStatusListenerManager) {
-
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
         DeviceManager deviceManager = agentType.getManager();
         if (deviceManager instanceof AndroidDeviceManager) {
@@ -135,7 +134,7 @@ public class AppConfiguration {
             }
         }
         deviceManager.setDeviceLogBaseDir(deviceLogBaseDir);
-        deviceManager.setBlobStorageClient(deviceLabBlobClient);
+        deviceManager.setStorageServiceClientProxy(storageServiceClientProxy);
 
         deviceManager.setScreenshotDir(getScreenshotDir());
         deviceManager.setDeviceFolderUrlPrefix(AppOptions.DEVICE_STORAGE_MAPPING_REL_PATH);
@@ -170,11 +169,6 @@ public class AppConfiguration {
         );
         fastConverter.setFastJsonConfig(fastJsonConfig);
         return fastConverter;
-    }
-
-    @Bean
-    public BlobStorageClient blobStorageClient() {
-        return new BlobStorageClient();
     }
 
     @Bean
@@ -224,5 +218,10 @@ public class AppConfiguration {
 
         return new PrometheusPushGatewayManager(pushGateway, registry,
                 pushRate, job, groupingKey, shutdownOperation);
+    }
+
+    @Bean
+    public StorageServiceClientProxy storageServiceClientProxy(ApplicationContext applicationContext) {
+        return new StorageServiceClientProxy(applicationContext);
     }
 }

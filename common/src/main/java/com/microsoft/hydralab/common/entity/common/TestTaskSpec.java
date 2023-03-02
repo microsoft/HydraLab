@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
-import com.microsoft.hydralab.common.entity.common.DeviceAction;
-import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.performance.InspectionStrategy;
 import lombok.ToString;
 

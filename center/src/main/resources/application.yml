@@ -51,14 +51,18 @@ app:
   access-token-limit: 2
   # Mail Address Format
   default-user: ${DEFAULT_USER:default@hydralab.com}
-  blob:
-    connection: ${BLOB_CONNECTION_STR}
-    fileLimitDay: 6
-    CDNUrl: ${CDN_URL:@null}
-    SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
-    SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
-    SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
-    timeUnit: ${TIME_UNIT:MINUTES}
+  storage:
+    type: AZURE # current available options: LOCAL, AZURE
+    blob:
+      connection: ${BLOB_CONNECTION_STR}
+      fileLimitDay: 6
+      CDNUrl: ${CDN_URL:@null}
+      SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
+      SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
+      SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
+      timeUnit: ${TIME_UNIT:MINUTES}
+#    local:
+
   location: ${user.dir}
 management:
   endpoints:

@@ -2,8 +2,8 @@ package com.microsoft.hydralab.common.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.test.BaseTest;
 import net.dongliu.apk.parser.ApkFile;
 import org.junit.jupiter.api.Assertions;

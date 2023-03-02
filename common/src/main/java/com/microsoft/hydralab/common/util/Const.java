@@ -75,7 +75,7 @@ public interface Const {
         String STRING_FILE_NAMES = "strings,username,password";
     }
 
-    interface ScreenRecoderConfig{
+    interface ScreenRecoderConfig {
         String DEFAULT_FILE_NAME = "merged_test.mp4";
         String PC_FILE_NAME = "PC_test.mp4";
         String PHONE_FILE_NAME = "PHONE_test.mp4";
@@ -139,5 +139,20 @@ public interface Const {
     interface PreInstallFailurePolicy {
         String SHUTDOWN = "SHUTDOWN";
         String IGNORE = "IGNORE";
+    }
+
+    interface FilePermission {
+        String WRITE = "WRITE";
+        String READ = "READ";
+    }
+
+    interface StorageType {
+        String LOCAL = "LOCAL";
+        String AZURE = "AZURE";
+    }
+
+    interface StoragePropertyBean {
+        String LOCAL = "localProperty";
+        String AZURE = "azureBlobProperty";
     }
 }
