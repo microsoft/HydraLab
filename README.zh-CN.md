@@ -183,7 +183,7 @@ java -jar agent/build/libs/agent.jar
 <span id="license-trademarks"></span>
 ## 许可证和商标
 
-整个代码库都在 [MIT许可证](https://github.com/microsoft/HydraLab/blob/main/LICENSE)下。
+整个代码库遵循 [MIT许可协议](https://github.com/microsoft/HydraLab/blob/main/LICENSE)。
 
 此项目可能包含项目、产品或服务的商标或徽标。对Microsoft商标或徽标的授权使用受 [Microsoft的商标和品牌准则](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general)的约束，并且必须遵循该准则。在本项目的修改版本中使用Microsoft商标或徽标不得引起混淆或暗示Microsoft的赞助。对第三方商标或徽标的任何使用均受这些第三方政策的约束。
 
