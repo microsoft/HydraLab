@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.config;
 
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
@@ -30,7 +31,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/portal/").setViewName("forward:"+ Const.FrontEndPath.INDEX_PATH);
+        registry.addViewController("/portal/").setViewName("forward:" + Const.FrontEndPath.INDEX_PATH);
     }
 
     @Override

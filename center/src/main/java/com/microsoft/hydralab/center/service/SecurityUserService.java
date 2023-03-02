@@ -1,9 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.center.util.AuthUtil;
-import com.microsoft.hydralab.common.entity.center.*;
+import com.microsoft.hydralab.common.entity.center.SysPermission;
+import com.microsoft.hydralab.common.entity.center.SysRole;
+import com.microsoft.hydralab.common.entity.center.SysTeam;
+import com.microsoft.hydralab.common.entity.center.SysUser;
+import com.microsoft.hydralab.common.entity.center.UserTeamRelation;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.center.repository.RolePermissionRelationRepository;
@@ -9,7 +10,11 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -46,7 +51,7 @@ public class RolePermissionManagementService {
 
     public void deleteRolePermissionRelation(RolePermissionRelation relation) {
         Set<SysPermission> permissions = rolePermissionListMap.get(relation.getRoleId());
-        if (permissions == null){
+        if (permissions == null) {
             return;
         }
         permissions.remove(sysPermissionService.queryPermissionById(relation.getPermissionId()));
@@ -54,13 +59,13 @@ public class RolePermissionManagementService {
         rolePermissionRelationRepository.delete(relation);
     }
 
-    public RolePermissionRelation queryRelation(String roleId, String permissionId){
+    public RolePermissionRelation queryRelation(String roleId, String permissionId) {
         return rolePermissionRelationRepository.findByRoleIdAndPermissionId(roleId, permissionId).orElse(null);
     }
 
     public List<SysPermission> queryPermissionsByRole(String roleId) {
         Set<SysPermission> permissions = rolePermissionListMap.get(roleId);
-        if (permissions == null){
+        if (permissions == null) {
             return null;
         }
 
