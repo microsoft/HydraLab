@@ -776,9 +776,6 @@ public class DeviceAgentManagementService {
         Assert.isTrue(deviceSerials.size() > 0, "error deviceIdentifier or there is no devices in the group!");
         DeviceGroup deviceGroup = deviceGroupService.getGroupByName(testTaskSpec.deviceIdentifier);
         Assert.notNull(deviceGroup, "error deviceIdentifier !");
-        if (deviceGroup.getIsPrivate()) {
-            checkAccessInfo(testTaskSpec.deviceIdentifier, testTaskSpec.accessKey);
-        }
         Map<String, List<String>> testAgentDevicesMap = new HashMap<>();
         boolean isSingle = Const.DeviceGroup.SINGLE_TYPE.equals(testTaskSpec.groupTestType);
         boolean isAll = Const.DeviceGroup.ALL_TYPE.equals(testTaskSpec.groupTestType);
@@ -837,9 +834,6 @@ public class DeviceAgentManagementService {
         Message message = new Message();
         message.setBody(testTaskSpec);
         message.setPath(Const.Path.TEST_TASK_RUN);
-        if (device.getIsPrivate()) {
-            checkAccessInfo(device.getSerialNum(), testTaskSpec.accessKey);
-        }
         Assert.isTrue(device.isAlive(), "Device/Agent Offline!");
         if (device.isTesting()) {
             return result;
