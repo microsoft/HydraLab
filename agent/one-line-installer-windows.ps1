@@ -25,7 +25,8 @@ Function Get-File ($Url, $Path, $ExtractCurrent=$false)
     {
         if ($ExtractCurrent)
         {
-            Expand-Archive $Path -DestinationPath (Get-Item $Path).Directory.parent
+            $PathExtract = $Path.Substring(0, $Path.LastIndexOf('\') + 1)
+            Expand-Archive $Path -DestinationPath $PathExtract
         }
         else
         {
@@ -198,6 +199,11 @@ if (Test-Path -Path $RootPath)
     Remove-Item $RootPath -Recurse
 }
 [void](New-Item -Path $RootPath -ItemType Directory)
+
+# =======================================
+# Copy Configuration File
+# =======================================
+Copy-Item "$CurrentPath\application.yml" -Destination "$RootPath\application.yml"
 
 # =======================================
 # Download HydraLab
