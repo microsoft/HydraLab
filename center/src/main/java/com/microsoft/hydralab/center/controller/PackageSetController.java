@@ -5,7 +5,7 @@ package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.center.service.BlobStorageService;
+import com.microsoft.hydralab.center.service.StorageTokenManageService;
 import com.microsoft.hydralab.center.service.SysTeamService;
 import com.microsoft.hydralab.center.service.SysUserService;
 import com.microsoft.hydralab.center.service.TestFileSetService;
@@ -235,8 +235,8 @@ public class PackageSetController {
         String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
         try {
             File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
-            StorageFileInfo fileInfo = new StorageFileInfo(savedPkg, fileRelativePath, StorageFileInfo.FileType.AGENT_PACKAGE);
-            return Result.ok(attachmentService.saveFileInStorageAndDB(fileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
+            StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativePath, StorageFileInfo.FileType.AGENT_PACKAGE);
+            return Result.ok(attachmentService.saveFileInStorageAndDB(storageFileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
         } catch (Exception e) {
@@ -409,8 +409,8 @@ public class PackageSetController {
             String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
 
             File savedAttachment = attachmentService.verifyAndSaveFile(attachment, parentDir, false, newFileName, limitFileTypes);
-            StorageFileInfo fileInfo = new StorageFileInfo(savedAttachment, fileRelativePath, fileType, loadType, loadDir);
-            attachmentService.addAttachment(fileSetId, EntityType.APP_FILE_SET, fileInfo, savedAttachment, logger);
+            StorageFileInfo storageFileInfo = new StorageFileInfo(savedAttachment, fileRelativePath, fileType, loadType, loadDir);
+            attachmentService.addAttachment(fileSetId, EntityType.APP_FILE_SET, storageFileInfo, savedAttachment, logger);
             testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
             testFileSetService.saveFileSetToMem(testFileSet);
             return Result.ok(testFileSet);
