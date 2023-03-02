@@ -125,7 +125,7 @@ public class PackageSetController {
             TestFileSet testFileSet = new TestFileSet();
             testFileSet.setBuildType(localBuildType);
             testFileSet.setCommitId(localCommitId);
-            testFileSet.setCommitMessage(commitMessage);
+            testFileSet.setCommitMessage(localCommitMessage);
             testFileSet.setCommitCount(commitCount);
             testFileSet.setTeamId(team.getTeamId());
             testFileSet.setTeamName(team.getTeamName());
