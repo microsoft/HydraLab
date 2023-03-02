@@ -102,8 +102,8 @@ public class AppConfiguration {
             }
         }
         agentManagementService.setPreAppDir(preAppDir);
-        agentManagementService.setPreInstallPolicy(
-                shutdownIfFail ? Const.PreInstallPolicy.SHUTDOWN : Const.PreInstallPolicy.IGNORE);
+        agentManagementService.setPreInstallFailurePolicy(
+                shutdownIfFail ? Const.PreInstallFailurePolicy.SHUTDOWN : Const.PreInstallFailurePolicy.IGNORE);
         agentManagementService.setDeviceStatusListenerManager(deviceStatusListenerManager);
         agentManagementService.setTestBaseDirUrlMapping(AppOptions.TEST_CASE_RESULT_STORAGE_MAPPING_REL_PATH);
         File deviceLogBaseDir = new File(appOptions.getDeviceLogStorageLocation());

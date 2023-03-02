@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management.listener.impl;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -27,16 +28,16 @@ public class PreInstallListener implements DeviceStatusListener {
             DeviceInfo.DeviceType.IOS, Set.of("ipa", "app"),
             DeviceInfo.DeviceType.WINDOWS, Set.of("appx", "appxbundle")
     );
-    private Logger classLogger = LoggerFactory.getLogger(PreInstallListener.class);
     AgentManagementService agentManagementService;
+    private Logger classLogger = LoggerFactory.getLogger(PreInstallListener.class);
+
+    public PreInstallListener(AgentManagementService agentManagementService) {
+        this.agentManagementService = agentManagementService;
+    }
 
     @Override
     public void onDeviceInactive(DeviceInfo deviceInfo) {
 
-    }
-
-    public PreInstallListener(AgentManagementService agentManagementService) {
-        this.agentManagementService = agentManagementService;
     }
 
     @Override
@@ -50,13 +51,15 @@ public class PreInstallListener implements DeviceStatusListener {
                 continue;
             }
             try {
-                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> deviceInfo.getTestDeviceManager().installApp(deviceInfo, appFile.getAbsolutePath(), classLogger));
+                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> deviceInfo.getTestDeviceManager()
+                        .installApp(deviceInfo, appFile.getAbsolutePath(), classLogger));
                 classLogger.info("Pre-Install {} successfully", appFile.getAbsolutePath());
                 break;
             } catch (Exception e) {
                 String errorMessage = String.format("Pre-Install %s failed", appFile.getAbsolutePath());
                 classLogger.error(errorMessage, e);
-                if (Const.PreInstallPolicy.SHUTDOWN.equals(agentManagementService.getPreInstallPolicy())) {
+                if (Const.PreInstallFailurePolicy.SHUTDOWN.equals(
+                        agentManagementService.getPreInstallFailurePolicy())) {
                     throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e);
                 }
             }

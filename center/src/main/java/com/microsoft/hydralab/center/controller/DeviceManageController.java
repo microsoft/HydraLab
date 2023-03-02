@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONObject;

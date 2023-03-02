@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -13,10 +14,24 @@ import com.microsoft.hydralab.common.entity.center.AgentDeviceGroup;
 import com.microsoft.hydralab.common.entity.center.DeviceGroup;
 import com.microsoft.hydralab.common.entity.center.DeviceGroupRelation;
 import com.microsoft.hydralab.common.entity.center.SysUser;
-import com.microsoft.hydralab.common.entity.common.*;
+import com.microsoft.hydralab.common.entity.common.AccessInfo;
+import com.microsoft.hydralab.common.entity.common.AgentMetadata;
+import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
+import com.microsoft.hydralab.common.entity.common.AgentUser;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.Message;
+import com.microsoft.hydralab.common.entity.common.StatisticData;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
-import com.microsoft.hydralab.common.util.*;
+import com.microsoft.hydralab.common.util.AttachmentService;
+import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.GlobalConstant;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
+import com.microsoft.hydralab.common.util.SerializeUtil;
 import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
@@ -35,7 +50,15 @@ import javax.websocket.Session;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -151,9 +174,11 @@ public class DeviceAgentManagementService {
                     throw new RuntimeException(e);
                 }
             } else {
-                if (agentDeviceGroups.get(agentUser.getId()) != null && checkIsSessionAliveByAgentId(agentUser.getId())) {
+                if (agentDeviceGroups.get(agentUser.getId()) != null &&
+                        checkIsSessionAliveByAgentId(agentUser.getId())) {
                     try {
-                        session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used"));
+                        session.close(
+                                new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used"));
                         return;
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -162,16 +187,20 @@ public class DeviceAgentManagementService {
                 agentSessionMap.put(session.getId(), new AgentSessionInfo(session, agentUser));
                 metricUtil.registerAgentAliveStatusMetric(agentUser);
 
-                log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
+                log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(),
+                        message.getBody());
 
                 //check is not agent update success
                 AgentUpdateTask tempTask = agentUpdateMap.get(agentUser.getId());
                 if (tempTask != null) {
-                    log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
+                    log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(),
+                            message.getBody());
 
                     AgentUpdateTask.UpdateMsg updateMag = null;
-                    String agentMessage = "Agent Reconnected After Updating.Version is " + agentUser.getVersionName();
-                    if (agentUser.getVersionName() == null || !agentUser.getVersionName().equals(tempTask.getTargetVersionName())) {
+                    String agentMessage =
+                            "Agent Reconnected After Updating.Version is " + agentUser.getVersionName();
+                    if (agentUser.getVersionName() == null ||
+                            !agentUser.getVersionName().equals(tempTask.getTargetVersionName())) {
                         tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_FAIL);
                         updateMag = new AgentUpdateTask.UpdateMsg(false, agentMessage, agentUser.toString());
                     } else {
@@ -192,7 +221,8 @@ public class DeviceAgentManagementService {
         switch (message.getPath()) {
             case Const.Path.DEVICE_LIST:
                 if (message.getBody() instanceof JSONArray) {
-                    List<DeviceInfo> latestDeviceInfos = ((JSONArray) message.getBody()).toJavaList(DeviceInfo.class);
+                    List<DeviceInfo> latestDeviceInfos =
+                            ((JSONArray) message.getBody()).toJavaList(DeviceInfo.class);
                     updateAgentDeviceGroup(savedSession, latestDeviceInfos);
                 }
                 break;
@@ -209,20 +239,24 @@ public class DeviceAgentManagementService {
                     AgentUpdateTask.UpdateMsg updateMsg = (AgentUpdateTask.UpdateMsg) message.getBody();
                     log.info("Agent {} is updating, message {}", savedSession.agentUser.getId(), updateMsg.message);
                     AgentUpdateTask tempTask = agentUpdateMap.get(savedSession.agentUser.getId());
-                    if (tempTask == null || !AgentUpdateTask.TaskConst.STATUS_UPDATING.equals(tempTask.getUpdateStatus())) {
+                    if (tempTask == null ||
+                            !AgentUpdateTask.TaskConst.STATUS_UPDATING.equals(tempTask.getUpdateStatus())) {
                         break;
                     }
                     tempTask.getUpdateMsgs().add(updateMsg);
                     if (!updateMsg.isProceed) {
                         tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_FAIL);
-                        agentDeviceGroups.get(savedSession.agentUser.getId()).setAgentStatus(AgentDeviceGroup.Status.HEALTHY);
+                        agentDeviceGroups.get(savedSession.agentUser.getId())
+                                .setAgentStatus(AgentDeviceGroup.Status.HEALTHY);
                     }
                 }
                 break;
             case Const.Path.DEVICE_STATUS:
                 if (message.getBody() instanceof JSONObject) {
                     JSONObject data = (JSONObject) message.getBody();
-                    updateDeviceStatus(data.getString(Const.AgentConfig.SERIAL_PARAM), data.getString(Const.AgentConfig.STATUS_PARAM), data.getString(Const.AgentConfig.TASK_ID_PARAM));
+                    updateDeviceStatus(data.getString(Const.AgentConfig.SERIAL_PARAM),
+                            data.getString(Const.AgentConfig.STATUS_PARAM),
+                            data.getString(Const.AgentConfig.TASK_ID_PARAM));
                 }
                 break;
             case Const.Path.ACCESS_INFO:
@@ -316,7 +350,8 @@ public class DeviceAgentManagementService {
         }
         AccessInfo accessInfo = accessInfoMap.get(name);
         if (accessInfo == null) {
-            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Please generate access key first!");
+            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(),
+                    "Please generate access key first!");
         }
         if (!key.equals(accessInfo.getKey())) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Error access key!");
@@ -340,7 +375,8 @@ public class DeviceAgentManagementService {
             newAgentDeviceGroup.initWithAgentUser(savedSession.agentUser);
             newAgentDeviceGroup.setDevices(new ArrayList<>(latestDeviceInfos));
             agentDeviceGroups.put(savedSession.agentUser.getId(), newAgentDeviceGroup);
-            log.info("Adding info of new agent: {}, device SN: {}", newAgentDeviceGroup.getAgentName(), latestDeviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
+            log.info("Adding info of new agent: {}, device SN: {}", newAgentDeviceGroup.getAgentName(),
+                    latestDeviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
         }
     }
 
@@ -350,7 +386,8 @@ public class DeviceAgentManagementService {
             deviceInfo.setAgentId(agentId);
 
             //if the status saved in master is testing, the value will not be covered
-            if (deviceListMap.get(deviceInfo.getSerialNum()) != null && deviceListMap.get(deviceInfo.getSerialNum()).isTesting()) {
+            if (deviceListMap.get(deviceInfo.getSerialNum()) != null &&
+                    deviceListMap.get(deviceInfo.getSerialNum()).isTesting()) {
                 deviceInfo.setStatus(DeviceInfo.TESTING);
             }
 
@@ -415,7 +452,7 @@ public class DeviceAgentManagementService {
         return new HashSet<>(serials);
     }
 
-    public List<DeviceInfo> queryDeviceInfoByGroup(String groupName){
+    public List<DeviceInfo> queryDeviceInfoByGroup(String groupName) {
         List<DeviceInfo> devices = new ArrayList<>();
         Set<String> serials = deviceGroupListMap.get(groupName);
         serials.forEach(serial -> devices.add(deviceListMap.get(serial)));
@@ -483,7 +520,7 @@ public class DeviceAgentManagementService {
         return deviceListMap.get(serialNum) != null;
     }
 
-    public boolean checkDeviceAuthorization(SysUser requestor, String serialNum) throws IllegalArgumentException{
+    public boolean checkDeviceAuthorization(SysUser requestor, String serialNum) throws IllegalArgumentException {
         DeviceInfo deviceInfo = deviceListMap.get(serialNum);
         if (deviceInfo == null) {
             throw new IllegalArgumentException("deviceIdentifier is incorrect");
@@ -514,21 +551,25 @@ public class DeviceAgentManagementService {
             boolean hasDevice = false;
             for (DeviceInfo device : agentDeviceGroup.getDevices()) {
                 //if the status saved in master is testing, the value will not be covered
-                if (deviceListMap.get(device.getSerialNum()) != null && deviceListMap.get(device.getSerialNum()).isTesting()) {
+                if (deviceListMap.get(device.getSerialNum()) != null &&
+                        deviceListMap.get(device.getSerialNum()).isTesting()) {
                     device.setStatus(DeviceInfo.TESTING);
                     hasDevice = true;
-                    log.info("Updating device status of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), newDeviceInfo.getSerialNum());
+                    log.info("Updating device status of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(),
+                            newDeviceInfo.getSerialNum());
                     break;
                 }
                 if (device.getSerialNum().equals(newDeviceInfo.getSerialNum())) {
                     hasDevice = true;
                     BeanUtil.copyProperties(newDeviceInfo, device);
-                    log.info("Updating device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), newDeviceInfo.getSerialNum());
+                    log.info("Updating device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(),
+                            newDeviceInfo.getSerialNum());
                     break;
                 }
             }
             if (!hasDevice) {
-                log.info("Adding device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), newDeviceInfo.getSerialNum());
+                log.info("Adding device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(),
+                        newDeviceInfo.getSerialNum());
                 agentDeviceGroup.getDevices().add(newDeviceInfo);
             }
         }
@@ -585,7 +626,8 @@ public class DeviceAgentManagementService {
             return;
         }
         log.info("Session of agent {} is closed.", removed.agentUser.getName());
-        metricUtil.updateAgentAliveStatus(removed.agentUser.getId(), GlobalConstant.AgentLiveStatus.OFFLINE.getStatus());
+        metricUtil.updateAgentAliveStatus(removed.agentUser.getId(),
+                GlobalConstant.AgentLiveStatus.OFFLINE.getStatus());
 
         AgentDeviceGroup agentDeviceGroup = agentDeviceGroups.remove(removed.agentUser.getId());
         if (agentDeviceGroup == null || agentDeviceGroup.getDevices() == null) {
@@ -597,7 +639,8 @@ public class DeviceAgentManagementService {
     private void sendMessageToSession(Session toSession, Message message) {
         try {
             byte[] array = SerializeUtil.messageToByteArr(message);
-            log.info("sendMessageToSession[{}], path: {}, message data len: {}", toSession.getId(), message.getPath(), array.length);
+            log.info("sendMessageToSession[{}], path: {}, message data len: {}", toSession.getId(),
+                    message.getPath(), array.length);
             toSession.getBasicRemote().sendBinary(ByteBuffer.wrap(array));
         } catch (IOException e) {
             throw new RuntimeException("Error in sendMessageToSession", e);
@@ -678,12 +721,15 @@ public class DeviceAgentManagementService {
     private JSONObject runT2CTest(TestTaskSpec testTaskSpec) {
         // TODO: upgrade to assign task to agent and check the available device count on the agent
         JSONObject result = new JSONObject();
-        StorageFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
+        StorageFileInfo testAppFileInfo =
+                attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(),
+                        StorageFileInfo.FileType.TEST_APP_FILE);
         if (testAppFileInfo != null) {
             File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
             TestInfo testInfo;
             try {
-                blobStorageClient.downloadFileFromBlob(testApkFile, testAppFileInfo.getBlobContainer(), testAppFileInfo.getBlobPath());
+                blobStorageClient.downloadFileFromBlob(testApkFile, testAppFileInfo.getBlobContainer(),
+                        testAppFileInfo.getBlobPath());
                 T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
                 String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
                 testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
@@ -862,7 +908,8 @@ public class DeviceAgentManagementService {
                 } else {
                     agentSessionMap.remove(entry.getKey());
                     log.info("Session of agent {} is not alive.", entry.getValue().agentUser.getName());
-                    metricUtil.updateAgentAliveStatus(entry.getValue().agentUser.getId(), GlobalConstant.AgentLiveStatus.OFFLINE.getStatus());
+                    metricUtil.updateAgentAliveStatus(entry.getValue().agentUser.getId(),
+                            GlobalConstant.AgentLiveStatus.OFFLINE.getStatus());
                 }
             }
         }
@@ -920,8 +967,10 @@ public class DeviceAgentManagementService {
         updateTask.setAgentName(agentUser.getName());
         updateTask.setOriginVersionName(agentUser.getVersionName());
         updateTask.setOriginVersionCode(agentUser.getVersionCode());
-        updateTask.setTargetVersionName(packageInfo.getFileParser().getString(AgentUpdateTask.TaskConst.PARAM_VERSION_NAME));
-        updateTask.setTargetVersionCode(packageInfo.getFileParser().getString(AgentUpdateTask.TaskConst.PARAM_VERSION_CODE));
+        updateTask.setTargetVersionName(
+                packageInfo.getFileParser().getString(AgentUpdateTask.TaskConst.PARAM_VERSION_NAME));
+        updateTask.setTargetVersionCode(
+                packageInfo.getFileParser().getString(AgentUpdateTask.TaskConst.PARAM_VERSION_CODE));
         updateTask.setPackageInfo(packageInfo);
 
         Message message = new Message();
@@ -962,11 +1011,11 @@ public class DeviceAgentManagementService {
         }
     }
 
-    public int getAliveAgentNum(){
+    public int getAliveAgentNum() {
         return agentSessionMap.size();
     }
 
-    public int getAliveDeviceNum(){
+    public int getAliveDeviceNum() {
         return (int) deviceListMap.values().stream().filter(DeviceInfo::isAlive).count();
     }
 
