@@ -56,7 +56,7 @@ app:
     blob:
       connection: ${BLOB_CONNECTION_STR}
       fileLimitDay: 6
-      CDNUrl: ${CDN_URL:@null}
+      CDNUrl: ${CDN_URL:}
       SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
       SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
       SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}

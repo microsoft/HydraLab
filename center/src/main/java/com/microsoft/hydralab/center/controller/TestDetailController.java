@@ -139,7 +139,6 @@ public class TestDetailController {
             }
             TestRun testInfo = testDataService.getTestRunWithVideoInfo(deviceTaskId);
             testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
-            testInfo.setVideoBlobUrl(testInfo.getVideoBlobUrl());
 
             return Result.ok(testInfo);
         } catch (HydraLabRuntimeException e) {
