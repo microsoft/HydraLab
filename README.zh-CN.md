@@ -150,7 +150,7 @@ java -jar agent/build/libs/agent.jar
 <span id="contribute"></span>
 ## 贡献
 
-您对Hydra Lab的贡献将使整个测试自动化生态系统发生变化。请参阅贡献指引 **[CONTRIBUTING.md](CONTRIBUTING.md)** 。
+您对Hydra Lab的贡献将为整个测试自动化生态系统带来改变。请参阅贡献指引 **[CONTRIBUTING.md](CONTRIBUTING.md)** 。
 ### 贡献者英雄榜：
 
 <a href="https://github.com/Microsoft/hydralab/graphs/contributors">
