@@ -22,6 +22,8 @@ spring:
 app:
   # Mail Address Format
   default-user: ${DEFAULT_USER}
-  blob:
-    connection: ${BLOB_CONNECTION_STR}
-    CDNUrl: ${CDN_URL}
+  storage:
+    type: ${STORAGE_TYPE:AZURE} # current available options: LOCAL, AZURE
+    blob:
+      connection: ${BLOB_CONNECTION_STR}
+      CDNUrl: ${CDN_URL}

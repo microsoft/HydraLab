@@ -8,7 +8,7 @@ import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.FileUtil;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class FileLoadUtil {
     @Resource
     private AppOptions appOptions;
     @Resource
-    BlobStorageClient blobStorageClient;
+    StorageServiceClientProxy storageServiceClientProxy;
 
     public void clearAttachments(TestTask testTask) {
         List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
@@ -58,17 +58,17 @@ public class FileLoadUtil {
                     loadCommonFile(attachment);
                     break;
                 case StorageFileInfo.FileType.APP_FILE:
-                    File appFile = downloadFromBlob(attachment);
+                    File appFile = downloadFile(attachment);
                     Assert.isTrue(appFile != null && appFile.exists(), "Download app file failed!");
                     testTask.setAppFile(appFile);
                     break;
                 case StorageFileInfo.FileType.TEST_APP_FILE:
-                    File testAppFile = downloadFromBlob(attachment);
+                    File testAppFile = downloadFile(attachment);
                     Assert.isTrue(testAppFile != null && testAppFile.exists(), "Download test app file failed!");
                     testTask.setTestAppFile(testAppFile);
                     break;
                 case StorageFileInfo.FileType.T2C_JSON_FILE:
-                    File testJsonFile = downloadFromBlob(attachment);
+                    File testJsonFile = downloadFile(attachment);
                     Assert.isTrue(testJsonFile != null && testJsonFile.exists(), "Download test json file failed!");
                     testTask.addTestJsonFile(testJsonFile);
                     break;
@@ -81,7 +81,7 @@ public class FileLoadUtil {
     public void installWinApp(StorageFileInfo attachment) {
         try {
             Runtime runtime = Runtime.getRuntime();
-            File attachmentFile = downloadFromBlob(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
+            File attachmentFile = downloadFile(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
             String installCommand = "& { Add-AppxPackage -ForceApplicationShutdown -forceupdatefromanyversion -Path '" +
                     attachmentFile.getAbsolutePath() + "' }";
             String[] command = new String[]{"Powershell.exe", "-Command", installCommand};
@@ -105,7 +105,7 @@ public class FileLoadUtil {
             File loadFolder = new File(appOptions.getLocation() + "/" + attachment.getLoadDir());
             Assert.isTrue(!loadFolder.exists(), "Load file error : folder has been existed!");
             log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
-            File attachmentFile = downloadFromBlob(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
+            File attachmentFile = downloadFile(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
             if (StorageFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {
                 FileUtil.unzipFile(attachmentFile.getAbsolutePath(), loadFolder.getAbsolutePath());
             }
@@ -115,17 +115,17 @@ public class FileLoadUtil {
         }
     }
 
-    private File downloadFromBlob(StorageFileInfo attachment, String location, String targetFilePath) throws IOException {
+    private File downloadFile(StorageFileInfo attachment, String location, String targetFilePath) throws IOException {
         File file = new File(location, targetFilePath);
         log.debug("download file from {} to {}", attachment.getBlobUrl(), file.getAbsolutePath());
-        blobStorageClient.downloadFileFromBlob(file, attachment.getBlobContainer(), attachment.getBlobPath());
+        storageServiceClientProxy.download(file, attachment);
         return file;
     }
 
-    private File downloadFromBlob(StorageFileInfo attachment) {
+    private File downloadFile(StorageFileInfo attachment) {
         File file = null;
         try {
-            file = downloadFromBlob(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
+            file = downloadFile(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
             log.info("Download file success");
         } catch (IOException e) {
             log.error("Download file failed", e);

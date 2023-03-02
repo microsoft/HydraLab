@@ -10,8 +10,8 @@ import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,14 +32,13 @@ public class AgentManageService {
     @Resource
     private AppOptions appOptions;
     @Resource
-    BlobStorageClient blobStorageClient;
+    StorageServiceClientProxy storageServiceClientProxy;
 
     public void updateAgentPackage(AgentUpdateTask updateTask, String path) {
         Runnable run = () -> {
             sendMessageToCenter(true, "Download package file.", "", path);
             File downloadToFile = new File(appOptions.getLocation(), updateTask.getPackageInfo().getFileName());
-            blobStorageClient.downloadFileFromBlob(downloadToFile, updateTask.getPackageInfo().getBlobContainer(),
-                    updateTask.getPackageInfo().getBlobPath());
+            storageServiceClientProxy.download(downloadToFile, updateTask.getPackageInfo());
             sendMessageToCenter(true, "Download Package Success!", "", path);
 
             restartAgent(updateTask.getPackageInfo().getFileName(), path);

@@ -34,8 +34,6 @@ public class TestDetailController {
     KeyValueRepository keyValueRepository;
     @Resource
     TestDataService testDataService;
-    @Resource
-    private UserTeamManagementService userTeamManagementService;
 
     /**
      * Authenticated USER:
@@ -109,17 +107,7 @@ public class TestDetailController {
 
             JSONObject data = new JSONObject();
             JSONArray videos = new JSONArray();
-            String videoRedirectUrl = testInfo.getVideoBlobUrl();
-
-            //use CDN url to access video
-            if (testInfo.getAttachments() != null && testInfo.getAttachments().size() > 0) {
-                String CDNUrl = testInfo.getAttachments().get(0).getCDNUrl();
-                if (CDNUrl != null && !"".equals(CDNUrl)) {
-                    String originDomain = testInfo.getVideoBlobUrl().split("//")[1].split("/")[0];
-                    videoRedirectUrl = videoRedirectUrl.replace(originDomain, CDNUrl);
-                }
-            }
-            videos.add(videoRedirectUrl);
+            videos.add(testInfo.getVideoBlobUrl());
             data.put("videos", videos);
             data.put("videoInfo", testInfo.getVideoTimeTagArr());
             return Result.ok(data);
@@ -152,15 +140,6 @@ public class TestDetailController {
             TestRun testInfo = testDataService.getTestRunWithVideoInfo(deviceTaskId);
             testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
 
-            //use CDN url to access video
-            if (testInfo.getAttachments() != null && testInfo.getAttachments().size() > 0) {
-                String CDNUrl = testInfo.getAttachments().get(0).getCDNUrl();
-                if (CDNUrl != null && !"".equals(CDNUrl)) {
-                    String originDomain = testInfo.getVideoBlobUrl().split("//")[1].split("/")[0];
-                    String videoRedirectUrl = testInfo.getVideoBlobUrl().replace(originDomain, CDNUrl);
-                    testInfo.setVideoBlobUrl(videoRedirectUrl);
-                }
-            }
             return Result.ok(testInfo);
         } catch (HydraLabRuntimeException e) {
             logger.error(e.getMessage(), e);
