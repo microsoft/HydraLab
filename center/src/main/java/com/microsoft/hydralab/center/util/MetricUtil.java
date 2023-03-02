@@ -56,7 +56,6 @@ public class MetricUtil {
         agentAliveStatusMap.put(agentId, status);
     }
 
-
     public int getAgentAliveStatus(String agentUserId) {
         String agentStatus = agentAliveStatusMap.getOrDefault(agentUserId, GlobalConstant.AgentLiveStatus.OFFLINE.getStatus());
         return GlobalConstant.AgentLiveStatus.OFFLINE.getStatus().equals(agentStatus) ? 1 : 0;

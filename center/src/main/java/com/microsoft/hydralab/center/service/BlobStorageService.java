@@ -21,27 +21,27 @@ import java.util.concurrent.ConcurrentMap;
 public class BlobStorageService {
     @Resource
     BlobStorageClient blobStorageClient;
-    private ConcurrentMap<String, SASData> SASMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, SASData> sasMap = new ConcurrentHashMap<>();
 
-    public SASData GenerateReadSAS(String uniqueId) {
+    public SASData generateReadSAS(String uniqueId) {
         Assert.notNull(uniqueId, "The key of SAS can't be null!");
-        SASData sasData = SASMap.get(uniqueId);
+        SASData sasData = sasMap.get(uniqueId);
 
         if (sasData == null || blobStorageClient.isSASExpired(sasData)) {
             sasData = blobStorageClient.generateSAS(SASData.SASPermission.Read);
-            SASMap.put(uniqueId, sasData);
+            sasMap.put(uniqueId, sasData);
         }
 
         return sasData;
     }
 
-    public SASData GenerateWriteSAS(String uniqueId) {
+    public SASData generateWriteSAS(String uniqueId) {
         Assert.notNull(uniqueId, "The key of SAS can't be null!");
-        SASData sasData = SASMap.get(uniqueId);
+        SASData sasData = sasMap.get(uniqueId);
 
         if (sasData == null || blobStorageClient.isSASExpired(sasData)) {
             sasData = blobStorageClient.generateSAS(SASData.SASPermission.Write);
-            SASMap.put(uniqueId, sasData);
+            sasMap.put(uniqueId, sasData);
         }
 
         return sasData;

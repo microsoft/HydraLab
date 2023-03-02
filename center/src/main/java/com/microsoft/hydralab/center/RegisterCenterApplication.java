@@ -19,6 +19,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableJpaRepositories(basePackages = {"com.microsoft.hydralab.common.repository", "com.microsoft.hydralab.center.repository"})
 @EntityScan(basePackages = {"com.microsoft.hydralab.common.entity.center", "com.microsoft.hydralab.common.entity.common"})
 @PropertySource(value = {"classpath:version.properties"}, encoding = "utf-8")
+@SuppressWarnings("HideUtilityClassConstructor")
 public class RegisterCenterApplication {
 
     public static void main(String[] args) {

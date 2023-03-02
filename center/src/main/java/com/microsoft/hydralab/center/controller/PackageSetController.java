@@ -56,8 +56,8 @@ import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_FILE_BASE
 @RestController
 public class PackageSetController {
     private final Logger logger = LoggerFactory.getLogger(PackageSetController.class);
-    public SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-    public int message_length = 200;
+    private final SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    private final int messageLength = 200;
     @Resource
     AttachmentService attachmentService;
     @Resource
@@ -77,6 +77,7 @@ public class PackageSetController {
      * 2) members of the TEAM that fileSet is in
      */
     @PostMapping(value = {"/api/package/add"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("ParameterNumber")
     public Result add(@CurrentSecurityContext SysUser requestor,
                       @RequestParam(value = "teamName", required = false) String teamName,
                       @RequestParam(value = "commitId", required = false) String commitId,
@@ -88,10 +89,11 @@ public class PackageSetController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
+        String localTeamName = teamName;
         if (StringUtils.isEmpty(teamName)) {
-            teamName = requestor.getDefaultTeamName();
+            localTeamName = requestor.getDefaultTeamName();
         }
-        SysTeam team = sysTeamService.queryTeamByName(teamName);
+        SysTeam team = sysTeamService.queryTeamByName(localTeamName);
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
@@ -101,26 +103,28 @@ public class PackageSetController {
         if (appFile.isEmpty()) {
             return Result.error(HttpStatus.FORBIDDEN.value(), "apk file empty");
         }
+        String localCommitId = commitId;
         if (!LogUtils.isLegalStr(commitId, Const.RegexString.COMMON_STR, true)) {
-            commitId = "commitId";
+            localCommitId = "commitId";
         }
+        String localBuildType = buildType;
         if (!LogUtils.isLegalStr(buildType, Const.RegexString.COMMON_STR, false)) {
-            buildType = "debug";
+            localBuildType = "debug";
         }
         int commitCountInt = Integer.parseInt(commitCount);
-        commitMessage = commitMessage.replaceAll("[\\t\\n\\r]", " ");
-        if (commitMessage.length() > message_length) {
-            commitMessage = commitMessage.substring(0, message_length);
+        String localCommitMessage = commitMessage.replaceAll("[\\t\\n\\r]", " ");
+        if (localCommitMessage.length() > messageLength) {
+            localCommitMessage = localCommitMessage.substring(0, messageLength);
         }
-        logger.info("commitId: {}, commitMessage: {}, buildType: {}, commitCount: {}", commitId, commitMessage, buildType,
+        logger.info("commitId: {}, commitMessage: {}, buildType: {}, commitCount: {}", localCommitId, localCommitMessage, localBuildType,
                 commitCountInt);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
 
         try {
             String relativePath = FileUtil.getPathForToday();
             //Init test file set info
             TestFileSet testFileSet = new TestFileSet();
-            testFileSet.setBuildType(buildType);
-            testFileSet.setCommitId(commitId);
+            testFileSet.setBuildType(localBuildType);
+            testFileSet.setCommitId(localCommitId);
             testFileSet.setCommitMessage(commitMessage);
             testFileSet.setCommitCount(commitCount);
             testFileSet.setTeamId(team.getTeamId());
@@ -263,10 +267,11 @@ public class PackageSetController {
         if (!LogUtils.isLegalStr(packageName, Const.RegexString.PACKAGE_NAME, false)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "The packagename is illegal");
         }
-        if (StringUtils.isEmpty(teamName)) {
-            teamName = requestor.getDefaultTeamName();
+        String localTeamName = teamName;
+        if (StringUtils.isEmpty(localTeamName)) {
+            localTeamName = requestor.getDefaultTeamName();
         }
-        SysTeam team = sysTeamService.queryTeamByName(teamName);
+        SysTeam team = sysTeamService.queryTeamByName(localTeamName);
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
@@ -454,6 +459,6 @@ public class PackageSetController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        return Result.ok(blobStorageService.GenerateReadSAS(requestor.getMailAddress()));
+        return Result.ok(blobStorageService.generateReadSAS(requestor.getMailAddress()));
     }
 }

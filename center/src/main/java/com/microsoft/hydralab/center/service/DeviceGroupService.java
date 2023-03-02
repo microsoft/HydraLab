@@ -3,7 +3,6 @@
 
 package com.microsoft.hydralab.center.service;
 
-
 import com.microsoft.hydralab.center.repository.DeviceGroupRelationRepository;
 import com.microsoft.hydralab.center.repository.DeviceGroupRepository;
 import com.microsoft.hydralab.common.entity.center.DeviceGroup;
@@ -35,7 +34,6 @@ public class DeviceGroupService {
     SysUserService sysUserService;
     @Resource
     UserTeamManagementService userTeamManagementService;
-
 
     public DeviceGroup createGroup(String teamId, String teamName, String groupName, String owner) {
         DeviceGroup deviceGroup = new DeviceGroup();
