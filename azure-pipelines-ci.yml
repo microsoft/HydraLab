@@ -43,6 +43,7 @@ stages:
         script: |
           New-Item -Path common/src/test/resources -Name ".env" -ItemType "file" -Value "BLOB_CONNECTION_STRING = $(BLOB_CONNECTION_STRING)"
         workingDirectory: '$(Build.Repository.LocalPath)'
+      condition: eq(variables.fullBuild, 'false')
     - task: PowerShell@2
       displayName: Set center/agent version
       inputs:
@@ -72,6 +73,7 @@ stages:
         jdkVersionOption: '1.11'
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
+      condition: eq(variables.fullBuild, 'false')
     - task: PowerShell@2
       displayName: Delete Env File
       inputs:
@@ -79,12 +81,14 @@ stages:
         script: |
           Remove-Item -Path common/src/test/resources/.env -Force
         workingDirectory: '$(Build.Repository.LocalPath)'
+      condition: eq(variables.fullBuild, 'false')
     - task: PublishCodeCoverageResults@1
       displayName: Publich Code Coverage
       inputs:
         codeCoverageTool: 'JaCoCo'
         summaryFileLocation: 'build/reports/jacoco/jacocoRootReport/*.xml'
         reportDirectory: 'build/reports/jacoco/jacocoRootReport/html'
+      condition: eq(variables.fullBuild, 'false')
     - task: Gradle@2
       displayName: Build center
       inputs:
@@ -111,21 +115,21 @@ stages:
         SourceFolder: 'center/'
         Contents: 'Dockerfile'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+      condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy deploy center files 2
       inputs:
         SourceFolder: 'center/deploy_startup/'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+      condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy center jar
       inputs:
         SourceFolder: 'center/build/libs/'
         Contents: '*.jar'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+      condition: eq(variables.fullBuild, 'true')
     - task: Gradle@2
       displayName: Package Mac installer
       inputs:
@@ -136,7 +140,7 @@ stages:
         jdkVersionOption: '1.11'
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+      condition: eq(variables.fullBuild, 'true')
     - task: Gradle@2
       displayName: Package Windows installer
       inputs:
@@ -147,28 +151,28 @@ stages:
         jdkVersionOption: '1.11'
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+      condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy agent jar
       inputs:
         SourceFolder: 'agent/build/libs/'
         Contents: '*.jar'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+      condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy agent installer
       inputs:
         SourceFolder: 'build/installer/'
         Contents: '*.zip'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+      condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy deploy uber files
       inputs:
         SourceFolder: 'center/uber_image/'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/uber_image'
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+      condition: eq(variables.fullBuild, 'true')
     - task: PowerShell@2
       displayName: Add Release Tag
       inputs:
@@ -176,10 +180,10 @@ stages:
         script: |
           Write-Host "##vso[build.addbuildtag]Release"
         workingDirectory: '$(Build.Repository.LocalPath)'
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'), contains(variables['Build.SourceBranch'], 'Release/'))
+      condition: and(eq(variables.fullBuild, 'true'), contains(variables['Build.SourceBranch'], 'Release/'))
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'HydraLabRelease'
         publishLocation: 'Container'
-      condition: and(succeeded(), eq(variables.fullBuild, 'true'))
+      condition: eq(variables.fullBuild, 'true')
