@@ -25,5 +25,3 @@ app:
   blob:
     connection: ${BLOB_CONNECTION_STR}
     CDNUrl: ${CDN_URL}
-
-
