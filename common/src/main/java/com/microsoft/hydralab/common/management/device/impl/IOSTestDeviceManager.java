@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management.device.impl;
 
 import com.alibaba.fastjson.JSON;
@@ -47,7 +48,8 @@ public class IOSTestDeviceManager extends TestDeviceManager {
         return isConnectedToWindowsOS;
     }
 
-    public IOSTestDeviceManager(AgentManagementService agentManagementService, AppiumServerManager appiumServerManager) {
+    public IOSTestDeviceManager(AgentManagementService agentManagementService,
+                                AppiumServerManager appiumServerManager) {
         super(agentManagementService, appiumServerManager);
         String osName = System.getProperty("os.name");
         classLogger.info("Devices are connected to " + osName);
@@ -74,10 +76,13 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
         File screenshotImageFile = deviceInfo.getScreenshotImageFile();
         if (screenshotImageFile == null) {
-            screenshotImageFile = new File(agentManagementService.getScreenshotDir(), deviceInfo.getName().replace(" ", "") + "-" + deviceInfo.getSerialNum() + ".jpg");
+            screenshotImageFile = new File(agentManagementService.getScreenshotDir(),
+                    deviceInfo.getName().replace(" ", "") + "-" + deviceInfo.getSerialNum() + ".jpg");
             deviceInfo.setScreenshotImageFile(screenshotImageFile);
-            String imageRelPath = screenshotImageFile.getAbsolutePath().replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
-            imageRelPath = agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
+            String imageRelPath = screenshotImageFile.getAbsolutePath()
+                    .replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
+            imageRelPath =
+                    agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
             deviceInfo.setImageRelPath(imageRelPath);
         }
         IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), screenshotImageFile.getAbsolutePath(), classLogger);
@@ -86,7 +91,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
                 new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(),
                         StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
         String fileDownloadUrl =
-                agentManagementService.getStorageServiceClientProxy.upload(screenshotImageFile, fileInfo)
+                agentManagementService.getStorageServiceClientProxy().upload(screenshotImageFile, fileInfo)
                         .getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
             classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
@@ -114,7 +119,8 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @NotNull Logger logger) {
+    public void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
+                                      @NotNull Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
@@ -136,12 +142,14 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent, @NotNull String pathOnDevice, @Nullable Logger logger) {
+    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent,
+                                 @NotNull String pathOnDevice, @Nullable Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override
-    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) {
+    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice,
+                                   @Nullable Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
@@ -165,7 +173,8 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
+    public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity,
+                                      Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
         return true;
     }
@@ -270,7 +279,8 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName, Logger logger) {
+    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName,
+                                                       Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
         return true;
     }

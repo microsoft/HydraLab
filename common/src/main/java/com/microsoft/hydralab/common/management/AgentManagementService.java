@@ -4,9 +4,9 @@
 package com.microsoft.hydralab.common.management;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +33,17 @@ public class AgentManagementService {
     protected DeviceStatusListenerManager deviceStatusListenerManager;
     protected String deviceFolderUrlPrefix;
     protected String deviceStoragePath;
-    protected BlobStorageClient blobStorageClient;
+    protected StorageServiceClientProxy storageServiceClientProxy;
     protected String preInstallFailurePolicy;
+
+    public StorageServiceClientProxy getStorageServiceClientProxy() {
+        return storageServiceClientProxy;
+    }
+
+    public void setStorageServiceClientProxy(
+            StorageServiceClientProxy storageServiceClientProxy) {
+        this.storageServiceClientProxy = storageServiceClientProxy;
+    }
 
     public String getPreInstallFailurePolicy() {
         return preInstallFailurePolicy;
@@ -42,14 +51,6 @@ public class AgentManagementService {
 
     public void setPreInstallFailurePolicy(String preInstallFailurePolicy) {
         this.preInstallFailurePolicy = preInstallFailurePolicy;
-    }
-
-    public BlobStorageClient getBlobStorageClient() {
-        return blobStorageClient;
-    }
-
-    public void setBlobStorageClient(BlobStorageClient blobStorageClient) {
-        this.blobStorageClient = blobStorageClient;
     }
 
     public DeviceStatusListenerManager getDeviceStatusListenerManager() {

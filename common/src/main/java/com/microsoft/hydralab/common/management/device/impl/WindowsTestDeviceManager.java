@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
@@ -8,7 +9,6 @@ import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.android.ddmlib.InstallException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
-import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
@@ -18,7 +18,6 @@ import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.screen.WindowsScreenRecorder;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
-import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import com.microsoft.hydralab.t2c.runner.ActionInfo;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
@@ -51,7 +50,8 @@ import java.util.UUID;
 public class WindowsTestDeviceManager extends TestDeviceManager {
     static final Logger classLogger = LoggerFactory.getLogger(WindowsTestDeviceManager.class);
 
-    public WindowsTestDeviceManager(AgentManagementService agentManagementService, AppiumServerManager appiumServerManager) {
+    public WindowsTestDeviceManager(AgentManagementService agentManagementService,
+                                    AppiumServerManager appiumServerManager) {
         super(agentManagementService, appiumServerManager);
     }
 
@@ -84,10 +84,13 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
     public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
         File screenShotImageFile = deviceInfo.getScreenshotImageFile();
         if (screenShotImageFile == null) {
-            screenShotImageFile = new File(agentManagementService.getScreenshotDir(), deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
+            screenShotImageFile = new File(agentManagementService.getScreenshotDir(),
+                    deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
             deviceInfo.setScreenshotImageFile(screenShotImageFile);
-            String imageRelPath = screenShotImageFile.getAbsolutePath().replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
-            imageRelPath = agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
+            String imageRelPath = screenShotImageFile.getAbsolutePath()
+                    .replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
+            imageRelPath =
+                    agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
             deviceInfo.setImageRelPath(imageRelPath);
         }
         try {
@@ -95,8 +98,12 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
         } catch (IOException e) {
             classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
         }
-        StorageFileInfo fileInfo = new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
-        String fileDownloadUrl = agentManagementService.getStorageServiceClientProxy.upload(pcScreenShotImageFile, fileInfo).getBlobUrl();
+        StorageFileInfo fileInfo =
+                new StorageFileInfo(screenShotImageFile, "device/screenshots/" + screenShotImageFile.getName(),
+                        StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl =
+                agentManagementService.getStorageServiceClientProxy().upload(screenShotImageFile, fileInfo)
+                        .getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
             classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
@@ -116,22 +123,26 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void grantPermission(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @NotNull String permissionName, @Nullable Logger logger) {
+    public void grantPermission(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
+                                @NotNull String permissionName, @Nullable Logger logger) {
 
     }
 
     @Override
-    public void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @NotNull Logger logger) {
+    public void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
+                                      @NotNull Logger logger) {
 
     }
 
     @Override
-    public boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath, @Nullable Logger logger) throws InstallException {
+    public boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath, @Nullable Logger logger)
+            throws InstallException {
         return false;
     }
 
     @Override
-    public boolean uninstallApp(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @Nullable Logger logger) throws InstallException {
+    public boolean uninstallApp(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
+                                @Nullable Logger logger) throws InstallException {
         return false;
     }
 
@@ -141,37 +152,44 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent, @NotNull String pathOnDevice, @Nullable Logger logger) throws Exception {
+    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent,
+                                 @NotNull String pathOnDevice, @Nullable Logger logger) throws Exception {
 
     }
 
     @Override
-    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) throws Exception {
+    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice,
+                                   @Nullable Logger logger) throws Exception {
 
     }
 
     @Override
-    public LogCollector getLogCollector(@NotNull DeviceInfo deviceInfo, @NotNull String pkgName, @NotNull TestRun testRun, @NotNull Logger logger) {
+    public LogCollector getLogCollector(@NotNull DeviceInfo deviceInfo, @NotNull String pkgName,
+                                        @NotNull TestRun testRun, @NotNull Logger logger) {
         return null;
     }
 
     @Override
-    public void setProperty(@NotNull DeviceInfo deviceInfo, @NotNull String property, String val, @Nullable Logger logger) {
+    public void setProperty(@NotNull DeviceInfo deviceInfo, @NotNull String property, String val,
+                            @Nullable Logger logger) {
 
     }
 
     @Override
-    public boolean setDefaultLauncher(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @NotNull String defaultActivity, @Nullable Logger logger) {
+    public boolean setDefaultLauncher(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
+                                      @NotNull String defaultActivity, @Nullable Logger logger) {
         return false;
     }
 
     @Override
-    public boolean isAppInstalled(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @Nullable Logger logger) {
+    public boolean isAppInstalled(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
+                                  @Nullable Logger logger) {
         return false;
     }
 
     @Override
-    public boolean grantProjectionAndBatteryPermission(@NotNull DeviceInfo deviceInfo, @NotNull String recordPackageName, @Nullable Logger logger) {
+    public boolean grantProjectionAndBatteryPermission(@NotNull DeviceInfo deviceInfo,
+                                                       @NotNull String recordPackageName, @Nullable Logger logger) {
         return false;
     }
 
@@ -277,10 +295,9 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
                     }
                     // Waiting for loading url
                     ThreadUtils.safeSleep(5000);
-                    driverControllerMap.put(driverInfo.getId(), new EdgeDriverController(
-                            appiumServerManager.getWindowsEdgeDriver(reportLogger),
-                            appiumServerManager.getEdgeDriver(reportLogger),
-                            reportLogger));
+                    driverControllerMap.put(driverInfo.getId(),
+                            new EdgeDriverController(appiumServerManager.getWindowsEdgeDriver(reportLogger),
+                                    appiumServerManager.getEdgeDriver(reportLogger), reportLogger));
                     reportLogger.info("Successfully init a Edge driver");
                 }
             }
@@ -290,7 +307,9 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
             for (ActionInfo actionInfo : caseList) {
                 BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
                 T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
-                reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
+                reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " +
+                        (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() :
+                                "No Element"));
             }
         } catch (Exception e) {
             reportLogger.error("T2C Test Error: ", e);
