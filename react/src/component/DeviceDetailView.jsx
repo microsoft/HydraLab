@@ -22,7 +22,8 @@ const deviceStyleLand = {
 
 const pcDeviceStyle = {
     width: "600px",
-    height: "350px"
+    height: "415px",
+    paddingTop: "60px"
 };
 const tdStyle = {
     verticalAlign: "middle",
