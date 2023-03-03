@@ -11,6 +11,8 @@ import com.android.ddmlib.RawImage;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
@@ -21,7 +23,6 @@ import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
-import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
 import org.apache.commons.lang3.StringUtils;
@@ -405,11 +406,12 @@ public class AndroidDeviceManager extends DeviceManager {
         deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
         sendKeyEvent(deviceInfo, KEYCODE_WAKEUP, logger);
         screenCapture(deviceInfo, screenshotImageFile.getAbsolutePath(), null);
-        String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.SCREENSHOT_CONTAINER_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);
-        if (StringUtils.isBlank(blobUrl)) {
-            classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
+        StorageFileInfo fileInfo = new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl = storageServiceClientProxy.upload(screenshotImageFile, fileInfo).getBlobUrl();
+        if (StringUtils.isBlank(fileDownloadUrl)) {
+            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
-            deviceInfo.setScreenshotImageUrl(blobUrl);
+            deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
         }
         return screenshotImageFile;
     }

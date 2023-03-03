@@ -7,10 +7,10 @@ import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestJsonInfo;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.repository.EntityFileRelationRepository;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.repository.TestJsonInfoRepository;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,21 +41,22 @@ public class AttachmentService {
     @Resource
     EntityFileRelationRepository entityFileRelationRepository;
     @Resource
-    BlobStorageClient blobStorageClient;
-
+    StorageServiceClientProxy storageServiceClientProxy;
 
     public StorageFileInfo addAttachment(String entityId, EntityType entityType, StorageFileInfo storageFileInfo, File file, Logger logger) {
-        boolean flag = false;
+        boolean recordExists = false;
+
+        storageFileInfo.setBlobContainer(entityType.storageContainer);
         List<StorageFileInfo> tempFileInfos = storageFileInfoRepository.queryStorageFileInfoByMd5(storageFileInfo.getMd5());
         for (StorageFileInfo tempFileInfo : tempFileInfos) {
             if (compareFileInfo(storageFileInfo, tempFileInfo)) {
-                storageFileInfo = updateFileInfo(tempFileInfo, file, entityType, logger);
-                flag = true;
+                storageFileInfo = updateFileInStorageAndDB(tempFileInfo, file, entityType, logger);
+                recordExists = true;
                 break;
             }
         }
-        if (!flag) {
-            storageFileInfo = addFileInfo(storageFileInfo, file, entityType, logger);
+        if (!recordExists) {
+            storageFileInfo = saveFileInStorageAndDB(storageFileInfo, file, entityType, logger);
         }
         saveRelation(entityId, entityType, storageFileInfo);
         file.delete();
@@ -67,21 +68,32 @@ public class AttachmentService {
         entityFileRelationRepository.delete(entityFileRelation);
     }
 
-    public StorageFileInfo addFileInfo(StorageFileInfo storageFileInfo, File file, EntityType entityType, Logger logger) {
+    public StorageFileInfo saveFileInStorageAndDB(StorageFileInfo storageFileInfo, File file, EntityType entityType, Logger logger) {
         storageFileInfo.setFileId(UUID.randomUUID().toString());
         storageFileInfo.setFileParser(PkgUtil.analysisFile(file, entityType));
         storageFileInfo.setCreateTime(new Date());
         storageFileInfo.setUpdateTime(new Date());
-        storageFileInfo.setBlobUrl(saveFileToBlob(file, entityType.blobConstant, storageFileInfo.getBlobPath(), logger));
-        storageFileInfo.setBlobContainer(entityType.blobConstant);
-        storageFileInfo.setCDNUrl(blobStorageClient.cdnUrl);
+        storageFileInfo.setBlobContainer(entityType.storageContainer);
+        storageFileInfo.setBlobUrl(saveFileInStorage(file, storageFileInfo, logger));
         storageFileInfoRepository.save(storageFileInfo);
         return storageFileInfo;
     }
 
+    public StorageFileInfo updateFileInStorageAndDB(StorageFileInfo oldFileInfo, File file, EntityType entityType, Logger logger) {
+        int days = (int) ((new Date().getTime() - oldFileInfo.getUpdateTime().getTime()) / 1000 / 60 / 60 / 24);
+        if (days >= storageServiceClientProxy.getStorageFileLimitDay()) {
+            oldFileInfo.setUpdateTime(new Date());
+            oldFileInfo.setBlobContainer(entityType.storageContainer);
+            oldFileInfo.setBlobUrl(saveFileInStorage(file, oldFileInfo, logger));
+            storageFileInfoRepository.save(oldFileInfo);
+        }
+        return oldFileInfo;
+    }
+
     public TestJsonInfo addTestJsonFile(TestJsonInfo testJsonInfo, File file, EntityType entityType, Logger logger) {
-        testJsonInfo.setBlobUrl(saveFileToBlob(file, entityType.blobConstant, testJsonInfo.getBlobPath(), logger));
-        testJsonInfo.setBlobContainer(entityType.blobConstant);
+        StorageFileInfo storageFileInfo = new StorageFileInfo(file, testJsonInfo.getBlobPath(), StorageFileInfo.FileType.T2C_JSON_FILE, entityType);
+        testJsonInfo.setBlobUrl(saveFileInStorage(file, storageFileInfo, logger));
+        testJsonInfo.setBlobContainer(entityType.storageContainer);
         List<TestJsonInfo> oldJsonInfoList = testJsonInfoRepository.findByIsLatestAndPackageNameAndCaseName(true, testJsonInfo.getPackageName(), testJsonInfo.getCaseName());
         if (oldJsonInfoList != null) {
             for (TestJsonInfo json : oldJsonInfoList) {
@@ -134,24 +146,12 @@ public class AttachmentService {
             return true;
         } else if (newFileInfo.getFileName().equals(oldFileInfo.getFileName())
                 && newFileInfo.getLoadType().equals(oldFileInfo.getLoadType())
-                && newFileInfo.getLoadDir().equals(oldFileInfo.getLoadDir())) {
+                && newFileInfo.getLoadDir().equals(oldFileInfo.getLoadDir())
+                && newFileInfo.getBlobContainer().equals(oldFileInfo.getBlobContainer())) {
             return true;
         }
         return false;
     }
-
-    public StorageFileInfo updateFileInfo(StorageFileInfo oldFileInfo, File file, EntityType entityType, Logger logger) {
-        int days = (int) ((new Date().getTime() - oldFileInfo.getUpdateTime().getTime()) / 1000 / 60 / 60 / 24);
-        if (days >= blobStorageClient.fileLimitDay) {
-            oldFileInfo.setBlobUrl(saveFileToBlob(file, entityType.blobConstant, oldFileInfo.getBlobPath(), logger));
-            oldFileInfo.setBlobContainer(entityType.blobConstant);
-            oldFileInfo.setCDNUrl(blobStorageClient.cdnUrl);
-            oldFileInfo.setUpdateTime(new Date());
-            storageFileInfoRepository.save(oldFileInfo);
-        }
-        return oldFileInfo;
-    }
-
 
     public List<StorageFileInfo> getAttachments(String entityId, EntityType entityType) {
         List<StorageFileInfo> result = new ArrayList<>();
@@ -197,17 +197,17 @@ public class AttachmentService {
         saveRelations(entityId, entityType, attachments);
     }
 
-    private String saveFileToBlob(File file, String containerName, String fileName, Logger logger) {
-        String blobUrl = blobStorageClient.uploadBlobFromFile(file, containerName, fileName, logger);
-        if (StringUtils.isBlank(blobUrl)) {
-            logger.warn("blobUrl is empty for file {}", fileName);
+    private String saveFileInStorage(File file, StorageFileInfo storageFileInfo, Logger logger) {
+        storageServiceClientProxy.upload(file, storageFileInfo);
+        if (StringUtils.isBlank(storageFileInfo.getBlobUrl())) {
+            logger.warn("Download URL is empty for file {}", storageFileInfo.getBlobPath());
         } else {
-            logger.info("upload file {} success: {}", fileName, blobUrl);
+            logger.info("upload file {} success: {}", storageFileInfo.getBlobPath(), storageFileInfo.getBlobUrl());
         }
-        return blobUrl;
+        return storageFileInfo.getBlobUrl();
     }
 
-    public List<StorageFileInfo> queryBlobFileByType(String fileType) {
+    public List<StorageFileInfo> queryFileInfoByFileType(String fileType) {
         return storageFileInfoRepository.queryStorageFileInfoByFileType(fileType);
     }
 

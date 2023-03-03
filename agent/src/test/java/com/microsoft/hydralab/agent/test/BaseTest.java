@@ -5,7 +5,7 @@ package com.microsoft.hydralab.agent.test;
 
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ import javax.transaction.Transactional;
 public class BaseTest {
     protected Logger baseLogger = LoggerFactory.getLogger(BaseTest.class);
     @MockBean
-    BlobStorageClient blobStorageClient;
+    StorageServiceClientProxy storageServiceClientProxy;
     @MockBean
     AgentWebSocketClient agentWebSocketClient;
     @MockBean

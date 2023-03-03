@@ -10,12 +10,12 @@ import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.*;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import io.appium.java_client.appmanagement.ApplicationState;
 import io.appium.java_client.ios.IOSDriver;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +39,7 @@ import static com.android.ddmlib.IDevice.DeviceState;
 public abstract class DeviceManager {
     public static final String LOGGER_PREFIX = "logger.devices.";
     static final Logger classLogger = LoggerFactory.getLogger(DeviceManager.class);
-    protected BlobStorageClient blobStorageClient;
+    protected StorageServiceClientProxy storageServiceClientProxy;
     protected File testBaseDir;
     protected File preAppDir;
     protected String preInstallFailurePolicy;
@@ -91,12 +91,12 @@ public abstract class DeviceManager {
     }
 
 
-    public BlobStorageClient getBlobStorageClient() {
-        return blobStorageClient;
+    public StorageServiceClientProxy getStorageServiceClientProxy() {
+        return storageServiceClientProxy;
     }
 
-    public void setBlobStorageClient(BlobStorageClient blobStorageClient) {
-        this.blobStorageClient = blobStorageClient;
+    public void setStorageServiceClientProxy(StorageServiceClientProxy storageServiceClientProxy) {
+        this.storageServiceClientProxy = storageServiceClientProxy;
     }
 
     public File getTestBaseDir() {
