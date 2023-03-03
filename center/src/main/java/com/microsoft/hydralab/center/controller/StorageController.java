@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.controller;
 
 import com.microsoft.hydralab.center.service.StorageTokenManageService;
@@ -23,7 +24,6 @@ import javax.annotation.Resource;
 public class StorageController {
     @Resource
     private StorageTokenManageService storageTokenManageService;
-
 
     @GetMapping("/api/storage/getToken")
     public Result generateReadToken(@CurrentSecurityContext SysUser requestor) {
