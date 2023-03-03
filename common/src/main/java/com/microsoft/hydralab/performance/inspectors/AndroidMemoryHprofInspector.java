@@ -33,12 +33,24 @@ public class AndroidMemoryHprofInspector implements PerformanceInspector  {
         String sdHprofFilePath = HPROF_FILE_PREFIX + hprofFileName;
         String dumpCommand = String.format(getMemHprofCommand(), performanceInspection.deviceIdentifier, performanceInspection.appId, sdHprofFilePath);
 
-        Process process = ShellUtils.execLocalCommand(dumpCommand, classLogger);
-        if (process != null && process.exitValue() == 0) {
-            Process pullProcess = ShellUtils.execLocalCommand("adb pull " + sdHprofFilePath + " " + rawResultFile.getAbsolutePath(), classLogger);
-            if (pullProcess != null && pullProcess.exitValue() == 0) {
-                return new PerformanceInspectionResult(rawResultFile, performanceInspection);
+        Process process = ShellUtils.execLocalCommand(dumpCommand, false, classLogger);
+        if (process != null) {
+            try {
+                int ret = process.waitFor();
+                if (ret == 0) {
+                    Process pullProcess = ShellUtils.execLocalCommand("adb pull " + sdHprofFilePath + " " + rawResultFile.getAbsolutePath(), false, classLogger);
+                    if (pullProcess != null) {
+                        ret = pullProcess.waitFor();
+                        if (ret == 0) {
+                            return new PerformanceInspectionResult(rawResultFile, performanceInspection);
+                        }
+                    }
+                }
+            } catch (InterruptedException e) {
+                classLogger.error(e.getMessage(), e);
+                return new PerformanceInspectionResult(null, performanceInspection);
             }
+
         }
         return new PerformanceInspectionResult(null, performanceInspection);
     }
