@@ -1,10 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.Lob;
 import java.io.Serializable;
 
 @Data
@@ -25,9 +31,10 @@ public class KeyValue implements Serializable {
     public void setKey(String key) {
         this.keyid = key;
     }
+
     @Lob
     @Basic(fetch = FetchType.EAGER)
-    @Column(name="value", columnDefinition="CLOB", nullable=true)
+    @Column(name = "value", columnDefinition = "CLOB", nullable = true)
     public String getValue() {
         return value;
     }

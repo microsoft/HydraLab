@@ -49,7 +49,6 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
         return performanceTestResult;
     }
 
-
     private AndroidMemoryInfo buildMemoryInfo(String packageName, String description, long timestamp, long[] memInfos) {
         if (memInfos == null || memInfos.length != 19) {
             return null;

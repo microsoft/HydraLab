@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import java.text.SimpleDateFormat;
@@ -7,7 +8,11 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class TimeUtils {
+public final class TimeUtils {
+
+    private TimeUtils() {
+
+    }
 
     // This function is for filenames, please do not involve the following characters as returned value: \/:*?"<>|
     public static String getTimestampForFilename() {

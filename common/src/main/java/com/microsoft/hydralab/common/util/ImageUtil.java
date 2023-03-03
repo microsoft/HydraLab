@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import javax.imageio.ImageIO;
@@ -9,7 +10,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class ImageUtil {
+public final class ImageUtil {
+
+    private ImageUtil() {
+
+    }
+
     public static BufferedImage scaleBufferedImage(BufferedImage before, double ratio) {
         int w = before.getWidth();
         int h = before.getHeight();

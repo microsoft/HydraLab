@@ -22,7 +22,7 @@ public class RolePermissionRelation implements Serializable {
     @Id
     private String permissionId;
 
-    public RolePermissionRelation(String roleId, String permissionId){
+    public RolePermissionRelation(String roleId, String permissionId) {
         this.roleId = roleId;
         this.permissionId = permissionId;
     }

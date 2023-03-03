@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.center;
 
 import lombok.Data;
@@ -21,7 +22,9 @@ public class DeviceGroupRelation implements Serializable {
     @Id
     private String deviceSerial;
 
-    public DeviceGroupRelation() {}
+    public DeviceGroupRelation() {
+    }
+
     public DeviceGroupRelation(String groupName, String deviceSerial) {
         this.deviceSerial = deviceSerial;
         this.groupName = groupName;

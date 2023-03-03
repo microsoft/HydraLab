@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.performance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,15 +23,25 @@ import org.slf4j.Logger;
 import org.springframework.util.Assert;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
-import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.*;
-import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.*;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_BATTERY;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_MEMORY;
 
 public class PerformanceTestManagementService implements IPerformanceInspectionService, PerformanceTestListener {
-    private static final Map<PerformanceInspector.PerformanceInspectorType, PerformanceResultParser.PerformanceResultParserType> inspectorParserTypeMap = Map.of(
+    private static final Map<PerformanceInspector.PerformanceInspectorType, PerformanceResultParser.PerformanceResultParserType> INSPECTOR_PARSER_TYPE_MAP = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, PARSER_ANDROID_BATTERY_INFO,
             INSPECTOR_WIN_MEMORY, PARSER_WIN_MEMORY,
             INSPECTOR_WIN_BATTERY, PARSER_WIN_BATTERY,
@@ -66,7 +77,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     }
 
     private static PerformanceResultParser.PerformanceResultParserType getParserTypeByInspection(PerformanceInspection performanceInspection) {
-        return inspectorParserTypeMap.get(performanceInspection.inspectorType);
+        return INSPECTOR_PARSER_TYPE_MAP.get(performanceInspection.inspectorType);
     }
 
     private PerformanceInspector getInspectorByType(PerformanceInspector.PerformanceInspectorType inspectorType) {
@@ -83,8 +94,11 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         return inspect(performanceInspection, testRun);
     }
 
+    @SuppressWarnings("ParameterAssignment")
     private PerformanceInspectionResult inspect(PerformanceInspection performanceInspection, ITestRun testRun) {
-        if (performanceInspection == null || testRun == null) return null;
+        if (performanceInspection == null || testRun == null) {
+            return null;
+        }
 
         performanceInspection = getDevicePerformanceInspection(performanceInspection);
         PerformanceInspector.PerformanceInspectorType inspectorType = performanceInspection.inspectorType;
@@ -117,7 +131,9 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     }
 
     public void inspectWithStrategy(InspectionStrategy inspectionStrategy) {
-        if (inspectionStrategy == null || inspectionStrategy.inspection == null) return;
+        if (inspectionStrategy == null || inspectionStrategy.inspection == null) {
+            return;
+        }
 
         ITestRun testRun = getTestRun();
         if (inspectionStrategy.strategyType == InspectionStrategy.StrategyType.TEST_SCHEDULE) {
@@ -145,8 +161,11 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     }
 
     @Override
+    @SuppressWarnings("ParameterAssignment")
     public PerformanceTestResult parse(PerformanceInspection performanceInspection) {
-        if (performanceInspection == null) return null;
+        if (performanceInspection == null) {
+            return null;
+        }
 
         performanceInspection = getDevicePerformanceInspection(performanceInspection);
         Map<String, PerformanceTestResult> testResultMap = testRunPerfResultMap.get(getTestRun().getId());
@@ -204,12 +223,18 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
     private void inspectWithLifeCycle(InspectionStrategy.WhenType whenType, String description) {
         List<InspectionStrategy> strategyList = testLifeCycleStrategyMap.get(getTestRun().getId());
-        if (strategyList == null) return;
+        if (strategyList == null) {
+            return;
+        }
 
         for (InspectionStrategy inspectionStrategy : strategyList) {
-            if (inspectionStrategy == null) continue;
+            if (inspectionStrategy == null) {
+                continue;
+            }
             PerformanceInspection inspection = inspectionStrategy.inspection;
-            if (inspectionStrategy.when == null) continue;
+            if (inspectionStrategy.when == null) {
+                continue;
+            }
 
             if (inspectionStrategy.when.contains(whenType) || whenType == InspectionStrategy.WhenType.TEST_RUN_STARTED) {
                 PerformanceInspection lifeCycleInspection = new PerformanceInspection(
@@ -231,7 +256,9 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
     private List<PerformanceTestResult> parseForTestRun(ITestRun testRun) {
         Map<String, PerformanceTestResult> testResultMap = testRunPerfResultMap.get(testRun.getId());
-        if (testResultMap == null) return null;
+        if (testResultMap == null) {
+            return null;
+        }
 
         List<PerformanceTestResult> resultList = new ArrayList<>();
         for (PerformanceTestResult performanceTestResult : testResultMap.values()) {

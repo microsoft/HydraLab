@@ -12,8 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WindowsMemoryParsedData {
 
     @Data
-    public static class WindowsMemoryMetrics
-    {
+    public static class WindowsMemoryMetrics {
         private long nonpagedSystemMemorySize64;
         private long pagedMemorySize64;
         private long pagedSystemMemorySize64;

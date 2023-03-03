@@ -28,11 +28,11 @@ public class MockAzureBlobClient extends AzureBlobClientAdapter {
     private long SASExpiryUpdate;
 
     public MockAzureBlobClient(AzureBlobProperty azureBlobProperty) {
-        this.SASExpiryUpdate = azureBlobProperty.getSASExpiryUpdate();
-        SASPermission.READ.setExpiryTime(azureBlobProperty.getSASExpiryTimeFront(), azureBlobProperty.getTimeUnit());
-        SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSASExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
+        this.SASExpiryUpdate = azureBlobProperty.getSasExpiryUpdate();
+        SASPermission.READ.setExpiryTime(azureBlobProperty.getSasExpiryTimeFront(), azureBlobProperty.getTimeUnit());
+        SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSasExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
         fileLimitDay = azureBlobProperty.getFileLimitDay();
-        cdnUrl = azureBlobProperty.getCDNUrl();
+        cdnUrl = azureBlobProperty.getCdnUrl();
         isAuthedBySAS = false;
         isConnected = true;
         classLogger.info("Init blob client successfully!");
@@ -42,7 +42,7 @@ public class MockAzureBlobClient extends AzureBlobClientAdapter {
         Assert.isTrue(!isAuthedBySAS, "The client was init by SAS and can't generate SAS!");
 
         SASData sasData = new SASData();
-        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, sasPermission.timeUnit), ZoneId.systemDefault());
+        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.getExpiryTime(), sasPermission.getTimeUnit()), ZoneId.systemDefault());
 
         sasData.setToken("test");
         sasData.setExpiredTime(expiryTime);

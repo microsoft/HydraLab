@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.performance.inspectors;
 
 import com.microsoft.hydralab.agent.runner.ITestRun;
@@ -17,20 +18,20 @@ import java.io.File;
 /**
  * WindowsBatteryInspector is only suitable for the Windows devices with battery,
  * since powercfg command runs only on those devices.
- *
+ * <p>
  * Note:
  * powercfg command needs the elevated privileges of powershell, and UAC (User Account Control) dialog may pop up during
  * the elevation process to block the testing. There is a workaround to disable the UAC dialog by setting "Never notify"
  * in the UAC settings panel.
- *
+ * <p>
  * TODO:
  * Need to verify if the agent configured with elevated privileges can bypass the UAC popup without changing the UAC
  * configuration.
  * Add a new method in ShellUtils to run the admin command if the TODO is not feasible.
  */
 public class WindowsBatteryInspector implements PerformanceInspector {
-    private final static String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s.csv";
-    private final static String COMMAND_FORMAT = "Start-Process -FilePath Powershell.exe -Verb RunAs -ArgumentList " +
+    private static final String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s.csv";
+    private static final String COMMAND_FORMAT = "Start-Process -FilePath Powershell.exe -Verb RunAs -ArgumentList " +
             "'-command \"powercfg /srumutil /OUTPUT %s /CSV \"'";
 
     protected Logger classLogger = LoggerFactory.getLogger(getClass());
@@ -38,8 +39,7 @@ public class WindowsBatteryInspector implements PerformanceInspector {
     @Override
     public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
         ITestRun testRun = TestRunThreadContext.getTestRun();
-        if (testRun == null)
-        {
+        if (testRun == null) {
             classLogger.error("TestRunThreadContext.getTestRun() return null.");
             return null;
         }
@@ -50,8 +50,7 @@ public class WindowsBatteryInspector implements PerformanceInspector {
         PerformanceInspectionResult result = new PerformanceInspectionResult(rawResultFile, performanceInspection);
 
         try {
-            if (process != null && process.waitFor() != 0)
-            {
+            if (process != null && process.waitFor() != 0) {
                 classLogger.error("Exit code: " + process.exitValue());
             }
         } catch (InterruptedException e) {

@@ -1,10 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.UUID;
 
 @Data
@@ -31,9 +37,9 @@ public class AgentUser {
     @Transient
     private BatteryStrategy batteryStrategy;
 
-    public interface DeviceType {
-        int ANDROID = 1;
-        int WINDOWS = 2;
+    public static final class DeviceType {
+        public static final int ANDROID = 1;
+        public static final int WINDOWS = 2;
     }
 
     public enum BatteryStrategy {
@@ -44,12 +50,20 @@ public class AgentUser {
         Normal(120, 120),
         Aggressive(30, 30);
 
-        public final int wakeUpInterval;
-        public final int screenShotInterval;
+        private final int wakeUpInterval;
+        private final int screenShotInterval;
 
         BatteryStrategy(int wakeUpInterval, int screenShotInterval) {
             this.wakeUpInterval = wakeUpInterval;
             this.screenShotInterval = screenShotInterval;
+        }
+
+        public int getWakeUpInterval() {
+            return wakeUpInterval;
+        }
+
+        public int getScreenShotInterval() {
+            return screenShotInterval;
         }
     }
 }

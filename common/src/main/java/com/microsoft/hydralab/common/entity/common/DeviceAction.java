@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
@@ -17,10 +18,9 @@ public class DeviceAction implements Serializable {
     private String method;
     private List<String> args = new ArrayList<>();
 
-
-    public interface When {
-        String SET_UP = "setUp";
-        String TEAR_DOWN = "tearDown";
+    public static final class When {
+        public static final String SET_UP = "setUp";
+        public static final String TEAR_DOWN = "tearDown";
     }
 
     public DeviceAction() {

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import com.alibaba.fastjson.JSON;
@@ -15,8 +16,11 @@ import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class GraphAPIUtils {
+public final class GraphAPIUtils {
 
+    private GraphAPIUtils() {
+
+    }
 
     public static Group createSecurityGroup(IAuthenticationProvider authProvider) {
         GraphServiceClient graphClient = GraphServiceClient.builder().authenticationProvider(authProvider).buildClient();
@@ -31,13 +35,14 @@ public class GraphAPIUtils {
         group.mailEnabled = true;
         group.mailNickname = "yourphonecanarytestv22";
         group.securityEnabled = true;
-//        group.additionalDataManager().put("members@odata.bind", new JsonPrimitive("[  \"https://graph.microsoft.com/v1.0/users/881881d0-7286-4f7e-9212-cc1c29b99a4b\",  \"https://graph.microsoft.com/v1.0/users/839b6578-080e-4cfc-b76c-b54771628c0a\"]"));
+//        group.additionalDataManager().put("members@odata.bind",
+//        new JsonPrimitive("[  \"https://graph.microsoft.com/v1.0/users/881881d0-7286-4f7e-9212-cc1c29b99a4b\",
+//        \"https://graph.microsoft.com/v1.0/users/839b6578-080e-4cfc-b76c-b54771628c0a\"]"));
 
         return graphClient.groups()
                 .buildRequest()
                 .post(group);
     }
-
 
     public static User getMeUser(IAuthenticationProvider authProvider) {
         GraphServiceClient graphClient = GraphServiceClient.builder().authenticationProvider(authProvider).buildClient();

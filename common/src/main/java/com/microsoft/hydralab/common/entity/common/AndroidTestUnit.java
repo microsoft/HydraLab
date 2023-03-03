@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import com.alibaba.fastjson.annotation.JSONField;
@@ -7,7 +8,12 @@ import com.microsoft.hydralab.common.util.DateUtil;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
@@ -78,16 +84,16 @@ public class AndroidTestUnit implements Serializable {
      * Copied from {@link com.android.ddmlib.testrunner.InstrumentationResultParser} private class StatusCodes
      * The original constants are inaccessible.
      */
-    public interface StatusCodes {
-        int START = 1;
-        int IN_PROGRESS = 2;
+    public static final class StatusCodes {
+        public static final int START = 1;
+        public static final int IN_PROGRESS = 2;
 
         // codes used for test completed
-        int ASSUMPTION_FAILURE = -4;
-        int IGNORED = -3;
-        int FAILURE = -2;
-        int ERROR = -1;
-        int OK = 0;
+        public static final int ASSUMPTION_FAILURE = -4;
+        public static final int IGNORED = -3;
+        public static final int FAILURE = -2;
+        public static final int ERROR = -1;
+        public static final int OK = 0;
     }
 
     public String getStatusDesc() {
@@ -119,12 +125,12 @@ public class AndroidTestUnit implements Serializable {
 
     @Transient
     public String getDisplayRelStartTimeInVideo() {
-        return DateUtil.mmssFormat.format(new Date(relStartTimeInVideo));
+        return DateUtil.MMSS_FORMAT.format(new Date(relStartTimeInVideo));
     }
 
     @Transient
     public String getDisplayRelEndTimeInVideo() {
-        return DateUtil.mmssFormat.format(new Date(relEndTimeInVideo));
+        return DateUtil.MMSS_FORMAT.format(new Date(relEndTimeInVideo));
     }
 
     @JSONField(serialize = false)

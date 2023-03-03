@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.entity.agent;
 
+package com.microsoft.hydralab.common.entity.agent;
 
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import lombok.AllArgsConstructor;

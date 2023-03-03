@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import ch.qos.logback.classic.Level;
@@ -15,7 +16,11 @@ import org.slf4j.LoggerFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LogUtils {
+public final class LogUtils {
+
+    private LogUtils() {
+
+    }
 
     public enum MaskSensitiveData {
         CURRENT_PASSWORD("(current[_\\s-]*password)[=:\"\\s]*(\\w*)"),
@@ -106,16 +111,17 @@ public class LogUtils {
     }
 
     public static String scrubSensitiveArgs(String content) {
+        String rst = content;
         for (MaskSensitiveData sensitiveData : MaskSensitiveData.values()) {
             Pattern pattern = Pattern.compile(sensitiveData.getRegEx(), Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(content);
             if (matcher.find()) {
                 String maskedMessage = matcher.group(2);
                 if (maskedMessage.length() > 0) {
-                    content = content.replaceFirst(maskedMessage, "***");
+                    rst = content.replaceFirst(maskedMessage, "***");
                 }
             }
         }
-        return content;
+        return rst;
     }
 }

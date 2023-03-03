@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.screen;
 
 import cn.hutool.core.thread.ThreadUtil;
@@ -19,11 +20,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ADBScreenRecorder implements ScreenRecorder {
-    public final Object lock = new Object();
+    private final Object lock = new Object();
     private final DeviceInfo deviceInfo;
     private final Logger logger;
     private final File baseFolder;
-    public int preSleepSeconds = 0;
+    private int preSleepSeconds = 0;
     ADBOperateUtil adbOperateUtil;
     private Process recordingProcess;
     private Thread recordingThread;
@@ -92,7 +93,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
                     }
                     deviceInfo.finishCommand();
 
-                    String outputFilePrefix = new File(baseFolder, DateUtil.fileNameDateDashFormat.format(new Date())).getAbsolutePath();
+                    String outputFilePrefix = new File(baseFolder, DateUtil.FILE_NAME_DATE_DASH_FORMAT.format(new Date())).getAbsolutePath();
 
                     final String outFileFullPath = outputFilePrefix + "_" + totalTime + "_" + (totalTime + timeSpan) + ".mp4";
                     String pullComm = String.format("pull %s %s", fileName, outFileFullPath);

@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.repository;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.KeyValue;
+import com.microsoft.hydralab.common.entity.common.TestRun;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
@@ -19,15 +20,14 @@ import javax.annotation.Resource;
 @Repository
 @CacheConfig(cacheNames = "keyValueCache")
 public class KeyValueRepository {
-    public final static String UNIT_TEST_DETAIL = "UNIT_TEST_DETAIL:";
+    public static final String UNIT_TEST_DETAIL = "UNIT_TEST_DETAIL:";
     public static final String DEVICE_RES_INFO = "Device_Res_Info:";
-    public final static String CRASH_STACK_IN_DEVICE = "CRASH_STACK:";
+    public static final String CRASH_STACK_IN_DEVICE = "CRASH_STACK:";
     @Resource
     KeyValueDBRepository keyValueDBRepository;
     @Lazy
     @Resource
     KeyValueRepository keyValueRepository;
-
 
     @CachePut(key = "#result.keyid")
     public KeyValue putKeyValuePairDB(String key, String value) {

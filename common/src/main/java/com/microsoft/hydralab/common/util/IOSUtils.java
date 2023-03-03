@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -19,10 +20,15 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class IOSUtils {
+public final class IOSUtils {
+
+    private IOSUtils() {
+
+    }
+
     public static final String WDA_BUNDLE_ID = "com.microsoft.wdar.xctrunner";
-    private static final Map<String, Integer> wdaPortMap = new ConcurrentHashMap<>();
-    private static final Map<String, Integer> mjpegServerPortMap = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> WDA_PORT_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> MJPEG_SERVER_PORT_MAP = new ConcurrentHashMap<>();
     private static final Set<Integer> PORT_BLACK_LIST = new HashSet<>() {{
         add(8080);  //Reserved port
         add(8100);  //for WDA
@@ -141,33 +147,33 @@ public class IOSUtils {
     }
 
     public static int getWdaPortByUdid(String serialNum, Logger classLogger) {
-        if (!wdaPortMap.containsKey(serialNum)) {
+        if (!WDA_PORT_MAP.containsKey(serialNum)) {
             // Randomly assign a port
             int wdaPort = generateRandomPort(classLogger);
-            wdaPortMap.put(serialNum, wdaPort);
+            WDA_PORT_MAP.put(serialNum, wdaPort);
         }
-        classLogger.info("get Wda port = " + wdaPortMap.get(serialNum));
-        return wdaPortMap.get(serialNum);
+        classLogger.info("get Wda port = " + WDA_PORT_MAP.get(serialNum));
+        return WDA_PORT_MAP.get(serialNum);
     }
 
     public static int getMjpegServerPortByUdid(String serialNum, Logger classLogger, DeviceInfo deviceInfo) {
-        if (!mjpegServerPortMap.containsKey(serialNum) || !isPortOccupied(mjpegServerPortMap.get(serialNum), classLogger)) {
+        if (!MJPEG_SERVER_PORT_MAP.containsKey(serialNum) || !isPortOccupied(MJPEG_SERVER_PORT_MAP.get(serialNum), classLogger)) {
             // Randomly assign a port
             int mjpegServerPor = generateRandomPort(classLogger);
             classLogger.info("Generate a new mjpeg port = " + mjpegServerPor);
             Process process = ShellUtils.execLocalCommand("tidevice -u " + serialNum + " relay " + mjpegServerPor + " 9100", false, classLogger);
             deviceInfo.addCurrentProcess(process);
-            mjpegServerPortMap.put(serialNum, mjpegServerPor);
+            MJPEG_SERVER_PORT_MAP.put(serialNum, mjpegServerPor);
         }
-        classLogger.info("get mjpeg port = " + mjpegServerPortMap.get(serialNum));
-        return mjpegServerPortMap.get(serialNum);
+        classLogger.info("get mjpeg port = " + MJPEG_SERVER_PORT_MAP.get(serialNum));
+        return MJPEG_SERVER_PORT_MAP.get(serialNum);
     }
 
     public static void releaseMjpegServerPortByUdid(String serialNum, Logger classLogger) {
-        if (mjpegServerPortMap.containsKey(serialNum)) {
-            int mjpegServerPor = mjpegServerPortMap.get(serialNum);
+        if (MJPEG_SERVER_PORT_MAP.containsKey(serialNum)) {
+            int mjpegServerPor = MJPEG_SERVER_PORT_MAP.get(serialNum);
             ShellUtils.killProcessByCommandStr("tidevice -u " + serialNum + " relay " + mjpegServerPor + " 9100", classLogger);
-            mjpegServerPortMap.remove(serialNum, mjpegServerPor);
+            MJPEG_SERVER_PORT_MAP.remove(serialNum, mjpegServerPor);
         }
     }
 
@@ -177,7 +183,7 @@ public class IOSUtils {
         do {
             // 7000 - 9999
             port = random.nextInt(10000 - 7000) + 7000;
-        } while (wdaPortMap.containsValue(port) || PORT_BLACK_LIST.contains(port) || isPortOccupied(port, classLogger));
+        } while (WDA_PORT_MAP.containsValue(port) || PORT_BLACK_LIST.contains(port) || isPortOccupied(port, classLogger));
         return port;
     }
 

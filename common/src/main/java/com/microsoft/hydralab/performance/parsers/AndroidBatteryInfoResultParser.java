@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.performance.parsers;
 
 import com.microsoft.hydralab.performance.Entity.AndroidBatteryInfo;
@@ -10,7 +11,11 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +50,9 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
     }
 
     private AndroidBatteryInfo parseRawResultFile(File rawFile, String packageName) {
-        if (!rawFile.isFile() || !rawFile.exists()) return null;
+        if (!rawFile.isFile() || !rawFile.exists()) {
+            return null;
+        }
 
         AndroidBatteryInfo batteryInfo = new AndroidBatteryInfo();
         float totalUsage = 0.0f;
@@ -124,7 +131,9 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
     }
 
     private float parseAppDetails(String line, String keyword) {
-        if (!line.contains(keyword)) return 0;
+        if (!line.contains(keyword)) {
+            return 0;
+        }
         return parseFloat(line.split(keyword)[1].split(" ")[0], line);
     }
 

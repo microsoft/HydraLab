@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.center;
 
 import com.microsoft.hydralab.common.entity.common.AgentUser;
@@ -41,9 +42,9 @@ public class AgentDeviceGroup {
         agentVersionCode = agentUser.getVersionCode();
     }
 
-    public interface Status {
-        String HEALTHY = "HEALTHY";
-        String ERROR = "ERROR";
-        String UPDATING = "UPDATING";
+    public static final class Status {
+        public static final String HEALTHY = "HEALTHY";
+        public static final String ERROR = "ERROR";
+        public static final String UPDATING = "UPDATING";
     }
 }

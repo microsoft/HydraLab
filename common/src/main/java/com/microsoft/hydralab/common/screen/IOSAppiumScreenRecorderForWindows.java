@@ -1,17 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.screen;
 
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,12 +47,15 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
     }
 
     @Override
+    @SuppressWarnings("IllegalCatch")
     public void startRecord(int maxTimeInSecond) {
         int timeout = maxTimeInSecond > 0 ? maxTimeInSecond : DEFAULT_TIMEOUT_IN_SECOND;
         String destPath = new File(recordDir, Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();
         try {
             iosDriver.startRecordingScreen();
-            recordProcess = ShellUtils.execLocalCommand("ffmpeg -f mjpeg -i http://127.0.0.1:" + IOSUtils.getMjpegServerPortByUdid(deviceInfo.getSerialNum(), CLASS_LOGGER, deviceInfo) + " -vf scale=720:360 -vcodec h264 -y " + destPath, false, CLASS_LOGGER);
+            recordProcess = ShellUtils.execLocalCommand(
+                    "ffmpeg -f mjpeg -i http://127.0.0.1:" + IOSUtils.getMjpegServerPortByUdid(deviceInfo.getSerialNum(), CLASS_LOGGER, deviceInfo) +
+                            " -vf scale=720:360 -vcodec h264 -y " + destPath, false, CLASS_LOGGER);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -69,6 +77,7 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
         return stopRecord();
     }
 
+    @SuppressWarnings("IllegalCatch")
     private boolean stopRecord() {
         if (!isStarted) {
             return false;

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import cn.hutool.core.date.BetweenFormatter;
@@ -14,20 +15,24 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-public class DateUtil {
+public final class DateUtil {
 
-    public static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    public static final SimpleDateFormat kustoServiceToDateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    public static final SimpleDateFormat dateFormatMd = new SimpleDateFormat("MM/dd");
-    public static final SimpleDateFormat formatDateFile = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
-    public static final SimpleDateFormat ymdFormat = new SimpleDateFormat("yyyy/MM/dd");
-    public static final DateFormat appCenterFormat1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    public static final DateFormat appCenterFormat2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    public static final SimpleDateFormat mmssFormat = new SimpleDateFormat("mm:ss");
-    public static final SimpleDateFormat fileNameDateFormat = new SimpleDateFormat("MMddHHmmss");
-    public static final SimpleDateFormat fileNameDateDashFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
-    public static final SimpleDateFormat nowDirFormat = new SimpleDateFormat("yyyy" + File.separator + "MM" + File.separator + "dd" + File.separator + "HHmmss");
+    public static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static final SimpleDateFormat KUSTO_SERVICE_TO_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmm");
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    public static final SimpleDateFormat DATE_FORMAT_MD = new SimpleDateFormat("MM/dd");
+    public static final SimpleDateFormat FORMAT_DATE_FILE = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
+    public static final SimpleDateFormat YMD_FORMAT = new SimpleDateFormat("yyyy/MM/dd");
+    public static final DateFormat APP_CENTER_FORMAT_1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    public static final DateFormat APP_CENTER_FORMAT_2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    public static final SimpleDateFormat MMSS_FORMAT = new SimpleDateFormat("mm:ss");
+    public static final SimpleDateFormat FILE_NAME_DATE_FORMAT = new SimpleDateFormat("MMddHHmmss");
+    public static final SimpleDateFormat FILE_NAME_DATE_DASH_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmm");
+    public static final SimpleDateFormat NOW_DIR_FORMAT = new SimpleDateFormat("yyyy" + File.separator + "MM" + File.separator + "dd" + File.separator + "HHmmss");
+
+    private DateUtil() {
+
+    }
 
     public static Date localToUTC(Date localDate) {
         long localTimeInMillis = localDate.getTime();
@@ -49,7 +54,7 @@ public class DateUtil {
     }
 
     public static String getISO8601TimeString(Date date) {
-        return appCenterFormat1.format(date);
+        return APP_CENTER_FORMAT_1.format(date);
     }
 
     /**
@@ -61,10 +66,10 @@ public class DateUtil {
      */
     public static Date iSO8601TimeStringToDate(String timeString) {
         try {
-            return appCenterFormat1.parse(timeString);
+            return APP_CENTER_FORMAT_1.parse(timeString);
         } catch (ParseException e) {
             try {
-                return appCenterFormat2.parse(timeString);
+                return APP_CENTER_FORMAT_2.parse(timeString);
             } catch (ParseException parseException) {
                 parseException.printStackTrace();
             }
@@ -96,7 +101,7 @@ public class DateUtil {
      * return 2021-02-04 08:17:30
      */
     public static Date get5MinutesTimeMidDate(String date) throws ParseException {
-        Date fiveMinuteSpanDate = DateUtil.kustoServiceToDateFormat.parse(date.trim());
+        Date fiveMinuteSpanDate = DateUtil.KUSTO_SERVICE_TO_DATE_FORMAT.parse(date.trim());
         return new Date(fiveMinuteSpanDate.getTime() - (fiveMinuteSpanDate.getTime() % TimeUnit.MINUTES.toMillis(5)) + TimeUnit.SECONDS.toMillis(150));
     }
 }

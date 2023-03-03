@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import com.alibaba.fastjson.JSONArray;
@@ -9,7 +10,12 @@ import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
 import org.slf4j.Logger;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -165,8 +171,8 @@ public class TestRun implements Serializable, ITestRun {
     }
 
     public static class CommandlineAndTime {
-        public String line;
-        public long timestamp = System.currentTimeMillis();
+        private String line;
+        private long timestamp = System.currentTimeMillis();
 
         public CommandlineAndTime(String line) {
             this.line = line;

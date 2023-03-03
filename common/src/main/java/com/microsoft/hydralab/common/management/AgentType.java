@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.management;
 
+package com.microsoft.hydralab.common.management;
 
 import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;

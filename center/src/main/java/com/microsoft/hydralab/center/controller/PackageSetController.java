@@ -25,7 +25,7 @@ import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.common.util.PkgUtil.FILE_SUFFIX;
+import com.microsoft.hydralab.common.util.PkgUtil.FileSuffix;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +132,7 @@ public class PackageSetController {
 
             //Save app file to server
             File tempAppFile =
-                    attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE});
+                    attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FileSuffix.APK_FILE, FileSuffix.IPA_FILE});
             StorageFileInfo appFileInfo = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
             //Upload app file
             appFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appFileInfo, tempAppFile, logger);
@@ -145,7 +145,7 @@ public class PackageSetController {
             //Save test app file to server if exist
             if (testAppFile != null && !testAppFile.isEmpty()) {
                 File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativePath, false, null,
-                        new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE});
+                        new String[]{FileSuffix.APK_FILE, FileSuffix.JAR_FILE, FileSuffix.JSON_FILE});
 
                 StorageFileInfo testAppFileInfo = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
                 //Upload app file
@@ -238,7 +238,7 @@ public class PackageSetController {
         String fileRelativePath = FileUtil.getPathForToday();
         String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
         try {
-            File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
+            File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FileSuffix.JAR_FILE});
             StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativePath, StorageFileInfo.FileType.AGENT_PACKAGE);
             return Result.ok(attachmentService.saveFileInStorageAndDB(storageFileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
         } catch (HydraLabRuntimeException e) {
@@ -292,8 +292,8 @@ public class PackageSetController {
             testJsonInfo.setLatest(true);
             testJsonInfo.setTeamId(team.getTeamId());
             testJsonInfo.setTeamName(team.getTeamName());
-            String newFileName = formatDate.format(testJsonInfo.getIngestTime()) + FILE_SUFFIX.JSON_FILE;
-            File savedJson = attachmentService.verifyAndSaveFile(testJsonFile, parentDir, false, newFileName, new String[]{FILE_SUFFIX.JSON_FILE});
+            String newFileName = formatDate.format(testJsonInfo.getIngestTime()) + FileSuffix.JSON_FILE;
+            File savedJson = attachmentService.verifyAndSaveFile(testJsonFile, parentDir, false, newFileName, new String[]{FileSuffix.JSON_FILE});
             String fileRelPath = fileRelativePath + "/" + savedJson.getName();
             testJsonInfo.setBlobPath(fileRelPath);
 
@@ -392,18 +392,18 @@ public class PackageSetController {
         String[] limitFileTypes = null;
         switch (fileType) {
             case StorageFileInfo.FileType.WINDOWS_APP:
-                limitFileTypes = new String[]{FILE_SUFFIX.APPX_FILE};
+                limitFileTypes = new String[]{FileSuffix.APPX_FILE};
                 break;
             case StorageFileInfo.FileType.COMMON_FILE:
                 Assert.notNull(loadType, "loadType is required");
                 Assert.notNull(loadDir, "loadDir is required");
                 Assert.isTrue(FileUtil.isLegalFolderPath(loadDir), "illegal loadDir");
                 if (StorageFileInfo.LoadType.UNZIP.equals(loadType)) {
-                    limitFileTypes = new String[]{FILE_SUFFIX.ZIP_FILE};
+                    limitFileTypes = new String[]{FileSuffix.ZIP_FILE};
                 }
                 break;
             case StorageFileInfo.FileType.T2C_JSON_FILE:
-                limitFileTypes = new String[]{FILE_SUFFIX.JSON_FILE};
+                limitFileTypes = new String[]{FileSuffix.JSON_FILE};
                 break;
             default:
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "Error fileType");

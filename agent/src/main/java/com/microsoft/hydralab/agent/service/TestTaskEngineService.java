@@ -92,7 +92,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         if (deviceTaskControl == null) {
             testTask.setTestDevicesCount(0);
         } else {
-            testTask.setTestDevicesCount(deviceTaskControl.devices.size());
+            testTask.setTestDevicesCount(deviceTaskControl.getDevices().size());
         }
         return testTask;
     }
@@ -132,7 +132,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     public void setupTestDir(TestTask testTask) {
-        File baseDir = new File(deviceManager.getTestBaseDir(), DateUtil.nowDirFormat.format(new Date()));
+        File baseDir = new File(deviceManager.getTestBaseDir(), DateUtil.NOW_DIR_FORMAT.format(new Date()));
         if (!baseDir.exists()) {
             if (!baseDir.mkdirs()) {
                 throw new RuntimeException("mkdirs fail for: " + baseDir);
@@ -231,7 +231,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
         Assert.isTrue(result.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
-        String deviceTestResultBlobUrl = result.getAttachments().get(0).getCDNUrl();
+        String deviceTestResultBlobUrl = result.getAttachments().get(0).getCdnUrl();
         String fileName = result.getAttachments().get(0).getFileName();
         log.info("deviceTestResultBlobUrl is {}", deviceTestResultBlobUrl);
 

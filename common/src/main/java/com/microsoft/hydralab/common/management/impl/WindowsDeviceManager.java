@@ -1,17 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management.impl;
 
 import cn.hutool.core.img.ImgUtil;
 import com.android.ddmlib.TimeoutException;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
-import com.microsoft.hydralab.t2c.runner.*;
+import com.microsoft.hydralab.t2c.runner.ActionInfo;
+import com.microsoft.hydralab.t2c.runner.DriverInfo;
+import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
+import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
+import com.microsoft.hydralab.t2c.runner.TestInfo;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
@@ -47,12 +52,13 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         try {
             screenCapture(pcScreenShotImageFile.getAbsolutePath());
         } catch (IOException e) {
-            classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
+            LOGGER.error("Screen capture failed for device: {}", deviceInfo, e);
         }
-        StorageFileInfo fileInfo = new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        StorageFileInfo fileInfo =
+                new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
         String fileDownloadUrl = storageServiceClientProxy.upload(pcScreenShotImageFile, fileInfo).getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
-            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
+            LOGGER.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
             deviceInfo.setPcScreenshotImageUrl(fileDownloadUrl);
         }
@@ -78,16 +84,16 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
                         fileAvailableCallback.onFileReady(imageFile);
                     }
                 } catch (TimeoutException te) {
-                    classLogger.error("{}: {}, updateScreenshotImageAsyncDelay", te.getClass().getSimpleName(), te.getMessage());
+                    LOGGER.error("{}: {}, updateScreenshotImageAsyncDelay", te.getClass().getSimpleName(), te.getMessage());
                 } catch (Exception e) {
-                    classLogger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                 }
             }
         });
     }
 
     public void screenCapture(String outputFile) throws IOException {
-        File scrFile = appiumServerManager.getWindowsRootDriver(classLogger).getScreenshotAs(OutputType.FILE);
+        File scrFile = appiumServerManager.getWindowsRootDriver(LOGGER).getScreenshotAs(OutputType.FILE);
         BufferedImage screenshot = ImageIO.read(scrFile);
         ImgUtil.scale(screenshot, new File(outputFile), 0.7f);
     }
@@ -97,30 +103,30 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         return new AppiumE2ETestRecorder(this, this.adbOperateUtil, deviceInfo, folder, logger);
     }
 
-    public File joinImages(File PCFile, File PhoneFile, String outFileName) {
+    public File joinImages(File pcfile, File phoneFile, String outFileName) {
         File outFile = new File(screenshotDir, outFileName);
         try {
-            BufferedImage image_pc = ImageIO.read(PCFile);
-            int width_pc = image_pc.getWidth();
-            int height_pc = image_pc.getHeight();
-            int[] imageArrayPC = new int[width_pc * height_pc];
-            imageArrayPC = image_pc.getRGB(0, 0, width_pc, height_pc, imageArrayPC, 0, width_pc);
+            BufferedImage imagePc = ImageIO.read(pcfile);
+            int widthPc = imagePc.getWidth();
+            int heightPc = imagePc.getHeight();
+            int[] imageArrayPC = new int[widthPc * heightPc];
+            imageArrayPC = imagePc.getRGB(0, 0, widthPc, heightPc, imageArrayPC, 0, widthPc);
 
-            BufferedImage image_phone = ImageIO.read(PhoneFile);
-            int width_phone = image_phone.getWidth();
-            int height_phone = image_phone.getHeight();
-            int[] ImageArrayPhone = new int[width_phone * height_phone];
-            ImageArrayPhone = image_phone.getRGB(0, 0, width_phone, height_phone, ImageArrayPhone, 0, width_phone);
+            BufferedImage imagePhone = ImageIO.read(phoneFile);
+            int widthPhone = imagePhone.getWidth();
+            int heightPhone = imagePhone.getHeight();
+            int[] imageArrayPhone = new int[widthPhone * heightPhone];
+            imageArrayPhone = imagePhone.getRGB(0, 0, widthPhone, heightPhone, imageArrayPhone, 0, widthPhone);
 
-            int height_new = Math.max(height_pc, height_phone);
-            BufferedImage imageNew = new BufferedImage(width_pc + width_phone, height_new, BufferedImage.TYPE_INT_RGB);
-            imageNew.setRGB(0, 0, width_pc, height_pc, imageArrayPC, 0, width_pc);
-            imageNew.setRGB(width_pc, 0, width_phone, height_phone, ImageArrayPhone, 0, width_phone);
+            int heightNew = Math.max(heightPc, heightPhone);
+            BufferedImage imageNew = new BufferedImage(widthPc + widthPhone, heightNew, BufferedImage.TYPE_INT_RGB);
+            imageNew.setRGB(0, 0, widthPc, heightPc, imageArrayPC, 0, widthPc);
+            imageNew.setRGB(widthPc, 0, widthPhone, heightPhone, imageArrayPhone, 0, widthPhone);
 
             ImageIO.write(imageNew, "jpg", outFile);
         } catch (Exception e) {
             e.printStackTrace();
-            return PCFile;
+            return pcfile;
         }
         return outFile;
     }
@@ -136,7 +142,8 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
 
         // Check device requirements
-        int androidCount = 0, edgeCount = 0;
+        int androidCount = 0;
+        int edgeCount = 0;
 
         for (DriverInfo driverInfo : testInfo.getDrivers()) {
             if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
@@ -168,7 +175,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
                 if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
                     WindowsDriver windowsDriver;
                     testWindowsApp = driverInfo.getLauncherApp();
-                    if (testWindowsApp.length() > 0 && !testWindowsApp.equalsIgnoreCase("root")) {
+                    if (testWindowsApp.length() > 0 && !"root".equalsIgnoreCase(testWindowsApp)) {
                         windowsDriver = appiumServerManager.getWindowsAppDriver(testWindowsApp, reportLogger);
                     } else {
                         testWindowsApp = "Root";
@@ -199,7 +206,8 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
             for (ActionInfo actionInfo : caseList) {
                 BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
                 T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
-                reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
+                reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " +
+                        (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
             }
         } catch (Exception e) {
             reportLogger.error("T2C Test Error: ", e);

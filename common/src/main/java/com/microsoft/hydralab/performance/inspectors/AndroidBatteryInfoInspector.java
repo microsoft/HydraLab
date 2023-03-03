@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.performance.inspectors;
 
 import com.microsoft.hydralab.common.util.ShellUtils;

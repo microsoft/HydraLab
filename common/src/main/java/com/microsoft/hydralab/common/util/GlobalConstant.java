@@ -1,35 +1,39 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
-public interface GlobalConstant {
+public final class GlobalConstant {
+    private GlobalConstant() {
+
+    }
 
     enum AgentLiveStatus {
         ONLINE("ONLINE"),
         OFFLINE("OFFLINE");
 
-        AgentLiveStatus(String status){
+        AgentLiveStatus(String status) {
             this.status = status;
         }
 
-        public String status;
+        private String status;
 
-        public String getStatus(){
+        public String getStatus() {
             return status;
         }
 
     }
 
-    String PROMETHEUS_METRIC_DISK_USAGE_RATIO = "agent_disk_usage_ratio";
-    String PROMETHEUS_METRIC_WEBSOCKET_RECONNECT_RETRY_TIMES = "agent_ws_reconnect_retry_times";
-    String PROMETHEUS_METRIC_RUNNING_TEST_NUM = "agent_running_test_num";
-    String PROMETHEUS_METRIC_DEVICE_STATE_CHANGE_TIMES = "agent_device_state_change_times";
-    String PROMETHEUS_METRIC_TEST_DEVICE_UNSTABLE_SIGNAL = "agent_device_unstable_signal";
-    String PROMETHEUS_METRIC_TEST_DEVICE_OFFLINE_SIGNAL = "agent_device_offline_signal";
-    String PROMETHEUS_METRIC_TEST_DEVICE_RUNNING_TEST_SIGNAL= "agent_device_running_test_signal";
-    String PROMETHEUS_METRIC_TEST_DEVICE_ALIVE_SIGNAL= "agent_device_alive_signal";
-    String PROMETHEUS_METRIC_TEST_DEVICE_ADB_TIMEOUT_SIGNAL= "agent_device_adb_cmd_timeout_signal";
-    String PROMETHEUS_METRIC_WEBSOCKET_DISCONNECT_SIGNAL = "agent_ws_disconnect_signal";
-    String PROMETHEUS_METRIC_ONLINE_AGENT_NUM = "agent_online_agent_num";
-    String PROMETHEUS_METRIC_ONLINE_DEVICE_NUM = "agent_online_device_num";
+    public static final String PROMETHEUS_METRIC_DISK_USAGE_RATIO = "agent_disk_usage_ratio";
+    public static final String PROMETHEUS_METRIC_WEBSOCKET_RECONNECT_RETRY_TIMES = "agent_ws_reconnect_retry_times";
+    public static final String PROMETHEUS_METRIC_RUNNING_TEST_NUM = "agent_running_test_num";
+    public static final String PROMETHEUS_METRIC_DEVICE_STATE_CHANGE_TIMES = "agent_device_state_change_times";
+    public static final String PROMETHEUS_METRIC_TEST_DEVICE_UNSTABLE_SIGNAL = "agent_device_unstable_signal";
+    public static final String PROMETHEUS_METRIC_TEST_DEVICE_OFFLINE_SIGNAL = "agent_device_offline_signal";
+    public static final String PROMETHEUS_METRIC_TEST_DEVICE_RUNNING_TEST_SIGNAL = "agent_device_running_test_signal";
+    public static final String PROMETHEUS_METRIC_TEST_DEVICE_ALIVE_SIGNAL = "agent_device_alive_signal";
+    public static final String PROMETHEUS_METRIC_TEST_DEVICE_ADB_TIMEOUT_SIGNAL = "agent_device_adb_cmd_timeout_signal";
+    public static final String PROMETHEUS_METRIC_WEBSOCKET_DISCONNECT_SIGNAL = "agent_ws_disconnect_signal";
+    public static final String PROMETHEUS_METRIC_ONLINE_AGENT_NUM = "agent_online_agent_num";
+    public static final String PROMETHEUS_METRIC_ONLINE_DEVICE_NUM = "agent_online_device_num";
 }

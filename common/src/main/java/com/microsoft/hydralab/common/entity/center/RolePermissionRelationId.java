@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
-
 @Data
 @NoArgsConstructor
 public class RolePermissionRelationId implements Serializable {

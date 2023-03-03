@@ -74,7 +74,7 @@ public class XmlBuilder {
         testSuite.setAttribute(ATTR_TIME, Double.toString(
                 (double) (testRun.getTestEndTimeMillis() - testRun.getTestStartTimeMillis()) / 1000.f));
         testSuite.setAttribute(TIMESTAMP,
-                DateUtil.appCenterFormat2.format(DateUtil.localToUTC(new Date(testRun.getTestStartTimeMillis()))));
+                DateUtil.APP_CENTER_FORMAT_2.format(DateUtil.localToUTC(new Date(testRun.getTestStartTimeMillis()))));
         testSuite.setAttribute(HOSTNAME, InetAddress.getLocalHost().getHostName());
         if (testRun.getTestUnitList() != null) {
             testSuite.setAttribute(ATTR_SKIPPED,

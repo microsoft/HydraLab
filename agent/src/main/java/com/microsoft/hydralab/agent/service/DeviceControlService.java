@@ -88,7 +88,7 @@ public class DeviceControlService {
             return;
         }
 
-        CountDownLatch countDownLatch = deviceTaskControl.countDownLatch;
+        CountDownLatch countDownLatch = deviceTaskControl.getCountDownLatch();
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {

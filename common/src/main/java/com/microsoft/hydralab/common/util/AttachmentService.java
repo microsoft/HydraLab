@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
@@ -46,25 +47,26 @@ public class AttachmentService {
     public StorageFileInfo addAttachment(String entityId, EntityType entityType, StorageFileInfo storageFileInfo, File file, Logger logger) {
         boolean recordExists = false;
 
-        storageFileInfo.setBlobContainer(entityType.storageContainer);
+        storageFileInfo.setBlobContainer(entityType.getStorageContainer());
         List<StorageFileInfo> tempFileInfos = storageFileInfoRepository.queryStorageFileInfoByMd5(storageFileInfo.getMd5());
+        StorageFileInfo tmp = storageFileInfo;
         for (StorageFileInfo tempFileInfo : tempFileInfos) {
             if (compareFileInfo(storageFileInfo, tempFileInfo)) {
-                storageFileInfo = updateFileInStorageAndDB(tempFileInfo, file, entityType, logger);
+                tmp = updateFileInStorageAndDB(tempFileInfo, file, entityType, logger);
                 recordExists = true;
                 break;
             }
         }
         if (!recordExists) {
-            storageFileInfo = saveFileInStorageAndDB(storageFileInfo, file, entityType, logger);
+            tmp = saveFileInStorageAndDB(storageFileInfo, file, entityType, logger);
         }
-        saveRelation(entityId, entityType, storageFileInfo);
+        saveRelation(entityId, entityType, tmp);
         file.delete();
         return storageFileInfo;
     }
 
     public void removeAttachment(String entityId, EntityType entityType, String fileId) {
-        EntityFileRelation entityFileRelation = new EntityFileRelation(entityId, entityType.typeName, fileId);
+        EntityFileRelation entityFileRelation = new EntityFileRelation(entityId, entityType.getTypeName(), fileId);
         entityFileRelationRepository.delete(entityFileRelation);
     }
 
@@ -73,7 +75,7 @@ public class AttachmentService {
         storageFileInfo.setFileParser(PkgUtil.analysisFile(file, entityType));
         storageFileInfo.setCreateTime(new Date());
         storageFileInfo.setUpdateTime(new Date());
-        storageFileInfo.setBlobContainer(entityType.storageContainer);
+        storageFileInfo.setBlobContainer(entityType.getStorageContainer());
         storageFileInfo.setBlobUrl(saveFileInStorage(file, storageFileInfo, logger));
         storageFileInfoRepository.save(storageFileInfo);
         return storageFileInfo;
@@ -83,7 +85,7 @@ public class AttachmentService {
         int days = (int) ((new Date().getTime() - oldFileInfo.getUpdateTime().getTime()) / 1000 / 60 / 60 / 24);
         if (days >= storageServiceClientProxy.getStorageFileLimitDay()) {
             oldFileInfo.setUpdateTime(new Date());
-            oldFileInfo.setBlobContainer(entityType.storageContainer);
+            oldFileInfo.setBlobContainer(entityType.getStorageContainer());
             oldFileInfo.setBlobUrl(saveFileInStorage(file, oldFileInfo, logger));
             storageFileInfoRepository.save(oldFileInfo);
         }
@@ -93,7 +95,7 @@ public class AttachmentService {
     public TestJsonInfo addTestJsonFile(TestJsonInfo testJsonInfo, File file, EntityType entityType, Logger logger) {
         StorageFileInfo storageFileInfo = new StorageFileInfo(file, testJsonInfo.getBlobPath(), StorageFileInfo.FileType.T2C_JSON_FILE, entityType);
         testJsonInfo.setBlobUrl(saveFileInStorage(file, storageFileInfo, logger));
-        testJsonInfo.setBlobContainer(entityType.storageContainer);
+        testJsonInfo.setBlobContainer(entityType.getStorageContainer());
         List<TestJsonInfo> oldJsonInfoList = testJsonInfoRepository.findByIsLatestAndPackageNameAndCaseName(true, testJsonInfo.getPackageName(), testJsonInfo.getCaseName());
         if (oldJsonInfoList != null) {
             for (TestJsonInfo json : oldJsonInfoList) {
@@ -156,7 +158,7 @@ public class AttachmentService {
     public List<StorageFileInfo> getAttachments(String entityId, EntityType entityType) {
         List<StorageFileInfo> result = new ArrayList<>();
 
-        List<EntityFileRelation> fileRelations = entityFileRelationRepository.queryAllByEntityIdAndAndEntityType(entityId, entityType.typeName);
+        List<EntityFileRelation> fileRelations = entityFileRelationRepository.queryAllByEntityIdAndAndEntityType(entityId, entityType.getTypeName());
         for (EntityFileRelation fileRelation : fileRelations) {
             StorageFileInfo tempFileInfo = storageFileInfoRepository.findById(fileRelation.getFileId()).get();
             if (tempFileInfo != null) {
@@ -169,7 +171,7 @@ public class AttachmentService {
     public void saveRelation(String entityId, EntityType entityType, StorageFileInfo storageFileInfo) {
         EntityFileRelation entityFileRelation = new EntityFileRelation();
         entityFileRelation.setEntityId(entityId);
-        entityFileRelation.setEntityType(entityType.typeName);
+        entityFileRelation.setEntityType(entityType.getTypeName());
         entityFileRelation.setFileId(storageFileInfo.getFileId());
         entityFileRelationRepository.save(entityFileRelation);
     }
@@ -183,7 +185,7 @@ public class AttachmentService {
             EntityFileRelation entityFileRelation = new EntityFileRelation();
             entityFileRelation.setFileId(attachment.getFileId());
             entityFileRelation.setEntityId(entityId);
-            entityFileRelation.setEntityType(entityType.typeName);
+            entityFileRelation.setEntityType(entityType.getTypeName());
             relations.add(entityFileRelation);
         }
         entityFileRelationRepository.saveAll(relations);
@@ -238,7 +240,8 @@ public class AttachmentService {
         return null;
     }
 
-    public File verifyAndSaveFile(@NotNull MultipartFile originFile, String parentDir, boolean isBase64, String newFileName, String... fileTypes) throws HydraLabRuntimeException, IOException {
+    public File verifyAndSaveFile(@NotNull MultipartFile originFile, String parentDir, boolean isBase64, String newFileName, String... fileTypes)
+            throws HydraLabRuntimeException, IOException {
         File parentDirFile = new File(parentDir);// CodeQL [java/path-injection] False Positive: Has verified the string by regular expression
         if (!parentDirFile.exists() && !parentDirFile.mkdirs()) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "mkdirs failed!");
@@ -261,13 +264,13 @@ public class AttachmentService {
                 throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "error file type: " + filename);
             }
         }
-
+        String tmpFileName = newFileName;
         if (StringUtils.isEmpty(newFileName)) {
-            newFileName = filename.replace(fileSuffix, "") + "_" + System.currentTimeMillis() % 10000 + "_" + fileSuffix;
+            tmpFileName = filename.replace(fileSuffix, "") + "_" + System.currentTimeMillis() % 10000 + "_" + fileSuffix;
         }
 
-        newFileName = FileUtil.getLegalFileName(newFileName);
-        File file = new File(parentDir, newFileName);// CodeQL [java/path-injection] False Positive: Has verified the string by regular expression
+        tmpFileName = FileUtil.getLegalFileName(tmpFileName);
+        File file = new File(parentDir, tmpFileName);// CodeQL [java/path-injection] False Positive: Has verified the string by regular expression
         InputStream inputStream = originFile.getInputStream();
         if (isBase64) {
             inputStream = new Base64InputStream(originFile.getInputStream());

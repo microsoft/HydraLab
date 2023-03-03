@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
@@ -13,14 +14,14 @@ public class AccessInfo {
     private String key;
     private Date ingestTime;
 
-    public AccessInfo(String name){
+    public AccessInfo(String name) {
         this.name = name;
-        key = UUID.randomUUID().toString().replace("-","");
+        key = UUID.randomUUID().toString().replace("-", "");
         ingestTime = new Date();
     }
 
-    public interface TYPE{
-        String GROUP = "GROUP";
-        String DEVICE = "DEVICE";
+    public static final class TYPE {
+        public static final String GROUP = "GROUP";
+        public static final String DEVICE = "DEVICE";
     }
 }

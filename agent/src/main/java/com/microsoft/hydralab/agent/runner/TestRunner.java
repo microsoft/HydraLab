@@ -234,7 +234,7 @@ public abstract class TestRunner {
 
     private Logger createLoggerForTestRun(TestRun testRun, String loggerNamePrefix, Logger parentLogger) {
         parentLogger.info("Start setup report child parentLogger");
-        String dateInfo = DateUtil.fileNameDateFormat.format(new Date());
+        String dateInfo = DateUtil.FILE_NAME_DATE_FORMAT.format(new Date());
         File instrumentLogFile = new File(testRun.getResultFolder(), loggerNamePrefix + "_" + dateInfo + ".log");
         // make sure it's a child logger of the parentLogger
         String loggerName = parentLogger.getName() + ".test." + dateInfo;

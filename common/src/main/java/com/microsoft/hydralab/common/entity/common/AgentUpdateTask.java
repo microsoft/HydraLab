@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
@@ -20,31 +21,46 @@ public class AgentUpdateTask {
     private StorageFileInfo packageInfo;
     private List<UpdateMsg> updateMsgs = new ArrayList<>();
 
-
-    public interface TaskConst {
-        String STATUS_UPDATING = "UPDATING";
-        String STATUS_FAIL = "FAIL";
-        String STATUS_SUCCESS = "SUCCESS";
-        String STATUS_NONE = "NONE";
-        String PARAM_VERSION_NAME = "versionName";
-        String PARAM_VERSION_CODE = "versionCode";
-        String PROPERTY_PATH = "BOOT-INF/classes/version.properties";
-        String PROPERTY_VERSION_NAME = "agent.version";
-        String PROPERTY_VERSION_CODE = "agent.versionCode";
+    public static final class TaskConst {
+        public static final String STATUS_UPDATING = "UPDATING";
+        public static final String STATUS_FAIL = "FAIL";
+        public static final String STATUS_SUCCESS = "SUCCESS";
+        public static final String STATUS_NONE = "NONE";
+        public static final String PARAM_VERSION_NAME = "versionName";
+        public static final String PARAM_VERSION_CODE = "versionCode";
+        public static final String PROPERTY_PATH = "BOOT-INF/classes/version.properties";
+        public static final String PROPERTY_VERSION_NAME = "agent.version";
+        public static final String PROPERTY_VERSION_CODE = "agent.versionCode";
 
     }
 
     public static class UpdateMsg {
-        public Boolean isProceed;
-        public String message;
-        public String errorDesc;
-        public Date recordTime;
+        private Boolean isProceed;
+        private String message;
+        private String errorDesc;
+        private Date recordTime;
 
         public UpdateMsg(Boolean isProceed, String message, String errorDesc) {
             recordTime = new Date();
             this.isProceed = isProceed;
             this.message = message;
             this.errorDesc = errorDesc;
+        }
+
+        public Boolean isProceed() {
+            return isProceed;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getErrorDesc() {
+            return errorDesc;
+        }
+
+        public Date getRecordTime() {
+            return recordTime;
         }
     }
 

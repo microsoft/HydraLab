@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import cn.hutool.core.util.ZipUtil;
@@ -14,7 +15,12 @@ import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
 import org.springframework.util.Assert;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.file.Files;
 import java.util.Enumeration;
@@ -22,14 +28,19 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class PkgUtil {
+public final class PkgUtil {
+
+    private PkgUtil() {
+
+    }
+
     public static JSONObject analysisFile(File file, EntityType entityType) {
         JSONObject res = new JSONObject();
         switch (entityType) {
             case APP_FILE_SET:
-                if (file.getName().endsWith(FILE_SUFFIX.APK_FILE)) {
+                if (file.getName().endsWith(FileSuffix.APK_FILE)) {
                     res = analysisApkFile(file);
-                } else if (file.getName().endsWith(FILE_SUFFIX.IPA_FILE)) {
+                } else if (file.getName().endsWith(FileSuffix.IPA_FILE)) {
                     res = analysisIpaFile(file);
                 }
                 break;
@@ -48,7 +59,7 @@ public class PkgUtil {
         File zipFile = null;
 
         try {
-            zipFile = convertToZipFile(file, FILE_SUFFIX.JAR_FILE);
+            zipFile = convertToZipFile(file, FileSuffix.JAR_FILE);
             Assert.notNull(zipFile, "Convert .jar file to .zip file failed.");
             propertyStream = ZipUtil.get(new ZipFile(zipFile), TaskConst.PROPERTY_PATH);
             Properties prop = new Properties();
@@ -95,8 +106,10 @@ public class PkgUtil {
     private static JSONObject analysisIpaFile(File ipa) {
         JSONObject res = new JSONObject();
         try {
-            String name, pkgName, version;
-            File zipFile = convertToZipFile(ipa, FILE_SUFFIX.IPA_FILE);
+            String name;
+            String pkgName;
+            String version;
+            File zipFile = convertToZipFile(ipa, FileSuffix.IPA_FILE);
             Assert.notNull(zipFile, "Convert .ipa file to .zip file failed.");
             File file = getIpaPlistFile(zipFile, zipFile.getParent());
             //Need third-party jar package dd-plist
@@ -197,7 +210,7 @@ public class PkgUtil {
     private static File convertToZipFile(File file, String suffix) {
         try {
             int bytes = 0;
-            String filename = file.getAbsolutePath().replaceAll(suffix, FILE_SUFFIX.ZIP_FILE);
+            String filename = file.getAbsolutePath().replaceAll(suffix, FileSuffix.ZIP_FILE);
             File zipFile = new File(filename);
             if (file.exists()) {
                 //Create a Zip file
@@ -218,12 +231,12 @@ public class PkgUtil {
         return null;
     }
 
-    public interface FILE_SUFFIX {
-        String APK_FILE = ".apk";
-        String JAR_FILE = ".jar";
-        String APPX_FILE = ".appxbundle";
-        String ZIP_FILE = ".zip";
-        String IPA_FILE = ".ipa";
-        String JSON_FILE = ".json";
+    public static final class FileSuffix {
+        public static final String APK_FILE = ".apk";
+        public static final String JAR_FILE = ".jar";
+        public static final String APPX_FILE = ".appxbundle";
+        public static final String ZIP_FILE = ".zip";
+        public static final String IPA_FILE = ".ipa";
+        public static final String JSON_FILE = ".json";
     }
 }

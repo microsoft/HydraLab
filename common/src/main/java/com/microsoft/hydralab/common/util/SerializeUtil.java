@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import cn.hutool.core.util.ZipUtil;
@@ -11,11 +12,16 @@ import com.microsoft.hydralab.common.entity.common.Message;
 
 import java.nio.charset.StandardCharsets;
 
-public class SerializeUtil {
+public final class SerializeUtil {
     static {
         // add auto type support for following entities
         ParserConfig.getGlobalInstance().addAccept("com.microsoft.hydralab.common.entity.common.");
     }
+
+    private SerializeUtil() {
+
+    }
+
     public static byte[] messageToByteArr(Message message) {
         return ZipUtil.gzip(JSON.toJSONString(message, SerializerFeature.WriteClassName), StandardCharsets.UTF_8.toString());
     }

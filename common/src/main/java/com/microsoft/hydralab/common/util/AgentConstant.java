@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class AgentConstant {
+public final class AgentConstant {
     public static final String UNKNOWN_IOS_MODEL = "Unknown iOS Device";
-    public static final Map<String, String> iOSProductModelMap  = new HashMap<String, String>() {{
+    @SuppressWarnings("ConstantName")
+    public static final Map<String, String> iOSProductModelMap = new HashMap<String, String>() {{
         put("i386", "iPhone Simulator");
         put("x86_64", "iPhone Simulator");
         put("arm64", "iPhone Simulator");
@@ -174,4 +176,8 @@ public class AgentConstant {
         put("Watch6,8", "Apple Watch Series 7 41mm case (GPS+Cellular)");
         put("Watch6,9", "Apple Watch Series 7 45mm case (GPS+Cellular)");
     }};
+
+    private AgentConstant() {
+
+    }
 }

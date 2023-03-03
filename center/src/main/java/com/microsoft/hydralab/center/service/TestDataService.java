@@ -155,7 +155,7 @@ public class TestDataService {
     public void saveTestTaskDataFromAgent(TestTask testTask, boolean persistence, String agentId) {
         TestTask oldTestTask = testDataServiceCache.getTestTaskDetail(testTask.getId());
         //run by device
-        if (oldTestTask.agentIds.size() == 0) {
+        if (oldTestTask.getAgentIds().size() == 0) {
             testDataServiceCache.saveTestTaskData(testTask);
             return;
         }
@@ -168,9 +168,9 @@ public class TestDataService {
         oldTestTask.setTotalTestCount(oldTestTask.getTotalTestCount() + testTask.getTotalTestCount());
         oldTestTask.setTotalFailCount(oldTestTask.getTotalFailCount() + testTask.getTotalFailCount());
         oldTestTask.setTestSuite(testTask.getTestSuite());
-        oldTestTask.agentIds.remove(agentId);
+        oldTestTask.getAgentIds().remove(agentId);
 
-        boolean isAllFinish = oldTestTask.agentIds.size() == 0;
+        boolean isAllFinish = oldTestTask.getAgentIds().size() == 0;
         if (isAllFinish) {
             oldTestTask.setStatus(TestTask.TestStatus.FINISHED);
             oldTestTask.setEndDate(testTask.getEndDate());

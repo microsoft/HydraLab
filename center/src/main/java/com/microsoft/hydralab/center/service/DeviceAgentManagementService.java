@@ -233,13 +233,13 @@ public class DeviceAgentManagementService {
             case Const.Path.AGENT_UPDATE:
                 if (message.getBody() instanceof AgentUpdateTask.UpdateMsg) {
                     AgentUpdateTask.UpdateMsg updateMsg = (AgentUpdateTask.UpdateMsg) message.getBody();
-                    log.info("Agent {} is updating, message {}", savedSession.agentUser.getId(), updateMsg.message);
+                    log.info("Agent {} is updating, message {}", savedSession.agentUser.getId(), updateMsg.getMessage());
                     AgentUpdateTask tempTask = agentUpdateMap.get(savedSession.agentUser.getId());
                     if (tempTask == null || !AgentUpdateTask.TaskConst.STATUS_UPDATING.equals(tempTask.getUpdateStatus())) {
                         break;
                     }
                     tempTask.getUpdateMsgs().add(updateMsg);
-                    if (!updateMsg.isProceed) {
+                    if (!updateMsg.isProceed()) {
                         tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_FAIL);
                         agentDeviceGroups.get(savedSession.agentUser.getId()).setAgentStatus(AgentDeviceGroup.Status.HEALTHY);
                     }

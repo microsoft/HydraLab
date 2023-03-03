@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.common.monitor;
 
+package com.microsoft.hydralab.common.monitor;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;
@@ -12,20 +12,28 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MetricPushGateway extends PushGateway {
-    public final AtomicBoolean isBasicAuthSet = new AtomicBoolean(false);
+    private final AtomicBoolean isBasicAuthSet = new AtomicBoolean(false);
 
     public MetricPushGateway(String serverBaseURLStr) {
         super(serverBaseURLStr);
     }
+
     public MetricPushGateway(URL serverBaseURL) {
         super(serverBaseURL);
+    }
+
+    public void setBasicAuth(boolean isSet) {
+        isBasicAuthSet.set(isSet);
+    }
+
+    public boolean isBasicAuthSet() {
+        return isBasicAuthSet.get();
     }
 
     public void pushAdd(CollectorRegistry registry, String job, Map<String, String> groupingKey) throws IOException {
         try {
             super.pushAdd(registry, job, groupingKey);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // if already get basic auth info from center and still fail
             if (isBasicAuthSet.get()) {
                 throw e;

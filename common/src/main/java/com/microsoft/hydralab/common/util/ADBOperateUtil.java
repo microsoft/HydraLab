@@ -1,8 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
-import com.android.ddmlib.*;
+import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.AndroidDebugBridge;
+import com.android.ddmlib.DdmPreferences;
+import com.android.ddmlib.IDevice;
+import com.android.ddmlib.IShellOutputReceiver;
+import com.android.ddmlib.InstallException;
+import com.android.ddmlib.InstallReceiver;
+import com.android.ddmlib.RawImage;
+import com.android.ddmlib.ShellCommandUnresponsiveException;
+import com.android.ddmlib.TimeoutException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelReceiver;
@@ -32,6 +42,7 @@ public class ADBOperateUtil {
     private File mAdbPath;
     private String adbServerHost = DdmPreferences.DEFAULT_ADBHOST_VALUE;
     private AndroidDebugBridge mAndroidDebugBridge;
+
     public void init(AndroidDebugBridge.IDeviceChangeListener mListener) throws IOException {
         mAndroidHome = System.getenv("ANDROID_HOME");
         Assert.notNull(mAndroidHome, "ANDROID_HOME env var must be set and pointing to the home path of Android SDK.");
@@ -62,6 +73,7 @@ public class ADBOperateUtil {
         Assert.notNull(mAndroidDebugBridge, "Create AndroidDebugBridge failed");
     }
 
+    @SuppressWarnings("LineLength")
     /**
      * This method will use reflection API to modify the value of the ADB server host address.
      * For more details of the source code, you may refer to
@@ -130,7 +142,9 @@ public class ADBOperateUtil {
         }
     }
 
-    public void executeShellCommandOnDevice(DeviceInfo deviceInfo, String command, IShellOutputReceiver receiver, int testTimeOutSec) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
+    @SuppressWarnings("ThrowsCount")
+    public void executeShellCommandOnDevice(DeviceInfo deviceInfo, String command, IShellOutputReceiver receiver, int testTimeOutSec)
+            throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
         IDevice device = getDeviceByInfo(deviceInfo);
         Assert.notNull(device, "Not such device is available " + deviceInfo.getSerialNum());
         device.executeShellCommand(command, receiver, testTimeOutSec, 120, TimeUnit.SECONDS);
@@ -141,7 +155,6 @@ public class ADBOperateUtil {
         getNotNullLogger(logger).info("executeDeviceCommandOnPC: {}", commandLine);
         return runtime.exec(commandLine);
     }
-
 
     public Process executeCommandOnPC(String command, Logger logger) throws IOException {
         String commandLine = String.format("%s -H %s %s", mAdbPath.getAbsolutePath(), adbServerHost, command);
@@ -178,7 +191,6 @@ public class ADBOperateUtil {
         }
         return receiver.isSuccessfullyCompleted();
     }
-
 
     public boolean uninstallApp(DeviceInfo deviceInfo, String packageName, Logger logger) throws InstallException {
         IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
@@ -257,9 +269,9 @@ public class ADBOperateUtil {
                     if (line.contains(pkgName) && !line.contains(pkgName + ":")) {
                         String[] args = line.split("\\s+");
                         for (String arg : args) {
-                            arg = arg.trim();
-                            if (arg.matches("\\d+")) {
-                                pid[0] = Integer.parseInt(arg);
+                            String tmp = arg.trim();
+                            if (tmp.matches("\\d+")) {
+                                pid[0] = Integer.parseInt(tmp);
                                 return;
                             }
                         }

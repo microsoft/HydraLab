@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.file.impl.azure;
 
 import com.microsoft.hydralab.common.file.StorageProperties;
@@ -16,12 +17,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class AzureBlobProperty implements StorageProperties {
     private String connection;
-    private long SASExpiryTimeFront;
-    private long SASExpiryTimeAgent;
-    private long SASExpiryUpdate;
+    private long sasExpiryTimeFront;
+    private long sasExpiryTimeAgent;
+    private long sasExpiryUpdate;
     private String timeUnit;
     private int fileLimitDay;
-    private String CDNUrl;
+    private String cdnUrl;
 
     private static final String SCREENSHOT_CONTAINER_NAME = "images";
     private static final String APP_FILE_CONTAINER_NAME = "pkgstore";

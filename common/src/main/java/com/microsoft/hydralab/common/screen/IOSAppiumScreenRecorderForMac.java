@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.screen;
 
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.appium.java_client.ios.IOSStartScreenRecordingOptions;
 
@@ -23,6 +24,7 @@ public class IOSAppiumScreenRecorderForMac extends IOSAppiumScreenRecorder {
     }
 
     @Override
+    @SuppressWarnings("IllegalCatch")
     public void startRecord(int maxTimeInSecond) {
         int timeout = maxTimeInSecond > 0 ? maxTimeInSecond : DEFAULT_TIMEOUT_IN_SECOND;
         try {
@@ -41,6 +43,7 @@ public class IOSAppiumScreenRecorderForMac extends IOSAppiumScreenRecorder {
     }
 
     @Override
+    @SuppressWarnings("IllegalCatch")
     public boolean finishRecording() {
         if (!isStarted) {
             return false;

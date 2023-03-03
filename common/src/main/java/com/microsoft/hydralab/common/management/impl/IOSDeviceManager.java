@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.impl.IOSLogCollector;
@@ -37,8 +38,9 @@ import java.util.stream.Collectors;
 import static com.microsoft.hydralab.common.util.AgentConstant.UNKNOWN_IOS_MODEL;
 
 public class IOSDeviceManager extends DeviceManager {
+    @SuppressWarnings("ConstantName")
     public static final String iOSDeviceManufacturer = "Apple";
-    static final Logger classLogger = LoggerFactory.getLogger(IOSDeviceManager.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(IOSDeviceManager.class);
     private final Map<String, DeviceInfo> iOSDeviceInfoMap = new HashMap<>();
 
     private boolean isConnectedToWindowsOS;
@@ -50,7 +52,7 @@ public class IOSDeviceManager extends DeviceManager {
     @Override
     public void init() throws Exception {
         String osName = System.getProperty("os.name");
-        classLogger.info("Devices are connected to " + osName);
+        LOGGER.info("Devices are connected to " + osName);
         if (osName.startsWith("Windows")) {
             isConnectedToWindowsOS = true;
             IOSAppiumScreenRecorderForWindows.copyScript(testBaseDir);
@@ -58,8 +60,8 @@ public class IOSDeviceManager extends DeviceManager {
             // Mac, unix or linux
             isConnectedToWindowsOS = false;
         }
-        ShellUtils.killProcessByCommandStr("tidevice", classLogger);
-        IOSUtils.startIOSDeviceWatcher(classLogger, this);
+        ShellUtils.killProcessByCommandStr("tidevice", LOGGER);
+        IOSUtils.startIOSDeviceWatcher(LOGGER, this);
     }
 
     @Override
@@ -88,7 +90,7 @@ public class IOSDeviceManager extends DeviceManager {
         for (Map.Entry<String, DeviceInfo> entry : entries) {
             DeviceInfo value = entry.getValue();
             if (value == null || !value.isAlive()) {
-                classLogger.debug("Invalid device: {}", value);
+                LOGGER.debug("Invalid device: {}", value);
                 continue;
             }
             set.add(value);
@@ -106,12 +108,13 @@ public class IOSDeviceManager extends DeviceManager {
             imageRelPath = getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
             deviceInfo.setImageRelPath(imageRelPath);
         }
-        IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), screenshotImageFile.getAbsolutePath(), classLogger);
+        IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), screenshotImageFile.getAbsolutePath(), LOGGER);
         deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
-        StorageFileInfo fileInfo = new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        StorageFileInfo fileInfo =
+                new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
         String fileDownloadUrl = storageServiceClientProxy.upload(screenshotImageFile, fileInfo).getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
-            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
+            LOGGER.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
             deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
         }
@@ -140,7 +143,7 @@ public class IOSDeviceManager extends DeviceManager {
 
     @Override
     public void wakeUpDevice(DeviceInfo deviceInfo, Logger logger) {
-        classLogger.info("Unlocking may not work as expected, please keep your device wake.");
+        LOGGER.info("Unlocking may not work as expected, please keep your device wake.");
         getAppiumServerManager().getIOSDriver(deviceInfo, logger).unlockDevice();
     }
 
@@ -152,12 +155,12 @@ public class IOSDeviceManager extends DeviceManager {
 
     @Override
     public void grantPermission(DeviceInfo deviceInfo, String packageName, String permissionName, Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        LOGGER.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override
     public void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @NotNull Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        LOGGER.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override
@@ -174,17 +177,17 @@ public class IOSDeviceManager extends DeviceManager {
 
     @Override
     public void resetPackage(DeviceInfo deviceInfo, String packageName, Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        LOGGER.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override
     public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent, @NotNull String pathOnDevice, @Nullable Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        LOGGER.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override
     public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        LOGGER.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override
@@ -203,7 +206,7 @@ public class IOSDeviceManager extends DeviceManager {
 
     @Override
     public void setProperty(DeviceInfo deviceInfo, String property, String val, Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        LOGGER.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override
@@ -219,14 +222,14 @@ public class IOSDeviceManager extends DeviceManager {
 
     @Override
     public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        LOGGER.info("Nothing Implemented for iOS in " + currentMethodName());
         return true;
     }
 
     @Override
     public boolean isAppInstalled(DeviceInfo deviceInfo, String packageName, Logger logger) {
         String result = IOSUtils.getAppList(deviceInfo.getSerialNum(), logger);
-        if (result != null && !result.equals("")) {
+        if (result != null && !"".equals(result)) {
             for (String line : result.split("\n")) {
                 if (line.startsWith(packageName + " ")) {
                     return true;
@@ -238,7 +241,7 @@ public class IOSDeviceManager extends DeviceManager {
 
     @Override
     public void updateAllDeviceInfo() {
-        String deviceListJsonStr = IOSUtils.getIOSDeviceListJsonStr(classLogger);
+        String deviceListJsonStr = IOSUtils.getIOSDeviceListJsonStr(LOGGER);
         JSONArray deviceListJson = JSON.parseArray(deviceListJsonStr);
         Map<String, DeviceInfo> latestDeviceInfoMap = new HashMap<>();
 
@@ -269,7 +272,7 @@ public class IOSDeviceManager extends DeviceManager {
 //                    classLogger.info("Device " + serialNum + " disconnected");
                     info.setStatus(DeviceInfo.OFFLINE);
                     deviceStatusListenerManager.onDeviceInactive(info);
-                    getAppiumServerManager().quitIOSDriver(info, classLogger);
+                    getAppiumServerManager().quitIOSDriver(info, LOGGER);
                 }
             }
             for (Map.Entry<String, DeviceInfo> infoEntry : latestDeviceInfoMap.entrySet()) {
@@ -302,7 +305,7 @@ public class IOSDeviceManager extends DeviceManager {
     }
 
     public void updateDeviceDetailByUdid(DeviceInfo deviceInfo, String udid) {
-        String deviceDetailJsonStr = IOSUtils.getIOSDeviceDetailInfo(udid, classLogger);
+        String deviceDetailJsonStr = IOSUtils.getIOSDeviceDetailInfo(udid, LOGGER);
         JSONObject deviceDetailJson = JSON.parseObject(deviceDetailJsonStr);
         deviceInfo.setAbiList(deviceDetailJson.getString("CPUArchitecture"));
 
@@ -323,7 +326,7 @@ public class IOSDeviceManager extends DeviceManager {
 
     @Override
     public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName, Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        LOGGER.info("Nothing Implemented for iOS in " + currentMethodName());
         return true;
     }
 
@@ -354,7 +357,7 @@ public class IOSDeviceManager extends DeviceManager {
 
     @Override
     public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        LOGGER.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     private String currentMethodName() {

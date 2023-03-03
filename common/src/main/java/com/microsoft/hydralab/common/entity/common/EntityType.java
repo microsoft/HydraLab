@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import com.microsoft.hydralab.common.file.StorageProperties;
@@ -11,11 +12,19 @@ public enum EntityType {
     AGENT_PACKAGE("AGENT_PKG"),
     TEST_JSON("TEST_JSON");
 
-    public String typeName;
-    public String storageContainer;
+    private String typeName;
+    private String storageContainer;
 
     EntityType(String typeName) {
         this.typeName = typeName;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public String getStorageContainer() {
+        return storageContainer;
     }
 
     public static void setInstanceContainer(StorageProperties storageProperties) {

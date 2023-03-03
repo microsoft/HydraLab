@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.file.impl.azure;
 
 import com.microsoft.hydralab.common.file.AccessToken;

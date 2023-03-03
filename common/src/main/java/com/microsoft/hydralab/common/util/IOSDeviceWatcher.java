@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
@@ -30,7 +31,9 @@ public class IOSDeviceWatcher extends Thread {
             BufferedReader bufferedReader = new BufferedReader(isr);
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                if (iosDeviceManagerRef.get() == null) break;
+                if (iosDeviceManagerRef.get() == null) {
+                    break;
+                }
                 if (line.contains("MessageType")) {
                     Objects.requireNonNull(iosDeviceManagerRef.get()).updateAllDeviceInfo();
                 }

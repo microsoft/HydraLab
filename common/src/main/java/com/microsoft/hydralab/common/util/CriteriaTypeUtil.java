@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import com.alibaba.fastjson.JSONArray;
@@ -131,6 +132,5 @@ public class CriteriaTypeUtil<T> {
         }
         return date;
     }
-
 
 }

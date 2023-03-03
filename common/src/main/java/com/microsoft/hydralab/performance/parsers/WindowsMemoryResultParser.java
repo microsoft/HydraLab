@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.performance.parsers;
 
 import com.microsoft.hydralab.performance.Entity.WindowsMemoryParsedData;
@@ -21,7 +22,7 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
 
     private final Logger classLogger = LoggerFactory.getLogger(getClass());
 
-    private static final Pattern pattern = Pattern.compile("^Id=(.*?) .*?ProcessName=(.*?) " +
+    private static final Pattern PATTERN = Pattern.compile("^Id=(.*?) .*?ProcessName=(.*?) " +
             ".*?NonpagedSystemMemorySize64=(.*?) .*?PagedMemorySize64=(.*?) .*?PagedSystemMemorySize64=(.*?) " +
             ".*?PeakPagedMemorySize64=(.*?) .*?PeakVirtualMemorySize64=(.*?) .*?PeakWorkingSet64=(.*?) " +
             ".*?PrivateMemorySize64=(.*?) .*?WorkingSet64=(.*?) .*?Description=(.*?) .*?Path=(.*?) .*?Product=(.*?) " +
@@ -29,19 +30,16 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
 
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
-        for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
-        {
+        for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults) {
             try (BufferedReader reader = new BufferedReader(new FileReader(inspectionResult.rawResultFile,
                     StandardCharsets.UTF_16))) {
                 WindowsMemoryParsedData parsedData = new WindowsMemoryParsedData();
                 inspectionResult.parsedData = parsedData;
                 String line;
 
-                while ((line = reader.readLine()) != null)
-                {
-                    Matcher matcher = pattern.matcher(line);
-                    while (matcher.find())
-                    {
+                while ((line = reader.readLine()) != null) {
+                    Matcher matcher = PATTERN.matcher(line);
+                    while (matcher.find()) {
                         Long processId = Long.parseLong(matcher.group(1));
                         String processName = matcher.group(2);
                         WindowsMemoryParsedData.WindowsMemoryMetrics windowsMemoryMetrics =
@@ -62,8 +60,7 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
         return performanceTestResult;
     }
 
-    private WindowsMemoryParsedData.WindowsMemoryMetrics getWindowsMemoryMetrics(Matcher matcher)
-    {
+    private WindowsMemoryParsedData.WindowsMemoryMetrics getWindowsMemoryMetrics(Matcher matcher) {
         long nonpagedSystemMemorySize64 = Long.parseLong(matcher.group(3));
         long pagedMemorySize64 = Long.parseLong(matcher.group(4));
         long pagedSystemMemorySize64 = Long.parseLong(matcher.group(5));

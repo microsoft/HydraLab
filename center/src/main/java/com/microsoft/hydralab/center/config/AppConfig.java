@@ -87,7 +87,7 @@ public class AppConfig {
         }
         MetricPushGateway pushGateway = new MetricPushGateway(new URL(baseUrl));
         pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(pushgatewayUsername, pushgatewayPassword));
-        pushGateway.isBasicAuthSet.set(true);
+        pushGateway.setBasicAuth(true);
 
         return pushGateway;
     }

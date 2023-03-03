@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.file;
 
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
-import com.microsoft.hydralab.common.file.AccessToken;
-import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.file.impl.azure.AzureBlobClientAdapter;
 import com.microsoft.hydralab.common.file.impl.azure.AzureBlobProperty;
 import com.microsoft.hydralab.common.util.Const;

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -28,7 +29,11 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -36,7 +41,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
 
 @Service
 public class AppiumServerManager {
@@ -242,7 +246,9 @@ public class AppiumServerManager {
 
     @Nonnull
     private String getHexAppTopLevelWindowByProcessName(String processName, Logger logger) {
-        String processInfo = ShellUtils.execLocalCommandWithResult(ShellUtils.POWER_SHELL_PATH + " -Command " + "\"(Get-Process | where {$_.mainWindowTitle -and $_.mainWindowHandle -ne 0 -and $_.Name -eq '" + processName + "'} | Select mainWindowHandle).mainWindowHandle\"", logger);
+        String processInfo = ShellUtils.execLocalCommandWithResult(
+                ShellUtils.POWER_SHELL_PATH + " -Command " + "\"(Get-Process | where {$_.mainWindowTitle -and $_.mainWindowHandle -ne 0 -and $_.Name -eq '" + processName +
+                        "'} | Select mainWindowHandle).mainWindowHandle\"", logger);
         logger.info(processName + " processInfo: " + processInfo);
         if (processInfo != null && processInfo.length() > 0) {
             String handlerIdStr = processInfo.trim().split(" ")[0];
@@ -288,7 +294,6 @@ public class AppiumServerManager {
         edgeDriverName = new File(workspacePath, EDGE_DRIVER_EXE).getAbsolutePath();
         edgeDriverVersionFile = new File(workspacePath, EDGE_DRIVER_VERSION_TXT).getAbsolutePath();
     }
-
 
     public WindowsDriver getWindowsEdgeDriver(Logger logger) {
         startAppiumServer();
@@ -380,7 +385,6 @@ public class AppiumServerManager {
         ThreadUtils.safeSleep(TimeUnit.SECONDS.toMillis(2));
 
     }
-
 
     public void quitIOSDriver(DeviceInfo deviceInfo, Logger logger) {
         String udid = deviceInfo.getSerialNum();

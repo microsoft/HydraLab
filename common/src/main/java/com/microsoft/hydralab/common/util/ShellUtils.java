@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import com.microsoft.hydralab.agent.runner.ITestRun;
@@ -7,14 +8,23 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
-public class ShellUtils {
+public final class ShellUtils {
+    @SuppressWarnings("VisibilityModifier")
     public static final String POWER_SHELL_PATH = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
+    @SuppressWarnings("VisibilityModifier")
     public static boolean isConnectedToWindowsOS = System.getProperty("os.name").startsWith("Windows");
 
-    private static String[] getFullCommand(String command)
-    {
+    private ShellUtils() {
+
+    }
+
+    private static String[] getFullCommand(String command) {
         String shellProcess = "";
         String args = "";
 
@@ -110,7 +120,8 @@ public class ShellUtils {
             String processName = commandStr.split(" ")[0];
             shellProcess = POWER_SHELL_PATH;
             args = "-Command";
-            command = "\"Get-WmiObject Win32_Process -Filter {name like '%" + processName + "%' and CommandLine like '%" + commandStr.replace(" ", "%") + "%'} | Select-Object ProcessId -OutVariable pids; if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}\"";
+            command = "\"Get-WmiObject Win32_Process -Filter {name like '%" + processName + "%' and CommandLine like '%" + commandStr.replace(" ", "%") +
+                    "%'} | Select-Object ProcessId -OutVariable pids; if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}\"";
         } else {
             shellProcess = "sh";
             args = "-c";

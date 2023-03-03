@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.screen;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
+import com.microsoft.hydralab.common.util.Const;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
@@ -15,7 +16,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class FFmpegConcatUtil {
+public final class FFmpegConcatUtil {
+
+    private FFmpegConcatUtil() {
+
+    }
 
     public static File concatVideos(List<File> videos, File outputDir, Logger logger) {
         if (videos.isEmpty()) {
@@ -43,7 +48,6 @@ public class FFmpegConcatUtil {
                 // The interrupted status of the thread is cleared by this method.
                 Assert.isTrue(Thread.interrupted());
             }
-
 
             process.waitFor();
             return new File(outputDir, fileName);

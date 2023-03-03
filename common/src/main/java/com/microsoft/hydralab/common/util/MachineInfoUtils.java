@@ -1,11 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import java.util.Locale;
 import java.util.Properties;
 
-public class MachineInfoUtils {
+public final class MachineInfoUtils {
+
+    private MachineInfoUtils() {
+
+    }
 
     public static boolean isOnMacOS() {
         Properties props = System.getProperties();

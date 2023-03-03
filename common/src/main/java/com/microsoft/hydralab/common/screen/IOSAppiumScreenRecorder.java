@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.screen;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -8,7 +9,7 @@ import io.appium.java_client.ios.IOSDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
+public abstract class IOSAppiumScreenRecorder implements ScreenRecorder {
     static final Logger CLASS_LOGGER = LoggerFactory.getLogger(IOSAppiumScreenRecorder.class);
 
     protected static final int DEFAULT_TIMEOUT_IN_SECOND = 600;
@@ -19,7 +20,6 @@ abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
     protected String recordDir;
 
     protected boolean isStarted = false;
-
 
     public IOSAppiumScreenRecorder(DeviceManager deviceManager, DeviceInfo info, String recordDir) {
         this.deviceManager = deviceManager;
@@ -40,8 +40,8 @@ abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
     }
 
     @Override
-    abstract public void startRecord(int maxTimeInSecond);
+    public abstract void startRecord(int maxTimeInSecond);
 
     @Override
-    abstract public boolean finishRecording();
+    public abstract boolean finishRecording();
 }

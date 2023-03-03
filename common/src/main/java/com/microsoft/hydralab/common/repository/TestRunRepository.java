@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.repository;
 
 import com.microsoft.hydralab.common.entity.common.TestRun;
@@ -13,5 +14,6 @@ import java.util.Optional;
 public interface TestRunRepository extends JpaRepository<TestRun, String> {
 
     List<TestRun> findByTestTaskId(String taskId);
+
     Optional<TestRun> findByCrashStackId(String crashStackId);
 }

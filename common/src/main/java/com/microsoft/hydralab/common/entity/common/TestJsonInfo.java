@@ -1,10 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -12,7 +17,7 @@ import java.util.Date;
 @Entity
 @Table(indexes = {@Index(columnList = "team_id")})
 public class TestJsonInfo {
-    public static final SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Id
     private long id;
@@ -34,6 +39,6 @@ public class TestJsonInfo {
     }
 
     public String getDisplayIngestTime() {
-        return formatDate.format(ingestTime);
+        return SIMPLE_DATE_FORMAT.format(ingestTime);
     }
 }

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management;
 
 import com.android.ddmlib.InstallException;
@@ -15,12 +16,21 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
-import com.microsoft.hydralab.common.util.*;
+import com.microsoft.hydralab.common.util.IOSUtils;
+import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.common.util.ShellUtils;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.appium.java_client.appmanagement.ApplicationState;
 import io.appium.java_client.ios.IOSDriver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.ElementNotInteractableException;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -35,10 +45,9 @@ import java.util.concurrent.TimeUnit;
 
 import static com.android.ddmlib.IDevice.DeviceState;
 
-
 public abstract class DeviceManager {
     public static final String LOGGER_PREFIX = "logger.devices.";
-    static final Logger classLogger = LoggerFactory.getLogger(DeviceManager.class);
+    static final Logger CLASS_LOGGER = LoggerFactory.getLogger(DeviceManager.class);
     protected StorageServiceClientProxy storageServiceClientProxy;
     protected File testBaseDir;
     protected File preAppDir;
@@ -89,7 +98,6 @@ public abstract class DeviceManager {
     public void setAppiumServerManager(AppiumServerManager appiumServerManager) {
         this.appiumServerManager = appiumServerManager;
     }
-
 
     public StorageServiceClientProxy getStorageServiceClientProxy() {
         return storageServiceClientProxy;
@@ -167,11 +175,11 @@ public abstract class DeviceManager {
         File screenshotImageFile = deviceInfo.getScreenshotImageFile();
         if (screenshotImageFile == null || StringUtils.isEmpty(deviceInfo.getScreenshotImageUrl())) {
             return getScreenShot(deviceInfo, logger);
-        } else if (batteryStrategy.wakeUpInterval > 0) {
+        } else if (batteryStrategy.getWakeUpInterval() > 0) {
             synchronized (deviceInfo.getLock()) {
                 long now = System.currentTimeMillis();
-                if (now - deviceInfo.getScreenshotUpdateTimeMilli() < TimeUnit.SECONDS.toMillis(batteryStrategy.wakeUpInterval)) {
-                    classLogger.warn("skip screen shot for too short interval {}", deviceInfo.getName());
+                if (now - deviceInfo.getScreenshotUpdateTimeMilli() < TimeUnit.SECONDS.toMillis(batteryStrategy.getWakeUpInterval())) {
+                    CLASS_LOGGER.warn("skip screen shot for too short interval {}", deviceInfo.getName());
                     return screenshotImageFile;
                 }
                 getScreenShot(deviceInfo, logger);
@@ -206,7 +214,8 @@ public abstract class DeviceManager {
         return false;
     }
 
-    public boolean grantAllPackageNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull File packageFile, @NotNull String targetPackage, boolean allowCustomizedPermissions, @Nullable Logger logger) {
+    public boolean grantAllPackageNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull File packageFile, @NotNull String targetPackage, boolean allowCustomizedPermissions,
+                                                    @Nullable Logger logger) {
         return false;
     }
 
@@ -230,9 +239,9 @@ public abstract class DeviceManager {
                         fileAvailableCallback.onFileReady(imageFile);
                     }
                 } catch (TimeoutException te) {
-                    classLogger.error("{}: {}, updateScreenshotImageAsyncDelay", te.getClass().getSimpleName(), te.getMessage());
+                    CLASS_LOGGER.error("{}: {}, updateScreenshotImageAsyncDelay", te.getClass().getSimpleName(), te.getMessage());
                 } catch (Exception e) {
-                    classLogger.error(e.getMessage(), e);
+                    CLASS_LOGGER.error(e.getMessage(), e);
                 }
             }
         });
@@ -259,11 +268,11 @@ public abstract class DeviceManager {
 
     public abstract void testDeviceUnset(DeviceInfo deviceInfo, Logger logger);
 
-    abstract public WebDriver getMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
+    public abstract WebDriver getMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
 
-    abstract public void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
+    public abstract void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
 
-    abstract public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
+    public abstract void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
 
     public void execCommandOnAgent(DeviceInfo deviceInfo, String command, Logger logger) {
         ITestRun testRun = TestRunThreadContext.getTestRun();

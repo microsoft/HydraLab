@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.file.impl.azure;
 
 import com.azure.core.credential.AzureSasCredential;
@@ -20,6 +21,7 @@ import com.google.common.net.MediaType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -35,7 +37,7 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
     private static boolean isAuthedBySAS = true;
     private BlobServiceClient blobServiceClient;
     Logger classLogger = LoggerFactory.getLogger(AzureBlobClientAdapter.class);
-    private long SASExpiryUpdate;
+    private long sasExpiryUpdate;
     private SASData sasDataInUse = null;
     private SASData sasDataForUpdate = null;
     private boolean isConnected = false;
@@ -44,12 +46,12 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
     }
 
     public AzureBlobClientAdapter(AzureBlobProperty azureBlobProperty) {
-        SASExpiryUpdate = azureBlobProperty.getSASExpiryUpdate();
-        SASPermission.READ.setExpiryTime(azureBlobProperty.getSASExpiryTimeFront(), azureBlobProperty.getTimeUnit());
-        SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSASExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
+        sasExpiryUpdate = azureBlobProperty.getSasExpiryUpdate();
+        SASPermission.READ.setExpiryTime(azureBlobProperty.getSasExpiryTimeFront(), azureBlobProperty.getTimeUnit());
+        SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSasExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
         blobServiceClient = new BlobServiceClientBuilder().connectionString(azureBlobProperty.getConnection()).buildClient();
         fileLimitDay = azureBlobProperty.getFileLimitDay();
-        cdnUrl = azureBlobProperty.getCDNUrl();
+        cdnUrl = azureBlobProperty.getCdnUrl();
         isAuthedBySAS = false;
         isConnected = true;
     }
@@ -81,7 +83,7 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         SASData sasData = (SASData) accessToken;
         Assert.notNull(sasData, "The sasData can't be null!");
 
-        return sasData.getExpiredTime().isBefore(OffsetDateTime.ofInstant(Instant.now().plus(SASExpiryUpdate, ChronoUnit.MINUTES), ZoneId.systemDefault()));
+        return sasData.getExpiredTime().isBefore(OffsetDateTime.ofInstant(Instant.now().plus(sasExpiryUpdate, ChronoUnit.MINUTES), ZoneId.systemDefault()));
     }
 
     @Override
@@ -133,10 +135,10 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         Assert.isTrue(!isAuthedBySAS, "The client was init by SAS and can't generate SAS!");
 
         SASData sasData = new SASData();
-        AccountSasService services = AccountSasService.parse(sasPermission.serviceStr);
-        AccountSasResourceType resourceTypes = AccountSasResourceType.parse(sasPermission.resourceStr);
-        AccountSasPermission permissions = AccountSasPermission.parse(sasPermission.permissionStr);
-        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, sasPermission.timeUnit), ZoneId.systemDefault());
+        AccountSasService services = AccountSasService.parse(sasPermission.getServiceStr());
+        AccountSasResourceType resourceTypes = AccountSasResourceType.parse(sasPermission.getResourceStr());
+        AccountSasPermission permissions = AccountSasPermission.parse(sasPermission.getPermissionStr());
+        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.getExpiryTime(), sasPermission.getTimeUnit()), ZoneId.systemDefault());
 
         AccountSasSignatureValues sasSignatureValues = new AccountSasSignatureValues(expiryTime, permissions,
                 services, resourceTypes);
@@ -159,13 +161,14 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
      * @param logger
      * @return
      */
-    public String uploadFileToBlob(File uploadFile, String containerName, String blobFilePath, Logger logger) {
+    public String uploadFileToBlob(File uploadFile, String containerName, String blobFilePath, @Nullable Logger logger) {
         if (!isConnected) {
             return null;
         }
         checkBlobClientUpdate();
+        Logger log = logger;
         if (logger == null) {
-            logger = classLogger;
+            log = classLogger;
         }
 
         BlobClient blobClient = getContainer(containerName).getBlobClient(blobFilePath);
@@ -176,7 +179,7 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         } else {
             blobClient.uploadFromFile(uploadFile.getAbsolutePath(), true);
         }
-        logger.info("upload file {} to Blob, Size {}", uploadFile.getName(), uploadFile.length());
+        log.info("upload file {} to Blob, Size {}", uploadFile.getName(), uploadFile.length());
         return blobClient.getBlobUrl();
     }
 
@@ -204,10 +207,10 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
     public void setFileUrls(StorageFileInfo storageFileInfo, String downloadUrl) {
         storageFileInfo.setBlobUrl(downloadUrl);
         if (StringUtils.isEmpty(this.cdnUrl)) {
-            storageFileInfo.setCDNUrl(downloadUrl);
+            storageFileInfo.setCdnUrl(downloadUrl);
         } else {
             String originDomain = downloadUrl.split("//")[1].split("/")[0];
-            storageFileInfo.setCDNUrl(downloadUrl.replace(originDomain, this.cdnUrl));
+            storageFileInfo.setCdnUrl(downloadUrl.replace(originDomain, this.cdnUrl));
         }
     }
 }

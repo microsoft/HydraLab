@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.logger.impl;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -51,7 +52,7 @@ public class IOSLogCollector implements LogCollector {
                 connectedDevice.addCurrentProcess(logProcess);
             }
             infoLogger.info("Start to fetch the system log of iOS device");
-        }catch (Exception e) {
+        } catch (Exception e) {
             infoLogger.info("fail to fetch the system log of iOS device");
         }
         return loggerFilePath;

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import cn.hutool.core.io.StreamProgress;
@@ -11,7 +12,14 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,27 +32,36 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FileUtil {
-    private final static SimpleDateFormat format = new SimpleDateFormat("yyyy" + File.separator + "MM" + File.separator + "dd");
-    private static final Pattern paramKeyMatch = Pattern.compile("\\$\\{(\\w+)}");
+public final class FileUtil {
+    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy" + File.separator + "MM" + File.separator + "dd");
+    private static final Pattern PARAM_KEY_MATCH = Pattern.compile("\\$\\{(\\w+)}");
 
+    @SuppressWarnings({"StaticVariableName", "VisibilityModifier"})
     public static String UTF_8 = "UTF-8";
 
-    public static String WORKSPACE_PATH = System.getProperty("user.dir");
+    private static final String WORKSPACE_PATH = System.getProperty("user.dir");
+
+    private static final int GB = 1024 * 1024 * 1024;
+    private static final int MB = 1024 * 1024;
+    private static final int KB = 1024;
+
+    private FileUtil() {
+
+    }
 
     public static String getPathForToday() {
         Date date = new Date();
-        return format.format(date);
+        return FORMAT.format(date);
     }
 
     public static String getLegalFileName(String originalFilename) {
         if (originalFilename == null) {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Illegal file name!");
         }
-        originalFilename = originalFilename.replaceAll(" ", "");
-        String extension = FilenameUtils.getExtension(originalFilename);
+        String tmpName = originalFilename.replaceAll(" ", "");
+        String extension = FilenameUtils.getExtension(tmpName);
         extension = extension.replaceAll("\\.", "").replaceAll("/", "");
-        String fileName = FilenameUtils.getBaseName(originalFilename);
+        String fileName = FilenameUtils.getBaseName(tmpName);
         fileName = fileName.replaceAll("\\.", "").replaceAll("/", "");
         if (StringUtils.isEmpty(extension) || StringUtils.isEmpty(fileName)) {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Illegal file name!");
@@ -116,7 +133,7 @@ public class FileUtil {
 
     public static List<String> getAllParamKeysInFile(String relativePath) {
         String text = getFileTextAsCommandFromResource(relativePath);
-        Matcher matcher = paramKeyMatch.matcher(text);
+        Matcher matcher = PARAM_KEY_MATCH.matcher(text);
         List<String> list = null;
 
         while (matcher.find()) {
@@ -141,23 +158,21 @@ public class FileUtil {
 
     public static String getSizeString(long size) {
         boolean isLessZero = false;
-        if (size < 0) {
-            size = -size;
+        long tmpSize = size;
+        if (tmpSize < 0) {
+            tmpSize = -tmpSize;
             isLessZero = true;
         }
-        int GB = 1024 * 1024 * 1024;
-        int MB = 1024 * 1024;
-        int KB = 1024;
         DecimalFormat df = new DecimalFormat("0.00");
         String resultSize = "";
-        if (size / GB >= 1) {
-            resultSize = df.format(size / (float) GB) + "GB";
-        } else if (size / MB >= 1) {
-            resultSize = df.format(size / (float) MB) + "MB";
-        } else if (size / KB >= 1) {
-            resultSize = df.format(size / (float) KB) + "KB";
+        if (tmpSize / GB >= 1) {
+            resultSize = df.format(tmpSize / (float) GB) + "GB";
+        } else if (tmpSize / MB >= 1) {
+            resultSize = df.format(tmpSize / (float) MB) + "MB";
+        } else if (tmpSize / KB >= 1) {
+            resultSize = df.format(tmpSize / (float) KB) + "KB";
         } else {
-            resultSize = size + "B";
+            resultSize = tmpSize + "B";
         }
         return isLessZero ? "-" + resultSize : resultSize;
     }
@@ -174,11 +189,12 @@ public class FileUtil {
     }
 
     public static boolean isLegalFolderPath(String folderPath) {
-        if (folderPath.endsWith("/")) {
-            folderPath = folderPath.substring(0, folderPath.length() - 1);
+        String tmpFolderPath = folderPath;
+        if (tmpFolderPath.endsWith("/")) {
+            tmpFolderPath = tmpFolderPath.substring(0, tmpFolderPath.length() - 1);
         }
         String pattern = "^((?! )(?![^\\\\/]*\\s+[\\\\/])[\\w -]+[\\\\/])*(?! )(?![^.]*\\s+\\.)[\\w -]+$";
-        return Pattern.matches(pattern, folderPath);
+        return Pattern.matches(pattern, tmpFolderPath);
     }
 
     public static File unzipFile(String zipFilePath, String outFileDir) {

@@ -1,11 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-public class ThreadUtils {
+public final class ThreadUtils {
+
+    private ThreadUtils() {
+
+    }
 
     public static <T> void doInParallel(List<T> dataList, int threadCount, ParallelTask<T> task) {
         CountDownLatch countDownLatch = new CountDownLatch(threadCount);
@@ -26,7 +31,7 @@ public class ThreadUtils {
                         try {
                             task.processOne(item, j - start);
                         } catch (Exception e) {
-                            task.onError(item,e);
+                            task.onError(item, e);
                         }
                     }
                     countDownLatch.countDown();

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management.listener.impl;
 
 import com.android.ddmlib.IDevice;
@@ -38,7 +39,8 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
      * Map from device SN to current active state sliding window.
      * The length of list being larger the preset threshold (default 12 as 4 changes for a loop) will be considered as UNSTABLE state.
      * When it's UNSTABLE, keep all current UNSTABLE changes, until time check for last change is before time setting.
-     * Trigger a timer to count down for the rest time to reset the state from UNSTABLE to the last changed state, re-trigger a timer if any change happened during the counting down.
+     * Trigger a timer to count down for the rest time to reset the state from UNSTABLE to the last changed state,
+     * re-trigger a timer if any change happened during the counting down.
      * <p>
      * Some possible UNSTABLE situation:
      * 1. switching between connected(OFFLINE) and disconnected, without entering deviceChanged (OFFLINE - DISCONNECTED switching but no ONLINE).
@@ -71,7 +73,6 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
             return stateChangeList;
         });
 
-
         /**
          * deviceBehaviour != null means not checking from an incoming behaviour (for now just UNSTABLE_RESET_TIMER)
          */
@@ -95,17 +96,20 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
 
         int stateChangeSum = deviceStateChangeList.size();
         if (stateChangeSum > deviceStateChangeThreshold) {
-            classLogger.warn("[Stability] Window time length: {} minutes, threshold of change number: {}. Device {} currently contains {} changes, which exceeds the threshold.", deviceStateChangeWindowTime, deviceStateChangeThreshold, deviceInfo.getSerialNum(), stateChangeSum);
+            classLogger.warn("[Stability] Window time length: {} minutes, threshold of change number: {}. Device {} currently contains {} changes, which exceeds the threshold.",
+                    deviceStateChangeWindowTime, deviceStateChangeThreshold, deviceInfo.getSerialNum(), stateChangeSum);
             synchronized (deviceInfo) {
                 deviceInfo.setStatus(DeviceInfo.UNSTABLE);
             }
 
             long secondsSinceLastChange = now.toEpochSecond(ZoneOffset.UTC) - lastStateChange.getTime().toEpochSecond(ZoneOffset.UTC);
-            long sleepTime = deviceStateChangeRecoveryTime * 60 - secondsSinceLastChange + 1; // use 1 second offset to erase millsecond-level error when calculating on second level
+            long sleepTime =
+                    deviceStateChangeRecoveryTime * 60 - secondsSinceLastChange + 1; // use 1 second offset to erase millsecond-level error when calculating on second level
 
             AtomicBoolean isWaitingForConverting = deviceStateIsConvertingList.computeIfAbsent(deviceInfo.getSerialNum(), k -> new AtomicBoolean(false));
             if (isWaitingForConverting.compareAndSet(false, true)) {
-                classLogger.info("[Stability] Device {}: last state change happened {} seconds ago, will re-check after {} seconds", deviceInfo.getSerialNum(), secondsSinceLastChange, sleepTime);
+                classLogger.info("[Stability] Device {}: last state change happened {} seconds ago, will re-check after {} seconds", deviceInfo.getSerialNum(),
+                        secondsSinceLastChange, sleepTime);
 
                 // start a timer to trigger when recovery time limit is reached, to recover state from UNSTABLE to last recorded normal state
                 ThreadPoolUtil.TIMER_EXECUTOR.schedule(new Runnable() {
@@ -120,12 +124,14 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
             }
         } else {
             if (DeviceInfo.UNSTABLE.equals(deviceInfo.getStatus())) {
-                classLogger.info("[Stability] Device {}: converted back to {} from UNSTABLE state, and clear state change windows.", deviceInfo.getSerialNum(), lastStateChange.getState().toString());
+                classLogger.info("[Stability] Device {}: converted back to {} from UNSTABLE state, and clear state change windows.", deviceInfo.getSerialNum(),
+                        lastStateChange.getState().toString());
                 synchronized (deviceInfo) {
                     deviceInfo.setStatus(lastStateChange.getState().toString());
                 }
             } else {
-                classLogger.warn("[Stability] Window time length: {} minutes, threshold of change number: {}. Device {} currently contains {} changes.", deviceStateChangeWindowTime, deviceStateChangeThreshold, deviceInfo.getSerialNum(), stateChangeSum);
+                classLogger.warn("[Stability] Window time length: {} minutes, threshold of change number: {}. Device {} currently contains {} changes.",
+                        deviceStateChangeWindowTime, deviceStateChangeThreshold, deviceInfo.getSerialNum(), stateChangeSum);
             }
         }
     }
@@ -176,7 +182,8 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
 
     private void addDeviceMetricRegistration(DeviceInfo deviceInfo, ConcurrentLinkedDeque<DeviceStateChangeRecord> deviceStateChangeList) {
         // Metric: device state change times
-        meterRegistry.gaugeCollectionSize(GlobalConstant.PROMETHEUS_METRIC_DEVICE_STATE_CHANGE_TIMES, Tags.empty().and("device SN", deviceInfo.getSerialNum()), deviceStateChangeList);
+        meterRegistry.gaugeCollectionSize(GlobalConstant.PROMETHEUS_METRIC_DEVICE_STATE_CHANGE_TIMES, Tags.empty().and("device SN", deviceInfo.getSerialNum()),
+                deviceStateChangeList);
         classLogger.info("Metric of agent device state change times for device {} has been registered.", deviceInfo.getSerialNum());
         // Metric: device UNSTABLE state signal
         meterRegistry.gauge(GlobalConstant.PROMETHEUS_METRIC_TEST_DEVICE_UNSTABLE_SIGNAL,

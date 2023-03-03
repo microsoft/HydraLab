@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -9,10 +10,22 @@ import com.microsoft.hydralab.performance.InspectionStrategy;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.File;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,20 +35,20 @@ import java.util.regex.Pattern;
         @Index(name = "start_date_index", columnList = "start_date", unique = false),
         @Index(columnList = "team_id")})
 public class TestTask implements Serializable {
-    static final Pattern pIdMatch = Pattern.compile("\\d{3,7}");
+    static final Pattern PATTERN = Pattern.compile("\\d{3,7}");
     @Transient
-    private static final String defaultRunner = "androidx.test.runner.AndroidJUnitRunner";
+    private static final String DEFAULT_RUNNER = "androidx.test.runner.AndroidJUnitRunner";
     @Transient
     private List<String> neededPermissions;
     @Transient
-    public transient File appFile;
+    private transient File appFile;
     // more like test bundle after we support appium jar
     @Transient
-    public transient File testAppFile;
+    private transient File testAppFile;
     @Transient
-    public transient List<File> testJsonFileList = new ArrayList<>();
+    private transient List<File> testJsonFileList = new ArrayList<>();
     @Transient
-    public Set<String> agentIds = new HashSet<>();
+    private Set<String> agentIds = new HashSet<>();
     @Id
     private String id = UUID.randomUUID().toString();
     private int testDevicesCount;
@@ -89,7 +102,7 @@ public class TestTask implements Serializable {
     @Column(name = "team_id")
     private String teamId;
     private String teamName;
-    private transient String testRunnerName = defaultRunner;
+    private transient String testRunnerName = DEFAULT_RUNNER;
     private String testScope;
     // todo: change this to a more general name for all scopes of ESPRESSO tests.
     private String testSuite;
@@ -116,8 +129,7 @@ public class TestTask implements Serializable {
         testTask.setDeviceActions(testTaskSpec.deviceActions);
         if (testTaskSpec.instrumentationArgs != null) {
             testTask.setInstrumentationArgs(testTaskSpec.instrumentationArgs);
-        }
-        else {
+        } else {
             testTask.setInstrumentationArgs(testTaskSpec.testRunArgs);
         }
         testTask.setFileSetId(testTaskSpec.fileSetId);
@@ -212,7 +224,7 @@ public class TestTask implements Serializable {
     @JSONField(serialize = false)
     @Transient
     public String getDisplayStartTime() {
-        return DateUtil.format.format(startDate);
+        return DateUtil.FORMAT.format(startDate);
     }
 
     @Transient
@@ -227,7 +239,7 @@ public class TestTask implements Serializable {
         if (!msg.startsWith("merge pull request ")) {
             return null;
         }
-        Matcher matcher = pIdMatch.matcher(msg);
+        Matcher matcher = PATTERN.matcher(msg);
         if (!matcher.find()) {
             return null;
         }
@@ -240,7 +252,7 @@ public class TestTask implements Serializable {
         if (endDate == null) {
             return "";
         }
-        return DateUtil.format.format(endDate);
+        return DateUtil.FORMAT.format(endDate);
     }
 
     @Transient
@@ -270,38 +282,38 @@ public class TestTask implements Serializable {
         return false;
     }
 
-    public interface TestStatus {
-        String RUNNING = "running";
-        String FINISHED = "finished";
-        String CANCELED = "canceled";
-        String EXCEPTION = "error";
-        String WAITING = "waiting";
+    public static final class TestStatus {
+        public static final String RUNNING = "running";
+        public static final String FINISHED = "finished";
+        public static final String CANCELED = "canceled";
+        public static final String EXCEPTION = "error";
+        public static final String WAITING = "waiting";
     }
 
-    public interface TestType {
-        String PR = "PullRequest";
-        String API = "API";
-        String Schedule = "Schedule";
+    public static final class TestType {
+        public static final String PR = "PullRequest";
+        public static final String API = "API";
+        public static final String SCHEDULE = "Schedule";
     }
 
-    public interface TestRunningType {
-        String INSTRUMENTATION = "INSTRUMENTATION";
-        String APPIUM = "APPIUM";
-        String APPIUM_CROSS = "APPIUM_CROSS";
-        String SMART_TEST = "SMART";
-        String MONKEY_TEST = "MONKEY";
-        String APPIUM_MONKEY_TEST = "APPIUM_MONKEY";
-        String T2C_JSON_TEST = "T2C_JSON";
+    public static final class TestRunningType {
+        public static final String INSTRUMENTATION = "INSTRUMENTATION";
+        public static final String APPIUM = "APPIUM";
+        public static final String APPIUM_CROSS = "APPIUM_CROSS";
+        public static final String SMART_TEST = "SMART";
+        public static final String MONKEY_TEST = "MONKEY";
+        public static final String APPIUM_MONKEY_TEST = "APPIUM_MONKEY";
+        public static final String T2C_JSON_TEST = "T2C_JSON";
     }
 
-    public interface TestFrameworkType {
-        String JUNIT4 = "JUnit4";
-        String JUNIT5 = "JUnit5";
+    public static final class TestFrameworkType {
+        public static final String JUNIT4 = "JUnit4";
+        public static final String JUNIT5 = "JUnit5";
     }
 
-    public interface TestScope {
-        String TEST_APP = "TEST_APP";
-        String PACKAGE = "PACKAGE";
-        String CLASS = "CLASS";
+    public static final class TestScope {
+        public static final String TEST_APP = "TEST_APP";
+        public static final String PACKAGE = "PACKAGE";
+        public static final String CLASS = "CLASS";
     }
 }

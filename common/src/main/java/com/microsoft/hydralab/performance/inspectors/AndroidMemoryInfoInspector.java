@@ -11,11 +11,10 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 
-public class AndroidMemoryInfoInspector implements PerformanceInspector  {
+public class AndroidMemoryInfoInspector implements PerformanceInspector {
 
     private static final String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s_%s_memory.txt";
     private final Logger classLogger = LoggerFactory.getLogger(getClass());
-
 
     @Override
     public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {

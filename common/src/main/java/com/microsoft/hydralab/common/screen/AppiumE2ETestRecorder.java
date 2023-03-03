@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.screen;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -41,15 +42,16 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
     }
 
     @Override
+    @SuppressWarnings("IllegalCatch")
     public boolean finishRecording() {
-        File PCVideoFile = null;
+        File pcVideofile = null;
         File phoneVideoFile = null;
         super.finishRecording();
         try {
             String base64String = windowsDriver.stopRecordingScreen();
             byte[] data = Base64.getDecoder().decode(base64String);
-            PCVideoFile = new File(baseFolder.getAbsolutePath(), Const.ScreenRecoderConfig.PC_FILE_NAME);
-            Path path = Paths.get(PCVideoFile.getAbsolutePath());
+            pcVideofile = new File(baseFolder.getAbsolutePath(), Const.ScreenRecoderConfig.PC_FILE_NAME);
+            Path path = Paths.get(pcVideofile.getAbsolutePath());
             Files.write(path, data);
         } catch (Throwable e) {
             System.out.println("-------------------------------Fail to Stop recording, Ignore it to unblocking the following tests-----------------------------");
@@ -59,13 +61,13 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
 
         phoneVideoFile = new File(baseFolder.getAbsolutePath(), Const.ScreenRecoderConfig.PHONE_FILE_NAME);
 
-        if (PCVideoFile == null || !PCVideoFile.exists() || !phoneVideoFile.exists()) {
+        if (pcVideofile == null || !pcVideofile.exists() || !phoneVideoFile.exists()) {
             return false;
         }
         // Merge two videos side-by-side if exist
         System.out.println("-------------Merge two videos side-by-side-------------");
         String mergeDestinationPath = new File(baseFolder.getAbsolutePath(), Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();
-        FFmpegConcatUtil.mergeVideosSideBySide(phoneVideoFile.getAbsolutePath(), PCVideoFile.getAbsolutePath(), mergeDestinationPath, logger);
+        FFmpegConcatUtil.mergeVideosSideBySide(phoneVideoFile.getAbsolutePath(), pcVideofile.getAbsolutePath(), mergeDestinationPath, logger);
         // PCVideoFile.delete();
         // phoneVideoFile.delete();
         return true;

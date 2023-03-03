@@ -1,15 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 import cn.hutool.core.lang.Assert;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class DownloadUtils {
+public final class DownloadUtils {
     public static final int CONNECT_TIMEOUT = 5 * 1000;
+
+    private DownloadUtils() {
+
+    }
 
     public static void downloadFileFromUrl(String urlStr, String fileName, String savePath) throws IOException {
         URL url = new URL(urlStr);

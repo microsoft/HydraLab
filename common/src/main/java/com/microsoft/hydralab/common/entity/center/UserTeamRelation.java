@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.center;
 
 import lombok.Data;
@@ -25,7 +26,7 @@ public class UserTeamRelation implements Serializable {
     private String mailAddress;
     private boolean isTeamAdmin;
 
-    public UserTeamRelation(String teamId, String mailAddress, boolean isTeamAdmin){
+    public UserTeamRelation(String teamId, String mailAddress, boolean isTeamAdmin) {
         this.teamId = teamId;
         this.mailAddress = mailAddress;
         this.isTeamAdmin = isTeamAdmin;

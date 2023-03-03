@@ -1,158 +1,213 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
 
 public interface Const {
-    interface Path {
-        String AUTH = "/auth";
-        String AGENT_INIT = "/agentInit";
-        String HEARTBEAT = "/heartbeat";
-        String DEVICE_LIST = "/api/device/list";
-        String DEVICE_UPDATE = "/api/device/update";
-        String DEVICE_STATUS = "/api/device/status";
-        String ACCESS_INFO = "/api/device/access";
-        String TEST_TASK_RUN = "/api/test/task/run";
-        String TEST_TASK_UPDATE = "/api/test/task/update";
-        String TEST_TASK_CANCEL = "/api/test/task/cancel";
-        String TEST_TASK_RETRY = "/api/test/task/retry";
-        String AGENT_UPDATE = "/api/agent/update";
-        String AGENT_RESTART = "/api/agent/restart";
-        String DEFAULT_PHOTO = "static/dist/images/default_user.png";
+    final class Path {
+        public static final String AUTH = "/auth";
+        public static final String AGENT_INIT = "/agentInit";
+        public static final String HEARTBEAT = "/heartbeat";
+        public static final String DEVICE_LIST = "/api/device/list";
+        public static final String DEVICE_UPDATE = "/api/device/update";
+        public static final String DEVICE_STATUS = "/api/device/status";
+        public static final String ACCESS_INFO = "/api/device/access";
+        public static final String TEST_TASK_RUN = "/api/test/task/run";
+        public static final String TEST_TASK_UPDATE = "/api/test/task/update";
+        public static final String TEST_TASK_CANCEL = "/api/test/task/cancel";
+        public static final String TEST_TASK_RETRY = "/api/test/task/retry";
+        public static final String AGENT_UPDATE = "/api/agent/update";
+        public static final String AGENT_RESTART = "/api/agent/restart";
+        public static final String DEFAULT_PHOTO = "static/dist/images/default_user.png";
+
+        private Path() {
+        }
     }
 
-    interface DeviceGroup {
-        String CI = "CI";
-        String REGULAR = "REGULAR";
-        String GROUP_NAME_PREFIX = "G.";
-        String SYS_GROUP = "SYS";
-        String USER_GROUP = "USER";
-        String SINGLE_TYPE = "SINGLE";
-        String REST_TYPE = "REST";
-        String ALL_TYPE = "ALL";
+    final class DeviceGroup {
+        public static final String CI = "CI";
+        public static final String REGULAR = "REGULAR";
+        public static final String GROUP_NAME_PREFIX = "G.";
+        public static final String SYS_GROUP = "SYS";
+        public static final String USER_GROUP = "USER";
+        public static final String SINGLE_TYPE = "SINGLE";
+        public static final String REST_TYPE = "REST";
+        public static final String ALL_TYPE = "ALL";
+
+        private DeviceGroup() {
+        }
     }
 
-    interface AgentConfig {
-        int RETRY_TIME = 5;
-        int PHOTO_UPDATE_SEC = 15;
-        String TASK_ID_PARAM = "testTaskId";
-        String SERIAL_PARAM = "serialNum";
-        String STATUS_PARAM = "status";
-        String SCOPE_PARAM = "isPrivate";
-        String RESTART_FILE_MAC = "restartAgent.sh";
-        String RESTART_FILE_WIN = "restartAgent.bat";
+    final class AgentConfig {
+        public static final int RETRY_TIME = 5;
+        public static final int PHOTO_UPDATE_SEC = 15;
+        public static final String TASK_ID_PARAM = "testTaskId";
+        public static final String SERIAL_PARAM = "serialNum";
+        public static final String STATUS_PARAM = "status";
+        public static final String SCOPE_PARAM = "isPrivate";
+        public static final String RESTART_FILE_MAC = "restartAgent.sh";
+        public static final String RESTART_FILE_WIN = "restartAgent.bat";
+
+        private AgentConfig() {
+        }
     }
 
-    interface TaskResult {
-        String ERROR_DEVICE_OFFLINE = "DEVICE_OFFLINE";
-        String SUCCESS = "SUCCESS";
+    final class TaskResult {
+        public static final String ERROR_DEVICE_OFFLINE = "DEVICE_OFFLINE";
+        public static final String SUCCESS = "SUCCESS";
+
+        private TaskResult() {
+        }
     }
 
-    interface Param {
-        String TEST_DEVICE_SN = "devices";
-        String GROUP = "groups";
-        String AGENT = "agents";
-        String TEST_TASK_ID = "testTaskId";
+    final class Param {
+        public static final String TEST_DEVICE_SN = "devices";
+        public static final String GROUP = "groups";
+        public static final String AGENT = "agents";
+        public static final String TEST_TASK_ID = "testTaskId";
+
+        private Param() {
+        }
     }
 
-    interface SmartTestConfig {
-        String SUCCESS_TAG = "success";
-        String TASK_EXP_TAG = "exception";
-        String APP_EXP_TAG = "appException";
-        String COVERAGE_TAG = "coverage";
-        String VISIT_TAG = "visited";
-        String BERT_PATH_TAG = "path_to_screen_bert_model";
-        String TOPIC_PATH_TAG = "path_to_screen_topic_classifier_model";
-        String SOURCE_MODEL_TAG = "source_model_id";
-        String TARGET_MODEL_TAG = "target_model_id";
+    final class SmartTestConfig {
+        public static final String SUCCESS_TAG = "success";
+        public static final String TASK_EXP_TAG = "exception";
+        public static final String APP_EXP_TAG = "appException";
+        public static final String COVERAGE_TAG = "coverage";
+        public static final String VISIT_TAG = "visited";
+        public static final String BERT_PATH_TAG = "path_to_screen_bert_model";
+        public static final String TOPIC_PATH_TAG = "path_to_screen_topic_classifier_model";
+        public static final String SOURCE_MODEL_TAG = "source_model_id";
+        public static final String TARGET_MODEL_TAG = "target_model_id";
 
-        String ZIP_FILE_NAME = "SmartTest.zip";
-        String ZIP_FOLDER_NAME = "SmartTest";
-        String PY_FILE_NAME = "main.py";
-        String BERT_MODEL_NAME = "screenBert.pt";
-        String TOPIC_MODEL_NAME = "topic.pt";
-        String REQUIRE_FILE_NAME = "requirements.txt";
-        String STRING_FOLDER_NAME = "SmartTestString";
-        String STRING_FILE_NAMES = "strings,username,password";
+        public static final String ZIP_FILE_NAME = "SmartTest.zip";
+        public static final String ZIP_FOLDER_NAME = "SmartTest";
+        public static final String PY_FILE_NAME = "main.py";
+        public static final String BERT_MODEL_NAME = "screenBert.pt";
+        public static final String TOPIC_MODEL_NAME = "topic.pt";
+        public static final String REQUIRE_FILE_NAME = "requirements.txt";
+        public static final String STRING_FOLDER_NAME = "SmartTestString";
+        public static final String STRING_FILE_NAMES = "strings,username,password";
+
+        private SmartTestConfig() {
+        }
     }
 
-    interface ScreenRecoderConfig {
-        String DEFAULT_FILE_NAME = "merged_test.mp4";
-        String PC_FILE_NAME = "PC_test.mp4";
-        String PHONE_FILE_NAME = "PHONE_test.mp4";
+    final class ScreenRecoderConfig {
+        public static final String DEFAULT_FILE_NAME = "merged_test.mp4";
+        public static final String PC_FILE_NAME = "PC_test.mp4";
+        public static final String PHONE_FILE_NAME = "PHONE_test.mp4";
+
+        private ScreenRecoderConfig() {
+        }
     }
 
-    interface DeviceStability {
-        String BEHAVIOUR_GO_ONLINE = "went ONLINE";
-        String BEHAVIOUR_GO_OFFLINE = "went OFFLINE";
-        String BEHAVIOUR_CONNECT = "connected";
-        String BEHAVIOUR_DISCONNECT = "disconnected";
+    final class DeviceStability {
+        public static final String BEHAVIOUR_GO_ONLINE = "went ONLINE";
+        public static final String BEHAVIOUR_GO_OFFLINE = "went OFFLINE";
+        public static final String BEHAVIOUR_CONNECT = "connected";
+        public static final String BEHAVIOUR_DISCONNECT = "disconnected";
+
+        private DeviceStability() {
+        }
     }
 
-    interface FrontEndPath {
-        String PREFIX_PATH = "/portal";
-        String INDEX_PATH = "/portal/index.html";
-        String ANCHOR = "#";
-        String REDIRECT_PARAM = "redirectUrl";
+    final class FrontEndPath {
+        public static final String PREFIX_PATH = "/portal";
+        public static final String INDEX_PATH = "/portal/index.html";
+        public static final String ANCHOR = "#";
+        public static final String REDIRECT_PARAM = "redirectUrl";
+
+        private FrontEndPath() {
+        }
     }
 
-    interface RegexString {
+    final class RegexString {
         //uuid
-        String UUID = "[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}";
+        public static final String UUID = "[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}";
         //0-1,a-z,A-Z,_
-        String COMMON_STR = "\\w*";
+        public static final String COMMON_STR = "\\w*";
         // HTTP url  e.g. /api/auth
-        String URL = "(/[A-Za-z0-9_.-]*)*";
-        String MAIL_ADDRESS = "\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
+        public static final String URL = "(/[A-Za-z0-9_.-]*)*";
+        public static final String MAIL_ADDRESS = "\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
 
         //File path
-        String LINUX_PATH = "^(\\/[\\w-]+)+\\/?$";
-        String WINDOWS_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
+        public static final String LINUX_PATH = "^(\\/[\\w-]+)+\\/?$";
+        public static final String WINDOWS_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
 
         //Package name
-        String PACKAGE_NAME = "\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
+        public static final String PACKAGE_NAME = "\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
+
+        private RegexString() {
+        }
     }
 
-    interface PermissionType {
-        String API = "API";
-        String METHOD = "METHOD";
+    final class PermissionType {
+        public static final String API = "API";
+        public static final String METHOD = "METHOD";
+
+        private PermissionType() {
+        }
     }
 
-    interface DefaultRole {
-        String SUPER_ADMIN = "SUPER_ADMIN";
-        String ADMIN = "ADMIN";
-        String TEAM_ADMIN = "TEAM_ADMIN";
-        String USER = "USER";
+    final class DefaultRole {
+        public static final String SUPER_ADMIN = "SUPER_ADMIN";
+        public static final String ADMIN = "ADMIN";
+        public static final String TEAM_ADMIN = "TEAM_ADMIN";
+        public static final String USER = "USER";
+
+        private DefaultRole() {
+        }
     }
 
-    interface DefaultTeam {
-        String DEFAULT_TEAM_NAME = "Default";
+    final class DefaultTeam {
+        public static final String DEFAULT_TEAM_NAME = "Default";
+
+        private DefaultTeam() {
+        }
     }
 
-    interface AuthComponent {
-        String DEFAULT_TEAM = "DEFAULT_TEAM";
-        String TEAM = "TEAM";
-        String ROLE = "ROLE";
+    final class AuthComponent {
+        public static final String DEFAULT_TEAM = "DEFAULT_TEAM";
+        public static final String TEAM = "TEAM";
+        public static final String ROLE = "ROLE";
         // permission
-        String AUTHORITY = "AUTHORITY";
+        public static final String AUTHORITY = "AUTHORITY";
+
+        private AuthComponent() {
+        }
     }
 
-    interface PreInstallFailurePolicy {
-        String SHUTDOWN = "SHUTDOWN";
-        String IGNORE = "IGNORE";
+    final class PreInstallFailurePolicy {
+        public static final String SHUTDOWN = "SHUTDOWN";
+        public static final String IGNORE = "IGNORE";
+
+        private PreInstallFailurePolicy() {
+        }
     }
 
-    interface FilePermission {
-        String WRITE = "WRITE";
-        String READ = "READ";
+    final class FilePermission {
+        public static final String WRITE = "WRITE";
+        public static final String READ = "READ";
+
+        private FilePermission() {
+        }
     }
 
-    interface StorageType {
-        String LOCAL = "LOCAL";
-        String AZURE = "AZURE";
+    final class StorageType {
+        public static final String LOCAL = "LOCAL";
+        public static final String AZURE = "AZURE";
+
+        private StorageType() {
+        }
     }
 
-    interface StoragePropertyBean {
-        String LOCAL = "localProperty";
-        String AZURE = "azureBlobProperty";
+    final class StoragePropertyBean {
+        public static final String LOCAL = "localProperty";
+        public static final String AZURE = "azureBlobProperty";
+
+        private StoragePropertyBean() {
+        }
     }
 }
