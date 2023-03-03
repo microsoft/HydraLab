@@ -11,7 +11,7 @@ import java.io.Serializable;
 import static com.microsoft.hydralab.common.util.FileUtil.getSizeStringWithTagIfLarge;
 
 public class ObjectInfo implements Serializable {
-    private static final int SIZE_THRESHOLD = 500 * 1024;
+    public static final int SIZE_THRESHOLD = 500 * 1024;
 
     public int index;
     public int distanceToRoot;
