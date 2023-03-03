@@ -8,7 +8,7 @@ public final class GlobalConstant {
 
     }
 
-    enum AgentLiveStatus {
+    public enum AgentLiveStatus {
         ONLINE("ONLINE"),
         OFFLINE("OFFLINE");
 
