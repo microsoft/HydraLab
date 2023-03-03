@@ -3,6 +3,8 @@
 
 package com.microsoft.hydralab.performance.hprof;
 
+import java.io.Serializable;
+
 public class BitmapInfo extends ObjectInfo implements Serializable {
 
     public int width;
