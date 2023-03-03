@@ -15,7 +15,7 @@ import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerMan
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;
@@ -28,6 +28,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus.
 import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -85,7 +86,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public AgentManagementService agentManagementService(BlobStorageClient deviceLabBlobClient,
+    public AgentManagementService agentManagementService(StorageServiceClientProxy storageServiceClientProxy,
                                                DeviceStatusListenerManager deviceStatusListenerManager) {
         AgentManagementService agentManagementService = new AgentManagementService();
         File testBaseDir = new File(appOptions.getTestCaseResultLocation());
@@ -113,7 +114,7 @@ public class AppConfiguration {
             }
         }
         agentManagementService.setDeviceLogBaseDir(deviceLogBaseDir);
-        agentManagementService.setBlobStorageClient(deviceLabBlobClient);
+        agentManagementService.setStorageServiceClientProxy(storageServiceClientProxy);
 
         agentManagementService.setScreenshotDir(getScreenshotDir());
         agentManagementService.setDeviceFolderUrlPrefix(AppOptions.DEVICE_STORAGE_MAPPING_REL_PATH);
@@ -141,11 +142,6 @@ public class AppConfiguration {
         );
         fastConverter.setFastJsonConfig(fastJsonConfig);
         return fastConverter;
-    }
-
-    @Bean
-    public BlobStorageClient blobStorageClient() {
-        return new BlobStorageClient();
     }
 
     @Bean
@@ -195,5 +191,10 @@ public class AppConfiguration {
 
         return new PrometheusPushGatewayManager(pushGateway, registry,
                 pushRate, job, groupingKey, shutdownOperation);
+    }
+
+    @Bean
+    public StorageServiceClientProxy storageServiceClientProxy(ApplicationContext applicationContext) {
+        return new StorageServiceClientProxy(applicationContext);
     }
 }

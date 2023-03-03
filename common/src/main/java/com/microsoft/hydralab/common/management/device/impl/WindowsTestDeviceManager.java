@@ -3,8 +3,12 @@
 package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
+import com.android.ddmlib.TimeoutException;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.android.ddmlib.InstallException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
@@ -91,13 +95,12 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
         } catch (IOException e) {
             classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
         }
-        String blobUrl = agentManagementService.getBlobStorageClient()
-                .uploadBlobFromFile(screenShotImageFile, DeviceNetworkBlobConstants.SCREENSHOT_CONTAINER_NAME,
-                        "device/screenshots/" + screenShotImageFile.getName(), null);
-        if (StringUtils.isBlank(blobUrl)) {
-            classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
+        StorageFileInfo fileInfo = new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl = agentManagementService.getStorageServiceClientProxy.upload(pcScreenShotImageFile, fileInfo).getBlobUrl();
+        if (StringUtils.isBlank(fileDownloadUrl)) {
+            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
-            deviceInfo.setScreenshotImageUrl(blobUrl);
+            deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
         }
         return screenShotImageFile;
     }

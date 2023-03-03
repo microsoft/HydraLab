@@ -237,13 +237,12 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         StorageFileInfo storageFileInfo = new StorageFileInfo(file,
                 "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(),
                 StorageFileInfo.FileType.COMMON_FILE);
-        return attachmentService.addFileInfo(storageFileInfo, file, EntityType.TEST_RESULT,
-                logger);
+        return attachmentService.saveFileInStorageAndDB(storageFileInfo, file, EntityType.TEST_RESULT, logger);
     }
 
     private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
         Assert.isTrue(result.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
-        String deviceTestResultBlobUrl = result.getAttachments().get(0).getBlobUrl();
+        String deviceTestResultBlobUrl = result.getAttachments().get(0).getCDNUrl();
         String fileName = result.getAttachments().get(0).getFileName();
         log.info("deviceTestResultBlobUrl is {}", deviceTestResultBlobUrl);
 

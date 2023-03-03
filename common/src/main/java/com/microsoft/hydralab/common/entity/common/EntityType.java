@@ -2,20 +2,27 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
-import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
+import com.microsoft.hydralab.common.file.StorageProperties;
 
 public enum EntityType {
-    SCREENSHOT("SCREENSHOT", DeviceNetworkBlobConstants.SCREENSHOT_CONTAINER_NAME),
-    APP_FILE_SET("FILE_SET", DeviceNetworkBlobConstants.APP_FILE_CONTAINER_NAME),
-    TEST_RESULT("TEST_RES", DeviceNetworkBlobConstants.TEST_RESULT_CONTAINER_NAME),
-    AGENT_PACKAGE("AGENT_PKG", DeviceNetworkBlobConstants.AGENT_PACKAGE_CONTAINER_NAME),
-    TEST_JSON("TEST_JSON", DeviceNetworkBlobConstants.TEST_JSON_CONTAINER_NAME);
+    SCREENSHOT("SCREENSHOT"),
+    APP_FILE_SET("FILE_SET"),
+    TEST_RESULT("TEST_RES"),
+    AGENT_PACKAGE("AGENT_PKG"),
+    TEST_JSON("TEST_JSON");
 
     public String typeName;
-    public String blobConstant;
+    public String storageContainer;
 
-    EntityType(String typeName, String blobConstant) {
+    EntityType(String typeName) {
         this.typeName = typeName;
-        this.blobConstant = blobConstant;
+    }
+
+    public static void setInstanceContainer(StorageProperties storageProperties) {
+        SCREENSHOT.storageContainer = storageProperties.getScreenshotContainerName();
+        APP_FILE_SET.storageContainer = storageProperties.getAppFileContainerName();
+        TEST_RESULT.storageContainer = storageProperties.getTestResultContainerName();
+        AGENT_PACKAGE.storageContainer = storageProperties.getAgentPackageContainerName();
+        TEST_JSON.storageContainer = storageProperties.getTestJsonContainerName();
     }
 }

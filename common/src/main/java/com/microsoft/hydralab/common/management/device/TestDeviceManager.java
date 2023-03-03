@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.MobileDeviceState;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;

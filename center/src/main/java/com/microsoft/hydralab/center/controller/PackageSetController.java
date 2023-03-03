@@ -5,7 +5,7 @@ package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.center.service.BlobStorageService;
+import com.microsoft.hydralab.center.service.StorageTokenManageService;
 import com.microsoft.hydralab.center.service.SysTeamService;
 import com.microsoft.hydralab.center.service.SysUserService;
 import com.microsoft.hydralab.center.service.TestFileSetService;
@@ -15,11 +15,11 @@ import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.EntityType;
-import com.microsoft.hydralab.common.entity.common.SASData;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestJsonInfo;
+import com.microsoft.hydralab.common.file.impl.azure.SASData;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
@@ -56,8 +56,8 @@ import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_FILE_BASE
 @RestController
 public class PackageSetController {
     private final Logger logger = LoggerFactory.getLogger(PackageSetController.class);
-    public SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-    public int message_length = 200;
+    private final SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    private final int messageLength = 200;
     @Resource
     AttachmentService attachmentService;
     @Resource
@@ -69,7 +69,7 @@ public class PackageSetController {
     @Resource
     private UserTeamManagementService userTeamManagementService;
     @Resource
-    private BlobStorageService blobStorageService;
+    private StorageTokenManageService storageTokenManageService;
 
     /**
      * Authenticated USER:
@@ -77,6 +77,7 @@ public class PackageSetController {
      * 2) members of the TEAM that fileSet is in
      */
     @PostMapping(value = {"/api/package/add"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("ParameterNumber")
     public Result add(@CurrentSecurityContext SysUser requestor,
                       @RequestParam(value = "teamName", required = false) String teamName,
                       @RequestParam(value = "commitId", required = false) String commitId,
@@ -88,10 +89,11 @@ public class PackageSetController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
+        String localTeamName = teamName;
         if (StringUtils.isEmpty(teamName)) {
-            teamName = requestor.getDefaultTeamName();
+            localTeamName = requestor.getDefaultTeamName();
         }
-        SysTeam team = sysTeamService.queryTeamByName(teamName);
+        SysTeam team = sysTeamService.queryTeamByName(localTeamName);
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
@@ -101,27 +103,29 @@ public class PackageSetController {
         if (appFile.isEmpty()) {
             return Result.error(HttpStatus.FORBIDDEN.value(), "apk file empty");
         }
+        String localCommitId = commitId;
         if (!LogUtils.isLegalStr(commitId, Const.RegexString.COMMON_STR, true)) {
-            commitId = "commitId";
+            localCommitId = "commitId";
         }
+        String localBuildType = buildType;
         if (!LogUtils.isLegalStr(buildType, Const.RegexString.COMMON_STR, false)) {
-            buildType = "debug";
+            localBuildType = "debug";
         }
         int commitCountInt = Integer.parseInt(commitCount);
-        commitMessage = commitMessage.replaceAll("[\\t\\n\\r]", " ");
-        if (commitMessage.length() > message_length) {
-            commitMessage = commitMessage.substring(0, message_length);
+        String localCommitMessage = commitMessage.replaceAll("[\\t\\n\\r]", " ");
+        if (localCommitMessage.length() > messageLength) {
+            localCommitMessage = localCommitMessage.substring(0, messageLength);
         }
-        logger.info("commitId: {}, commitMessage: {}, buildType: {}, commitCount: {}", commitId, commitMessage, buildType,
+        logger.info("commitId: {}, commitMessage: {}, buildType: {}, commitCount: {}", localCommitId, localCommitMessage, localBuildType,
                 commitCountInt);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
 
         try {
             String relativePath = FileUtil.getPathForToday();
             //Init test file set info
             TestFileSet testFileSet = new TestFileSet();
-            testFileSet.setBuildType(buildType);
-            testFileSet.setCommitId(commitId);
-            testFileSet.setCommitMessage(commitMessage);
+            testFileSet.setBuildType(localBuildType);
+            testFileSet.setCommitId(localCommitId);
+            testFileSet.setCommitMessage(localCommitMessage);
             testFileSet.setCommitCount(commitCount);
             testFileSet.setTeamId(team.getTeamId());
             testFileSet.setTeamName(team.getTeamName());
@@ -129,24 +133,24 @@ public class PackageSetController {
             //Save app file to server
             File tempAppFile =
                     attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE});
-            StorageFileInfo appBlobFile = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
+            StorageFileInfo appFileInfo = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
             //Upload app file
-            appBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appBlobFile, tempAppFile, logger);
-            JSONObject appFileParser = appBlobFile.getFileParser();
+            appFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appFileInfo, tempAppFile, logger);
+            JSONObject appFileParser = appFileInfo.getFileParser();
             testFileSet.setAppName(appFileParser.getString(ParserKey.APP_NAME));
             testFileSet.setPackageName(appFileParser.getString(ParserKey.PKG_NAME));
             testFileSet.setVersion(appFileParser.getString(ParserKey.VERSION));
-            testFileSet.getAttachments().add(appBlobFile);
+            testFileSet.getAttachments().add(appFileInfo);
 
             //Save test app file to server if exist
             if (testAppFile != null && !testAppFile.isEmpty()) {
                 File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativePath, false, null,
                         new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE});
 
-                StorageFileInfo testAppBlobFile = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
+                StorageFileInfo testAppFileInfo = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
                 //Upload app file
-                testAppBlobFile = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, testAppBlobFile, tempTestAppFile, logger);
-                testFileSet.getAttachments().add(testAppBlobFile);
+                testAppFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, testAppFileInfo, tempTestAppFile, logger);
+                testFileSet.getAttachments().add(testAppFileInfo);
             }
 
             //Save file set info to DB and memory
@@ -236,7 +240,7 @@ public class PackageSetController {
         try {
             File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
             StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativePath, StorageFileInfo.FileType.AGENT_PACKAGE);
-            return Result.ok(attachmentService.addFileInfo(storageFileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
+            return Result.ok(attachmentService.saveFileInStorageAndDB(storageFileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
         } catch (Exception e) {
@@ -263,10 +267,11 @@ public class PackageSetController {
         if (!LogUtils.isLegalStr(packageName, Const.RegexString.PACKAGE_NAME, false)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "The packagename is illegal");
         }
-        if (StringUtils.isEmpty(teamName)) {
-            teamName = requestor.getDefaultTeamName();
+        String localTeamName = teamName;
+        if (StringUtils.isEmpty(localTeamName)) {
+            localTeamName = requestor.getDefaultTeamName();
         }
-        SysTeam team = sysTeamService.queryTeamByName(teamName);
+        SysTeam team = sysTeamService.queryTeamByName(localTeamName);
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
@@ -289,8 +294,8 @@ public class PackageSetController {
             testJsonInfo.setTeamName(team.getTeamName());
             String newFileName = formatDate.format(testJsonInfo.getIngestTime()) + FILE_SUFFIX.JSON_FILE;
             File savedJson = attachmentService.verifyAndSaveFile(testJsonFile, parentDir, false, newFileName, new String[]{FILE_SUFFIX.JSON_FILE});
-            String blobPath = fileRelativePath + "/" + savedJson.getName();
-            testJsonInfo.setBlobPath(blobPath);
+            String fileRelPath = fileRelativePath + "/" + savedJson.getName();
+            testJsonInfo.setBlobPath(fileRelPath);
 
             return Result.ok(attachmentService.addTestJsonFile(testJsonInfo, savedJson, EntityType.TEST_JSON, logger));
         } catch (HydraLabRuntimeException e) {
@@ -355,7 +360,7 @@ public class PackageSetController {
     @PostMapping("/api/package/queryAgentPackage")
     public Result queryAgentPackage() {
 
-        return Result.ok(attachmentService.queryBlobFileByType(StorageFileInfo.FileType.AGENT_PACKAGE));
+        return Result.ok(attachmentService.queryFileInfoByFileType(StorageFileInfo.FileType.AGENT_PACKAGE));
     }
 
     /**
@@ -449,11 +454,12 @@ public class PackageSetController {
         return Result.ok(testFileSet);
     }
 
+    @Deprecated
     @GetMapping("/api/package/getSAS")
     public Result<SASData> generateReadSAS(@CurrentSecurityContext SysUser requestor) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        return Result.ok(blobStorageService.GenerateReadSAS(requestor.getMailAddress()));
+        return Result.ok((SASData) storageTokenManageService.temporaryGetReadSAS(requestor.getMailAddress()));
     }
 }

@@ -25,6 +25,7 @@ import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -32,7 +33,6 @@ import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.SerializeUtil;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
 import com.microsoft.hydralab.t2c.runner.TestInfo;
@@ -105,9 +105,11 @@ public class DeviceAgentManagementService {
     @Resource
     AgentManageService agentManageService;
     @Resource
-    BlobStorageClient blobStorageClient;
+    StorageServiceClientProxy storageServiceClientProxy;
     @Resource
-    BlobStorageService blobStorageService;
+    StorageTokenManageService storageTokenManageService;
+    @Value("${app.storage.type}")
+    private String storageType;
 
     @Value("${app.access-token-limit}")
     int accessLimit;
@@ -148,7 +150,8 @@ public class DeviceAgentManagementService {
     private void sendAgentMetadata(Session session, AgentUser agentUser, String signalName) {
         agentUser.setBatteryStrategy(AgentUser.BatteryStrategy.valueOf(batteryStrategy));
         AgentMetadata data = new AgentMetadata();
-        data.setBlobSAS(blobStorageService.GenerateWriteSAS(agentUser.getId()));
+        data.setStorageType(storageType);
+        data.setAccessToken(storageTokenManageService.generateWriteToken(agentUser.getId()));
         data.setAgentUser(agentUser);
         data.setPushgatewayUsername(pushgatewayUsername);
         data.setPushgatewayPassword(pushgatewayPassword);
@@ -739,8 +742,7 @@ public class DeviceAgentManagementService {
             File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
             TestInfo testInfo;
             try {
-                blobStorageClient.downloadFileFromBlob(testApkFile, testAppFileInfo.getBlobContainer(),
-                        testAppFileInfo.getBlobPath());
+                storageServiceClientProxy.download(testApkFile, testAppFileInfo);
                 T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
                 String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
                 testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
@@ -749,7 +751,8 @@ public class DeviceAgentManagementService {
             }
             Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
 
-            int androidCount = 0, edgeCount = 0;
+            int androidCount = 0;
+            int edgeCount = 0;
 
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
                 if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
