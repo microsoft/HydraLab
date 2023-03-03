@@ -52,7 +52,7 @@ public class T2CRunner extends AppiumRunner {
         logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
         logCollector.start();
 
-        testRun.setTotalCount(testTask.testJsonFileList.size() + (initialJsonFile == null ? 0 : 1));
+        testRun.setTotalCount(testTask.getTestJsonFileList().size() + (initialJsonFile == null ? 0 : 1));
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
 
@@ -69,7 +69,7 @@ public class T2CRunner extends AppiumRunner {
         if (initialJsonFile != null) {
             runT2CJsonTestCase(initialJsonFile, deviceInfo, testRun, reportLogger, recordingStartTimeMillis);
         }
-        for (File jsonFile : testTask.testJsonFileList) {
+        for (File jsonFile : testTask.getTestJsonFileList()) {
             runT2CJsonTestCase(jsonFile, deviceInfo, testRun, reportLogger, recordingStartTimeMillis);
         }
 
