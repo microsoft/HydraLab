@@ -23,8 +23,7 @@ public class AuthTokenService {
     SecurityUserService securityUserService;
 
     public AuthToken saveAuthToken(AuthToken authToken) {
-        authToken = authTokenRepository.save(authToken);
-        return authToken;
+        return authTokenRepository.save(authToken);
     }
 
     public AuthToken getAuthToken(Long tokenId) {

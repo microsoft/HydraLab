@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-
 @Repository
 public interface UserTeamRelationRepository extends JpaRepository<UserTeamRelation, UserTeamRelationId> {
     Optional<UserTeamRelation> findByMailAddressAndTeamId(String mailAddress, String teamId);

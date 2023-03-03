@@ -146,6 +146,7 @@ public class DeviceManageController {
      * 3) admin of the TEAM that group is in
      */
     @PostMapping(value = "/api/device/updateDeviceScope", produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("IllegalCatch")
     public Result updateDeviceScope(@CurrentSecurityContext SysUser requestor,
                                     @RequestParam(value = "deviceSerial") String deviceSerial,
                                     @RequestParam(value = "isPrivate") Boolean isPrivate) {

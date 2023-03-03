@@ -22,7 +22,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @Component
 public class AuthUtil {
 
@@ -135,16 +134,17 @@ public class AuthUtil {
         if (originUrl == null) {
             return getLoginUrl();
         }
+        String url = originUrl;
         if (queryString != null) {
-            originUrl = originUrl + "?" + queryString;
+            url = url + "?" + queryString;
         }
         try {
-            originUrl = URLEncoder.encode(originUrl, FileUtil.UTF_8);
+            url = URLEncoder.encode(url, FileUtil.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
         }
         String loginUrl =
-                authorizationUri + "?client_id=" + clientId + "&response_type=code&redirect_uri=" + redirectUri + "&response_mode=query&scope=" + scope + "&state=" + originUrl;
+                authorizationUri + "?client_id=" + clientId + "&response_type=code&redirect_uri=" + redirectUri + "&response_mode=query&scope=" + scope + "&state=" + url;
         return loginUrl;
     }
 

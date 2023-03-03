@@ -150,7 +150,6 @@ public class DeviceAgentManagementService {
     private void sendAgentMetadata(Session session, AgentUser agentUser, String signalName) {
         agentUser.setBatteryStrategy(AgentUser.BatteryStrategy.valueOf(batteryStrategy));
         AgentMetadata data = new AgentMetadata();
-
         data.setStorageType(storageType);
         data.setAccessToken(storageTokenManageService.generateWriteToken(agentUser.getId()));
         data.setAgentUser(agentUser);
@@ -721,7 +720,8 @@ public class DeviceAgentManagementService {
             }
             Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
 
-            int androidCount = 0, edgeCount = 0;
+            int androidCount = 0;
+            int edgeCount = 0;
 
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
                 if (driverInfo.getPlatform().equalsIgnoreCase("android")) {

@@ -154,7 +154,8 @@ public class AgentManageService {
                         "  registry:\n" +
                         "    # The server hostname:port of Hydra Lab Center. If nginx enabled, switch to port of nginx\n" +
                         "    server: '" + host + "'\n" +
-                        "    # The Agent info registered in Hydra Lab Center, for instance if it's running on localhost, the URL would be: http://localhost:9886/portal/index.html#/auth\n" +
+                        "    # The Agent info registered in Hydra Lab Center, for instance if it's running on localhost," +
+                        "    the URL would be: http://localhost:9886/portal/index.html#/auth\n" +
                         "    name: " + agentUser.getName() + "\n" +
                         "    id: " + agentUser.getId() + "\n" +
                         "    secret: " + agentUser.getSecret() + "\n" +
