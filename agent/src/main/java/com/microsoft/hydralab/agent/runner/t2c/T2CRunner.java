@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner.t2c;
 
 import cn.hutool.core.img.ImgUtil;
@@ -13,6 +14,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -29,13 +31,15 @@ public class T2CRunner extends AppiumRunner {
     String agentName;
     private int currentIndex = 0;
 
-    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, String agentName) {
-        super(deviceManager, testTaskRunCallback);
+    public T2CRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                     PerformanceTestManagementService performanceTestManagementService, String agentName) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.agentName = agentName;
     }
 
     @Override
-    protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, DeviceInfo deviceInfo, TestTask testTask,
+    protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, DeviceInfo deviceInfo,
+                                TestTask testTask,
                                 TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         pkgName = testTask.getPkgName();
 
@@ -51,6 +55,9 @@ public class T2CRunner extends AppiumRunner {
         testRun.setTotalCount(testTask.testJsonFileList.size() + (initialJsonFile == null ? 0 : 1));
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
+
+        performanceTestManagementService.testRunStarted();
+
         deviceInfo.setRunningTestName(pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
         currentIndex = 0;
 
@@ -66,9 +73,9 @@ public class T2CRunner extends AppiumRunner {
             runT2CJsonTestCase(jsonFile, deviceInfo, testRun, reportLogger, recordingStartTimeMillis);
         }
 
-
         // Test finish
         reportLogger.info(pkgName + ".end");
+        performanceTestManagementService.testRunFinished();
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         deviceInfo.setRunningTestName(null);
@@ -79,7 +86,8 @@ public class T2CRunner extends AppiumRunner {
     @Override
     public TestRun createTestRun(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
         TestRun testRun = super.createTestRun(deviceInfo, testTask, parentLogger);
-        String deviceName = System.getProperties().getProperty("os.name") + "-" + agentName + "-" + deviceInfo.getName();
+        String deviceName =
+                System.getProperties().getProperty("os.name") + "-" + agentName + "-" + deviceInfo.getName();
         testRun.setDeviceName(deviceName);
         return testRun;
     }
@@ -98,8 +106,11 @@ public class T2CRunner extends AppiumRunner {
 
         reportLogger.info(ongoingTest.getTitle());
 
-        testRun.addNewTimeTag(currentIndex + ". " + ongoingTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(currentIndex + ". " + ongoingTest.getTitle(),
+                System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.addNewTestUnit(ongoingTest);
+
+        performanceTestManagementService.testStarted(ongoingTest.getTitle());
 
         deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
             if (imagePNGFile == null) {
@@ -118,6 +129,7 @@ public class T2CRunner extends AppiumRunner {
         // Run Test
         try {
             deviceManager.runAppiumT2CTest(deviceInfo, jsonFile, reportLogger);
+            performanceTestManagementService.testSuccess(ongoingTest.getTitle());
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTest.setSuccess(true);
         } catch (Exception e) {
@@ -125,12 +137,15 @@ public class T2CRunner extends AppiumRunner {
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingTest.setSuccess(false);
             ongoingTest.setStack(e.toString());
-            testRun.addNewTimeTag(ongoingTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            performanceTestManagementService.testFailure(ongoingTest.getTitle());
+            testRun.addNewTimeTag(ongoingTest.getTitle() + ".fail",
+                    System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         }
         ongoingTest.setEndTimeMillis(System.currentTimeMillis());
         ongoingTest.setRelEndTimeInVideo(ongoingTest.getEndTimeMillis() - recordingStartTimeMillis);
-        testRun.addNewTimeTag(ongoingTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTest.getTitle() + ".end",
+                System.currentTimeMillis() - recordingStartTimeMillis);
     }
 
     private void releaseResource() {

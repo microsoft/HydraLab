@@ -2,11 +2,15 @@ plugins {
     id 'java'
     id 'org.springframework.boot'
 }
+apply from: "${project.rootDir}/quality/checkstyle.gradle"
 group = 'com.microsoft.hydralab'
 version = hydraLabVersion
 
 sourceCompatibility = 11
 targetCompatibility = 11
+
+classes.finalizedBy checkstyleMain
+bootJar.dependsOn("checkstyleMain")
 
 repositories {
     mavenCentral()

@@ -5,7 +5,9 @@ package com.microsoft.hydralab.common.management.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.impl.IOSLogCollector;
@@ -16,7 +18,6 @@ import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.AgentConstant;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
-import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -107,11 +108,12 @@ public class IOSDeviceManager extends DeviceManager {
         }
         IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), screenshotImageFile.getAbsolutePath(), classLogger);
         deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
-        String blobUrl = blobStorageClient.uploadBlobFromFile(screenshotImageFile, DeviceNetworkBlobConstants.IMAGES_BLOB_NAME, "device/screenshots/" + screenshotImageFile.getName(), null);
-        if (StringUtils.isBlank(blobUrl)) {
-            classLogger.warn("blobUrl is empty for device {}", deviceInfo.getName());
+        StorageFileInfo fileInfo = new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl = storageServiceClientProxy.upload(screenshotImageFile, fileInfo).getBlobUrl();
+        if (StringUtils.isBlank(fileDownloadUrl)) {
+            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
-            deviceInfo.setScreenshotImageUrl(blobUrl);
+            deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
         }
         return screenshotImageFile;
     }

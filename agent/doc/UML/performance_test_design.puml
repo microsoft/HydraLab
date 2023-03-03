@@ -1,0 +1,110 @@
+
+@startmindmap performance_test_inspection_entrypoints
+* Performance Test
+** Define the strategy in TestTask
+*** LifeCycle
+****:
+TEST_STARTED
+TEST_FINISHED
+TEST_FAILED
+TEST_RUN_STARTED
+TEST_RUN_FINISHED
+;
+*** Schedule
+** Call inspect() method in a test case
+*** Hydra SDK
+*** T2C
+*** Espresso
+@endmindmap
+@startjson taps_to_cases_json_with_performance_test_actions
+{
+  "drivers": [
+    {
+      "id": "13211FDD400183",
+      "platform": "android",
+'      Deprecated Name : init
+      "setUp": {
+        "launcherApp": ""
+      }
+'      Can also add tearDown here to match the device action design
+    }
+  ],
+'  deprecated name: cases
+  "actions": [
+    {
+      "index": 0,
+      "driverId": "13211FDD400183",
+      "action": {
+        "actionType": "inspection",
+        "arguments": {
+          "inspectorType": "INSPECTOR_ANDROID_MEMORY_INFO",
+          "targetApp": "com.microsoft.appmanager",
+          "description": "Start LTW",
+          "isReset": false
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 1,
+      "driverId": "13211FDD400183",
+      "action": {
+        "actionType": "inspection",
+        "arguments": {
+          "inspectorType": "INSPECTOR_ANDROID_BATTERY_INFO",
+          "targetApp ": "com.microsoft.appmanager",
+          "description ": "Start LTW",
+          "isReset": true
+        }
+      },
+      "isOptional": false
+    }
+  ]
+}
+@endjson
+
+@startuml perf_test_class_design
+class InspectionStrategy {
+
+    + StrategyType strategyType;
+
+    // if the strategyType == TEST_LIFECYCLE
+    + List<WhenType> when;
+
+    // if the strategyType == TEST_SCHEDULE
+    + long interval;
+    + TimeUnit intervalUnit;
+}
+
+interface PerformanceTestListener {
+    void testStarted();
+    void testFinished();
+    void testFailure();
+    void testRunStarted();
+    void testRunFinished();
+}
+
+class PerformanceTestManagementService {
+    Map<String, List<ScheduledFuture<?>>> inspectPerformanceTimerMap
+    Map<String, List<InspectionStrategy>> testLifeCycleStrategyMap
+}
+
+PerformanceTestManagementService -> InspectionStrategy
+PerformanceTestManagementService -u-|> PerformanceTestListener
+
+PerformanceTestManagementService -d-o TestRunner
+AppiumListener -d->  PerformanceTestListener
+Junit5Listener -d->  PerformanceTestListener
+EspressoTestInfoProcessorListener  -d->  PerformanceTestListener
+@enduml
+
+@startuml espresso_performance_test_design
+class EspressoPerformanceParser {
+    void processNewLines()
+}
+EspressoPerformanceParser --|> InstrumentationResultParser
+TestRunner <|-- EspressoRunner
+EspressoRunner -> EspressoPerformanceParser
+EspressoPerformanceParser -> PerformanceInspectionService
+@enduml
+

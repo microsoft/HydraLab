@@ -4,7 +4,7 @@ import com.microsoft.hydralab.agent.config.TestRunnerConfig;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
 import com.microsoft.hydralab.agent.test.BaseTest;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -36,7 +36,7 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForGroupDevice.groupDevices = "TestDeviceSerial1,TestDeviceSerial2";
         taskSpecForGroupDevice.pkgName = "com.microsoft.test";
 
-        String beanName = TestRunnerConfig.TestRunnerMap.get(taskSpecForGroupDevice.runningType);
+        String beanName = TestRunnerConfig.testRunnerMap.get(taskSpecForGroupDevice.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
         baseLogger.info("Try to get bean by name: " + taskSpecForGroupDevice);
 

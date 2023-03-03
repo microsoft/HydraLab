@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.interceptor;
 
 import com.microsoft.hydralab.center.service.AuthTokenService;
@@ -45,7 +46,8 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
         String token = null;
 
         if (LogUtils.isLegalStr(requestURI, Const.RegexString.URL, true) && LogUtils.isLegalStr(remoteUser, Const.RegexString.MAIL_ADDRESS, true)) {
-            LOGGER.info("New access from IP {}, host {}, user {}, for path {}", request.getRemoteAddr(), request.getRemoteHost(), remoteUser, requestURI);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
+            LOGGER.info("New access from IP {}, host {}, user {}, for path {}", request.getRemoteAddr(), request.getRemoteHost(), remoteUser,
+                    requestURI);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
         } else {
             return false;
         }
@@ -77,14 +79,15 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
             }
             //invoke by browser
             if (StringUtils.isEmpty(token) || !authUtil.verifyToken(token)) {
-                if (requestURI.contains(Const.FontPath.PREFIX_PATH)) {
+                if (requestURI.contains(Const.FrontEndPath.PREFIX_PATH)) {
                     String queryString = request.getQueryString();
                     if (StringUtils.isNotEmpty(queryString)
-                            && queryString.startsWith(Const.FontPath.REDIRECT_PARAM)
-                            && LogUtils.isLegalStr(queryString.replace(Const.FontPath.REDIRECT_PARAM + "=", ""), Const.RegexString.URL, false)
+                            && queryString.startsWith(Const.FrontEndPath.REDIRECT_PARAM)
+                            && LogUtils.isLegalStr(queryString.replace(Const.FrontEndPath.REDIRECT_PARAM + "=", ""), Const.RegexString.URL, false)
                             && LogUtils.isLegalStr(requestURI, Const.RegexString.URL, true)
                     ) {
-                        response.sendRedirect(authUtil.getLoginUrl(requestURI, queryString));// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
+                        response.sendRedirect(authUtil.getLoginUrl(requestURI,
+                                queryString));// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
                     } else {
                         response.sendRedirect(authUtil.getLoginUrl());
                     }
@@ -95,9 +98,10 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
                 return false;
             }
             //redirect
-            String redirectUrl = request.getParameter(Const.FontPath.REDIRECT_PARAM);
+            String redirectUrl = request.getParameter(Const.FrontEndPath.REDIRECT_PARAM);
             if (StringUtils.isNotEmpty(redirectUrl) && LogUtils.isLegalStr(redirectUrl, Const.RegexString.URL, false)) {
-                response.sendRedirect(Const.FontPath.INDEX_PATH + Const.FontPath.ANCHOR + redirectUrl);// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
+                response.sendRedirect(Const.FrontEndPath.INDEX_PATH + Const.FrontEndPath.ANCHOR +
+                        redirectUrl);// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
                 return false;
             }
         }

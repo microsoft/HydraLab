@@ -14,7 +14,7 @@ import Tooltip from "@mui/material/Tooltip";
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import DeviceAgentsView from '@/component/DeviceAgentsView'
-import GroupManageView from '@/component/GroupManageView'
+import DeviceGroupView from '@/component/DeviceGroupView'
 import SearchView from '@/component/SearchView'
 import RunnerView from '@/component/RunnerView'
 import TestTaskView from '@/component/TasksView'
@@ -153,9 +153,9 @@ export default function Dashboard() {
             this.snackBarError(error)
         })
 
-        axios.get('/api/package/getSAS').then(res => {
+        axios.get('/api/storage/getToken').then(res => {
             if (res.data && res.data.code === 200) {
-                ls.set("BlobSignature", res.data.content.signature);
+                ls.set("FileToken", res.data.content);
             } else {
                 this.snackBarFail(res)
             }
@@ -194,9 +194,9 @@ export default function Dashboard() {
                             </ListItem>
                             <ListItem component={Link} to={'/manage'} button>
                                 <ListItemIcon>
-                                    <span className="material-icons-outlined">groups</span>
+                                    <span className="material-icons-outlined">table_view</span>
                                 </ListItemIcon>
-                                <ListItemText primary="Group Management"/>
+                                <ListItemText primary="Device Group"/>
                             </ListItem>
                             <ListItem component={Link} to={'/tasks'} button>
                                 <ListItemIcon>
@@ -290,7 +290,7 @@ export default function Dashboard() {
                                                 <DeviceAgentsView/>
                                             </Route>
                                             <Route exact path="/manage">
-                                                <GroupManageView/>
+                                                <DeviceGroupView/>
                                             </Route>
                                             <Route path="/runner">
                                                 <RunnerView theme={theme}/>

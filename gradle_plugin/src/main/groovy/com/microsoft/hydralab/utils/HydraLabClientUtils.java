@@ -3,7 +3,6 @@
 package com.microsoft.hydralab.utils;
 
 import com.google.gson.*;
-import com.microsoft.hydralab.config.DeviceConfig;
 import com.microsoft.hydralab.config.HydraLabAPIConfig;
 import com.microsoft.hydralab.config.TestConfig;
 import com.microsoft.hydralab.entity.*;
@@ -301,7 +300,7 @@ public class HydraLabClientUtils {
 
             if (deviceTestResult.attachments.size() != 0) {
                 String signature = hydraLabAPIClient.getBlobSAS(apiConfig);
-                for (BlobFileInfo fileInfo : deviceTestResult.attachments) {
+                for (StorageFileInfo fileInfo : deviceTestResult.attachments) {
                     String attachmentUrl = fileInfo.blobUrl + "?" + signature;
                     String attachmentFileName = fileInfo.fileName;
 

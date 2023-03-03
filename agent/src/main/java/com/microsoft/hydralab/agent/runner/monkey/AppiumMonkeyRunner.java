@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner.monkey;
 
 import cn.hutool.core.img.ImgUtil;
@@ -13,6 +14,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -23,16 +25,19 @@ import java.util.concurrent.TimeUnit;
 public class AppiumMonkeyRunner extends AppiumRunner {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
 
-    public AppiumMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
-        super(deviceManager, testTaskRunCallback);
+    public AppiumMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                              PerformanceTestManagementService performanceTestManagementService) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
     }
 
     @Override
-    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask, TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
+    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask,
+                                TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         String pkgName = testTask.getPkgName();
 
         long recordingStartTimeMillis = System.currentTimeMillis();
-        ScreenRecorder deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
+        ScreenRecorder deviceScreenRecorder =
+                deviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
 
@@ -52,7 +57,10 @@ public class AppiumMonkeyRunner extends AppiumRunner {
 
         reportLogger.info(ongoingMonkeyTest.getTitle());
 
-        testRun.addNewTimeTag(1 + ". " + ongoingMonkeyTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        performanceTestManagementService.testRunStarted();
+
+        testRun.addNewTimeTag(1 + ". " + ongoingMonkeyTest.getTitle(),
+                System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingMonkeyTest.getTitle());
         File gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
@@ -72,6 +80,9 @@ public class AppiumMonkeyRunner extends AppiumRunner {
             }
         }), reportLogger);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
+
+        performanceTestManagementService.testStarted(ongoingMonkeyTest.getTitle());
+
         deviceManager.runAppiumMonkey(deviceInfo, pkgName, testTask.getMaxStepCount(), reportLogger);
 
         deviceScreenRecorder.finishRecording();
@@ -84,21 +95,26 @@ public class AppiumMonkeyRunner extends AppiumRunner {
             ongoingMonkeyTest.setSuccess(false);
             ongoingMonkeyTest.setStack(e.toString());
             testRun.setSuccess(false);
-            testRun.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            performanceTestManagementService.testFailure(ongoingMonkeyTest.getTitle());
+            testRun.addNewTimeTagBeforeLast(ongoingMonkeyTest.getTitle() + ".fail",
+                    System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         } else {
             // Pass
             ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingMonkeyTest.setSuccess(true);
             testRun.setSuccess(true);
+            performanceTestManagementService.testSuccess(ongoingMonkeyTest.getTitle());
         }
 
         // Test finish
         reportLogger.info(ongoingMonkeyTest.getTitle() + ".end");
+        performanceTestManagementService.testRunFinished();
         ongoingMonkeyTest.setEndTimeMillis(System.currentTimeMillis());
         deviceInfo.setRunningTestName(null);
         testRun.addNewTestUnit(ongoingMonkeyTest);
-        testRun.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         return gifFile;
     }

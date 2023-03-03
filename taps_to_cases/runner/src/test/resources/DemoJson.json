@@ -15,7 +15,7 @@
   ],
   "cases": [
     {
-      "index": 0,
+      "description": "Input helloworld in PC",
       "elementInfo": {},
       "driverId": "windows",
       "action": {
@@ -27,7 +27,7 @@
       "isOption": false
     },
     {
-      "index": 1,
+      "description": "Click sign in in GP",
       "elementInfo": {
         "index": "3",
         "package": "com.android.vending",
@@ -56,7 +56,7 @@
       "isOption": false
     },
     {
-      "index": 2,
+      "description": "Assert text in TextView",
       "elementInfo": {
         "index": "2",
         "package": "com.android.vending",
@@ -88,7 +88,7 @@
       "isOption": false
     },
     {
-      "index": 3,
+      "description": "Sleep 10 seconds",
       "elementInfo": { },
       "driverId": "10086",
       "action": {
@@ -100,7 +100,7 @@
       "isOption": false
     },
     {
-      "index": 4,
+      "description": "Sleep 10 seconds",
       "elementInfo": { },
       "driverId": "10086",
       "action": {
@@ -112,7 +112,7 @@
       "isOption": false
     },
     {
-      "index": 5,
+      "description": "tap on phone screen",
       "elementInfo": { },
       "driverId": "10086",
       "action": {
@@ -125,7 +125,7 @@
       "isOption": false
     },
     {
-      "index": 6,
+      "description": "Launch application in phone",
       "driverId": "10086",
       "action": {
         "actionType": "activateApp",
@@ -136,7 +136,7 @@
       "isOption": false
     },
     {
-      "index": 7,
+      "description": "Input text in phone",
       "driverId": "10086",
       "elementInfo": {
         "index": "2",

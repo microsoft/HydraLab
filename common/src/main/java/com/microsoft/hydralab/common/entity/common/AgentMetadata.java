@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
-import com.microsoft.hydralab.common.entity.center.AgentUser;
+import com.microsoft.hydralab.common.file.AccessToken;
 import lombok.Data;
 
 /**
@@ -11,7 +11,8 @@ import lombok.Data;
  */
 @Data
 public class AgentMetadata {
-    SASData blobSAS;
+    AccessToken accessToken;
+    String storageType;
     AgentUser agentUser;
     String pushgatewayUsername;
     String pushgatewayPassword;

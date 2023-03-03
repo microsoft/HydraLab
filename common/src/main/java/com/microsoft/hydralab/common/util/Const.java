@@ -78,7 +78,7 @@ public interface Const {
         String XCTEST_RESULT_FILE_NAME = "XctestResult";
     }
 
-    interface ScreenRecoderConfig{
+    interface ScreenRecoderConfig {
         String DEFAULT_FILE_NAME = "merged_test.mp4";
         String PC_FILE_NAME = "PC_test.mp4";
         String PHONE_FILE_NAME = "PHONE_test.mp4";
@@ -91,7 +91,7 @@ public interface Const {
         String BEHAVIOUR_DISCONNECT = "disconnected";
     }
 
-    interface FontPath {
+    interface FrontEndPath {
         String PREFIX_PATH = "/portal";
         String INDEX_PATH = "/portal/index.html";
         String ANCHOR = "#";
@@ -139,8 +139,23 @@ public interface Const {
         String AUTHORITY = "AUTHORITY";
     }
 
-    interface PreInstallPolicy{
+    interface PreInstallFailurePolicy {
         String SHUTDOWN = "SHUTDOWN";
         String IGNORE = "IGNORE";
+    }
+
+    interface FilePermission {
+        String WRITE = "WRITE";
+        String READ = "READ";
+    }
+
+    interface StorageType {
+        String LOCAL = "LOCAL";
+        String AZURE = "AZURE";
+    }
+
+    interface StoragePropertyBean {
+        String LOCAL = "localProperty";
+        String AZURE = "azureBlobProperty";
     }
 }

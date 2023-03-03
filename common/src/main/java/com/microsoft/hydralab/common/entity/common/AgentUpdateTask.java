@@ -17,7 +17,7 @@ public class AgentUpdateTask {
     private String targetVersionName;
     private String originVersionCode;
     private String targetVersionCode;
-    private BlobFileInfo packageInfo;
+    private StorageFileInfo packageInfo;
     private List<UpdateMsg> updateMsgs = new ArrayList<>();
 
 

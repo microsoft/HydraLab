@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
-
-import com.microsoft.hydralab.common.entity.center.DeviceGroupRelationId;
-import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.entity.center.DeviceGroup;
-import com.microsoft.hydralab.common.entity.center.DeviceGroupRelation;
 import com.microsoft.hydralab.center.repository.DeviceGroupRelationRepository;
 import com.microsoft.hydralab.center.repository.DeviceGroupRepository;
+import com.microsoft.hydralab.common.entity.center.DeviceGroup;
+import com.microsoft.hydralab.common.entity.center.DeviceGroupRelation;
+import com.microsoft.hydralab.common.entity.center.DeviceGroupRelationId;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -34,7 +34,6 @@ public class DeviceGroupService {
     SysUserService sysUserService;
     @Resource
     UserTeamManagementService userTeamManagementService;
-
 
     public DeviceGroup createGroup(String teamId, String teamName, String groupName, String owner) {
         DeviceGroup deviceGroup = new DeviceGroup();
@@ -108,7 +107,7 @@ public class DeviceGroupService {
         return deviceGroupRelationRepository.findAllByDeviceSerial(deviceSerial);
     }
 
-    public boolean checkGroupAuthorization(SysUser requestor, String groupName, boolean teamAdminRequired) throws IllegalArgumentException{
+    public boolean checkGroupAuthorization(SysUser requestor, String groupName, boolean teamAdminRequired) throws IllegalArgumentException {
         if (requestor == null) {
             return false;
         }
@@ -129,8 +128,7 @@ public class DeviceGroupService {
         if (teamAdminRequired) {
             // TEAM_ADMIN of current TEAM
             return userTeamManagementService.checkRequestorTeamAdmin(requestor, deviceGroup.getTeamId());
-        }
-        else {
+        } else {
             return userTeamManagementService.checkRequestorTeamRelation(requestor, deviceGroup.getTeamId());
         }
     }

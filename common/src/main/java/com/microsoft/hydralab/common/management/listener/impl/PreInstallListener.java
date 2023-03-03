@@ -47,7 +47,7 @@ public class PreInstallListener implements DeviceStatusListener {
             } catch (Exception e) {
                 String errorMessage = String.format("Pre-Install %s failed", appFile.getAbsolutePath());
                 classLogger.error(errorMessage, e);
-                if (Const.PreInstallPolicy.SHUTDOWN.equals(deviceManager.getPreInstallPolicy())) {
+                if (Const.PreInstallFailurePolicy.SHUTDOWN.equals(deviceManager.getPreInstallFailurePolicy())) {
                     throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e);
                 }
             }

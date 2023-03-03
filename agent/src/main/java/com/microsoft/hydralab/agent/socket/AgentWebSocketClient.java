@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.socket;
 
+import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
+import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.SerializeUtil;
-import com.microsoft.hydralab.common.entity.common.Message;
-import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;

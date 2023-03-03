@@ -9,9 +9,8 @@ import com.dd.plist.NSDictionary;
 import com.dd.plist.NSString;
 import com.dd.plist.PropertyListParser;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask.TaskConst;
-import com.microsoft.hydralab.common.entity.common.BlobFileInfo.ParserKey;
-import com.microsoft.hydralab.common.entity.common.EntityFileRelation;
-
+import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
 
@@ -28,7 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class PkgUtil {
-    public static JSONObject analysisFile(File file, EntityFileRelation.EntityType entityType) {
+    public static JSONObject analysisFile(File file, EntityType entityType) {
         JSONObject res = new JSONObject();
         switch (entityType) {
             case APP_FILE_SET:

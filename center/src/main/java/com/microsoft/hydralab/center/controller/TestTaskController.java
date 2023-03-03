@@ -1,17 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.center.service.*;
+import com.microsoft.hydralab.center.service.DeviceAgentManagementService;
+import com.microsoft.hydralab.center.service.SysUserService;
+import com.microsoft.hydralab.center.service.TestDataService;
+import com.microsoft.hydralab.center.service.TestFileSetService;
+import com.microsoft.hydralab.center.service.TestTaskService;
+import com.microsoft.hydralab.center.service.UserTeamManagementService;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.center.TestTaskQueuedInfo;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -21,7 +27,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -237,8 +249,8 @@ public class TestTaskController {
 
             // filter all Task Suite in TEAMs that user is in
             if (!sysUserService.checkUserAdmin(requestor)) {
-                criteriaTypes = userTeamManagementService.formTeamIdCriteria(requestor.getTeamAdminMap());
-                if (criteriaTypes.size() == 0) {
+                List<CriteriaType> criteriaTypeList = userTeamManagementService.formTeamIdCriteria(requestor.getTeamAdminMap());
+                if (criteriaTypeList.size() == 0) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "User belongs to no TEAM, please contact administrator for binding TEAM");
                 }
             }

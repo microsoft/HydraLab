@@ -26,6 +26,31 @@ to group your changes into a small number of commits which we can review one at 
 When completing a pull request, we will generally squash your changes into a single commit. Please
 let us know if your pull request needs to be merged as separate commits.
 
+### Technical design practice
+
+We use the [PlantUML](https://github.com/plantuml/plantuml) generation tool to provide planning solution and clarity for the architecture design of Hydra Lab, and most of the designs are documented in `*.puml` files, and running the following [Gradle task]([build.gradle](https://github.com/microsoft/HydraLab/blob/bc1471a9f1385664adb9bc26a204670e24917751/build.gradle#L94)) will generate the UML images in folder [docs/images/UML](docs/images/UML):
+
+```bash
+./gradlew generateUMLImage
+```
+And you can also trigger the run in the Gradle panel of IDEA:
+
+![image](https://user-images.githubusercontent.com/8344245/220255351-8bd2db47-9e4b-407c-9444-ac982173f77b.png)
+
+### Design a new feature/solution/architecture upgrade
+
+If you are going to apply a huge change to the code, to minimize the possible impact and code review pressure, here are some guide on the general steps we can follow:
+- Create a new PR for UML update to clarify/illustrate the changes on class relations and new interface definitions.
+- Create a PR to check in the interfaces and abstract classes, and create some unit test to define the behavior of the entities/components.
+- Start the PR(s) for implementation and tweak the UT during the process.
+
+Ideally, the above steps could help you win incremental approval from the team faster and break down your changes into smaller and more manageable tasks.
+Some more instructions you can refer to: [Dealing with large Pull Requests](https://www.soundstep.com/posts/dealing-with-large-pull-requests/) | [Optimal pull request size](https://dev.to/bosepchuk/optimal-pull-request-size-600). Gentle reminder:
+
+<p align="center"><b>
+YOU DON'T HAVE TO WRAP UP EVERYTHING IN ONE PR
+</b></p>
+
 ## Coding style conventions
 
 Under most cases, new file/folder name should follow the [snake case](https://en.wikipedia.org/wiki/Snake_case) style patterns. A fully capitalized name should come with a reasonable justification.
@@ -35,6 +60,14 @@ Under most cases, new file/folder name should follow the [snake case](https://en
 We are aligned on the [Fail Fast](https://www.techtarget.com/whatis/definition/fail-fast) principles for the project, and will avoid any inappropriate practice that will bury an exception in long log or ignoed code comment, please refer to [Java-Exception-handling-best-practices](https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Java-Exception-handling-best-practices)|[中文版](https://xie.infoq.cn/article/e1acf36fa0655c321f673c230) to learn about it first.
 
 And please leverage the `Assert` API to save if conditions, for example: [Spring Assert API](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/util/Assert.html)
+
+In a nutshell:
+
+<p align="center"><b>
+  DO NOT SWALLOW THE EXCEPTIONS
+</b></p>
+
+You can try `logging it with a proper logger`, `rethrowing it to bubble up`, `letting upper call stack handle it by declaring it`, and `handling it in the codeflow`, or `recording the info in an entity`.
 
 ## Review Process
 

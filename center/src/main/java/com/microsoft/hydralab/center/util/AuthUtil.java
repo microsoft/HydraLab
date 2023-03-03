@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.util;
 
 import com.alibaba.fastjson.JSONObject;
@@ -20,7 +21,6 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
-
 
 @Component
 public class AuthUtil {
@@ -134,15 +134,17 @@ public class AuthUtil {
         if (originUrl == null) {
             return getLoginUrl();
         }
+        String url = originUrl;
         if (queryString != null) {
-            originUrl = originUrl + "?" + queryString;
+            url = url + "?" + queryString;
         }
         try {
-            originUrl = URLEncoder.encode(originUrl, FileUtil.UTF_8);
+            url = URLEncoder.encode(url, FileUtil.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String loginUrl = authorizationUri + "?client_id=" + clientId + "&response_type=code&redirect_uri=" + redirectUri + "&response_mode=query&scope=" + scope + "&state=" + originUrl;
+        String loginUrl =
+                authorizationUri + "?client_id=" + clientId + "&response_type=code&redirect_uri=" + redirectUri + "&response_mode=query&scope=" + scope + "&state=" + url;
         return loginUrl;
     }
 
@@ -167,7 +169,7 @@ public class AuthUtil {
             body.add("grant_type", "authorization_code");
             body.add("client_secret", clientSecret);
             HttpEntity<LinkedMultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-            
+
             ResponseEntity<JSONObject> json = restTemplateHttps.exchange(tokenUrl, HttpMethod.POST, entity, JSONObject.class);
             accessToken = json.getBody().getString("access_token");
         } catch (Exception e) {

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner;
 
 import cn.hutool.core.lang.Assert;
@@ -13,6 +14,8 @@ import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
+import com.microsoft.hydralab.performance.InspectionStrategy;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +32,15 @@ public abstract class TestRunner {
     protected final Logger log = LoggerFactory.getLogger(DeviceManager.class);
     protected final DeviceManager deviceManager;
     protected final TestTaskRunCallback testTaskRunCallback;
+    protected final PerformanceTestManagementService performanceTestManagementService;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
     protected final ActionExecutor actionExecutor = new ActionExecutor();
 
-    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback) {
+    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                      PerformanceTestManagementService performanceTestManagementService) {
         this.deviceManager = deviceManager;
         this.testTaskRunCallback = testTaskRunCallback;
+        this.performanceTestManagementService = performanceTestManagementService;
     }
 
     public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
@@ -52,7 +58,6 @@ public abstract class TestRunner {
             testRun.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(testRun, e);
         } finally {
-            //TODO: tearDown for performance testing. Android battery: adb shell dumpsys battery reset
             tearDown(deviceInfo, testTask, testRun);
         }
     }
@@ -131,7 +136,8 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing setUp actions.");
-            List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.SET_UP);
+            List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(),
+                    testTask.getDeviceActions(), DeviceAction.When.SET_UP);
             Assert.isTrue(exceptions.size() == 0, () -> exceptions.get(0));
         }
 
@@ -140,15 +146,27 @@ public abstract class TestRunner {
 
         checkTestTaskCancel(testTask);
         deviceManager.getScreenShot(deviceInfo, testRun.getLogger());
+
+        if (performanceTestManagementService != null && testTask.getInspectionStrategies() != null) {
+            for (InspectionStrategy strategy : testTask.getInspectionStrategies()) {
+                performanceTestManagementService.inspectWithStrategy(strategy);
+            }
+        }
     }
 
     protected abstract void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception;
 
     protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
+        // stop performance test
+        if (performanceTestManagementService != null) {
+            performanceTestManagementService.testTearDown(deviceInfo, log);
+        }
+
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
-            List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+            List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(),
+                    testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
             if (exceptions.size() > 0) {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
@@ -156,11 +174,13 @@ public abstract class TestRunner {
         deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
 
         //generate xml report and upload files
-        try {
-            String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
-            testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-        } catch (Exception e) {
-            testRun.getLogger().error("Error in buildTestResultXml", e);
+        if (testRun.getTotalCount() > 0) {
+            try {
+                String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
+                testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+            } catch (Exception e) {
+                testRun.getLogger().error("Error in buildTestResultXml", e);
+            }
         }
         if (testTaskRunCallback != null) {
             try {
@@ -185,7 +205,8 @@ public abstract class TestRunner {
         deviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
     }
 
-    protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
+    protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger)
+            throws Exception {
         if (!shouldInstallTestPackageAsApp()) {
             return;
         }
@@ -217,7 +238,9 @@ public abstract class TestRunner {
         File instrumentLogFile = new File(testRun.getResultFolder(), loggerNamePrefix + "_" + dateInfo + ".log");
         // make sure it's a child logger of the parentLogger
         String loggerName = parentLogger.getName() + ".test." + dateInfo;
-        Logger reportLogger = LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(), "%d %p -- %m%n");
+        Logger reportLogger =
+                LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(),
+                        "%d %p -- %m%n");
         // TODO the getTestBaseRelPathInUrl method shouldn't be in deviceManager, testBaseDir should be managed by agent
         testRun.setInstrumentReportPath(deviceManager.getTestBaseRelPathInUrl(instrumentLogFile));
 

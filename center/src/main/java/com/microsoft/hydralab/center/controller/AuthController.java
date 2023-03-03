@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.controller;
 
 import com.microsoft.hydralab.center.service.AuthTokenService;
@@ -17,7 +18,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +51,7 @@ public class AuthController {
      */
     @GetMapping(value = {"/api/auth"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public void getAccessToken(@RequestParam("code") String code, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String redirectUrl = Const.FontPath.INDEX_PATH;
+        String redirectUrl = Const.FrontEndPath.INDEX_PATH;
         String accessToken = authUtil.verifyCode(code);
         if (accessToken == null) {
             response.sendRedirect(authUtil.getLoginUrl());
@@ -55,7 +61,7 @@ public class AuthController {
         securityUserService.addSessionAndUserAuth(authUtil.getLoginUserName(accessToken), accessToken, request.getSession());
 
         String state = request.getParameter("state");
-        String prefix = Const.FontPath.INDEX_PATH + "?" + Const.FontPath.REDIRECT_PARAM + "=";
+        String prefix = Const.FrontEndPath.INDEX_PATH + "?" + Const.FrontEndPath.REDIRECT_PARAM + "=";
 
         if (StringUtils.isNotEmpty(state) && state.startsWith(prefix)) {
             String newUrl = state.replace(prefix, "");

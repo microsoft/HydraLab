@@ -7,7 +7,7 @@ import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
 import org.slf4j.Logger;
 
-import java.awt.*;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -47,6 +47,11 @@ public class EdgeDriverController extends BaseDriverController {
         StringSelection selection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, null);
+    }
+
+    @Override
+    public String getPageSource() {
+        return "Windows page: \n" + windowsDriver.getPageSource() + "\n Edge source: " + edgeDriver.getPageSource();
     }
 
     @Override

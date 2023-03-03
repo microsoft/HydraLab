@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.config;
 
 import com.alibaba.fastjson.JSON;
@@ -7,8 +8,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
-import com.microsoft.hydralab.common.entity.center.BlobProperty;
-import com.microsoft.hydralab.common.util.blob.BlobStorageClient;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import io.prometheus.client.exporter.PushGateway;
@@ -17,6 +17,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus.
 import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +37,8 @@ public class AppConfig {
     private String pushgatewayUsername;
     @Value("${management.metrics.export.prometheus.pushgateway.password}")
     private String pushgatewayPassword;
+    @Value("${app.storage.type}")
+    private String storageType;
 
     @Bean
     @ConditionalOnClass({JSON.class})
@@ -54,8 +57,11 @@ public class AppConfig {
     }
 
     @Bean
-    public BlobStorageClient blobStorageClient(BlobProperty blobProperty) {
-        return new BlobStorageClient(blobProperty);
+    public StorageServiceClientProxy storageServiceClientProxy(ApplicationContext applicationContext) {
+        StorageServiceClientProxy storageServiceClientProxy = new StorageServiceClientProxy(applicationContext);
+        storageServiceClientProxy.initCenterStorageClient(storageType);
+
+        return storageServiceClientProxy;
     }
 
     @Bean
@@ -72,11 +78,10 @@ public class AppConfig {
     @ConditionalOnProperty(prefix = "management.metrics.export.prometheus.pushgateway", name = "enabled", havingValue = "true")
     public PushGateway pushGateway(PrometheusProperties prometheusProperties) throws MalformedURLException {
         String baseUrl = prometheusProperties.getPushgateway().getBaseUrl();
-        if (!baseUrl.startsWith("http")){
+        if (!baseUrl.startsWith("http")) {
             if (baseUrl.startsWith("127.0.0.1") || baseUrl.startsWith("localhost")) {
                 baseUrl = "http://" + baseUrl;
-            }
-            else {
+            } else {
                 baseUrl = "https://" + baseUrl;
             }
         }

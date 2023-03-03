@@ -4,8 +4,8 @@ package com.microsoft.hydralab.common.entity.common;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.annotation.JSONField;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
 import com.microsoft.hydralab.common.util.DateUtil;
+import com.microsoft.hydralab.performance.InspectionStrategy;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -93,10 +93,14 @@ public class TestTask implements Serializable {
     private String testScope;
     // todo: change this to a more general name for all scopes of ESPRESSO tests.
     private String testSuite;
+    //todo: Add performance test result to test task
+    @Transient
+    private List<InspectionStrategy> inspectionStrategies;
 
     public TestTask() {
     }
 
+    @SuppressWarnings("deprecation")
     public static TestTask convertToTestTask(TestTaskSpec testTaskSpec) {
         TestTask testTask = new TestTask();
         testTask.setId(testTaskSpec.testTaskId);
@@ -141,10 +145,12 @@ public class TestTask implements Serializable {
             testTask.setTestRunnerName(testTaskSpec.testRunnerName);
         }
         testTask.setTestScope(testTaskSpec.testScope);
+        testTask.setInspectionStrategies(testTaskSpec.inspectionStrategies);
 
         return testTask;
     }
 
+    @SuppressWarnings("deprecation")
     public static TestTaskSpec convertToTestTaskSpec(TestTask testTask) {
         TestTaskSpec testTaskSpec = new TestTaskSpec();
         testTaskSpec.testTaskId = testTask.getId();
@@ -173,6 +179,7 @@ public class TestTask implements Serializable {
         testTaskSpec.teamName = testTask.getTeamName();
         testTaskSpec.testRunnerName = testTask.getTestRunnerName();
         testTaskSpec.testScope = testTask.getTestScope();
+        testTaskSpec.inspectionStrategies = testTask.getInspectionStrategies();
 
         return testTaskSpec;
     }

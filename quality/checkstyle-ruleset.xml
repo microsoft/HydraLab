@@ -1,0 +1,276 @@
+<?xml version="1.0"?><!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+
+    <module name="SuppressionFilter">
+        <property name="file" value="${checkstyleSuppressionsPath}" />
+    </module>
+
+
+    <module name="SuppressWarningsFilter" />
+
+
+    <!-- Checks that there are no tabs in the source file !-->
+    <!-- http://checkstyle.sourceforge.net/config_whitespace.html#FileTabCharacter !-->
+    <module name="FileTabCharacter" />
+
+
+    <!-- Trailing spaces -->
+    <module name="RegexpSingleline">
+        <property name="format" value="\s+$" />
+        <property name="message" value="Line has trailing spaces." />
+    </module>
+
+
+    <module name="TreeWalker">
+        <!-- ================== NAMING ===================== -->
+        <!-- See http://checkstyle.sf.net/config_naming.html !-->
+
+        <!-- Checks for method name naming conventions. !-->
+        <module name="MethodName" />
+
+        <!-- Checks for package name naming conventions. !-->
+        <module name="PackageName" />
+
+        <!-- Checks for parameter name naming conventions. !-->
+        <module name="ParameterName" />
+
+        <!-- Checks for type name naming conventions. !-->
+        <module name="TypeName" />
+
+        <!-- Checks for constant name naming conventions. !-->
+        <module name="ConstantName" />
+
+        <!-- Checks that the outer type name and the file name match. !-->
+        <module name="OuterTypeFilename" />
+
+        <!-- Checks for class type parameter name naming conventions. !-->
+        <module name="ClassTypeParameterName" />
+
+        <!-- Checks for constant name naming conventions. !-->
+        <module name="ConstantName" />
+
+        <!-- Checks for local final variable name naming conventions. !-->
+        <module name="LocalFinalVariableName" />
+
+        <!-- Checks for local variable name naming conventions. !-->
+        <module name="LocalVariableName" />
+
+        <!-- Checks for member variable name naming conventions. !-->
+        <module name="MemberName" />
+
+        <!-- Checks for method type parameter name naming conventions. !-->
+        <module name="MethodTypeParameterName" />
+
+        <!-- Checks for static variable name naming conventions. !-->
+        <module name="StaticVariableName" />
+
+
+        <!-- ================== IMPORTS ===================== -->
+        <!-- See http://checkstyle.sf.net/config_import.html -->
+        <module name="AvoidStarImport" />
+        <module name="IllegalImport" />
+        <module name="RedundantImport" />
+        <module name="UnusedImports">
+            <property name="processJavadoc" value="true" />
+        </module>
+
+
+        <!-- ================== SIZES ===================== -->
+        <!-- See http://checkstyle.sf.net/config_sizes.html -->
+        <module name="LineLength">
+            <property name="max" value="180" />
+            <property name="tabWidth" value="4" />
+        </module>
+
+        <!-- Checks for long methods and constructors. !-->
+        <!-- See http://checkstyle.sf.net/config_sizes.html !-->
+        <module name="MethodLength">
+            <property name="max" value="100" />
+            <property name="countEmpty" value="true" />
+            <property name="tokens" value="METHOD_DEF, CTOR_DEF" />
+        </module>
+
+        <!-- Checks the number of parameters of a method or constructor. !-->
+        <!-- See http://checkstyle.sf.net/config_sizes.html !-->
+        <module name="ParameterNumber">
+            <property name="max" value="7" />
+            <property name="tokens" value="METHOD_DEF, CTOR_DEF" />
+        </module>
+
+        <!-- Checks the number of methods declared in each type. This includes the number of each scope !-->
+        <!-- (private, package, protected and public) as well as an overall total. !-->
+        <!-- See http://checkstyle.sourceforge.net/config_sizes.html#MethodCount !-->
+        <module name="MethodCount">
+            <property name="maxTotal" value="100" />
+            <property name="maxPrivate" value="100" />
+            <property name="maxPackage" value="100" />
+            <property name="maxProtected" value="100" />
+            <property name="maxPublic" value="100" />
+        </module>
+
+
+        <!-- ================== WHITESPACE ===================== -->
+        <!-- See http://checkstyle.sf.net/config_whitespace.html -->
+
+        <!-- Checks that the whitespace around the Generic tokens < and > is correct to the typical convention. !-->
+        <module name="GenericWhitespace" />
+
+        <!-- Checks the padding of an empty for iterator. !-->
+        <module name="EmptyForIteratorPad" />
+
+        <!-- Checks the padding between the identifier of a method definition, !-->
+        <!-- constructor definition, method call, or constructor invocation; and the left parenthesis of the parameter list. !-->
+        <module name="MethodParamPad" />
+
+        <!-- Checks that there is no whitespace after a token. !-->
+        <module name="NoWhitespaceAfter" />
+
+        <!-- Checks that there is no whitespace before a token. !-->
+        <module name="NoWhitespaceBefore" />
+
+        <!-- Checks the policy on the padding of parentheses. !-->
+        <module name="ParenPad" />
+
+        <!-- Checks the policy on the padding of parentheses for typecasts. !-->
+        <module name="TypecastParenPad" />
+
+      <!--  &lt;!&ndash; Checks that a token is surrounded by whitespace. !&ndash;&gt;
+        <module name="WhitespaceAround" />
+-->
+        <!-- Checks the padding of an empty for initializer. !-->
+        <!-- See http://checkstyle.sf.net/config_whitespace.html !-->
+        <module name="EmptyForInitializerPad" />
+
+        <!-- Checks that there is only one statement per line. !-->
+        <!-- See http://checkstyle.sourceforge.net/config_coding.html#OneStatementPerLine !-->
+        <module name="OneStatementPerLine" />
+
+        <!-- Checks that each variable declaration is in its own statement and on its own line. !-->
+        <!-- See http://checkstyle.sf.net/config_coding.html !-->
+        <module name="MultipleVariableDeclarations" />
+
+        <!-- Ensure a class has a package declaration. !-->
+        <!-- See http://checkstyle.sf.net/config_coding.html !-->
+        <module name="PackageDeclaration" />
+
+        <!-- Checks consecutive empty lines. !-->
+        <module name="EmptyLineSeparator">
+            <property name="allowNoEmptyLineBetweenFields" value="true" />
+            <property name="allowMultipleEmptyLines" value="false" />
+            <property name="allowMultipleEmptyLinesInsideClassMembers" value="false" />
+        </module>
+
+
+        <!-- ================== MODIFIER ===================== -->
+        <!-- See http://checkstyle.sf.net/config_modifiers.html -->
+
+        <!-- Checks that the order of modifiers conforms to the suggestions in the Java Language specification, !-->
+        <!-- sections 8.1.1, 8.3.1 and 8.4.3. !-->
+        <module name="ModifierOrder" />
+
+        <!-- Checks visibility of class members. !-->
+        <!-- See http://checkstyle.sf.net/config_design.html !-->
+        <module name="VisibilityModifier">
+            <property name="packageAllowed" value="true" />
+            <property name="protectedAllowed" value="true" />
+        </module>
+
+
+        <!-- ================== BLOCKS ===================== -->
+        <!-- See http://checkstyle.sf.net/config_blocks.html -->
+        <module name="LeftCurly" />
+        <module name="RightCurly" />
+        <module name="AvoidNestedBlocks" />
+        <module name="EmptyBlock" />
+        <module name="NeedBraces" />
+
+
+        <!-- ================== ANNOTATION ===================== -->
+        <!-- See http://checkstyle.sf.net/config_annotations.html -->
+        <module name="MissingOverride" />
+        <module name="AnnotationLocation">
+            <property name="allowSamelineMultipleAnnotations" value="false" />
+            <property name="allowSamelineSingleParameterlessAnnotation" value="true" />
+            <property name="allowSamelineParameterizedAnnotation" value="false" />
+        </module>
+
+
+        <!-- ================== CODE PROBLEMS ===================== -->
+        <!-- See http://checkstyle.sf.net/config_coding.html -->
+
+        <!-- Checks that classes that define a covariant equals() method also override method equals(java.lang.Object). !-->
+        <module name="CovariantEquals" />
+
+        <!-- Detects empty statements (standalone ;). !-->
+        <module name="EmptyStatement" />
+
+        <!-- Checks that switch statement has "default" clause. !-->
+        <module name="MissingSwitchDefault" />
+
+        <module name="EqualsHashCode" />
+        <module name="IllegalInstantiation" />
+        <module name="SimplifyBooleanExpression" />
+        <module name="SimplifyBooleanReturn" />
+        <module name="EqualsAvoidNull" />
+        <module name="InnerAssignment" />
+
+
+        <!-- ================== MISC ===================== -->
+        <!-- See http://checkstyle.sf.net/config_misc.html -->
+        <module name="ArrayTypeStyle" />
+        <module name="UpperEll" />
+
+        <!-- Checks for the number of types declared at the outer (or root) level in a file. !-->
+        <!-- See http://checkstyle.sourceforge.net/config_sizes.html#OuterTypeNumber !-->
+        <module name="OuterTypeNumber">
+            <property name="max" value="1" />
+        </module>
+
+
+        <!-- ================== CLASS DESIGN ===================== -->
+        <!-- Make sure that utility classes (classes that contain only static methods) do not have a public constructor. !-->
+        <!-- See http://checkstyle.sf.net/config_design.html !-->
+        <module name="HideUtilityClassConstructor" />
+
+        <!-- Checks that a class which has only private constructors is declared as final. !-->
+        <!-- See http://checkstyle.sf.net/config_design.html !-->
+        <module name="FinalClass" />
+
+        <!-- Implements Bloch, Effective Java, Item 17 - Use Interfaces only to define types. !-->
+        <!-- See http://checkstyle.sf.net/config_design.html !-->
+        <module name="InterfaceIsType">
+            <property name="allowMarkerInterfaces" value="true" />
+        </module>
+
+        <!-- Restricts throws statements to a specified count. !-->
+        <!-- See http://checkstyle.sf.net/config_design.html !-->
+        <module name="ThrowsCount">
+            <property name="max" value="3" />
+        </module>
+
+        <!-- Check that the default is after all the cases in a switch statement. !-->
+        <!-- See http://checkstyle.sf.net/config_coding.html !-->
+        <module name="DefaultComesLast" />
+
+        <!-- Catching java.lang.Exception, java.lang.Error or java.lang.RuntimeException is almost never acceptable. !-->
+        <!-- See http://checkstyle.sf.net/config_coding.html !-->
+        <module name="IllegalCatch">
+            <property name="illegalClassNames" value="java.lang.Throwable, java.lang.RuntimeException" />
+        </module>
+
+        <!-- Check for ensuring that for loop control variables are not modified inside the for block. !-->
+        <!-- See http://checkstyle.sourceforge.net/config_coding.html#ModifiedControlVariable !-->
+        <module name="ModifiedControlVariable" />
+
+        <!-- Disallow assignment of parameters. !-->
+        <!-- See http://checkstyle.sf.net/config_coding.html !-->
+        <module name="ParameterAssignment" />
+
+        <!-- See http://checkstyle.sourceforge.net/config_annotation.html#SuppressWarningsHolder -->
+        <module name="SuppressWarningsHolder" />
+    </module>
+
+</module>

@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.performance;
 
 public enum PerformanceInspectionService implements IPerformanceInspectionService {
     INSTANCE;
-
-    public static PerformanceInspectionService getInstance() {
-        return INSTANCE;
-    }
 
     private IPerformanceInspectionService serviceImplementation = new IPerformanceInspectionService() {
         @Override
@@ -16,8 +13,7 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
         }
 
         @Override
-        public void inspectWithStrategy(PerformanceInspection performanceInspection, InspectionStrategy inspectionStrategy) {
-
+        public void inspectWithStrategy(InspectionStrategy inspectionStrategy) {
         }
 
         @Override
@@ -25,6 +21,10 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
             return null;
         }
     };
+
+    public static PerformanceInspectionService getInstance() {
+        return INSTANCE;
+    }
 
     void swapImplementation(IPerformanceInspectionService serviceImplementation) {
         this.serviceImplementation = serviceImplementation;
@@ -36,8 +36,8 @@ public enum PerformanceInspectionService implements IPerformanceInspectionServic
     }
 
     @Override
-    public void inspectWithStrategy(PerformanceInspection performanceInspection, InspectionStrategy inspectionStrategy) {
-        serviceImplementation.inspectWithStrategy(performanceInspection, inspectionStrategy);
+    public void inspectWithStrategy(InspectionStrategy inspectionStrategy) {
+        serviceImplementation.inspectWithStrategy(inspectionStrategy);
     }
 
     @Override

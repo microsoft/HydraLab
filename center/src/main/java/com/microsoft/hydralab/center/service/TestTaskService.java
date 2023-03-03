@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.center.DeviceGroup;
 import com.microsoft.hydralab.common.entity.center.TestTaskQueuedInfo;
-import com.microsoft.hydralab.common.entity.center.TestTaskSpec;
+import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.agent.runner.smart;
 
 import cn.hutool.core.img.ImgUtil;
@@ -18,6 +19,7 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -36,8 +38,10 @@ public class SmartRunner extends TestRunner {
     private File gifFile;
     private SmartTestParam smartTestParam;
 
-    public SmartRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback, SmartTestUtil smartTestUtil) {
-        super(deviceManager, testTaskRunCallback);
+    public SmartRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+                       PerformanceTestManagementService performanceTestManagementService,
+                       SmartTestUtil smartTestUtil) {
+        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
         this.smartTestUtil = smartTestUtil;
     }
 
@@ -58,10 +62,12 @@ public class SmartRunner extends TestRunner {
         reportLogger.info("Start Smart test");
         checkTestTaskCancel(testTask);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        performanceTestManagementService.testRunStarted();
 
         /** init smart_test arg */
         //TODO choose model before starting test task
-        smartTestParam = new SmartTestParam(testTask.getAppFile().getAbsolutePath(), deviceInfo, "0", "0", testTask.getMaxStepCount(), smartTestUtil.getFolderPath(), smartTestUtil.getStringFolderPath());
+        smartTestParam = new SmartTestParam(testTask.getAppFile().getAbsolutePath(), deviceInfo, "0", "0",
+                testTask.getMaxStepCount(), smartTestUtil.getFolderPath(), smartTestUtil.getStringFolderPath());
 
         for (int i = 1; i <= testTask.getDeviceTestCount(); i++) {
             checkTestTaskCancel(testTask);
@@ -120,7 +126,8 @@ public class SmartRunner extends TestRunner {
         ongoingSmartTest.setDeviceTestResultId(testRun.getId());
         ongoingSmartTest.setTestTaskId(testRun.getTestTaskId());
 
-        testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(),
+                System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingSmartTest.getTitle());
         logger.info(ongoingSmartTest.getTitle());
         deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1), (imagePNGFile -> {
@@ -136,6 +143,9 @@ public class SmartRunner extends TestRunner {
                 ioException.printStackTrace();
             }
         }), logger);
+
+        performanceTestManagementService.testStarted(ongoingSmartTest.getTitle());
+
         Boolean isSuccess = false;
         JSONObject res = new JSONObject();
         JSONObject analysisRes = new JSONObject();
@@ -154,31 +164,39 @@ public class SmartRunner extends TestRunner {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(res.getString(Const.SmartTestConfig.TASK_EXP_TAG));
-            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            performanceTestManagementService.testFailure(ongoingSmartTest.getTitle());
+            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail",
+                    System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         } else if (crashStack != null && crashStack.size() > 0) {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(crashStack.toJSONString());
-            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
+            performanceTestManagementService.testFailure(ongoingSmartTest.getTitle());
+            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail",
+                    System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.oneMoreFailure();
         } else {
             analysisRes = smartTestUtil.analysisRes(res);
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingSmartTest.setSuccess(true);
+            performanceTestManagementService.testSuccess(ongoingSmartTest.getTitle());
         }
         ongoingSmartTest.setEndTimeMillis(System.currentTimeMillis());
         logger.info(ongoingSmartTest.getTitle() + ".end");
         deviceInfo.setRunningTestName(null);
         testRun.addNewTestUnit(ongoingSmartTest);
-        testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".end",
+                System.currentTimeMillis() - recordingStartTimeMillis);
         if (ongoingSmartTest.isSuccess()) {
-            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".res" + ":" + analysisRes, System.currentTimeMillis() - recordingStartTimeMillis);
+            testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".res" + ":" + analysisRes,
+                    System.currentTimeMillis() - recordingStartTimeMillis);
         }
 
     }
 
     public void testRunEnded(DeviceInfo deviceInfo, TestRun testRun) {
+        performanceTestManagementService.testRunFinished();
 
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();

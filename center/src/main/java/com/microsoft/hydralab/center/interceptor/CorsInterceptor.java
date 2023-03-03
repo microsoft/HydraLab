@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.interceptor;
 
 import com.microsoft.hydralab.common.util.Const;
@@ -21,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 public class CorsInterceptor implements HandlerInterceptor {
     private final Logger logger = LoggerFactory.getLogger(CorsInterceptor.class);
     @Value("${ENV:dev}")
-    private String ENV;
+    private String env;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {

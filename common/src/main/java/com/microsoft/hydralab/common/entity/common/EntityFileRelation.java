@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
-import com.microsoft.hydralab.common.util.blob.DeviceNetworkBlobConstants;
 import lombok.Data;
 
 import javax.persistence.Entity;
@@ -29,20 +28,5 @@ public class EntityFileRelation implements Serializable {
         this.entityId = entityId;
         this.entityType = entityType;
         this.fileId = fileId;
-    }
-
-    public enum EntityType {
-        APP_FILE_SET("FILE_SET", DeviceNetworkBlobConstants.PKG_BLOB_NAME),
-        TEST_RESULT("TEST_RES", DeviceNetworkBlobConstants.TEST_RESULT_BLOB_NAME),
-        AGENT_PACKAGE("AGENT_PKG", DeviceNetworkBlobConstants.PKG_BLOB_NAME),
-        TEST_JSON("TEST_JSON", DeviceNetworkBlobConstants.TEST_JSON);
-
-        public String typeName;
-        public String blobConstant;
-
-        EntityType(String typeName, String blobConstant) {
-            this.typeName = typeName;
-            this.blobConstant = blobConstant;
-        }
     }
 }

@@ -1,25 +1,36 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.center.service.*;
+import com.microsoft.hydralab.center.service.AgentManageService;
+import com.microsoft.hydralab.center.service.DeviceAgentManagementService;
+import com.microsoft.hydralab.center.service.SysTeamService;
+import com.microsoft.hydralab.center.service.SysUserService;
+import com.microsoft.hydralab.center.service.UserTeamManagementService;
 import com.microsoft.hydralab.common.entity.agent.Result;
-import com.microsoft.hydralab.common.entity.center.AgentUser;
 import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
+import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -227,40 +238,30 @@ public class AgentManageController {
     @GetMapping("/api/agent/downloadAgentConfigFile/{agentId}")
     public Result downloadAgentConfigFile(@CurrentSecurityContext SysUser requestor,
                                           @PathVariable(value = "agentId") String agentId,
+                                          @RequestHeader(HttpHeaders.HOST) String host,
                                           HttpServletResponse response) throws IOException {
         if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
-        File agentConfigFile = agentManageService.generateAgentConfigFile(agentId);
+        File agentConfigFile = agentManageService.generateAgentConfigFile(agentId, host);
         if (agentConfigFile == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "The file was not downloaded");
         }
 
-        ServletOutputStream out = null;
-        FileInputStream in = null;
-        try {
-            in = new FileInputStream(agentConfigFile);
+        try (FileInputStream in = new FileInputStream(agentConfigFile);
+             ServletOutputStream out = response.getOutputStream()) {
+
             response.setContentType("application/octet-stream;charset=UTF-8");
-            response.setHeader("Content-Disposition","attachment;filename=" + agentConfigFile.getName());
-            out = response.getOutputStream();
-            int len = 0;
+            response.setHeader("Content-Disposition", "attachment;filename=" + agentConfigFile.getName());
+            int len;
             byte[] buffer = new byte[1024 * 10];
             while ((len = in.read(buffer)) != -1) {
                 out.write(buffer, 0, len);
             }
             out.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error");
         } finally {
             response.flushBuffer();
-            try {
-                out.close();
-                in.close();
-                agentConfigFile.delete();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            agentConfigFile.delete();
         }
 
         return Result.ok();
