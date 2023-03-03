@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,7 +57,8 @@ public class DeviceManageController {
         List<AgentDeviceGroup> deviceGroupList = deviceAgentManagementService.getAgentDeviceGroups();
         if (!sysUserService.checkUserAdmin(requestor)) {
             deviceGroupList.forEach(agentDeviceGroup -> {
-                if (!userTeamManagementService.checkRequestorTeamRelation(requestor, agentDeviceGroup.getTeamId())) {
+                if (!userTeamManagementService.checkRequestorTeamRelation(requestor,
+                        agentDeviceGroup.getTeamId())) {
                     List<DeviceInfo> devices = agentDeviceGroup.getDevices();
                     List<DeviceInfo> newDevices = new ArrayList<>();
                     devices.forEach(device -> {
@@ -71,7 +71,8 @@ public class DeviceManageController {
             });
         }
         deviceGroupList = deviceGroupList.stream()
-                .filter(agentDeviceGroup -> agentDeviceGroup.getDevices() != null && agentDeviceGroup.getDevices().size() > 0)
+                .filter(agentDeviceGroup -> agentDeviceGroup.getDevices() != null &&
+                        agentDeviceGroup.getDevices().size() > 0)
                 .sorted((a, b) -> b.getDevices().size() - a.getDevices().size())
                 .collect(Collectors.toList());
 
@@ -109,14 +110,17 @@ public class DeviceManageController {
 
         if (!sysUserService.checkUserAdmin(requestor)) {
             groupList = groupList.stream()
-                    .filter(group -> userTeamManagementService.checkRequestorTeamRelation(requestor, group.getTeamId())
-                            || !group.getIsPrivate())
+                    .filter(group ->
+                            userTeamManagementService.checkRequestorTeamRelation(requestor, group.getTeamId())
+                                    || !group.getIsPrivate())
                     .collect(Collectors.toList());
             agentDeviceList = agentDeviceList.stream()
-                    .filter(agentDeviceGroup -> userTeamManagementService.checkRequestorTeamRelation(requestor, agentDeviceGroup.getTeamId()))
+                    .filter(agentDeviceGroup -> userTeamManagementService.checkRequestorTeamRelation(requestor,
+                            agentDeviceGroup.getTeamId()))
                     .collect(Collectors.toList());
             deviceList = deviceList.stream()
-                    .filter(device -> userTeamManagementService.checkRequestorTeamRelation(requestor, agentManageService.getAgent(device.getAgentId()).getTeamId())
+                    .filter(device -> userTeamManagementService.checkRequestorTeamRelation(requestor,
+                            agentManageService.getAgent(device.getAgentId()).getTeamId())
                             || !device.getIsPrivate())
                     .collect(Collectors.toList());
         }

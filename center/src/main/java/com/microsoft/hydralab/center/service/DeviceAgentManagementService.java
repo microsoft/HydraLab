@@ -273,24 +273,9 @@ public class DeviceAgentManagementService {
                     TestTask testTask = (TestTask) message.getBody();
                     boolean isFinished = testTask.getStatus().equals(TestTask.TestStatus.FINISHED);
                     testDataService.saveTestTaskDataFromAgent(testTask, isFinished, savedSession.agentUser.getId());
-
                     //after the task finishing, update the status of device used
                     if (isFinished) {
-                        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
-                        for (TestRun deviceTestResult : deviceTestResults) {
-                            // todo workaround for E2E agent
-                            if ((TestTask.TestRunningType.APPIUM_CROSS.equals(testTask.getRunningType()) ||
-                                    TestTask.TestRunningType.T2C_JSON_TEST.equals(testTask.getRunningType())) &&
-                                    deviceTestResult.getDeviceSerialNumber().split(",").length == 2) {
-                                updateDeviceStatus(deviceTestResult.getDeviceSerialNumber().split(",")[0],
-                                        DeviceInfo.ONLINE, null);
-                                updateDeviceStatus(deviceTestResult.getDeviceSerialNumber().split(",")[1],
-                                        DeviceInfo.ONLINE, null);
-                            } else {
-                                updateDeviceStatus(deviceTestResult.getDeviceSerialNumber(), DeviceInfo.ONLINE,
-                                        null);
-                            }
-                        }
+                        resetTestDeviceStatus(testTask);
                         //run the task saved in queue
                         testTaskService.runTask();
                     }
@@ -321,6 +306,24 @@ public class DeviceAgentManagementService {
                 break;
             default:
                 break;
+        }
+    }
+
+    private void resetTestDeviceStatus(TestTask testTask) {
+        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
+        for (TestRun deviceTestResult : deviceTestResults) {
+            // todo workaround for E2E agent
+            if ((TestTask.TestRunningType.APPIUM_CROSS.equals(testTask.getRunningType()) ||
+                    TestTask.TestRunningType.T2C_JSON_TEST.equals(testTask.getRunningType())) &&
+                    deviceTestResult.getDeviceSerialNumber().split(",").length == 2) {
+                updateDeviceStatus(deviceTestResult.getDeviceSerialNumber().split(",")[0],
+                        DeviceInfo.ONLINE, null);
+                updateDeviceStatus(deviceTestResult.getDeviceSerialNumber().split(",")[1],
+                        DeviceInfo.ONLINE, null);
+            } else {
+                updateDeviceStatus(deviceTestResult.getDeviceSerialNumber(), DeviceInfo.ONLINE,
+                        null);
+            }
         }
     }
 
@@ -702,10 +705,10 @@ public class DeviceAgentManagementService {
             AgentDeviceGroup agent = agentDeviceGroups.get(key);
             // todo workaround for E2E agent
             List<DeviceInfo> devices = agent.getDevices();
-            long PC_COUNT = devices.stream()
+            long pcCount = devices.stream()
                     .filter(deviceInfo -> DeviceInfo.DeviceType.WINDOWS.toString().equals(deviceInfo.getType()))
                     .count();
-            if (PC_COUNT == 0 || devices.size() != 2 || !devices.get(0).isAlive() || !devices.get(1).isAlive()) {
+            if (pcCount == 0 || devices.size() != 2 || !devices.get(0).isAlive() || !devices.get(1).isAlive()) {
                 continue;
             }
             res.add(agent);
