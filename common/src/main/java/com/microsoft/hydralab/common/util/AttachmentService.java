@@ -46,12 +46,11 @@ public class AttachmentService {
 
     public StorageFileInfo addAttachment(String entityId, EntityType entityType, StorageFileInfo storageFileInfo, File file, Logger logger) {
         boolean recordExists = false;
-
-        storageFileInfo.setBlobContainer(entityType.getStorageContainer());
-        List<StorageFileInfo> tempFileInfos = storageFileInfoRepository.queryStorageFileInfoByMd5(storageFileInfo.getMd5());
         StorageFileInfo tmp = storageFileInfo;
+        tmp.setBlobContainer(entityType.getStorageContainer());
+        List<StorageFileInfo> tempFileInfos = storageFileInfoRepository.queryStorageFileInfoByMd5(storageFileInfo.getMd5());
         for (StorageFileInfo tempFileInfo : tempFileInfos) {
-            if (compareFileInfo(storageFileInfo, tempFileInfo)) {
+            if (compareFileInfo(tmp, tempFileInfo)) {
                 tmp = updateFileInStorageAndDB(tempFileInfo, file, entityType, logger);
                 recordExists = true;
                 break;
@@ -62,7 +61,7 @@ public class AttachmentService {
         }
         saveRelation(entityId, entityType, tmp);
         file.delete();
-        return storageFileInfo;
+        return tmp;
     }
 
     public void removeAttachment(String entityId, EntityType entityType, String fileId) {
