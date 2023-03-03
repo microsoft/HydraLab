@@ -3,6 +3,8 @@
 
 package com.microsoft.hydralab.performance;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 
 public class PerformanceInspectionResult {
@@ -12,12 +14,13 @@ public class PerformanceInspectionResult {
     @SuppressWarnings("visibilitymodifier")
     public PerformanceInspection inspection;
     @SuppressWarnings("visibilitymodifier")
+    @Nullable
     public File rawResultFile;
     @SuppressWarnings("visibilitymodifier")
     // TODO: restrict the size of it.
     public Object parsedData;
 
-    public PerformanceInspectionResult(File rawResultFile, PerformanceInspection inspection) {
+    public PerformanceInspectionResult(@Nullable File rawResultFile, PerformanceInspection inspection) {
         this.timestamp = System.currentTimeMillis();
         this.rawResultFile = rawResultFile;
         this.inspection = inspection;

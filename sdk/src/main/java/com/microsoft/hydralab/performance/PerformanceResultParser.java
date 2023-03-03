@@ -3,8 +3,11 @@
 
 package com.microsoft.hydralab.performance;
 
+import org.jetbrains.annotations.Nullable;
+
 public interface PerformanceResultParser {
-    PerformanceTestResult parse(PerformanceTestResult performanceTestResult);
+    @Nullable
+    PerformanceTestResult parse(@Nullable PerformanceTestResult performanceTestResult);
 
     enum PerformanceResultParserType {
         PARSER_ANDROID_MEMORY_DUMP,
