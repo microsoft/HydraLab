@@ -133,10 +133,7 @@ public class SmartRunner extends TestRunner {
         logger.info(ongoingSmartTest.getTitle());
         testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1),
                 (imagePNGFile -> {
-                    if (imagePNGFile == null) {
-                        return;
-                    }
-                    if (!e.isStarted()) {
+                    if (imagePNGFile == null || !e.isStarted()) {
                         return;
                     }
                     try {

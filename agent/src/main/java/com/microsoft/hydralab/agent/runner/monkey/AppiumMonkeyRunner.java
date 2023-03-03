@@ -68,18 +68,15 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         e.setRepeat(0);
         testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5),
                 (imagePNGFile -> {
-                    if (imagePNGFile == null) {
+                    if (imagePNGFile == null || !e.isStarted()) {
                         return;
                     }
-                    if (!e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), reportLogger);
+                    try {
+                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }), reportLogger);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
 
         performanceTestManagementService.testStarted(ongoingMonkeyTest.getTitle());

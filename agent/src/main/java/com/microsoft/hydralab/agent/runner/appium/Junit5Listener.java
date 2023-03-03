@@ -240,10 +240,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15),
                 (imagePNGFile -> {
-                    if (imagePNGFile == null) {
-                        return;
-                    }
-                    if (!e.isStarted()) {
+                    if (imagePNGFile == null || !e.isStarted()) {
                         return;
                     }
                     try {

@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public abstract class TestRunner {
-    protected final Logger log = LoggerFactory.getLogger(TestDeviceManager.class);
+    protected final Logger log = LoggerFactory.getLogger(TestRunner.class);
     protected final AgentManagementService agentManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
     protected final PerformanceTestManagementService performanceTestManagementService;

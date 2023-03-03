@@ -155,10 +155,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         testRun.addNewTestUnit(ongoingTestUnit);
 
         testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
+            if (imagePNGFile == null || !e.isStarted()) {
                 return;
             }
             try {

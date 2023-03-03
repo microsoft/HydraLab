@@ -139,10 +139,7 @@ public class AdbMonkeyRunner extends TestRunner {
 
         logger.info(ongoingMonkeyTest.getTitle());
         testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
+            if (imagePNGFile == null || !e.isStarted()) {
                 return;
             }
             try {
@@ -188,10 +185,7 @@ public class AdbMonkeyRunner extends TestRunner {
 
         logger.info(ongoingMonkeyTest.getTitle() + ".end");
         testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(0), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
+            if (imagePNGFile == null || !e.isStarted()) {
                 return;
             }
             try {
