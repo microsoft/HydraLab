@@ -102,8 +102,9 @@ public class TestRunnerConfig {
     }
 
     @Bean
-    public XctestRunner xctestRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService) {
-        return new XctestRunner(deviceManager, testTaskEngineService);
+    public XctestRunner xctestRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
+                                     PerformanceTestManagementService performanceTestManagementService) {
+        return new XctestRunner(deviceManager, testTaskEngineService, performanceTestManagementService);
     }
 
     @ConfigurationProperties(prefix = "app.device-script.commands")

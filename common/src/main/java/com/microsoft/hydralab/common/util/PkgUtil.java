@@ -234,7 +234,6 @@ public class PkgUtil {
             Collection<File> files = FileUtils.listFiles(rootFolder, null, recursive);
 
             for (File file : files) {
-                System.out.println(file.getAbsolutePath());
                 if (file.getAbsolutePath().endsWith(".app/Info.plist")
                         && !file.getAbsolutePath().contains("-Runner"))
                     return file;
