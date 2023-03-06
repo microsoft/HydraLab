@@ -61,7 +61,9 @@ app:
       SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
       SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
       timeUnit: ${TIME_UNIT:MINUTES}
-#    local:
+    local:
+      token: ${CENTER_TOKEN:}
+      endpoint: ${LOCAL_STORAGE_ENDPOINT:}
 
   location: ${user.dir}
 management:

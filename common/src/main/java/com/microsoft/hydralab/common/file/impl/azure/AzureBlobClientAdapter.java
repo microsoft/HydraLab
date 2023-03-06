@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.file.impl.azure;
 
 import com.azure.core.credential.AzureSasCredential;
@@ -19,6 +20,7 @@ import com.azure.storage.common.sas.AccountSasSignatureValues;
 import com.google.common.net.MediaType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.file.AccessToken;
+import com.microsoft.hydralab.common.file.StorageProperties;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +45,8 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
     public AzureBlobClientAdapter() {
     }
 
-    public AzureBlobClientAdapter(AzureBlobProperty azureBlobProperty) {
+    public AzureBlobClientAdapter(StorageProperties storageProperties) {
+        AzureBlobProperty azureBlobProperty = (AzureBlobProperty) storageProperties;
         SASExpiryUpdate = azureBlobProperty.getSASExpiryUpdate();
         SASPermission.READ.setExpiryTime(azureBlobProperty.getSASExpiryTimeFront(), azureBlobProperty.getTimeUnit());
         SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSASExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
@@ -199,15 +202,5 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         }
         BlobClient blobClient = getContainer(containerName).getBlobClient(blobFilePath);
         return blobClient.downloadToFile(downloadToFile.getAbsolutePath(), true);
-    }
-
-    public void setFileUrls(StorageFileInfo storageFileInfo, String downloadUrl) {
-        storageFileInfo.setBlobUrl(downloadUrl);
-        if (StringUtils.isEmpty(this.cdnUrl)) {
-            storageFileInfo.setCDNUrl(downloadUrl);
-        } else {
-            String originDomain = downloadUrl.split("//")[1].split("/")[0];
-            storageFileInfo.setCDNUrl(downloadUrl.replace(originDomain, this.cdnUrl));
-        }
     }
 }
