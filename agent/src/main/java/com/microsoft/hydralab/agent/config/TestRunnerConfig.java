@@ -12,7 +12,7 @@ import com.microsoft.hydralab.agent.runner.monkey.AppiumMonkeyRunner;
 import com.microsoft.hydralab.agent.runner.smart.SmartRunner;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
-import com.microsoft.hydralab.agent.runner.xctest.XctestRunner;
+import com.microsoft.hydralab.agent.runner.xctest.XCTestRunner;
 import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.DeviceManager;
@@ -102,9 +102,9 @@ public class TestRunnerConfig {
     }
 
     @Bean
-    public XctestRunner xctestRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
+    public XCTestRunner xctestRunner(DeviceManager deviceManager, TestTaskEngineService testTaskEngineService,
                                      PerformanceTestManagementService performanceTestManagementService) {
-        return new XctestRunner(deviceManager, testTaskEngineService, performanceTestManagementService);
+        return new XCTestRunner(deviceManager, testTaskEngineService, performanceTestManagementService);
     }
 
     @ConfigurationProperties(prefix = "app.device-script.commands")

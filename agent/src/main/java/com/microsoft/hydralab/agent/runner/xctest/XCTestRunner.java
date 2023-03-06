@@ -2,6 +2,7 @@ package com.microsoft.hydralab.agent.runner.xctest;
 
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
+import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -20,10 +21,10 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
-public class XctestRunner extends TestRunner {
+public class XCTestRunner extends TestRunner {
     private static String folderPath = "";
 
-    public XctestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+    public XCTestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
                         PerformanceTestManagementService performanceTestManagementService) {
         super(deviceManager, testTaskRunCallback, performanceTestManagementService);
     }
@@ -34,10 +35,16 @@ public class XctestRunner extends TestRunner {
         ScreenRecorder deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
+        testRun.setTestStartTimeMillis(System.currentTimeMillis());
         unzipXctestFolder(testTask.getAppFile(), testRun, reportLogger);
         String result = runXctest(deviceInfo, reportLogger, testTask, testRun);
         deviceScreenRecorder.finishRecording();
-        analysisXctestResult(result);
+        analysisXctestResult(result, testRun);
+        testRun.onTestEnded();
+    }
+
+    @Override
+    protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) {
     }
 
     private void unzipXctestFolder(File zipFile, TestRun testRun, Logger reportLogger) {
@@ -71,37 +78,65 @@ public class XctestRunner extends TestRunner {
 
         commFormat += " -xctestrun " + xctestrun.getAbsolutePath();
 
-        String result;
-        try {
-            String deviceId = "id=" + deviceInfo.getDeviceId();
-            String resultPath = testRun.getResultFolder().getAbsolutePath() + "/" + "result";
+        String deviceId = "id=" + deviceInfo.getDeviceId();
+        String resultPath = testRun.getResultFolder().getAbsolutePath() + "/" + "result";
 
-            commFormat += " -destination \"id=%s\" -resultBundlePath %s";
-            String command = String.format(commFormat, deviceId, resultPath);
-            result = ShellUtils.execLocalCommandWithResult(command, logger);
-        } catch (Exception e) {
-            if (logger != null) {
-                logger.error(e.getMessage(), e);
-            }
-            return e.getMessage();
+        commFormat += " -destination \"id=%s\" -resultBundlePath %s";
+        String command = String.format(commFormat, deviceId, resultPath);
+
+        String result = ShellUtils.execLocalCommandWithResult(command, logger);
+
+        if (result == null) {
+            throw new RuntimeException("Execute XCTest failed");
         }
         return result;
     }
 
-    private void analysisXctestResult(String result) {
+    private void analysisXctestResult(String result, TestRun testRun) {
+        String[] resultList = result.split("/n");
 
+        int totalCases = getTotalTestCase(result);
+
+        for (String resultLine : resultList
+        ) {
+            if (resultLine.startsWith("Test case") && !resultLine.contains("started")) {
+                AndroidTestUnit ongoingXctest = new AndroidTestUnit();
+                ongoingXctest.setNumtests(totalCases);
+                String testInfo = resultLine.split("'")[1];
+                ongoingXctest.setTestName(testInfo.split("\\.")[1].replaceAll("[^a-zA-Z0-9_]", ""));
+                ongoingXctest.setTestedClass(testInfo.split("\\.")[0].replaceAll("[^a-zA-Z0-9_]", ""));
+                ongoingXctest.setDeviceTestResultId(testRun.getId());
+                ongoingXctest.setTestTaskId(testRun.getTestTaskId());
+                if (resultLine.contains("passed")) {
+                    ongoingXctest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
+                    ongoingXctest.setSuccess(true);
+                } else {
+                    ongoingXctest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
+                    ongoingXctest.setSuccess(false);
+                }
+                testRun.addNewTestUnit(ongoingXctest);
+            }
+        }
+    }
+
+    private int getTotalTestCase(String result) {
+        String targetString = "Test case";
+        int len = targetString.length();
+        int count = 0;
+        String localResult = result;
+        while (localResult.contains(targetString)) {
+            count += 1;
+            localResult = result.substring(result.indexOf(targetString) + len);
+        }
+        return count;
     }
 
     private File getXctestrunFile(File unzippedFolder) {
-        try {
-            Collection<File> files = FileUtils.listFiles(unzippedFolder, null, false);
-            for (File file : files) {
-                if (file.getAbsolutePath().endsWith(".xctestrun")){
-                    return file;
-                }
+        Collection<File> files = FileUtils.listFiles(unzippedFolder, null, false);
+        for (File file : files) {
+            if (file.getAbsolutePath().endsWith(".xctestrun")) {
+                return file;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
 
