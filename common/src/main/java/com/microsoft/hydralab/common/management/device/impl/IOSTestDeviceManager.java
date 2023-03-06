@@ -1,21 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management.device.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.impl.IOSLogCollector;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForMac;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForWindows;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.AgentConstant;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,10 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.microsoft.hydralab.common.util.AgentConstant.UNKNOWN_IOS_MODEL;
 
@@ -48,94 +48,50 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void init() throws Exception {
+    public void init() {
         String osName = System.getProperty("os.name");
-        classLogger.info("Devices are connected to " + osName);
         if (osName.startsWith("Windows")) {
             isConnectedToWindowsOS = true;
-            IOSAppiumScreenRecorderForWindows.copyScript(testBaseDir);
+            IOSAppiumScreenRecorderForWindows.copyScript(agentManagementService.getTestBaseDir());
         } else {
             // Mac, unix or linux
             isConnectedToWindowsOS = false;
         }
-        ShellUtils.killProcessByCommandStr("tidevice", classLogger);
-        IOSUtils.startIOSDeviceWatcher(classLogger, this);
-    }
-
-    @Override
-    public Set<DeviceInfo> getDeviceList(Logger logger) {
-        Set<DeviceInfo> set = new HashSet<>();
-        Set<Map.Entry<String, DeviceInfo>> entries = null;
-        synchronized (this) {
-            entries = new HashSet<>(iOSDeviceInfoMap.entrySet());
+        try {
+            ShellUtils.killProcessByCommandStr("tidevice", classLogger);
+            IOSUtils.startIOSDeviceWatcher(classLogger, this);
+        } catch (Exception e) {
+            throw new HydraLabRuntimeException(500, "IOSDeviceManager init failed", e);
         }
-        for (Map.Entry<String, DeviceInfo> entry : entries) {
-            DeviceInfo value = entry.getValue();
-            if (value != null) {
-                set.add(value);
-            }
-        }
-        return set;
-    }
-
-    @Override
-    public Set<DeviceInfo> getActiveDeviceList(Logger logger) {
-        Set<DeviceInfo> set = new HashSet<>();
-        Set<Map.Entry<String, DeviceInfo>> entries = null;
-        synchronized (this) {
-            entries = new HashSet<>(iOSDeviceInfoMap.entrySet());
-        }
-        for (Map.Entry<String, DeviceInfo> entry : entries) {
-            DeviceInfo value = entry.getValue();
-            if (value == null || !value.isAlive()) {
-                classLogger.debug("Invalid device: {}", value);
-                continue;
-            }
-            set.add(value);
-        }
-        return set;
     }
 
     @Override
     public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
         File screenshotImageFile = deviceInfo.getScreenshotImageFile();
         if (screenshotImageFile == null) {
-            screenshotImageFile = new File(getScreenshotDir(), deviceInfo.getName().replace(" ", "") + "-" + deviceInfo.getSerialNum() + ".jpg");
+            screenshotImageFile = new File(agentManagementService.getScreenshotDir(),
+                    deviceInfo.getName().replace(" ", "") + "-" + deviceInfo.getSerialNum() + ".jpg");
             deviceInfo.setScreenshotImageFile(screenshotImageFile);
-            String imageRelPath = screenshotImageFile.getAbsolutePath().replace(new File(getDeviceStoragePath()).getAbsolutePath(), "");
-            imageRelPath = getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
+            String imageRelPath = screenshotImageFile.getAbsolutePath()
+                    .replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
+            imageRelPath =
+                    agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
             deviceInfo.setImageRelPath(imageRelPath);
         }
         IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), screenshotImageFile.getAbsolutePath(), classLogger);
         deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
-        StorageFileInfo fileInfo = new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
-        String fileDownloadUrl = storageServiceClientProxy.upload(screenshotImageFile, fileInfo).getBlobUrl();
+        StorageFileInfo fileInfo =
+                new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(),
+                        StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl =
+                agentManagementService.getStorageServiceClientProxy().upload(screenshotImageFile, fileInfo)
+                        .getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
             classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
             deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
         }
         return screenshotImageFile;
-    }
-
-    @Override
-    public void resetDeviceByTestId(String testId, Logger logger) {
-        Set<DeviceInfo> devices = getActiveDeviceList(logger).stream()
-                .filter(adbDeviceInfo -> testId.equals(adbDeviceInfo.getRunningTaskId()))
-                .collect(Collectors.toSet());
-        for (DeviceInfo device : devices) {
-            resetDevice(device.getSerialNum());
-        }
-    }
-
-    private void resetDevice(String serialNum) {
-        DeviceInfo deviceInfo = iOSDeviceInfoMap.get(serialNum);
-        if (deviceInfo == null) {
-            return;
-        }
-        synchronized (deviceInfo) {
-            deviceInfo.reset();
-        }
     }
 
     @Override
@@ -156,7 +112,8 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @NotNull Logger logger) {
+    public void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
+                                      @NotNull Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
@@ -178,12 +135,14 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent, @NotNull String pathOnDevice, @Nullable Logger logger) {
+    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent,
+                                 @NotNull String pathOnDevice, @Nullable Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override
-    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) {
+    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice,
+                                   @Nullable Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
@@ -198,7 +157,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
 
     @Override
     public LogCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
-        return new IOSLogCollector(this, deviceInfo, pkgName, testRun, logger);
+        return new IOSLogCollector(deviceInfo, pkgName, testRun, logger);
     }
 
     @Override
@@ -207,18 +166,8 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void updateIsPrivateByDeviceSerial(String deviceSerial, Boolean isPrivate) {
-        DeviceInfo deviceInfo;
-        synchronized (iOSDeviceInfoMap) {
-            deviceInfo = iOSDeviceInfoMap.get(deviceSerial);
-        }
-        if (deviceInfo != null) {
-            deviceInfo.setIsPrivate(isPrivate);
-        }
-    }
-
-    @Override
-    public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
+    public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity,
+                                      Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
         return true;
     }
@@ -256,7 +205,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
                 DeviceInfo removedInfo = latestDeviceInfoMap.remove(serialNum);
                 if (removedInfo != null) {
                     if (DeviceInfo.OFFLINE.equals(info.getStatus())) {
-                        deviceStatusListenerManager.onDeviceConnected(info);
+                        agentManagementService.getDeviceStatusListenerManager().onDeviceConnected(info);
                         info.setStatus(DeviceInfo.ONLINE);
 //                        classLogger.info("Device " + serialNum + " updated");
                     }
@@ -268,7 +217,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
                     // Device was disconnected
 //                    classLogger.info("Device " + serialNum + " disconnected");
                     info.setStatus(DeviceInfo.OFFLINE);
-                    deviceStatusListenerManager.onDeviceInactive(info);
+                    agentManagementService.getDeviceStatusListenerManager().onDeviceInactive(info);
                     getAppiumServerManager().quitIOSDriver(info, classLogger);
                 }
             }
@@ -279,13 +228,13 @@ public class IOSTestDeviceManager extends TestDeviceManager {
                 info.setStatus(DeviceInfo.ONLINE);
                 // Add new connected devices
                 iOSDeviceInfoMap.put(serialNum, info);
-                deviceStatusListenerManager.onDeviceConnected(info);
+                agentManagementService.getDeviceStatusListenerManager().onDeviceConnected(info);
             }
         }
     }
 
     public DeviceInfo parseJsonToDevice(JSONObject deviceObject) {
-        DeviceInfo deviceInfo = new DeviceInfo();
+        DeviceInfo deviceInfo = new DeviceInfo(this);
         String udid = deviceObject.getString("udid");
         deviceInfo.setSerialNum(udid);
         deviceInfo.setDeviceId(udid);
@@ -297,6 +246,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
         deviceInfo.setOsSDKInt("");
         deviceInfo.setScreenDensity(0);
         deviceInfo.setScreenSize("");
+        deviceInfo.setType(DeviceType.IOS.name());
         updateDeviceDetailByUdid(deviceInfo, udid);
         return deviceInfo;
     }
@@ -322,7 +272,8 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName, Logger logger) {
+    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName,
+                                                       Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
         return true;
     }
