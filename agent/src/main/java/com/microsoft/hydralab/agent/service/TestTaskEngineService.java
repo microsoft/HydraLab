@@ -17,6 +17,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
@@ -116,10 +117,10 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             Set<DeviceInfo> activeDeviceList = agentManagementService.getActiveDeviceList(log);
             Assert.isTrue(activeDeviceList.size() == 2, "No connected device!");
             DeviceInfo phoneDevice = activeDeviceList.stream()
-                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceInfo.DeviceType.ANDROID.name())).findFirst()
+                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceType.ANDROID.name())).findFirst()
                     .get();
             DeviceInfo pcDevice = activeDeviceList.stream()
-                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceInfo.DeviceType.WINDOWS.name())).findFirst()
+                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceType.WINDOWS.name())).findFirst()
                     .get();
             Set<DeviceInfo> deviceCombo = new HashSet<>();
             deviceCombo.add(new DeviceCombo(phoneDevice, pcDevice));

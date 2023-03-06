@@ -26,6 +26,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -709,7 +710,7 @@ public class DeviceAgentManagementService {
             // todo workaround for E2E agent
             List<DeviceInfo> devices = agent.getDevices();
             long pcCount = devices.stream()
-                    .filter(deviceInfo -> DeviceInfo.DeviceType.WINDOWS.toString().equals(deviceInfo.getType()))
+                    .filter(deviceInfo -> DeviceType.WINDOWS.toString().equals(deviceInfo.getType()))
                     .count();
             if (pcCount == 0 || devices.size() != 2 || !devices.get(0).isAlive() || !devices.get(1).isAlive()) {
                 continue;
@@ -795,7 +796,7 @@ public class DeviceAgentManagementService {
             if (device.isTesting()) {
                 return result;
             }
-            if (device.getType().equals(DeviceInfo.DeviceType.ANDROID.toString())) {
+            if (device.getType().equals(DeviceType.ANDROID.toString())) {
                 phoneDevice = device;
             }
         }
