@@ -133,14 +133,16 @@ public class Junit5Listener extends SummaryGeneratingListener {
                 }
             }
             if (e.isStarted() && addedFrameCount < 2) {
-                try {
-                    File imagePNGFile = testDeviceManager.getScreenShot(deviceInfo, logger);
-                    e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                } catch (Exception exception) {
-                    logger.error(exception.getMessage(), e);
-                }
+                testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(0),
+                        (imagePNGFile -> {
+                            try {
+                                e.addFrame(
+                                        ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
+                        }), logger);
             }
-
         }
 
         performanceTestListener.testRunFinished();
@@ -213,23 +215,20 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                addedFrameCount++;
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), logger);
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15),
+                (imagePNGFile -> {
+                    if (imagePNGFile == null || !e.isStarted()) {
+                        return;
+                    }
+                    try {
+                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                        addedFrameCount++;
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }), logger);
 
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
-
     }
 
     @Override
