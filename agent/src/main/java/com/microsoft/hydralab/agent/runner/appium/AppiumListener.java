@@ -48,8 +48,7 @@ public class AppiumListener extends RunListener {
     private int currentTestIndex = 0;
 
     public AppiumListener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun,
-                          String pkgName,
-                          PerformanceTestListener performanceTestListener, Logger logger) {
+                          String pkgName, PerformanceTestListener performanceTestListener, Logger logger) {
         this.agentManagementService = agentManagementService;
         this.testDeviceManager = deviceInfo.getTestDeviceManager();
         this.deviceInfo = deviceInfo;
@@ -155,20 +154,21 @@ public class AppiumListener extends RunListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                addedFrameCount++;
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), logger);
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15),
+                (imagePNGFile -> {
+                    if (imagePNGFile == null) {
+                        return;
+                    }
+                    if (!e.isStarted()) {
+                        return;
+                    }
+                    try {
+                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                        addedFrameCount++;
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }), logger);
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
     }
 
