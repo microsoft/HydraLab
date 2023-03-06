@@ -116,10 +116,10 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             Set<DeviceInfo> activeDeviceList = agentManagementService.getActiveDeviceList(log);
             Assert.isTrue(activeDeviceList.size() == 2, "No connected device!");
             DeviceInfo phoneDevice = activeDeviceList.stream()
-                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceInfo.DeviceType.ANDROID)).findFirst()
+                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceInfo.DeviceType.ANDROID.name())).findFirst()
                     .get();
             DeviceInfo pcDevice = activeDeviceList.stream()
-                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceInfo.DeviceType.WINDOWS)).findFirst()
+                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceInfo.DeviceType.WINDOWS.name())).findFirst()
                     .get();
             Set<DeviceInfo> deviceCombo = new HashSet<>();
             deviceCombo.add(new DeviceCombo(phoneDevice, pcDevice));

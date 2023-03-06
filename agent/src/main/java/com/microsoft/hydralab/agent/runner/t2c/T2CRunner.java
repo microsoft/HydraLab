@@ -8,12 +8,16 @@ import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.DeviceCombo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.screen.FFmpegConcatUtil;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
@@ -31,6 +35,12 @@ public class T2CRunner extends AppiumRunner {
     String agentName;
     private int currentIndex = 0;
 
+    // todo workaround for E2E agent
+    TestDeviceManager comboDeviceManager;
+    ScreenRecorder comboDeviceScreenRecorder;
+    DeviceInfo comboDeviceInfo;
+
+
     public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                      PerformanceTestManagementService performanceTestManagementService, String agentName) {
         super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
@@ -43,11 +53,26 @@ public class T2CRunner extends AppiumRunner {
                                 TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         pkgName = testTask.getPkgName();
 
+        //todo workaround for E2E agent
+        if (deviceInfo instanceof DeviceCombo) {
+            comboDeviceInfo = ((DeviceCombo) deviceInfo).getLinkedDeviceInfo();
+            comboDeviceManager = comboDeviceInfo.getTestDeviceManager();
+            comboDeviceScreenRecorder =
+                    comboDeviceManager.getScreenRecorder(comboDeviceInfo, testRun.getResultFolder(), reportLogger);
+        }
+
         // Test start
         deviceScreenRecorder =
                 testDeviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
+
+        // todo workaround for E2E agent
+        if (comboDeviceScreenRecorder != null) {
+            comboDeviceScreenRecorder.setupDevice();
+            comboDeviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
+        }
+
         long recordingStartTimeMillis = System.currentTimeMillis();
 
         logCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
@@ -80,14 +105,8 @@ public class T2CRunner extends AppiumRunner {
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         deviceInfo.setRunningTestName(null);
-        releaseResource();
+        releaseResource(testRun, reportLogger);
         return gifFile;
-    }
-
-    @Override
-    public TestRun createTestRun(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
-        TestRun testRun = super.createTestRun(deviceInfo, testTask, parentLogger);
-        return testRun;
     }
 
     private void runT2CJsonTestCase(File jsonFile, DeviceInfo deviceInfo, TestRun testRun,
@@ -144,9 +163,31 @@ public class T2CRunner extends AppiumRunner {
                 System.currentTimeMillis() - recordingStartTimeMillis);
     }
 
-    private void releaseResource() {
+    private void releaseResource(TestRun testRun, Logger logger) {
         e.finish();
         deviceScreenRecorder.finishRecording();
+        // todo workaround for E2E agent
+        if (comboDeviceScreenRecorder != null) {
+            comboDeviceScreenRecorder.finishRecording();
+            File phoneVideoFile = new File(testRun.getResultFolder().getAbsolutePath(),
+                    Const.ScreenRecoderConfig.DEFAULT_FILE_NAME);
+            File pcVideoFile =
+                    new File(testRun.getResultFolder().getAbsolutePath(), Const.ScreenRecoderConfig.PC_FILE_NAME);
+            if (pcVideoFile.exists() && phoneVideoFile.exists()) {
+                // Merge two videos side-by-side if exist
+                System.out.println("-------------Merge two videos side-by-side-------------");
+                File tempVideoFile = new File(testRun.getResultFolder().getAbsolutePath(),
+                        Const.ScreenRecoderConfig.TEMP_FILE_NAME);
+                FFmpegConcatUtil.mergeVideosSideBySide(phoneVideoFile.getAbsolutePath(),
+                        pcVideoFile.getAbsolutePath(), tempVideoFile.getAbsolutePath(), logger);
+                // Rename phone video file
+                phoneVideoFile.renameTo(new File(testRun.getResultFolder().getAbsolutePath(),
+                        Const.ScreenRecoderConfig.PHONE_FILE_NAME));
+                // Rename temp video file
+                tempVideoFile.renameTo(new File(testRun.getResultFolder().getAbsolutePath(),
+                        Const.ScreenRecoderConfig.DEFAULT_FILE_NAME));
+            }
+        }
         logCollector.stopAndAnalyse();
     }
 }

@@ -300,15 +300,18 @@ public class Junit5Listener extends SummaryGeneratingListener {
             File pcVideoFile =
                     new File(testRun.getResultFolder().getAbsolutePath(), Const.ScreenRecoderConfig.PC_FILE_NAME);
             if (pcVideoFile.exists() && phoneVideoFile.exists()) {
+                // Merge two videos side-by-side if exist
+                System.out.println("-------------Merge two videos side-by-side-------------");
+                File tempVideoFile = new File(testRun.getResultFolder().getAbsolutePath(),
+                        Const.ScreenRecoderConfig.TEMP_FILE_NAME);
+                FFmpegConcatUtil.mergeVideosSideBySide(phoneVideoFile.getAbsolutePath(),
+                        pcVideoFile.getAbsolutePath(), tempVideoFile.getAbsolutePath(), logger);
                 // Rename phone video file
                 phoneVideoFile.renameTo(new File(testRun.getResultFolder().getAbsolutePath(),
                         Const.ScreenRecoderConfig.PHONE_FILE_NAME));
-                // Merge two videos side-by-side if exist
-                System.out.println("-------------Merge two videos side-by-side-------------");
-                String mergeDestinationPath = new File(testRun.getResultFolder().getAbsolutePath(),
-                        Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();
-                FFmpegConcatUtil.mergeVideosSideBySide(phoneVideoFile.getAbsolutePath(),
-                        pcVideoFile.getAbsolutePath(), mergeDestinationPath, logger);
+                // Rename temp video file
+                tempVideoFile.renameTo(new File(testRun.getResultFolder().getAbsolutePath(),
+                        Const.ScreenRecoderConfig.DEFAULT_FILE_NAME));
             }
         }
         logcatCollector.stopAndAnalyse();

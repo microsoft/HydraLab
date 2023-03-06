@@ -65,6 +65,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_FILE_BASE_DIR;
+import static com.microsoft.hydralab.common.entity.common.TestTask.TestRunningType.APPIUM_CROSS;
+import static com.microsoft.hydralab.common.entity.common.TestTask.TestRunningType.T2C_JSON_TEST;
 
 @Slf4j
 @Component
@@ -295,7 +297,7 @@ public class DeviceAgentManagementService {
                         TestTaskSpec taskSpec = TestTask.convertToTestTaskSpec(testTask);
                         taskSpec.retryTime++;
                         testTaskService.addTask(taskSpec);
-                        cancelTestTaskById(testTask.getId(), "Retry time limit!");
+                        cancelTestTask(testTask, "Retry time limit!");
                         //run the task saved in queue
                         testTaskService.runTask();
                     }
@@ -313,7 +315,7 @@ public class DeviceAgentManagementService {
         List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
         for (TestRun deviceTestResult : deviceTestResults) {
             // todo workaround for E2E agent
-            if ((TestTask.TestRunningType.APPIUM_CROSS.equals(testTask.getRunningType()) ||
+            if ((APPIUM_CROSS.equals(testTask.getRunningType()) ||
                     TestTask.TestRunningType.T2C_JSON_TEST.equals(testTask.getRunningType())) &&
                     deviceTestResult.getDeviceSerialNumber().split(",").length == 2) {
                 updateDeviceStatus(deviceTestResult.getDeviceSerialNumber().split(",")[0],
@@ -333,11 +335,11 @@ public class DeviceAgentManagementService {
         }
     }
 
-    public void cancelTestTaskById(String taskId, String reason) {
-        Set<String> agentIds = testDataService.cancelTaskById(taskId, reason);
+    public void cancelTestTask(TestTask testTask, String reason) {
+        Set<String> agentIds = testDataService.cancelTaskById(testTask.getId(), reason);
         JSONObject data = new JSONObject();
         Message message = new Message();
-        data.put(Const.AgentConfig.TASK_ID_PARAM, taskId);
+        data.put(Const.AgentConfig.TASK_ID_PARAM, testTask.getId());
         message.setPath(Const.Path.TEST_TASK_CANCEL);
         message.setBody(data);
         for (String agentId : agentIds) {
@@ -347,14 +349,15 @@ public class DeviceAgentManagementService {
             }
             sendMessageToSession(agentSession.session, message);
             for (DeviceInfo deviceInfo : agentDeviceGroups.get(agentId).getDevices()) {
-                if (taskId.equals(deviceInfo.getRunningTaskId())) {
+                if (APPIUM_CROSS.toString().equals(testTask.getRunningType()) ||
+                        T2C_JSON_TEST.toString().equals(testTask.getRunningType()) ||
+                        testTask.getId().equals(deviceInfo.getRunningTaskId())) {
                     deviceInfo.setStatus(DeviceInfo.ONLINE);
                     deviceInfo.setRunningTaskId(null);
 
                     DeviceInfo device = deviceListMap.get(deviceInfo.getSerialNum());
                     device.setStatus(DeviceInfo.ONLINE);
                     deviceInfo.setRunningTaskId(null);
-                    break;
                 }
             }
         }
@@ -721,7 +724,7 @@ public class DeviceAgentManagementService {
     public JSONObject runTestTaskBySpec(TestTaskSpec testTaskSpec) {
         JSONObject result;
 
-        if (TestTask.TestRunningType.APPIUM_CROSS.equals(testTaskSpec.runningType)) {
+        if (APPIUM_CROSS.equals(testTaskSpec.runningType)) {
             result = runAppiumTestTask(testTaskSpec);
         } else if (TestTask.TestRunningType.T2C_JSON_TEST.equals(testTaskSpec.runningType)) {
             result = runT2CTest(testTaskSpec);

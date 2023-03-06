@@ -56,6 +56,14 @@ public class DeviceInfo extends MobileDevice {
     }
 
     public DeviceInfo(DeviceInfo deviceInfo) {
+        this.setSerialNum(deviceInfo.getSerialNum());
+        this.setName(deviceInfo.getName());
+        this.setManufacturer(deviceInfo.getManufacturer());
+        this.setModel(deviceInfo.getModel());
+        this.setOsVersion(deviceInfo.getOsVersion());
+        this.setScreenSize(deviceInfo.getScreenSize());
+        this.setScreenDensity(deviceInfo.getScreenDensity());
+        this.setOsSDKInt(deviceInfo.getOsSDKInt());
         this.testDeviceManager = deviceInfo.testDeviceManager;
         this.status = deviceInfo.status;
         this.imageRelPath = deviceInfo.imageRelPath;

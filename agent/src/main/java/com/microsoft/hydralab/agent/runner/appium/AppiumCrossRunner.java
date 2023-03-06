@@ -19,10 +19,4 @@ public class AppiumCrossRunner extends AppiumRunner {
         super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
         this.agentName = agentName;
     }
-
-    @Override
-    protected TestRun createTestRun(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
-        TestRun testRun = super.createTestRun(deviceInfo, testTask, parentLogger);
-        return testRun;
-    }
 }

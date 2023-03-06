@@ -79,6 +79,8 @@ public interface Const {
         String DEFAULT_FILE_NAME = "merged_test.mp4";
         String PC_FILE_NAME = "PC_test.mp4";
         String PHONE_FILE_NAME = "PHONE_test.mp4";
+
+        String TEMP_FILE_NAME = "TEMP_test.mp4";
     }
 
     interface DeviceStability {

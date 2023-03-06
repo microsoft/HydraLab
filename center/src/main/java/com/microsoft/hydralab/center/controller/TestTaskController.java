@@ -295,7 +295,7 @@ public class TestTaskController {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
                 }
 
-                deviceAgentManagementService.cancelTestTaskById(testId, reason);
+                deviceAgentManagementService.cancelTestTask(testTask, reason);
             }
             if (!LogUtils.isLegalStr(testId, Const.RegexString.UUID, false)) {
                 logger.warn("test {} is canceled", testId);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
