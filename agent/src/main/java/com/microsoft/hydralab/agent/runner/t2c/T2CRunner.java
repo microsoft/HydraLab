@@ -40,7 +40,6 @@ public class T2CRunner extends AppiumRunner {
     ScreenRecorder comboDeviceScreenRecorder;
     DeviceInfo comboDeviceInfo;
 
-
     public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                      PerformanceTestManagementService performanceTestManagementService, String agentName) {
         super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
