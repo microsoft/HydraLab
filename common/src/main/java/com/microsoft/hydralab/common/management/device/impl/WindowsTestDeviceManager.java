@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.screen.WindowsScreenRecorder;
@@ -70,7 +71,7 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
             deviceInfo.setOsSDKInt(System.getProperties().getProperty("os.arch"));
             deviceInfo.setScreenDensity(0);
             deviceInfo.setScreenSize("");
-            deviceInfo.setType(DeviceInfo.DeviceType.WINDOWS.name());
+            deviceInfo.setType(DeviceType.WINDOWS.name());
             deviceInfo.setStatus(DeviceInfo.ONLINE);
             agentManagementService.getDeviceStatusListenerManager().onDeviceConnected(deviceInfo);
         } catch (Exception e) {
