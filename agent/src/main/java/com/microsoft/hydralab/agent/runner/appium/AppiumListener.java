@@ -9,7 +9,7 @@ import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.junit.runner.Description;
@@ -32,7 +32,7 @@ public class AppiumListener extends RunListener {
     private final Logger logger;
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
-    DeviceManager deviceManager;
+    TestDeviceManager testDeviceManager;
     private final PerformanceTestListener performanceTestListener;
     private long recordingStartTimeMillis;
     private int index;
@@ -45,16 +45,16 @@ public class AppiumListener extends RunListener {
     private String currentTestName = "";
     private int currentTestIndex = 0;
 
-    public AppiumListener(DeviceManager deviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
+    public AppiumListener(TestDeviceManager testDeviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
                           PerformanceTestListener performanceTestListener, Logger logger) {
-        this.deviceManager = deviceManager;
+        this.testDeviceManager = testDeviceManager;
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;
         this.logger = logger;
         this.pkgName = pkgName;
         this.performanceTestListener = performanceTestListener;
-        logcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
+        logcatCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
+        deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
     }
 
     public File getGifFile() {
@@ -97,7 +97,7 @@ public class AppiumListener extends RunListener {
 
         logger.info("Start logcat collection");
         String logcatFilePath = logcatCollector.start();
-        testRun.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(testDeviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
     @Override
@@ -151,7 +151,7 @@ public class AppiumListener extends RunListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15), (imagePNGFile -> {
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15), (imagePNGFile -> {
             if (imagePNGFile == null) {
                 return;
             }
@@ -234,7 +234,7 @@ public class AppiumListener extends RunListener {
             }
             if (e.isStarted() && addedFrameCount < 2) {
                 try {
-                    File imagePNGFile = deviceManager.getScreenShot(deviceInfo, logger);
+                    File imagePNGFile = testDeviceManager.getScreenShot(deviceInfo, logger);
                     e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
                 } catch (Exception exception) {
                     logger.error(exception.getMessage(), e);

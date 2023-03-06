@@ -10,7 +10,7 @@ import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -26,10 +26,10 @@ import java.util.Map;
 public class EspressoRunner extends TestRunner {
     final ADBOperateUtil adbOperateUtil;
 
-    public EspressoRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+    public EspressoRunner(TestDeviceManager testDeviceManager, TestTaskRunCallback testTaskRunCallback,
                           PerformanceTestManagementService performanceTestManagementService,
                           ADBOperateUtil adbOperateUtil) {
-        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
+        super(testDeviceManager, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 
@@ -41,7 +41,7 @@ public class EspressoRunner extends TestRunner {
         try {
             /** xml report: parse listener */
             reportLogger.info("Start xml report: parse listener");
-            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(deviceManager,
+            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(testDeviceManager,
                     adbOperateUtil, deviceInfo, testRun, testTask.getPkgName(), performanceTestManagementService);
             instrumentationResultParser =
                     new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
@@ -67,10 +67,10 @@ public class EspressoRunner extends TestRunner {
 
             /** set paths */
             String absoluteReportPath = listener.getAbsoluteReportPath();
-            testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+            testRun.setTestXmlReportPath(testDeviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
             File gifFile = listener.getGifFile();
             if (gifFile.exists() && gifFile.length() > 0) {
-                testRun.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
+                testRun.setTestGifPath(testDeviceManager.getTestBaseRelPathInUrl(gifFile));
             }
 
         } finally {

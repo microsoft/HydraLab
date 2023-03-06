@@ -5,7 +5,7 @@ import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.AndroidTestDeviceManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,7 +30,7 @@ class CommandActionLoaderTest extends BaseTest {
         Assertions.assertTrue(testTask.getDeviceActions().get("setUp").size() == 4, "Analysis commands failed!");
         Assertions.assertTrue(testTask.getDeviceActions().get("tearDown").size() == 3, "Analysis commands failed!");
 
-        AndroidDeviceManager deviceManager = Mockito.mock(AndroidDeviceManager.class);
+        AndroidTestDeviceManager deviceManager = Mockito.mock(AndroidTestDeviceManager.class);
         ActionExecutor actionExecutor = new ActionExecutor();
         DeviceInfo deviceInfo = new DeviceInfo();
 
