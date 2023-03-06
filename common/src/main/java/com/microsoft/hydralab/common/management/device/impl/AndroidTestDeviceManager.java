@@ -21,6 +21,7 @@ import com.microsoft.hydralab.common.logger.MultiLineNoCancelReceiver;
 import com.microsoft.hydralab.common.logger.impl.ADBLogcatCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
@@ -511,7 +512,7 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
             adbDevice.setDeviceId(deviceId);
             adbDevice.setScreenDensity(device.getDensity());
             adbDevice.setName(device.getName());
-            adbDevice.setType(DeviceInfo.DeviceType.ANDROID.name());
+            adbDevice.setType(DeviceType.ANDROID.name());
         }
     }
 

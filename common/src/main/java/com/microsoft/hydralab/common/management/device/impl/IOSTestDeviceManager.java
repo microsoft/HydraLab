@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.impl.IOSLogCollector;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForMac;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForWindows;
@@ -245,7 +246,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
         deviceInfo.setOsSDKInt("");
         deviceInfo.setScreenDensity(0);
         deviceInfo.setScreenSize("");
-        deviceInfo.setType(DeviceInfo.DeviceType.IOS.name());
+        deviceInfo.setType(DeviceType.IOS.name());
         updateDeviceDetailByUdid(deviceInfo, udid);
         return deviceInfo;
     }
