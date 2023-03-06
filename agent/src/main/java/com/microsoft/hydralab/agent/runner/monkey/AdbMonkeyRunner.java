@@ -13,7 +13,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -42,10 +42,10 @@ public class AdbMonkeyRunner extends TestRunner {
     private File gifFile;
     private AndroidTestUnit ongoingMonkeyTest;
 
-    public AdbMonkeyRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+    public AdbMonkeyRunner(TestDeviceManager testDeviceManager, TestTaskRunCallback testTaskRunCallback,
                            PerformanceTestManagementService performanceTestManagementService,
                            ADBOperateUtil adbOperateUtil) {
-        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
+        super(testDeviceManager, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 
@@ -56,8 +56,8 @@ public class AdbMonkeyRunner extends TestRunner {
 
         pkgName = testTask.getPkgName();
         /** start Record **/
-        logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
+        logCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
+        deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
         startRecording(deviceInfo, testRun, testTask.getTimeOutSecond(), reportLogger);
 
         /** run the test */
@@ -86,10 +86,10 @@ public class AdbMonkeyRunner extends TestRunner {
 
         /** set paths */
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
-        testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+        testRun.setTestXmlReportPath(testDeviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
         File gifFile = getGifFile();
         if (gifFile.exists() && gifFile.length() > 0) {
-            testRun.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
+            testRun.setTestGifPath(testDeviceManager.getTestBaseRelPathInUrl(gifFile));
         }
 
     }
@@ -114,7 +114,7 @@ public class AdbMonkeyRunner extends TestRunner {
 
         logger.info("Start adb logcat collection");
         String logcatFilePath = logCollector.start();
-        testRun.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(testDeviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
     public File getGifFile() {
@@ -138,7 +138,7 @@ public class AdbMonkeyRunner extends TestRunner {
         ongoingMonkeyTest.setTestTaskId(testRun.getTestTaskId());
 
         logger.info(ongoingMonkeyTest.getTitle());
-        deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
             if (imagePNGFile == null) {
                 return;
             }

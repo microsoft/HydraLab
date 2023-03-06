@@ -11,7 +11,7 @@ import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
@@ -36,7 +36,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private final Logger logger;
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
-    private final DeviceManager deviceManager;
+    private final TestDeviceManager testDeviceManager;
     private final PerformanceTestListener performanceTestListener;
     ADBOperateUtil adbOperateUtil;
     private long recordingStartTimeMillis;
@@ -48,18 +48,18 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private int pid;
     private int addedFrameCount;
 
-    public EspressoTestInfoProcessorListener(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil,
+    public EspressoTestInfoProcessorListener(TestDeviceManager testDeviceManager, ADBOperateUtil adbOperateUtil,
                                              DeviceInfo deviceInfo, TestRun testRun, String pkgName,
                                              PerformanceTestListener performanceTestListener) {
-        this.deviceManager = deviceManager;
+        this.testDeviceManager = testDeviceManager;
         this.adbOperateUtil = adbOperateUtil;
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;
         this.logger = testRun.getLogger();
         this.pkgName = pkgName;
         this.performanceTestListener = performanceTestListener;
-        adbLogcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
-        adbDeviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
+        adbLogcatCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
+        adbDeviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
         setReportDir(testRun.getResultFolder());
         try {
             setHostName(InetAddress.getLocalHost().getHostName());
@@ -75,7 +75,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     public void startRecording(int maxTime) {
         logger.info("Start adb logcat collection");
         String logcatFilePath = adbLogcatCollector.start();
-        testRun.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(testDeviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
         logger.info("Start record screen");
         adbDeviceScreenRecorder.setupDevice();
         adbDeviceScreenRecorder.startRecord(maxTime <= 0 ? 30 * 60 : maxTime);
@@ -152,7 +152,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
             if (imagePNGFile == null) {
                 return;
             }
@@ -231,7 +231,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         }
         if (e.isStarted() && addedFrameCount < 2) {
             try {
-                File imagePNGFile = deviceManager.getScreenShot(deviceInfo, logger);
+                File imagePNGFile = testDeviceManager.getScreenShot(deviceInfo, logger);
                 e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
             } catch (Exception exception) {
                 logger.error(exception.getMessage(), e);

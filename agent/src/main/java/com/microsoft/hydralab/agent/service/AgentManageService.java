@@ -6,8 +6,8 @@ package com.microsoft.hydralab.agent.service;
 import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
 import com.microsoft.hydralab.common.entity.common.Message;
-import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
@@ -26,7 +26,7 @@ import java.io.File;
 public class AgentManageService {
     private final Logger logger = LoggerFactory.getLogger(AgentManageService.class);
     @Resource
-    DeviceManager deviceManager;
+    TestDeviceManager testDeviceManager;
     @Resource
     AgentWebSocketClientService agentWebSocketClientService;
     @Resource
@@ -63,8 +63,8 @@ public class AgentManageService {
         sendMessageToCenter(true, "Init command Arr and check restart script exists or not.", "", path);
 
         String packageName = packageFileName == null ? "" : packageFileName;
-        if (deviceManager instanceof IOSDeviceManager &&
-                !((IOSDeviceManager) deviceManager).isDeviceConnectedToWindows()) {
+        if (testDeviceManager instanceof IOSTestDeviceManager &&
+                !((IOSTestDeviceManager) testDeviceManager).isDeviceConnectedToWindows()) {
             scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.RESTART_FILE_MAC;
             restartArgs = new String[]{"sh", scriptPath, packageName};
         } else {

@@ -12,8 +12,8 @@ import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
 import com.microsoft.hydralab.common.management.AgentType;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
-import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.AndroidTestDeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
@@ -98,12 +98,12 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceManager initDeviceManager(StorageServiceClientProxy storageServiceClientProxy, ADBOperateUtil adbOperateUtil, AppiumServerManager appiumServerManager,
-                                           DeviceStatusListenerManager deviceStatusListenerManager) {
+    public TestDeviceManager initDeviceManager(StorageServiceClientProxy storageServiceClientProxy, ADBOperateUtil adbOperateUtil, AppiumServerManager appiumServerManager,
+                                               DeviceStatusListenerManager deviceStatusListenerManager) {
         AgentType agentType = AgentType.formAgentType(agentTypeValue);
-        DeviceManager deviceManager = agentType.getManager();
-        if (deviceManager instanceof AndroidDeviceManager) {
-            ((AndroidDeviceManager) deviceManager).setADBOperateUtil(adbOperateUtil);
+        TestDeviceManager testDeviceManager = agentType.getManager();
+        if (testDeviceManager instanceof AndroidTestDeviceManager) {
+            ((AndroidTestDeviceManager) testDeviceManager).setADBOperateUtil(adbOperateUtil);
         }
         if (StringUtils.isNotBlank(adbServerHost)) {
             logger.info("Setting the adb server hostname to {}", adbServerHost);
@@ -115,30 +115,30 @@ public class AppConfiguration {
                 throw new RuntimeException("adbDeviceManager dir.mkdirs() failed: " + testBaseDir);
             }
         }
-        deviceManager.setTestBaseDir(testBaseDir);
+        testDeviceManager.setTestBaseDir(testBaseDir);
         File preAppDir = new File(appOptions.getPreAppStorageLocation());
         if (!preAppDir.exists()) {
             if (!preAppDir.mkdirs()) {
                 throw new RuntimeException("adbDeviceManager dir.mkdirs() failed: " + preAppDir);
             }
         }
-        deviceManager.setPreAppDir(preAppDir);
-        deviceManager.setPreInstallFailurePolicy(
+        testDeviceManager.setPreAppDir(preAppDir);
+        testDeviceManager.setPreInstallFailurePolicy(
                 shutdownIfFail ? Const.PreInstallFailurePolicy.SHUTDOWN : Const.PreInstallFailurePolicy.IGNORE);
-        deviceManager.setDeviceStatusListenerManager(deviceStatusListenerManager);
-        deviceManager.setTestBaseDirUrlMapping(AppOptions.TEST_CASE_RESULT_STORAGE_MAPPING_REL_PATH);
+        testDeviceManager.setDeviceStatusListenerManager(deviceStatusListenerManager);
+        testDeviceManager.setTestBaseDirUrlMapping(AppOptions.TEST_CASE_RESULT_STORAGE_MAPPING_REL_PATH);
         File deviceLogBaseDir = new File(appOptions.getDeviceLogStorageLocation());
         if (!deviceLogBaseDir.exists()) {
             if (!deviceLogBaseDir.mkdirs()) {
                 throw new RuntimeException("adbDeviceManager dir.mkdirs() failed: " + deviceLogBaseDir);
             }
         }
-        deviceManager.setDeviceLogBaseDir(deviceLogBaseDir);
-        deviceManager.setStorageServiceClientProxy(storageServiceClientProxy);
+        testDeviceManager.setDeviceLogBaseDir(deviceLogBaseDir);
+        testDeviceManager.setStorageServiceClientProxy(storageServiceClientProxy);
 
-        deviceManager.setScreenshotDir(getScreenshotDir());
-        deviceManager.setDeviceFolderUrlPrefix(AppOptions.DEVICE_STORAGE_MAPPING_REL_PATH);
-        deviceManager.setDeviceStoragePath(appOptions.getDeviceStorageLocation());
+        testDeviceManager.setScreenshotDir(getScreenshotDir());
+        testDeviceManager.setDeviceFolderUrlPrefix(AppOptions.DEVICE_STORAGE_MAPPING_REL_PATH);
+        testDeviceManager.setDeviceStoragePath(appOptions.getDeviceStorageLocation());
 
         if (StringUtils.isNotBlank(appiumServerHost)) {
             logger.info("Setting the appium server hostname to {}", appiumServerHost);
@@ -146,8 +146,8 @@ public class AppConfiguration {
         }
         appiumServerManager.setWorkspacePath(appOptions.getLocation());
 
-        deviceManager.setAppiumServerManager(appiumServerManager);
-        return deviceManager;
+        testDeviceManager.setAppiumServerManager(appiumServerManager);
+        return testDeviceManager;
     }
 
     @Bean
@@ -177,13 +177,13 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceStabilityMonitor deviceStabilityMonitor(DeviceManager deviceManager, MeterRegistry meterRegistry) {
+    public DeviceStabilityMonitor deviceStabilityMonitor(TestDeviceManager testDeviceManager, MeterRegistry meterRegistry) {
         DeviceStabilityMonitor deviceStabilityMonitor = new DeviceStabilityMonitor();
 
         deviceStabilityMonitor.setDeviceStateChangeThreshold(deviceStateChangeThreshold);
         deviceStabilityMonitor.setDeviceStateChangeWindowTime(deviceStateChangeWindowTime);
         deviceStabilityMonitor.setDeviceStateChangeRecoveryTime(deviceStateChangeRecoveryTime);
-        deviceStabilityMonitor.setDeviceManager(deviceManager);
+        deviceStabilityMonitor.setTestDeviceManager(testDeviceManager);
         deviceStabilityMonitor.setMeterRegistry(meterRegistry);
 
         return deviceStabilityMonitor;

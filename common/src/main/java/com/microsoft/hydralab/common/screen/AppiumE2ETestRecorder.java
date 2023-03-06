@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.common.screen;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import io.appium.java_client.windows.WindowsDriver;
@@ -20,9 +20,9 @@ import java.util.Base64;
 public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
     private WindowsDriver windowsDriver;
 
-    public AppiumE2ETestRecorder(DeviceManager deviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
-        super(deviceManager, adbOperateUtil, deviceInfo, baseFolder, logger);
-        windowsDriver = deviceManager.getAppiumServerManager().getWindowsRootDriver(logger);
+    public AppiumE2ETestRecorder(TestDeviceManager testDeviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
+        super(testDeviceManager, adbOperateUtil, deviceInfo, baseFolder, logger);
+        windowsDriver = testDeviceManager.getAppiumServerManager().getWindowsRootDriver(logger);
     }
 
     @Override
