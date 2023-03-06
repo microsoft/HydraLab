@@ -196,8 +196,7 @@ public class DeviceAgentManagementService {
                 //check is not agent update success
                 AgentUpdateTask tempTask = agentUpdateMap.get(agentUser.getId());
                 if (tempTask != null) {
-                    log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(),
-                            message.getBody());
+                    log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
 
                     AgentUpdateTask.UpdateMsg updateMag = null;
                     String agentMessage = "Agent Reconnected After Updating.Version is " + agentUser.getVersionName();
