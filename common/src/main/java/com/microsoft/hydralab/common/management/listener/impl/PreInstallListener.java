@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.management.listener.impl;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FlowUtil;
@@ -23,10 +24,10 @@ import java.util.Set;
  */
 
 public class PreInstallListener implements DeviceStatusListener {
-    static Map<DeviceInfo.DeviceType, Set<String>> suffixMap = Map.of(
-            DeviceInfo.DeviceType.ANDROID, Set.of("apk"),
-            DeviceInfo.DeviceType.IOS, Set.of("ipa", "app"),
-            DeviceInfo.DeviceType.WINDOWS, Set.of("appx", "appxbundle")
+    static Map<DeviceType, Set<String>> suffixMap = Map.of(
+            DeviceType.ANDROID, Set.of("apk"),
+            DeviceType.IOS, Set.of("ipa", "app"),
+            DeviceType.WINDOWS, Set.of("appx", "appxbundle")
     );
     AgentManagementService agentManagementService;
     private Logger classLogger = LoggerFactory.getLogger(PreInstallListener.class);
@@ -46,7 +47,7 @@ public class PreInstallListener implements DeviceStatusListener {
         File[] appFiles = appDir.listFiles();
         for (File appFile : appFiles) {
             if (!appFile.isFile() ||
-                    suffixMap.getOrDefault(DeviceInfo.DeviceType.valueOf(deviceInfo.getType()), Set.of())
+                    suffixMap.getOrDefault(DeviceType.valueOf(deviceInfo.getType()), Set.of())
                             .stream().noneMatch(suffix -> appFile.getName().endsWith(suffix))) {
                 continue;
             }

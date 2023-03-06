@@ -4,11 +4,10 @@
 package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
-import com.android.ddmlib.TimeoutException;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.android.ddmlib.InstallException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
@@ -85,7 +84,7 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
         File screenShotImageFile = deviceInfo.getScreenshotImageFile();
         if (screenShotImageFile == null) {
             screenShotImageFile = new File(agentManagementService.getScreenshotDir(),
-                    deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
+                    deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + ".jpg");
             deviceInfo.setScreenshotImageFile(screenShotImageFile);
             String imageRelPath = screenShotImageFile.getAbsolutePath()
                     .replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");

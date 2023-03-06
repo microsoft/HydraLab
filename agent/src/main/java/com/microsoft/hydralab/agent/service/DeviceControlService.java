@@ -175,7 +175,7 @@ public class DeviceControlService {
     public void initDeviceManager() {
         boolean isAllFailed = true;
         for (DeviceManagerProperty deviceManagerProperty : deviceManagerProperties) {
-            DeviceInfo.DeviceType deviceType = DeviceInfo.DeviceType.valueOf(deviceManagerProperty.getType());
+            DeviceType deviceType = DeviceType.valueOf(deviceManagerProperty.getType());
             if (!deviceManagerProperty.isEnabled() || deviceType == null) {
                 continue;
             }

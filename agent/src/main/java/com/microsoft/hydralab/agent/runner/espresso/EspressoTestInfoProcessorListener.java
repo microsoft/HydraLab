@@ -50,7 +50,9 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private int pid;
     private int addedFrameCount;
 
-    public EspressoTestInfoProcessorListener(AgentManagementService agentManagementService, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
+    public EspressoTestInfoProcessorListener(AgentManagementService agentManagementService,
+                                             ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, TestRun testRun,
+                                             String pkgName,
                                              PerformanceTestListener performanceTestListener) {
         this.agentManagementService = agentManagementService;
         this.testDeviceManager = deviceInfo.getTestDeviceManager();
@@ -61,7 +63,8 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         this.pkgName = pkgName;
         this.performanceTestListener = performanceTestListener;
         adbLogcatCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
-        adbDeviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
+        adbDeviceScreenRecorder =
+                testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
         setReportDir(testRun.getResultFolder());
         try {
             setHostName(InetAddress.getLocalHost().getHostName());
@@ -154,17 +157,18 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
-            if (imagePNGFile == null || !e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                addedFrameCount++;
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), logger);
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5),
+                (imagePNGFile -> {
+                    if (imagePNGFile == null || !e.isStarted()) {
+                        return;
+                    }
+                    try {
+                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                        addedFrameCount++;
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }), logger);
 
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
     }

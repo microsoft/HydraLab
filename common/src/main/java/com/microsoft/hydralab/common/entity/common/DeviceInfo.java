@@ -174,19 +174,4 @@ public class DeviceInfo extends MobileDevice {
             temp.interrupt();
         }
     }
-
-    public enum DeviceType {
-        // Define device type and bean name
-        ANDROID("androidDeviceManager"),
-        WINDOWS("windowsDeviceManager"),
-        IOS("iosDeviceManager");
-        String beanName;
-
-        DeviceType(String beanName) {
-            this.beanName = beanName;
-        }
-        public String getBeanName() {
-            return beanName;
-        }
-    }
 }

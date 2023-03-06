@@ -10,12 +10,12 @@ import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
-import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;
@@ -87,7 +87,7 @@ public class AppConfiguration {
 
     @Bean
     public AgentManagementService agentManagementService(StorageServiceClientProxy storageServiceClientProxy,
-                                               DeviceStatusListenerManager deviceStatusListenerManager) {
+                                                         DeviceStatusListenerManager deviceStatusListenerManager) {
         AgentManagementService agentManagementService = new AgentManagementService();
         File testBaseDir = new File(appOptions.getTestCaseResultLocation());
         if (!testBaseDir.exists()) {
@@ -150,7 +150,8 @@ public class AppConfiguration {
     }
 
     @Bean
-    public DeviceStabilityMonitor deviceStabilityMonitor(AgentManagementService agentManagementService, MeterRegistry meterRegistry) {
+    public DeviceStabilityMonitor deviceStabilityMonitor(AgentManagementService agentManagementService,
+                                                         MeterRegistry meterRegistry) {
         DeviceStabilityMonitor deviceStabilityMonitor = new DeviceStabilityMonitor();
 
         deviceStabilityMonitor.setDeviceStateChangeThreshold(deviceStateChangeThreshold);

@@ -27,7 +27,8 @@ public class EspressoRunner extends TestRunner {
     final ADBOperateUtil adbOperateUtil;
 
     public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
-                          PerformanceTestManagementService performanceTestManagementService, ADBOperateUtil adbOperateUtil) {
+                          PerformanceTestManagementService performanceTestManagementService,
+                          ADBOperateUtil adbOperateUtil) {
         super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
@@ -40,8 +41,10 @@ public class EspressoRunner extends TestRunner {
         try {
             /** xml report: parse listener */
             reportLogger.info("Start xml report: parse listener");
-            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(agentManagementService,
-                    adbOperateUtil, deviceInfo, testRun, testTask.getPkgName(), performanceTestManagementService);
+            EspressoTestInfoProcessorListener listener =
+                    new EspressoTestInfoProcessorListener(agentManagementService,
+                            adbOperateUtil, deviceInfo, testRun, testTask.getPkgName(),
+                            performanceTestManagementService);
             instrumentationResultParser =
                     new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
                         @Override
@@ -54,8 +57,9 @@ public class EspressoRunner extends TestRunner {
             reportLogger.info("Start instrumenting the test");
             checkTestTaskCancel(testTask);
             listener.startRecording(testTask.getTimeOutSecond());
-            String command = buildCommand(testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(),
-                    testTask.getTestScope(), testTask.getInstrumentationArgs());
+            String command =
+                    buildCommand(testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(),
+                            testTask.getTestScope(), testTask.getInstrumentationArgs());
             String result = startInstrument(deviceInfo, reportLogger,
                     instrumentationResultParser, testTask.getTimeOutSecond(), command);
             if (Const.TaskResult.ERROR_DEVICE_OFFLINE.equals(result)) {
@@ -66,7 +70,8 @@ public class EspressoRunner extends TestRunner {
 
             /** set paths */
             String absoluteReportPath = listener.getAbsoluteReportPath();
-            testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+            testRun.setTestXmlReportPath(
+                    agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
             File gifFile = listener.getGifFile();
             if (gifFile.exists() && gifFile.length() > 0) {
                 testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));

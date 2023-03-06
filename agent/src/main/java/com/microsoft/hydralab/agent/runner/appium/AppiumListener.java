@@ -56,8 +56,7 @@ public class AppiumListener extends RunListener {
     DeviceInfo comboDeviceInfo;
 
     public AppiumListener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun,
-                          String pkgName,
-                          PerformanceTestListener performanceTestListener, Logger logger) {
+                          String pkgName, PerformanceTestListener performanceTestListener, Logger logger) {
         this.agentManagementService = agentManagementService;
         this.testDeviceManager = deviceInfo.getTestDeviceManager();
         this.deviceInfo = deviceInfo;
