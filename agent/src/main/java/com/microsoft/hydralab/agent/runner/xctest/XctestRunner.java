@@ -96,8 +96,9 @@ public class XctestRunner extends TestRunner {
         try {
             Collection<File> files = FileUtils.listFiles(unzippedFolder, null, false);
             for (File file : files) {
-                if (file.getAbsolutePath().endsWith(".xctestrun"))
+                if (file.getAbsolutePath().endsWith(".xctestrun")){
                     return file;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
