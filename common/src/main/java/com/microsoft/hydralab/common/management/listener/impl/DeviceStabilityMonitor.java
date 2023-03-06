@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.management.listener.impl;
 import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.common.entity.agent.DeviceStateChangeRecord;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
@@ -46,7 +47,7 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
      * 3. switching between connected(OFFLINE)/connected(ONLINE)
      */
 
-    private TestDeviceManager testDeviceManager;
+    private AgentManagementService agentManagementService;
     private int deviceStateChangeThreshold;
     private long deviceStateChangeWindowTime;
     private long deviceStateChangeRecoveryTime;
@@ -233,7 +234,7 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
     @Scheduled(cron = "*/10 * * * * *")
     public void refreshDeviceStateChangeTimes() {
         LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
-        Set<DeviceInfo> deviceInfos = testDeviceManager.getDeviceList(null);
+        Set<DeviceInfo> deviceInfos = agentManagementService.getDeviceList(null);
 
         for (DeviceInfo info : deviceInfos) {
             cleanOutdatedDeviceStateChange(deviceStateChangesMap.get(info.getSerialNum()), now, info);

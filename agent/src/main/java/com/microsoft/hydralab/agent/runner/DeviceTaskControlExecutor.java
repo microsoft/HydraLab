@@ -5,14 +5,12 @@ package com.microsoft.hydralab.agent.runner;
 
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,8 +20,6 @@ import java.util.concurrent.CountDownLatch;
 public class DeviceTaskControlExecutor {
     @SuppressWarnings("constantname")
     static final Logger log = LoggerFactory.getLogger(DeviceTaskControlExecutor.class);
-    @Resource
-    TestDeviceManager testDeviceManager;
 
     @Nullable
     public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task,
@@ -72,7 +68,7 @@ public class DeviceTaskControlExecutor {
             }
             Logger logger = null;
             if (logging) {
-                logger = testDeviceManager.getDeviceLogger(device);
+                logger = device.getTestDeviceManager().getDeviceLogger(device);
             }
             final Logger fLogger = logger;
             devices.add(device);

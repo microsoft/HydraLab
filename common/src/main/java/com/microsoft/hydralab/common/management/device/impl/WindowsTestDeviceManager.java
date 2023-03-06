@@ -4,14 +4,21 @@ package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
 import com.android.ddmlib.TimeoutException;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
-import com.microsoft.hydralab.t2c.runner.*;
+import com.microsoft.hydralab.t2c.runner.ActionInfo;
+import com.microsoft.hydralab.t2c.runner.DriverInfo;
+import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
+import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
+import com.microsoft.hydralab.t2c.runner.TestInfo;
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
@@ -38,10 +45,13 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
         super.getScreenShot(deviceInfo, logger);
         File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
         if (pcScreenShotImageFile == null) {
-            pcScreenShotImageFile = new File(screenshotDir, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
+            pcScreenShotImageFile = new File(agentManagementService.getScreenshotDir(),
+                    deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
             deviceInfo.setPcScreenshotImageFile(pcScreenShotImageFile);
-            String pcImageRelPath = pcScreenShotImageFile.getAbsolutePath().replace(new File(getDeviceStoragePath()).getAbsolutePath(), "");
-            pcImageRelPath = getDeviceFolderUrlPrefix() + pcImageRelPath.replace(File.separator, "/");
+            String pcImageRelPath = pcScreenShotImageFile.getAbsolutePath()
+                    .replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
+            pcImageRelPath =
+                    agentManagementService.getDeviceFolderUrlPrefix() + pcImageRelPath.replace(File.separator, "/");
             deviceInfo.setPcImageRelPath(pcImageRelPath);
         }
         try {
@@ -49,8 +59,12 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
         } catch (IOException e) {
             classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
         }
-        StorageFileInfo fileInfo = new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
-        String fileDownloadUrl = storageServiceClientProxy.upload(pcScreenShotImageFile, fileInfo).getBlobUrl();
+        StorageFileInfo fileInfo =
+                new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(),
+                        StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl =
+                agentManagementService.getStorageServiceClientProxy().upload(pcScreenShotImageFile, fileInfo)
+                        .getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
             classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
@@ -98,7 +112,7 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
     }
 
     public File joinImages(File PCFile, File PhoneFile, String outFileName) {
-        File outFile = new File(screenshotDir, outFileName);
+        File outFile = new File(agentManagementService.getScreenshotDir(), outFileName);
         try {
             BufferedImage image_pc = ImageIO.read(PCFile);
             int width_pc = image_pc.getWidth();

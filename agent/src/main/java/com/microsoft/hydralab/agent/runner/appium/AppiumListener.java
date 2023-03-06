@@ -9,6 +9,7 @@ import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.performance.PerformanceTestListener;
@@ -33,6 +34,7 @@ public class AppiumListener extends RunListener {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
     TestDeviceManager testDeviceManager;
+    AgentManagementService agentManagementService;
     private final PerformanceTestListener performanceTestListener;
     private long recordingStartTimeMillis;
     private int index;
@@ -45,9 +47,11 @@ public class AppiumListener extends RunListener {
     private String currentTestName = "";
     private int currentTestIndex = 0;
 
-    public AppiumListener(TestDeviceManager testDeviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
+    public AppiumListener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun,
+                          String pkgName,
                           PerformanceTestListener performanceTestListener, Logger logger) {
-        this.testDeviceManager = testDeviceManager;
+        this.agentManagementService = agentManagementService;
+        this.testDeviceManager = deviceInfo.getTestDeviceManager();
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;
         this.logger = logger;
@@ -97,7 +101,7 @@ public class AppiumListener extends RunListener {
 
         logger.info("Start logcat collection");
         String logcatFilePath = logcatCollector.start();
-        testRun.setLogcatPath(testDeviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
     @Override

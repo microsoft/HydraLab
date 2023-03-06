@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
@@ -18,10 +19,13 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelReceiver;
 import com.microsoft.hydralab.common.logger.impl.ADBLogcatCollector;
+import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
@@ -42,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static com.android.ddmlib.IDevice.*;
 import static com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder.recordPackageName;
@@ -57,129 +60,82 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     static final Logger classLogger = LoggerFactory.getLogger(AndroidTestDeviceManager.class);
     private final Map<String, DeviceInfo> adbDeviceInfoMap = new HashMap<>();
     ADBOperateUtil adbOperateUtil;
-    private final AndroidDebugBridge.IDeviceChangeListener mListener = new AndroidDebugBridge.IDeviceChangeListener() {
-        @Override
-        public void deviceConnected(IDevice device) {
-            // from disconnected to connected (OFFLINE)
-            classLogger.warn("DeviceConnected {} {} {}", device.getSerialNumber(), device.getState(), device.getName());
-            deviceInfoUpdate(device);
-            DeviceInfo deviceInfo = adbDeviceInfoMap.get(device.getSerialNumber());
-            if (deviceInfo == null) {
-                return;
-            }
-            if (device.getState().equals(DeviceState.ONLINE)) {
-                deviceStatusListenerManager.onDeviceConnected(deviceInfo);
-            } else {
-                deviceStatusListenerManager.onDeviceInactive(deviceInfo);
-            }
-        }
 
-        @Override
-        public void deviceDisconnected(IDevice device) {
-            classLogger.error("DeviceDisconnected {} {} {}", device.getSerialNumber(), device.getState(), device.getName());
-            deviceInfoUpdate(device);
-            DeviceInfo deviceInfo = adbDeviceInfoMap.get(device.getSerialNumber());
-            if (deviceInfo == null) {
-                return;
-            }
-
-            deviceStatusListenerManager.onDeviceInactive(deviceInfo);
-            appiumServerManager.quitAndroidDriver(deviceInfo, classLogger);
-        }
-
-        @Override
-        public void deviceChanged(IDevice device, int changeMask) {
-            if (changeMask != CHANGE_STATE) {
-                String changeType = "";
-                if (changeMask == CHANGE_BUILD_INFO) {
-                    changeType = "build info";
-                } else if (changeMask == CHANGE_CLIENT_LIST) {
-                    changeType = "client list";
+    private final AndroidDebugBridge.IDeviceChangeListener mListener =
+            new AndroidDebugBridge.IDeviceChangeListener() {
+                @Override
+                public void deviceConnected(IDevice device) {
+                    // from disconnected to connected (OFFLINE)
+                    classLogger.warn("DeviceConnected {} {} {}", device.getSerialNumber(), device.getState(),
+                            device.getName());
+                    deviceInfoUpdate(device);
+                    DeviceInfo deviceInfo = adbDeviceInfoMap.get(device.getSerialNumber());
+                    if (deviceInfo == null) {
+                        return;
+                    }
+                    if (device.getState().equals(DeviceState.ONLINE)) {
+                        agentManagementService.getDeviceStatusListenerManager().onDeviceConnected(deviceInfo);
+                    } else {
+                        agentManagementService.getDeviceStatusListenerManager().onDeviceInactive(deviceInfo);
+                    }
                 }
-                classLogger.warn("DeviceChanged, SN: {}, name: {}, {} changed", device.getSerialNumber(), device.getName(), changeType);
-                return;
-            }
 
-            classLogger.warn("DeviceChanged {} {} {}", device.getSerialNumber(), device.getState(), device.getName());
-            deviceInfoUpdate(device);
-            DeviceInfo deviceInfo = adbDeviceInfoMap.get(device.getSerialNumber());
-            if (deviceInfo == null) {
-                return;
-            }
+                @Override
+                public void deviceDisconnected(IDevice device) {
+                    classLogger.error("DeviceDisconnected {} {} {}", device.getSerialNumber(), device.getState(),
+                            device.getName());
+                    deviceInfoUpdate(device);
+                    DeviceInfo deviceInfo = adbDeviceInfoMap.get(device.getSerialNumber());
+                    if (deviceInfo == null) {
+                        return;
+                    }
 
-            if (device.getState().equals(DeviceState.ONLINE)) {
-                deviceStatusListenerManager.onDeviceConnected(deviceInfo);
-            } else {
-                deviceStatusListenerManager.onDeviceInactive(deviceInfo);
-            }
-        }
-    };
+                    agentManagementService.getDeviceStatusListenerManager().onDeviceInactive(deviceInfo);
+                    appiumServerManager.quitAndroidDriver(deviceInfo, classLogger);
+                }
+
+                @Override
+                public void deviceChanged(IDevice device, int changeMask) {
+                    if (changeMask != CHANGE_STATE) {
+                        String changeType = "";
+                        if (changeMask == CHANGE_BUILD_INFO) {
+                            changeType = "build info";
+                        } else if (changeMask == CHANGE_CLIENT_LIST) {
+                            changeType = "client list";
+                        }
+                        classLogger.warn("DeviceChanged, SN: {}, name: {}, {} changed", device.getSerialNumber(),
+                                device.getName(), changeType);
+                        return;
+                    }
+
+                    classLogger.warn("DeviceChanged {} {} {}", device.getSerialNumber(), device.getState(),
+                            device.getName());
+                    deviceInfoUpdate(device);
+                    DeviceInfo deviceInfo = adbDeviceInfoMap.get(device.getSerialNumber());
+                    if (deviceInfo == null) {
+                        return;
+                    }
+
+                    if (device.getState().equals(DeviceState.ONLINE)) {
+                        agentManagementService.getDeviceStatusListenerManager().onDeviceConnected(deviceInfo);
+                    } else {
+                        agentManagementService.getDeviceStatusListenerManager().onDeviceInactive(deviceInfo);
+                    }
+                }
+            };
 
     private static boolean isAndroidCommonPermission(String usesPermission) {
         return usesPermission.startsWith("android.");
     }
 
-    public void setADBOperateUtil(ADBOperateUtil adbOperateUtil) {
-        this.adbOperateUtil = adbOperateUtil;
-    }
-
     @Override
-    public void init() throws Exception {
-        adbOperateUtil.init(mListener);
-        PhoneAppScreenRecorder.copyAPK(preAppDir);
-    }
-
-    @Override
-    public Set<DeviceInfo> getDeviceList(Logger logger) {
-        Set<DeviceInfo> set = new HashSet<>();
-        Set<Map.Entry<String, DeviceInfo>> entries = null;
-        synchronized (this) {
-            entries = new HashSet<>(adbDeviceInfoMap.entrySet());
-        }
-        for (Map.Entry<String, DeviceInfo> entry : entries) {
-            DeviceInfo value = entry.getValue();
-            if (value != null) {
-                set.add(value);
-            }
-        }
-        return set;
-    }
-
-    @Override
-    public Set<DeviceInfo> getActiveDeviceList(Logger logger) {
-        Set<DeviceInfo> set = new HashSet<>();
-        Set<Map.Entry<String, DeviceInfo>> entries = null;
-        synchronized (this) {
-            entries = new HashSet<>(adbDeviceInfoMap.entrySet());
-        }
-        for (Map.Entry<String, DeviceInfo> entry : entries) {
-            DeviceInfo value = entry.getValue();
-            if (value == null || !value.isAlive()) {
-                classLogger.debug("Invalid device: {}", value);
-                continue;
-            }
-            set.add(value);
-        }
-        return set;
-    }
-
-    @Override
-    public void resetDeviceByTestId(String testId, Logger logger) {
-        Set<DeviceInfo> devices = getActiveDeviceList(logger).stream()
-                .filter(adbDeviceInfo -> testId.equals(adbDeviceInfo.getRunningTaskId()))
-                .collect(Collectors.toSet());
-        for (DeviceInfo device : devices) {
-            resetDevice(device.getSerialNum());
-        }
-    }
-
-    private void resetDevice(String serialNum) {
-        DeviceInfo deviceInfo = adbDeviceInfoMap.get(serialNum);
-        if (deviceInfo == null) {
-            return;
-        }
-        synchronized (deviceInfo) {
-            deviceInfo.reset();
+    public void init() {
+        try {
+            adbOperateUtil.init(mListener);
+            PhoneAppScreenRecorder.copyAPK(agentManagementService.getPreAppDir());
+        } catch (Exception e) {
+            classLogger.error("init adbOperateUtil failed", e);
+            throw new HydraLabRuntimeException(500, "adbOperateUtil init failed", e);
         }
     }
 
@@ -206,9 +162,11 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
      * And refer to cts/common/device-side/bedstead/nene/common/src/main/java/com/android/bedstead/nene/permissions/CommonPermissions.java get all the common permission names.
      * Refer to https://developer.android.com/reference/android/Manifest.permission#ACCEPT_HANDOVER to see the permission level of each permission.
      */
-    public void grantPermission(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @NotNull String permissionName, @Nullable Logger logger) {
+    public void grantPermission(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
+                                @NotNull String permissionName, @Nullable Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, String.format("pm grant %s %s", packageName, permissionName), new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, String.format("pm grant %s %s", packageName, permissionName),
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             Logger myLogger = classLogger;
             if (logger != null) {
@@ -229,7 +187,9 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
      * @return return true if succeeded.
      */
     @Override
-    public boolean grantAllPackageNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull File packageFile, @NotNull String targetPackage, boolean allowCustomizedPermissions, @Nullable Logger logger) {
+    public boolean grantAllPackageNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull File packageFile,
+                                                    @NotNull String targetPackage,
+                                                    boolean allowCustomizedPermissions, @Nullable Logger logger) {
         Logger myLogger = classLogger;
         if (logger != null) {
             myLogger = logger;
@@ -247,12 +207,15 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
                 try {
                     grantPermission(deviceInfo, targetPackage, usesPermission, logger);
                 } catch (Exception e) {
-                    myLogger.info(String.format("error occurred when granting permission %s to package %s", usesPermission, targetPackage), e);
+                    myLogger.info(String.format("error occurred when granting permission %s to package %s",
+                            usesPermission, targetPackage), e);
                 }
             }
             return true;
         } catch (IOException e) {
-            myLogger.warn("grantAllPackageNeededPermissions for file failed, file path: " + packageFile.getAbsolutePath(), e);
+            myLogger.warn(
+                    "grantAllPackageNeededPermissions for file failed, file path: " + packageFile.getAbsolutePath(),
+                    e);
         }
         return false;
     }
@@ -266,7 +229,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
      * @return return true if succeeded.
      */
     @Override
-    public boolean grantAllTaskNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull TestTask task, @Nullable Logger logger) {
+    public boolean grantAllTaskNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull TestTask task,
+                                                 @Nullable Logger logger) {
         Logger myLogger = classLogger;
         if (logger != null) {
             myLogger = logger;
@@ -293,7 +257,9 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
             try {
                 grantPermission(deviceInfo, task.getPkgName(), usesPermission, logger);
             } catch (Exception e) {
-                myLogger.info(String.format("error occurred when granting permission %s to package %s", usesPermission, task.getPkgName()), e);
+                myLogger.info(
+                        String.format("error occurred when granting permission %s to package %s", usesPermission,
+                                task.getPkgName()), e);
             }
         }
         return succeeded;
@@ -302,7 +268,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     @Override
     public void addToBatteryWhiteList(DeviceInfo deviceInfo, String packageName, Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, String.format("dumpsys deviceidle whitelist +%s", packageName), new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, String.format("dumpsys deviceidle whitelist +%s", packageName),
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (RuntimeException e) {
             classLogger.error(e.getMessage(), e);
         }
@@ -317,7 +284,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
      * -t: Allow test APKs to be installed.
      * -g: Grant all permissions listed in the app manifest.
      */
-    public boolean installApp(DeviceInfo deviceInfo, String packagePath, @Nullable Logger logger) throws InstallException {
+    public boolean installApp(DeviceInfo deviceInfo, String packagePath, @Nullable Logger logger)
+            throws InstallException {
         File apk = new File(packagePath);
         Assert.isTrue(apk.exists(), "apk not exist!!");
         return adbOperateUtil.installApp(deviceInfo, apk.getAbsolutePath(), true, "-t -d -g", logger);
@@ -331,22 +299,27 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     @Override
     public void resetPackage(DeviceInfo deviceInfo, String packageName, Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, String.format("pm clear %s", packageName), new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, String.format("pm clear %s", packageName),
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             classLogger.error(e.getMessage(), e);
         }
     }
 
     @Override
-    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent, @NotNull String pathOnDevice, @Nullable Logger logger) throws IOException, InterruptedException {
+    public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent,
+                                 @NotNull String pathOnDevice, @Nullable Logger logger)
+            throws IOException, InterruptedException {
         adbOperateUtil.pushFileToDevice(deviceInfo, pathOnAgent, pathOnDevice, logger);
     }
 
     @Override
-    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice, @Nullable Logger logger) throws IOException, InterruptedException {
+    public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice,
+                                   @Nullable Logger logger) throws IOException, InterruptedException {
         ITestRun testRun = TestRunThreadContext.getTestRun();
         Assert.notNull(testRun, "There is no testRun instance in ThreadContext!");
-        Assert.notNull(testRun.getResultFolder(), "The testRun instance in ThreadContext does not have resultFolder property!");
+        Assert.notNull(testRun.getResultFolder(),
+                "The testRun instance in ThreadContext does not have resultFolder property!");
 
         String pathOnAgent = testRun.getResultFolder().getAbsolutePath() + "/";
         adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
@@ -358,14 +331,16 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public ADBLogcatCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
-        return new ADBLogcatCollector(this, this.adbOperateUtil, deviceInfo, pkgName, testRun, logger);
+    public ADBLogcatCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun,
+                                              Logger logger) {
+        return new ADBLogcatCollector(this.adbOperateUtil, deviceInfo, pkgName, testRun, logger);
     }
 
     @Override
     public void setProperty(DeviceInfo deviceInfo, String property, String val, Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, String.format("setprop %s %s", property, val), new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, String.format("setprop %s %s", property, val),
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             classLogger.error(e.getMessage(), e);
         }
@@ -373,7 +348,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
 
     public void changeGlobalSetting(DeviceInfo deviceInfo, String property, String val, Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, String.format("settings put global %s %s", property, val), new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, String.format("settings put global %s %s", property, val),
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             classLogger.error(e.getMessage(), e);
         }
@@ -381,7 +357,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
 
     public void changeSystemSetting(DeviceInfo deviceInfo, String property, String val, Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, String.format("settings put system %s %s", property, val), new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, String.format("settings put system %s %s", property, val),
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             classLogger.error(e.getMessage(), e);
         }
@@ -397,35 +374,30 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
         File screenshotImageFile = deviceInfo.getScreenshotImageFile();
         if (screenshotImageFile == null) {
-            screenshotImageFile = new File(getScreenshotDir(), deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + ".jpg");
+            screenshotImageFile = new File(agentManagementService.getScreenshotDir(),
+                    deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + ".jpg");
             deviceInfo.setScreenshotImageFile(screenshotImageFile);
-            String imageRelPath = screenshotImageFile.getAbsolutePath().replace(new File(getDeviceStoragePath()).getAbsolutePath(), "");
-            imageRelPath = getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
+            String imageRelPath = screenshotImageFile.getAbsolutePath()
+                    .replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
+            imageRelPath =
+                    agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
             deviceInfo.setImageRelPath(imageRelPath);
         }
         deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
         sendKeyEvent(deviceInfo, KEYCODE_WAKEUP, logger);
         screenCapture(deviceInfo, screenshotImageFile.getAbsolutePath(), null);
-        StorageFileInfo fileInfo = new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
-        String fileDownloadUrl = storageServiceClientProxy.upload(screenshotImageFile, fileInfo).getBlobUrl();
+        StorageFileInfo fileInfo =
+                new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(),
+                        StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl =
+                agentManagementService.getStorageServiceClientProxy().upload(screenshotImageFile, fileInfo)
+                        .getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
             classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
             deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
         }
         return screenshotImageFile;
-    }
-
-    @Override
-    public void updateIsPrivateByDeviceSerial(String deviceSerial, Boolean isPrivate) {
-        DeviceInfo deviceInfo;
-        synchronized (adbDeviceInfoMap) {
-            deviceInfo = adbDeviceInfoMap.get(deviceSerial);
-        }
-        if (deviceInfo != null) {
-            deviceInfo.setIsPrivate(isPrivate);
-        }
-
     }
 
     private void deviceInfoUpdate(IDevice device) {
@@ -453,9 +425,12 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity, Logger logger) {
+    public boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName, String defaultActivity,
+                                      Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, String.format("cmd package set-home-activity %s/%s", packageName, defaultActivity), new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo,
+                    String.format("cmd package set-home-activity %s/%s", packageName, defaultActivity),
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
             return true;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -490,7 +465,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     private boolean sendKeyEvent(DeviceInfo deviceInfo, String event, Logger logger) {
 
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, String.format("input keyevent %s", event), new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, String.format("input keyevent %s", event),
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
             return true;
         } catch (Exception e) {
             classLogger.error(e.getMessage(), e);
@@ -499,7 +475,7 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     }
 
     private DeviceInfo getADBDeviceInfoFromDevice(IDevice device) {
-        DeviceInfo adbDevice = new DeviceInfo();
+        DeviceInfo adbDevice = new DeviceInfo(this);
         updateADBDeviceInfoByDevice(device, adbDevice);
         return adbDevice;
     }
@@ -535,7 +511,7 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
             adbDevice.setDeviceId(deviceId);
             adbDevice.setScreenDensity(device.getDensity());
             adbDevice.setName(device.getName());
-
+            adbDevice.setType(DeviceInfo.DeviceType.ANDROID.name());
         }
     }
 
@@ -574,18 +550,19 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     private String getDeviceId(DeviceInfo deviceInfo, Logger logger) {
         try {
             final String[] idOutput = {null};
-            adbOperateUtil.execOnDevice(deviceInfo, "settings get secure android_id", new MultiLineNoCancelReceiver() {
-                @Override
-                public void processNewLines(String[] lines) {
-                    for (String line : lines) {
-                        String trim = line.trim();
-                        if (StringUtils.isBlank(trim)) {
-                            continue;
+            adbOperateUtil.execOnDevice(deviceInfo, "settings get secure android_id",
+                    new MultiLineNoCancelReceiver() {
+                        @Override
+                        public void processNewLines(String[] lines) {
+                            for (String line : lines) {
+                                String trim = line.trim();
+                                if (StringUtils.isBlank(trim)) {
+                                    continue;
+                                }
+                                idOutput[0] = trim;
+                            }
                         }
-                        idOutput[0] = trim;
-                    }
-                }
-            }, logger);
+                    }, logger);
             return idOutput[0];
         } catch (Exception e) {
             classLogger.error(e.getMessage(), e);
@@ -620,7 +597,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName, Logger logger) {
+    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName,
+                                                       Logger logger) {
         boolean isProjectionPermissionGranted = false;
         stopPackageProcess(deviceInfo, recordPackageName, logger);
         startRecordActivity(deviceInfo, logger);
@@ -648,7 +626,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
 
     private String dumpView(DeviceInfo deviceInfo, Logger logger) {
         StringBuilder sb = new StringBuilder();
-        adbOperateUtil.execOnDevice(deviceInfo, "uiautomator dump", new MultiLineNoCancelLoggingReceiver(logger), logger);
+        adbOperateUtil.execOnDevice(deviceInfo, "uiautomator dump", new MultiLineNoCancelLoggingReceiver(logger),
+                logger);
         adbOperateUtil.execOnDevice(deviceInfo, "cat /sdcard/window_dump.xml", new MultiLineNoCancelReceiver() {
             @Override
             public void processNewLines(@NotNull String[] lines) {
@@ -662,7 +641,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
 
     private void stopPackageProcess(DeviceInfo deviceInfo, String packageName, Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(Objects.requireNonNull(deviceInfo), "am force-stop " + packageName, new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(Objects.requireNonNull(deviceInfo), "am force-stop " + packageName,
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -670,17 +650,21 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
 
     private void startRecordActivity(DeviceInfo deviceInfo, Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(Objects.requireNonNull(deviceInfo), "am start -n " + recordPackageName + "/.MainActivity", new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(Objects.requireNonNull(deviceInfo),
+                    "am start -n " + recordPackageName + "/.MainActivity",
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
     }
 
-    private boolean clickNodeOnDeviceWithText(DeviceInfo deviceInfo, Logger logger, @NotNull String... possibleTexts) {
+    private boolean clickNodeOnDeviceWithText(DeviceInfo deviceInfo, Logger logger,
+                                              @NotNull String... possibleTexts) {
         String dump = dumpView(deviceInfo, logger);
         // classLogger.info("Dump on {}: {}", adbDeviceInfo.getSerialNum(), dump);
         if (StringUtils.isBlank(dump)) {
-            logger.error("did not find element with text {} on {}", Arrays.asList(possibleTexts).toString(), deviceInfo.getSerialNum());
+            logger.error("did not find element with text {} on {}", Arrays.asList(possibleTexts).toString(),
+                    deviceInfo.getSerialNum());
             return false;
         }
         Document viewTree = Jsoup.parse(dump, "", Parser.xmlParser());
@@ -720,7 +704,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
         changeGlobalSetting(deviceInfo, "transition_animation_scale", "1", logger);
         changeGlobalSetting(deviceInfo, "animator_duration_scale", "1", logger);
 
-        changeSystemSetting(deviceInfo, "screen_off_timeout", String.valueOf(TimeUnit.SECONDS.toMillis(45)), logger);
+        changeSystemSetting(deviceInfo, "screen_off_timeout", String.valueOf(TimeUnit.SECONDS.toMillis(45)),
+                logger);
     }
 
     @Override
@@ -741,9 +726,14 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     @Override
     public void removeFileInDevice(DeviceInfo deviceInfo, String pathOnDevice, Logger logger) {
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, "rm " + pathOnDevice, new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, "rm " + pathOnDevice,
+                    new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    public void setADBOperateUtil(ADBOperateUtil adbOperateUtil) {
+        this.adbOperateUtil = adbOperateUtil;
     }
 }
