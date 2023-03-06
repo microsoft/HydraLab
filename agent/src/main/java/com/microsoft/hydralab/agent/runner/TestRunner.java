@@ -111,10 +111,8 @@ public abstract class TestRunner {
 
         // todo workaround for E2E agent
         if (deviceInfo instanceof DeviceCombo) {
-            testRun.setDeviceSerialNumber(deviceInfo.getSerialNum() + "," +
-                    ((DeviceCombo) deviceInfo).getLinkedDeviceInfo().getSerialNum());
-            testRun.setDeviceName(deviceInfo.getName() + "-" + System.getProperties().getProperty("os.name") + "-" +
-                    ((DeviceCombo) deviceInfo).getLinkedDeviceInfo().getName());
+            testRun.setDeviceSerialNumber(deviceInfo.getSerialNum() + "," + ((DeviceCombo) deviceInfo).getLinkedDeviceInfo().getSerialNum());
+            testRun.setDeviceName(deviceInfo.getName() + "-" + System.getProperties().getProperty("os.name") + "-" + ((DeviceCombo) deviceInfo).getLinkedDeviceInfo().getName());
         }
 
         File testRunResultFolder = new File(testTask.getResourceDir(), deviceInfo.getSerialNum());
@@ -179,9 +177,7 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
-            List<Exception> exceptions =
-                    actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
-                            testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
             if (exceptions.size() > 0) {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
@@ -192,8 +188,7 @@ public abstract class TestRunner {
         if (testRun.getTotalCount() > 0) {
             try {
                 String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
-                testRun.setTestXmlReportPath(
-                        agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+                testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
             } catch (Exception e) {
                 testRun.getLogger().error("Error in buildTestResultXml", e);
             }
@@ -254,10 +249,8 @@ public abstract class TestRunner {
         File instrumentLogFile = new File(testRun.getResultFolder(), loggerNamePrefix + "_" + dateInfo + ".log");
         // make sure it's a child logger of the parentLogger
         String loggerName = parentLogger.getName() + ".test." + dateInfo;
-        Logger reportLogger =
-                LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(),
-                        "%d %p -- %m%n");
-       testRun.setInstrumentReportPath(agentManagementService.getTestBaseRelPathInUrl(instrumentLogFile));
+        Logger reportLogger = LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(), "%d %p -- %m%n");
+        testRun.setInstrumentReportPath(agentManagementService.getTestBaseRelPathInUrl(instrumentLogFile));
 
         return reportLogger;
     }
