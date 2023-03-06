@@ -11,6 +11,7 @@ import moment from 'moment';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Button from "@mui/material/Button";
 import axios from "@/axios";
+import PerfTestDashboard from './PerfTestDashboard';
 
 const COLORS = ['#00C49F', '#FF8042'];
 const badgeList = ['primary', 'info', 'secondary', 'light'];
@@ -181,6 +182,7 @@ export default class TestReportView extends React.Component {
                                 </Link>
                             {task.pipelineLink ?
                                 <p className='mt-3'><a href={task.pipelineLink} rel="noopener noreferrer">Link to PipeLine</a></p> : null}
+
                         </td>
                         <td>
                             <h4>Overall success rate {task.overallSuccessRate} <span
@@ -437,6 +439,19 @@ export default class TestReportView extends React.Component {
                         </tbody>
                     </table>
                 </div> : null}
+            </div>
+            <div id='test_report_content_3>'>
+                <table className='table table-borderless'>
+                    <thead className="thead-info">
+                        <tr className="table-info">
+                            <th colSpan={chunkedSuccDeviceResult[0].length + ''}
+                                style={{ backgroundColor: '#2F5496', color: 'white' }}>
+                                Performance Test Results:
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+                <PerfTestDashboard testTask={task} />
             </div>
         </div>
     }
