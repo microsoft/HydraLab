@@ -126,7 +126,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="base" />
                 <div className="content">
                     <img className={cssObj.device_screenshot}
-                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
+                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('FileToken')}
                         alt={"Computer"} />
                 </div>
             </div>
@@ -139,7 +139,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="case" />
                 <div className="content">
                     <img className={cssObj.tablet_screenshot}
-                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
+                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('FileToken')}
                         alt="Surface Duo" />
                 </div>
             </div>
@@ -153,7 +153,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="camera" />
                 <div className="content">
                     <img className={cssObj.mobile_screenshot}
-                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
+                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('FileToken')}
                         alt="Android Phone" />
                 </div>
             </div>
@@ -168,7 +168,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="speaker" />
                 <div className="content">
                     <img className={cssObj.iphone_mobile_screenshot}
-                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('BlobSignature')}
+                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('FileToken')}
                         alt="iPhone" />
                 </div>
             </div>
