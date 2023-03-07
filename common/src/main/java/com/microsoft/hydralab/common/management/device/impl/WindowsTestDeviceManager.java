@@ -295,9 +295,10 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
                     }
                     // Waiting for loading url
                     ThreadUtils.safeSleep(5000);
-                    driverControllerMap.put(driverInfo.getId(),
-                            new EdgeDriverController(appiumServerManager.getWindowsEdgeDriver(reportLogger),
-                                    appiumServerManager.getEdgeDriver(reportLogger), reportLogger));
+                    driverControllerMap.put(driverInfo.getId(), new EdgeDriverController(
+                            appiumServerManager.getWindowsEdgeDriver(reportLogger),
+                            appiumServerManager.getEdgeDriver(reportLogger),
+                            reportLogger));
                     reportLogger.info("Successfully init a Edge driver");
                 }
             }
@@ -307,9 +308,8 @@ public class WindowsTestDeviceManager extends TestDeviceManager {
             for (ActionInfo actionInfo : caseList) {
                 BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
                 T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
-                reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " +
-                        (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() :
-                                "No Element"));
+                reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " + (actionInfo.getTestElement() != null ?
+                        actionInfo.getTestElement().getElementInfo() : "No Element"));
             }
         } catch (Exception e) {
             reportLogger.error("T2C Test Error: ", e);

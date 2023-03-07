@@ -28,6 +28,8 @@ import java.util.Map;
 
 @Configuration
 public class TestRunnerConfig {
+    @Value("${app.registry.name}")
+    String agentName;
     @SuppressWarnings("visibilitymodifier")
     public static Map<String, String> testRunnerMap = Map.of(
             TestTask.TestRunningType.INSTRUMENTATION, "espressoRunner",
@@ -38,8 +40,6 @@ public class TestRunnerConfig {
             TestTask.TestRunningType.APPIUM_MONKEY_TEST, "appiumMonkeyRunner",
             TestTask.TestRunningType.T2C_JSON_TEST, "t2cRunner"
     );
-    @Value("${app.registry.name}")
-    String agentName;
 
     @Bean
     public PerformanceTestManagementService performanceTestManagementService() {
@@ -85,8 +85,7 @@ public class TestRunnerConfig {
     public AppiumCrossRunner appiumCrossRunner(AgentManagementService agentManagementService,
                                                TestTaskEngineService testTaskEngineService,
                                                PerformanceTestManagementService performanceTestManagementService) {
-        return new AppiumCrossRunner(agentManagementService, testTaskEngineService,
-                performanceTestManagementService, agentName);
+        return new AppiumCrossRunner(agentManagementService, testTaskEngineService, performanceTestManagementService, agentName);
     }
 
     @Bean

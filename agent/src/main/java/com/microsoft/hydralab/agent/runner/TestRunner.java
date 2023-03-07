@@ -147,9 +147,8 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing setUp actions.");
-            List<Exception> exceptions =
-                    actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
-                            testTask.getDeviceActions(), DeviceAction.When.SET_UP);
+            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
+                    testTask.getDeviceActions(), DeviceAction.When.SET_UP);
             Assert.isTrue(exceptions.size() == 0, () -> exceptions.get(0));
         }
 
@@ -177,7 +176,8 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
-            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(), testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
+                    testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
             if (exceptions.size() > 0) {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }

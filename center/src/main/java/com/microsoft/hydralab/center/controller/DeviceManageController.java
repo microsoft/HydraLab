@@ -110,18 +110,15 @@ public class DeviceManageController {
 
         if (!sysUserService.checkUserAdmin(requestor)) {
             groupList = groupList.stream()
-                    .filter(group ->
-                            userTeamManagementService.checkRequestorTeamRelation(requestor, group.getTeamId())
-                                    || !group.getIsPrivate())
+                    .filter(group -> userTeamManagementService.checkRequestorTeamRelation(requestor, group.getTeamId())
+                            || !group.getIsPrivate())
                     .collect(Collectors.toList());
             agentDeviceList = agentDeviceList.stream()
-                    .filter(agentDeviceGroup -> userTeamManagementService.checkRequestorTeamRelation(requestor,
-                            agentDeviceGroup.getTeamId()))
+                    .filter(agentDeviceGroup -> userTeamManagementService.checkRequestorTeamRelation(requestor, agentDeviceGroup.getTeamId()))
                     .collect(Collectors.toList());
             deviceList = deviceList.stream()
                     .filter(device -> userTeamManagementService.checkRequestorTeamRelation(requestor,
-                            agentManageService.getAgent(device.getAgentId()).getTeamId())
-                            || !device.getIsPrivate())
+                            agentManageService.getAgent(device.getAgentId()).getTeamId()) || !device.getIsPrivate())
                     .collect(Collectors.toList());
         }
 

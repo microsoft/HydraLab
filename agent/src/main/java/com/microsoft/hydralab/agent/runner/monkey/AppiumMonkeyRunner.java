@@ -25,7 +25,8 @@ import java.util.concurrent.TimeUnit;
 public class AppiumMonkeyRunner extends AppiumRunner {
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
 
-    public AppiumMonkeyRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+    public AppiumMonkeyRunner(AgentManagementService agentManagementService,
+                              TestTaskRunCallback testTaskRunCallback,
                               PerformanceTestManagementService performanceTestManagementService) {
         super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
     }

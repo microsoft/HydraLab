@@ -43,25 +43,25 @@ import java.util.stream.Collectors;
 
 @Service("TestTaskEngineService")
 public class TestTaskEngineService implements TestTaskRunCallback {
-    @SuppressWarnings("constantname")
-    static final Logger log = LoggerFactory.getLogger(TestTaskEngineService.class);
-    private final Map<String, TestTask> runningTestTask = new HashMap<>();
     @Resource
     FileLoadUtil fileLoadUtil;
     @Resource
     TestDataService testDataService;
+    @SuppressWarnings("constantname")
+    static final Logger log = LoggerFactory.getLogger(TestTaskEngineService.class);
     @Resource
     ApplicationContext applicationContext;
     @Resource
     AttachmentService attachmentService;
+    @Resource(name = "WebSocketClient")
+    private TestTaskRunCallback webSocketCallback;
     @Resource
     DeviceTaskControlExecutor deviceTaskControlExecutor;
     @Resource
     AgentManagementService agentManagementService;
     @Resource
     DeviceScriptCommandLoader deviceScriptCommandLoader;
-    @Resource(name = "WebSocketClient")
-    private TestTaskRunCallback webSocketCallback;
+    private final Map<String, TestTask> runningTestTask = new HashMap<>();
 
     public TestTask runTestTask(TestTaskSpec testTaskSpec) {
         updateTaskSpecWithDefaultValues(testTaskSpec);
@@ -75,22 +75,20 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         Set<DeviceInfo> chosenDevices = chooseDevices(testTaskSpec, runner);
 
         onTaskStart(testTask);
-        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices,
-                new DeviceTaskControlExecutor.DeviceTask() {
-                    @Override
-                    public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
-                        runner.runTestOnDevice(testTask, deviceInfo, logger);
-                        return false;
-                    }
-                },
-                () -> {
-                    testTask.onFinished();
-                    if (!testTask.isCanceled()) {
-                        testTask.setStatus(TestTask.TestStatus.FINISHED);
-                    }
+        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices, new DeviceTaskControlExecutor.DeviceTask() {
+            @Override
+            public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
+                runner.runTestOnDevice(testTask, deviceInfo, logger);
+                return false;
+            }
+        }, () -> {
+            testTask.onFinished();
+            if (!testTask.isCanceled()) {
+                testTask.setStatus(TestTask.TestStatus.FINISHED);
+            }
 
-                    onTaskComplete(testTask);
-                });
+            onTaskComplete(testTask);
+        });
 
         if (deviceTaskControl == null) {
             testTask.setTestDevicesCount(0);
@@ -116,12 +114,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         if ((runner instanceof AppiumCrossRunner) || (runner instanceof T2CRunner)) {
             Set<DeviceInfo> activeDeviceList = agentManagementService.getActiveDeviceList(log);
             Assert.isTrue(activeDeviceList.size() == 2, "No connected device!");
-            DeviceInfo phoneDevice = activeDeviceList.stream()
-                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceType.ANDROID.name())).findFirst()
-                    .get();
-            DeviceInfo pcDevice = activeDeviceList.stream()
-                    .filter(deviceInfo -> deviceInfo.getType().equals(DeviceType.WINDOWS.name())).findFirst()
-                    .get();
+            DeviceInfo phoneDevice = activeDeviceList.stream().filter(deviceInfo -> deviceInfo.getType().equals(DeviceType.ANDROID.name())).findFirst().get();
+            DeviceInfo pcDevice = activeDeviceList.stream().filter(deviceInfo -> deviceInfo.getType().equals(DeviceType.WINDOWS.name())).findFirst().get();
             Set<DeviceInfo> deviceCombo = new HashSet<>();
             deviceCombo.add(new DeviceCombo(phoneDevice, pcDevice));
             return deviceCombo;
@@ -133,14 +127,10 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
         if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
             List<String> devices = Arrays.asList(testTaskSpec.groupDevices.split(","));
-            return allActiveConnectedDevice.stream()
-                    .filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum()))
-                    .collect(Collectors.toSet());
+            return allActiveConnectedDevice.stream().filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum())).collect(Collectors.toSet());
         }
 
-        return allActiveConnectedDevice.stream()
-                .filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum()))
-                .collect(Collectors.toSet());
+        return allActiveConnectedDevice.stream().filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum())).collect(Collectors.toSet());
     }
 
     public void setupTestDir(TestTask testTask) {
@@ -214,8 +204,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         Assert.notNull(files, "should have result file to upload");
         for (File file : files) {
             if (file.isDirectory()) {
-                File zipFile = FileUtil.zipFile(file.getAbsolutePath(),
-                        deviceTestResultFolder + "/" + file.getName() + ".zip");
+                File zipFile = FileUtil.zipFile(file.getAbsolutePath(), deviceTestResultFolder + "/" + file.getName() + ".zip");
                 attachments.add(saveFileToBlob(zipFile, deviceTestResultFolder, logger));
                 continue;
             }
@@ -235,9 +224,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     private StorageFileInfo saveFileToBlob(File file, File folder, Logger logger) {
-        StorageFileInfo storageFileInfo = new StorageFileInfo(file,
-                "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(),
-                StorageFileInfo.FileType.COMMON_FILE);
+        StorageFileInfo storageFileInfo =
+                new StorageFileInfo(file, "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(), StorageFileInfo.FileType.COMMON_FILE);
         return attachmentService.saveFileInStorageAndDB(storageFileInfo, file, EntityType.TEST_RESULT, logger);
     }
 
