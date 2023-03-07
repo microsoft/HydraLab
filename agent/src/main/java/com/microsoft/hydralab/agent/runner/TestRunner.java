@@ -50,6 +50,7 @@ public abstract class TestRunner {
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
         TestRun testRun = createTestRun(deviceInfo, testTask, logger);
+        testDeviceManager = deviceInfo.getTestDeviceManager();
         checkTestTaskCancel(testTask);
 
         try {
