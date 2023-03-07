@@ -13,7 +13,7 @@ abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
 
     protected static final int DEFAULT_TIMEOUT_IN_SECOND = 600;
     static final String INTERRUPT_SCRIPT_PATH = "InterruptProcess.ps1";
-    private final TestDeviceManager testDeviceManager;
+    protected TestDeviceManager testDeviceManager;
     protected IOSDriver iosDriver;
     protected DeviceInfo deviceInfo;
     protected String recordDir;

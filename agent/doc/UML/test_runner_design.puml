@@ -194,15 +194,18 @@ DeviceTestResult *--> TestUnitResult: contain a list of
 
 @startuml test_device_design
 
-interface TestDevice{
-   String TAG
-   TestDevice getPrimaryDevice()
-   DeviceManager getDeviceManager()
+class TestDevice{
+    String tag
+    String type
+    String serialNumber
+    String status
+    List<Process> processList
+    DeviceManager getDeviceManager()
+    getDeviceByTag(String tag)
 }
 
-interface DeviceCombo extends TestDevice{
-   List<TestDevice> getDevices()
-   TestDevice getPrimaryDevice()
-   getByTag(String tag)
+class DeviceCombo extends TestDevice{
+   List<TestDevice> pairDevices()
+   getDeviceByTag(String tag)
 }
 @enduml
