@@ -192,8 +192,7 @@ export default class TestReportView extends React.Component {
                                     <Button variant="outlined" color="info">This Report Link</Button>
                                 </Link>
                             {task.pipelineLink ?
-                                <p className='mt-3'><a href={task.pipelineLink} rel="noopener noreferrer">Link to PipeLine</a></p> : null}
-
+                                    <p className='mt-3'><a href={task.pipelineLink} rel="noopener noreferrer">Link to PipeLine</a></p> : null}
                         </td>
                         <td>
                             <h4>Overall success rate {task.overallSuccessRate} <span
