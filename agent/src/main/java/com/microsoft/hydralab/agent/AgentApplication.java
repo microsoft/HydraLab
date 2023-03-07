@@ -37,7 +37,7 @@ public class AgentApplication {
         ConfigurableApplicationContext context = new SpringApplicationBuilder(AgentApplication.class)
                 .headless(headless)
                 .run(args);
-        log.info("*************************\nDevice Agent Startup success in %s\n*************************\n {}",
+        log.info("\n*************************\nDevice Agent Startup success in {}\n*************************\n",
                 System.currentTimeMillis() - time);
     }
 

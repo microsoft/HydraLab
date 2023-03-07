@@ -156,10 +156,7 @@ public class AppiumListener extends RunListener {
 
         testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15),
                 (imagePNGFile -> {
-                    if (imagePNGFile == null) {
-                        return;
-                    }
-                    if (!e.isStarted()) {
+                    if (imagePNGFile == null || !e.isStarted()) {
                         return;
                     }
                     try {
@@ -237,14 +234,15 @@ public class AppiumListener extends RunListener {
                 }
             }
             if (e.isStarted() && addedFrameCount < 2) {
-                try {
-                    File imagePNGFile = testDeviceManager.getScreenShot(deviceInfo, logger);
-                    e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                } catch (Exception exception) {
-                    logger.error(exception.getMessage(), e);
-                }
+                testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(0),
+                        (imagePNGFile -> {
+                            try {
+                                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
+                        }), logger);
             }
-
         }
 
         logEnter("testRunEnded", elapsedTime, Thread.currentThread().getName());

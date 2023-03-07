@@ -27,7 +27,7 @@ class ActionExecutorTest extends BaseTest {
     @Test
     void createAndExecuteActions() throws InvocationTargetException, IllegalAccessException {
         AndroidTestDeviceManager deviceManager = Mockito.mock(AndroidTestDeviceManager.class);
-        DeviceInfo deviceInfo = new DeviceInfo();
+        DeviceInfo deviceInfo = new DeviceInfo(deviceManager);
         JSONObject actionJson = new JSONObject();
         actionJson.put("method", "setProperty");
         actionJson.put("deviceType", "Android");

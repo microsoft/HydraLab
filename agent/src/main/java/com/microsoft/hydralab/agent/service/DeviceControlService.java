@@ -83,7 +83,7 @@ public class DeviceControlService {
                                           AgentUser.BatteryStrategy batteryStrategy) {
         DeviceTaskControl deviceTaskControl =
                 deviceTaskControlExecutor.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
-                    testDeviceManager.getScreenShotWithStrategy(deviceInfo, DeviceControlService.log, batteryStrategy);
+                    testDeviceManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
                     return true;
                 }, null, logging, true);
 
