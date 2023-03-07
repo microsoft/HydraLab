@@ -100,6 +100,17 @@ export default class TestReportView extends React.Component {
 
         const dtrSuccFailMap = _.groupBy(task.deviceTestResults, 'success')
 
+        var perfResults = [];
+        for (let testResult of task.deviceTestResults) {
+            for (let attachment of testResult.attachments) {
+                if (attachment.fileName == 'PerformanceReport.json') {
+                    perfResults.push(attachment);
+                    break;
+                }
+            }
+        }
+        console.log('PerfResults:', perfResults);
+
         var chunkedFailedDeviceResult = null
         var top3FailedCase = null
         if (dtrSuccFailMap['false']) {
@@ -441,18 +452,26 @@ export default class TestReportView extends React.Component {
                 </div> : null}
             </div>
             <div id='test_report_content_3>'>
+                {perfResults.length > 0 ? <div>
                 <table className='table table-borderless'>
                     <thead className="thead-info">
                         <tr className="table-info">
-                            <th colSpan={chunkedSuccDeviceResult[0].length + ''}
+                                <th colSpan={perfResults.length + ''}
                                 style={{ backgroundColor: '#2F5496', color: 'white' }}>
                                 Performance Test Results:
                             </th>
                         </tr>
                     </thead>
                 </table>
-                <PerfTestDashboard testTask={task} />
-            </div>
+                    <table className='table table-borderless'>
+                        <tbody>
+                            {perfResults.map((perfTestResult) =>
+                                <PerfTestDashboard perfTestResult={perfTestResult} />
+                            )}
+                        </tbody>
+                    </table>
+                </div> : null}
+            </div> 
         </div>
     }
 

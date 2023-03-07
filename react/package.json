@@ -54,7 +54,6 @@
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "recharts": "^2.0.9",
-    "chart.js": "^2.9.4",
     "react-select": "^5.2.2"
   }
 }
