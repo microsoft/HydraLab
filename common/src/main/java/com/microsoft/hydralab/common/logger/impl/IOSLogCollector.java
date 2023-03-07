@@ -5,8 +5,6 @@ package com.microsoft.hydralab.common.logger.impl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
-import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import org.slf4j.Logger;
 
@@ -22,14 +20,12 @@ public class IOSLogCollector implements LogCollector {
     private final TestRun testRun;
     private final String pkgName;
     private final Logger infoLogger;
-    IOSTestDeviceManager deviceManager;
     private boolean started;
     private String loggerFilePath;
     private Process logProcess;
     private boolean crashFound;
 
-    public IOSLogCollector(TestDeviceManager testDeviceManager, DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
-        this.deviceManager = (IOSTestDeviceManager) testDeviceManager;
+    public IOSLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
         this.connectedDevice = deviceInfo;
         this.testRun = testRun;
         this.pkgName = pkgName;

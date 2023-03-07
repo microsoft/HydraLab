@@ -24,13 +24,11 @@ public class ADBLogcatCollector implements LogCollector {
     private final TestRun testRun;
     private final String pkgName;
     private final Logger infoLogger;
-    TestDeviceManager testDeviceManager;
     ADBOperateUtil adbOperateUtil;
     private boolean started;
     private String loggerFilePath;
 
-    public ADBLogcatCollector(TestDeviceManager testDeviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
-        this.testDeviceManager = testDeviceManager;
+    public ADBLogcatCollector(ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
         this.adbOperateUtil = adbOperateUtil;
         this.connectedDevice = deviceInfo;
         this.testRun = testRun;
@@ -69,7 +67,7 @@ public class ADBLogcatCollector implements LogCollector {
     public void stopAndAnalyse() {
         started = false;
         Logger logger = LogUtils.getLoggerWithRollingFileAppender(
-                TestDeviceManager.LOGGER_PREFIX + "logcat_" + connectedDevice.getSerialNum(),
+                LOGGER_PREFIX + "logcat_" + connectedDevice.getSerialNum(),
                 loggerFilePath,
                 "%logger{0}>> %m%n");
         Process process = null;

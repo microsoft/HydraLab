@@ -11,6 +11,7 @@ import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
@@ -36,6 +37,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private final Logger logger;
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
+    private final AgentManagementService agentManagementService;
     private final TestDeviceManager testDeviceManager;
     private final PerformanceTestListener performanceTestListener;
     ADBOperateUtil adbOperateUtil;
@@ -48,10 +50,11 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private int pid;
     private int addedFrameCount;
 
-    public EspressoTestInfoProcessorListener(TestDeviceManager testDeviceManager, ADBOperateUtil adbOperateUtil,
+    public EspressoTestInfoProcessorListener(AgentManagementService agentManagementService, ADBOperateUtil adbOperateUtil,
                                              DeviceInfo deviceInfo, TestRun testRun, String pkgName,
                                              PerformanceTestListener performanceTestListener) {
-        this.testDeviceManager = testDeviceManager;
+        this.agentManagementService = agentManagementService;
+        this.testDeviceManager = deviceInfo.getTestDeviceManager();
         this.adbOperateUtil = adbOperateUtil;
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;
@@ -75,12 +78,11 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     public void startRecording(int maxTime) {
         logger.info("Start adb logcat collection");
         String logcatFilePath = adbLogcatCollector.start();
-        testRun.setLogcatPath(testDeviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(logcatFilePath)));
         logger.info("Start record screen");
         adbDeviceScreenRecorder.setupDevice();
         adbDeviceScreenRecorder.startRecord(maxTime <= 0 ? 30 * 60 : maxTime);
-        recordingStartTimeMillis =
-                System.currentTimeMillis() + adbDeviceScreenRecorder.getPreSleepSeconds() * 1000L;
+        recordingStartTimeMillis = System.currentTimeMillis() + adbDeviceScreenRecorder.getPreSleepSeconds() * 1000L;
         final String initializing = "Initializing";
         deviceInfo.setRunningTestName(initializing);
         testRun.addNewTimeTag(initializing, 0);
@@ -143,8 +145,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         }
         ongoingTestUnit.setTestedClass(test.getClassName());
 
-        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(),
-                System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingTestUnit.getTitle());
 
         ongoingTestUnit.setDeviceTestResultId(testRun.getId());
@@ -153,10 +154,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         testRun.addNewTestUnit(ongoingTestUnit);
 
         testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
+            if (imagePNGFile == null || !e.isStarted()) {
                 return;
             }
             try {
@@ -177,8 +175,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         ongoingTestUnit.setStack(trace);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
         performanceTestListener.testFailure(ongoingTestUnit.getTitle());
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail",
-                System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".fail", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.oneMoreFailure();
     }
 
@@ -187,8 +184,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         logEnter("testAssumptionFailure", test, trace);
         super.testAssumptionFailure(test, trace);
         ongoingTestUnit.setStack(trace);
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail",
-                System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail", System.currentTimeMillis() - recordingStartTimeMillis);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE);
     }
 
@@ -202,13 +198,10 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     @Override
     public void testEnded(TestIdentifier test, Map<String, String> testMetrics) {
         logEnter("testEnded", test, testMetrics);
-        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end",
-                System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
         super.testEnded(test, testMetrics);
-        if (ongoingTestUnit.getStatusCode() == 0
-                || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE
-                || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.IGNORED
-        ) {
+        if (ongoingTestUnit.getStatusCode() == 0 || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE ||
+                ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.IGNORED) {
             ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTestUnit.setSuccess(true);
             performanceTestListener.testSuccess(ongoingTestUnit.getTitle());

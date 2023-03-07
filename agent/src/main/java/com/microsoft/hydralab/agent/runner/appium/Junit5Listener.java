@@ -9,6 +9,7 @@ import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.performance.PerformanceTestListener;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Junit5Listener extends SummaryGeneratingListener {
     private final TestDeviceManager testDeviceManager;
+    private final AgentManagementService agentManagementService;
     private final PerformanceTestListener performanceTestListener;
     private final DeviceInfo deviceInfo;
     private final TestRun testRun;
@@ -47,9 +49,10 @@ public class Junit5Listener extends SummaryGeneratingListener {
     private String currentTestName = "";
     private int currentTestIndex = 0;
 
-    public Junit5Listener(TestDeviceManager testDeviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
-                          PerformanceTestListener performanceTestListener, Logger logger) {
-        this.testDeviceManager = testDeviceManager;
+    public Junit5Listener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun,
+                          String pkgName, PerformanceTestListener performanceTestListener, Logger logger) {
+        this.agentManagementService = agentManagementService;
+        this.testDeviceManager = deviceInfo.getTestDeviceManager();
         this.deviceInfo = deviceInfo;
         this.testRun = testRun;
         this.logger = logger;
@@ -93,7 +96,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         logger.info("Start logcat collection");
         String logcatFilePath = logcatCollector.start();
-        testRun.setLogcatPath(testDeviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
     @Override
@@ -130,14 +133,15 @@ public class Junit5Listener extends SummaryGeneratingListener {
                 }
             }
             if (e.isStarted() && addedFrameCount < 2) {
-                try {
-                    File imagePNGFile = testDeviceManager.getScreenShot(deviceInfo, logger);
-                    e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                } catch (Exception exception) {
-                    logger.error(exception.getMessage(), e);
-                }
+                testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(0),
+                        (imagePNGFile -> {
+                            try {
+                                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
+                        }), logger);
             }
-
         }
 
         performanceTestListener.testRunFinished();
@@ -210,23 +214,20 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                addedFrameCount++;
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), logger);
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15),
+                (imagePNGFile -> {
+                    if (imagePNGFile == null || !e.isStarted()) {
+                        return;
+                    }
+                    try {
+                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                        addedFrameCount++;
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }), logger);
 
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
-
     }
 
     @Override

@@ -12,7 +12,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
@@ -31,9 +31,9 @@ public class T2CRunner extends AppiumRunner {
     String agentName;
     private int currentIndex = 0;
 
-    public T2CRunner(TestDeviceManager testDeviceManager, TestTaskRunCallback testTaskRunCallback,
+    public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                      PerformanceTestManagementService performanceTestManagementService, String agentName) {
-        super(testDeviceManager, testTaskRunCallback, performanceTestManagementService);
+        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
         this.agentName = agentName;
     }
 
@@ -112,19 +112,17 @@ public class T2CRunner extends AppiumRunner {
 
         performanceTestManagementService.testStarted(ongoingTest.getTitle());
 
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), reportLogger);
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5),
+                (imagePNGFile -> {
+                    if (imagePNGFile == null || !e.isStarted()) {
+                        return;
+                    }
+                    try {
+                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }), reportLogger);
 
         // Run Test
         try {

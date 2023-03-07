@@ -8,6 +8,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
 import com.microsoft.hydralab.common.util.DateUtil;
@@ -29,16 +30,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public abstract class TestRunner {
-    protected final Logger log = LoggerFactory.getLogger(TestDeviceManager.class);
-    protected final TestDeviceManager testDeviceManager;
+    protected final Logger log = LoggerFactory.getLogger(TestRunner.class);
+    protected final AgentManagementService agentManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
     protected final PerformanceTestManagementService performanceTestManagementService;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
     protected final ActionExecutor actionExecutor = new ActionExecutor();
+    protected TestDeviceManager testDeviceManager;
 
-    public TestRunner(TestDeviceManager testDeviceManager, TestTaskRunCallback testTaskRunCallback,
+    public TestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                       PerformanceTestManagementService performanceTestManagementService) {
-        this.testDeviceManager = testDeviceManager;
+        this.agentManagementService = agentManagementService;
         this.testTaskRunCallback = testTaskRunCallback;
         this.performanceTestManagementService = performanceTestManagementService;
     }
@@ -177,7 +179,7 @@ public abstract class TestRunner {
         if (testRun.getTotalCount() > 0) {
             try {
                 String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
-                testRun.setTestXmlReportPath(testDeviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+                testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
             } catch (Exception e) {
                 testRun.getLogger().error("Error in buildTestResultXml", e);
             }
@@ -241,8 +243,7 @@ public abstract class TestRunner {
         Logger reportLogger =
                 LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(),
                         "%d %p -- %m%n");
-        // TODO the getTestBaseRelPathInUrl method shouldn't be in deviceManager, testBaseDir should be managed by agent
-        testRun.setInstrumentReportPath(testDeviceManager.getTestBaseRelPathInUrl(instrumentLogFile));
+        testRun.setInstrumentReportPath(agentManagementService.getTestBaseRelPathInUrl(instrumentLogFile));
 
         return reportLogger;
     }

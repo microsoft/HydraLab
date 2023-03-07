@@ -32,7 +32,7 @@ class CommandActionLoaderTest extends BaseTest {
 
         AndroidTestDeviceManager deviceManager = Mockito.mock(AndroidTestDeviceManager.class);
         ActionExecutor actionExecutor = new ActionExecutor();
-        DeviceInfo deviceInfo = new DeviceInfo();
+        DeviceInfo deviceInfo = new DeviceInfo(deviceManager);
 
         actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, testTask.getDeviceActions(),
                 DeviceAction.When.SET_UP);
