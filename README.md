@@ -43,7 +43,7 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 
 **Supported environments for Hydra Lab agent**: Windows, Mac OSX, and Linux ([Docker](https://github.com/microsoft/HydraLab/blob/main/agent/README.md#run-agent-in-docker)).
 
-**Supported platforms and frameworks**:
+**Supported platforms and frameworks matrix**:
 
 |  | Appium(Java) | Espresso | 
 | ---- |--------------|---- |
