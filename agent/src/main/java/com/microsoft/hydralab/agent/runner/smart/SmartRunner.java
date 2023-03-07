@@ -55,8 +55,7 @@ public class SmartRunner extends TestRunner {
 
         /** start Record **/
         logCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
-        deviceScreenRecorder =
-                testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
+        deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
         startRecording(deviceInfo, testRun, testTask.getTimeOutSecond(), reportLogger);
 
         /** run the test */
@@ -127,21 +126,19 @@ public class SmartRunner extends TestRunner {
         ongoingSmartTest.setDeviceTestResultId(testRun.getId());
         ongoingSmartTest.setTestTaskId(testRun.getTestTaskId());
 
-        testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(),
-                System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingSmartTest.getTitle());
         logger.info(ongoingSmartTest.getTitle());
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1),
-                (imagePNGFile -> {
-                    if (imagePNGFile == null || !e.isStarted()) {
-                        return;
-                    }
-                    try {
-                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    }
-                }), logger);
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1), (imagePNGFile -> {
+            if (imagePNGFile == null || !e.isStarted()) {
+                return;
+            }
+            try {
+                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        }), logger);
 
         performanceTestManagementService.testStarted(ongoingSmartTest.getTitle());
 

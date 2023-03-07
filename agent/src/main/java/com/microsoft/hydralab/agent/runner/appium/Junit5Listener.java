@@ -157,14 +157,12 @@ public class Junit5Listener extends SummaryGeneratingListener {
                 testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(0),
                         (imagePNGFile -> {
                             try {
-                                e.addFrame(
-                                        ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
                             } catch (IOException ioException) {
                                 ioException.printStackTrace();
                             }
                         }), logger);
             }
-
         }
 
         performanceTestListener.testRunFinished();
@@ -251,7 +249,6 @@ public class Junit5Listener extends SummaryGeneratingListener {
                 }), logger);
 
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
-
     }
 
     @Override
