@@ -141,7 +141,6 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
                                     AppiumServerManager appiumServerManager, ADBOperateUtil adbOperateUtil) {
         super(agentManagementService, appiumServerManager);
         this.adbOperateUtil = adbOperateUtil;
-        PhoneAppScreenRecorder.copyAPK(agentManagementService.getPreAppDir());
     }
 
     private static boolean isAndroidCommonPermission(String usesPermission) {
@@ -751,9 +750,5 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-    }
-
-    public void setADBOperateUtil(ADBOperateUtil adbOperateUtil) {
-        this.adbOperateUtil = adbOperateUtil;
     }
 }
