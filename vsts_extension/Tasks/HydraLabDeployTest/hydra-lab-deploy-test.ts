@@ -333,7 +333,7 @@ async function run() {
         }
 
         const testReportUrl: URL = new URL(HydraLabAPIConfig.Path.testPortalTaskInfoPath, HydraLabAPIConfig.serviceEndpointUrl);
-        testReportUrl.searchParams.append('redirectUrl', path.join('/info/task/', runningTest.id));
+        testReportUrl.searchParams.append('redirectUrl', `/info/task/${runningTest.id}`);
 
         const StringBuilder = require("string-builder");
         const mdBuilder: any = new StringBuilder();
