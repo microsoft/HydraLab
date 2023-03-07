@@ -40,7 +40,7 @@ public class XCTestRunner extends TestRunner {
         String result = runXctest(deviceInfo, reportLogger, testTask, testRun);
         deviceScreenRecorder.finishRecording();
         analysisXctestResult(result, testRun);
-        FileUtil.deleteFileRecursively(new File(folderPath));
+        FileUtil.deleteFile(new File(folderPath));
         testRun.onTestEnded();
     }
 
