@@ -260,10 +260,10 @@ export default class RunnerView extends BaseView {
                             variant="outlined"
                             startIcon={<UploadFileIcon />}
                         >
-                            {this.state.uploadAppInstallerFile ? this.state.uploadAppInstallerFile.name : 'APK/IPA file'}
+                            {this.state.uploadAppInstallerFile ? this.state.uploadAppInstallerFile.name : 'APK/IPA/ZIP file'}
                             <input id="uploadAppInstallerFile"
                                 type="file"
-                                accept=".apk,.ipa"
+                                accept=".apk,.ipa,.zip"
                                 hidden
                                 onChange={this.handleFileUpload}
                             />
@@ -530,6 +530,7 @@ export default class RunnerView extends BaseView {
         const brandMap = new Map();
         brandMap.set('apk', 'Android');
         brandMap.set('ipa', 'Apple');
+        brandMap.set('zip', 'Apple');
 
         if (agentList || groupList || deviceList) {
             agentList.forEach((agent) => {
@@ -581,7 +582,7 @@ export default class RunnerView extends BaseView {
                 })
 
                 let selectedList
-                if (this.state.currentAppInstallerType === 'ipa') {
+                if (this.state.currentAppInstallerType === 'ipa' || this.state.currentAppInstallerType === 'zip') {
                     selectedList = deviceList.filter((device) => device.brand === brandMap.get(this.state.currentAppInstallerType))
                 } else {
                     selectedList = deviceList.filter((device) => device.brand !== 'Apple')
@@ -652,13 +653,14 @@ export default class RunnerView extends BaseView {
                             size="small"
                             name="runTestType"
                             onChange={this.handleValueChange}>
-                            <MenuItem value={"INSTRUMENTATION"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Espresso</MenuItem>
-                            <MenuItem value={"APPIUM"} disabled={this.state.runTestType === 'T2C_JSON'}>Appium</MenuItem>
-                            <MenuItem value={"SMART"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Smart</MenuItem>
-                            <MenuItem value={"MONKEY"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Monkey</MenuItem>
+                            <MenuItem value={"INSTRUMENTATION"} disabled={this.state.currentAppInstallerType !== 'apk' || this.state.runTestType === 'T2C_JSON'}>Espresso</MenuItem>
+                            <MenuItem value={"APPIUM"} disabled={this.state.currentAppInstallerType === 'zip' || this.state.runTestType === 'T2C_JSON'}>Appium</MenuItem>
+                            <MenuItem value={"SMART"} disabled={this.state.currentAppInstallerType !== 'apk' || this.state.runTestType === 'T2C_JSON'}>Smart</MenuItem>
+                            <MenuItem value={"MONKEY"} disabled={this.state.currentAppInstallerType !== 'apk' || this.state.runTestType === 'T2C_JSON'}>Monkey</MenuItem>
                             <MenuItem value={"APPIUM_MONKEY"} disabled={this.state.currentAppInstallerType !== 'ipa'}>Appium Monkey</MenuItem>
-                            <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Appium E2E</MenuItem>
-                            <MenuItem value={"T2C_JSON"}>JSON-Described Test</MenuItem>
+                            <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType !== 'apk' || this.state.runTestType === 'T2C_JSON'}>Appium E2E</MenuItem>
+                            <MenuItem value={"T2C_JSON"} disabled={this.state.currentAppInstallerType !== 'apk'}>JSON-Described Test</MenuItem>
+                            <MenuItem value={"XCTEST"} enabled={this.state.currentAppInstallerType === 'zip'}>JSON-Described Test</MenuItem>
                         </Select>
                     </FormControl>
                     <br />
@@ -899,7 +901,7 @@ export default class RunnerView extends BaseView {
 
     uploadApk = () => {
         if (!this.state.selectedTeamName || !this.state.uploadAppInstallerFile) {
-            this.snackBarMsg("Please upload APK/IPA file and select a team")
+            this.snackBarMsg("Please upload APK/IPA/ZIP file and select a team")
             return
         }
         const formData = new FormData()
