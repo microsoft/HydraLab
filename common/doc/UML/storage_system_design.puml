@@ -1,0 +1,53 @@
+@startuml
+
+interface AccessToken
+interface ContainerConstants {
+getContainerName()
+}
+abstract class StorageServiceClient {
++updateAccessToken(AccessToken)
++generateAccessToken(String permissionType)
++isAccessTokenExpired(AccessToken)
++upload(File, StorageFileInfo)
++download(File, StorageFileInfo)
+}
+class StorageFileInfo
+
+class AzureBlobClientAdapter
+class AzureBlobProperty
+class SASData
+enum SASPermission {
+READ
+WRITE
+ADMIN
++setExpiryTime(AzureBlobProperty)
+}
+
+class SomeStorageAdapter
+class SomeProperty
+class SomeToken
+enum SomePermission {
+READ
+WRITE
+ADMIN
++setExpiryTime(SomeProperty)
+}
+
+StorageServiceClient --> AccessToken
+StorageServiceClient -> StorageFileInfo
+
+StorageServiceClient <|-- AzureBlobClientAdapter
+AccessToken <|-- SASData
+SASPermission --o SASData
+AzureBlobProperty <-- SASPermission
+AzureBlobProperty <-- AzureBlobClientAdapter
+ContainerConstants <|-- AzureBlobProperty
+
+StorageServiceClient <|-- SomeStorageAdapter
+AccessToken <|-- SomeToken
+SomePermission -o SomeToken
+SomeProperty <-- SomePermission
+SomeProperty <-- SomeStorageAdapter
+ContainerConstants <|-- SomeProperty
+
+@enduml

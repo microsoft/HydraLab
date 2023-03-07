@@ -3,7 +3,6 @@
 
 package com.microsoft.hydralab.center.controller;
 
-
 import com.microsoft.hydralab.center.service.RolePermissionManagementService;
 import com.microsoft.hydralab.center.service.SecurityUserService;
 import com.microsoft.hydralab.center.service.SysPermissionService;

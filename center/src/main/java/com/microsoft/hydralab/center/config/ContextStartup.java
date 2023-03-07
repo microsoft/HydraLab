@@ -3,7 +3,6 @@
 
 package com.microsoft.hydralab.center.config;
 
-
 import com.microsoft.hydralab.center.service.DeviceAgentManagementService;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import lombok.extern.slf4j.Slf4j;

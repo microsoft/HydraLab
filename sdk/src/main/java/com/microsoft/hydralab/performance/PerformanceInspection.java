@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.Serializable;
 
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
 
@@ -46,6 +47,10 @@ public class PerformanceInspection implements Serializable {
 
     public static PerformanceInspection createWindowsMemoryInspection(String appId, String deviceIdentifier, String description) {
         return createWindowsMemoryInspection(appId, deviceIdentifier, description, false);
+    }
+
+    public static PerformanceInspection createAndroidMemoryInfoInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
+        return new PerformanceInspection(description, INSPECTOR_ANDROID_MEMORY_INFO, appId, deviceIdentifier, isReset);
     }
 
     public static PerformanceInspection createAndroidBatteryInfoInspection(String appId, String deviceIdentifier, String description, boolean isReset) {

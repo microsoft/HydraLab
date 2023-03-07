@@ -15,7 +15,7 @@ import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
@@ -55,7 +55,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     @Resource
     DeviceTaskControlExecutor deviceTaskControlExecutor;
     @Resource
-    DeviceManager deviceManager;
+    AgentManagementService agentManagementService;
     @Resource
     DeviceScriptCommandLoader deviceScriptCommandLoader;
     private final Map<String, TestTask> runningTestTask = new HashMap<>();
@@ -110,13 +110,13 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     protected Set<DeviceInfo> chooseDevices(TestTaskSpec testTaskSpec, TestRunner runner) {
         if ((runner instanceof AppiumCrossRunner) || (runner instanceof T2CRunner)) {
-            Set<DeviceInfo> activeDeviceList = deviceManager.getActiveDeviceList(log);
+            Set<DeviceInfo> activeDeviceList = agentManagementService.getActiveDeviceList(log);
             Assert.isTrue(activeDeviceList == null || activeDeviceList.size() <= 1, "No connected device!");
             return activeDeviceList;
         }
 
         String identifier = testTaskSpec.deviceIdentifier;
-        Set<DeviceInfo> allActiveConnectedDevice = deviceManager.getDeviceList(log);
+        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getDeviceList(log);
         log.info("Choosing devices from {}", allActiveConnectedDevice.size());
 
         if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
@@ -132,7 +132,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     public void setupTestDir(TestTask testTask) {
-        File baseDir = new File(deviceManager.getTestBaseDir(), DateUtil.nowDirFormat.format(new Date()));
+        File baseDir = new File(agentManagementService.getTestBaseDir(), DateUtil.nowDirFormat.format(new Date()));
         if (!baseDir.exists()) {
             if (!baseDir.mkdirs()) {
                 throw new RuntimeException("mkdirs fail for: " + baseDir);
@@ -162,7 +162,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             return false;
         }
         testTask.setStatus(TestTask.TestStatus.CANCELED);
-        deviceManager.resetDeviceByTestId(testId, log);
+        agentManagementService.resetDeviceByTestId(testId, log);
         return true;
     }
 
@@ -226,13 +226,12 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         StorageFileInfo storageFileInfo = new StorageFileInfo(file,
                 "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(),
                 StorageFileInfo.FileType.COMMON_FILE);
-        return attachmentService.addFileInfo(storageFileInfo, file, EntityType.TEST_RESULT,
-                logger);
+        return attachmentService.saveFileInStorageAndDB(storageFileInfo, file, EntityType.TEST_RESULT, logger);
     }
 
     private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
         Assert.isTrue(result.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
-        String deviceTestResultBlobUrl = result.getAttachments().get(0).getBlobUrl();
+        String deviceTestResultBlobUrl = result.getAttachments().get(0).getCDNUrl();
         String fileName = result.getAttachments().get(0).getFileName();
         log.info("deviceTestResultBlobUrl is {}", deviceTestResultBlobUrl);
 

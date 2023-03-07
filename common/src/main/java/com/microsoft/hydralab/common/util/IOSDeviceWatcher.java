@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.util;
 
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
@@ -16,9 +16,9 @@ public class IOSDeviceWatcher extends Thread {
     private final InputStream inputStream;
     private final Logger logger;
 
-    private final WeakReference<IOSDeviceManager> iosDeviceManagerRef;
+    private final WeakReference<IOSTestDeviceManager> iosDeviceManagerRef;
 
-    public IOSDeviceWatcher(InputStream inputStream, Logger logger, IOSDeviceManager iosDeviceManager) {
+    public IOSDeviceWatcher(InputStream inputStream, Logger logger, IOSTestDeviceManager iosDeviceManager) {
         this.inputStream = inputStream;
         this.logger = logger;
         this.iosDeviceManagerRef = new WeakReference<>(iosDeviceManager);

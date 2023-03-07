@@ -324,7 +324,7 @@ export default class TestReportView extends React.Component {
                                                     <p><Link to={"/info/videos/" + d.id}
                                                              target='_blank'>
                                                         <img style={{height: '105px'}}
-                                                             src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('BlobSignature') : 'images/hydra_lab_logo.png'}
+                                                             src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('FileToken') : 'images/hydra_lab_logo.png'}
                                                              alt={d.deviceName}/>
                                                     </Link></p>
                                                 </td>
@@ -357,11 +357,11 @@ export default class TestReportView extends React.Component {
                                             <CloudDownloadIcon className='ml-1 mr-1'
                                                                style={{height: '21px'}}/>
                                             <a className='badge badge-light m-1' target='_blank'
-                                               href={d.logcatBlobUrl + '?' + require('local-storage').get('BlobSignature')} download rel="noopener noreferrer">Device Log</a>
+                                               href={d.logcatBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Device Log</a>
                                             <a className='badge badge-light m-1' target='_blank'
-                                               href={d.testXmlReportBlobUrl + '?' + require('local-storage').get('BlobSignature')} download rel="noopener noreferrer">XML</a>
+                                               href={d.testXmlReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">XML</a>
                                             <a className='badge badge-light m-1' target='_blank'
-                                               href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('BlobSignature')} download rel="noopener noreferrer">Agent Log</a>
+                                               href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Agent Log</a>
                                         </p>
                                         <div style={{
                                             maxHeight: '210px',
@@ -382,7 +382,7 @@ export default class TestReportView extends React.Component {
                                             </table>
                                             {d.testErrorMessage ? <div className='mb-3 mt-2'>
                                                 <a className="badge badge-warning"
-                                                   href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('BlobSignature')}
+                                                   href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')}
                                                    rel="noopener noreferrer"
                                                    style={{whiteSpace: 'normal'}}
                                                    target='_blank'>{_.truncate(d.testErrorMessage, 50)}</a>
@@ -422,7 +422,7 @@ export default class TestReportView extends React.Component {
                                         <td>
                                             <p><Link to={"/info/videos/" + d.id} target='_blank'>
                                                 <img style={{height: '105px'}}
-                                                     src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('BlobSignature') : 'images/logo/m.png'}
+                                                     src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('FileToken') : 'images/logo/m.png'}
                                                      alt={d.deviceName}/>
                                             </Link></p>
                                             <p className='badge badge-light'>{d.displayTotalTime}</p>
