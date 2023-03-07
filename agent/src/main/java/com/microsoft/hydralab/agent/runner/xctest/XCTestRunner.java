@@ -6,7 +6,7 @@ import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
@@ -24,15 +24,15 @@ import java.util.Map;
 public class XCTestRunner extends TestRunner {
     private static String folderPath = "";
 
-    public XCTestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+    public XCTestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                         PerformanceTestManagementService performanceTestManagementService) {
-        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
+        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
     }
 
     @Override
     protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
         Logger reportLogger = testRun.getLogger();
-        ScreenRecorder deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
+        ScreenRecorder deviceScreenRecorder = deviceInfo.getTestDeviceManager().getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
@@ -40,6 +40,7 @@ public class XCTestRunner extends TestRunner {
         String result = runXctest(deviceInfo, reportLogger, testTask, testRun);
         deviceScreenRecorder.finishRecording();
         analysisXctestResult(result, testRun);
+
         testRun.onTestEnded();
     }
 
@@ -79,7 +80,7 @@ public class XCTestRunner extends TestRunner {
         commFormat += " -xctestrun " + xctestrun.getAbsolutePath();
 
         String deviceId = "id=" + deviceInfo.getDeviceId();
-        String resultPath = testRun.getResultFolder().getAbsolutePath() + "/" + "result";
+        String resultPath = testRun.getResultFolder().getAbsolutePath() + "/" + "result.xcresult";
 
         commFormat += " -destination \"id=%s\" -resultBundlePath %s";
         String command = String.format(commFormat, deviceId, resultPath);
