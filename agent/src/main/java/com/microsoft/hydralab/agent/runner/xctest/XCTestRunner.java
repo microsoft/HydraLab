@@ -50,7 +50,7 @@ public class XCTestRunner extends TestRunner {
 
     private void unzipXctestFolder(File zipFile, TestRun testRun, Logger reportLogger) {
         reportLogger.info("start unzipping file");
-        folderPath = testRun.getResultFolder().getAbsolutePath() + "/" + Const.SmartTestConfig.XCTEST_ZIP_FOLDER_NAME
+        folderPath = testRun.getResultFolder().getAbsolutePath() + "/" + Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME
                 + "/";
 
         FileUtil.unzipFile(zipFile.getAbsolutePath(), folderPath);

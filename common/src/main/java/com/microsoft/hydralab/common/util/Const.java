@@ -73,9 +73,6 @@ public interface Const {
         String REQUIRE_FILE_NAME = "requirements.txt";
         String STRING_FOLDER_NAME = "SmartTestString";
         String STRING_FILE_NAMES = "strings,username,password";
-        String XCTEST_ZIP_FILE_NAME = "Xctest.zip";
-        String XCTEST_ZIP_FOLDER_NAME = "Xctest";
-        String XCTEST_RESULT_FILE_NAME = "XctestResult";
     }
 
     interface ScreenRecoderConfig {
@@ -157,5 +154,11 @@ public interface Const {
     interface StoragePropertyBean {
         String LOCAL = "localProperty";
         String AZURE = "azureBlobProperty";
+    }
+
+    interface XCTestConfig{
+        String XCTEST_ZIP_FILE_NAME = "Xctest.zip";
+        String XCTEST_ZIP_FOLDER_NAME = "Xctest";
+        String XCTEST_RESULT_FILE_NAME = "XctestResult";
     }
 }
