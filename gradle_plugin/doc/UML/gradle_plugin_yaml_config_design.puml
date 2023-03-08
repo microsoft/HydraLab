@@ -65,7 +65,7 @@ testSpec:
         maxStepCount: 100
         testRound: -1
     inspectionStrategies:
-    - strategyType: TEST_LIFECYCLE
+    - strategyType: TEST_SCHEDULE
       interval: 5000
       intervalUnit: MILLISECONDS
       inspection:

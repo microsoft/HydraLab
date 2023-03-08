@@ -52,9 +52,9 @@ testSpec:
     testRound: # <Optional>
   inspectionStrategies: # <Optional> <Array>
     - strategyType: # <TEST_LIFECYCLE | TEST_SCHEDULE>
-      interval:
-      intervalUnit:
-      when: # <TEST_STARTED | TEST_SUCCESS | TEST_FAILURE | TEST_RUN_STARTED | TEST_RUN_FINISHED>
+      interval: # <Required if strategyType = TEST_SCHEDULE>
+      intervalUnit: # <Required if strategyType = TEST_SCHEDULE>
+      when: # <Optional> <TEST_STARTED | TEST_SUCCESS | TEST_FAILURE | TEST_RUN_STARTED | TEST_RUN_FINISHED>
         - xxx
         - xxx
         - xxx
@@ -62,6 +62,3 @@ testSpec:
         inspectorType: # <Required if inspectionStrategies is enabled>
         appId: # <Required if inspectionStrategies is enabled>
         description: # <Required if inspectionStrategies is enabled>
-        deviceIdentifier:
-        inspectionKey:
-        isReset:
