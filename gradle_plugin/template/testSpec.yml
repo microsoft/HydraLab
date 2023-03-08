@@ -44,9 +44,24 @@ testSpec:
       loadType:
       loadDir:
   testRunArgs: # <Optional>
-#    key1: value1
-#    key2: value2
+  #    key1: value1
+  #    key2: value2
   artifactTag: # <Optional>
   exploration:
     maxStepCount: # <Optional>
     testRound: # <Optional>
+  inspectionStrategies: # <Optional> <Array>
+    - strategyType: # <TEST_LIFECYCLE | TEST_SCHEDULE>
+      interval:
+      intervalUnit:
+      when: # <TEST_STARTED | TEST_SUCCESS | TEST_FAILURE | TEST_RUN_STARTED | TEST_RUN_FINISHED>
+        - xxx
+        - xxx
+        - xxx
+      inspection:
+        inspectorType: # <Required if inspectionStrategies is enabled>
+        appId: # <Required if inspectionStrategies is enabled>
+        description: # <Required if inspectionStrategies is enabled>
+        deviceIdentifier:
+        inspectionKey:
+        isReset:

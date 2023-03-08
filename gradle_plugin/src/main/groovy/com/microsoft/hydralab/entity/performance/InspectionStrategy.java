@@ -8,15 +8,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class InspectionStrategy implements Serializable {
-    @SuppressWarnings("visibilitymodifier")
     public StrategyType strategyType;
-    @SuppressWarnings("visibilitymodifier")
     public List<WhenType> when;
-    @SuppressWarnings("visibilitymodifier")
     public long interval;
-    @SuppressWarnings("visibilitymodifier")
     public TimeUnit intervalUnit;
-    @SuppressWarnings("visibilitymodifier")
     public PerformanceInspection inspection;
 
     enum StrategyType {

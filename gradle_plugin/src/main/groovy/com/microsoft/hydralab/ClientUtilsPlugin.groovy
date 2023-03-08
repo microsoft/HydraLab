@@ -141,6 +141,10 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 else if (project.hasProperty('deviceTestCount')) {
                     testConfig.testRound = Integer.parseInt(project.deviceTestCount)
                 }
+                if (project.hasProperty('inspectionStrategiesStr')) {
+                    // add quotes back as quotes in gradle plugins will be replaced by blanks
+                    testConfig.inspectionStrategiesStr = project.inspectionStrategiesStr.replace("\\", "\"")
+                }
 
                 requiredParamCheck(apiConfig, testConfig)
 
