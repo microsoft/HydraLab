@@ -43,6 +43,12 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
 
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+        try {
+            Thread.sleep(20 * 1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         boolean baseLineFound = false;
         String baseLine = "";
 
