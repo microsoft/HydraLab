@@ -53,6 +53,7 @@
     "react-loading": "^2.0.3",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "recharts": "^2.0.9"
+    "recharts": "^2.0.9",
+    "react-select": "^5.2.2"
   }
 }
