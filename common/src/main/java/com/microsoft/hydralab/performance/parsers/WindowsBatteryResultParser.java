@@ -55,6 +55,10 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
 
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
         {
+            if (inspectionResult == null) {
+                continue;
+            }
+
             try (ReversedLinesFileReader reversedReader = new ReversedLinesFileReader(inspectionResult.rawResultFile,
                     StandardCharsets.UTF_8);) {
                 WindowsBatteryParsedData windowsBatteryParsedData = new WindowsBatteryParsedData();
