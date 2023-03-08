@@ -29,12 +29,6 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
 
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
-        try {
-            Thread.sleep(5 * 1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
         {
             try (BufferedReader reader = new BufferedReader(new FileReader(inspectionResult.rawResultFile,

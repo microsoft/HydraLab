@@ -44,6 +44,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
         try {
+            // Wait 20 seconds for the results to be completely written to the hard disk.
             Thread.sleep(20 * 1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
