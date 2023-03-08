@@ -55,13 +55,15 @@ public class TestConfig {
             this.queueTimeOutSeconds = this.runTimeOutSeconds;
         }
         HashMap<String, Object> explorationArgs = (HashMap<String, Object>)map.get("exploration");
-        Object maxStepCount = explorationArgs.get("maxStepCount");
-        if (maxStepCount != null) {
-            this.maxStepCount = Integer.parseInt(maxStepCount.toString());
-        }
-        Object testRound = explorationArgs.get("testRound");
-        if (testRound != null) {
-            this.testRound = Integer.parseInt(testRound.toString());
+        if (explorationArgs != null) {
+            Object maxStepCount = explorationArgs.get("maxStepCount");
+            if (maxStepCount != null) {
+                this.maxStepCount = Integer.parseInt(maxStepCount.toString());
+            }
+            Object testRound = explorationArgs.get("testRound");
+            if (testRound != null) {
+                this.testRound = Integer.parseInt(testRound.toString());
+            }
         }
     }
 
