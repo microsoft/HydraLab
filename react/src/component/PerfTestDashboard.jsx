@@ -123,7 +123,7 @@ export default class PerfTestDashboard extends React.Component {
     };
 
     getPerfReportJson() {
-        axios.get(this.state.perfTestResult.blobUrl + '?' + require('local-storage').get('BlobSignature'), {
+        axios.get(this.state.perfTestResult.blobUrl + '?' + require('local-storage').get('FileToken'), {
         }).then(res => {
             console.log(res.data);
             for (var info of res.data) {
