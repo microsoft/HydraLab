@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 param (
-	[string]$output = ""
+    [string]$output = ""
 )
 
 if ($output -eq "") {
