@@ -622,28 +622,6 @@ export default class RunnerView extends BaseView {
         switch (this.state.activeStep) {
             case 0:
                 return <Box sx={{ display: 'flex', flexDirection: 'column', pt: 3 }}>
-                    <TextField
-                        disabled
-                        autoFocus
-                        margin="dense"
-                        name="packageName"
-                        label="Package Name"
-                        type="text"
-                        fullWidth
-                        variant="standard"
-                        value={this.state.currentAppPackageName}
-                    />
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        name="currentTestPackageName"
-                        type="text"
-                        label="Test Package Name"
-                        fullWidth
-                        variant="standard"
-                        value={this.state.currentTestPackageName}
-                        onChange={this.handleValueChange}
-                    /><br />
                     <FormControl fullWidth>
                         <InputLabel>Test type</InputLabel>
                         <Select
@@ -660,14 +638,38 @@ export default class RunnerView extends BaseView {
                             <MenuItem value={"APPIUM_MONKEY"} disabled={this.state.currentAppInstallerType !== 'ipa'}>Appium Monkey</MenuItem>
                             <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType !== 'apk' || this.state.runTestType === 'T2C_JSON'}>Appium E2E</MenuItem>
                             <MenuItem value={"T2C_JSON"} disabled={this.state.currentAppInstallerType !== 'apk'}>JSON-Described Test</MenuItem>
-                            <MenuItem value={"XCTEST"} enabled={this.state.currentAppInstallerType === 'zip'}>JSON-Described Test</MenuItem>
+                            <MenuItem value={"XCTEST"} disabled={this.state.currentAppInstallerType === 'zip'}>XCTest</MenuItem>
                         </Select>
                     </FormControl>
                     <br />
-                    <FormControl fullWidth>
+                    <TextField
+                        disabled
+                        autoFocus
+                        margin="dense"
+                        name="packageName"
+                        label="Package Name"
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                        value={this.state.currentAppPackageName}
+                    />
+                    <TextField
+                        autoFocus
+                        hidden={runTestType === "XCTEST"}
+                        margin="dense"
+                        name="currentTestPackageName"
+                        type="text"
+                        label="Test Package Name"
+                        fullWidth
+                        variant="standard"
+                        value={this.state.currentTestPackageName}
+                        onChange={this.handleValueChange}
+                    /><br />
+                    <FormControl
+                        fullWidth
+                        hidden={this.state.runTestType !== 'INSTRUMENTATION'}>
                         <InputLabel>Espresso test scope</InputLabel>
                         <Select
-                            disabled={this.state.runTestType !== 'INSTRUMENTATION'}
                             margin="dense"
                             value={testScope}
                             fullWidth
@@ -680,7 +682,7 @@ export default class RunnerView extends BaseView {
                         </Select>
                     </FormControl>
                     <TextField
-                        disabled={(runTestType !== "INSTRUMENTATION" && runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS") || (runTestType === "INSTRUMENTATION" && testScope === "TEST_APP")}
+                        hidden={(runTestType !== "INSTRUMENTATION" && runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS") || (runTestType === "INSTRUMENTATION" && testScope === "TEST_APP")}
                         required={runTestType === "INSTRUMENTATION" || runTestType === "APPIUM" || runTestType === "APPIUM_CROSS"}
                         margin="dense"
                         name="testSuiteClass"
@@ -692,7 +694,7 @@ export default class RunnerView extends BaseView {
                         onChange={this.handleValueChange}
                     />
                     <TextField
-                        disabled={runTestType !== "INSTRUMENTATION"}
+                        hidden={runTestType !== "INSTRUMENTATION"}
                         required={runTestType === "INSTRUMENTATION"}
                         margin="dense"
                         name="testRunnerName"
@@ -704,10 +706,11 @@ export default class RunnerView extends BaseView {
                         onChange={this.handleValueChange}
                     />
                     <br />
-                    <FormControl fullWidth>
+                    <FormControl
+                        fullWidth
+                        hidden={runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS"}>
                         <InputLabel>Test Framework</InputLabel>
                         <Select
-                            disabled={runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS"}
                             required={runTestType === "APPIUM" || runTestType === "APPIUM_CROSS"}
                             margin="dense"
                             value={this.state.frameworkType}
@@ -743,7 +746,7 @@ export default class RunnerView extends BaseView {
                         <Select
                             size="small"
                             margin="dense"
-                            disabled={!this.state.currentRunnable.startsWith("G.")}
+                            hidden={!this.state.currentRunnable.startsWith("G.")}
                             value={groupTestType}
                             fullWidth
                             name="groupTestType"
@@ -851,14 +854,13 @@ export default class RunnerView extends BaseView {
         const currentId = element.target.id
         axios.get('/api/package/' + currentId).then(res => {
             console.log(res.data)
-            let currentRunTestType = this.state.runTestType
-            let currentTestPackageType, testPkgName, currentAppInstallerType;
+            let currentRunTestType, currentTestPackageType, testPkgName, currentAppInstallerType;
 
             const currentAppInfo = res.data.content;
             currentAppInfo.attachments.forEach((attachment) => {
-                if (attachment.fileType == 'APP') {
+                if (attachment.fileType === 'APP') {
                     currentAppInstallerType = attachment.fileName.split(".").pop()
-                } else if (attachment.fileType == 'TEST_APP') {
+                } else if (attachment.fileType === 'TEST_APP') {
                     testPkgName = attachment.fileParser.pkgName
                     currentTestPackageType = attachment.fileName.split(".").pop()
                 }
@@ -868,6 +870,8 @@ export default class RunnerView extends BaseView {
                 currentRunTestType = "T2C_JSON"
             } else if (currentAppInstallerType === "apk") {
                 currentRunTestType = "INSTRUMENTATION"
+            } else if (currentAppInstallerType === "zip") {
+                currentRunTestType = "XCTEST"
             } else {
                 currentRunTestType = "APPIUM"
             }
