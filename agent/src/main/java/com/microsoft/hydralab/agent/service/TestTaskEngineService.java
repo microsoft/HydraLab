@@ -127,10 +127,14 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
         if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
             List<String> devices = Arrays.asList(testTaskSpec.groupDevices.split(","));
-            return allActiveConnectedDevice.stream().filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum())).collect(Collectors.toSet());
+            return allActiveConnectedDevice.stream()
+                    .filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum()))
+                    .collect(Collectors.toSet());
         }
 
-        return allActiveConnectedDevice.stream().filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum())).collect(Collectors.toSet());
+        return allActiveConnectedDevice.stream()
+                .filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum()))
+                .collect(Collectors.toSet());
     }
 
     public void setupTestDir(TestTask testTask) {
@@ -204,7 +208,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         Assert.notNull(files, "should have result file to upload");
         for (File file : files) {
             if (file.isDirectory()) {
-                File zipFile = FileUtil.zipFile(file.getAbsolutePath(), deviceTestResultFolder + "/" + file.getName() + ".zip");
+                File zipFile = FileUtil.zipFile(file.getAbsolutePath(),
+                        deviceTestResultFolder + "/" + file.getName() + ".zip");
                 attachments.add(saveFileToBlob(zipFile, deviceTestResultFolder, logger));
                 continue;
             }
@@ -224,8 +229,9 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     private StorageFileInfo saveFileToBlob(File file, File folder, Logger logger) {
-        StorageFileInfo storageFileInfo =
-                new StorageFileInfo(file, "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(), StorageFileInfo.FileType.COMMON_FILE);
+        StorageFileInfo storageFileInfo = new StorageFileInfo(file,
+                "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(),
+                StorageFileInfo.FileType.COMMON_FILE);
         return attachmentService.saveFileInStorageAndDB(storageFileInfo, file, EntityType.TEST_RESULT, logger);
     }
 

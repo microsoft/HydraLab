@@ -49,7 +49,7 @@ import static com.android.ddmlib.IDevice.DeviceState;
 
 public abstract class TestDeviceManager {
     static final Logger classLogger = LoggerFactory.getLogger(TestDeviceManager.class);
-    protected final AgentManagementService agentManagementService;
+    protected AgentManagementService agentManagementService;
     protected AppiumServerManager appiumServerManager;
 
     public TestDeviceManager(AgentManagementService agentManagementService,

@@ -57,8 +57,7 @@ public class DeviceManageController {
         List<AgentDeviceGroup> deviceGroupList = deviceAgentManagementService.getAgentDeviceGroups();
         if (!sysUserService.checkUserAdmin(requestor)) {
             deviceGroupList.forEach(agentDeviceGroup -> {
-                if (!userTeamManagementService.checkRequestorTeamRelation(requestor,
-                        agentDeviceGroup.getTeamId())) {
+                if (!userTeamManagementService.checkRequestorTeamRelation(requestor, agentDeviceGroup.getTeamId())) {
                     List<DeviceInfo> devices = agentDeviceGroup.getDevices();
                     List<DeviceInfo> newDevices = new ArrayList<>();
                     devices.forEach(device -> {

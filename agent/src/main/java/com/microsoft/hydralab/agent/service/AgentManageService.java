@@ -9,6 +9,7 @@ import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,9 +60,7 @@ public class AgentManageService {
         sendMessageToCenter(true, "Init command Arr and check restart script exists or not.", "", path);
 
         String packageName = packageFileName == null ? "" : packageFileName;
-        String osName = System.getProperty("os.name");
-        logger.info("Devices are connected to " + osName);
-        if (!osName.startsWith("Windows")) {
+        if (!ShellUtils.isConnectedToWindowsOS) {
             scriptPath = appOptions.getLocation() + File.separator + Const.AgentConfig.RESTART_FILE_MAC;
             restartArgs = new String[]{"sh", scriptPath, packageName};
         } else {

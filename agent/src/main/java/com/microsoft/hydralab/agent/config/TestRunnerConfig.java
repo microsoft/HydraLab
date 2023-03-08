@@ -85,7 +85,9 @@ public class TestRunnerConfig {
     public AppiumCrossRunner appiumCrossRunner(AgentManagementService agentManagementService,
                                                TestTaskEngineService testTaskEngineService,
                                                PerformanceTestManagementService performanceTestManagementService) {
-        return new AppiumCrossRunner(agentManagementService, testTaskEngineService, performanceTestManagementService, agentName);
+        return new AppiumCrossRunner(agentManagementService, testTaskEngineService,
+                performanceTestManagementService,
+                agentName);
     }
 
     @Bean

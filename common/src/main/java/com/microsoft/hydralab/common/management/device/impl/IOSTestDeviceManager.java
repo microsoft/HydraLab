@@ -43,23 +43,14 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     static final Logger classLogger = LoggerFactory.getLogger(IOSTestDeviceManager.class);
     private final Map<String, DeviceInfo> iOSDeviceInfoMap = new HashMap<>();
 
-    private boolean isConnectedToWindowsOS;
-
-    public boolean isDeviceConnectedToWindows() {
-        return isConnectedToWindowsOS;
-    }
-
     public IOSTestDeviceManager(AgentManagementService agentManagementService,
                                 AppiumServerManager appiumServerManager) {
         super(agentManagementService, appiumServerManager);
-        String osName = System.getProperty("os.name");
-        classLogger.info("Devices are connected to " + osName);
-        if (osName.startsWith("Windows")) {
-            isConnectedToWindowsOS = true;
+        if (ShellUtils.isConnectedToWindowsOS) {
             IOSAppiumScreenRecorderForWindows.copyScript(agentManagementService.getTestBaseDir());
         } else {
             // Mac, unix or linux
-            isConnectedToWindowsOS = false;
+            // do nothing
         }
     }
 

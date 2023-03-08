@@ -61,8 +61,7 @@ public class T2CRunner extends AppiumRunner {
         }
 
         // Test start
-        deviceScreenRecorder =
-                testDeviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
+        deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
 
