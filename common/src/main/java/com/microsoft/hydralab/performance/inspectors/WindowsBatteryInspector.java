@@ -26,10 +26,10 @@ import java.util.Objects;
  * the elevation process to block the testing. There is a workaround to disable the UAC dialog by setting "Never notify"
  * in the UAC settings panel.
  *
- * TODO:
- * Need to verify if the agent configured with elevated privileges can bypass the UAC popup without changing the UAC
- * configuration.
- * Add a new method in ShellUtils to run the admin command if the TODO is not feasible.
+ * Prerequisites:
+ * 1. Requires a Windows device with a battery, such as a laptop
+ * 2. Need to disable UAC popup manually since the elevated privileges is required which would blocking the performance
+ * testing.
  */
 public class WindowsBatteryInspector implements PerformanceInspector {
     private final static String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s.csv";
