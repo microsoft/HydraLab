@@ -45,6 +45,7 @@ public class YamlParser {
         Object target = fileRootMap.get("testSpec");
         TestConfig testConfig = objectMapper.convertValue(target, TestConfig.class);
         testConfig.constructField((HashMap<String, Object>) target);
+        testConfig.extractFromExistingField();
         if (testConfig.deviceConfig != null) {
             testConfig.deviceConfig.extractFromExistingField();
         }

@@ -220,6 +220,11 @@ public class HydraLabAPIClient {
             if (testConfig.neededPermissions.size() > 0) {
                 jsonElement.add("neededPermissions", GSON.toJsonTree(testConfig.neededPermissions));
             }
+            if (StringUtils.isNotBlank(testConfig.inspectionStrategiesStr)) {
+                JsonParser parser = new JsonParser();
+                JsonArray jsonArray = parser.parse(testConfig.inspectionStrategiesStr).getAsJsonArray();
+                jsonElement.add("inspectionStrategies", jsonArray);
+            }
             if (StringUtils.isNotBlank(deviceConfig.deviceActionsStr)) {
                 JsonParser parser = new JsonParser();
                 JsonObject jsonObject = parser.parse(deviceConfig.deviceActionsStr).getAsJsonObject();
