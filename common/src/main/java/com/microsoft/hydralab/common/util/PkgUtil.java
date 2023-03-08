@@ -119,12 +119,11 @@ public class PkgUtil {
         JSONObject res = new JSONObject();
         try {
             FileUtil.unzipFile(zip.getAbsolutePath(), zip.getParentFile().getAbsolutePath());
-            File unzippedFolder = new File(zip.getParentFile().getAbsoluteFile() + "/" + zip.getName().substring(0, zip.getName().lastIndexOf(".")));
+            File unzippedFolder = zip.getParentFile().getAbsoluteFile();
             File plistFile = findPlistFile(unzippedFolder);
             Assert.notNull(plistFile, "Analysis .app file failed.");
             analysisPlist(plistFile, res);
 
-            // TODO: file exists
             unzippedFolder.delete();
             File maxosxFolder = new File(zip.getAbsolutePath() + "/__MACOSX");
             if (maxosxFolder.exists()) {
