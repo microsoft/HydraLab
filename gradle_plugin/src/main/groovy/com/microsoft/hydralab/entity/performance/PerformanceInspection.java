@@ -6,11 +6,6 @@ package com.microsoft.hydralab.entity.performance;
 import java.io.File;
 import java.io.Serializable;
 
-import static com.microsoft.hydralab.entity.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
-import static com.microsoft.hydralab.entity.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_INFO;
-import static com.microsoft.hydralab.entity.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
-import static com.microsoft.hydralab.entity.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
-
 public class PerformanceInspection implements Serializable {
 
     public PerformanceInspector.PerformanceInspectorType inspectorType;
