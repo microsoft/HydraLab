@@ -4,11 +4,15 @@ package com.microsoft.hydralab.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.hydralab.entity.AttachmentInfo;
+import com.microsoft.hydralab.entity.performance.InspectionStrategy;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.microsoft.hydralab.utils.CommonUtils.GSON;
 
 /**
  * @author Li Shen
@@ -42,6 +46,8 @@ public class TestConfig {
     public Map<String, String> testRunArgs;
     public int maxStepCount = 100;
     public int testRound = -1;
+    public List<InspectionStrategy> inspectionStrategies = new ArrayList<>();
+    public String inspectionStrategiesStr = "";
 
     public void constructField(HashMap<String, Object> map) {
         Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");
@@ -49,13 +55,21 @@ public class TestConfig {
             this.queueTimeOutSeconds = this.runTimeOutSeconds;
         }
         HashMap<String, Object> explorationArgs = (HashMap<String, Object>)map.get("exploration");
-        Object maxStepCount = explorationArgs.get("maxStepCount");
-        if (maxStepCount != null) {
-            this.maxStepCount = Integer.parseInt(maxStepCount.toString());
+        if (explorationArgs != null) {
+            Object maxStepCount = explorationArgs.get("maxStepCount");
+            if (maxStepCount != null) {
+                this.maxStepCount = Integer.parseInt(maxStepCount.toString());
+            }
+            Object testRound = explorationArgs.get("testRound");
+            if (testRound != null) {
+                this.testRound = Integer.parseInt(testRound.toString());
+            }
         }
-        Object testRound = explorationArgs.get("testRound");
-        if (testRound != null) {
-            this.testRound = Integer.parseInt(testRound.toString());
+    }
+
+    public void extractFromExistingField(){
+        if (StringUtils.isBlank(this.inspectionStrategiesStr) && this.inspectionStrategies.size() != 0) {
+            this.inspectionStrategiesStr = GSON.toJson(this.inspectionStrategies);
         }
     }
 
@@ -85,6 +99,7 @@ public class TestConfig {
                 "\tartifactTag=" + artifactTag + "\n" +
                 "\ttestRunArgs=" + testRunArgs + "\n" +
                 "\tmaxStepCount=" + maxStepCount + "\n" +
-                "\ttestRound=" + testRound;
+                "\ttestRound=" + testRound + "\n" +
+                "\tinspectionStrategiesStr=" + inspectionStrategiesStr;
     }
 }

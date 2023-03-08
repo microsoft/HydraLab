@@ -11,6 +11,7 @@ import moment from 'moment';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Button from "@mui/material/Button";
 import axios from "@/axios";
+import PerfTestDashboard from './PerfTestDashboard';
 
 const COLORS = ['#00C49F', '#FF8042'];
 const badgeList = ['primary', 'info', 'secondary', 'light'];
@@ -99,6 +100,17 @@ export default class TestReportView extends React.Component {
 
         const dtrSuccFailMap = _.groupBy(task.deviceTestResults, 'success')
 
+        var perfResults = [];
+        for (let testResult of task.deviceTestResults) {
+            for (let attachment of testResult.attachments) {
+                if (attachment.fileName == 'PerformanceReport.json') {
+                    perfResults.push(attachment);
+                    break;
+                }
+            }
+        }
+        console.log('PerfResults:', perfResults);
+
         var chunkedFailedDeviceResult = null
         var top3FailedCase = null
         if (dtrSuccFailMap['false']) {
@@ -180,7 +192,7 @@ export default class TestReportView extends React.Component {
                                     <Button variant="outlined" color="info">This Report Link</Button>
                                 </Link>
                             {task.pipelineLink ?
-                                <p className='mt-3'><a href={task.pipelineLink} rel="noopener noreferrer">Link to PipeLine</a></p> : null}
+                                    <p className='mt-3'><a href={task.pipelineLink} rel="noopener noreferrer">Link to PipeLine</a></p> : null}
                         </td>
                         <td>
                             <h4>Overall success rate {task.overallSuccessRate} <span
@@ -438,6 +450,27 @@ export default class TestReportView extends React.Component {
                     </table>
                 </div> : null}
             </div>
+            <div id='test_report_content_3>'>
+                {perfResults.length > 0 ? <div>
+                <table className='table table-borderless'>
+                    <thead className="thead-info">
+                        <tr className="table-info">
+                                <th colSpan={perfResults.length + ''}
+                                style={{ backgroundColor: '#2F5496', color: 'white' }}>
+                                Performance Test Results:
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+                    <table className='table table-borderless'>
+                        <tbody>
+                            {perfResults.map((perfTestResult) =>
+                                <PerfTestDashboard perfTestResult={perfTestResult} />
+                            )}
+                        </tbody>
+                    </table>
+                </div> : null}
+            </div> 
         </div>
     }
 
