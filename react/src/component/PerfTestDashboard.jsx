@@ -127,7 +127,7 @@ export default class PerfTestDashboard extends React.Component {
     };
 
     getPerfReportJson() {
-        axios.get('https://devicelabstorage.blob.core.windows.net/testresults/test%2Fresult%2F173750%2FR5CR603BHGB%2FPerformanceReport.json' + '?' + require('local-storage').get('FileToken'), {
+        axios.get(this.state.perfTestResult.blobUrl + '?' + require('local-storage').get('FileToken'), {
         }).then(res => {
             console.log(res.data);
             for (var info of res.data) {
