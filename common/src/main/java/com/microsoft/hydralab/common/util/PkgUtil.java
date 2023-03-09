@@ -118,17 +118,15 @@ public class PkgUtil {
     private static JSONObject analysisZipFile(File zip) {
         JSONObject res = new JSONObject();
         try {
-            FileUtil.unzipFile(zip.getAbsolutePath(), zip.getParentFile().getAbsolutePath());
-            File unzippedFolder = zip.getParentFile().getAbsoluteFile();
+            String unzippedFolderPath = zip.getParentFile().getAbsolutePath()
+                    + "/" + zip.getName().substring(0, zip.getName().lastIndexOf('.'));
+            FileUtil.unzipFile(zip.getAbsolutePath(), unzippedFolderPath);
+            File unzippedFolder = new File(unzippedFolderPath);
             File plistFile = findPlistFile(unzippedFolder);
             Assert.notNull(plistFile, "Analysis .app file failed.");
             analysisPlist(plistFile, res);
 
-            unzippedFolder.delete();
-            File maxosxFolder = new File(zip.getAbsolutePath() + "/__MACOSX");
-            if (maxosxFolder.exists()) {
-                maxosxFolder.delete();
-            }
+            FileUtil.deleteFile(unzippedFolder);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -234,7 +232,8 @@ public class PkgUtil {
 
             for (File file : files) {
                 if (file.getAbsolutePath().endsWith(".app/Info.plist")
-                        && !file.getAbsolutePath().contains("-Runner"))
+                        && !file.getAbsolutePath().contains("-Runner")
+                        && !file.getAbsolutePath().contains("Watch"))
                     return file;
             }
         } catch (Exception e) {

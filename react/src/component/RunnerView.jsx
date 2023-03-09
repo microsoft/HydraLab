@@ -725,7 +725,7 @@ export default class RunnerView extends BaseView {
                 </Box>
             case 1:
                 return <Box sx={{ display: 'flex', flexDirection: 'column', pt: 2 }}>
-                    <TableContainer style={{ margin: "auto", overflowY: 'initial', height: '960px' }}>
+                    <TableContainer style={{ margin: "auto", overflowY: 'initial'}}>
                         <Table size="medium">
                             <TableHead>
                                 <TableRow>
