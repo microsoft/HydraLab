@@ -161,7 +161,7 @@ public class AdbMonkeyRunner extends TestRunner {
         if (StringUtils.isBlank(argString.toString())) {
             commFormat = "monkey -p %s %d";
         } else {
-            commFormat = "monkey -p %s %d" + argString;
+            commFormat = "monkey -p %s " + argString + " %d";
         }
         try {
             String command = String.format(commFormat, pkgName, maxStepCount);
