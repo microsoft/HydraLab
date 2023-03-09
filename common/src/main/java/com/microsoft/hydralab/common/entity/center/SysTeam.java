@@ -20,5 +20,6 @@ public class SysTeam {
     private Date createTime;
     private Date updateTime;
     @Transient
+    // if the team is manageable by API requestor
     private boolean manageable = false;
 }

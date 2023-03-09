@@ -4,8 +4,9 @@
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.common.file.AccessToken;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.util.Const;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -48,6 +49,15 @@ public class StorageTokenManageService {
         }
 
         return accessToken;
+    }
+
+    public boolean validateToken(String accessToken) {
+        // only for signature part
+        // todo:
+        if (StringUtils.isBlank(accessToken)) {
+            return false;
+        }
+        return true;
     }
 
     @Deprecated

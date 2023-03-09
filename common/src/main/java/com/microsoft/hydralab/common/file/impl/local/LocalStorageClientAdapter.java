@@ -8,18 +8,16 @@ import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageProperties;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.file.impl.local.client.LocalStorageClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
 
 public class LocalStorageClientAdapter extends StorageServiceClient {
     private boolean isInitiated = false;
-    private LocalStorageClient localStorageClient;
-    Logger classLogger = LoggerFactory.getLogger(LocalStorageClientAdapter.class);
+    private final LocalStorageClient localStorageClient;
 
     public LocalStorageClientAdapter() {
+        this.localStorageClient = new LocalStorageClient();
     }
 
     public LocalStorageClientAdapter(StorageProperties storageProperties) {
@@ -45,8 +43,12 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
     public AccessToken generateAccessToken(String permissionType) {
         LocalStoragePermission permission = LocalStoragePermission.valueOf(permissionType);
 
-        // todo: generate token with specific permissions
-        return null;
+        // todo: generate token with specific permissions and expiry time
+        LocalStorageToken localStorageToken = new LocalStorageToken();
+        localStorageToken.setToken("anytoken");
+        localStorageToken.setEndpoint(localStorageClient.getEndpoint());
+        return localStorageToken;
+//        return null;
 //        return generateJWT(permission);
     }
 
@@ -57,7 +59,8 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
         Assert.notNull(localStorageToken, "The localStorageToken can't be null!");
 
         // todo: check if the token is expired
-        return false;
+        return true;
+//        return false;
 //        return sasData.getExpiredTime().isBefore(OffsetDateTime.ofInstant(Instant.now().plus(SASExpiryUpdate, ChronoUnit.MINUTES), ZoneId.systemDefault()));
     }
 

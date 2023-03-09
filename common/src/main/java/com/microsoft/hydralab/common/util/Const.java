@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
+
+import java.util.List;
 
 public interface Const {
     interface Path {
@@ -154,5 +157,12 @@ public interface Const {
     interface StoragePropertyBean {
         String LOCAL = "localStorageProperty";
         String AZURE = "azureBlobProperty";
+    }
+
+    final class LocalStorageURL {
+        public static final List<String> API_PATH_PREFIX_LIST = List.of("/api/storage/local/upload", "/api/storage/local/download");
+        public static final String CENTER_LOCAL_STORAGE_UPLOAD = "/api/storage/local/upload";
+        public static final String CENTER_LOCAL_STORAGE_DOWNLOAD = "/api/storage/local/download";
+        public static final String CENTER_LOCAL_STORAGE_DIR = "storage/local/";
     }
 }

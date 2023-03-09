@@ -19,7 +19,6 @@ import java.util.List;
 @ConfigurationProperties(prefix = "app.storage.local")
 @Component
 public class LocalStorageProperty implements StorageProperties {
-    public static final List<String> LOCAL_STORAGE_API_PATH_LIST = List.of("/api/storage/local/upload", "/api/storage/local/download");
     private static final String SCREENSHOT_CONTAINER_NAME = "images";
     private static final String APP_FILE_CONTAINER_NAME = "pkgstore";
     private static final String TEST_RESULT_CONTAINER_NAME = "testresults";

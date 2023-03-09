@@ -6,7 +6,6 @@ package com.microsoft.hydralab.center.interceptor;
 import com.microsoft.hydralab.center.service.AuthTokenService;
 import com.microsoft.hydralab.center.util.AuthUtil;
 import com.microsoft.hydralab.common.entity.center.SysUser;
-import com.microsoft.hydralab.common.file.impl.local.LocalStorageProperty;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +52,8 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
         } else {
             return false;
         }
-        if (storageType.equals(Const.StorageType.LOCAL) && LocalStorageProperty.LOCAL_STORAGE_API_PATH_LIST.contains(requestURI)) {
+
+        if (storageType.equals(Const.StorageType.LOCAL) && Const.LocalStorageURL.API_PATH_PREFIX_LIST.stream().anyMatch(requestURI::contains)) {
             return true;
         }
         if (!enabledAuth) {
