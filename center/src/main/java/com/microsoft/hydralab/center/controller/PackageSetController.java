@@ -120,7 +120,7 @@ public class PackageSetController {
                 commitCountInt);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
 
         try {
-            String relativePath = FileUtil.getPathForToday();
+            String relativeParent = FileUtil.getPathForToday();
             //Init test file set info
             TestFileSet testFileSet = new TestFileSet();
             testFileSet.setBuildType(localBuildType);
@@ -132,9 +132,9 @@ public class PackageSetController {
 
             //Save app file to server
             File tempAppFile =
-                    attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null,
+                    attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativeParent, false, null,
                             new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE, FILE_SUFFIX.ZIP_FILE});
-            StorageFileInfo appFileInfo = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
+            StorageFileInfo appFileInfo = new StorageFileInfo(tempAppFile, relativeParent, StorageFileInfo.FileType.APP_FILE);
             //Upload app file
             appFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appFileInfo, tempAppFile, logger);
             JSONObject appFileParser = appFileInfo.getFileParser();
@@ -145,10 +145,10 @@ public class PackageSetController {
 
             //Save test app file to server if exist
             if (testAppFile != null && !testAppFile.isEmpty()) {
-                File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativePath, false, null,
+                File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativeParent, false, null,
                         new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE});
 
-                StorageFileInfo testAppFileInfo = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
+                StorageFileInfo testAppFileInfo = new StorageFileInfo(tempTestAppFile, relativeParent, StorageFileInfo.FileType.TEST_APP_FILE);
                 //Upload app file
                 testAppFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, testAppFileInfo, tempTestAppFile, logger);
                 testFileSet.getAttachments().add(testAppFileInfo);
@@ -236,11 +236,11 @@ public class PackageSetController {
             return Result.error(HttpStatus.FORBIDDEN.value(), "package file empty");
         }
 
-        String fileRelativePath = FileUtil.getPathForToday();
-        String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
+        String fileRelativeParent = FileUtil.getPathForToday();
+        String parentDir = CENTER_FILE_BASE_DIR + fileRelativeParent;
         try {
             File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
-            StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativePath, StorageFileInfo.FileType.AGENT_PACKAGE);
+            StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativeParent, StorageFileInfo.FileType.AGENT_PACKAGE);
             return Result.ok(attachmentService.saveFileInStorageAndDB(storageFileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
@@ -411,11 +411,11 @@ public class PackageSetController {
         }
         try {
             String newFileName = FileUtil.getLegalFileName(attachment.getOriginalFilename());
-            String fileRelativePath = FileUtil.getPathForToday();
-            String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
+            String fileRelativeParent = FileUtil.getPathForToday();
+            String parentDir = CENTER_FILE_BASE_DIR + fileRelativeParent;
 
             File savedAttachment = attachmentService.verifyAndSaveFile(attachment, parentDir, false, newFileName, limitFileTypes);
-            StorageFileInfo storageFileInfo = new StorageFileInfo(savedAttachment, fileRelativePath, fileType, loadType, loadDir);
+            StorageFileInfo storageFileInfo = new StorageFileInfo(savedAttachment, fileRelativeParent, fileType, loadType, loadDir);
             attachmentService.addAttachment(fileSetId, EntityType.APP_FILE_SET, storageFileInfo, savedAttachment, logger);
             testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
             testFileSetService.saveFileSetToMem(testFileSet);
