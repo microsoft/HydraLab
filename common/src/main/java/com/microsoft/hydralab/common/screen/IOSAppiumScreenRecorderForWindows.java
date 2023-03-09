@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.screen;
 
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.DeviceManager;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
@@ -23,8 +23,8 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
     private final Timer timer = new Timer();
     private Process recordProcess;
 
-    public IOSAppiumScreenRecorderForWindows(DeviceManager deviceManager, DeviceInfo info, String recordDir) {
-        super(deviceManager, info, recordDir);
+    public IOSAppiumScreenRecorderForWindows(TestDeviceManager testDeviceManager, DeviceInfo info, String recordDir) {
+        super(testDeviceManager, info, recordDir);
     }
 
     public static void copyScript(File testBaseDir) {

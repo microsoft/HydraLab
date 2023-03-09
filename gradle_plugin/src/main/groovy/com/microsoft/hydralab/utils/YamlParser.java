@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.hydralab.config.DeviceConfig;
 import com.microsoft.hydralab.config.HydraLabAPIConfig;
 import com.microsoft.hydralab.config.TestConfig;
 import org.yaml.snakeyaml.Yaml;
@@ -38,13 +38,22 @@ public class YamlParser {
 
     public HydraLabAPIConfig parseAPIConfig() {
         Object target = fileRootMap.get("hydraLabAPIServer");
-        return objectMapper.convertValue(target, HydraLabAPIConfig.class);
+        if (target == null) {
+            return new HydraLabAPIConfig();
+        } else {
+            return objectMapper.convertValue(target, HydraLabAPIConfig.class);
+        }
     }
 
     public TestConfig parseTestConfig() {
         Object target = fileRootMap.get("testSpec");
+        if (target == null) {
+            return new TestConfig();
+        }
+
         TestConfig testConfig = objectMapper.convertValue(target, TestConfig.class);
         testConfig.constructField((HashMap<String, Object>) target);
+        testConfig.extractFromExistingField();
         if (testConfig.deviceConfig != null) {
             testConfig.deviceConfig.extractFromExistingField();
         }

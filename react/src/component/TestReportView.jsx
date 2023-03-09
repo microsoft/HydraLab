@@ -11,6 +11,7 @@ import moment from 'moment';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Button from "@mui/material/Button";
 import axios from "@/axios";
+import PerfTestDashboard from './PerfTestDashboard';
 
 const COLORS = ['#00C49F', '#FF8042'];
 const badgeList = ['primary', 'info', 'secondary', 'light'];
@@ -99,6 +100,17 @@ export default class TestReportView extends React.Component {
 
         const dtrSuccFailMap = _.groupBy(task.deviceTestResults, 'success')
 
+        var perfResults = [];
+        for (let testResult of task.deviceTestResults) {
+            for (let attachment of testResult.attachments) {
+                if (attachment.fileName == 'PerformanceReport.json') {
+                    perfResults.push(attachment);
+                    break;
+                }
+            }
+        }
+        console.log('PerfResults:', perfResults);
+
         var chunkedFailedDeviceResult = null
         var top3FailedCase = null
         if (dtrSuccFailMap['false']) {
@@ -180,7 +192,7 @@ export default class TestReportView extends React.Component {
                                     <Button variant="outlined" color="info">This Report Link</Button>
                                 </Link>
                             {task.pipelineLink ?
-                                <p className='mt-3'><a href={task.pipelineLink} rel="noopener noreferrer">Link to PipeLine</a></p> : null}
+                                    <p className='mt-3'><a href={task.pipelineLink} rel="noopener noreferrer">Link to PipeLine</a></p> : null}
                         </td>
                         <td>
                             <h4>Overall success rate {task.overallSuccessRate} <span
@@ -311,7 +323,7 @@ export default class TestReportView extends React.Component {
                                                     <p><Link to={"/info/videos/" + d.id}
                                                              target='_blank'>
                                                         <img style={{height: '105px'}}
-                                                             src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('BlobSignature') : 'images/hydra_lab_logo.png'}
+                                                             src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('FileToken') : 'images/hydra_lab_logo.png'}
                                                              alt={d.deviceName}/>
                                                     </Link></p>
                                                 </td>
@@ -344,11 +356,11 @@ export default class TestReportView extends React.Component {
                                             <CloudDownloadIcon className='ml-1 mr-1'
                                                                style={{height: '21px'}}/>
                                             <a className='badge badge-light m-1' target='_blank'
-                                               href={d.logcatBlobUrl + '?' + require('local-storage').get('BlobSignature')} download rel="noopener noreferrer">Device Log</a>
+                                               href={d.logcatBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Device Log</a>
                                             <a className='badge badge-light m-1' target='_blank'
-                                               href={d.testXmlReportBlobUrl + '?' + require('local-storage').get('BlobSignature')} download rel="noopener noreferrer">XML</a>
+                                               href={d.testXmlReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">XML</a>
                                             <a className='badge badge-light m-1' target='_blank'
-                                               href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('BlobSignature')} download rel="noopener noreferrer">Agent Log</a>
+                                               href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Agent Log</a>
                                         </p>
                                         <div style={{
                                             maxHeight: '210px',
@@ -369,7 +381,7 @@ export default class TestReportView extends React.Component {
                                             </table>
                                             {d.testErrorMessage ? <div className='mb-3 mt-2'>
                                                 <a className="badge badge-warning"
-                                                   href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('BlobSignature')}
+                                                   href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')}
                                                    rel="noopener noreferrer"
                                                    style={{whiteSpace: 'normal'}}
                                                    target='_blank'>{_.truncate(d.testErrorMessage, 50)}</a>
@@ -409,7 +421,7 @@ export default class TestReportView extends React.Component {
                                         <td>
                                             <p><Link to={"/info/videos/" + d.id} target='_blank'>
                                                 <img style={{height: '105px'}}
-                                                     src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('BlobSignature') : 'images/logo/m.png'}
+                                                     src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('FileToken') : 'images/logo/m.png'}
                                                      alt={d.deviceName}/>
                                             </Link></p>
                                             <p className='badge badge-light'>{d.displayTotalTime}</p>
@@ -438,6 +450,27 @@ export default class TestReportView extends React.Component {
                     </table>
                 </div> : null}
             </div>
+            <div id='test_report_content_3>'>
+                {perfResults.length > 0 ? <div>
+                <table className='table table-borderless'>
+                    <thead className="thead-info">
+                        <tr className="table-info">
+                                <th colSpan={perfResults.length + ''}
+                                style={{ backgroundColor: '#2F5496', color: 'white' }}>
+                                Performance Test Results:
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+                    <table className='table table-borderless'>
+                        <tbody>
+                            {perfResults.map((perfTestResult) =>
+                                <PerfTestDashboard perfTestResult={perfTestResult} />
+                            )}
+                        </tbody>
+                    </table>
+                </div> : null}
+            </div> 
         </div>
     }
 

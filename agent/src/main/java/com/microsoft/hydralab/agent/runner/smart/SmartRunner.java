@@ -16,7 +16,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
@@ -38,10 +38,10 @@ public class SmartRunner extends TestRunner {
     private File gifFile;
     private SmartTestParam smartTestParam;
 
-    public SmartRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+    public SmartRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                        PerformanceTestManagementService performanceTestManagementService,
                        SmartTestUtil smartTestUtil) {
-        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
+        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
         this.smartTestUtil = smartTestUtil;
     }
 
@@ -54,8 +54,8 @@ public class SmartRunner extends TestRunner {
         pkgName = testTask.getPkgName();
 
         /** start Record **/
-        logCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
+        logCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
+        deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
         startRecording(deviceInfo, testRun, testTask.getTimeOutSecond(), reportLogger);
 
         /** run the test */
@@ -76,10 +76,10 @@ public class SmartRunner extends TestRunner {
         testRunEnded(deviceInfo, testRun);
         /** set paths */
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
-        testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+        testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
         File gifFile = getGifFile();
         if (gifFile.exists() && gifFile.length() > 0) {
-            testRun.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
+            testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
         }
 
     }
@@ -104,7 +104,7 @@ public class SmartRunner extends TestRunner {
 
         logger.info("Start adb logcat collection");
         String logcatFilePath = logCollector.start();
-        testRun.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
     public File getGifFile() {
@@ -126,15 +126,11 @@ public class SmartRunner extends TestRunner {
         ongoingSmartTest.setDeviceTestResultId(testRun.getId());
         ongoingSmartTest.setTestTaskId(testRun.getTestTaskId());
 
-        testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(),
-                System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         deviceInfo.setRunningTestName(ongoingSmartTest.getTitle());
         logger.info(ongoingSmartTest.getTitle());
-        deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(1), (imagePNGFile -> {
+            if (imagePNGFile == null || !e.isStarted()) {
                 return;
             }
             try {
