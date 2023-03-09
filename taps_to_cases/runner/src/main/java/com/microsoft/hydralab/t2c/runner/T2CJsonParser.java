@@ -31,6 +31,9 @@ public class T2CJsonParser {
 
         JSONArray driverJsonArray = jsonObject.getJSONArray("drivers");
         JSONArray caseJsonArray = jsonObject.getJSONArray("cases");
+        if (caseJsonArray == null) {
+            caseJsonArray = jsonObject.getJSONArray("actions");
+        }
 
         ArrayList<DriverInfo> driverList = getDriverList(driverJsonArray);
         ArrayList<ActionInfo> caseList = getActionList(caseJsonArray);
@@ -46,7 +49,11 @@ public class T2CJsonParser {
             String id = driverJsonObject.getString("id");
             String platform = driverJsonObject.getString("platform");
             driveIdToTypeMap.put(id, platform);
+            //Keep this to compat the old json format
             JSONObject initMassage = driverJsonObject.getJSONObject("init");
+            if (initMassage == null) {
+                initMassage = driverJsonObject.getJSONObject("setup");
+            }
             String launcherApp = "";
             String initUrl = "";
             if (initMassage.containsKey("launcherApp")) {
@@ -62,7 +69,9 @@ public class T2CJsonParser {
     }
 
     private ArrayList<ActionInfo> getActionList(JSONArray caseJsonArray) {
-        ArrayList<ActionInfo> caseList = new ArrayList<>();
+        ArrayList<ActionInfo> actionListInJson = new ArrayList<>();
+        PerformanceActionInitializer batteryTestInitializer = new PerformanceActionInitializer(ActionInfo.ACTION_TYPE_INSPECT_BATTERY_USAGE);
+        PerformanceActionInitializer memoryTestInitializer = new PerformanceActionInitializer(ActionInfo.ACTION_TYPE_INSPECT_MEM_USAGE);
         ActionInfo actionInfo = null;
         AndroidElementInfo androidElement = null;
         WindowsElementInfo windowsElement = null;
@@ -102,10 +111,23 @@ public class T2CJsonParser {
             } else {
                 actionInfo = new ActionInfo(i, null, actionType, arguments, driverId, description, isOptional);
             }
-            caseList.add(actionInfo);
+            actionListInJson.add(actionInfo);
+            if (ActionInfo.ACTION_TYPE_INSPECT_BATTERY_USAGE.equalsIgnoreCase(actionType)) {
+                String targetApp = (String) arguments.get("targetApp");
+                batteryTestInitializer.add(driverId, targetApp);
+
+            }
+            if (ActionInfo.ACTION_TYPE_INSPECT_MEM_USAGE.equalsIgnoreCase(actionType)) {
+                String targetApp = (String) arguments.get("targetApp");
+                memoryTestInitializer.add(driverId, targetApp);
+            }
         }
 
-        return caseList;
+        ArrayList<ActionInfo> fullList = new ArrayList<>();
+        fullList.addAll(memoryTestInitializer.exportInitActionInfoList());
+        fullList.addAll(batteryTestInitializer.exportInitActionInfoList());
+        fullList.addAll(actionListInJson);
+        return fullList;
     }
 
     public TestInfo parseJsonFile(String path) {
@@ -125,6 +147,71 @@ public class T2CJsonParser {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private static class PerformanceActionInitializer {
+
+        private final String actionType;
+        private final ArrayList<PerfInitActionMetaData> mPerfInitActions = new ArrayList<>();
+
+        PerformanceActionInitializer(String perfActionType) {
+            this.actionType = perfActionType;
+        }
+
+        public void add(String deviceId, String targetApp) {
+            PerfInitActionMetaData newAction = new PerfInitActionMetaData(deviceId, targetApp);
+            boolean isExist = false;
+            for (PerfInitActionMetaData action : mPerfInitActions) {
+                if (action.equalTo(newAction)) {
+                    isExist = true;
+                    break;
+                }
+            }
+            if (!isExist) {
+                mPerfInitActions.add(newAction);
+            }
+        }
+
+        public ArrayList<ActionInfo> exportInitActionInfoList() {
+            ArrayList<ActionInfo> initActionInfoList = new ArrayList<>();
+            for (PerfInitActionMetaData actionMetaData : mPerfInitActions) {
+                String description = String.format("Init %s module for driver: %s, app: %s.", actionType, actionMetaData.getDriverId(), actionMetaData.getTargetApp());
+                Map<String, Object> arguments = new HashMap<>() {
+                    {
+                        put("targetApp", actionMetaData.getTargetApp());
+                        put("description", description);
+                        put("isReset", true);
+                    }
+                };
+                ActionInfo actionInfo = new ActionInfo(-1, null, actionType, arguments, actionMetaData.getDriverId(), description, true);
+                initActionInfoList.add(actionInfo);
+            }
+            return initActionInfoList;
+        }
+    }
+
+    private static class PerfInitActionMetaData {
+        private final String driverIdInJson;
+        private final String targetAppInJson;
+
+        PerfInitActionMetaData(String deviceId, String targetApp) {
+            driverIdInJson = deviceId;
+            targetAppInJson = targetApp;
+        }
+
+        boolean equalTo(PerfInitActionMetaData performanceInitAction) {
+            return performanceInitAction != null
+                    && this.driverIdInJson.equals(performanceInitAction.driverIdInJson)
+                    && this.targetAppInJson.equals(performanceInitAction.targetAppInJson);
+        }
+
+        public String getDriverId() {
+            return driverIdInJson;
+        }
+
+        public String getTargetApp() {
+            return targetAppInJson;
         }
     }
 }
