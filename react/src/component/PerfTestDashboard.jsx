@@ -86,10 +86,12 @@ export default class PerfTestDashboard extends React.Component {
         if (batteryInfo && batteryInfo.performanceInspectionResults && batteryInfo.performanceInspectionResults.length > 0) {
             let startTime = batteryInfo.performanceInspectionResults[0].timestamp;
             batteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
-                let result = { ...inspectionResult.parsedData };
-                result.time = (inspectionResult.timestamp - startTime) / 1000;
-                result.ratio = inspectionResult.parsedData.ratio * 100;
-                batteryMetrics.push(result);
+                if (inspectionResult.parsedData !== null) {
+                    let result = { ...inspectionResult.parsedData };
+                    result.time = (inspectionResult.timestamp - startTime) / 1000;
+                    result.ratio = inspectionResult.parsedData.ratio * 100;
+                    batteryMetrics.push(result);
+                }
             })
         }
 
@@ -125,17 +127,19 @@ export default class PerfTestDashboard extends React.Component {
         if (memoryInfo && memoryInfo.performanceInspectionResults && memoryInfo.performanceInspectionResults.length > 0) {
             let startTime = memoryInfo.performanceInspectionResults[0].timestamp;
             memoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
-                let result = { ...inspectionResult.parsedData };
-                result.time = (inspectionResult.timestamp - startTime) / 1000;
-                Object.keys(inspectionResult.parsedData).forEach((key) => {
-                    if (inspectionResult.parsedData[key] == -1) {
-                        result[key] = 0;
-                    } else if (memoryKey.indexOf(key) > -1) {
-                        // KB to MB 
-                        result[key] = inspectionResult.parsedData[key] / 1024;
-                    }
-                })
-                memoryMetrics.push(result);
+                if (inspectionResult.parsedData !== null) {
+                    let result = { ...inspectionResult.parsedData };
+                    result.time = (inspectionResult.timestamp - startTime) / 1000;
+                    Object.keys(inspectionResult.parsedData).forEach((key) => {
+                        if (inspectionResult.parsedData[key] == -1) {
+                            result[key] = 0;
+                        } else if (memoryKey.indexOf(key) > -1) {
+                            // KB to MB 
+                            result[key] = inspectionResult.parsedData[key] / 1024;
+                        }
+                    })
+                    memoryMetrics.push(result);
+                }
             })
         }
 
