@@ -30,6 +30,7 @@ public class T2CJsonParser {
         JSONObject jsonObject = JSON.parseObject(json);
 
         JSONArray driverJsonArray = jsonObject.getJSONArray("drivers");
+        //Keep this to compat the old json format
         JSONArray caseJsonArray = jsonObject.getJSONArray("cases");
         if (caseJsonArray == null) {
             caseJsonArray = jsonObject.getJSONArray("actions");
