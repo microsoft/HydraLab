@@ -11,6 +11,7 @@ import com.dd.plist.PropertyListParser;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask.TaskConst;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
+
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
 
@@ -226,18 +227,12 @@ public class PkgUtil {
     }
 
     private static File findPlistFile(File rootFolder) {
-        try {
-            boolean recursive = true;
-            Collection<File> files = FileUtils.listFiles(rootFolder, null, recursive);
-
-            for (File file : files) {
-                if (file.getAbsolutePath().endsWith(".app/Info.plist")
-                        && !file.getAbsolutePath().contains("-Runner")
-                        && !file.getAbsolutePath().contains("Watch"))
-                    return file;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        Collection<File> files = FileUtils.listFiles(rootFolder, null, true);
+        for (File file : files) {
+            if (file.getAbsolutePath().endsWith(".app/Info.plist")
+                    && !file.getAbsolutePath().contains("-Runner")
+                    && !file.getAbsolutePath().contains("Watch"))
+                return file;
         }
         return null;
     }

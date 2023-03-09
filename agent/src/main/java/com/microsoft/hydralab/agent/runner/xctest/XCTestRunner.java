@@ -82,7 +82,7 @@ public class XCTestRunner extends TestRunner {
         String deviceId = "id=" + deviceInfo.getDeviceId();
         String resultPath = testRun.getResultFolder().getAbsolutePath() + "/" + "result.xcresult";
 
-        commFormat += " -destination \"id=%s\" -resultBundlePath %s";
+        commFormat += " -destination %s -resultBundlePath %s";
         String command = String.format(commFormat, deviceId, resultPath);
 
         String result = ShellUtils.execLocalCommandWithResult(command, logger);
@@ -133,9 +133,10 @@ public class XCTestRunner extends TestRunner {
     }
 
     private File getXctestrunFile(File unzippedFolder) {
-        Collection<File> files = FileUtils.listFiles(unzippedFolder, null, false);
+        Collection<File> files = FileUtils.listFiles(unzippedFolder, null, true);
         for (File file : files) {
-            if (file.getAbsolutePath().endsWith(".xctestrun")) {
+            if (file.getAbsolutePath().endsWith(".xctestrun")
+                    && !file.getAbsolutePath().contains("__MACOSX")) {
                 return file;
             }
         }
