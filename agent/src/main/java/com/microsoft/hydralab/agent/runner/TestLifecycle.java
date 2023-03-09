@@ -47,6 +47,7 @@ public interface TestLifecycle {
      * skip,
      * abort,
      * warn.
+     * {@link TestResult.TestState}
      */
     TestResult analyze(TestRun testRun);
     /**

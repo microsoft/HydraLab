@@ -1,8 +1,8 @@
 package com.microsoft.hydralab.common.entity.common;
 
 public class TestResult {
-    TestStatus status;
-    public enum TestStatus {
+    TestState state;
+    public enum TestState {
         // The test passed
         PASS,
         // The test failed
