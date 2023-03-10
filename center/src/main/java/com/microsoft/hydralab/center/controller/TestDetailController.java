@@ -166,6 +166,10 @@ public class TestDetailController {
     public Result getPerformanceTestReport(@CurrentSecurityContext SysUser requestor,
                                            @PathVariable(value = "fileId") String fileId) {
         try {
+            if (requestor == null) {
+                return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+            }
+
             AccessToken token = storageTokenManageService.generateReadToken(requestor.getMailAddress());
             StorageFileInfo tempFileInfo = storageFileInfoRepository.findById(fileId).get();
             String blobUrl = tempFileInfo.getBlobUrl();
@@ -181,7 +185,7 @@ public class TestDetailController {
             JSONArray array = JSON.parseArray(jsonStr);
             return Result.ok(array);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
         }
     }
