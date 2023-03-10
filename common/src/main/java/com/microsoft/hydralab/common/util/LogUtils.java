@@ -98,6 +98,9 @@ public class LogUtils {
         }
     }
 
+    /**
+     * TODO: this should be put to a Util class for String
+     */
     public static Boolean isLegalStr(String message, String regex, Boolean nullable) {
         if (StringUtils.isEmpty(message)) {
             return nullable;
