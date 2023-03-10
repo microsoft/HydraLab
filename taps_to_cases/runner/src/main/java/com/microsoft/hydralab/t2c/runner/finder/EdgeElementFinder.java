@@ -35,8 +35,6 @@ public class EdgeElementFinder implements ElementFinder<EdgeElementInfo> {
             }
         }
 
-
-
         return null;
     }
 }
