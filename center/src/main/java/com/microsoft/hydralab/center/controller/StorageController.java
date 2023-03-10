@@ -57,7 +57,7 @@ public class StorageController {
         } else {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Invalid visit with no auth code");
         }
-        if (!storageTokenManageService.validateToken(storageToken)) {
+        if (!storageTokenManageService.validateAccessToken(storageToken)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
         }
         File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
@@ -87,7 +87,7 @@ public class StorageController {
         } else {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Invalid visit with no auth code");
         }
-        if (!storageTokenManageService.validateToken(storageToken)) {
+        if (!storageTokenManageService.validateAccessToken(storageToken)) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
         }
 
@@ -108,8 +108,7 @@ public class StorageController {
         if (token == null) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Invalid visit with no auth code");
         }
-        // todo: differentiate validation method here, as AccessToken is split by HTTP PATH EXTRACTION already
-        if (!storageTokenManageService.validateToken(token)) {
+        if (!storageTokenManageService.validateTokenVal(token)) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
         }
         final String appendPath = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();

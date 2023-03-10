@@ -51,13 +51,15 @@ public class StorageTokenManageService {
         return accessToken;
     }
 
-    public boolean validateToken(String accessToken) {
-        // only for signature part
-        // todo:
-        if (StringUtils.isBlank(accessToken)) {
-            return false;
-        }
-        return true;
+    // todo: to be updated when needed: check token in the format of "token=xxx&expiryTime=yyy&permission=zzz"
+    public boolean validateAccessToken(String accessToken) {
+        return !StringUtils.isBlank(accessToken);
+    }
+
+    // todo: specify content
+    // for subfield "token" of AccessToken of storage type LOCAL. Differentiate validation method here as AccessToken is split by HTTP PATH EXTRACTION from frontend request already
+    public boolean validateTokenVal(String token) {
+        return !StringUtils.isBlank(token);
     }
 
     @Deprecated
