@@ -20,14 +20,16 @@ RUN \
     wget -qO- "http://dl.google.com/android/android-sdk_r24.3.4-linux.tgz" | tar -zx -C /opt && \
     echo y | android update sdk --no-ui --all --filter platform-tools --force
 
-# TODO: after we enabled the smart test in Github, we will renable the following layers.
+# TODO: after we enable the smart test in Github, we will reactivate the following layers.
 # Install python/pip and smart test dependencies
 # This file should be in position if we have run the bootJar task with Gradle.
 # ARG PYTHON_REQUIREMENTS=build/requirements.txt
 # COPY ${PYTHON_REQUIREMENTS} /requirements.txt
 # RUN pip3 install -r /requirements.txt
 
-COPY ${JAR_FILE} /app.jar
+COPY ${JAR_FILE} /agent.jar
 
-EXPOSE 8886
-ENTRYPOINT ["java","-jar","/app.jar","--spring.profiles.active=docker"]
+# Official doc about connecting package with repo: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
+LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
+
+ENTRYPOINT ["java","-jar","/agent.jar","--spring.profiles.active=docker"]
