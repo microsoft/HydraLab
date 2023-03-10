@@ -20,6 +20,9 @@ brew install android-platform-tools
 
 # trace adb path and set ANDROID_HOME as env var
 adb_path=`which adb`
+# example value of this adb_path here: 
+# lrwxr-xr-x  1 bsp  admin  71 Mar 10 18:47 /opt/homebrew/bin/adb -> /opt/homebrew/Caskroom/android-platform-tools/34.0.0/platform-tools/adb
+
 adb_path=`ls -l $adb_path`
 echo $adb_path > temp.txt
 adb_path=`awk -F '-> ' '{print $2}' temp.txt`
