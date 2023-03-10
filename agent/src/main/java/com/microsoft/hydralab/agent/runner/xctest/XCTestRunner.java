@@ -55,6 +55,7 @@ public class XCTestRunner extends TestRunner {
         deviceScreenRecorder.setupDevice();
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
         recordingStartTimeMillis = System.currentTimeMillis();
+        testRun.addNewTimeTag("Initializing", 0);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         reportLogger.info("Start gif frames collection");
         gifFile = new File(testRun.getResultFolder(), testTask.getPkgName() + ".gif");
@@ -104,7 +105,7 @@ public class XCTestRunner extends TestRunner {
 
         commFormat += " -destination %s -resultBundlePath %s";
         String command = String.format(commFormat, deviceId, resultPath);
-
+        testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
         ArrayList<String> result;
         try {
             Process proc = Runtime.getRuntime().exec(command);
@@ -139,7 +140,7 @@ public class XCTestRunner extends TestRunner {
         int totalCases = 0;
         for (String resultLine : resultList
         ) {
-            if (resultLine.startsWith("Test case") && !resultLine.contains("started")) {
+            if (resultLine.toLowerCase().startsWith("test case") && !resultLine.contains("started")) {
                 AndroidTestUnit ongoingXctest = new AndroidTestUnit();
                 String testInfo = resultLine.split("'")[1];
                 ongoingXctest.setTestName(testInfo.split("\\.")[1].replaceAll("[^a-zA-Z0-9_]", ""));
