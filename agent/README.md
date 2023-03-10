@@ -6,6 +6,25 @@ Before you run the agent jar, you need to provide the necessary configuration in
 
 ## Run Agent in Docker
 
+You need to install Docker or other compatible container before executing the below operations.
+
+### Pull Docker Image from GitHub package and run
+
+Pull the docker image:
+```bash
+docker pull ghcr.io/microsoft/hydra-lab-agent:latest
+```
+
+Then you can download the YAML config from the center service Web portal Authentication -> AGENTS. And You can run the docker. If you are using bash terminal:
+```bash
+# Replace {REPLACE_WITH_YAML_CONFIG_FILE_PATH} with the application.yml file path, for example: /User/xxx/HydraLab/application.yml
+# Replace {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH} with the data folder path, for example: /User/xxx/HydraLab/data
+docker run --mount type=bind,source={REPLACE_WITH_YAML_CONFIG_FILE_PATH},target=/application.yml \
+           -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data hydra-lab-agent:local
+```
+
+### Build the Docker image locally and run it
+
 Firstly, you need to build the agent.jar by running the below in root dir:
 
 ```bash
