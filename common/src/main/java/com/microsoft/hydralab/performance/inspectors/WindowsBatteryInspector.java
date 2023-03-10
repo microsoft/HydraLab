@@ -4,6 +4,7 @@ package com.microsoft.hydralab.performance.inspectors;
 
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
+import com.microsoft.hydralab.common.util.MachineInfoUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.TimeUtils;
 import com.microsoft.hydralab.performance.PerformanceInspection;
@@ -54,6 +55,10 @@ public class WindowsBatteryInspector implements PerformanceInspector {
 
     @Override
     public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
+        if (!MachineInfoUtils.isOnWindowsLaptop()) {
+            classLogger.error("Windows battery test must be run on Windows Laptop!");
+            return null;
+        }
         initializeIfNeeded(performanceInspection);
 
         ITestRun testRun = TestRunThreadContext.getTestRun();
