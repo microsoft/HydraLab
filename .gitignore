@@ -66,3 +66,6 @@ application-local.yml
 
 /local_debug
 .env
+
+!/common/src/test/resources/**
+/common/src/test/resources/.DS_Store

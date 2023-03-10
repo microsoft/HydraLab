@@ -20,10 +20,18 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+
+import cn.hutool.core.img.gif.AnimatedGifEncoder;
 
 public class XCTestRunner extends TestRunner {
     private static String folderPath = "";
+    private File gifFile;
+    private final AnimatedGifEncoder gitEncoder = new AnimatedGifEncoder();
+    private ScreenRecorder deviceScreenRecorder;
+    private Logger reportLogger;
+    private long recordingStartTimeMillis;
 
     public XCTestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                         PerformanceTestManagementService performanceTestManagementService) {
@@ -32,17 +40,27 @@ public class XCTestRunner extends TestRunner {
 
     @Override
     protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
-        Logger reportLogger = testRun.getLogger();
-        ScreenRecorder deviceScreenRecorder = deviceInfo.getTestDeviceManager().getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
-        deviceScreenRecorder.setupDevice();
-        deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
-        testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        initializeTest(deviceInfo, testTask, testRun);
         unzipXctestFolder(testTask.getAppFile(), testRun, reportLogger);
-        ArrayList<String> result = runXctest(deviceInfo, reportLogger, testTask, testRun);
+        List<String> result = runXctest(deviceInfo, reportLogger, testTask, testRun);
         deviceScreenRecorder.finishRecording();
         analysisXctestResult(result, testRun);
         FileUtil.deleteFile(new File(folderPath));
-        testRun.onTestEnded();
+        finishTest(testRun);
+    }
+
+    private void initializeTest(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
+        reportLogger = testRun.getLogger();
+        deviceScreenRecorder = deviceInfo.getTestDeviceManager().getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
+        deviceScreenRecorder.setupDevice();
+        deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
+        recordingStartTimeMillis = System.currentTimeMillis();
+        testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        reportLogger.info("Start gif frames collection");
+        gifFile = new File(testRun.getResultFolder(), testTask.getPkgName() + ".gif");
+        gitEncoder.start(gifFile.getAbsolutePath());
+        gitEncoder.setDelay(1000);
+        gitEncoder.setRepeat(0);
     }
 
     @Override
@@ -106,7 +124,18 @@ public class XCTestRunner extends TestRunner {
         return result;
     }
 
-    private void analysisXctestResult(ArrayList<String> resultList, TestRun testRun) {
+    private File getXctestrunFile(File unzippedFolder) {
+        Collection<File> files = FileUtils.listFiles(unzippedFolder, null, true);
+        for (File file : files) {
+            if (file.getAbsolutePath().endsWith(".xctestrun")
+                    && !file.getAbsolutePath().contains("__MACOSX")) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    private void analysisXctestResult(List<String> resultList, TestRun testRun) {
         int totalCases = 0;
         for (String resultLine : resultList
         ) {
@@ -120,6 +149,9 @@ public class XCTestRunner extends TestRunner {
                 if (resultLine.contains("passed")) {
                     ongoingXctest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
                     ongoingXctest.setSuccess(true);
+                } else if (resultLine.contains("skipped")) {
+                    ongoingXctest.setStatusCode(AndroidTestUnit.StatusCodes.IGNORED);
+                    ongoingXctest.setSuccess(true);
                 } else {
                     ongoingXctest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
                     ongoingXctest.setSuccess(false);
@@ -131,14 +163,16 @@ public class XCTestRunner extends TestRunner {
         testRun.setTotalCount(totalCases);
     }
 
-    private File getXctestrunFile(File unzippedFolder) {
-        Collection<File> files = FileUtils.listFiles(unzippedFolder, null, true);
-        for (File file : files) {
-            if (file.getAbsolutePath().endsWith(".xctestrun")
-                    && !file.getAbsolutePath().contains("__MACOSX")) {
-                return file;
-            }
+    private void finishTest(TestRun testRun) {
+        testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.onTestEnded();
+        String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
+        testRun.setTestXmlReportPath(
+                agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+        if (gifFile.exists() && gifFile.length() > 0) {
+            testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
         }
-        return null;
+        gitEncoder.finish();
+        deviceScreenRecorder.finishRecording();
     }
 }
