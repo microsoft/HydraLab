@@ -20,7 +20,7 @@ Then you can download the YAML config from the center service Web portal Authent
 # Replace {REPLACE_WITH_YAML_CONFIG_FILE_PATH} with the application.yml file path, for example: /User/xxx/HydraLab/application.yml
 # Replace {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH} with the data folder path, for example: /User/xxx/HydraLab/data
 docker run --mount type=bind,source={REPLACE_WITH_YAML_CONFIG_FILE_PATH},target=/application.yml \
-           -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data hydra-lab-agent:local
+           -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data ghcr.io/microsoft/hydra-lab-agent:latest
 ```
 
 ### Build the Docker image locally and run it
