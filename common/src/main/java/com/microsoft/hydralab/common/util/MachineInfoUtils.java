@@ -44,6 +44,7 @@ public class MachineInfoUtils {
                 IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
                 out.close();
             } catch (IOException e) {
+                classLogger.error("Failed to find app handler script", e);
                 return false;
             }
         }
