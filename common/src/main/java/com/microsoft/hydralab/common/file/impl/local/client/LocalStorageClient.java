@@ -69,10 +69,10 @@ public class LocalStorageClient {
         headers.add("Authorization", "Bearer " + token);
         headers.add("Content-Type", MediaType.MULTIPART_FORM_DATA.toString());
 
+        String fileUri = storageFileInfo.getBlobContainer() + "/" + storageFileInfo.getBlobPath();
         LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new FileSystemResource(file));
-        body.add("container", storageFileInfo.getBlobContainer());
-        body.add("fileRelPath", storageFileInfo.getBlobPath());
+        body.add("fileUri", fileUri);
         HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
         ResponseEntity<String> responseAsStr = restTemplateHttps.exchange(this.getUploadUrl(), HttpMethod.POST, entity, String.class);
@@ -96,9 +96,9 @@ public class LocalStorageClient {
         headers.add("Authorization", "Bearer " + token);
         headers.add("Content-Type", MediaType.MULTIPART_FORM_DATA.toString());
 
+        String fileUri = storageFileInfo.getBlobContainer() + "/" + storageFileInfo.getBlobPath();
         LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("container", storageFileInfo.getBlobContainer());
-        body.add("fileRelPath", storageFileInfo.getBlobPath());
+        body.add("fileUri", fileUri);
         HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
