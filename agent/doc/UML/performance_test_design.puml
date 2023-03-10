@@ -23,7 +23,7 @@ TEST_RUN_FINISHED
       "id": "13211FDD400183",
       "platform": "android",
 '      Deprecated Name : init
-      "setUp": {
+      "setup": {
         "launcherApp": ""
       }
 '      Can also add tearDown here to match the device action design
