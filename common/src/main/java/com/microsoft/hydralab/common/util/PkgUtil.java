@@ -106,7 +106,7 @@ public class PkgUtil {
             String name, pkgName, version;
             File zipFile = convertToZipFile(ipa, FILE_SUFFIX.IPA_FILE);
             Assert.notNull(zipFile, "Convert .ipa file to .zip file failed.");
-            File file = getIpaPlistFile(zipFile, zipFile.getParent());
+            File file = getPlistFromZip(zipFile, zipFile.getParent());
             //Need third-party jar package dd-plist
             Assert.notNull(file, "Analysis .ipa file failed.");
             analysisPlist(file, res);
@@ -123,7 +123,7 @@ public class PkgUtil {
                     + "/" + zip.getName().substring(0, zip.getName().lastIndexOf('.'));
             FileUtil.unzipFile(zip.getAbsolutePath(), unzippedFolderPath);
             File unzippedFolder = new File(unzippedFolderPath);
-            File plistFile = findPlistFile(unzippedFolder);
+            File plistFile = getPlistFromFolder(unzippedFolder);
             Assert.notNull(plistFile, "Analysis .app file failed.");
             analysisPlist(plistFile, res);
 
@@ -157,7 +157,7 @@ public class PkgUtil {
         res.put(ParserKey.VERSION, version);
     }
 
-    private static File getIpaPlistFile(File file, String unzipDirectory) throws Exception {
+    private static File getPlistFromZip(File file, String unzipDirectory) throws Exception {
         //Define input and output stream objects
         InputStream input = null;
         OutputStream output = null;
@@ -226,7 +226,7 @@ public class PkgUtil {
         return result;
     }
 
-    private static File findPlistFile(File rootFolder) {
+    private static File getPlistFromFolder(File rootFolder) {
         Collection<File> files = FileUtils.listFiles(rootFolder, null, true);
         for (File file : files) {
             if (file.getAbsolutePath().endsWith(".app/Info.plist")
@@ -235,71 +235,6 @@ public class PkgUtil {
                 return file;
         }
         return null;
-    }
-
-    private static File getAppFile(File file, String unzipDirectory) throws Exception {
-        //Define input and output stream objects
-        InputStream input = null;
-        OutputStream output = null;
-        File result = null;
-        File unzipFile = null;
-        ZipFile zipFile = null;
-        try {
-            //Create zip file object
-            zipFile = new ZipFile(file);
-            //Create this zip file decompression directory
-            String name = file.getName().substring(0, file.getName().lastIndexOf("."));
-            unzipFile = new File(unzipDirectory + "/" + name);
-            if (unzipFile.exists()) {
-                unzipFile.delete();
-            }
-            unzipFile.mkdir();
-            //Get zip file entry enumeration object
-            Enumeration<? extends ZipEntry> zipEnum = zipFile.entries();
-            //define object
-            ZipEntry entry = null;
-            String entryName = null;
-            String[] names = null;
-            int length;
-            //loop reading entries
-            while (zipEnum.hasMoreElements()) {
-                //get the current entry
-                entry = zipEnum.nextElement();
-                entryName = new String(entry.getName());
-                //separate entry names with/
-                names = entryName.split("\\/");
-                length = names.length;
-                for (int v = 0; v < length; v++) {
-                    if (entryName.endsWith(".app/") && !entryName.contains("-Runner")) {
-                        input = zipFile.getInputStream(entry);
-                        result = new File(unzipFile.getAbsolutePath() + "/" + entryName);
-                        output = Files.newOutputStream(result.toPath());
-                        byte[] buffer = new byte[1024 * 8];
-                        int readLen = 0;
-                        while ((readLen = input.read(buffer, 0, 1024 * 8)) != -1) {
-                            output.write(buffer, 0, readLen);
-                        }
-                        break;
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            if (input != null) {
-                input.close();
-            }
-            if (output != null) {
-                output.flush();
-                output.close();
-            }
-            //The stream must be closed, otherwise the file cannot be deleted
-            if (zipFile != null) {
-                zipFile.close();
-            }
-        }
-
-        return result;
     }
 
     private static File convertToZipFile(File file, String suffix) {

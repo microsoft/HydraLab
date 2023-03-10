@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public class XCTestRunner extends TestRunner {
         deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         unzipXctestFolder(testTask.getAppFile(), testRun, reportLogger);
-        String result = runXctest(deviceInfo, reportLogger, testTask, testRun);
+        ArrayList<String> result = runXctest(deviceInfo, reportLogger, testTask, testRun);
         deviceScreenRecorder.finishRecording();
         analysisXctestResult(result, testRun);
         FileUtil.deleteFile(new File(folderPath));
@@ -50,14 +51,15 @@ public class XCTestRunner extends TestRunner {
 
     private void unzipXctestFolder(File zipFile, TestRun testRun, Logger reportLogger) {
         reportLogger.info("start unzipping file");
-        folderPath = testRun.getResultFolder().getAbsolutePath() + "/" + Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME
-                + "/";
+        folderPath = testRun.getResultFolder().getAbsolutePath() + "/"
+                + Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME + "/";
 
-        FileUtil.unzipFile(zipFile.getAbsolutePath(), folderPath);
+        String command = String.format("unzip -d %s %s", folderPath, zipFile.getAbsolutePath());
+        ShellUtils.execLocalCommand(command, reportLogger);
     }
 
-    private String runXctest(DeviceInfo deviceInfo, Logger logger,
-                             TestTask testTask, TestRun testRun) {
+    private ArrayList<String> runXctest(DeviceInfo deviceInfo, Logger logger,
+                                        TestTask testTask, TestRun testRun) {
         if (deviceInfo == null) {
             throw new RuntimeException("No such device: " + deviceInfo);
         }
@@ -85,24 +87,31 @@ public class XCTestRunner extends TestRunner {
         commFormat += " -destination %s -resultBundlePath %s";
         String command = String.format(commFormat, deviceId, resultPath);
 
-        String result = ShellUtils.execLocalCommandWithResult(command, logger);
+        ArrayList<String> result;
+        try {
+            Process proc = Runtime.getRuntime().exec(command);
+            XCTestCommandReceiver err = new XCTestCommandReceiver(proc.getErrorStream(), logger);
+            XCTestCommandReceiver out = new XCTestCommandReceiver(proc.getInputStream(), logger);
+            err.start();
+            out.start();
+            proc.waitFor();
+            result = out.getResult();
+        } catch (Exception e) {
+            throw new RuntimeException("Execute XCTest failed");
+        }
 
         if (result == null) {
-            throw new RuntimeException("Execute XCTest failed");
+            throw new RuntimeException("No result collected");
         }
         return result;
     }
 
-    private void analysisXctestResult(String result, TestRun testRun) {
-        String[] resultList = result.split("/n");
-
-        int totalCases = getTotalTestCase(result);
-
+    private void analysisXctestResult(ArrayList<String> resultList, TestRun testRun) {
+        int totalCases = 0;
         for (String resultLine : resultList
         ) {
             if (resultLine.startsWith("Test case") && !resultLine.contains("started")) {
                 AndroidTestUnit ongoingXctest = new AndroidTestUnit();
-                ongoingXctest.setNumtests(totalCases);
                 String testInfo = resultLine.split("'")[1];
                 ongoingXctest.setTestName(testInfo.split("\\.")[1].replaceAll("[^a-zA-Z0-9_]", ""));
                 ongoingXctest.setTestedClass(testInfo.split("\\.")[0].replaceAll("[^a-zA-Z0-9_]", ""));
@@ -116,20 +125,10 @@ public class XCTestRunner extends TestRunner {
                     ongoingXctest.setSuccess(false);
                 }
                 testRun.addNewTestUnit(ongoingXctest);
+                totalCases += 1;
             }
         }
-    }
-
-    private int getTotalTestCase(String result) {
-        String targetString = "Test case";
-        int len = targetString.length();
-        int count = 0;
-        String localResult = result;
-        while (localResult.contains(targetString)) {
-            count += 1;
-            localResult = result.substring(result.indexOf(targetString) + len);
-        }
-        return count;
+        testRun.setTotalCount(totalCases);
     }
 
     private File getXctestrunFile(File unzippedFolder) {
@@ -141,6 +140,5 @@ public class XCTestRunner extends TestRunner {
             }
         }
         return null;
-
     }
 }
