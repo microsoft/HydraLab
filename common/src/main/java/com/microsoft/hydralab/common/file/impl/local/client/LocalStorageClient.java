@@ -8,18 +8,24 @@ import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.file.impl.local.LocalStorageProperty;
 import com.microsoft.hydralab.common.file.impl.local.LocalStorageToken;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.RestTemplateConfig;
 import lombok.Data;
+import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * @author Li Shen
@@ -69,8 +75,9 @@ public class LocalStorageClient {
         body.add("fileRelPath", storageFileInfo.getBlobPath());
         HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<JSONObject> responseJson = restTemplateHttps.exchange(this.getUploadUrl(), HttpMethod.POST, entity, JSONObject.class);
-        return responseJson.getBody().getString("content");
+        ResponseEntity<String> responseAsStr = restTemplateHttps.exchange(this.getUploadUrl(), HttpMethod.POST, entity, String.class);
+        JSONObject responseObject = JSONObject.parseObject(responseAsStr.getBody());
+        return this.endpoint + Const.LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD + "/" + responseObject.getString("content");
     }
 
     /**
@@ -94,8 +101,12 @@ public class LocalStorageClient {
         body.add("fileRelPath", storageFileInfo.getBlobPath());
         HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<JSONObject> responseJson = restTemplateHttps.exchange(this.getDownloadUrl(), HttpMethod.POST, entity, JSONObject.class);
-//        return responseJson.getBody().getString("content");
+        try {
+            ResponseEntity<Resource> response = restTemplateHttps.exchange(this.getDownloadUrl(), HttpMethod.POST, entity, Resource.class);
+            IOUtils.copy(response.getBody().getInputStream(), new FileOutputStream(file));
+        } catch (IOException e) {
+            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File stream downloaded, but saved to local failed.", e);
+        }
     }
 
     public String getUploadUrl() {
@@ -105,6 +116,5 @@ public class LocalStorageClient {
     public String getDownloadUrl() {
         return this.endpoint + Const.LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD;
     }
-
 
 }

@@ -11,7 +11,6 @@ import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,12 +20,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @author Li Shen
@@ -38,7 +40,7 @@ import java.io.InputStream;
 public class StorageController {
     private final Logger logger = LoggerFactory.getLogger(StorageController.class);
 
-    @Resource
+    @javax.annotation.Resource
     private StorageTokenManageService storageTokenManageService;
 
     @PostMapping(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_UPLOAD)
@@ -74,29 +76,48 @@ public class StorageController {
     }
 
     @PostMapping(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD)
-    public Result<FileSystemResource> downloadFile(HttpServletRequest request,
-                                                   @RequestParam("container") String container,
-                                                   @RequestParam("fileRelPath") String fileRelPath) {
+    public void downloadFile(HttpServletRequest request, HttpServletResponse response,
+                             @RequestParam("container") String container,
+                             @RequestParam("fileRelPath") String fileRelPath) {
         String storageToken = request.getHeader("Authorization");
         if (storageToken != null) {
             storageToken = storageToken.replaceAll("Bearer ", "");
         } else {
-//            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Invalid visit with no auth code");
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Invalid visit with no auth code");
         }
         if (!storageTokenManageService.validateToken(storageToken)) {
-//            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
         }
-
         String fileUri = Const.LocalStorageURL.CENTER_LOCAL_STORAGE_DIR + container + "/" + fileRelPath;
         File file = new File(fileUri);
         if (!file.exists()) {
-//            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
-            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), String.format("File %s not exist!", fileUri));
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), String.format("File %s not exist!", fileUri));
         }
 
-        return Result.ok(new FileSystemResource(file));
+        // todo: new
+        response.reset();
+        response.setContentType("application/octet-stream");
+        response.setCharacterEncoding("utf-8");
+        response.setContentLength((int) file.length());
+        response.setHeader("Content-Disposition", "attachment;filename=" + file.getName());
+
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));) {
+            OutputStream os = response.getOutputStream();
+            int resLen = IOUtils.copy(bis, os);
+            logger.info(String.format("Output file: %s , size: %d!", fileUri, resLen));
+        } catch (IOException e) {
+            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        }
+
+        // todo: old
+//        Resource resource = new UrlResource(file.toURI());
+//        return ResponseEntity.ok()
+//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + resource.getFilename())
+//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+//                .body(resource);
+//        String contentType = "application/octet-stream";
+//        String headerValue = "attachment; filename=\"" + resource.getFilename() + "\"";
+//        return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).header(HttpHeaders.CONTENT_DISPOSITION, headerValue).body(resource);
     }
 
 //    // todo: for front end to download file
@@ -122,9 +143,9 @@ public class StorageController {
 //        final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
 //        String fileRelPath = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, appendPath);
 ////        if (StringUtils.isEmpty(fileRelPath)) {
-////            moduleName = container + '/' + fileRelPath;
+////            fileUri = container + '/' + fileRelPath;
 ////        } else {
-////            moduleName = container;
+////            fileUri = container;
 ////        }
 //
 //        if (fileToken == null) {
