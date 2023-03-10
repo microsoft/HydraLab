@@ -16,8 +16,8 @@ public class EdgeElementFinder implements ElementFinder<EdgeElementInfo> {
     @Override
     public WebElement findElement(EdgeElementInfo elementInfo) {
         WebElement elementFound;
-        if (!Strings.isNullOrEmpty(elementInfo.getAutomationId())) {
-            elementFound = driverController.findElementByAccessibilityId(elementInfo.getAutomationId());
+        if (!Strings.isNullOrEmpty(elementInfo.getXpath())) {
+            elementFound = driverController.findElementByXPath(elementInfo.getXpath());
             if (elementFound != null) {
                 return elementFound;
             }
@@ -28,13 +28,15 @@ public class EdgeElementFinder implements ElementFinder<EdgeElementInfo> {
                 return elementFound;
             }
         }
-
-        if (!Strings.isNullOrEmpty(elementInfo.getXpath())) {
-            elementFound = driverController.findElementByXPath(elementInfo.getXpath());
+        if (!Strings.isNullOrEmpty(elementInfo.getAutomationId())) {
+            elementFound = driverController.findElementByAccessibilityId(elementInfo.getAutomationId());
             if (elementFound != null) {
                 return elementFound;
             }
         }
+
+
+
         return null;
     }
 }
