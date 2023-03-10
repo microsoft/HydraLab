@@ -52,7 +52,7 @@ public final class T2CAppiumUtils {
             e.printStackTrace();
             int index = actionInfo.getId();
             String description = actionInfo.getDescription();
-            logger.error("doAction at " + index + ", description: " + description + ", with exception: " + e.getMessage());
+            logger.error("doAction at " + index + ", description: " + description + ", page source: " + driver.getPageSource() + "\n, with exception: " + e.getMessage());
             if (!isOption) {
                 throw new IllegalStateException("Failed at " + index + ", description: " + description + ", " + e.getMessage()
                         + ", page source: \n" + driver.getPageSource(), e);
@@ -71,6 +71,7 @@ public final class T2CAppiumUtils {
         if (webElement == null && !isSelfTesting) {
             safeSleep(3000);
         }
+        logger.info("chooseActionType, action id: " + actionInfo.getId() + ", description: " + actionInfo.getDescription() + " on element: "  + webElement);
         switch (actionType) {
             case "click":
                 driver.click(webElement);

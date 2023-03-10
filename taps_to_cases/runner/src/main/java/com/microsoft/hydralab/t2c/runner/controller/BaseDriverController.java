@@ -158,7 +158,6 @@ public abstract class BaseDriverController {
                     });
         } catch (Exception e) {
             logger.info("Can not find element by AccessibilityId: " + accessibilityId);
-            e.printStackTrace();
         }
         return elementFound;
     }
