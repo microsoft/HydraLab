@@ -219,6 +219,18 @@ public final class T2CAppiumUtils {
                 String clipboardText = (String) arguments.get("text");
                 driver.setClipboard(clipboardText);
                 break;
+            case ActionInfo.ACTION_TYPE_INSPECT_BATTERY_USAGE:
+                String targetApp = (String) arguments.get("targetApp");
+                String description = (String) arguments.get("description");
+                boolean isReset = (Boolean) arguments.getOrDefault("isReset", false);
+                driver.inspectBatteryUsage(targetApp, description, isReset);
+                break;
+            case ActionInfo.ACTION_TYPE_INSPECT_MEM_USAGE:
+                targetApp = (String) arguments.get("targetApp");
+                description = (String) arguments.get("description");
+                isReset = (Boolean) arguments.getOrDefault("isReset", false);
+                driver.inspectMemoryUsage(targetApp, description, isReset);
+                break;
             default:
                 throw new IllegalStateException("action fail" +
                         "" +
