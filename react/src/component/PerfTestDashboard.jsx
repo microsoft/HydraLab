@@ -158,10 +158,10 @@ export default class PerfTestDashboard extends React.Component {
     };
 
     getPerfReportJson() {
-        axios.get(this.state.perfTestResult.blobUrl + '?' + require('local-storage').get('FileToken'), {
+        axios.get("api/test/performance/" + this.state.perfTestResult.fileId, {
         }).then(res => {
             console.log(res.data);
-            for (var info of res.data) {
+            for (var info of res.data.content) {
                 console.log(info);
                 if (info.parserType == 'PARSER_ANDROID_BATTERY_INFO') {
                     this.setState({ batteryInfo: info });
