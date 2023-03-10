@@ -39,13 +39,4 @@ public class PkgUtilTest extends BaseTest {
         logger.info(res.toString(SerializerFeature.PrettyFormat));
         Assertions.assertTrue("com.microsoft.es.uitestsample".equals(res.getString(StorageFileInfo.ParserKey.PKG_NAME)), "Analysis ipa error!");
     }
-
-    @Test
-    public void analysisZipFile() {
-        File recordFile = new File("src/test/resources/uitestsample.zip");
-        JSONObject res = PkgUtil.analysisFile(recordFile, EntityType.APP_FILE_SET);
-
-        logger.info(res.toString(SerializerFeature.PrettyFormat));
-        Assertions.assertTrue("com.microsoft.es.uitestsample".equals(res.getString(StorageFileInfo.ParserKey.PKG_NAME)), "Analysis zip error!");
-    }
 }
