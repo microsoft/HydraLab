@@ -17,8 +17,8 @@ public class AndroidElementFinder implements ElementFinder<AndroidElementInfo> {
     public WebElement findElement(AndroidElementInfo elementInfo) {
         WebElement elementFound;
 
-        if (!Strings.isNullOrEmpty(elementInfo.getResourceId())) {
-            elementFound = driverController.findElementById(elementInfo.getResourceId());
+        if (!Strings.isNullOrEmpty(elementInfo.getXpath())) {
+            elementFound = driverController.findElementByXPath(elementInfo.getXpath());
             if (elementFound != null) {
                 return elementFound;
             }
@@ -31,6 +31,13 @@ public class AndroidElementFinder implements ElementFinder<AndroidElementInfo> {
             }
         }
 
+        if (!Strings.isNullOrEmpty(elementInfo.getResourceId())) {
+            elementFound = driverController.findElementById(elementInfo.getResourceId());
+            if (elementFound != null) {
+                return elementFound;
+            }
+        }
+
         if (!Strings.isNullOrEmpty(elementInfo.getText())) {
             elementFound = driverController.findElementByText(elementInfo.getText());
             if (elementFound != null) {
@@ -38,12 +45,6 @@ public class AndroidElementFinder implements ElementFinder<AndroidElementInfo> {
             }
         }
 
-        if (!Strings.isNullOrEmpty(elementInfo.getXpath())) {
-            elementFound = driverController.findElementByXPath(elementInfo.getXpath());
-            if (elementFound != null) {
-                return elementFound;
-            }
-        }
         return null;
     }
 }
