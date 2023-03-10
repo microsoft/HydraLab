@@ -15,28 +15,28 @@ Firstly, you need to build the agent.jar by running the below in root dir:
 Then change working dir to the path of the agent Dockerfile and build the docker image:, and execute the following command using bash:
 
 ```bash
-docker build -t hydra_lab_agent:local .
+docker build -t hydra-lab-agent:local .
 ```
 
 Then run the docker in container, and if you are using bash on Windows:
 
 ```bash
 docker run --mount type=bind,source={REPLACE_WITH_YAML_CONFIG_FILE_PATH},target=/application.yml \
-           -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data hydra_lab_agent:local
+           -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data hydra-lab-agent:local
 ```
 
 Or using powershell:
 
 ```powershell
 docker run --mount type=bind,source={REPLACE_WITH_YAML_CONFIG_FILE_PATH},target=/application.yml `
-           -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data hydra_lab_agent:local
+           -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data hydra-lab-agent:local
 ```
 
 If you are using Linux, you can map the USB devices leveraging the volume param, so that we could have better support for device connection:
 
 ```bash
 docker run -v /dev/bus/usb:/dev/bus/usb --mount type=bind,source={REPLACE_WITH_YAML_CONFIG_FILE_PATH},target=/application.yml \
-           -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data hydra_lab_agent:local
+           -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data hydra-lab-agent:local
 ```
 In this mode, we don't need the port forwarding anymore, and you need to change the active profile to default in [Dockerfile](Dockerfile) to build the image.  The final solution also depends on where the tested app is running.
 
