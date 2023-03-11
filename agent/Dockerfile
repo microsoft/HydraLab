@@ -32,4 +32,4 @@ COPY ${JAR_FILE} /app.jar
 # Official doc about connecting package with repo: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
 LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
 
-ENTRYPOINT ["java","-jar","/agent.jar","--spring.profiles.active=docker"]
+ENTRYPOINT ["java","-jar","/app.jar","--spring.profiles.active=docker"]
