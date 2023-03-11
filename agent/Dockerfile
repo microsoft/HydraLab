@@ -27,7 +27,7 @@ RUN \
 # COPY ${PYTHON_REQUIREMENTS} /requirements.txt
 # RUN pip3 install -r /requirements.txt
 
-COPY ${JAR_FILE} /agent.jar
+COPY ${JAR_FILE} /app.jar
 
 # Official doc about connecting package with repo: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
 LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
