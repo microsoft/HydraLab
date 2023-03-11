@@ -1,4 +1,7 @@
-# run this after running command "./gradlew :agent:bootJar" in project root DIR.
+# Before you build this docker image,
+# please make sure you run the command:
+# "./gradlew :agent:bootJar"
+# in project root DIR to generate the JAR_FILE (build/libs/agent.jar).
 FROM mcr.microsoft.com/openjdk/jdk:11-ubuntu
 ARG JAR_FILE=build/libs/agent.jar
 
