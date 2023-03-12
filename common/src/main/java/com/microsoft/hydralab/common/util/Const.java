@@ -105,7 +105,7 @@ public interface Const {
         String MAIL_ADDRESS = "\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
 
         //File path
-        String LINUX_ABSOLUTE_PATH = "^(\\/[\\w\\s_<>?-.]+)+\\/?$";
+        String LINUX_ABSOLUTE_PATH = "^(\\/[\\w\\s<>?.\\-]+)+\\/?$";
         String WINDOWS_ABSOLUTE_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
 
         //Package name
