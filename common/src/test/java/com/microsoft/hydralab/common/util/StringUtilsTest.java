@@ -9,6 +9,7 @@ public class StringUtilsTest {
         Assertions.assertTrue(LogUtils.isLegalStr("/opt/homebrew/android_sdk/34.0.0", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
         Assertions.assertFalse(LogUtils.isLegalStr("opt/homebrew/android_sdk/", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
         Assertions.assertTrue(LogUtils.isLegalStr("/opt/homebrew", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
+        Assertions.assertTrue(LogUtils.isLegalStr("/path/to/ab-c/abc 2/12.3", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
         Assertions.assertFalse(LogUtils.isLegalStr("0", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
         Assertions.assertFalse(LogUtils.isLegalStr("abc", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
         Assertions.assertFalse(LogUtils.isLegalStr("~", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
