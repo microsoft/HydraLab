@@ -18,6 +18,7 @@ public class StringUtilsTest {
 
         Assertions.assertTrue(LogUtils.isLegalStr("C:\\123.5\\AndroidSDK\\a", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
         Assertions.assertTrue(LogUtils.isLegalStr("C:\\Program Files (x86)\\Common Files", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
+        Assertions.assertTrue(LogUtils.isLegalStr("C:\\Program Files (x86)\\安卓SDK", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
         Assertions.assertTrue(LogUtils.isLegalStr("C:\\Program Files (x86)\\Common Files\\Microsoft Shared\\Phone Tools\\15.0", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
         Assertions.assertFalse(LogUtils.isLegalStr("~", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
         Assertions.assertFalse(LogUtils.isLegalStr("Common Files\\Microsoft Shared\\Phone Tools", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
