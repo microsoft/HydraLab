@@ -106,7 +106,7 @@ public interface Const {
 
         //File path
         // There are almost no restrictions - apart from '/' and '\0', you're allowed to use anything. Hence the below is only an adoption for the most cases
-        String LINUX_ABSOLUTE_PATH = "^(\\/[\\S ]+)+\\/?$";
+        String LINUX_ABSOLUTE_PATH = "^(\\/[^\\t\\f\\n\\r\\v]+)+\\/?$";
         String WINDOWS_ABSOLUTE_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
 
         //Package name
