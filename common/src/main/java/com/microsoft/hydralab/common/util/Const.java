@@ -110,6 +110,7 @@ public interface Const {
         //File path
         String LINUX_PATH = "^(\\/[\\w-]+)+\\/?$";
         String WINDOWS_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
+        String STORAGE_FILE_REL_PATH = "^([^\\/\\\\:*?\"<>|]+\\/?)+$";
 
         //Package name
         String PACKAGE_NAME = "\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";

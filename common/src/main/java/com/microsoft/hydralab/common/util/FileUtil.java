@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FileUtil {
-    private final static SimpleDateFormat format = new SimpleDateFormat("yyyy" + File.separator + "MM" + File.separator + "dd");
+    private final static SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
     private static final Pattern paramKeyMatch = Pattern.compile("\\$\\{(\\w+)}");
 
     public static String UTF_8 = "UTF-8";

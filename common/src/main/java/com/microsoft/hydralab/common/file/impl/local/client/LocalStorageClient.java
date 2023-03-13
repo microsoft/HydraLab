@@ -83,9 +83,8 @@ public class LocalStorageClient {
     /**
      * Download a file from the local storage. If the file already exists, overwrite it.
      * <p>
-     * //     * @param downloadToFile
-     * //     * @param containerName
-     * //     * @param blobFilePath
+     * //     * @param file
+     * //     * @storageFileInfo
      *
      * @return
      */
