@@ -89,6 +89,11 @@ public class LocalStorageClient {
      * @return
      */
     public void download(File file, StorageFileInfo storageFileInfo) {
+        File parentDirFile = new File(file.getParent());
+        if (!parentDirFile.exists() && !parentDirFile.mkdirs()) {
+            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "mkdirs failed!");
+        }
+
         RestTemplate restTemplateHttps = RestTemplateConfig.getRestTemplateInstance();
 
         HttpHeaders headers = new HttpHeaders();
@@ -100,8 +105,8 @@ public class LocalStorageClient {
         body.add("fileUri", fileUri);
         HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
+        ResponseEntity<Resource> response = restTemplateHttps.exchange(this.getDownloadUrl(), HttpMethod.POST, entity, Resource.class);
         try {
-            ResponseEntity<Resource> response = restTemplateHttps.exchange(this.getDownloadUrl(), HttpMethod.POST, entity, Resource.class);
             IOUtils.copy(response.getBody().getInputStream(), new FileOutputStream(file));
         } catch (IOException e) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File stream downloaded, but saved to local failed.", e);
