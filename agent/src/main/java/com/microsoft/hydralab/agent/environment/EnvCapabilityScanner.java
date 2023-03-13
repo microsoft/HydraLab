@@ -35,9 +35,6 @@ public abstract class EnvCapabilityScanner {
     }
 
     public List<EnvCapability> scan() throws IOException {
-        String userName = System.getProperty("user.name");
-        logger.info("Current process User Name is {}", userName);
-
         for (String scanVariable : VariableNames.SCAN_VARIABLES) {
             if (!systemEnv.containsKey(scanVariable)) {
                 continue;
@@ -66,11 +63,11 @@ public abstract class EnvCapabilityScanner {
 
     private void scanCapabilityVersion(List<EnvCapability> capabilities) throws IOException {
         for (EnvCapability capability : capabilities) {
-            fetchVersionInfo(capability);
+            extractAndParseVersionOutput(capability);
         }
     }
 
-    private void fetchVersionInfo(EnvCapability capability) throws IOException {
+    private void extractAndParseVersionOutput(EnvCapability capability) throws IOException {
         Process process = Runtime.getRuntime().exec(new String[]{capability.getFile().getAbsolutePath(), capability.getKeyword().fetchVersionParam});
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
              BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
@@ -80,6 +77,9 @@ public abstract class EnvCapabilityScanner {
                 logger.warn("Failed to get version of " + capability.getKeyword().name());
             }
             capability.getKeyword().versionOutput = versionOutput;
+
+            determineCapReadyFromBrokenMessage(capability, versionOutput);
+
             Matcher matcher = versionPattern.matcher(versionOutput);
             if (matcher.find()) {
                 capability.setVersion(matcher.group());
@@ -90,6 +90,20 @@ public abstract class EnvCapabilityScanner {
             logger.error("Failed to get version of " + capability.getKeyword().name() + " at " + capability.getFile().getAbsolutePath(), e);
         } finally {
             process.destroy();
+        }
+    }
+
+    private static void determineCapReadyFromBrokenMessage(EnvCapability capability, String versionOutput) {
+        capability.getKeyword().setReady(true);
+        if (capability.getKeyword().brokenIndicatorMessageParts == null) {
+            return;
+        }
+        String[] brokenIndicatorMessagePart = capability.getKeyword().brokenIndicatorMessageParts;
+        for (String message : brokenIndicatorMessagePart) {
+            if (!versionOutput.contains(message)) {
+                continue;
+            }
+            capability.getKeyword().setReady(false);
         }
     }
 
