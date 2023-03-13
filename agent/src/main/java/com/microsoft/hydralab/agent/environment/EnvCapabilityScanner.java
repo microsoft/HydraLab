@@ -80,9 +80,7 @@ public abstract class EnvCapabilityScanner {
             if (!exited) {
                 logger.warn("Failed to get version of " + capability.getKeyword().name());
             }
-            capability.getKeyword().versionOutput = versionOutput;
-
-            determineCapReadyFromBrokenMessage(capability, versionOutput);
+            capability.getKeyword().setVersionOutput(versionOutput);
 
             Matcher matcher = versionPattern.matcher(versionOutput);
             if (matcher.find()) {
@@ -94,20 +92,6 @@ public abstract class EnvCapabilityScanner {
             logger.error("Failed to get version of " + capability.getKeyword().name() + " at " + capability.getFile().getAbsolutePath(), e);
         } finally {
             process.destroy();
-        }
-    }
-
-    private static void determineCapReadyFromBrokenMessage(EnvCapability capability, String versionOutput) {
-        capability.getKeyword().setReady(true);
-        if (capability.getKeyword().brokenIndicatorMessageParts == null) {
-            return;
-        }
-        String[] brokenIndicatorMessagePart = capability.getKeyword().brokenIndicatorMessageParts;
-        for (String message : brokenIndicatorMessagePart) {
-            if (!versionOutput.contains(message)) {
-                continue;
-            }
-            capability.getKeyword().setReady(false);
         }
     }
 

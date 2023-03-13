@@ -17,7 +17,7 @@ public class EnvCapabilityDiscoveryServiceTest {
             System.out.println(capability.isReady());
             System.out.println(capability.getFile());
             System.out.println(capability.getVersion());
-            System.out.println(capability.getKeyword().versionOutput);
+            System.out.println(capability.getKeyword().getVersionOutput());
         });
     }
 }

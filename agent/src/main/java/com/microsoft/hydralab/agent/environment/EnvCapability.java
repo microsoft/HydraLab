@@ -34,17 +34,39 @@ public class EnvCapability {
 
         final String fetchVersionParam;
         final String[] brokenIndicatorMessageParts;
-        public String versionOutput;
+        private String versionOutput;
         private int minimumViableMajorVersion;
         private int minimumViableMinorVersion;
         private boolean ready = false;
 
-        public void setReady(boolean ready) {
+        private void setReady(boolean ready) {
             this.ready = ready;
         }
 
         boolean isReady() {
             return ready;
+        }
+
+        public void setVersionOutput(String versionOutput) {
+            this.versionOutput = versionOutput;
+            determineCapReadyFromBrokenMessage();
+        }
+
+        private void determineCapReadyFromBrokenMessage() {
+            setReady(true);
+            if (brokenIndicatorMessageParts == null) {
+                return;
+            }
+            for (String message : brokenIndicatorMessageParts) {
+                if (!versionOutput.contains(message)) {
+                    continue;
+                }
+                setReady(false);
+            }
+        }
+
+        public String getVersionOutput() {
+            return versionOutput;
         }
     }
 
