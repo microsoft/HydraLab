@@ -81,6 +81,7 @@ end tell'
 processid=\$(ps aux | grep agent | grep -v \"grep\" | awk '{ print \$2}')
 kill \$processid
 export PATH=\"/opt/homebrew/opt/openjdk@11/bin:/opt/homebrew/bin:\$PATH\"
+export ANDROID_HOME=\"$ANDROID_HOME\"
 java -Xms1024m -Xmx2048m -jar ~/Library/Server/HydraLab/agent.jar
 " >> "$agentTaskFile"
 
