@@ -1,16 +1,27 @@
 package com.microsoft.hydralab.agent.environment;
 
-import com.alibaba.fastjson.JSON;
+import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class EnvCapabilityScanner {
-
+    Logger logger = org.slf4j.LoggerFactory.getLogger(EnvCapabilityScanner.class);
     protected Map<String, String> systemEnv = System.getenv();
+    static Pattern versionPattern = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+)");
 
     @SuppressWarnings("checkstyle:InterfaceIsType")
     public interface VariableNames {
@@ -20,19 +31,66 @@ public abstract class EnvCapabilityScanner {
         String PATH_LINUX = "PATH";
         String TEMP_FOLDER = "TEMP";
         String TMP_FOLDER = "TMP";
+        String[] SCAN_VARIABLES = {JAVA_HOME, ANDROID_HOME, TEMP_FOLDER, TMP_FOLDER};
     }
 
-    public List<EnvCapability> scan() {
+    public List<EnvCapability> scan() throws IOException {
+        String userName = System.getProperty("user.name");
+        logger.info("Current process User Name is {}", userName);
+
+        for (String scanVariable : VariableNames.SCAN_VARIABLES) {
+            if (!systemEnv.containsKey(scanVariable)) {
+                continue;
+            }
+            logger.info("Scan system variable {} with value {}", scanVariable, systemEnv.get(scanVariable));
+        }
+
         ArrayList<File> files = scanPathExecutables(getPathVariableName());
-        List<String> capabilityKeywordFiles = getCapabilityKeywordFiles();
+        List<EnvCapability> capabilities = createCapabilities(files);
+        scanCapabilityVersion(capabilities);
+        return capabilities;
+    }
+
+    @NotNull
+    private List<EnvCapability> createCapabilities(ArrayList<File> files) {
+        Map<String, EnvCapability.CapabilityKeyword> capabilityKeywordFiles = getCapabilityKeywordFiles();
         List<EnvCapability> capabilities = new ArrayList<>();
         for (File file : files) {
             String fileName = file.getName();
-            if (capabilityKeywordFiles.contains(fileName)) {
-                capabilities.add(new EnvCapability(fileName, file));
+            if (capabilityKeywordFiles.containsKey(fileName)) {
+                capabilities.add(new EnvCapability(capabilityKeywordFiles.get(fileName), file));
             }
         }
         return capabilities;
+    }
+
+    private void scanCapabilityVersion(List<EnvCapability> capabilities) throws IOException {
+        for (EnvCapability capability : capabilities) {
+            fetchVersionInfo(capability);
+        }
+    }
+
+    private void fetchVersionInfo(EnvCapability capability) throws IOException {
+        Process process = Runtime.getRuntime().exec(new String[]{capability.getFile().getAbsolutePath(), capability.getKeyword().fetchVersionParam});
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+             BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
+            String versionOutput = String.format("Standard Output: %s\nError Output: %s", IOUtils.toString(reader), IOUtils.toString(error));
+            boolean exited = process.waitFor(5, TimeUnit.SECONDS);
+            if (!exited) {
+                logger.warn("Failed to get version of " + capability.getKeyword().name());
+            }
+            capability.getKeyword().versionOutput = versionOutput;
+            Matcher matcher = versionPattern.matcher(versionOutput);
+            if (matcher.find()) {
+                capability.setVersion(matcher.group());
+            } else {
+                logger.warn("Failed to get version of " + capability.getKeyword().name() + " in " + versionOutput);
+            }
+        } catch (InterruptedException e) {
+            logger.error("Failed to get version of " + capability.getKeyword().name() + " at " + capability.getFile().getAbsolutePath(), e);
+        } finally {
+            process.destroy();
+        }
     }
 
     protected abstract String getPathVariableName();
@@ -71,8 +129,8 @@ public abstract class EnvCapabilityScanner {
         if (path == null) {
             return null;
         }
-        String[] paths = path.split(";");
-        System.out.println(JSON.toJSONString(Arrays.asList(paths)));
+        String[] paths = path.split(getPathVariableSeparator());
+        // System.out.println(JSON.toJSONString(Arrays.asList(paths)));
         ArrayList<File> files = new ArrayList<>();
         for (String p : paths) {
             List<File> executableFiles = listExecutableFiles(p);
@@ -84,11 +142,13 @@ public abstract class EnvCapabilityScanner {
         return files;
     }
 
-    protected List<String> getCapabilityKeywordFiles() {
-        List<String> capabilityKeywordFiles = new ArrayList<>();
+    protected abstract String getPathVariableSeparator();
+
+    protected Map<String, EnvCapability.CapabilityKeyword> getCapabilityKeywordFiles() {
+        Map<String, EnvCapability.CapabilityKeyword> capabilityKeywordFiles = new HashMap<>();
         for (EnvCapability.CapabilityKeyword value : EnvCapability.CapabilityKeyword.values()) {
             for (String executableSuffixOption : getExecutableSuffixOptions()) {
-                capabilityKeywordFiles.add(value.name() + executableSuffixOption);
+                capabilityKeywordFiles.put(value.name() + executableSuffixOption, value);
             }
         }
         return capabilityKeywordFiles;
@@ -107,6 +167,11 @@ public abstract class EnvCapabilityScanner {
         protected List<String> getExecutableSuffixOptions() {
             return options;
         }
+
+        @Override
+        protected String getPathVariableSeparator() {
+            return ";";
+        }
     }
 
     public static class LinuxScanner extends EnvCapabilityScanner {
@@ -121,6 +186,11 @@ public abstract class EnvCapabilityScanner {
         protected List<String> getExecutableSuffixOptions() {
             return options;
         }
+
+        @Override
+        protected String getPathVariableSeparator() {
+            return ":";
+        }
     }
 
     public static class MacOSScanner extends EnvCapabilityScanner {
@@ -134,6 +204,11 @@ public abstract class EnvCapabilityScanner {
         @Override
         protected List<String> getExecutableSuffixOptions() {
             return options;
+        }
+
+        @Override
+        protected String getPathVariableSeparator() {
+            return ":";
         }
     }
 }

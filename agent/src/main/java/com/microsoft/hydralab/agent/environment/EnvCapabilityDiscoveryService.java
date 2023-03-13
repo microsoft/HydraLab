@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.agent.environment;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -12,7 +13,7 @@ public class EnvCapabilityDiscoveryService {
         envInfo = new EnvInfo();
     }
 
-    public void discover() {
+    public void discover() throws IOException {
         Properties props = System.getProperties();
         String osName = props.getProperty("os.name");
         if (osName.toLowerCase(Locale.US).contains("windows")) {
