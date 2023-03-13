@@ -96,7 +96,7 @@ task packageMacInstaller(type: Zip, dependsOn: ':agent:bootJar') {
 task packageWindowsInstaller(type: Zip, dependsOn: ':agent:bootJar') {
     from 'agent/agent_installer/Windows'
     from 'agent/build/libs'
-    archiveName 'Hydra_Agent_Installer_Windows.zip'
+    archiveName 'HydraLab_Agent_Installer_Windows.zip'
     destinationDir file('build/installer')
 }
 import com.microsoft.hydralab.compile.UMLImageGenerator
