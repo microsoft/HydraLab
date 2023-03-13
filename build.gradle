@@ -86,14 +86,16 @@ task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
     }
 }
 
-task packageMacInstaller(type: Zip) {
+task packageMacInstaller(type: Zip, dependsOn: ':agent:bootJar') {
     from 'agent/agent_installer/MacOS/iOS'
+    from 'agent/build/libs'
     archiveName 'Hydra_Agent_Installer_Mac.zip'
     destinationDir file('build/installer')
 }
 
-task packageWindowsInstaller(type: Zip) {
+task packageWindowsInstaller(type: Zip, dependsOn: ':agent:bootJar') {
     from 'agent/agent_installer/Windows'
+    from 'agent/build/libs'
     archiveName 'Hydra_Agent_Installer_Windows.zip'
     destinationDir file('build/installer')
 }
