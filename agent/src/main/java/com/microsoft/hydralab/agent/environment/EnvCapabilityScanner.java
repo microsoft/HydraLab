@@ -1,6 +1,7 @@
 package com.microsoft.hydralab.agent.environment;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -71,7 +72,10 @@ public abstract class EnvCapabilityScanner {
         Process process = Runtime.getRuntime().exec(new String[]{capability.getFile().getAbsolutePath(), capability.getKeyword().fetchVersionParam});
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
              BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
-            String versionOutput = String.format("Standard Output: %s\nError Output: %s", IOUtils.toString(reader), IOUtils.toString(error));
+            // combine this in case that some output is provided through stdout and some through stderr
+            String versionOutput = String.format("Standard Output: %s\nError Output: %s",
+                    StringUtils.trim(IOUtils.toString(reader)),
+                    StringUtils.trim(IOUtils.toString(error)));
             boolean exited = process.waitFor(5, TimeUnit.SECONDS);
             if (!exited) {
                 logger.warn("Failed to get version of " + capability.getKeyword().name());

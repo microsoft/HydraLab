@@ -12,7 +12,7 @@ public class EnvCapability {
         ffmpeg("-version"),
         python("--version"),
         python3("--version"),
-        java("-version", "Unable to locate a Java Runtime"),
+        java("--version", "Unable to locate a Java Runtime"),
         node("--version"),
         npm("--version"),
         git("--version"),
