@@ -12,7 +12,9 @@ public class EnvCapability {
         ffmpeg("-version"),
         python("--version"),
         python3("--version"),
-        java("--version", "Unable to locate a Java Runtime"),
+        // it's java -version on JDK7, java --version on JDK11 ...
+        // -version is more common, so we use it, but the output is on stderr ...
+        java("-version", "Unable to locate a Java Runtime"),
         node("--version"),
         npm("--version"),
         git("--version"),
