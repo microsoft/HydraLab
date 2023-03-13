@@ -13,13 +13,11 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.Arrays;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableWebMvc
 @EnableAsync
 @ComponentScan(basePackages = {"com.microsoft.hydralab"})
 @EnableJpaRepositories(basePackages = {"com.microsoft.hydralab.common.repository",

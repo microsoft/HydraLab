@@ -22,9 +22,11 @@ import java.time.Duration;
 public abstract class BaseDriverController {
     protected WebDriver webDriver;
     protected Logger logger;
+    protected String udid;
 
-    public BaseDriverController(WebDriver webDriver, Logger logger) {
+    public BaseDriverController(WebDriver webDriver, String udid, Logger logger) {
         this.webDriver = webDriver;
+        this.udid = udid;
         this.logger = logger;
     }
 
@@ -158,7 +160,6 @@ public abstract class BaseDriverController {
                     });
         } catch (Exception e) {
             logger.info("Can not find element by AccessibilityId: " + accessibilityId);
-            e.printStackTrace();
         }
         return elementFound;
     }
@@ -209,4 +210,7 @@ public abstract class BaseDriverController {
 
     public abstract String getPageSource();
 
+    public abstract void inspectMemoryUsage(String targetApp, String description, boolean isReset);
+
+    public abstract void inspectBatteryUsage(String targetApp, String description, boolean isReset);
 }

@@ -3,15 +3,21 @@
 
 package com.microsoft.hydralab.center.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.center.service.StorageTokenManageService;
 import com.microsoft.hydralab.center.service.TestDataService;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
+import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.DownloadUtils;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
 import org.slf4j.Logger;
@@ -24,6 +30,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 @RestController
 @RequestMapping
@@ -33,6 +42,10 @@ public class TestDetailController {
     KeyValueRepository keyValueRepository;
     @Resource
     TestDataService testDataService;
+    @Resource
+    StorageTokenManageService storageTokenManageService;
+    @Resource
+    StorageFileInfoRepository storageFileInfoRepository;
 
     /**
      * Authenticated USER:
@@ -143,6 +156,34 @@ public class TestDetailController {
         } catch (HydraLabRuntimeException e) {
             logger.error(e.getMessage(), e);
             return Result.error(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+    }
+
+    @GetMapping(value = {"/api/test/performance/{fileId}"})
+    public Result getPerformanceTestReport(@CurrentSecurityContext SysUser requestor,
+                                           @PathVariable(value = "fileId") String fileId) {
+        try {
+            if (requestor == null) {
+                return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+            }
+
+            AccessToken token = storageTokenManageService.generateReadToken(requestor.getMailAddress());
+            StorageFileInfo tempFileInfo = storageFileInfoRepository.findById(fileId).get();
+            String blobUrl = tempFileInfo.getBlobUrl();
+
+            URL url = new URL(blobUrl + "?" + token.getToken());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(10000);
+            conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+            InputStream inputStream = conn.getInputStream();
+            byte[] byteData = DownloadUtils.readInputStream(inputStream);
+
+            String jsonStr = new String(byteData);
+            JSONArray array = JSON.parseArray(jsonStr);
+            return Result.ok(array);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);

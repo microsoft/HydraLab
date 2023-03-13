@@ -49,13 +49,13 @@ public class MockDriverT2CTest {
 
     public void getDriversMap(ArrayList<DriverInfo> drivers) {
         for (DriverInfo driverInfo : drivers) {
-            driverControllerMap.put(driverInfo.getId(), new MockDriverController(null, logger));
+            driverControllerMap.put(driverInfo.getId(), new MockDriverController(null, "10086", logger));
         }
     }
 
     @Test
     public void jsonTest() {
-        ArrayList<ActionInfo> caseList = testInfo.getCases();
+        ArrayList<ActionInfo> caseList = testInfo.getActions();
 
         for (ActionInfo actionInfo : caseList) {
             BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
@@ -83,8 +83,8 @@ public class MockDriverT2CTest {
             return Thread.currentThread().getStackTrace()[2].getMethodName();
         }
 
-        public MockDriverController(WebDriver webDriver, Logger logger) {
-            super(webDriver, logger);
+        public MockDriverController(WebDriver webDriver, String udid, Logger logger) {
+            super(webDriver, udid, logger);
         }
 
         public void click(WebElement element) {
@@ -193,6 +193,16 @@ public class MockDriverT2CTest {
         public String getPageSource() {
             logger.info("Called " + currentMethodName());
             return "foo";
+        }
+
+        @Override
+        public void inspectMemoryUsage(String targetApp, String description, boolean isReset) {
+            logger.info("Called " + currentMethodName());
+        }
+
+        @Override
+        public void inspectBatteryUsage(String targetApp, String description, boolean isReset) {
+            logger.info("Called " + currentMethodName());
         }
 
 
