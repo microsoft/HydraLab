@@ -12,7 +12,7 @@ You need to install Docker or other compatible container before executing the be
 
 Pull the docker image:
 ```bash
-docker pull ghcr.io/microsoft/hydra-lab-agent:latest
+docker pull ghcr.io/microsoft/hydra-lab-agent:0.0.2
 ```
 
 Then you can download the YAML config from the center service Web portal Authentication -> AGENTS. And You can run the docker. If you are using bash terminal:
