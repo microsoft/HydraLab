@@ -21,18 +21,18 @@ import java.io.IOException;
 
 public class TestDevice implements TestDeviceOperation {
     private final DeviceInfo deviceInfo;
-    private final String tag;
+    private final TestDeviceTag tag;
 
     private ScreenRecorder screenRecorder;
 
     private LogCollector logCollector;
 
-    public TestDevice(DeviceInfo deviceInfo, String tag) {
+    public TestDevice(DeviceInfo deviceInfo, TestDeviceTag tag) {
         this.deviceInfo = deviceInfo;
         this.tag = tag;
     }
 
-    public String getTag() {
+    public TestDeviceTag getTag() {
         return tag;
     }
 
