@@ -15,6 +15,7 @@ echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$userHome/.zprofile"
 eval "$(/opt/homebrew/bin/brew shellenv)"
 brew install carthage
 brew install node
+
 brew install awk
 brew install android-platform-tools
 
