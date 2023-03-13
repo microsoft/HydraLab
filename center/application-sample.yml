@@ -25,5 +25,5 @@ app:
   storage:
     type: ${STORAGE_TYPE:AZURE} # current available options: LOCAL, AZURE
     blob:
-      connection: ${BLOB_CONNECTION_STR}
-      CDNUrl: ${CDN_URL}
+      connection: ${BLOB_CONNECTION_STR:}
+      CDNUrl: ${CDN_URL:}
