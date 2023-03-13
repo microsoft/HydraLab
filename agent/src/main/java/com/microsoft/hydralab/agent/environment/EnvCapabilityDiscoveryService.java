@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class EnvCapabilityDiscoveryService {
     Logger logger = org.slf4j.LoggerFactory.getLogger(EnvCapabilityDiscoveryService.class);
-    private final EnvInfo envInfo;
+    private final EnvInfo envInfo = new EnvInfo();
     private EnvCapabilityScanner scanner;
 
     private boolean enableScan = false;
@@ -18,20 +18,15 @@ public class EnvCapabilityDiscoveryService {
         this.enableScan = enableScan;
     }
 
-    public EnvCapabilityDiscoveryService() {
-        envInfo = new EnvInfo();
-    }
-
     public void discover() throws IOException {
         Properties props = System.getProperties();
-        String osName = props.getProperty("os.name");
-        String osVersion = props.getProperty("os.version");
-        String userName = System.getProperty("user.name");
-        logger.info("Current OS name: {}", osName);
-        logger.info("Current OS version: {}", osVersion);
-        logger.info("Current process start user is {}", userName);
+        envInfo.setOsName(props.getProperty("os.name"));
+        envInfo.setOsVersion(props.getProperty("os.version"));
+        envInfo.setUserName(System.getProperty("user.name"));
 
-        determineEnvironmentComponents(osName);
+        logger.info("ENV_INFO: {}", envInfo);
+
+        determineEnvironmentComponents(envInfo.getOsName());
 
         scanCapabilities();
     }

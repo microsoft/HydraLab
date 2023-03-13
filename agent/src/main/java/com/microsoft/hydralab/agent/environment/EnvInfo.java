@@ -7,6 +7,8 @@ import java.util.List;
 @Data
 public class EnvInfo {
     private String osName;
+    private String osVersion;
+    private String userName;
     private OS os;
     private List<EnvCapability> capabilities;
 
