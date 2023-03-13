@@ -34,14 +34,14 @@ cat export_android_home.sh >> ~/.zshrc
 rm temp.txt
 
 # brew install maven
-brew list libimobiledevice || brew install libimobiledevice
+brew install libimobiledevice
 brew install --build-from-source python@3.9
-brew list ffmpeg || brew install ffmpeg
+brew install ffmpeg
 
-brew list supervisor || brew install supervisor
-brew list services || brew install services
+brew install supervisor
+brew install services
 
-brew list openjdk@11 || brew install openjdk@11
+brew install openjdk@11
 
 npm install -g ios-deploy
 npm install -g appium
