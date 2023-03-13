@@ -1,7 +1,6 @@
-server:
-  port: 8886
-
 spring:
+  main:
+    web-application-type: none
   application:
     name: ${app.registry.name:device-network-agent}
   output:
