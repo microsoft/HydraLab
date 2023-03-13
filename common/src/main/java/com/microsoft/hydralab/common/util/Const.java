@@ -105,8 +105,9 @@ public interface Const {
         String MAIL_ADDRESS = "\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
 
         //File path
-        String LINUX_PATH = "^(\\/[\\w-]+)+\\/?$";
-        String WINDOWS_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
+        // There are almost no restrictions - apart from '/' and '\0', you're allowed to use anything. Hence the below is only an adoption for the most cases
+        String LINUX_ABSOLUTE_PATH = "^(\\/[^\\t\\f\\n\\r\\v]+)+\\/?$";
+        String WINDOWS_ABSOLUTE_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
 
         //Package name
         String PACKAGE_NAME = "\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";

@@ -45,11 +45,11 @@ public class ADBOperateUtil {
 
         boolean onWindows = MachineInfoUtils.isOnWindows();
         if (onWindows) {
-            if (LogUtils.isLegalStr(mAndroidHome, Const.RegexString.WINDOWS_PATH, false)) {
+            if (LogUtils.isLegalStr(mAndroidHome, Const.RegexString.WINDOWS_ABSOLUTE_PATH, false)) {
                 mAdbPath = new File(mAndroidHome, "platform-tools" + File.separator + "adb.exe");
             }
         } else {
-            if (LogUtils.isLegalStr(mAndroidHome, Const.RegexString.LINUX_PATH, false)) {
+            if (LogUtils.isLegalStr(mAndroidHome, Const.RegexString.LINUX_ABSOLUTE_PATH, false)) {
                 mAdbPath = new File(mAndroidHome, "platform-tools" + File.separator + "adb");
             }
         }
