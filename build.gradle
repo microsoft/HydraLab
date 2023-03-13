@@ -89,7 +89,7 @@ task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
 task packageMacInstaller(type: Zip, dependsOn: ':agent:bootJar') {
     from 'agent/agent_installer/MacOS/iOS'
     from 'agent/build/libs'
-    archiveName 'Hydra_Agent_Installer_Mac.zip'
+    archiveName 'HydraLab_Agent_Installer_Mac.zip'
     destinationDir file('build/installer')
 }
 
