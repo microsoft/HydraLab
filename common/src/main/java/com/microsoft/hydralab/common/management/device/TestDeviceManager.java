@@ -4,7 +4,6 @@
 package com.microsoft.hydralab.common.management.device;
 
 import com.android.ddmlib.InstallException;
-import com.android.ddmlib.TimeoutException;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
@@ -19,8 +18,6 @@ import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
-import com.microsoft.hydralab.common.util.ThreadPoolUtil;
-import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.appium.java_client.appmanagement.ApplicationState;
 import io.appium.java_client.ios.IOSDriver;
 import org.jetbrains.annotations.NotNull;
@@ -141,25 +138,6 @@ public abstract class TestDeviceManager {
     }
 
 
-    public void updateScreenshotImageAsyncDelay(@NotNull DeviceInfo deviceInfo, long delayMillis,
-                                                @NotNull FileAvailableCallback fileAvailableCallback,
-                                                @NotNull Logger logger) {
-        ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(() -> {
-            try {
-                ThreadUtils.safeSleep(delayMillis);
-                File imageFile = getScreenShot(deviceInfo, logger);
-                if (fileAvailableCallback != null) {
-                    fileAvailableCallback.onFileReady(imageFile);
-                }
-            } catch (TimeoutException te) {
-                classLogger.error("{}: {}, updateScreenshotImageAsyncDelay", te.getClass().getSimpleName(),
-                        te.getMessage());
-            } catch (Exception e) {
-                classLogger.error(e.getMessage(), e);
-            }
-        });
-    }
-
     public void updateAllDeviceInfo() {
     }
 
@@ -271,9 +249,5 @@ public abstract class TestDeviceManager {
 
     public void setAgentManagementService(AgentManagementService agentManagementService) {
         this.agentManagementService = agentManagementService;
-    }
-
-    public interface FileAvailableCallback {
-        void onFileReady(File file);
     }
 }

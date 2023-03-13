@@ -3,16 +3,11 @@
 package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
-import com.android.ddmlib.TimeoutException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
-import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
-import com.microsoft.hydralab.common.util.ADBOperateUtil;
-import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.t2c.runner.ActionInfo;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
@@ -25,7 +20,6 @@ import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.WindowsDriverController;
 import io.appium.java_client.windows.WindowsDriver;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.OutputType;
 import org.slf4j.Logger;
 import org.springframework.util.Assert;
@@ -42,7 +36,7 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
 
     @Override
     public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
-        super.getScreenShot(deviceInfo, logger);
+        File deviceFile = super.getScreenShot(deviceInfo, logger);
         File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
         if (pcScreenShotImageFile == null) {
             pcScreenShotImageFile = new File(agentManagementService.getScreenshotDir(),
@@ -70,34 +64,7 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
         } else {
             deviceInfo.setPcScreenshotImageUrl(fileDownloadUrl);
         }
-        return pcScreenShotImageFile;
-    }
-
-    public File getPairScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
-        getScreenShot(deviceInfo, logger);
-        File deviceFile = deviceInfo.getScreenshotImageFile();
-        File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
         return joinImages(pcScreenShotImageFile, deviceFile, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "comb" + ".jpg");
-    }
-
-    @Override
-    public void updateScreenshotImageAsyncDelay(@NotNull DeviceInfo deviceInfo, long delayMillis, @NotNull FileAvailableCallback fileAvailableCallback, @NotNull Logger logger) {
-        ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ThreadUtils.safeSleep(delayMillis);
-                    File imageFile = getPairScreenShot(deviceInfo, logger);
-                    if (fileAvailableCallback != null) {
-                        fileAvailableCallback.onFileReady(imageFile);
-                    }
-                } catch (TimeoutException te) {
-                    classLogger.error("{}: {}, updateScreenshotImageAsyncDelay", te.getClass().getSimpleName(), te.getMessage());
-                } catch (Exception e) {
-                    classLogger.error(e.getMessage(), e);
-                }
-            }
-        });
     }
 
     public void screenCapture(String outputFile) throws IOException {

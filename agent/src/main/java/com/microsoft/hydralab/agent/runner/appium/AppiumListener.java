@@ -6,12 +6,9 @@ package com.microsoft.hydralab.agent.runner.appium;
 import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
-import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
-import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
@@ -26,14 +23,11 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class AppiumListener extends RunListener {
-    private final DeviceInfo deviceInfo;
+    private final TestDevice testDevice;
     private final TestRun testRun;
-    private final LogCollector logcatCollector;
-    private final ScreenRecorder deviceScreenRecorder;
     private final Logger logger;
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
-    TestDeviceManager testDeviceManager;
     AgentManagementService agentManagementService;
     private final PerformanceTestListener performanceTestListener;
     private long recordingStartTimeMillis;
@@ -47,17 +41,14 @@ public class AppiumListener extends RunListener {
     private String currentTestName = "";
     private int currentTestIndex = 0;
 
-    public AppiumListener(AgentManagementService agentManagementService, DeviceInfo deviceInfo, TestRun testRun,
+    public AppiumListener(AgentManagementService agentManagementService, TestDevice testDevice, TestRun testRun,
                           String pkgName, PerformanceTestListener performanceTestListener, Logger logger) {
         this.agentManagementService = agentManagementService;
-        this.testDeviceManager = deviceInfo.getTestDeviceManager();
-        this.deviceInfo = deviceInfo;
+        this.testDevice = testDevice;
         this.testRun = testRun;
         this.logger = logger;
         this.pkgName = pkgName;
         this.performanceTestListener = performanceTestListener;
-        logcatCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
-        deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
     }
 
     public File getGifFile() {
@@ -77,11 +68,10 @@ public class AppiumListener extends RunListener {
     public void startRecording(int maxTime) {
         startTools();
         logger.info("Start record screen");
-        deviceScreenRecorder.setupDevice();
-        deviceScreenRecorder.startRecord(maxTime <= 0 ? 30 * 60 : maxTime);
+        testDevice.startScreenRecorder(testRun.getResultFolder(), maxTime <= 0 ? 30 * 60 : maxTime, logger);
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
-        deviceInfo.setRunningTestName(initializing);
+        testDevice.setRunningTestName(initializing);
         testRun.addNewTimeTag(initializing, 0);
     }
 
@@ -99,7 +89,7 @@ public class AppiumListener extends RunListener {
         e.setRepeat(0);
 
         logger.info("Start logcat collection");
-        String logcatFilePath = logcatCollector.start();
+        String logcatFilePath = testDevice.startLogCollector(pkgName, testRun, logger);
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
@@ -112,7 +102,7 @@ public class AppiumListener extends RunListener {
         testRun.setTotalCount(testCount);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceInfo.setRunningTestName(runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
+        testDevice.setRunningTestName(runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
         logEnter(runName, description.testCount());
         performanceTestListener.testRunStarted();
     }
@@ -147,14 +137,14 @@ public class AppiumListener extends RunListener {
 
         testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(),
                 System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceInfo.setRunningTestName(ongoingTestUnit.getTitle());
+        testDevice.setRunningTestName(ongoingTestUnit.getTitle());
 
         ongoingTestUnit.setDeviceTestResultId(testRun.getId());
         ongoingTestUnit.setTestTaskId(testRun.getTestTaskId());
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15),
+        testDevice.updateScreenshotImageAsyncDelay(TimeUnit.SECONDS.toMillis(15),
                 (imagePNGFile -> {
                     if (imagePNGFile == null || !e.isStarted()) {
                         return;
@@ -234,7 +224,7 @@ public class AppiumListener extends RunListener {
                 }
             }
             if (e.isStarted() && addedFrameCount < 2) {
-                testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(0),
+                testDevice.updateScreenshotImageAsyncDelay(TimeUnit.SECONDS.toMillis(0),
                         (imagePNGFile -> {
                             try {
                                 e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
@@ -253,7 +243,7 @@ public class AppiumListener extends RunListener {
             performanceTestListener.testRunFinished();
             testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.onTestEnded();
-            deviceInfo.setRunningTestName(null);
+            testDevice.setRunningTestName(null);
             releaseResource();
             alreadyEnd = true;
         }
@@ -261,8 +251,8 @@ public class AppiumListener extends RunListener {
 
     private void releaseResource() {
         e.finish();
-        deviceScreenRecorder.finishRecording();
-        logcatCollector.stopAndAnalyse();
+        testDevice.stopScreenRecorder();
+        testDevice.stopLogCollector();
         logger.info("Record Finished");
     }
 }

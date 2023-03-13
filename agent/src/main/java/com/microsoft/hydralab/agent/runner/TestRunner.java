@@ -5,12 +5,10 @@ package com.microsoft.hydralab.agent.runner;
 
 import cn.hutool.core.lang.Assert;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
-import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
+import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
@@ -36,7 +34,6 @@ public abstract class TestRunner {
     protected final PerformanceTestManagementService performanceTestManagementService;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
     protected final ActionExecutor actionExecutor = new ActionExecutor();
-    protected TestDeviceManager testDeviceManager;
 
     public TestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                       PerformanceTestManagementService performanceTestManagementService) {
@@ -45,30 +42,29 @@ public abstract class TestRunner {
         this.performanceTestManagementService = performanceTestManagementService;
     }
 
-    public void runTestOnDevice(TestTask testTask, DeviceInfo deviceInfo, Logger logger) {
+    public void runTestOnDevice(TestTask testTask, TestDevice testDevice, Logger logger) {
         checkTestTaskCancel(testTask);
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
-        TestRun testRun = createTestRun(deviceInfo, testTask, logger);
-        testDeviceManager = deviceInfo.getTestDeviceManager();
+        TestRun testRun = createTestRun(testDevice, testTask, logger);
         checkTestTaskCancel(testTask);
 
         try {
-            setUp(deviceInfo, testTask, testRun);
+            setUp(testDevice, testTask, testRun);
             checkTestTaskCancel(testTask);
-            runByFutureTask(deviceInfo, testTask, testRun);
+            runByFutureTask(testDevice, testTask, testRun);
         } catch (Exception e) {
-            testRun.getLogger().error(deviceInfo.getSerialNum() + ": " + e.getMessage(), e);
+            testRun.getLogger().error(testDevice.getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(testRun, e);
         } finally {
-            tearDown(deviceInfo, testTask, testRun);
+            tearDown(testDevice, testTask, testRun);
         }
     }
 
-    private void runByFutureTask(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
+    private void runByFutureTask(TestDevice testDevice, TestTask testTask, TestRun testRun) throws Exception {
         FutureTask<String> futureTask = new FutureTask<>(() -> {
             loadTestRunToCurrentThread(testRun);
-            run(deviceInfo, testTask, testRun);
+            run(testDevice, testTask, testRun);
             return null;
         });
         ThreadPoolUtil.TEST_EXECUTOR.execute(futureTask);
@@ -80,7 +76,7 @@ public abstract class TestRunner {
             }
         } catch (TimeoutException | InterruptedException | ExecutionException e) {
             futureTask.cancel(true);
-            stopTest(deviceInfo);
+            stopTest(testDevice);
             throw e;
         }
     }
@@ -105,9 +101,9 @@ public abstract class TestRunner {
         Assert.isFalse(testTask.isCanceled(), "Task {} is canceled", testTask.getId());
     }
 
-    protected TestRun createTestRun(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
-        TestRun testRun = new TestRun(deviceInfo.getSerialNum(), deviceInfo.getName(), testTask.getId());
-        File testRunResultFolder = new File(testTask.getResourceDir(), deviceInfo.getSerialNum());
+    protected TestRun createTestRun(TestDevice testDevice, TestTask testTask, Logger parentLogger) {
+        TestRun testRun = new TestRun(testDevice.getSerialNum(), testDevice.getName(), testTask.getId());
+        File testRunResultFolder = new File(testTask.getResourceDir(), testDevice.getSerialNum());
         parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
         if (!testRunResultFolder.exists()) {
             if (!testRunResultFolder.mkdirs()) {
@@ -122,33 +118,33 @@ public abstract class TestRunner {
         return testRun;
     }
 
-    protected void setUp(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
-        deviceInfo.killAll();
+    protected void setUp(TestDevice testDevice, TestTask testTask, TestRun testRun) throws Exception {
+        testDevice.killAll();
         // this key will be used to recover device status when lost the connection between agent and master
-        deviceInfo.addCurrentTask(testTask);
+        testDevice.addCurrentTask(testTask);
         loadTestRunToCurrentThread(testRun);
         /* set up device */
         testRun.getLogger().info("Start setup device");
-        testDeviceManager.testDeviceSetup(deviceInfo, testRun.getLogger());
-        testDeviceManager.wakeUpDevice(deviceInfo, testRun.getLogger());
+        testDevice.testDeviceSetup(testRun.getLogger());
+        testDevice.wakeUpDevice(testRun.getLogger());
         ThreadUtils.safeSleep(1000);
         checkTestTaskCancel(testTask);
-        reInstallApp(deviceInfo, testTask, testRun.getLogger());
-        reInstallTestApp(deviceInfo, testTask, testRun.getLogger());
+        reInstallApp(testDevice, testTask, testRun.getLogger());
+        reInstallTestApp(testDevice, testTask, testRun.getLogger());
 
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing setUp actions.");
-            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
+            List<Exception> exceptions = actionExecutor.doActions(testDevice, testRun.getLogger(),
                     testTask.getDeviceActions(), DeviceAction.When.SET_UP);
             Assert.isTrue(exceptions.size() == 0, () -> exceptions.get(0));
         }
 
         testRun.getLogger().info("Start granting all package needed permissions device");
-        testDeviceManager.grantAllTaskNeededPermissions(deviceInfo, testTask, testRun.getLogger());
+        testDevice.grantAllTaskNeededPermissions(testTask, testRun.getLogger());
 
         checkTestTaskCancel(testTask);
-        testDeviceManager.getScreenShot(deviceInfo, testRun.getLogger());
+        testDevice.getScreenShot(testRun.getLogger());
 
         if (performanceTestManagementService != null && testTask.getInspectionStrategies() != null) {
             for (InspectionStrategy strategy : testTask.getInspectionStrategies()) {
@@ -157,24 +153,24 @@ public abstract class TestRunner {
         }
     }
 
-    protected abstract void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception;
+    protected abstract void run(TestDevice testDevice, TestTask testTask, TestRun testRun) throws Exception;
 
-    protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
+    protected void tearDown(TestDevice testDevice, TestTask testTask, TestRun testRun) {
         // stop performance test
         if (performanceTestManagementService != null) {
-            performanceTestManagementService.testTearDown(deviceInfo, log);
+            performanceTestManagementService.testTearDown(testDevice, log);
         }
 
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
-            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
+            List<Exception> exceptions = actionExecutor.doActions(testDevice, testRun.getLogger(),
                     testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
             if (exceptions.size() > 0) {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
         }
-        testDeviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
+        testDevice.testDeviceUnset(testRun.getLogger());
 
         //generate xml report and upload files
         if (testRun.getTotalCount() > 0) {
@@ -187,7 +183,7 @@ public abstract class TestRunner {
         }
         if (testTaskRunCallback != null) {
             try {
-                testTaskRunCallback.onOneDeviceComplete(testTask, deviceInfo, testRun.getLogger(), testRun);
+                testTaskRunCallback.onOneDeviceComplete(testTask, testDevice, testRun.getLogger(), testRun);
             } catch (Exception e) {
                 testRun.getLogger().error("Error in onOneDeviceComplete", e);
             }
@@ -196,19 +192,19 @@ public abstract class TestRunner {
         LogUtils.releaseLogger(testRun.getLogger());
     }
 
-    protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
-        if (testTask.getRequireReinstall() || testDeviceManager instanceof IOSTestDeviceManager) {
-            testDeviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
+    protected void reInstallApp(TestDevice testDevice, TestTask testTask, Logger reportLogger) throws Exception {
+        if (testTask.getRequireReinstall()) {
+            testDevice.uninstallApp(testTask.getPkgName(), reportLogger);
             ThreadUtils.safeSleep(3000);
         } else if (testTask.getRequireClearData()) {
-            testDeviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
+            testDevice.resetPackage(testTask.getPkgName(), reportLogger);
         }
         checkTestTaskCancel(testTask);
 
-        testDeviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
+        testDevice.installApp(testTask.getAppFile().getAbsolutePath(), reportLogger);
     }
 
-    protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger)
+    protected void reInstallTestApp(TestDevice testDevice, TestTask testTask, Logger reportLogger)
             throws Exception {
         if (!shouldInstallTestPackageAsApp()) {
             return;
@@ -223,12 +219,12 @@ public abstract class TestRunner {
             return;
         }
         if (testTask.getRequireReinstall()) {
-            testDeviceManager.uninstallApp(deviceInfo, testTask.getTestPkgName(), reportLogger);
+            testDevice.uninstallApp(testTask.getTestPkgName(), reportLogger);
             // test package uninstall should be faster than app package removal.
             ThreadUtils.safeSleep(2000);
         }
         checkTestTaskCancel(testTask);
-        testDeviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger);
+        testDevice.installApp(testTask.getTestAppFile().getAbsolutePath(), reportLogger);
     }
 
     protected boolean shouldInstallTestPackageAsApp() {
@@ -249,7 +245,7 @@ public abstract class TestRunner {
         return reportLogger;
     }
 
-    public void stopTest(DeviceInfo deviceInfo) {
-        deviceInfo.killAll();
+    public void stopTest(TestDevice testDevice) {
+        testDevice.killAll();
     }
 }

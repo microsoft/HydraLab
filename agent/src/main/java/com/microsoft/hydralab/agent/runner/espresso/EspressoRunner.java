@@ -11,6 +11,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -34,7 +35,7 @@ public class EspressoRunner extends TestRunner {
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
+    protected void run(TestDevice testDevice, TestTask testTask, TestRun testRun) throws Exception {
         InstrumentationResultParser instrumentationResultParser = null;
         Logger reportLogger = testRun.getLogger();
 
@@ -43,7 +44,7 @@ public class EspressoRunner extends TestRunner {
             reportLogger.info("Start xml report: parse listener");
             EspressoTestInfoProcessorListener listener =
                     new EspressoTestInfoProcessorListener(agentManagementService,
-                            adbOperateUtil, deviceInfo, testRun, testTask.getPkgName(),
+                            adbOperateUtil, testDevice, testRun, testTask.getPkgName(),
                             performanceTestManagementService);
             instrumentationResultParser =
                     new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
@@ -59,7 +60,7 @@ public class EspressoRunner extends TestRunner {
             listener.startRecording(testTask.getTimeOutSecond());
             String command = buildCommand(testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(),
                     testTask.getTestScope(), testTask.getInstrumentationArgs());
-            String result = startInstrument(deviceInfo, reportLogger,
+            String result = startInstrument(testDevice.getDeviceInfo(), reportLogger,
                     instrumentationResultParser, testTask.getTimeOutSecond(), command);
             if (Const.TaskResult.ERROR_DEVICE_OFFLINE.equals(result)) {
                 testTaskRunCallback.onDeviceOffline(testTask);

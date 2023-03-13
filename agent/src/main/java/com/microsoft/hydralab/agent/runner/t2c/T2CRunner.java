@@ -8,12 +8,10 @@ import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
@@ -25,8 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class T2CRunner extends AppiumRunner {
 
     private final AnimatedGifEncoder e = new AnimatedGifEncoder();
-    private LogCollector logCollector;
-    private ScreenRecorder deviceScreenRecorder;
+    private TestDevice testDevice;
     private String pkgName;
     String agentName;
     private int currentIndex = 0;
@@ -38,19 +35,15 @@ public class T2CRunner extends AppiumRunner {
     }
 
     @Override
-    protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, DeviceInfo deviceInfo,
-                                TestTask testTask,
+    protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, TestDevice testDevice, TestTask testTask,
                                 TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         pkgName = testTask.getPkgName();
-
+        this.testDevice = testDevice;
         // Test start
-        deviceScreenRecorder = testDeviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
-        deviceScreenRecorder.setupDevice();
-        deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
+        testDevice.startScreenRecorder(deviceTestResultFolder, testTask.getTimeOutSecond(), reportLogger);
         long recordingStartTimeMillis = System.currentTimeMillis();
 
-        logCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
-        logCollector.start();
+        testDevice.startLogCollector(pkgName, testRun, reportLogger);
 
         testRun.setTotalCount(testTask.testJsonFileList.size() + (initialJsonFile == null ? 0 : 1));
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
@@ -58,7 +51,7 @@ public class T2CRunner extends AppiumRunner {
 
         performanceTestManagementService.testRunStarted();
 
-        deviceInfo.setRunningTestName(pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
+        testDevice.setRunningTestName(pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
         currentIndex = 0;
 
         File gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
@@ -67,10 +60,10 @@ public class T2CRunner extends AppiumRunner {
         e.setRepeat(0);
 
         if (initialJsonFile != null) {
-            runT2CJsonTestCase(initialJsonFile, deviceInfo, testRun, reportLogger, recordingStartTimeMillis);
+            runT2CJsonTestCase(initialJsonFile, testDevice, testRun, reportLogger, recordingStartTimeMillis);
         }
         for (File jsonFile : testTask.testJsonFileList) {
-            runT2CJsonTestCase(jsonFile, deviceInfo, testRun, reportLogger, recordingStartTimeMillis);
+            runT2CJsonTestCase(jsonFile, testDevice, testRun, reportLogger, recordingStartTimeMillis);
         }
 
         // Test finish
@@ -78,21 +71,21 @@ public class T2CRunner extends AppiumRunner {
         performanceTestManagementService.testRunFinished();
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
-        deviceInfo.setRunningTestName(null);
+        testDevice.setRunningTestName(null);
         releaseResource();
         return gifFile;
     }
 
     @Override
-    public TestRun createTestRun(DeviceInfo deviceInfo, TestTask testTask, Logger parentLogger) {
-        TestRun testRun = super.createTestRun(deviceInfo, testTask, parentLogger);
+    public TestRun createTestRun(TestDevice testDevice, TestTask testTask, Logger parentLogger) {
+        TestRun testRun = super.createTestRun(testDevice, testTask, parentLogger);
         String deviceName =
-                System.getProperties().getProperty("os.name") + "-" + agentName + "-" + deviceInfo.getName();
+                System.getProperties().getProperty("os.name") + "-" + agentName + "-" + testDevice.getName();
         testRun.setDeviceName(deviceName);
         return testRun;
     }
 
-    private void runT2CJsonTestCase(File jsonFile, DeviceInfo deviceInfo, TestRun testRun,
+    private void runT2CJsonTestCase(File jsonFile, TestDevice testDevice, TestRun testRun,
                                     Logger reportLogger, long recordingStartTimeMillis) {
         AndroidTestUnit ongoingTest = new AndroidTestUnit();
         ongoingTest.setNumtests(testRun.getTotalCount());
@@ -112,7 +105,7 @@ public class T2CRunner extends AppiumRunner {
 
         performanceTestManagementService.testStarted(ongoingTest.getTitle());
 
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5),
+        testDevice.updateScreenshotImageAsyncDelay(TimeUnit.SECONDS.toMillis(5),
                 (imagePNGFile -> {
                     if (imagePNGFile == null || !e.isStarted()) {
                         return;
@@ -126,7 +119,7 @@ public class T2CRunner extends AppiumRunner {
 
         // Run Test
         try {
-            testDeviceManager.runAppiumT2CTest(deviceInfo, jsonFile, reportLogger);
+            testDevice.runAppiumT2CTest(jsonFile, reportLogger);
             performanceTestManagementService.testSuccess(ongoingTest.getTitle());
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTest.setSuccess(true);
@@ -148,7 +141,7 @@ public class T2CRunner extends AppiumRunner {
 
     private void releaseResource() {
         e.finish();
-        deviceScreenRecorder.finishRecording();
-        logCollector.stopAndAnalyse();
+        testDevice.stopScreenRecorder();
+        testDevice.stopLogCollector();
     }
 }

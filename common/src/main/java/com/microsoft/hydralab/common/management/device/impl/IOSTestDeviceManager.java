@@ -131,6 +131,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
 
     @Override
     public void resetPackage(DeviceInfo deviceInfo, String packageName, Logger logger) {
+        uninstallApp(deviceInfo, packageName, logger);
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 

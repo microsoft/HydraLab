@@ -7,10 +7,10 @@ import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.appium.AppiumParam;
 import com.microsoft.hydralab.appium.ThreadParam;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
@@ -40,12 +40,12 @@ public class AppiumRunner extends TestRunner {
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
+    protected void run(TestDevice testDevice, TestTask testTask, TestRun testRun) throws Exception {
 
         Logger reportLogger = testRun.getLogger();
         try {
             File gifFile =
-                    runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testRun,
+                    runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), testDevice, testTask, testRun,
                             testRun.getResultFolder(), reportLogger);
             if (gifFile != null && gifFile.exists() && gifFile.length() > 0) {
                 testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
@@ -57,16 +57,16 @@ public class AppiumRunner extends TestRunner {
     }
 
     @Override
-    protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
-        quitAppiumDrivers(deviceInfo, testTask, testRun.getLogger());
-        super.tearDown(deviceInfo, testTask, testRun);
+    protected void tearDown(TestDevice testDevice, TestTask testTask, TestRun testRun) {
+        quitAppiumDrivers(testDevice, testTask, testRun.getLogger());
+        super.tearDown(testDevice, testTask, testRun);
     }
 
-    protected void quitAppiumDrivers(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) {
-        testDeviceManager.quitMobileAppiumDriver(deviceInfo, reportLogger);
+    protected void quitAppiumDrivers(TestDevice testDevice, TestTask testTask, Logger reportLogger) {
+        testDevice.quitMobileAppiumDriver(reportLogger);
     }
 
-    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask,
+    protected File runAndGetGif(File appiumJarFile, String appiumCommand, TestDevice testDevice, TestTask testTask,
                                 TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         //set appium test property
         reportLogger.info("Start set appium test property");
@@ -75,8 +75,8 @@ public class AppiumRunner extends TestRunner {
             instrumentationArgs = new HashMap<>();
         }
         AppiumParam appiumParam =
-                new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(),
-                        IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger),
+                new AppiumParam(testDevice.getSerialNum(), testDevice.getName(), testDevice.getOsVersion(),
+                        IOSUtils.getWdaPortByUdid(testDevice.getSerialNum(), reportLogger),
                         testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
         ThreadParam.init(appiumParam, instrumentationArgs);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam,
@@ -85,7 +85,7 @@ public class AppiumRunner extends TestRunner {
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");
             Junit5Listener junit5Listener =
-                    new Junit5Listener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(),
+                    new Junit5Listener(agentManagementService, testDevice, testRun, testTask.getPkgName(),
                             performanceTestManagementService, reportLogger);
 
             /** run the test */
@@ -99,7 +99,7 @@ public class AppiumRunner extends TestRunner {
             /** xml report: parse listener */
             reportLogger.info("Start init listener");
             AppiumListener listener =
-                    new AppiumListener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(),
+                    new AppiumListener(agentManagementService, testDevice, testRun, testTask.getPkgName(),
                             performanceTestManagementService, reportLogger);
 
             /** run the test */

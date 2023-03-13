@@ -5,6 +5,8 @@ import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.management.device.TestDevice;
+import com.microsoft.hydralab.common.management.device.TestDeviceTag;
 import com.microsoft.hydralab.common.management.device.impl.AndroidTestDeviceManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,14 +36,14 @@ class CommandActionLoaderTest extends BaseTest {
         ActionExecutor actionExecutor = new ActionExecutor();
         DeviceInfo deviceInfo = new DeviceInfo(deviceManager);
 
-        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, testTask.getDeviceActions(),
+        actionExecutor.doActions(new TestDevice(deviceInfo, TestDeviceTag.DEFAULT), baseLogger, testTask.getDeviceActions(),
                 DeviceAction.When.SET_UP);
         verify(deviceManager, times(3)).execCommandOnDevice(Mockito.any(DeviceInfo.class), Mockito.anyString(),
                 Mockito.any(Logger.class));
         verify(deviceManager, times(1)).execCommandOnAgent(Mockito.any(DeviceInfo.class), Mockito.anyString(),
                 Mockito.any(Logger.class));
 
-        actionExecutor.doActions(deviceManager, deviceInfo, baseLogger, testTask.getDeviceActions(),
+        actionExecutor.doActions(new TestDevice(deviceInfo, TestDeviceTag.DEFAULT), baseLogger, testTask.getDeviceActions(),
                 DeviceAction.When.TEAR_DOWN);
         verify(deviceManager, times(4)).execCommandOnDevice(Mockito.any(DeviceInfo.class), Mockito.anyString(),
                 Mockito.any(Logger.class));

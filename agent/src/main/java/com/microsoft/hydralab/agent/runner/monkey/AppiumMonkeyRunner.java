@@ -8,13 +8,12 @@ import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -32,18 +31,14 @@ public class AppiumMonkeyRunner extends AppiumRunner {
     }
 
     @Override
-    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask,
+    protected File runAndGetGif(File appiumJarFile, String appiumCommand, TestDevice testDevice, TestTask testTask,
                                 TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         String pkgName = testTask.getPkgName();
 
         long recordingStartTimeMillis = System.currentTimeMillis();
-        ScreenRecorder deviceScreenRecorder =
-                testDeviceManager.getScreenRecorder(deviceInfo, deviceTestResultFolder, reportLogger);
-        deviceScreenRecorder.setupDevice();
-        deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
 
-        LogCollector logCollector = testDeviceManager.getLogCollector(deviceInfo, pkgName, testRun, reportLogger);
-        logCollector.start();
+        testDevice.startScreenRecorder(deviceTestResultFolder, testTask.getTimeOutSecond(), reportLogger);
+        testDevice.startLogCollector(pkgName, testRun, reportLogger);
         testRun.setTotalCount(1);
 
         AndroidTestUnit ongoingMonkeyTest = new AndroidTestUnit();
@@ -62,12 +57,12 @@ public class AppiumMonkeyRunner extends AppiumRunner {
 
         testRun.addNewTimeTag(1 + ". " + ongoingMonkeyTest.getTitle(),
                 System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceInfo.setRunningTestName(ongoingMonkeyTest.getTitle());
+        testDevice.setRunningTestName(ongoingMonkeyTest.getTitle());
         File gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
         e.start(gifFile.getAbsolutePath());
         e.setDelay(1000);
         e.setRepeat(0);
-        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(5),
+        testDevice.updateScreenshotImageAsyncDelay(TimeUnit.SECONDS.toMillis(5),
                 (imagePNGFile -> {
                     if (imagePNGFile == null || !e.isStarted()) {
                         return;
@@ -82,13 +77,13 @@ public class AppiumMonkeyRunner extends AppiumRunner {
 
         performanceTestManagementService.testStarted(ongoingMonkeyTest.getTitle());
 
-        testDeviceManager.runAppiumMonkey(deviceInfo, pkgName, testTask.getMaxStepCount(), reportLogger);
+        testDevice.runAppiumMonkey(pkgName, testTask.getMaxStepCount(), reportLogger);
 
-        deviceScreenRecorder.finishRecording();
-        logCollector.stopAndAnalyse();
+        testDevice.stopScreenRecorder();
+        testDevice.stopLogCollector();
 
         // Success status
-        if (logCollector.isCrashFound()) {
+        if (StringUtils.isNotEmpty(testRun.getCrashStack())) {
             // Fail
             ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
             ongoingMonkeyTest.setSuccess(false);
@@ -110,7 +105,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         reportLogger.info(ongoingMonkeyTest.getTitle() + ".end");
         performanceTestManagementService.testRunFinished();
         ongoingMonkeyTest.setEndTimeMillis(System.currentTimeMillis());
-        deviceInfo.setRunningTestName(null);
+        testDevice.setRunningTestName(null);
         testRun.addNewTestUnit(ongoingMonkeyTest);
         testRun.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end",
                 System.currentTimeMillis() - recordingStartTimeMillis);

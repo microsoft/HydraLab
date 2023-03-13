@@ -16,6 +16,8 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.TestDevice;
+import com.microsoft.hydralab.common.management.device.TestDeviceTag;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
@@ -76,7 +78,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 new DeviceTaskControlExecutor.DeviceTask() {
                     @Override
                     public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
-                        runner.runTestOnDevice(testTask, deviceInfo, logger);
+                        TestDevice testDevice = new TestDevice(deviceInfo, TestDeviceTag.DEFAULT);
+                        runner.runTestOnDevice(testTask, testDevice, logger);
                         return false;
                     }
                 },
@@ -192,9 +195,9 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result) {
-        log.info("onOneDeviceComplete: {}", deviceControl.getSerialNum());
-        deviceControl.finishTask();
+    public void onOneDeviceComplete(TestTask testTask, TestDevice testDevice, Logger logger, TestRun result) {
+        log.info("onOneDeviceComplete: {}", testDevice.getSerialNum());
+        testDevice.finishTask();
         File deviceTestResultFolder = result.getResultFolder();
 
         File[] files = deviceTestResultFolder.listFiles();
