@@ -24,7 +24,7 @@ public class EnvCapabilityDiscoveryService {
         envInfo.setOsVersion(props.getProperty("os.version"));
         envInfo.setUserName(System.getProperty("user.name"));
 
-        logger.info("ENV_INFO: {}", envInfo);
+        logger.info("General ENV_INFO: {}", envInfo);
 
         determineEnvironmentComponents(envInfo.getOsName());
 
