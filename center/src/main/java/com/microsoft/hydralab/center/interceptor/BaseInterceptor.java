@@ -54,11 +54,7 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
         }
 
         if (Const.LocalStorageURL.API_PATH_PREFIX_LIST.stream().anyMatch(requestURI::contains)) {
-            if (storageType.equals(Const.StorageType.LOCAL)) {
-                return true;
-            } else {
-                return false;
-            }
+            return storageType.equals(Const.StorageType.LOCAL);
         }
         if (!enabledAuth) {
             authTokenService.loadDefaultUser(request.getSession());
