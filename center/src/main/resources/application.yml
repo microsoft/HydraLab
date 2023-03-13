@@ -62,7 +62,7 @@ app:
       SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
       timeUnit: ${TIME_UNIT:MINUTES}
     local:
-      token: ${CENTER_TOKEN:}
+      token: ${CENTER_TOKEN:token=CENTER_LOCAL_STORAGE_TOKEN}
       endpoint: ${LOCAL_STORAGE_ENDPOINT:http://localhost:9886/}
 
   location: ${user.dir}

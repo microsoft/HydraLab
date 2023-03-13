@@ -98,12 +98,6 @@ public class StorageController {
     @GetMapping("/api/storage/local/download/**")
     public void getDownloadFile(HttpServletRequest request,
                                 HttpServletResponse response,
-//                               // todo: 无需传fileToken = 格式should be like:
-//                               //  sv=2020-10-02&ss=b&srt=o&se=2023-03-07T09%3A50%3A05Z&sp=r&sig=Uzb8EBKAdk6DTlqHFtsgqdPsXRltdilDujzvOQKpzAQ%3D
-//                               @QueryParam("expiryTime") String expiryTime,
-//                               @QueryParam("permission") String permission,
-//                               @QueryParam("signature") String signature,
-                                // todo: temporary used FileToken
                                 @QueryParam("token") String token) {
         if (token == null) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Invalid visit with no auth code");
