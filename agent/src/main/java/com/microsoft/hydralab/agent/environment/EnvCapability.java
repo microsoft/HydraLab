@@ -14,6 +14,9 @@ public class EnvCapability {
         python3("--version"),
         // it's java -version on JDK7, java --version on JDK11 ...
         // -version is more common, so we use it, but the output is on stderr ...
+        // https://www.java.com/en/download/help/version_manual.html
+        // And Java version is a bit tricky as some are 11.0.1 for JDK 11, some are 1.7.0 for JDK 7
+        // So the major version is the first OR second part of the version string
         java("-version", "Unable to locate a Java Runtime"),
         node("--version"),
         npm("--version"),
@@ -67,6 +70,19 @@ public class EnvCapability {
         String[] versionParts = version.split("\\.");
         majorVersion = Integer.parseInt(versionParts[0]);
         minorVersion = Integer.parseInt(versionParts[1]);
+        handleJavaVersion(versionParts);
+    }
+
+    private void handleJavaVersion(String[] versionParts) {
+        // there is no chance it's a JDK1, so it must be something like a 1.7.0
+        if (keyword == CapabilityKeyword.java && majorVersion == 1) {
+            majorVersion = minorVersion;
+            if (versionParts.length > 2) {
+                minorVersion = Integer.parseInt(versionParts[2]);
+            } else {
+                minorVersion = 0;
+            }
+        }
     }
 
     public boolean isReady() {
