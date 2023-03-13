@@ -9,7 +9,7 @@ scriptPath=$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )
 
 userHome=$(eval echo ~)
 
-### install enviroment
+### install environment
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$userHome/.zprofile"
 eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -19,19 +19,20 @@ brew install awk
 brew install android-platform-tools
 
 # trace adb path and set ANDROID_HOME as env var
-adb_path=`which adb`
+adb_path=$(which adb)
 # example value of this adb_path here: 
 # lrwxr-xr-x  1 bsp  admin  71 Mar 10 18:47 /opt/homebrew/bin/adb -> /opt/homebrew/Caskroom/android-platform-tools/34.0.0/platform-tools/adb
-adb_path=`ls -l $adb_path`
-echo $adb_path > temp.txt
-adb_path=`awk -F '-> ' '{print $2}' temp.txt`
-echo $adb_path > temp.txt
-export ANDROID_HOME=`awk -F '/platform-tools/' '{print $1}' temp.txt`
-echo $ANDROID_HOME
-echo "\nexport ANDROID_HOME=$ANDROID_HOME" >> export_android_home.sh
+adb_path=$(ls -l "$adb_path")
+echo "$adb_path" > temp.txt
+adb_path=$(awk -F '-> ' '{print $2}' temp.txt)
+echo "$adb_path" > temp.txt
+export ANDROID_HOME=$(awk -F '/platform-tools/' '{print $1}' temp.txt)
+echo "$ANDROID_HOME"
+echo "\nexport ANDROID_HOME=$ANDROID_HOME" > export_android_home.sh
 cat export_android_home.sh >> ~/.zshrc
+rm temp.txt
 
-brew install maven
+# brew install maven
 brew install libimobiledevice
 brew install --build-from-source python@3.9
 brew install ffmpeg
