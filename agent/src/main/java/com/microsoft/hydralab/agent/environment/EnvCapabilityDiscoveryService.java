@@ -48,13 +48,15 @@ public class EnvCapabilityDiscoveryService {
     }
 
     private void determineEnvironmentComponents(String osName) {
-        if (osName.toLowerCase(Locale.US).contains("windows")) {
+        String osLowerCase = osName.toLowerCase(Locale.US);
+        if (osLowerCase.contains("windows")) {
             envInfo.setOs(EnvInfo.OS.WINDOWS);
             scanner = new EnvCapabilityScanner.WindowsScanner();
-        } else if (osName.toLowerCase(Locale.US).contains("linux")) {
+        } else if (osLowerCase.contains("linux")) {
             envInfo.setOs(EnvInfo.OS.LINUX);
             scanner = new EnvCapabilityScanner.LinuxScanner();
-        } else if (osName.toLowerCase(Locale.US).contains("mac")) {
+        } else if (osLowerCase.contains("mac os")
+                || osLowerCase.contains("macos")) {
             envInfo.setOs(EnvInfo.OS.MACOS);
             scanner = new EnvCapabilityScanner.MacOSScanner();
         } else {
