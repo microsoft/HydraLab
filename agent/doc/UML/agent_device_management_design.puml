@@ -5,7 +5,10 @@ class AgentManagementService {
     File testBaseDir
     File deviceLogBaseDir
 }
-class TestDevice
+interface TestDeviceOperation
+class TestDevice implements TestDeviceOperation
+class TestDeviceCombo extends TestDevice
+class DeviceInfo
 abstract class TestDeviceManager
 class AndroidTestDeviceManager
 class IOSTestDeviceManager
@@ -26,5 +29,7 @@ TestDeviceManager --> TestDriver
 ADBDriver -u-|> TestDriver
 AppiumDriver -u-|> TestDriver
 
-TestRunner -r-> TestDeviceManager
+TestRunner -r-> TestDevice
+TestDevice -r-> DeviceInfo
+DeviceInfo ---> TestDeviceManager
 @enduml
