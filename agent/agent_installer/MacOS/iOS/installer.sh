@@ -95,9 +95,11 @@ mkdir -p "$serverPath"
 sudo mkdir -p "$supervisorPath"
 sudo cp "$iniFile" "$supervisorPath/HydraLabAgent.ini"
 jarPath=$(find "$scriptPath" -type f -name "*agent*")
+yamlPath=$(find "$scriptPath" -type f -name "*application.y*")
 cp "$scriptPath/HydraAgent.sh" "$serverPath/HydraAgent.sh"
 cp "$scriptPath/restartAgent.sh" "$serverPath/restartAgent.sh"
 cp "$jarPath" "$serverPath/agent.jar"
+cp "$yamlPath" "$serverPath/application.yml"
 echo "Files copy finished."
 
 ### start agent
