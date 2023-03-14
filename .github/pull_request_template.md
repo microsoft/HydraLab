@@ -31,8 +31,8 @@ Please check the type of change your PR introduces:
 Does this close any currently open issues? Issue ID: #
 
 ### Feature UI Screenshots or Technical Design Diagrams
-<!-- If this is a relatively large or complex change, kick off the discussion by drawing the tech design with PlantUML and explaining why you chose the solution you did and what alternatives you considered, etc... -->
+*If this is a relatively large or complex change, kick off the discussion by drawing the tech design with PlantUML and explaining why you chose the solution you did and what alternatives you considered, etc...*
 
-## How you tested the PR
+# How you tested the PR
 <!-- This is important! Please make sure the change is tested, you can test it by adding UTs, do local test and share the screenshots, etc. -->
 
