@@ -31,7 +31,7 @@ A few words to explain your changes:
 Does this close any currently open issues? Issue ID: #
 
 ### How you tested this
-*This is important! Please make sure the change is tested, you can test it by adding UTs, do local test and share the screenshots, etc.*
+*Please make sure the change is tested, you can test it by adding UTs, do local test and share the screenshots, etc.*
 
 ### Feature UI Screenshots or Technical Design Diagrams
 *If this is a relatively large or complex change, kick off the discussion by drawing the tech design with PlantUML and explaining why you chose the solution you did and what alternatives you considered, etc...*
