@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * @date 11/15/2022
  */
 @Data
-@ConfigurationProperties(prefix = "app.storage.blob")
+@ConfigurationProperties(prefix = "app.storage.azure")
 @Component
 public class AzureBlobProperty implements StorageProperties {
     private String connection;

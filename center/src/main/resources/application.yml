@@ -53,7 +53,7 @@ app:
   default-user: ${DEFAULT_USER:default@hydralab.com}
   storage:
     type: ${STORAGE_TYPE:AZURE} # current available options: LOCAL, AZURE
-    blob:
+    azure:
       connection: ${BLOB_CONNECTION_STR:}
       fileLimitDay: 6
       CDNUrl: ${CDN_URL:}
