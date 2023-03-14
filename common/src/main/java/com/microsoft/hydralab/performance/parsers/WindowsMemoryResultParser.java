@@ -31,6 +31,10 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
         {
+            if (inspectionResult == null) {
+                continue;
+            }
+
             try (BufferedReader reader = new BufferedReader(new FileReader(inspectionResult.rawResultFile,
                     StandardCharsets.UTF_16))) {
                 WindowsMemoryParsedData parsedData = new WindowsMemoryParsedData();

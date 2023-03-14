@@ -23,7 +23,7 @@ TEST_RUN_FINISHED
       "id": "13211FDD400183",
       "platform": "android",
 '      Deprecated Name : init
-      "setUp": {
+      "setup": {
         "launcherApp": ""
       }
 '      Can also add tearDown here to match the device action design
@@ -35,9 +35,8 @@ TEST_RUN_FINISHED
       "index": 0,
       "driverId": "13211FDD400183",
       "action": {
-        "actionType": "inspection",
+        "actionType": "inspectBatteryUsage",
         "arguments": {
-          "inspectorType": "INSPECTOR_ANDROID_MEMORY_INFO",
           "targetApp": "com.microsoft.appmanager",
           "description": "Start LTW",
           "isReset": false
@@ -49,9 +48,8 @@ TEST_RUN_FINISHED
       "index": 1,
       "driverId": "13211FDD400183",
       "action": {
-        "actionType": "inspection",
+        "actionType": "inspectMemoryUsage",
         "arguments": {
-          "inspectorType": "INSPECTOR_ANDROID_BATTERY_INFO",
           "targetApp ": "com.microsoft.appmanager",
           "description ": "Start LTW",
           "isReset": true

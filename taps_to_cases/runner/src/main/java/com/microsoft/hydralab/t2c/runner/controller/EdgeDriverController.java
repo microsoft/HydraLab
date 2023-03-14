@@ -20,8 +20,8 @@ public class EdgeDriverController extends BaseDriverController {
     EdgeDriver edgeDriver;
     WindowsDriver windowsDriver;
 
-    public EdgeDriverController(WindowsDriver windowsDriver, EdgeDriver edgeDriver, Logger logger) {
-        super(windowsDriver, logger);
+    public EdgeDriverController(WindowsDriver windowsDriver, EdgeDriver edgeDriver, String udid, Logger logger) {
+        super(windowsDriver, udid, logger);
         this.edgeDriver = edgeDriver;
         this.windowsDriver = windowsDriver;
     }
@@ -65,4 +65,13 @@ public class EdgeDriverController extends BaseDriverController {
         }
     }
 
+    @Override
+    public void inspectMemoryUsage(String targetApp, String description, boolean isReset) {
+        // Nothing need to do for Edge Driver
+    }
+
+    @Override
+    public void inspectBatteryUsage(String targetApp, String description, boolean isReset) {
+        // Nothing need to do for Edge Driver
+    }
 }

@@ -139,7 +139,8 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
                 if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
                     AndroidDriverController androidDriverController = new AndroidDriverController(
-                            appiumServerManager.getAndroidDriver(deviceInfo, reportLogger), reportLogger);
+                            appiumServerManager.getAndroidDriver(deviceInfo, reportLogger),
+                            deviceInfo.getSerialNum(), reportLogger);
                     driverControllerMap.put(driverInfo.getId(), androidDriverController);
                     if (!StringUtils.isEmpty(driverInfo.getLauncherApp())) {
                         androidDriverController.activateApp(driverInfo.getLauncherApp());
@@ -156,7 +157,7 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
                         windowsDriver = appiumServerManager.getWindowsRootDriver(reportLogger);
                     }
                     driverControllerMap.put(driverInfo.getId(),
-                            new WindowsDriverController(windowsDriver, reportLogger));
+                            new WindowsDriverController(windowsDriver, "Windows", reportLogger));
 
                     reportLogger.info("Successfully init a Windows driver: " + testWindowsApp);
                 }
@@ -170,17 +171,18 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
                     driverControllerMap.put(driverInfo.getId(), new EdgeDriverController(
                             appiumServerManager.getWindowsEdgeDriver(reportLogger),
                             appiumServerManager.getEdgeDriver(reportLogger),
-                            reportLogger));
+                            "Edge", reportLogger));
                     reportLogger.info("Successfully init a Edge driver");
                 }
             }
 
-            ArrayList<ActionInfo> caseList = testInfo.getCases();
+            ArrayList<ActionInfo> caseList = testInfo.getActions();
 
             for (ActionInfo actionInfo : caseList) {
                 BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
+                reportLogger.info("Start step: " + actionInfo.getId() + ", description: " + actionInfo.getDescription() + "action: " + actionInfo.getActionType() + " on element: "
+                        + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
                 T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
-                reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
             }
         } catch (Exception e) {
             reportLogger.error("T2C Test Error: ", e);
