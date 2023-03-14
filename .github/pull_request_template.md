@@ -19,10 +19,9 @@ Please check if your PR fulfills the following requirements:
 Please check the type of change your PR introduces:
 - [ ] Bugfix
 - [ ] Feature
-- [ ] Code style update (formatting, renaming)
-- [ ] Refactoring (no functional changes, no api changes)
 - [ ] Build related changes
-- [ ] Documentation content changes
+- [ ] Refactoring (no functional changes, no api changes)
+- [ ] Code style update (formatting, renaming) or Documentation content changes
 - [ ] Other (please describe): 
 
 A few words to explain your changes:
