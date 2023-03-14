@@ -5,12 +5,12 @@ package com.microsoft.hydralab.center.controller;
 
 import com.azure.core.annotation.QueryParam;
 import com.microsoft.hydralab.center.service.StorageTokenManageService;
+import com.microsoft.hydralab.center.util.LocalStorageIOUtil;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,13 +26,6 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * @author Li Shen
@@ -61,23 +54,19 @@ public class StorageController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
         }
         if (!LogUtils.isLegalStr(fileUri, Const.RegexString.STORAGE_FILE_REL_PATH, false)) {
-            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path!");
-        }
-        File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
-        File parentDirFile = new File(file.getParent());
-        if (!parentDirFile.exists() && !parentDirFile.mkdirs()) {
-            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "mkdirs failed!");
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid file path!");
         }
 
-        InputStream inputStream;
-        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-            inputStream = uploadedFile.getInputStream();
-            IOUtils.copy(inputStream, fileOutputStream);
-        } catch (IOException e) {
-            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "upload file failed!");
+        try {
+            LocalStorageIOUtil.copyUploadedStreamToFile(uploadedFile, fileUri);
+        } catch (HydraLabRuntimeException e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(e.getCode(), e.getMessage());
         }
+
         return Result.ok(fileUri);
     }
+
 
     // used by center/agent
     @PostMapping(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD)
@@ -97,7 +86,7 @@ public class StorageController {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path!");
         }
 
-        copyDownloadStreamToResponse(fileUri, response);
+        LocalStorageIOUtil.copyDownloadedStreamToResponse(fileUri, response);
     }
 
     // for front end to download file
@@ -118,7 +107,7 @@ public class StorageController {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path!");
         }
 
-        copyDownloadStreamToResponse(fileUri, response);
+        LocalStorageIOUtil.copyDownloadedStreamToResponse(fileUri, response);
     }
 
     @GetMapping("/api/storage/getToken")
@@ -127,26 +116,5 @@ public class StorageController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         return Result.ok(storageTokenManageService.generateReadToken(requestor.getMailAddress()).getToken());
-    }
-
-    private void copyDownloadStreamToResponse(String fileUri, HttpServletResponse response) {
-        File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
-        if (!file.exists()) {
-            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), String.format("File %s not exist!", fileUri));
-        }
-
-        response.reset();
-        response.setContentType("application/octet-stream");
-        response.setCharacterEncoding("utf-8");
-        response.setContentLength((int) file.length());
-        response.setHeader("Content-Disposition", "attachment;filename=" + file.getName());
-
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));) {
-            OutputStream os = response.getOutputStream();
-            int resLen = IOUtils.copy(bis, os);
-            logger.info(String.format("Output file: %s , size: %d!", fileUri, resLen));
-        } catch (IOException e) {
-            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
-        }
     }
 }
