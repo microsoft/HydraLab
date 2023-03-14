@@ -1,0 +1,13 @@
+app:
+  default-user: 'test@test.com'
+  storage:
+    type: LOCAL
+
+management:
+  metrics:
+    export:
+      prometheus:
+        pushgateway:
+          enabled: false
+          username: testUser
+          password: test
