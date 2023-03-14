@@ -1,9 +1,38 @@
-## Description
-<!-- Please write a brief information about the PR, what it contains & its purpose -->
+<!-- Please refer to our contributing documentation for making changes to the code of Hydra Lab https://github.com/microsoft/HydraLab/blob/main/CONTRIBUTING.md#making-changes-to-the-code , or let us know here if you need any help: https://github.com/microsoft/HydraLab/issues/new -->
 
-## Test
-<!-- How you tested the PR -->
+# Pull request checklist
 
-## Feature UI Screenshots or Technical Design Diagrams
-<!-- Please add the images -->
+Please check if your PR fulfills the following requirements:
+- [ ] Tests for the changes have been added (for bug fixes / features)
+- [ ] I've read the [contributing guide](https://github.com/microsoft/HydraLab/blob/main/CONTRIBUTING.md#making-changes-to-the-code) and followed the recommended practices.
+- [ ] [Wikis](https://github.com/microsoft/HydraLab/wiki) have been reviewed and added / updated if needed (for bug fixes / features)
+- [ ] Build (`gradlew build`) was run locally, Lint/Checkstyle were passed, and any changes were pushed.
+
+### Does this introduce a breaking change?
+<!-- If this introduces a breaking change, please describe the impact and migration path for existing applications below. -->
+
+- [ ] Yes
+- [ ] No
+
+# Pull Request Description
+
+Please check the type of change your PR introduces:
+- [ ] Bugfix
+- [ ] Feature
+- [ ] Code style update (formatting, renaming)
+- [ ] Refactoring (no functional changes, no api changes)
+- [ ] Build related changes
+- [ ] Documentation content changes
+- [ ] Other (please describe): 
+
+### A few words to explain your changes
+<!-- Please write a brief information about the PR, what it contains & its purpose, new behaviors after the change -->
+
+Does this close any currently open issues? Issue ID: #
+
+### Feature UI Screenshots or Technical Design Diagrams
+
+
+## How you tested the PR
+<!-- This is important! Please make sure the change is tested, you can test it by adding UTs, do local test and share the screenshots, etc. -->
 
