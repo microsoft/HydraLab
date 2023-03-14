@@ -233,7 +233,7 @@ public abstract class TestRunner {
         }
         checkTestTaskCancel(testTask);
         try {
-            FlowUtil.retryAndSleepWhenFalse(3, 10, () -> testDeviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger););
+            FlowUtil.retryAndSleepWhenFalse(3, 10, () -> testDeviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger));
         } catch (Exception e) {
             throw new Exception(e);
         }
