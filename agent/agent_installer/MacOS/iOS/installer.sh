@@ -89,13 +89,21 @@ chmod +x "$scriptPath/restartAgent.sh"
 chmod +x "$scriptPath/HydraAgent.sh"
 
 ### copy files 
-echo "Copying Files......"
-echo "Work Folder: $serverPath"
+echo "Copying Files to Work Folder: $serverPath"
 mkdir -p "$serverPath"
 sudo mkdir -p "$supervisorPath"
 sudo cp "$iniFile" "$supervisorPath/HydraLabAgent.ini"
 jarPath=$(find "$scriptPath" -type f -name "*agent*")
 yamlPath=$(find "$scriptPath" -type f -name "*application.y*")
+
+if [ -z "$yamlPath" ]
+then
+    echo "application YAML file found, please refer to the guide in
+    https://github.com/microsoft/HydraLab/wiki/Test-agent-setup#download-the-agent-configuration
+    and download the application.yml from the Hydra Lab Portal, and put it in this folder."
+    exit 1
+fi
+
 cp "$scriptPath/HydraAgent.sh" "$serverPath/HydraAgent.sh"
 cp "$scriptPath/restartAgent.sh" "$serverPath/restartAgent.sh"
 cp "$jarPath" "$serverPath/agent.jar"
