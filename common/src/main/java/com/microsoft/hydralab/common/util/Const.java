@@ -162,9 +162,12 @@ public interface Const {
     }
 
     final class LocalStorageURL {
-        public static final List<String> API_PATH_PREFIX_LIST = List.of("/api/storage/local/upload", "/api/storage/local/download");
         public static final String CENTER_LOCAL_STORAGE_UPLOAD = "/api/storage/local/upload";
         public static final String CENTER_LOCAL_STORAGE_DOWNLOAD = "/api/storage/local/download";
         public static final String CENTER_LOCAL_STORAGE_ROOT = "storage/local/";
+    }
+
+    final class LocalStorageConst {
+        public static final List<String> PATH_PREFIX_LIST = List.of(LocalStorageURL.CENTER_LOCAL_STORAGE_UPLOAD, LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD);
     }
 }
