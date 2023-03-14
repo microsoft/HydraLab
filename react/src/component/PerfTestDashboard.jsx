@@ -63,14 +63,14 @@ export default class PerfTestDashboard extends React.Component {
 
     render() {
         const androidMemoryInfo = this.state.androidMemoryInfo;
-        const memoryMetrics = [];
+        const androidMemoryMetrics = [];
         const androidBatteryInfo = this.state.androidBatteryInfo;
-        const batteryMetrics = [];
+        const androidBatteryMetrics = [];
         const windowsMemoryInfo = this.state.windowsMemoryInfo;
         const windowsMemoryMetrics = [];
 
         /**
-         * Battery Info
+         * Android Battery Info
          */
         if (androidBatteryInfo && androidBatteryInfo.performanceInspectionResults && androidBatteryInfo.performanceInspectionResults.length > 0) {
             let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
@@ -79,7 +79,7 @@ export default class PerfTestDashboard extends React.Component {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     result.ratio = inspectionResult.parsedData.ratio * 100;
-                    batteryMetrics.push(result);
+                    androidBatteryMetrics.push(result);
                 }
             })
         }
@@ -97,7 +97,7 @@ export default class PerfTestDashboard extends React.Component {
         );
 
         const renderAndroidBatteryChart = (
-            <LineChart width={800} height={400} data={batteryMetrics} margin={{ top: 20, right: 100, bottom: 20, left: 20 }}>
+            <LineChart width={800} height={400} data={androidBatteryMetrics} margin={{ top: 20, right: 100, bottom: 20, left: 20 }}>
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Battery usage (mAh)', angle: -90, position: 'left' }} />
                 <YAxis yAxisId="right" label={{ value: 'Ratio', angle: -90, position: 'right' }} unit="%" orientation="right" />
@@ -111,7 +111,7 @@ export default class PerfTestDashboard extends React.Component {
 
 
         /**
-         * Memory Info
+         * Android Memory Info
          */
         if (androidMemoryInfo && androidMemoryInfo.performanceInspectionResults && androidMemoryInfo.performanceInspectionResults.length > 0) {
             let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
@@ -127,7 +127,7 @@ export default class PerfTestDashboard extends React.Component {
                             result[key] = inspectionResult.parsedData[key] / 1024;
                         }
                     })
-                    memoryMetrics.push(result);
+                    androidMemoryMetrics.push(result);
                 }
             })
         }
@@ -145,7 +145,7 @@ export default class PerfTestDashboard extends React.Component {
         );
 
         const renderAndroidMemoryChart = (
-            <LineChart width={800} height={400} data={memoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <LineChart width={800} height={400} data={androidMemoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <Legend verticalAlign="top" />
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
@@ -223,12 +223,12 @@ export default class PerfTestDashboard extends React.Component {
 
         return <div id='perf_dashboard'>
             {androidBatteryInfo && <div>
-                <h3> Battery report</h3>
+                <h3> Android Battery report</h3>
                 {androidBatteryMultiSelect}
                 {renderAndroidBatteryChart}
             </div>}
             {androidMemoryInfo && <div>
-                <h3> Memory report</h3>
+                <h3> Android Memory report</h3>
                 {androidMemoryMultiSelect}
                 {renderAndroidMemoryChart}
             </div>}
