@@ -7,6 +7,18 @@ fi
 
 scriptPath=$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )
 
+echo "This script will install the agent for MacOS, and it will take 10-30 minutes to finish."
+echo "Checking if the application configuration is provided......"
+yamlPath=$(find "$scriptPath" -type f -name "*application.*")
+
+if [ -z "$yamlPath" ]
+then
+    echo "application YAML file found, please refer to the guide in
+    https://github.com/microsoft/HydraLab/wiki/Test-agent-setup#download-the-agent-configuration
+    and download the application.yml from the Hydra Lab Portal, and put it in this folder."
+    exit 1
+fi
+
 userHome=$(eval echo ~)
 
 ### install environment
@@ -94,15 +106,6 @@ mkdir -p "$serverPath"
 sudo mkdir -p "$supervisorPath"
 sudo cp "$iniFile" "$supervisorPath/HydraLabAgent.ini"
 jarPath=$(find "$scriptPath" -type f -name "*agent*")
-yamlPath=$(find "$scriptPath" -type f -name "*application.y*")
-
-if [ -z "$yamlPath" ]
-then
-    echo "application YAML file found, please refer to the guide in
-    https://github.com/microsoft/HydraLab/wiki/Test-agent-setup#download-the-agent-configuration
-    and download the application.yml from the Hydra Lab Portal, and put it in this folder."
-    exit 1
-fi
 
 cp "$scriptPath/HydraAgent.sh" "$serverPath/HydraAgent.sh"
 cp "$scriptPath/restartAgent.sh" "$serverPath/restartAgent.sh"
