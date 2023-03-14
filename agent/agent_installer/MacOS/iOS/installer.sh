@@ -13,7 +13,7 @@ yamlPath=$(find "$scriptPath" -type f -name "*application.*")
 
 if [ -z "$yamlPath" ]
 then
-    echo "application YAML file found, please refer to the guide in
+    echo "application YAML file is not found, please refer to the guide in
     https://github.com/microsoft/HydraLab/wiki/Test-agent-setup#download-the-agent-configuration
     and download the application.yml from the Hydra Lab Portal, and put it in this folder."
     exit 1
