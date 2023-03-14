@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package com.microsoft.hydralab.performance.Entity;
+package com.microsoft.hydralab.performance.entity;
 
 import lombok.Data;
 
