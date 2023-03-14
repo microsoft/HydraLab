@@ -6,7 +6,7 @@ Please check if your PR fulfills the following requirements:
 - [ ] Tests for the changes have been added (for bug fixes / features)
 - [ ] I've read the [contributing guide](https://github.com/microsoft/HydraLab/blob/main/CONTRIBUTING.md#making-changes-to-the-code) and followed the recommended practices.
 - [ ] [Wikis](https://github.com/microsoft/HydraLab/wiki) or [README](https://github.com/microsoft/HydraLab/blob/main/README.md) have been reviewed and added / updated if needed (for bug fixes / features)
-- [ ] Code compiles correctly with all tests are passing.
+- [ ] Code compiles correctly with all tests are passed.
 
 ### Does this introduce a breaking change?
 <!-- If this introduces a breaking change for Hydra Lab User and requires a migration process, please describe the impact and migration path for existing applications below. -->
