@@ -15,10 +15,10 @@ import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
-import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
@@ -72,6 +72,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     private boolean isPrometheusEnabled;
     @Autowired(required = false)
     private MetricPushGateway pushGateway;
+    boolean isAgentInit = false;
 
     public void onMessage(Message message) {
         log.info("onMessage Receive bytes message {}", message);
@@ -91,8 +92,11 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                  * [agentUser.setTeamName -> meterRegistry.config().commonTags -> deviceManager.init
                  *  -> (deviceControlService.provideDeviceList + deviceStatbilityMonitor.addDeviceMetricRegistration)].
                  */
-                registerAgentMetrics();
-                deviceControlService.deviceManagerInit();
+                if (!isAgentInit) {
+                    registerAgentMetrics();
+                    deviceControlService.deviceManagerInit();
+                    isAgentInit = true;
+                }
                 deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
                 return;
             case Const.Path.HEARTBEAT:

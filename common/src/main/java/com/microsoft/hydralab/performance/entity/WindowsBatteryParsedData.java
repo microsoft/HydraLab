@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-package com.microsoft.hydralab.performance.Entity;
+package com.microsoft.hydralab.performance.entity;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
 import lombok.Data;

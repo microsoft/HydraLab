@@ -3,25 +3,26 @@
 
 package com.microsoft.hydralab.common.management;
 
-import com.microsoft.hydralab.common.management.impl.AndroidDeviceManager;
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
-import com.microsoft.hydralab.common.management.impl.WindowsDeviceManager;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.AndroidTestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.WindowsTestDeviceManager;
 
 public enum AgentType {
     ANDROID(1) {
         @Override
-        public DeviceManager getManager() {
-            return new AndroidDeviceManager();
+        public TestDeviceManager getManager() {
+            return new AndroidTestDeviceManager();
         }
     }, WINDOWS(2) {
         @Override
-        public DeviceManager getManager() {
-            return new WindowsDeviceManager();
+        public TestDeviceManager getManager() {
+            return new WindowsTestDeviceManager();
         }
     }, IOS(3) {
         @Override
-        public DeviceManager getManager() {
-            return new IOSDeviceManager();
+        public TestDeviceManager getManager() {
+            return new IOSTestDeviceManager();
         }
     };
 
@@ -40,7 +41,7 @@ public enum AgentType {
         return ANDROID;
     }
 
-    public abstract DeviceManager getManager();
+    public abstract TestDeviceManager getManager();
 
     private int getAgentType() {
         return agentType;

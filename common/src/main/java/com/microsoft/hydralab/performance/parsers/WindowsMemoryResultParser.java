@@ -3,10 +3,10 @@
 
 package com.microsoft.hydralab.performance.parsers;
 
-import com.microsoft.hydralab.performance.Entity.WindowsMemoryParsedData;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import com.microsoft.hydralab.performance.entity.WindowsMemoryParsedData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +31,10 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults) {
+            if (inspectionResult == null) {
+                continue;
+            }
+
             try (BufferedReader reader = new BufferedReader(new FileReader(inspectionResult.rawResultFile,
                     StandardCharsets.UTF_16))) {
                 WindowsMemoryParsedData parsedData = new WindowsMemoryParsedData();

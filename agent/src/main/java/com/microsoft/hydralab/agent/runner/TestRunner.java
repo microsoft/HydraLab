@@ -8,8 +8,9 @@ import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
@@ -29,16 +30,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public abstract class TestRunner {
-    protected final Logger log = LoggerFactory.getLogger(DeviceManager.class);
-    protected final DeviceManager deviceManager;
+    protected final Logger log = LoggerFactory.getLogger(TestRunner.class);
+    protected final AgentManagementService agentManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
     protected final PerformanceTestManagementService performanceTestManagementService;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
     protected final ActionExecutor actionExecutor = new ActionExecutor();
+    protected TestDeviceManager testDeviceManager;
 
-    public TestRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
+    public TestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                       PerformanceTestManagementService performanceTestManagementService) {
-        this.deviceManager = deviceManager;
+        this.agentManagementService = agentManagementService;
         this.testTaskRunCallback = testTaskRunCallback;
         this.performanceTestManagementService = performanceTestManagementService;
     }
@@ -48,6 +50,7 @@ public abstract class TestRunner {
         logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
         TestRun testRun = createTestRun(deviceInfo, testTask, logger);
+        testDeviceManager = deviceInfo.getTestDeviceManager();
         checkTestTaskCancel(testTask);
 
         try {
@@ -126,8 +129,8 @@ public abstract class TestRunner {
         loadTestRunToCurrentThread(testRun);
         /* set up device */
         testRun.getLogger().info("Start setup device");
-        deviceManager.testDeviceSetup(deviceInfo, testRun.getLogger());
-        deviceManager.wakeUpDevice(deviceInfo, testRun.getLogger());
+        testDeviceManager.testDeviceSetup(deviceInfo, testRun.getLogger());
+        testDeviceManager.wakeUpDevice(deviceInfo, testRun.getLogger());
         ThreadUtils.safeSleep(1000);
         checkTestTaskCancel(testTask);
         reInstallApp(deviceInfo, testTask, testRun.getLogger());
@@ -136,16 +139,16 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing setUp actions.");
-            List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(),
+            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
                     testTask.getDeviceActions(), DeviceAction.When.SET_UP);
             Assert.isTrue(exceptions.size() == 0, () -> exceptions.get(0));
         }
 
         testRun.getLogger().info("Start granting all package needed permissions device");
-        deviceManager.grantAllTaskNeededPermissions(deviceInfo, testTask, testRun.getLogger());
+        testDeviceManager.grantAllTaskNeededPermissions(deviceInfo, testTask, testRun.getLogger());
 
         checkTestTaskCancel(testTask);
-        deviceManager.getScreenShot(deviceInfo, testRun.getLogger());
+        testDeviceManager.getScreenShot(deviceInfo, testRun.getLogger());
 
         if (performanceTestManagementService != null && testTask.getInspectionStrategies() != null) {
             for (InspectionStrategy strategy : testTask.getInspectionStrategies()) {
@@ -165,19 +168,19 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
-            List<Exception> exceptions = actionExecutor.doActions(deviceManager, deviceInfo, testRun.getLogger(),
+            List<Exception> exceptions = actionExecutor.doActions(testDeviceManager, deviceInfo, testRun.getLogger(),
                     testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
             if (exceptions.size() > 0) {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
         }
-        deviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
+        testDeviceManager.testDeviceUnset(deviceInfo, testRun.getLogger());
 
         //generate xml report and upload files
         if (testRun.getTotalCount() > 0) {
             try {
                 String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
-                testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+                testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
             } catch (Exception e) {
                 testRun.getLogger().error("Error in buildTestResultXml", e);
             }
@@ -194,15 +197,15 @@ public abstract class TestRunner {
     }
 
     protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
-        if (testTask.getRequireReinstall() || deviceManager instanceof IOSDeviceManager) {
-            deviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
+        if (testTask.getRequireReinstall() || testDeviceManager instanceof IOSTestDeviceManager) {
+            testDeviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
             ThreadUtils.safeSleep(3000);
         } else if (testTask.getRequireClearData()) {
-            deviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
+            testDeviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
         }
         checkTestTaskCancel(testTask);
 
-        deviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
+        testDeviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
     }
 
     protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger)
@@ -220,12 +223,12 @@ public abstract class TestRunner {
             return;
         }
         if (testTask.getRequireReinstall()) {
-            deviceManager.uninstallApp(deviceInfo, testTask.getTestPkgName(), reportLogger);
+            testDeviceManager.uninstallApp(deviceInfo, testTask.getTestPkgName(), reportLogger);
             // test package uninstall should be faster than app package removal.
             ThreadUtils.safeSleep(2000);
         }
         checkTestTaskCancel(testTask);
-        deviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger);
+        testDeviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger);
     }
 
     protected boolean shouldInstallTestPackageAsApp() {
@@ -241,8 +244,7 @@ public abstract class TestRunner {
         Logger reportLogger =
                 LogUtils.getLoggerWithRollingFileAppender(loggerName, instrumentLogFile.getAbsolutePath(),
                         "%d %p -- %m%n");
-        // TODO the getTestBaseRelPathInUrl method shouldn't be in deviceManager, testBaseDir should be managed by agent
-        testRun.setInstrumentReportPath(deviceManager.getTestBaseRelPathInUrl(instrumentLogFile));
+        testRun.setInstrumentReportPath(agentManagementService.getTestBaseRelPathInUrl(instrumentLogFile));
 
         return reportLogger;
     }

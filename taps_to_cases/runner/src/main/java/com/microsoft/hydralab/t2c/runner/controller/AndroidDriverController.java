@@ -4,6 +4,8 @@
 package com.microsoft.hydralab.t2c.runner.controller;
 
 import com.google.common.collect.ImmutableMap;
+import com.microsoft.hydralab.performance.PerformanceInspection;
+import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.nativekey.AndroidKey;
@@ -26,8 +28,8 @@ import java.util.Map;
 public class AndroidDriverController extends BaseDriverController {
     private final AndroidDriver androidDriver;
 
-    public AndroidDriverController(AndroidDriver androidDriver, Logger logger) {
-        super(androidDriver, logger);
+    public AndroidDriverController(AndroidDriver androidDriver, String udid, Logger logger) {
+        super(androidDriver, udid, logger);
         this.androidDriver = androidDriver;
     }
 
@@ -140,6 +142,21 @@ public class AndroidDriverController extends BaseDriverController {
     @Override
     public String getPageSource() {
         return androidDriver.getPageSource();
+    }
+
+    @Override
+    public void inspectMemoryUsage(String targetApp, String description, boolean isReset) {
+        // TODO: Need to add memory stack profiling inspector here
+        PerformanceInspectionService.getInstance()
+                .inspect(PerformanceInspection.createAndroidMemoryInfoInspection(
+                        targetApp, this.udid, description, isReset));
+    }
+
+    @Override
+    public void inspectBatteryUsage(String targetApp, String description, boolean isReset) {
+        PerformanceInspectionService.getInstance()
+                .inspect(PerformanceInspection.createAndroidBatteryInfoInspection(
+                        targetApp, this.udid, description, isReset));
     }
 
     @Override

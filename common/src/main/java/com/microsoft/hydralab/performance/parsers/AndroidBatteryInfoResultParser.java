@@ -3,7 +3,7 @@
 
 package com.microsoft.hydralab.performance.parsers;
 
-import com.microsoft.hydralab.performance.Entity.AndroidBatteryInfo;
+import com.microsoft.hydralab.performance.entity.AndroidBatteryInfo;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;

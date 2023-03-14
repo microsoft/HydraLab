@@ -3,6 +3,8 @@
 
 package com.microsoft.hydralab.t2c.runner;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class DriverInfo {
     private final String id;
     private final String platform;
@@ -30,5 +32,10 @@ public class DriverInfo {
 
     public String getLauncherApp() {
         return launcherApp;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

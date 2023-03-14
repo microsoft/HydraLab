@@ -274,8 +274,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         if (resultList != null && !resultList.isEmpty()) {
             try {
                 FileUtil.writeToFile(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(resultList),
-                        new File(getTestRun().getResultFolder(), PerformanceInspection.class.getSimpleName())
-                                + File.separator + "PerformanceReport.json");
+                        getTestRun().getResultFolder() + File.separator + "PerformanceReport.json");
             } catch (JsonProcessingException e) {
                 log.error("Failed to save performance test results to file", e);
             }

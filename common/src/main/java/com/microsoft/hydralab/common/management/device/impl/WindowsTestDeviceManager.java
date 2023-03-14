@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-package com.microsoft.hydralab.common.management.impl;
+package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
 import com.android.ddmlib.TimeoutException;
@@ -36,17 +36,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WindowsDeviceManager extends AndroidDeviceManager {
+public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
 
     @Override
     public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
         super.getScreenShot(deviceInfo, logger);
         File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
         if (pcScreenShotImageFile == null) {
-            pcScreenShotImageFile = new File(screenshotDir, deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
+            pcScreenShotImageFile = new File(agentManagementService.getScreenshotDir(),
+                    deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + "-" + "pc" + ".jpg");
             deviceInfo.setPcScreenshotImageFile(pcScreenShotImageFile);
-            String pcImageRelPath = pcScreenShotImageFile.getAbsolutePath().replace(new File(getDeviceStoragePath()).getAbsolutePath(), "");
-            pcImageRelPath = getDeviceFolderUrlPrefix() + pcImageRelPath.replace(File.separator, "/");
+            String pcImageRelPath = pcScreenShotImageFile.getAbsolutePath()
+                    .replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
+            pcImageRelPath =
+                    agentManagementService.getDeviceFolderUrlPrefix() + pcImageRelPath.replace(File.separator, "/");
             deviceInfo.setPcImageRelPath(pcImageRelPath);
         }
         try {
@@ -55,8 +58,11 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
             LOGGER.error("Screen capture failed for device: {}", deviceInfo, e);
         }
         StorageFileInfo fileInfo =
-                new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
-        String fileDownloadUrl = storageServiceClientProxy.upload(pcScreenShotImageFile, fileInfo).getBlobUrl();
+                new StorageFileInfo(pcScreenShotImageFile, "device/screenshots/" + pcScreenShotImageFile.getName(),
+                        StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl =
+                agentManagementService.getStorageServiceClientProxy().upload(pcScreenShotImageFile, fileInfo)
+                        .getBlobUrl();
         if (StringUtils.isBlank(fileDownloadUrl)) {
             LOGGER.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
         } else {
@@ -103,10 +109,10 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
         return new AppiumE2ETestRecorder(this, this.adbOperateUtil, deviceInfo, folder, logger);
     }
 
-    public File joinImages(File pcfile, File phoneFile, String outFileName) {
-        File outFile = new File(screenshotDir, outFileName);
+    public File joinImages(File pcFile, File phoneFile, String outFileName) {
+        File outFile = new File(agentManagementService.getScreenshotDir(), outFileName);
         try {
-            BufferedImage imagePc = ImageIO.read(pcfile);
+            BufferedImage imagePc = ImageIO.read(pcFile);
             int widthPc = imagePc.getWidth();
             int heightPc = imagePc.getHeight();
             int[] imageArrayPC = new int[widthPc * heightPc];
@@ -126,7 +132,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
             ImageIO.write(imageNew, "jpg", outFile);
         } catch (Exception e) {
             e.printStackTrace();
-            return pcfile;
+            return pcFile;
         }
         return outFile;
     }
@@ -165,7 +171,8 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
                 if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
                     AndroidDriverController androidDriverController = new AndroidDriverController(
-                            appiumServerManager.getAndroidDriver(deviceInfo, reportLogger), reportLogger);
+                            appiumServerManager.getAndroidDriver(deviceInfo, reportLogger),
+                            deviceInfo.getSerialNum(), reportLogger);
                     driverControllerMap.put(driverInfo.getId(), androidDriverController);
                     if (!StringUtils.isEmpty(driverInfo.getLauncherApp())) {
                         androidDriverController.activateApp(driverInfo.getLauncherApp());
@@ -182,7 +189,7 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
                         windowsDriver = appiumServerManager.getWindowsRootDriver(reportLogger);
                     }
                     driverControllerMap.put(driverInfo.getId(),
-                            new WindowsDriverController(windowsDriver, reportLogger));
+                            new WindowsDriverController(windowsDriver, "Windows", reportLogger));
 
                     reportLogger.info("Successfully init a Windows driver: " + testWindowsApp);
                 }
@@ -196,18 +203,18 @@ public class WindowsDeviceManager extends AndroidDeviceManager {
                     driverControllerMap.put(driverInfo.getId(), new EdgeDriverController(
                             appiumServerManager.getWindowsEdgeDriver(reportLogger),
                             appiumServerManager.getEdgeDriver(reportLogger),
-                            reportLogger));
+                            "Edge", reportLogger));
                     reportLogger.info("Successfully init a Edge driver");
                 }
             }
 
-            ArrayList<ActionInfo> caseList = testInfo.getCases();
+            ArrayList<ActionInfo> caseList = testInfo.getActions();
 
             for (ActionInfo actionInfo : caseList) {
                 BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
+                reportLogger.info("Start step: " + actionInfo.getId() + ", description: " + actionInfo.getDescription() + "action: " + actionInfo.getActionType() + " on element: "
+                        + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
                 T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
-                reportLogger.info("Do action: " + actionInfo.getActionType() + " on element: " +
-                        (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
             }
         } catch (Exception e) {
             reportLogger.error("T2C Test Error: ", e);

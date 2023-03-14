@@ -52,14 +52,17 @@ stages:
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
           $hydraVersionCode = $(Build.BuildId)
           $hydraVersion = "$(Build.SourceBranchName).$(Build.BuildId)"
+          $branchName =  "$(Build.SourceBranch)"
           
           (Get-Content agent/src/main/resources/version.properties) -Replace '1000000', "$hydraVersionCode"| Set-Content agent/src/main/resources/version.properties
-          (Get-Content agent/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content agent/src/main/resources/version.properties
-          
           (Get-Content center/src/main/resources/version.properties) -Replace '1000000', "$hydraVersionCode"| Set-Content center/src/main/resources/version.properties
-          (Get-Content center/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content center/src/main/resources/version.properties
+          
+          if($branchName -like '*Release*'){
+            (Get-Content agent/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content agent/src/main/resources/version.properties
+            (Get-Content center/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content center/src/main/resources/version.properties
+          }
         workingDirectory: '$(Build.Repository.LocalPath)'
-      condition: and(eq(variables.fullBuild, 'true'), contains(variables['Build.SourceBranch'], 'Release/'))
+      condition: eq(variables.fullBuild, 'true')
     - task: Gradle@3
       displayName: Run JUnit Test
       inputs:

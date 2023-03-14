@@ -52,7 +52,7 @@ public final class T2CAppiumUtils {
             e.printStackTrace();
             int index = actionInfo.getId();
             String description = actionInfo.getDescription();
-            logger.error("doAction at " + index + ", description: " + description + ", with exception: " + e.getMessage());
+            logger.error("doAction at " + index + ", description: " + description + ", page source: " + driver.getPageSource() + "\n, with exception: " + e.getMessage());
             if (!isOption) {
                 throw new IllegalStateException("Failed at " + index + ", description: " + description + ", " + e.getMessage()
                         + ", page source: \n" + driver.getPageSource(), e);
@@ -71,6 +71,7 @@ public final class T2CAppiumUtils {
         if (webElement == null && !isSelfTesting) {
             safeSleep(3000);
         }
+        logger.info("chooseActionType, action id: " + actionInfo.getId() + ", description: " + actionInfo.getDescription() + " on element: "  + webElement);
         switch (actionType) {
             case "click":
                 driver.click(webElement);
@@ -217,6 +218,18 @@ public final class T2CAppiumUtils {
             case "setClipboard":
                 String clipboardText = (String) arguments.get("text");
                 driver.setClipboard(clipboardText);
+                break;
+            case ActionInfo.ACTION_TYPE_INSPECT_BATTERY_USAGE:
+                String targetApp = (String) arguments.get("targetApp");
+                String description = (String) arguments.get("description");
+                boolean isReset = (Boolean) arguments.getOrDefault("isReset", false);
+                driver.inspectBatteryUsage(targetApp, description, isReset);
+                break;
+            case ActionInfo.ACTION_TYPE_INSPECT_MEM_USAGE:
+                targetApp = (String) arguments.get("targetApp");
+                description = (String) arguments.get("description");
+                isReset = (Boolean) arguments.getOrDefault("isReset", false);
+                driver.inspectMemoryUsage(targetApp, description, isReset);
                 break;
             default:
                 throw new IllegalStateException("action fail" +

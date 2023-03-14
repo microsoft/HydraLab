@@ -4,7 +4,7 @@
 package com.microsoft.hydralab.common.util;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
 import org.openqa.selenium.net.UrlChecker;
 import org.slf4j.Logger;
 
@@ -57,7 +57,7 @@ public final class IOSUtils {
         return logProcess;
     }
 
-    public static void startIOSDeviceWatcher(Logger logger, IOSDeviceManager deviceManager) {
+    public static void startIOSDeviceWatcher(Logger logger, IOSTestDeviceManager deviceManager) {
         Process process = null;
         String command = "tidevice watch";
         ShellUtils.killProcessByCommandStr(command, logger);
