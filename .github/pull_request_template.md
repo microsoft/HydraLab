@@ -30,7 +30,7 @@ A few words to explain your changes:
 
 Does this close any currently open issues? Issue ID: #
 
-### How you tested this
+### How you tested it
 *Please make sure the change is tested, you can test it by adding UTs, do local test and share the screenshots, etc.*
 
 ### Feature UI Screenshots or Technical Design Diagrams
