@@ -38,7 +38,9 @@ public class LocalStorageClient {
     private String endpoint;
     private String token;
 
-    public LocalStorageClient() {
+    public LocalStorageClient(LocalStorageToken localStorageToken) {
+        this.endpoint = localStorageToken.getEndpoint();
+        this.token = localStorageToken.getToken();
     }
 
     public LocalStorageClient(LocalStorageProperty localStorageProperty) {
@@ -47,11 +49,6 @@ public class LocalStorageClient {
             this.endpoint = this.endpoint.substring(0, this.endpoint.length() - 1);
         }
         this.token = localStorageProperty.getToken();
-    }
-
-    public void init(LocalStorageToken localStorageToken) {
-        this.endpoint = localStorageToken.getEndpoint();
-        this.token = localStorageToken.getToken();
     }
 
     /**

@@ -15,10 +15,9 @@ import java.util.UUID;
 
 public class LocalStorageClientAdapter extends StorageServiceClient {
     private boolean isInitiated = false;
-    private final LocalStorageClient localStorageClient;
+    private LocalStorageClient localStorageClient;
 
     public LocalStorageClientAdapter() {
-        this.localStorageClient = new LocalStorageClient();
     }
 
     public LocalStorageClientAdapter(StorageProperties storageProperties) {
@@ -36,7 +35,7 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
         }
 
         LocalStorageToken localStorageToken = (LocalStorageToken) accessToken;
-        localStorageClient.init(localStorageToken);
+        localStorageClient = new LocalStorageClient(localStorageToken);
         isInitiated = true;
     }
 
