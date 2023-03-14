@@ -25,14 +25,16 @@ Please check the type of change your PR introduces:
 - [ ] Documentation content changes
 - [ ] Other (please describe): 
 
-### A few words to explain your changes
+A few words to explain your changes:
 <!-- Please write a brief information about the PR, what it contains & its purpose, new behaviors after the change -->
 
 Does this close any currently open issues? Issue ID: #
 
+### How you tested the PR
+*This is important! Please make sure the change is tested, you can test it by adding UTs, do local test and share the screenshots, etc.*
+
 ### Feature UI Screenshots or Technical Design Diagrams
 *If this is a relatively large or complex change, kick off the discussion by drawing the tech design with PlantUML and explaining why you chose the solution you did and what alternatives you considered, etc...*
 
-# How you tested the PR
-<!-- This is important! Please make sure the change is tested, you can test it by adding UTs, do local test and share the screenshots, etc. -->
+
 
