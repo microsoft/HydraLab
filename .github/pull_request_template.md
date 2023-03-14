@@ -1,8 +1,9 @@
 ## Description
-<!-- Please write a brief information about PR, what it contains, its purpose -->
+<!-- Please write a brief information about the PR, what it contains & its purpose -->
 
-## Screenshots
-<!-- Please add screenshots -->
+## Test
+<!-- How you tested the PR -->
 
-## Testing
-<!-- How to test PR -->
+## Feature UI Screenshots or Technical Design Diagrams
+<!-- Please add the images -->
+
