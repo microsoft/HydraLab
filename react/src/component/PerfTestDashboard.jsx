@@ -194,7 +194,6 @@ export default class PerfTestDashboard extends React.Component {
         }
 
         const windowsMemoryMultiSelect = (
-            // TODO
             <Select
                 defaultValue={windowsMemoryOptions}
                 isMulti
@@ -207,7 +206,6 @@ export default class PerfTestDashboard extends React.Component {
         );
 
         const renderWindowsMemoryChart = (
-            // TODO
             <LineChart width={800} height={400} data={windowsMemoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <Legend verticalAlign="top" />
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
