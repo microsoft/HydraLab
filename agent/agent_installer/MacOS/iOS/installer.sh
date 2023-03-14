@@ -106,7 +106,6 @@ mkdir -p "$serverPath"
 sudo mkdir -p "$supervisorPath"
 sudo cp "$iniFile" "$supervisorPath/HydraLabAgent.ini"
 jarPath=$(find "$scriptPath" -type f -name "*agent*")
-
 cp "$scriptPath/HydraAgent.sh" "$serverPath/HydraAgent.sh"
 cp "$scriptPath/restartAgent.sh" "$serverPath/restartAgent.sh"
 cp "$jarPath" "$serverPath/agent.jar"
