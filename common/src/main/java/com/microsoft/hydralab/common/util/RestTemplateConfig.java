@@ -20,7 +20,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 public class RestTemplateConfig {
-
     public static HttpComponentsClientHttpRequestFactory generateHttpRequestFactory()
             throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
         TrustStrategy acceptingTrustStrategy = (x509Certificates, authType) -> true;
@@ -35,7 +34,7 @@ public class RestTemplateConfig {
         return factory;
     }
 
-    public static RestTemplate getRestTemplateInstance() {
+    public static RestTemplate getRestTemplateInstance(){
         RestTemplate restTemplateHttps;
         try {
             restTemplateHttps = new RestTemplate(generateHttpRequestFactory());

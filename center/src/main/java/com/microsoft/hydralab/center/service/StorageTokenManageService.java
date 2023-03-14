@@ -4,8 +4,9 @@
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.common.file.AccessToken;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.util.Const;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -48,6 +49,17 @@ public class StorageTokenManageService {
         }
 
         return accessToken;
+    }
+
+    // todo: to be updated when needed: check token in the format of "token=xxx&expiryTime=yyy&permission=zzz"
+    public boolean validateAccessToken(String accessToken) {
+        return !StringUtils.isBlank(accessToken);
+    }
+
+    // todo: specify content
+    // for subfield "token" of AccessToken of storage type LOCAL. Differentiate validation method here as AccessToken is split by HTTP PATH EXTRACTION from frontend request already
+    public boolean validateTokenVal(String token) {
+        return !StringUtils.isBlank(token);
     }
 
     @Deprecated
