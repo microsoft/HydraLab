@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.performance;
 
-import com.microsoft.hydralab.performance.Entity.AndroidBatteryInfo;
 import com.microsoft.hydralab.performance.PerformanceInspection;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import com.microsoft.hydralab.performance.entity.AndroidBatteryInfo;
 import com.microsoft.hydralab.performance.parsers.AndroidBatteryInfoResultParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
