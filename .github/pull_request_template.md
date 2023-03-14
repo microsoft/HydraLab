@@ -9,7 +9,7 @@ Please check if your PR fulfills the following requirements:
 - [ ] [Wikis](https://github.com/microsoft/HydraLab/wiki) or [README](https://github.com/microsoft/HydraLab/blob/main/README.md) have been reviewed and added / updated if needed (for bug fixes / features)
 
 ### Does this introduce a breaking change?
-<!-- If this introduces a breaking change for Hydra Lab User and requires a migration process, please describe the impact and migration path for existing applications below. -->
+*If this introduces a breaking change for Hydra Lab User and requires a migration process, please describe the impact and migration path for existing applications below.*
 
 - [ ] Yes
 - [ ] No
