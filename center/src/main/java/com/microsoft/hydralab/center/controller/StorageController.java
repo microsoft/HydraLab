@@ -26,6 +26,9 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Li Shen
@@ -58,10 +61,14 @@ public class StorageController {
         }
 
         try {
-            LocalStorageIOUtil.copyUploadedStreamToFile(uploadedFile, fileUri);
+            InputStream inputStream = uploadedFile.getInputStream();
+            LocalStorageIOUtil.copyUploadedStreamToFile(inputStream, fileUri);
         } catch (HydraLabRuntimeException e) {
             logger.error(e.getMessage(), e);
             return Result.error(e.getCode(), e.getMessage());
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
         }
 
         return Result.ok(fileUri);
@@ -86,7 +93,24 @@ public class StorageController {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path!");
         }
 
-        LocalStorageIOUtil.copyDownloadedStreamToResponse(fileUri, response);
+        File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
+        if (!file.exists()) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), String.format("File %s not exist!", fileUri));
+        }
+
+        response.reset();
+        response.setContentType("application/octet-stream");
+        response.setCharacterEncoding("utf-8");
+        response.setContentLength((int) file.length());
+        response.setHeader("Content-Disposition", "attachment;filename=" + file.getName());
+
+        int resLen;
+        try {
+            resLen = LocalStorageIOUtil.copyDownloadedStreamToResponse(file, response.getOutputStream());
+        } catch (IOException e) {
+            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        }
+        logger.info(String.format("Output file: %s , size: %d!", fileUri, resLen));
     }
 
     // for front end to download file
@@ -107,7 +131,24 @@ public class StorageController {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path!");
         }
 
-        LocalStorageIOUtil.copyDownloadedStreamToResponse(fileUri, response);
+        File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
+        if (!file.exists()) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), String.format("File %s not exist!", fileUri));
+        }
+
+        response.reset();
+        response.setContentType("application/octet-stream");
+        response.setCharacterEncoding("utf-8");
+        response.setContentLength((int) file.length());
+        response.setHeader("Content-Disposition", "attachment;filename=" + file.getName());
+
+        int resLen;
+        try {
+            resLen = LocalStorageIOUtil.copyDownloadedStreamToResponse(file, response.getOutputStream());
+        } catch (IOException e) {
+            throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+        }
+        logger.info(String.format("Output file: %s , size: %d!", fileUri, resLen));
     }
 
     @GetMapping("/api/storage/getToken")

@@ -8,6 +8,8 @@ import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageProperties;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.file.impl.local.client.LocalStorageClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -16,6 +18,7 @@ import java.util.UUID;
 public class LocalStorageClientAdapter extends StorageServiceClient {
     private boolean isInitiated = false;
     private LocalStorageClient localStorageClient;
+    Logger classLogger = LoggerFactory.getLogger(StorageServiceClient.class);
 
     public LocalStorageClientAdapter() {
     }
@@ -23,6 +26,7 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
     public LocalStorageClientAdapter(StorageProperties storageProperties) {
         LocalStorageProperty localStorageProperty = (LocalStorageProperty) storageProperties;
         this.localStorageClient = new LocalStorageClient(localStorageProperty);
+        classLogger.info("Init Center local storage client successfully!");
     }
 
     @Override
@@ -37,6 +41,7 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
         LocalStorageToken localStorageToken = (LocalStorageToken) accessToken;
         localStorageClient = new LocalStorageClient(localStorageToken);
         isInitiated = true;
+        classLogger.info("Init Agent local storage client successfully!");
     }
 
     @Override
