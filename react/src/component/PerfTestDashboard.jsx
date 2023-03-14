@@ -53,8 +53,8 @@ const windowsMemoryOptions = [
 export default class PerfTestDashboard extends React.Component {
     state = {
         perfTestResult: this.props.perfTestResult,
-        memoryInfo: undefined,
-        batteryInfo: undefined,
+        androidMemoryInfo: undefined,
+        androidBatteryInfo: undefined,
         windowsMemoryInfo: undefined,
         selectedAndroidBatteryOptions: androidBatteryOptions.slice(0, 4),
         selectedAndroidMemoryOptions: androidMemoryOptions.slice(0, 10),
@@ -62,9 +62,9 @@ export default class PerfTestDashboard extends React.Component {
     };
 
     render() {
-        const memoryInfo = this.state.memoryInfo;
+        const androidMemoryInfo = this.state.androidMemoryInfo;
         const memoryMetrics = [];
-        const batteryInfo = this.state.batteryInfo;
+        const androidBatteryInfo = this.state.androidBatteryInfo;
         const batteryMetrics = [];
         const windowsMemoryInfo = this.state.windowsMemoryInfo;
         const windowsMemoryMetrics = [];
@@ -72,9 +72,9 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Battery Info
          */
-        if (batteryInfo && batteryInfo.performanceInspectionResults && batteryInfo.performanceInspectionResults.length > 0) {
-            let startTime = batteryInfo.performanceInspectionResults[0].timestamp;
-            batteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
+        if (androidBatteryInfo && androidBatteryInfo.performanceInspectionResults && androidBatteryInfo.performanceInspectionResults.length > 0) {
+            let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
+            androidBatteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult.parsedData !== null) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
@@ -113,9 +113,9 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Memory Info
          */
-        if (memoryInfo && memoryInfo.performanceInspectionResults && memoryInfo.performanceInspectionResults.length > 0) {
-            let startTime = memoryInfo.performanceInspectionResults[0].timestamp;
-            memoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
+        if (androidMemoryInfo && androidMemoryInfo.performanceInspectionResults && androidMemoryInfo.performanceInspectionResults.length > 0) {
+            let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
+            androidMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult.parsedData !== null) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
@@ -222,12 +222,12 @@ export default class PerfTestDashboard extends React.Component {
 
 
         return <div id='perf_dashboard'>
-            {batteryInfo && <div>
+            {androidBatteryInfo && <div>
                 <h3> Battery report</h3>
                 {androidBatteryMultiSelect}
                 {renderAndroidBatteryChart}
             </div>}
-            {memoryInfo && <div>
+            {androidMemoryInfo && <div>
                 <h3> Memory report</h3>
                 {androidMemoryMultiSelect}
                 {renderAndroidMemoryChart}
@@ -247,9 +247,9 @@ export default class PerfTestDashboard extends React.Component {
             for (var info of res.data.content) {
                 console.log(info);
                 if (info.parserType == 'PARSER_ANDROID_BATTERY_INFO') {
-                    this.setState({ batteryInfo: info });
+                    this.setState({ androidBatteryInfo: info });
                 } else if (info.parserType == 'PARSER_ANDROID_MEMORY_INFO') {
-                    this.setState({ memoryInfo: info });
+                    this.setState({ androidMemoryInfo: info });
                 } else if (info.parserType == 'PARSER_WIN_MEMORY') {
                     this.setState({ windowsMemoryInfo: info });
                 }
