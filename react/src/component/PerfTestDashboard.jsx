@@ -44,10 +44,10 @@ const windowsMemoryOptions = [
     { value: 'pagedMemorySize64', label: 'pagedMemorySize64', color: '#FFA500' },
     { value: 'pagedSystemMemorySize64', label: 'pagedSystemMemorySize64', color: '#8B8970' },
     { value: 'peakPagedMemorySize64', label: 'peakPagedMemorySize64', color: '#800000' },
-    { value: 'peakVirtualMemorySize64', label: 'peakVirtualMemorySize64', color: '#FFCC00' },
     { value: 'peakWorkingSet64', label: 'peakWorkingSet64', color: '#808000' },
     { value: 'privateMemorySize64', label: 'privateMemorySize64', color: '#4B0080' },
-    { value: 'workingSet64', label: 'workingSet64', color: '#8884d8' }
+    { value: 'workingSet64', label: 'workingSet64', color: '#8884d8' },
+    { value: 'peakVirtualMemorySize64', label: 'peakVirtualMemorySize64', color: '#FFCC00' },
 ]
 
 export default class PerfTestDashboard extends React.Component {
@@ -58,7 +58,7 @@ export default class PerfTestDashboard extends React.Component {
         windowsMemoryInfo: undefined,
         selectedAndroidBatteryOptions: androidBatteryOptions.slice(0, 4),
         selectedAndroidMemoryOptions: androidMemoryOptions.slice(0, 10),
-        selectedWindowsMemoryOptions: windowsMemoryOptions,
+        selectedWindowsMemoryOptions: windowsMemoryOptions.slice(0, 7)
     };
 
     render() {
@@ -162,28 +162,27 @@ export default class PerfTestDashboard extends React.Component {
          */
         if (windowsMemoryInfo && windowsMemoryInfo.performanceInspectionResults && windowsMemoryInfo.performanceInspectionResults.length > 0) {
             let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
-
             windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
-                if (inspectionResult.parsedData !== null) {
-                    var result = new Map();
-                    
-                    let parsedData = { ...inspectionResult.parsedData };
-                    parsedData.time = (inspectionResult.timestamp - startTime) / 1000;
 
-                    let processIdProcessNameMap = { ...parsedData.processIdProcessNameMap };
-                    let processIdWindowsMemoryMetricsMap = { ...parsedData.processIdWindowsMemoryMetricsMap };
+                if (inspectionResult.parsedData !== null) {
+                    var result = { ...inspectionResult.parsedData };
+                    let parsedData = { ...inspectionResult.parsedData };
+                    result.time = (inspectionResult.timestamp - startTime) / 1000;
+
+                    let processIdProcessNameMap = new Map(Object.entries(parsedData.processIdProcessNameMap));
+                    let processIdWindowsMemoryMetricsMap = new Map(Object.entries(parsedData.processIdWindowsMemoryMetricsMap));
 
                     processIdProcessNameMap.forEach((key, value) => {
                         // TODO: involve other processes.
-                        if (value == 'PhoneExperienceHost') {
-                            let windowsMemoryMetricsOfSingleProcess = processIdWindowsMemoryMetricsMap[key];
+                        if (key === 'PhoneExperienceHost') {
+                            let windowsMemoryMetricsOfSingleProcess = processIdWindowsMemoryMetricsMap.get(value);
 
                             Object.keys(windowsMemoryMetricsOfSingleProcess).forEach((key) => {
                                 if (windowsMemoryMetricsOfSingleProcess[key] == -1) {
                                     result[key] = 0;
                                 } else if (windowsMemoryOptions.findIndex(item => item.value == key) != -1) {
                                     // Byte to MB
-                                    result[key] = inspectionResult.parsedData[key] / 1024 / 1024;
+                                    result[key] = windowsMemoryMetricsOfSingleProcess[key] / 1024 / 1024;
                                 }
                             })
                         }
@@ -209,7 +208,7 @@ export default class PerfTestDashboard extends React.Component {
 
         const renderWindowsMemoryChart = (
             // TODO
-            <LineChart width={800} height={400} data={memoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <LineChart width={800} height={400} data={windowsMemoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <Legend verticalAlign="top" />
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
@@ -251,6 +250,8 @@ export default class PerfTestDashboard extends React.Component {
                     this.setState({ batteryInfo: info });
                 } else if (info.parserType == 'PARSER_ANDROID_MEMORY_INFO') {
                     this.setState({ memoryInfo: info });
+                } else if (info.parserType == 'PARSER_WIN_MEMORY') {
+                    this.setState({ windowsMemoryInfo: info });
                 }
             };
         })
