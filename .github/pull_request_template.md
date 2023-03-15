@@ -1,6 +1,6 @@
 <!-- Please refer to our contributing documentation for making changes to the code of Hydra Lab https://github.com/microsoft/HydraLab/blob/main/CONTRIBUTING.md#making-changes-to-the-code , or let us know here if you need any help: https://github.com/microsoft/HydraLab/issues/new -->
 
-# Pull request checklist
+## Pull request checklist
 <!-- Put an x in the boxes that apply. This is simply a reminder of what we are going to look for before merging your code. -->
 
 - [ ] Tests for the changes have been added (for bug fixes / features)
@@ -14,7 +14,7 @@
 - [ ] Yes
 - [ ] No
 
-# Pull Request Description
+## Pull Request Description
 
 Please check the type of change your PR introduces:
 - [ ] Bugfix
