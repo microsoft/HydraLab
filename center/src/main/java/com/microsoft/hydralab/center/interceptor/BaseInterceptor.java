@@ -38,18 +38,23 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
     AuthUtil authUtil;
     @Resource
     AuthTokenService authTokenService;
+    @Value("${app.storage.type}")
+    private String storageType;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         String remoteUser = request.getRemoteUser();
         String requestURI = request.getRequestURI();
-        String token = null;
-
+        String oauthToken = null;
         if (LogUtils.isLegalStr(requestURI, Const.RegexString.URL, true) && LogUtils.isLegalStr(remoteUser, Const.RegexString.MAIL_ADDRESS, true)) {
             LOGGER.info("New access from IP {}, host {}, user {}, for path {}", request.getRemoteAddr(), request.getRemoteHost(), remoteUser,
                     requestURI);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
         } else {
             return false;
+        }
+
+        if (Const.LocalStorageConst.PATH_PREFIX_LIST.stream().anyMatch(requestURI::contains)) {
+            return Const.StorageType.LOCAL.equals(storageType);
         }
         if (!enabledAuth) {
             authTokenService.loadDefaultUser(request.getSession());
@@ -59,18 +64,18 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
         SecurityContext securityContext = (SecurityContext) request.getSession().getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
         if (securityContext != null) {
             SysUser userAuthentication = (SysUser) securityContext.getAuthentication();
-            token = userAuthentication.getAccessToken();
+            oauthToken = userAuthentication.getAccessToken();
         }
 
-        String authCode = request.getHeader("Authorization");
-        if (authCode != null) {
-            authCode = authCode.replaceAll("Bearer ", "");
+        String authToken = request.getHeader("Authorization");
+        if (authToken != null) {
+            authToken = authToken.replaceAll("Bearer ", "");
         }
         //check is ignore
         if (!authUtil.isIgnore(requestURI)) {
             //invoke by client
-            if (!StringUtils.isEmpty(authCode)) {
-                if (authTokenService.checkAuthToken(authCode)) {
+            if (!StringUtils.isEmpty(authToken)) {
+                if (authTokenService.checkAuthToken(authToken)) {
                     return true;
                 } else {
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), "unauthorized, error authorization code");
@@ -78,7 +83,7 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
 
             }
             //invoke by browser
-            if (StringUtils.isEmpty(token) || !authUtil.verifyToken(token)) {
+            if (StringUtils.isEmpty(oauthToken) || !authUtil.verifyToken(oauthToken)) {
                 if (requestURI.contains(Const.FrontEndPath.PREFIX_PATH)) {
                     String queryString = request.getQueryString();
                     if (StringUtils.isNotEmpty(queryString)

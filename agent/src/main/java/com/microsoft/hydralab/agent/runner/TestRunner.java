@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
 import com.microsoft.hydralab.common.util.DateUtil;
+import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
@@ -204,9 +205,12 @@ public abstract class TestRunner {
             testDeviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
         }
         checkTestTaskCancel(testTask);
-
         if (testTask.getNeedInstall()) {
-            testDeviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
+            try {
+                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> testDeviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger));
+            } catch (Exception e) {
+                throw new Exception(e);
+            }
         }
     }
 
@@ -230,7 +234,11 @@ public abstract class TestRunner {
             ThreadUtils.safeSleep(2000);
         }
         checkTestTaskCancel(testTask);
-        testDeviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger);
+        try {
+            FlowUtil.retryAndSleepWhenFalse(3, 10, () -> testDeviceManager.installApp(deviceInfo, testTask.getTestAppFile().getAbsolutePath(), reportLogger));
+        } catch (Exception e) {
+            throw new Exception(e);
+        }
     }
 
     protected boolean shouldInstallTestPackageAsApp() {

@@ -9,7 +9,7 @@ show_sidebar: true
 
 # Hydra Lab
 
-The Hydra Lab is the open-source mobile app cloud testing framework that we built from scratch since mid 2021 to empower every dev team to easily set up a cloud testing infrastructure utilizing the devices in hand.
+The Hydra Lab is the open-source mobile app cloud testing framework that we built from scratch since mid-2021 to empower every dev team to easily set up a cloud testing infrastructure utilizing the devices in hand.
 
 [![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/HydraLab-CI?branchName=main)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=743&branchName=main)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
