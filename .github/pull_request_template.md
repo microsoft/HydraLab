@@ -32,7 +32,7 @@ Does this close any currently open issues? Issue ID: #
 ### How you tested it
 *Please make sure the change is tested, you can test it by adding UTs, do local test and share the screenshots, etc.*
 
-### Feature UI Screenshots or Technical Design Diagrams
+### Feature UI screenshots or Technical design diagrams
 *If this is a relatively large or complex change, kick it off by drawing the tech design with PlantUML and explaining why you chose the solution you did and what alternatives you considered, etc...*
 
 
