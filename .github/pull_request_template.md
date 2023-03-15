@@ -24,10 +24,10 @@ Please check the type of change your PR introduces:
 - [ ] Code style update (formatting, renaming) or Documentation content changes
 - [ ] Other (please describe): 
 
-A few words to explain your changes:
+**A few words to explain your changes**:
 <!-- Please write a brief information about the PR, what it contains & its purpose, new behaviors after the change -->
 
-Does this close any currently open issues? Issue ID: #
+Issue ID: #
 
 ### How you tested it
 *Please make sure the change is tested, you can test it by adding UTs, do local test and share the screenshots, etc.*
