@@ -2,7 +2,16 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.util;
 
-import com.android.ddmlib.*;
+import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.AndroidDebugBridge;
+import com.android.ddmlib.DdmPreferences;
+import com.android.ddmlib.IDevice;
+import com.android.ddmlib.IShellOutputReceiver;
+import com.android.ddmlib.InstallException;
+import com.android.ddmlib.InstallReceiver;
+import com.android.ddmlib.RawImage;
+import com.android.ddmlib.ShellCommandUnresponsiveException;
+import com.android.ddmlib.TimeoutException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelReceiver;
@@ -14,12 +23,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +44,7 @@ public class ADBOperateUtil {
     private File mAdbPath;
     private String adbServerHost = DdmPreferences.DEFAULT_ADBHOST_VALUE;
     private AndroidDebugBridge mAndroidDebugBridge;
+
     public void init(AndroidDebugBridge.IDeviceChangeListener mListener) throws IOException {
         mAndroidHome = System.getenv("ANDROID_HOME");
         Assert.notNull(mAndroidHome, "ANDROID_HOME env var must be set and pointing to the home path of Android SDK.");
@@ -169,14 +182,49 @@ public class ADBOperateUtil {
         getNotNullLogger(logger).info("adb -H {} -s {} shell pm install {} {} {}", adbServerHost, deviceInfo.getSerialNum(),
                 extArgs, reinstall ? "-r" : "", packagePath);
         InstallReceiver receiver = new InstallReceiver();
-        deviceByInfo.installPackage(packagePath, reinstall, receiver, extArgs);
+        boolean pmInstallNoException = true;
+        try {
+            deviceByInfo.installPackage(packagePath, reinstall, receiver, extArgs);
+        } catch (InstallException e) {
+            getNotNullLogger(logger).error("InstallException: {}", e.getMessage());
+            pmInstallNoException = false;
+        }
         if (receiver.getErrorMessage() != null) {
             getNotNullLogger(logger).error("installApp Error code: {}, Error msg: {}", receiver.getErrorCode(), receiver.getErrorMessage());
         }
         if (receiver.getSuccessMessage() != null) {
             getNotNullLogger(logger).info("Install app success: {}", receiver.getSuccessMessage());
         }
-        return receiver.isSuccessfullyCompleted();
+        if (pmInstallNoException && receiver.isSuccessfullyCompleted()) {
+            return true;
+        }
+        return installAppWithADB(deviceInfo, packagePath, reinstall, extArgs, logger);
+    }
+
+    private boolean installAppWithADB(DeviceInfo deviceInfo, String packagePath, boolean reinstall, String extArgs, Logger logger) throws InstallException {
+        boolean success = false;
+        Process process = null;
+        try {
+            String command = String.format("install %s %s %s", extArgs, reinstall ? "-r" : "", packagePath);
+            process = executeDeviceCommandOnPC(deviceInfo, command, logger);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    getNotNullLogger(logger).info(line);
+                }
+            }
+            if (process.waitFor(75, TimeUnit.SECONDS)) {
+                success = process.exitValue() == 0;
+            }
+        } catch (IOException | InterruptedException e) {
+            getNotNullLogger(logger).error("installAppWithADB error: {}", e.getMessage());
+            throw new InstallException(e);
+        } finally {
+            if (process != null) {
+                process.destroy();
+            }
+        }
+        return success;
     }
 
 
