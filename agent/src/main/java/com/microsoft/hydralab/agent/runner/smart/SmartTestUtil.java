@@ -80,11 +80,11 @@ public class SmartTestUtil {
         String[] runArgs = new String[7];
         runArgs[0] = "python";
         runArgs[1] = filePath;
-        runArgs[2] = smartTestParam.apkPath;
-        runArgs[3] = smartTestParam.deviceInfo;
-        runArgs[4] = smartTestParam.modelInfo;
-        runArgs[5] = smartTestParam.testSteps;
-        runArgs[6] = smartTestParam.stringTextFolder;
+        runArgs[2] = smartTestParam.getApkPath();
+        runArgs[3] = smartTestParam.getDeviceInfo();
+        runArgs[4] = smartTestParam.getModelInfo();
+        runArgs[5] = smartTestParam.getTestSteps();
+        runArgs[6] = smartTestParam.getStringTextFolder();
 
         for (String tempArg : runArgs) {
             logger.info(tempArg);

@@ -92,7 +92,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         if (deviceTaskControl == null) {
             testTask.setTestDevicesCount(0);
         } else {
-            testTask.setTestDevicesCount(deviceTaskControl.devices.size());
+            testTask.setTestDevicesCount(deviceTaskControl.getDevices().size());
         }
         return testTask;
     }
