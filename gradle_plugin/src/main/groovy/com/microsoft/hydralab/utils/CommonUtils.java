@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.utils;
 
 import com.google.gson.Gson;
@@ -46,16 +47,19 @@ public class CommonUtils {
                 }
             }).create();
 
-    public static String validateAndReturnFilePath(String filePath, String paramName) throws IllegalArgumentException {
+    public static String validateAndReturnFilePath(String filePath, String paramName, boolean canBeDirectory) throws IllegalArgumentException {
         assertNotNull(filePath, paramName);
         File file = new File(filePath);
         assertTrue(file.exists(), filePath + " file not exist!", null);
+        if (!canBeDirectory && file.isDirectory()) {
+            throw new IllegalArgumentException(paramName + " should be the path to the specific file.");
+        }
 
         System.out.println("Param " + paramName + ": " + filePath + " validated.");
         return file.getAbsolutePath();
     }
 
-    public static HashMap<String, String> parseArguments(String argsString){
+    public static HashMap<String, String> parseArguments(String argsString) {
         if (StringUtils.isBlank(argsString)) {
             return null;
         }
@@ -63,7 +67,7 @@ public class CommonUtils {
 
         // quotation marks not support
         String[] argLines = argsString.replace("\"", "").split(",");
-        for (String argLine: argLines) {
+        for (String argLine : argLines) {
             String[] kv = argLine.split("=");
             argsMap.put(kv[0], kv[1]);
         }

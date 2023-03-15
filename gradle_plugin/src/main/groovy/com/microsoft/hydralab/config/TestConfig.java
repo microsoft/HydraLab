@@ -36,6 +36,7 @@ public class TestConfig {
     public int runTimeOutSeconds = 0;
     public int queueTimeOutSeconds = 0;
     public String pipelineLink = "";
+    public boolean needInstall = true;
     public boolean needUninstall = true;
     public boolean needClearData = true;
     public List<String> neededPermissions = new ArrayList<>();
@@ -91,6 +92,7 @@ public class TestConfig {
                 "\trunTimeOutSeconds=" + runTimeOutSeconds + "\n" +
                 "\tqueueTimeOutSeconds=" + queueTimeOutSeconds + "\n" +
                 "\tpipelineLink=" + pipelineLink + "\n" +
+                "\tneedInstall=" + needInstall + "\n" +
                 "\tneedUninstall=" + needUninstall + "\n" +
                 "\tneedClearData=" + needClearData + "\n" +
                 "\tneededPermissions=" + (neededPermissions != null ? neededPermissions.toString() : "") + "\n" +

@@ -34,13 +34,13 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 }
 
                 if (project.hasProperty('appPath')) {
-                    testConfig.appPath = CommonUtils.validateAndReturnFilePath(project.appPath, "appPath")
+                    testConfig.appPath = CommonUtils.validateAndReturnFilePath(project.appPath, "appPath", false)
                 }
                 if (project.hasProperty('testAppPath')) {
-                    testConfig.testAppPath = CommonUtils.validateAndReturnFilePath(project.testAppPath, "testAppPath")
+                    testConfig.testAppPath = CommonUtils.validateAndReturnFilePath(project.testAppPath, "testAppPath", false)
                 }
                 if (project.hasProperty('attachmentConfigPath')) {
-                    testConfig.attachmentConfigPath = CommonUtils.validateAndReturnFilePath(project.attachmentConfigPath, "attachmentConfigPath")
+                    testConfig.attachmentConfigPath = CommonUtils.validateAndReturnFilePath(project.attachmentConfigPath, "attachmentConfigPath", false)
                 }
 
                 if (project.hasProperty('hydraLabAPISchema')) {
@@ -107,6 +107,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     if (!project.hasProperty('ymlConfigFile')) {
                         testConfig.queueTimeOutSeconds = testConfig.runTimeOutSeconds
                     }
+                }
+                if (project.hasProperty('needInstall')) {
+                    testConfig.needInstall = Boolean.parseBoolean(project.needInstall)
                 }
                 if (project.hasProperty('needUninstall')) {
                     testConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
