@@ -1,10 +1,10 @@
 package com.microsoft.hydralab.performance.parsers;
 
 import com.google.common.base.Strings;
-import com.microsoft.hydralab.performance.Entity.AndroidMemoryInfo;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import com.microsoft.hydralab.performance.entity.AndroidMemoryInfo;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

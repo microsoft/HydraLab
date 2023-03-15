@@ -3,7 +3,7 @@
 
 param (
     [string]$keyword = "Phone",
-	[string]$output = ""
+    [string]$output = ""
 )
 
 if ($output -eq "") {

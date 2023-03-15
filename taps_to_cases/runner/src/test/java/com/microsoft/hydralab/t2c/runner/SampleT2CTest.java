@@ -12,14 +12,12 @@ import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.windows.WindowsDriver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class SampleT2CTest {
@@ -67,7 +65,7 @@ public class SampleT2CTest {
                 if (service != null) {
                     androidDriver = new AndroidDriver(service.getUrl(), caps);
                 }
-                AndroidDriverController androidDriverController = new AndroidDriverController(androidDriver, logger);
+                AndroidDriverController androidDriverController = new AndroidDriverController(androidDriver, "androidTest", logger);
                 driverControllerMap.put(driverInfo.getId(), androidDriverController);
                 if (driverInfo.getLauncherApp() != null && driverInfo.getLauncherApp().length() > 0 && service != null) {
                     androidDriverController.activateApp(driverInfo.getLauncherApp());
@@ -83,7 +81,7 @@ public class SampleT2CTest {
                 if (service != null) {
                     windowsDriver = new WindowsDriver(service.getUrl(), caps);
                 }
-                driverControllerMap.put(driverInfo.getId(), new WindowsDriverController(windowsDriver, logger));
+                driverControllerMap.put(driverInfo.getId(), new WindowsDriverController(windowsDriver, "windowsTest", logger));
             }
         }
     }
@@ -91,7 +89,7 @@ public class SampleT2CTest {
     //This is for json Local Verification
 //    @Test
     public void jsonTest() {
-        ArrayList<ActionInfo> caseList = testInfo.getCases();
+        ArrayList<ActionInfo> caseList = testInfo.getActions();
 
         for (ActionInfo actionInfo : caseList) {
             BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());

@@ -2,10 +2,11 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance.parsers;
 
-import com.microsoft.hydralab.performance.Entity.WindowsBatteryParsedData;
+import com.microsoft.hydralab.common.util.MachineInfoUtils;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import com.microsoft.hydralab.performance.entity.WindowsBatteryParsedData;
 import lombok.NonNull;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.slf4j.Logger;
@@ -43,11 +44,27 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
 
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+        if (!MachineInfoUtils.isOnWindowsLaptop()) {
+            classLogger.error("Windows battery test must be run on Windows Laptop!");
+            return null;
+        }
+
+        try {
+            // Wait 20 seconds for the results to be completely written to the hard disk.
+            Thread.sleep(20 * 1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         boolean baseLineFound = false;
         String baseLine = "";
 
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
         {
+            if (inspectionResult == null) {
+                continue;
+            }
+
             try (ReversedLinesFileReader reversedReader = new ReversedLinesFileReader(inspectionResult.rawResultFile,
                     StandardCharsets.UTF_8);) {
                 WindowsBatteryParsedData windowsBatteryParsedData = new WindowsBatteryParsedData();

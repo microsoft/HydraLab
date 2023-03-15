@@ -203,7 +203,7 @@ export default class RunnerView extends BaseView {
 
         return <div>
             <Typography variant="h4" className="m-3">
-                Run Test Suite</Typography>
+                Test Your App</Typography>
             <Stack className='m-3' direction="row" spacing={2}
                 justifyContent="flex-end">
                 <LoadingButton

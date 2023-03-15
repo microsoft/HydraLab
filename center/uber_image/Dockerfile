@@ -6,6 +6,7 @@ ARG STARTUP_FOLDER_PATH=.
 ARG ARG_AGENT_ID
 ARG ARG_AGENT_SECRET
 ARG ARG_AGENT_NAME
+ARG ARG_STORAGE_TYPE
 ARG CENTER_JAR_FILE=center.jar
 ARG AGENT_JAR_FILE=agent.jar
 # Sqlite file under the same directory, storing pre-defined data for uber-image
@@ -16,7 +17,8 @@ ENV TZ="Asia/Shanghai" \
     ANDROID_HOME=/opt/android-sdk-linux \
     AGENT_ID=${ARG_AGENT_ID} \
     AGENT_SECRET=${ARG_AGENT_SECRET} \
-    AGENT_NAME=${ARG_AGENT_NAME}
+    AGENT_NAME=${ARG_AGENT_NAME} \
+    STORAGE_TYPE=${ARG_STORAGE_TYPE}
 ENV PATH $PATH:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 
 RUN \

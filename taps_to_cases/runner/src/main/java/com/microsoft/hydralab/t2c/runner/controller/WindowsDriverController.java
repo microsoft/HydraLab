@@ -3,6 +3,8 @@
 
 package com.microsoft.hydralab.t2c.runner.controller;
 
+import com.microsoft.hydralab.performance.PerformanceInspection;
+import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import io.appium.java_client.windows.WindowsDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.PointerInput;
@@ -21,8 +23,8 @@ import java.util.Arrays;
 public class WindowsDriverController extends BaseDriverController {
     WindowsDriver windowsDriver;
 
-    public WindowsDriverController(WindowsDriver windowsDriver, Logger logger) {
-        super(windowsDriver, logger);
+    public WindowsDriverController(WindowsDriver windowsDriver, String udid, Logger logger) {
+        super(windowsDriver, udid, logger);
         this.windowsDriver = windowsDriver;
     }
 
@@ -74,4 +76,19 @@ public class WindowsDriverController extends BaseDriverController {
             throw new IllegalStateException("Could not get clipboard text on Windows", e);
         }
     }
+
+    @Override
+    public void inspectMemoryUsage(String targetApp, String description, boolean isReset) {
+        PerformanceInspectionService.getInstance()
+                .inspect(PerformanceInspection.createWindowsMemoryInspection(
+                        targetApp, this.udid, description, isReset));
+    }
+
+    @Override
+    public void inspectBatteryUsage(String targetApp, String description, boolean isReset) {
+        PerformanceInspectionService.getInstance()
+                .inspect(PerformanceInspection.createWindowsBatteryInspection(
+                        targetApp, this.udid, description, isReset));
+    }
+
 }
