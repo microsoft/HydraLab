@@ -872,7 +872,7 @@ export default class RunnerView extends BaseView {
 
             this.setState({
                 currentAppId: currentId,
-                currentAppInstallerType: currentTestPackageType,
+                currentAppInstallerType: currentAppInstallerType,
                 currentAppInfo: currentAppInfo,
                 currentAppPackageName: currentAppInfo.packageName,
                 currentTestPackageName: testPkgName,
