@@ -162,9 +162,8 @@ public interface Const {
     }
 
     interface XCTestConfig{
-        String XCTEST_ZIP_FILE_NAME = "Xctest.zip";
         String XCTEST_ZIP_FOLDER_NAME = "Xctest";
-        String XCTEST_RESULT_FILE_NAME = "XctestResult";
+        String XCTEST_RESULT_FILE_NAME = "result.xcresult";
     }
 
     final class LocalStorageURL {

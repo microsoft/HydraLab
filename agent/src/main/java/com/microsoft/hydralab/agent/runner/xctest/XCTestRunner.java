@@ -101,7 +101,8 @@ public class XCTestRunner extends TestRunner {
         commFormat += " -xctestrun " + xctestrun.getAbsolutePath();
 
         String deviceId = "id=" + deviceInfo.getDeviceId();
-        String resultPath = testRun.getResultFolder().getAbsolutePath() + "/" + "result.xcresult";
+        String resultPath = testRun.getResultFolder().getAbsolutePath()
+                + "/" + Const.XCTestConfig.XCTEST_RESULT_FILE_NAME;
 
         commFormat += " -destination %s -resultBundlePath %s";
         String command = String.format(commFormat, deviceId, resultPath);
