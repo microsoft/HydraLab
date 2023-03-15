@@ -51,9 +51,6 @@ Hydra Lab 的特性包括：
 <span id="quick-start"></span>
 ### 开箱即用的 Uber docker 镜像快速指南
 
-Hydra Lab 使用 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储日志文件、视频、应用包等。请访问你的 Azure 门户，打开一个 Azure Blob 存储账户，获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string) 。
-并将其放入环境变量中，名称为 BLOB_CONNECTION_STR。
-
 Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单地配置环境变量 BLOB_CONNECTION_STR 后，你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
 
 **第1步. 从容器注册中心获取 Docker 镜像**
@@ -62,15 +59,32 @@ Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单�
 docker pull ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-**第2步. 在你的机器上运行，并使用 BLOB_CONNECTION_STR 作为参数**
+**第2步. 在你的机器上运行**
 
-可以通过提供包含 `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` 的配置文件env.properties在运行目录，然后通过如下方式传入文件相对路径参数：
+直接从以下两种命令中选择一种，以开始你在 Hydra Lab 的体验：
+
+**1. 使用本地存储服务**
+
+Hydra Lab 默认使用本地文件系统作为存储，不需要额外的环境变量：
+
+```bash
+docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+```
+
+**2. 使用第三方存储服务**
+
+Hydra Lab 使用 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储日志文件、视频、应用包等。请访问你的 Azure 门户，创建一个 Azure Blob 存储账户，获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string)，
+并将其放入环境变量中，名称为 BLOB_CONNECTION_STR。简要步骤：[Login Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> 创建新的存储账户（你可以限制容器的公共读写） ->在创建的存储账户中, 找到 `Access Keys` 页面 -> 复制 `Connection string`。
+![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
+
+你可以将 `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` 写入一个配置文件（例如 env.properties），然后将文件路径传给 docker container：
 
 ```bash
 docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-或者通过直接设置环境变量传参：
+或者设置环境参数 -e 直接运行：
+
 ```bash
 docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
