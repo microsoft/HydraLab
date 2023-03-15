@@ -20,12 +20,13 @@ import com.azure.storage.common.sas.AccountSasSignatureValues;
 import com.google.common.net.MediaType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.file.AccessToken;
+import com.microsoft.hydralab.common.file.StorageProperties;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.time.Instant;
@@ -45,7 +46,8 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
     public AzureBlobClientAdapter() {
     }
 
-    public AzureBlobClientAdapter(AzureBlobProperty azureBlobProperty) {
+    public AzureBlobClientAdapter(StorageProperties storageProperties) {
+        AzureBlobProperty azureBlobProperty = (AzureBlobProperty) storageProperties;
         sasExpiryUpdate = azureBlobProperty.getSasExpiryUpdate();
         SASPermission.READ.setExpiryTime(azureBlobProperty.getSasExpiryTimeFront(), azureBlobProperty.getTimeUnit());
         SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSasExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
@@ -202,15 +204,5 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         }
         BlobClient blobClient = getContainer(containerName).getBlobClient(blobFilePath);
         return blobClient.downloadToFile(downloadToFile.getAbsolutePath(), true);
-    }
-
-    public void setFileUrls(StorageFileInfo storageFileInfo, String downloadUrl) {
-        storageFileInfo.setBlobUrl(downloadUrl);
-        if (StringUtils.isEmpty(this.cdnUrl)) {
-            storageFileInfo.setCdnUrl(downloadUrl);
-        } else {
-            String originDomain = downloadUrl.split("//")[1].split("/")[0];
-            storageFileInfo.setCdnUrl(downloadUrl.replace(originDomain, this.cdnUrl));
-        }
     }
 }

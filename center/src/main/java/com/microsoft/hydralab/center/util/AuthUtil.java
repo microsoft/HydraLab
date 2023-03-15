@@ -4,7 +4,7 @@
 package com.microsoft.hydralab.center.util;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.center.config.RestTemplateConfig;
+import com.microsoft.hydralab.common.util.RestTemplateConfig;
 import com.microsoft.hydralab.common.util.FileUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;

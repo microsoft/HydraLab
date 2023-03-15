@@ -1,15 +1,34 @@
 package com.microsoft.hydralab.common.file;
 
-public interface StorageProperties {
-    String getScreenshotContainerName();
+public abstract class StorageProperties {
+    protected static final String SCREENSHOT_CONTAINER_NAME = "images";
+    protected static final String APP_FILE_CONTAINER_NAME = "pkgstore";
+    protected static final String TEST_RESULT_CONTAINER_NAME = "testresults";
+    protected static final String AGENT_PACKAGE_CONTAINER_NAME = "pkgstore";
+    protected static final String TEST_JSON_CONTAINER_NAME = "testjson";
+    protected static final String TEST_SUITE_CONTAINER_NAME = "testsuitestore";
 
-    String getAppFileContainerName();
+    public String getScreenshotContainerName() {
+        return SCREENSHOT_CONTAINER_NAME;
+    }
 
-    String getTestResultContainerName();
+    public String getAppFileContainerName() {
+        return APP_FILE_CONTAINER_NAME;
+    }
 
-    String getAgentPackageContainerName();
+    public String getTestResultContainerName() {
+        return TEST_RESULT_CONTAINER_NAME;
+    }
 
-    String getTestJsonContainerName();
+    public String getAgentPackageContainerName() {
+        return AGENT_PACKAGE_CONTAINER_NAME;
+    }
 
-    String getTestSuiteContainerName();
+    public String getTestJsonContainerName() {
+        return TEST_JSON_CONTAINER_NAME;
+    }
+
+    public String getTestSuiteContainerName() {
+        return TEST_SUITE_CONTAINER_NAME;
+    }
 }

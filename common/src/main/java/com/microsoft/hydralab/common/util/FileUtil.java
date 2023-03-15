@@ -33,7 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class FileUtil {
-    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy" + File.separator + "MM" + File.separator + "dd");
+    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy/MM/dd");
     private static final Pattern PARAM_KEY_MATCH = Pattern.compile("\\$\\{(\\w+)}");
 
     @SuppressWarnings({"StaticVariableName", "VisibilityModifier"})

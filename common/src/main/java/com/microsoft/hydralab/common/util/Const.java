@@ -3,6 +3,8 @@
 
 package com.microsoft.hydralab.common.util;
 
+import java.util.List;
+
 public interface Const {
     final class Path {
         public static final String AUTH = "/auth";
@@ -136,6 +138,7 @@ public interface Const {
         // There are almost no restrictions - apart from '/' and '\0', you're allowed to use anything. Hence the below is only an adoption for the most cases
         public static final String LINUX_ABSOLUTE_PATH = "^(\\/[^\\t\\f\\n\\r\\v]+)+\\/?$";
         public static final String WINDOWS_ABSOLUTE_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
+        public static final String STORAGE_FILE_REL_PATH = "^[^\\/\\\\:*?\"<>|]+(\\/[^\\/\\\\:*?\"<>|]+)+$";
 
         //Package name
         public static final String PACKAGE_NAME = "\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
@@ -209,6 +212,24 @@ public interface Const {
         public static final String AZURE = "azureBlobProperty";
 
         private StoragePropertyBean() {
+        }
+    }
+
+    final class LocalStorageURL {
+        public static final String CENTER_LOCAL_STORAGE_UPLOAD = "/api/storage/local/upload";
+        public static final String CENTER_LOCAL_STORAGE_DOWNLOAD = "/api/storage/local/download";
+        public static final String CENTER_LOCAL_STORAGE_ROOT = "storage/local/";
+
+        private LocalStorageURL() {
+
+        }
+    }
+
+    final class LocalStorageConst {
+        public static final List<String> PATH_PREFIX_LIST = List.of(LocalStorageURL.CENTER_LOCAL_STORAGE_UPLOAD, LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD);
+
+        private LocalStorageConst() {
+
         }
     }
 }

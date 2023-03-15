@@ -39,33 +39,47 @@ const androidMemoryOptions = [
     { value: 'unknownPss', label: 'unknownPss', color: '#8884d8' },
     { value: 'unknownRss', label: 'unknownRss', color: '#8884d8' }
 ]
+const windowsMemoryOptions = [
+    { value: 'nonpagedSystemMemorySize64', label: 'nonpagedSystemMemorySize64', color: '#007FFF' },
+    { value: 'pagedMemorySize64', label: 'pagedMemorySize64', color: '#FFA500' },
+    { value: 'pagedSystemMemorySize64', label: 'pagedSystemMemorySize64', color: '#8B8970' },
+    { value: 'peakPagedMemorySize64', label: 'peakPagedMemorySize64', color: '#800000' },
+    { value: 'peakWorkingSet64', label: 'peakWorkingSet64', color: '#808000' },
+    { value: 'privateMemorySize64', label: 'privateMemorySize64', color: '#4B0080' },
+    { value: 'workingSet64', label: 'workingSet64', color: '#8884d8' },
+    { value: 'peakVirtualMemorySize64', label: 'peakVirtualMemorySize64', color: '#FFCC00' },
+]
 
 export default class PerfTestDashboard extends React.Component {
     state = {
         perfTestResult: this.props.perfTestResult,
-        memoryInfo: undefined,
-        batteryInfo: undefined,
+        androidMemoryInfo: undefined,
+        androidBatteryInfo: undefined,
+        windowsMemoryInfo: undefined,
         selectedAndroidBatteryOptions: androidBatteryOptions.slice(0, 4),
         selectedAndroidMemoryOptions: androidMemoryOptions.slice(0, 10),
+        selectedWindowsMemoryOptions: windowsMemoryOptions.slice(0, 7)
     };
 
     render() {
-        const memoryInfo = this.state.memoryInfo;
-        const memoryMetrics = [];
-        const batteryInfo = this.state.batteryInfo;
-        const batteryMetrics = [];
+        const androidMemoryInfo = this.state.androidMemoryInfo;
+        const androidMemoryMetrics = [];
+        const androidBatteryInfo = this.state.androidBatteryInfo;
+        const androidBatteryMetrics = [];
+        const windowsMemoryInfo = this.state.windowsMemoryInfo;
+        const windowsMemoryMetrics = [];
 
         /**
-         * Battery Info
+         * Android Battery Info
          */
-        if (batteryInfo && batteryInfo.performanceInspectionResults && batteryInfo.performanceInspectionResults.length > 0) {
-            let startTime = batteryInfo.performanceInspectionResults[0].timestamp;
-            batteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
+        if (androidBatteryInfo && androidBatteryInfo.performanceInspectionResults && androidBatteryInfo.performanceInspectionResults.length > 0) {
+            let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
+            androidBatteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult.parsedData !== null) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     result.ratio = inspectionResult.parsedData.ratio * 100;
-                    batteryMetrics.push(result);
+                    androidBatteryMetrics.push(result);
                 }
             })
         }
@@ -83,7 +97,7 @@ export default class PerfTestDashboard extends React.Component {
         );
 
         const renderAndroidBatteryChart = (
-            <LineChart width={800} height={400} data={batteryMetrics} margin={{ top: 20, right: 100, bottom: 20, left: 20 }}>
+            <LineChart width={800} height={400} data={androidBatteryMetrics} margin={{ top: 20, right: 100, bottom: 20, left: 20 }}>
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Battery usage (mAh)', angle: -90, position: 'left' }} />
                 <YAxis yAxisId="right" label={{ value: 'Ratio', angle: -90, position: 'right' }} unit="%" orientation="right" />
@@ -97,11 +111,11 @@ export default class PerfTestDashboard extends React.Component {
 
 
         /**
-         * Memory Info
+         * Android Memory Info
          */
-        if (memoryInfo && memoryInfo.performanceInspectionResults && memoryInfo.performanceInspectionResults.length > 0) {
-            let startTime = memoryInfo.performanceInspectionResults[0].timestamp;
-            memoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
+        if (androidMemoryInfo && androidMemoryInfo.performanceInspectionResults && androidMemoryInfo.performanceInspectionResults.length > 0) {
+            let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
+            androidMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult.parsedData !== null) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
@@ -113,7 +127,7 @@ export default class PerfTestDashboard extends React.Component {
                             result[key] = inspectionResult.parsedData[key] / 1024;
                         }
                     })
-                    memoryMetrics.push(result);
+                    androidMemoryMetrics.push(result);
                 }
             })
         }
@@ -131,7 +145,7 @@ export default class PerfTestDashboard extends React.Component {
         );
 
         const renderAndroidMemoryChart = (
-            <LineChart width={800} height={400} data={memoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <LineChart width={800} height={400} data={androidMemoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <Legend verticalAlign="top" />
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
@@ -143,16 +157,83 @@ export default class PerfTestDashboard extends React.Component {
 
             </LineChart>)
 
+        /**
+         * Windows Memory Info
+         */
+        if (windowsMemoryInfo && windowsMemoryInfo.performanceInspectionResults && windowsMemoryInfo.performanceInspectionResults.length > 0) {
+            let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
+            windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
+
+                if (inspectionResult.parsedData !== null) {
+                    var result = { ...inspectionResult.parsedData };
+                    let parsedData = { ...inspectionResult.parsedData };
+                    result.time = (inspectionResult.timestamp - startTime) / 1000;
+
+                    let processIdProcessNameMap = new Map(Object.entries(parsedData.processIdProcessNameMap));
+                    let processIdWindowsMemoryMetricsMap = new Map(Object.entries(parsedData.processIdWindowsMemoryMetricsMap));
+
+                    processIdProcessNameMap.forEach((key, value) => {
+                        // TODO: involve other processes.
+                        if (key === 'PhoneExperienceHost') {
+                            let windowsMemoryMetricsOfSingleProcess = processIdWindowsMemoryMetricsMap.get(value);
+
+                            Object.keys(windowsMemoryMetricsOfSingleProcess).forEach((key) => {
+                                if (windowsMemoryMetricsOfSingleProcess[key] == -1) {
+                                    result[key] = 0;
+                                } else if (windowsMemoryOptions.findIndex(item => item.value == key) != -1) {
+                                    // Byte to MB
+                                    result[key] = windowsMemoryMetricsOfSingleProcess[key] / 1024 / 1024;
+                                }
+                            })
+                        }
+                    })
+
+                    windowsMemoryMetrics.push(result);
+                }
+            })
+        }
+
+        const windowsMemoryMultiSelect = (
+            <Select
+                defaultValue={windowsMemoryOptions}
+                isMulti
+                components={animatedComponents}
+                options={windowsMemoryOptions}
+                className="android-battery-select"
+                classNamePrefix="select"
+                onChange={(e) => { this.setState({ selectedWindowsMemoryOptions: e }) }}
+            />
+        );
+
+        const renderWindowsMemoryChart = (
+            <LineChart width={800} height={400} data={windowsMemoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <Legend verticalAlign="top" />
+                <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
+                <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
+                {this.state.selectedWindowsMemoryOptions.map((key, index) => (
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
+                ))}
+                {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
+                <Tooltip />
+
+            </LineChart>)
+
+
         return <div id='perf_dashboard'>
-            {batteryInfo && <div>
-                <h3> Battery report</h3>
+            {androidBatteryInfo && <div>
+                <h3> Android Battery report</h3>
                 {androidBatteryMultiSelect}
                 {renderAndroidBatteryChart}
             </div>}
-            {memoryInfo && <div>
-                <h3> Memory report</h3>
+            {androidMemoryInfo && <div>
+                <h3> Android Memory report</h3>
                 {androidMemoryMultiSelect}
                 {renderAndroidMemoryChart}
+            </div>}
+            {windowsMemoryInfo && <div>
+                <h3> Windows Memory report</h3>
+                {windowsMemoryMultiSelect}
+                {renderWindowsMemoryChart}
             </div>}
         </div>
     };
@@ -164,9 +245,11 @@ export default class PerfTestDashboard extends React.Component {
             for (var info of res.data.content) {
                 console.log(info);
                 if (info.parserType == 'PARSER_ANDROID_BATTERY_INFO') {
-                    this.setState({ batteryInfo: info });
+                    this.setState({ androidBatteryInfo: info });
                 } else if (info.parserType == 'PARSER_ANDROID_MEMORY_INFO') {
-                    this.setState({ memoryInfo: info });
+                    this.setState({ androidMemoryInfo: info });
+                } else if (info.parserType == 'PARSER_WIN_MEMORY') {
+                    this.setState({ windowsMemoryInfo: info });
                 }
             };
         })
