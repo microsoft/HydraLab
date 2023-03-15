@@ -208,7 +208,7 @@ public interface Const {
     }
 
     final class StoragePropertyBean {
-        public static final String LOCAL = "localProperty";
+        public static final String LOCAL = "localStorageProperty";
         public static final String AZURE = "azureBlobProperty";
 
         private StoragePropertyBean() {
