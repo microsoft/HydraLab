@@ -74,10 +74,14 @@ public class AppiumRunner extends TestRunner {
         if (instrumentationArgs == null) {
             instrumentationArgs = new HashMap<>();
         }
+        String appAbsolutePath = null;
+        if (testTask.getAppFile() != null) {
+            appAbsolutePath = testTask.getAppFile().getAbsolutePath();
+        }
         AppiumParam appiumParam =
                 new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(),
                         IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger),
-                        testTask.getAppFile().getAbsolutePath(), deviceTestResultFolder.getAbsolutePath());
+                        appAbsolutePath, deviceTestResultFolder.getAbsolutePath());
         ThreadParam.init(appiumParam, instrumentationArgs);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam,
                 LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));

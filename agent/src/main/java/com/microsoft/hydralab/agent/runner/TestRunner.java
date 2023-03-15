@@ -197,15 +197,17 @@ public abstract class TestRunner {
     }
 
     protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) throws Exception {
-        if (testTask.getRequireReinstall() || testDeviceManager instanceof IOSTestDeviceManager) {
+        if (testTask.getNeedUninstall() || testDeviceManager instanceof IOSTestDeviceManager) {
             testDeviceManager.uninstallApp(deviceInfo, testTask.getPkgName(), reportLogger);
             ThreadUtils.safeSleep(3000);
-        } else if (testTask.getRequireClearData()) {
+        } else if (testTask.getNeedClearData()) {
             testDeviceManager.resetPackage(deviceInfo, testTask.getPkgName(), reportLogger);
         }
         checkTestTaskCancel(testTask);
 
-        testDeviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
+        if (testTask.getNeedInstall()) {
+            testDeviceManager.installApp(deviceInfo, testTask.getAppFile().getAbsolutePath(), reportLogger);
+        }
     }
 
     protected void reInstallTestApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger)
@@ -222,7 +224,7 @@ public abstract class TestRunner {
         if (!testTask.getTestAppFile().exists()) {
             return;
         }
-        if (testTask.getRequireReinstall()) {
+        if (testTask.getNeedUninstall()) {
             testDeviceManager.uninstallApp(deviceInfo, testTask.getTestPkgName(), reportLogger);
             // test package uninstall should be faster than app package removal.
             ThreadUtils.safeSleep(2000);
