@@ -161,6 +161,11 @@ public interface Const {
         String AZURE = "azureBlobProperty";
     }
 
+    interface XCTestConfig{
+        String XCTEST_ZIP_FOLDER_NAME = "Xctest";
+        String XCTEST_RESULT_FILE_NAME = "result.xcresult";
+    }
+
     final class LocalStorageURL {
         public static final String CENTER_LOCAL_STORAGE_UPLOAD = "/api/storage/local/upload";
         public static final String CENTER_LOCAL_STORAGE_DOWNLOAD = "/api/storage/local/download";

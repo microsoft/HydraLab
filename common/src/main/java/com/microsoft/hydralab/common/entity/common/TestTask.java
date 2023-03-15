@@ -292,6 +292,7 @@ public class TestTask implements Serializable {
         String MONKEY_TEST = "MONKEY";
         String APPIUM_MONKEY_TEST = "APPIUM_MONKEY";
         String T2C_JSON_TEST = "T2C_JSON";
+        String XCTEST = "XCTEST";
     }
 
     public interface TestFrameworkType {
