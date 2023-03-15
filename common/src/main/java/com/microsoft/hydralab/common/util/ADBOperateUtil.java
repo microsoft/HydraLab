@@ -182,20 +182,26 @@ public class ADBOperateUtil {
         getNotNullLogger(logger).info("adb -H {} -s {} shell pm install {} {} {}", adbServerHost, deviceInfo.getSerialNum(),
                 extArgs, reinstall ? "-r" : "", packagePath);
         InstallReceiver receiver = new InstallReceiver();
-        deviceByInfo.installPackage(packagePath, reinstall, receiver, extArgs);
+        boolean pmInstallNoException = true;
+        try {
+            deviceByInfo.installPackage(packagePath, reinstall, receiver, extArgs);
+        } catch (InstallException e) {
+            getNotNullLogger(logger).error("InstallException: {}", e.getMessage());
+            pmInstallNoException = false;
+        }
         if (receiver.getErrorMessage() != null) {
             getNotNullLogger(logger).error("installApp Error code: {}, Error msg: {}", receiver.getErrorCode(), receiver.getErrorMessage());
         }
         if (receiver.getSuccessMessage() != null) {
             getNotNullLogger(logger).info("Install app success: {}", receiver.getSuccessMessage());
         }
-        if (receiver.isSuccessfullyCompleted()) {
+        if (pmInstallNoException && receiver.isSuccessfullyCompleted()) {
             return true;
         }
         return installAppWithADB(deviceInfo, packagePath, reinstall, extArgs, logger);
     }
 
-    private boolean installAppWithADB(DeviceInfo deviceInfo, String packagePath, boolean reinstall, String extArgs, Logger logger) {
+    private boolean installAppWithADB(DeviceInfo deviceInfo, String packagePath, boolean reinstall, String extArgs, Logger logger) throws InstallException {
         boolean success = false;
         Process process = null;
         try {
@@ -212,7 +218,7 @@ public class ADBOperateUtil {
             }
         } catch (IOException | InterruptedException e) {
             getNotNullLogger(logger).error("installAppWithADB error: {}", e.getMessage());
-            throw new RuntimeException(e);
+            throw new InstallException(e);
         } finally {
             if (process != null) {
                 process.destroy();
