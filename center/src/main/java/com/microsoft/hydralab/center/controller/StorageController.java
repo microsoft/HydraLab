@@ -57,7 +57,7 @@ public class StorageController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
         }
         if (!LogUtils.isLegalStr(fileUri, Const.RegexString.STORAGE_FILE_REL_PATH, false)) {
-            return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid file path!");
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid file path, file name should not include ';'!");
         }
 
         try {
@@ -90,7 +90,7 @@ public class StorageController {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
         }
         if (!LogUtils.isLegalStr(fileUri, Const.RegexString.STORAGE_FILE_REL_PATH, false)) {
-            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path!");
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path, file name should not include ';'!");
         }
 
         File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
@@ -128,7 +128,7 @@ public class StorageController {
         final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
         String fileUri = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, appendPath);
         if (!LogUtils.isLegalStr(fileUri, Const.RegexString.STORAGE_FILE_REL_PATH, false)) {
-            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path!");
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path, file name should not include ';'!");
         }
 
         File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
