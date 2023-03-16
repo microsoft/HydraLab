@@ -104,7 +104,7 @@ public class EspressoRunner extends TestRunner {
                 logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(),
                         LogUtils.scrubSensitiveArgs(command));
             }
-            adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, receiver, testTimeOut);
+            adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, receiver, testTimeOut, -1);
             return Const.TaskResult.SUCCESS;
         } catch (Exception e) {
             if (logger != null) {
