@@ -21,16 +21,21 @@ import com.microsoft.hydralab.common.util.AgentConstant;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
+import com.microsoft.hydralab.t2c.runner.*;
+import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
+import com.microsoft.hydralab.t2c.runner.controller.IOSDriverController;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -317,5 +322,66 @@ public class IOSTestDeviceManager extends TestDeviceManager {
         IOSUtils.stopApp(deviceInfo.getSerialNum(), packageName, logger);
         IOSUtils.launchApp(deviceInfo.getSerialNum(), packageName, logger);
         super.runAppiumMonkey(deviceInfo, packageName, round, logger);
+    }
+
+    @Override
+    public boolean runAppiumT2CTest(DeviceInfo deviceInfo, File jsonFile, Logger reportLogger) {
+        reportLogger.info("Start T2C Test");
+        T2CJsonParser t2CJsonParser = new T2CJsonParser(reportLogger);
+        TestInfo testInfo = t2CJsonParser.parseJsonFile(jsonFile.getAbsolutePath());
+        Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
+
+        String testWindowsApp = "";
+        Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
+
+        // Check device requirements
+        int iosCount = 0;
+
+        for (DriverInfo driverInfo : testInfo.getDrivers()) {
+            if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
+                throw new RuntimeException("No Android device connected to this agent");
+            }
+            if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
+                throw new RuntimeException("No Browser supported in this agent");
+            }
+            if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
+                iosCount++;
+            }
+        }
+        // TODO: upgrade to check the available device count on the agent
+        Assert.isTrue(iosCount <= 1, "Only support one iOS device for now.");
+
+        try {
+            // Prepare drivers
+            for (DriverInfo driverInfo : testInfo.getDrivers()) {
+                if (driverInfo.getPlatform().equalsIgnoreCase("iOS")) {
+                    IOSDriverController iosDriverController = new IOSDriverController(
+                            appiumServerManager.getIOSDriver(deviceInfo, reportLogger),
+                            deviceInfo.getSerialNum(), reportLogger);
+                    driverControllerMap.put(driverInfo.getId(), iosDriverController);
+                    if (!StringUtils.isEmpty(driverInfo.getLauncherApp())) {
+                        iosDriverController.activateApp(driverInfo.getLauncherApp());
+                    }
+                    reportLogger.info("Successfully init an iOS driver: " + deviceInfo.getSerialNum());
+                }
+            }
+
+            ArrayList<ActionInfo> caseList = testInfo.getActions();
+
+            for (ActionInfo actionInfo : caseList) {
+                BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
+                reportLogger.info("Start step: " + actionInfo.getId() + ", description: " + actionInfo.getDescription() + "action: " + actionInfo.getActionType() + " on element: "
+                        + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
+                T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
+            }
+        } catch (Exception e) {
+            reportLogger.error("T2C Test Error: ", e);
+            throw e;
+        } finally {
+            appiumServerManager.quitIOSDriver(deviceInfo, reportLogger);
+            reportLogger.info("Finish T2C Test");
+        }
+
+        return true;
     }
 }

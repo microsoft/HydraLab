@@ -720,22 +720,22 @@ public class DeviceAgentManagementService {
             }
             Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
 
-            int androidCount = 0;
-            int edgeCount = 0;
-
-            for (DriverInfo driverInfo : testInfo.getDrivers()) {
-                if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
-                    androidCount++;
-                }
-                if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
-                    edgeCount++;
-                }
-                if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
-                    throw new RuntimeException("No iOS device connected to this agent");
-                }
-            }
-            Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
-            Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
+//            int androidCount = 0;
+//            int edgeCount = 0;
+//
+//            for (DriverInfo driverInfo : testInfo.getDrivers()) {
+//                if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
+//                    androidCount++;
+//                }
+//                if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
+//                    edgeCount++;
+//                }
+//                if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
+//                    throw new RuntimeException("No iOS device connected to this agent");
+//                }
+//            }
+//            Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
+//            Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
         }
 
         // Todo: leveraged current E2E agent, need to update to agent level test
