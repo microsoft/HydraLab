@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,50 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
             inspectionResult.parsedData = buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, memInfos);
         }
 
+        performanceTestResult.setResultSummary(buildMemoryAverageSummary(inspectionResults));
+
         return performanceTestResult;
+    }
+
+    private AndroidMemoryInfo buildMemoryAverageSummary(List<PerformanceInspectionResult> inspectionResults) {
+        if (inspectionResults == null || inspectionResults.isEmpty()) {
+            return null;
+        }
+
+        AndroidMemoryInfo averageMemoryInfo = new AndroidMemoryInfo();
+        List<AndroidMemoryInfo> memoryInfos = new ArrayList<>();
+        for (PerformanceInspectionResult inspectionResult : inspectionResults) {
+            if (inspectionResult.parsedData != null) {
+                memoryInfos.add((AndroidMemoryInfo) inspectionResult.parsedData);
+            }
+        }
+
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getJavaHeapPss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getJavaHeapRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getNativeHeapPss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getNativeHeapRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getCodePss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getCodeRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getStackPss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getStackRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getGraphicsPss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getGraphicsRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getPrivateOtherPss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getPrivateOtherRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getSystemPss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getSystemRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getUnknownPss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getUnknownRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalPss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalSwapPss).average().orElse(-1)));
+
+        return averageMemoryInfo;
+    }
+
+    private List<Long> objectToLong(List<AndroidMemoryInfo> androidMemoryInfoList, String field) {
+        return null;
     }
 
 

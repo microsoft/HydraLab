@@ -9,7 +9,12 @@ import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
 import org.slf4j.Logger;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -64,6 +69,8 @@ public class TestRun implements Serializable, ITestRun {
     private String videoBlobUrl;
     @Transient
     private List<StorageFileInfo> attachments;
+    @Transient
+    private List<PerformanceTestResultEntity> performanceTestResultEntities = new ArrayList<>();
 
     @Transient
     private transient List<CommandlineAndTime> commandlineAndTimeList = new ArrayList<>();

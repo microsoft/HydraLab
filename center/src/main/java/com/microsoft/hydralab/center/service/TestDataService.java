@@ -10,10 +10,12 @@ import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
+import com.microsoft.hydralab.common.repository.PerformanceTestResultRepository;
 import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -38,6 +40,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -45,6 +48,9 @@ import java.util.Set;
 @Service
 @CacheConfig(cacheNames = "taskCache")
 public class TestDataService {
+    // Get the performance test history of the last 6 months
+    public static final long PERFORMANCE_TEST_HISTORY_TIME = 1000L * 3600 * 24 * 180;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDataService.class);
     private final Sort sortByStartMillis = Sort.by(Sort.Direction.DESC, "startTimeMillis");
     private final Sort sortByStartDate = Sort.by(Sort.Direction.DESC, "startDate");
@@ -58,6 +64,8 @@ public class TestDataService {
     KeyValueRepository keyValueRepository;
     @Resource
     StabilityDataRepository stabilityDataRepository;
+    @Resource
+    PerformanceTestResultRepository performanceTestResultRepository;
     @Resource
     AttachmentService attachmentService;
     @Resource
@@ -191,6 +199,7 @@ public class TestDataService {
         List<AndroidTestUnit> list = new ArrayList<>();
         for (TestRun deviceTestResult : deviceTestResults) {
             attachmentService.saveAttachments(deviceTestResult.getId(), EntityType.TEST_RESULT, deviceTestResult.getAttachments());
+            performanceTestResultRepository.saveAll(deviceTestResult.getPerformanceTestResultEntities());
 
             List<AndroidTestUnit> testUnitList = deviceTestResult.getTestUnitList();
             list.addAll(testUnitList);
@@ -236,5 +245,12 @@ public class TestDataService {
         } else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
         }
+    }
+
+    public List<PerformanceTestResultEntity> getPerformanceTestHistory(String testSuite, String pkgName, String runningType, String parserType) {
+        Date date = new Date(System.currentTimeMillis() - PERFORMANCE_TEST_HISTORY_TIME);
+        List<PerformanceTestResultEntity> resultEntities =
+                performanceTestResultRepository.findByTestSuiteAndPkgNameAndRunningTypeAndParserType(testSuite, pkgName, runningType, parserType, date);
+        return resultEntities;
     }
 }
