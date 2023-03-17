@@ -65,34 +65,28 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
             }
         }
 
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getJavaHeapPss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getJavaHeapRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getNativeHeapPss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getNativeHeapRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getCodePss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getCodeRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getStackPss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getStackRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getGraphicsPss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getGraphicsRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getPrivateOtherPss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getPrivateOtherRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getSystemPss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getSystemRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getUnknownPss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getUnknownRss).average().orElse(-1)));
+        averageMemoryInfo.setJavaHeapPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getJavaHeapPss).average().orElse(-1)));
+        averageMemoryInfo.setJavaHeapRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getJavaHeapRss).average().orElse(-1)));
+        averageMemoryInfo.setNativeHeapPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getNativeHeapPss).average().orElse(-1)));
+        averageMemoryInfo.setNativeHeapRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getNativeHeapRss).average().orElse(-1)));
+        averageMemoryInfo.setCodePss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getCodePss).average().orElse(-1)));
+        averageMemoryInfo.setCodeRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getCodeRss).average().orElse(-1)));
+        averageMemoryInfo.setStackPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getStackPss).average().orElse(-1)));
+        averageMemoryInfo.setStackRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getStackRss).average().orElse(-1)));
+        averageMemoryInfo.setGraphicsPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getGraphicsPss).average().orElse(-1)));
+        averageMemoryInfo.setGraphicsRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getGraphicsRss).average().orElse(-1)));
+        averageMemoryInfo.setPrivateOtherPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getPrivateOtherPss).average().orElse(-1)));
+        averageMemoryInfo.setPrivateOtherRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getPrivateOtherRss).average().orElse(-1)));
+        averageMemoryInfo.setSystemPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getSystemPss).average().orElse(-1)));
+        averageMemoryInfo.setStackRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getSystemRss).average().orElse(-1)));
+        averageMemoryInfo.setUnknownPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getUnknownPss).average().orElse(-1)));
+        averageMemoryInfo.setUnknownRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getUnknownRss).average().orElse(-1)));
         averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalPss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalSwapPss).average().orElse(-1)));
+        averageMemoryInfo.setTotalRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalRss).average().orElse(-1)));
+        averageMemoryInfo.setTotalSwapPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalSwapPss).average().orElse(-1)));
 
         return averageMemoryInfo;
     }
-
-    private List<Long> objectToLong(List<AndroidMemoryInfo> androidMemoryInfoList, String field) {
-        return null;
-    }
-
 
     private AndroidMemoryInfo buildMemoryInfo(String packageName, String description, long timestamp, long[] memInfos) {
         if (memInfos == null || memInfos.length != 19) {

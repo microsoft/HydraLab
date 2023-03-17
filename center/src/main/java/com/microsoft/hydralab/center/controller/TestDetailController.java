@@ -21,6 +21,7 @@ import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DownloadUtils;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -205,9 +206,10 @@ public class TestDetailController {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
-//            if (StringUtils.isEmpty(testSuite) || TestTask.TestRunningType.MONKEY_TEST.equals(runningType)) {
-//                return Result.ok(null);
-//            }
+            if (StringUtils.isEmpty(testSuite) || StringUtils.isEmpty(pkgName) || StringUtils.isEmpty(runningType) || StringUtils.isEmpty(parserType)) {
+                return Result.error(HttpStatus.BAD_REQUEST.value(), "RequestParam should not be empty");
+            }
+            
             List<PerformanceTestResultEntity> performanceHistory = testDataService.getPerformanceTestHistory(testSuite, pkgName, runningType, parserType);
 
             return Result.ok(performanceHistory);
