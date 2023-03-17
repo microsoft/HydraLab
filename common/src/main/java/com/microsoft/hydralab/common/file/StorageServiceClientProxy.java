@@ -29,7 +29,6 @@ public class StorageServiceClientProxy extends StorageServiceClient {
     }
 
     public void initCenterStorageClient(String storageType) {
-        this.storageType = storageType;
         StorageProperties storageProperties;
         switch (storageType) {
             case Const.StorageType.AZURE:
@@ -46,7 +45,6 @@ public class StorageServiceClientProxy extends StorageServiceClient {
     }
 
     public void initAgentStorageClient(String storageType) {
-        this.storageType = storageType;
         StorageProperties storageProperties;
         switch (storageType) {
             case Const.StorageType.AZURE:
@@ -88,9 +86,5 @@ public class StorageServiceClientProxy extends StorageServiceClient {
     @Override
     public StorageFileInfo download(File file, StorageFileInfo storageFileInfo) {
         return storageServiceClient.download(file, storageFileInfo);
-    }
-
-    public String getStorageType() {
-        return storageType;
     }
 }
