@@ -75,11 +75,12 @@ docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 
 Hydra Lab 目前支持 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储多种文件类型，例如日志文件、视频、应用程序包等。欢迎为集成其他第三方存储服务做出贡献。
 
-如果你想要使用 Azure Blob 存储，请访问你的 Azure 门户，创建一个 Azure Blob 存储账户，获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string)，
-并将其存放在名为 BLOB_CONNECTION_STR 的环境变量中。简要步骤：[登录 Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> 创建新的存储账户（你可以限制容器的公共读写） -> 在创建的存储账户中, 找到 `Access Keys` 页面 -> 复制 `Connection string`。
+根据存储服务的类型，你需要在命令中额外指定一些环境变量。
+
+如果你想要使用 Azure Blob 存储，请访问你的 Azure 门户，创建一个 Azure Blob 存储账户，并获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string)。简要步骤：[登录 Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> 创建新的存储账户（你可以限制容器的公共读写） -> 在创建的存储账户中, 找到 `Access Keys` 页面 -> 复制 `Connection string`。
 ![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
 
-根据存储服务的类型，你需要在命令中额外指定一些环境变量。你可以将以下内容写入一个配置文件（例如 env.properties）:
+你可以将以下内容写入一个配置文件（例如 env.properties）:
 ```
 STORAGE_TYPE=AZURE
 BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}

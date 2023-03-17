@@ -80,11 +80,12 @@ docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 Hydra Lab currently supports [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist various file types such as log files, video, app package, etc. 
 Any contribution to integrating other third-party storage services is welcome.
 
-If you want to use Azure Blob storage, please go to your Azure portal, open an Azure Blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
-and place it in the environment variable with the name of BLOB_CONNECTION_STR. Brief steps: [Login Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> Create new storage account (you may disable the public access for the container) -> In the created storage account, find `Access Keys` tab -> copy `Connection string`.
+Some extra environment variables need to be specified in the command according to the storage service type.
+
+If you want to use Azure Blob storage, please go to your Azure portal, open an Azure Blob storage account, and get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string).
+Brief steps: [Login Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> Create new storage account (you may disable the public access for the container) -> In the created storage account, find `Access Keys` tab -> copy `Connection string`.
 ![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
 
-Some extra environment variables need to be specified in the command according to the storage service type.
 You may write the following content in an env file (e.g. env.properties):
 ```
 STORAGE_TYPE=AZURE
