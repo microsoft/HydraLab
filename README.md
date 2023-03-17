@@ -78,7 +78,7 @@ docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 **2. use third-party storage service**
 
 Hydra Lab currently supports [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist various file types such as log files, video, app package, etc. 
-Any contribution to integrating other third-party storage services is welcome.
+Any contribution to integrating other third-party storage services is welcome. (Here's the UML class diagram for this module as a reference: [storage service structure](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png).)
 
 Some extra environment variables need to be specified in the command according to the storage service type.
 
