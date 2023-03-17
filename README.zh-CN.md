@@ -73,7 +73,7 @@ docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 
 **2. 使用第三方存储服务**
 
-Hydra Lab 目前支持 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储多种文件类型，例如日志文件、视频、应用程序包等。欢迎为集成其他第三方存储服务做出贡献。（附上这个模块的 UML 类图作为参考：[存储服务架构](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png)。）
+Hydra Lab 目前支持 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储多种文件类型，例如日志文件、视频、应用程序包等。欢迎为集成其他第三方存储服务做出贡献。（附上此模块的 UML 类图作为参考：[存储服务架构](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png)。）
 
 根据存储服务的类型，你需要在命令中额外指定一些环境变量。
 
