@@ -12,6 +12,7 @@ import java.io.File;
 
 @Data
 public abstract class StorageServiceClient {
+    // File in storage may have a TTL to be deleted, so we need to specify a limit day to identify whether we need to reload a file.
     protected int fileLimitDay;
     // CDN endpoint
     protected String cdnUrl;
