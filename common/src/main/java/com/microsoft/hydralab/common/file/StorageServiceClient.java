@@ -12,7 +12,10 @@ import java.io.File;
 
 @Data
 public abstract class StorageServiceClient {
-    // File in storage may have a TTL to be deleted, so we need to specify a limit day to identify whether we need to reload a file.
+    /**
+     * File in storage may have a time limit to be deleted, so a time limit is necessary to be set in Hydra Lab to verify whether we need to re-upload a file to make sure the existence.
+     * Normally, this value is slightly smaller than the limit setting in third-party storage setting.
+     */
     protected int fileLimitDay;
     // CDN endpoint
     protected String cdnUrl;
