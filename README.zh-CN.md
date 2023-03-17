@@ -61,7 +61,7 @@ docker pull ghcr.io/microsoft/hydra-lab-uber:latest
 
 **第2步. 在你的机器上运行**
 
-直接从以下两种命令中选择一种，以开始你在 Hydra Lab 的体验：
+只需选择以下其中一个命令，即可开始您在 Hydra Lab 的体验：
 
 **1. 使用本地存储服务**
 
@@ -73,11 +73,20 @@ docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 
 **2. 使用第三方存储服务**
 
-Hydra Lab 现在支持 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储日志文件、视频、应用包等。请访问你的 Azure 门户，创建一个 Azure Blob 存储账户，获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string)，
-并将其放入环境变量中，名称为 BLOB_CONNECTION_STR。简要步骤：[Login Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> 创建新的存储账户（你可以限制容器的公共读写） ->在创建的存储账户中, 找到 `Access Keys` 页面 -> 复制 `Connection string`。
+Hydra Lab 目前支持 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储多种文件类型，例如日志文件、视频、应用程序包等。欢迎为集成其他第三方存储服务做出贡献。
+
+请访问你的 Azure 门户，创建一个 Azure Blob 存储账户，获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string)，
+并将其存放在名为 BLOB_CONNECTION_STR 的环境变量中。简要步骤：[登录 Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> 创建新的存储账户（你可以限制容器的公共读写） -> 在创建的存储账户中, 找到 `Access Keys` 页面 -> 复制 `Connection string`。
 ![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
 
-你可以将 `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` 写入一个配置文件（例如 env.properties），然后将文件路径传给 docker container：
+如果你想要使用第三方存储服务，需要根据服务类型指定一些额外的环境变量。
+你可以将以下内容写入一个配置文件（例如 env.properties）:
+```
+STORAGE_TYPE=AZURE
+BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}
+```
+
+然后将文件路径传给 docker container：
 
 ```bash
 docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
@@ -86,7 +95,7 @@ docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/micro
 或者设置环境参数 -e 直接运行：
 
 ```bash
-docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
 **第3步. 访问前端页面并查看你的已连接设备**
