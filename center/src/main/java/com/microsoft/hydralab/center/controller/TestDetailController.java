@@ -209,7 +209,7 @@ public class TestDetailController {
             if (StringUtils.isEmpty(testSuite) || StringUtils.isEmpty(pkgName) || StringUtils.isEmpty(runningType) || StringUtils.isEmpty(parserType)) {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "RequestParam should not be empty");
             }
-            
+
             List<PerformanceTestResultEntity> performanceHistory = testDataService.getPerformanceTestHistory(testSuite, pkgName, runningType, parserType);
 
             return Result.ok(performanceHistory);
