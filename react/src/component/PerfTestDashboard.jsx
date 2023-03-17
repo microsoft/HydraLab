@@ -164,7 +164,7 @@ export default class PerfTestDashboard extends React.Component {
             let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
             windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
-                if (inspectionResult.parsedData !== null) {
+                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
                     var result = { ...inspectionResult.parsedData };
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
