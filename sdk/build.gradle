@@ -13,4 +13,6 @@ repositories {
 dependencies {
     compile 'ch.qos.logback:logback-classic:1.2.3'
     compile 'org.slf4j:slf4j-api:1.7.30'
+    compile 'com.microsoft.cognitiveservices.speech:client-sdk:1.26.0@jar'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
 }
