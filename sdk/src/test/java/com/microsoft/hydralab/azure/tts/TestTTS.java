@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Future;
 
 public class TestTTS {
+    // Replace below with your own speechSubscriptionKey. The following is just an example.
     String speechSubscriptionKey = "d029eb2ca32145b5afbe434a33dfa28b";
     // Replace below with your own service region (e.g., "westus").
     String serviceRegion = "eastus";
