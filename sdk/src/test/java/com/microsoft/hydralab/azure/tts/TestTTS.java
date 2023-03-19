@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 import java.util.concurrent.Future;
 
 public class TestTTS {
@@ -20,6 +21,16 @@ public class TestTTS {
     String speechSubscriptionKey = "d029eb2ca32145b5afbe434a33dfa28b";
     // Replace below with your own service region (e.g., "westus").
     String serviceRegion = "eastus";
+
+    public TestTTS() {
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("scripts/env.properties"));
+            speechSubscriptionKey = properties.getProperty("AzureSpeechSubscriptionKey");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Test
     public void testTts() throws IOException {
