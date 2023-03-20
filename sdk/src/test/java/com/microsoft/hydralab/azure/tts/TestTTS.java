@@ -34,18 +34,17 @@ public class TestTTS {
 
     @Test
     public void testTts() throws IOException {
-        try (FileInputStream fileInputStream = new FileInputStream("script.txt")) {
+        try (FileInputStream fileInputStream = new FileInputStream("scripts/scripts.txt")) {
             String text = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
             String who = "en-US-NancyNeural";
-            String filePath = "previous.wav";
+            String filePath = "scripts/general.wav";
             speakAndSaveToFile(text, who, filePath);
         }
     }
 
     @Test
     public void testTtsSSML() throws IOException {
-        int index = 1;
-        processScripts(9);
+        processScripts(11);
     }
 
     private void processScripts(int... index) throws IOException {
