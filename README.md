@@ -55,7 +55,7 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 <span id="quick-start"></span>
 ### Quick guide on out-of-box Uber docker image
 
-Hydra Lab offers an out-of-box experience of docker image called Uber. By providing the env variable BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
+Hydra Lab offers an out-of-box experience of docker image called Uber. You can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
 **Step 1. pull Docker image from container registry**
 
