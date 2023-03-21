@@ -37,3 +37,7 @@ spring:
         jdbc:
           batch_size: 400
           batch_versioned_data: true
+
+app:
+  storage:
+    type: ${STORAGE_TYPE:AZURE}
