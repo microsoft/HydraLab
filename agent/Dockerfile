@@ -37,11 +37,11 @@ RUN \
 
 RUN \
     ls -al /opt/android-sdk-linux/cmdline-tools/latest && \
-    echo "y" | sdkmanager --install "platform-tools" "platforms;android-24" "emulator" "platforms;android-33" && \
-    echo "y" | sdkmanager --install "system-images;android-24;default;armeabi-v7a" && \
+    echo "y" | sdkmanager --install "platform-tools" "platforms;android-24" "emulator" "platforms;android-33" "platforms;android-30" && \
+    echo "y" | sdkmanager --install "system-images;android-30;default;armeabi-v7a" && \
     # echo "y" | sdkmanager --licenses && \
     # https://developer.android.com/studio/command-line/avdmanager
-    echo "no" | avdmanager create avd -n emuTestNexus -k "system-images;android-24;default;armeabi-v7a" -d "Nexus 5X" -f && \
+    echo "no" | avdmanager create avd -n emuTestNexus -k "system-images;android-30;default;armeabi-v7a" -d "Pixel 5" -f && \
     # echo y | sdkmanager "system-images;android-24;default;armeabi-v7a"  --sdk_root=/opt/android-sdk-linux  && \
     # The binary emulator-headless is now retired. Headless builds of the engine are now launched via emulator -no-window, thus unifying the previously separate (but similar) paths.
     emulator -avd emuTestNexus -noaudio -no-boot-anim -gpu off -no-window
