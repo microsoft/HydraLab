@@ -5,15 +5,9 @@
 FROM mcr.microsoft.com/openjdk/jdk:11-ubuntu
 ARG JAR_FILE=build/libs/agent.jar
 ARG START_SCRIPT=start.sh
-ARG ARG_AGENT_ID
-ARG ARG_AGENT_SECRET
-ARG ARG_AGENT_NAME
 
 ENV TZ="Asia/Shanghai" \
     TIME_ZONE="Asia/Shanghai" \
-    AGENT_ID=${ARG_AGENT_ID} \
-    AGENT_SECRET=${ARG_AGENT_SECRET} \
-    AGENT_NAME=${ARG_AGENT_NAME} \
     ANDROID_HOME=/opt/android-sdk-linux \
     ANDROID_SDK_ROOT=/opt/android-sdk-linux
 ENV PATH $PATH:${ANDROID_HOME}/tools:${ANDROID_HOME}/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools/bin
