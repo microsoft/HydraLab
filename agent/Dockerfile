@@ -8,7 +8,8 @@ ARG JAR_FILE=build/libs/agent.jar
 ENV TZ="Asia/Shanghai" \
     TIME_ZONE="Asia/Shanghai" \
     ANDROID_HOME=/opt/android-sdk-linux
-ENV PATH $PATH:${ANDROID_HOME}/tools:$ANDROID_HOME/platform-tools
+    ANDROID_SDK_ROOT=/opt/android-sdk-linux
+ENV PATH $PATH:${ANDROID_HOME}/tools:${ANDROID_HOME}/emulator:$ANDROID_HOME/cmdline-tools/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools/bin
 
 RUN \
     ln -sf /usr/share/zoneinfo/{TZ} /etc/localtime && \
@@ -22,6 +23,24 @@ RUN \
     mkdir /hydra && \
     wget -qO- "http://dl.google.com/android/android-sdk_r24.3.4-linux.tgz" | tar -zx -C /opt && \
     echo y | android update sdk --no-ui --all --filter platform-tools --force
+
+# set up environment for emulator, a example ref: https://andresand.medium.com/android-emulator-on-docker-container-f20c49b129ef
+RUN \
+    apt-get install -y unzip libnss3-dev libxcomposite-dev libxdamage1 && \
+    # Accepted values are: [add-on, doc, extra, platform, platform-tool, sample, source, system-image, tool]
+    android update sdk --no-ui --all --force --filter tool && \
+    # https://developer.android.com/studio#command-tools
+    # https://developer.android.google.cn/studio/command-line#tools-sdk
+    wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip && \
+    unzip commandlinetools-linux-9477386_latest.zip -d /opt/android-sdk-linux && \
+    echo "y" | sdkmanager --install "platforms;android-24" "emulator" && \
+    echo "y" | sdkmanager --install "system-images;android-24;default;armeabi-v7a" && \
+    echo "y" | sdkmanager --licenses && \
+    # https://developer.android.com/studio/command-line/avdmanager
+    echo "no" | avdmanager create avd -n emuTestNexus -k "system-images;android-24" -d "Nexus 5X" -f && \
+    # echo y | sdkmanager "system-images;android-24;default;armeabi-v7a"  --sdk_root=/opt/android-sdk-linux  && \
+    # The binary emulator-headless is now retired. Headless builds of the engine are now launched via emulator -no-window, thus unifying the previously separate (but similar) paths.
+    emulator -avd emuTestNexus -noaudio -no-boot-anim -gpu off -no-window
 
 # TODO: after we enable the smart test in Github, we will reactivate the following layers.
 # Install python/pip and smart test dependencies
