@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.agent.runner.xctest;
 
+import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
@@ -7,12 +8,11 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -23,13 +23,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import cn.hutool.core.img.gif.AnimatedGifEncoder;
-
 public class XCTestRunner extends TestRunner {
     private static String folderPath = "";
     private File gifFile;
     private final AnimatedGifEncoder gitEncoder = new AnimatedGifEncoder();
-    private ScreenRecorder deviceScreenRecorder;
     private Logger reportLogger;
     private long recordingStartTimeMillis;
 
@@ -39,21 +36,18 @@ public class XCTestRunner extends TestRunner {
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
-        initializeTest(deviceInfo, testTask, testRun);
+    protected void run(TestDevice testDevice, TestTask testTask, TestRun testRun) throws Exception {
+        initializeTest(testDevice, testTask, testRun);
         unzipXctestFolder(testTask.getAppFile(), testRun, reportLogger);
-        List<String> result = runXctest(deviceInfo, reportLogger, testTask, testRun);
-        deviceScreenRecorder.finishRecording();
+        List<String> result = runXctest(testDevice.getDeviceInfo(), reportLogger, testTask, testRun);
         analysisXctestResult(result, testRun);
         FileUtil.deleteFile(new File(folderPath));
-        finishTest(testRun);
+        finishTest(testDevice, testRun);
     }
 
-    private void initializeTest(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
+    private void initializeTest(TestDevice testDevice, TestTask testTask, TestRun testRun) {
         reportLogger = testRun.getLogger();
-        deviceScreenRecorder = deviceInfo.getTestDeviceManager().getScreenRecorder(deviceInfo, testRun.getResultFolder(), reportLogger);
-        deviceScreenRecorder.setupDevice();
-        deviceScreenRecorder.startRecord(testTask.getTimeOutSecond());
+        testDevice.startScreenRecorder(testRun.getResultFolder(), testTask.getTimeOutSecond(), reportLogger);
         recordingStartTimeMillis = System.currentTimeMillis();
         testRun.addNewTimeTag("Initializing", 0);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
@@ -65,7 +59,7 @@ public class XCTestRunner extends TestRunner {
     }
 
     @Override
-    protected void reInstallApp(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) {
+    protected void reInstallApp(TestDevice testDevice, TestTask testTask, Logger reportLogger) {
     }
 
     private void unzipXctestFolder(File zipFile, TestRun testRun, Logger reportLogger) {
@@ -165,7 +159,7 @@ public class XCTestRunner extends TestRunner {
         testRun.setTotalCount(totalCases);
     }
 
-    private void finishTest(TestRun testRun) {
+    private void finishTest(TestDevice testDevice, TestRun testRun) {
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
@@ -175,6 +169,6 @@ public class XCTestRunner extends TestRunner {
             testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
         }
         gitEncoder.finish();
-        deviceScreenRecorder.finishRecording();
+        testDevice.stopScreenRecorder();
     }
 }
