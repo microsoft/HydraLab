@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance.parsers;
 
-import com.microsoft.hydralab.performance.Entity.WindowsMemoryParsedData;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import com.microsoft.hydralab.performance.entity.WindowsMemoryParsedData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

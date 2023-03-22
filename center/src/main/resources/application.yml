@@ -52,16 +52,18 @@ app:
   # Mail Address Format
   default-user: ${DEFAULT_USER:default@hydralab.com}
   storage:
-    type: ${STORAGE_TYPE:AZURE} # current available options: LOCAL, AZURE
-    blob:
-      connection: ${BLOB_CONNECTION_STR}
+    type: ${STORAGE_TYPE:LOCAL} # current available options: LOCAL (default), AZURE
+    azure:
+      connection: ${BLOB_CONNECTION_STR:}
       fileLimitDay: 6
       CDNUrl: ${CDN_URL:}
       SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
       SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
       SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
       timeUnit: ${TIME_UNIT:MINUTES}
-#    local:
+    local:
+      token: ${CENTER_TOKEN:token=CENTER_LOCAL_STORAGE_TOKEN}
+      endpoint: ${LOCAL_STORAGE_ENDPOINT:http://localhost:9886/}
 
   location: ${user.dir}
 management:

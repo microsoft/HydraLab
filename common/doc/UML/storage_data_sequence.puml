@@ -1,4 +1,4 @@
-@startuml
+@startuml storage_general_data_sequence
 '(Local, Azure BLOB, ALI Cloud, QINIU Cloud, etc.)
 autonumber 1.1
 StorageService.Endpoint -> Center.StorageServiceClient: buildClient(connectionString)
@@ -21,5 +21,30 @@ Agent.StorageServiceClient -> StorageService.Endpoint: download(app / testApp / 
 StorageService.Endpoint -> Agent.StorageServiceClient: downloaded file info
 Agent.StorageServiceClient -> StorageService.Endpoint: upload(deviceTestResult)
 StorageService.Endpoint -> Agent.StorageServiceClient: uploaded file info
+
+@enduml
+
+@startuml local_storage_data_sequence
+autonumber 1.1
+LocalStorageClient -> Center.LocalStorageClientAdapter: buildClient(connectionString)
+Center.LocalStorageClientAdapter -> LocalStorageClient: upload(screenshot / attachment / agentPackage)
+LocalStorageClient --> Center.LocalStorageClientAdapter: download URL
+Center.LocalStorageClientAdapter -> LocalStorageClient: download(jsonFile)
+LocalStorageClient --> Center.LocalStorageClientAdapter: downloaded file
+|||
+autonumber 2.1
+Center.LocalStorageClientAdapter -> Browser: generateReadToken(permanent)
+Browser -> LocalStorageClient: read files with token
+|||
+autonumber 3.1
+Center.LocalStorageClientAdapter -> AgentMetadata: generateWriteToken(permanent)
+activate AgentMetadata
+AgentMetadata -> Agent.LocalStorageClientAdapter: heartbeatResponse(accessToken)
+deactivate AgentMetadata
+LocalStorageClient -> Agent.LocalStorageClientAdapter: buildClient(accessToken)
+Agent.LocalStorageClientAdapter -> LocalStorageClient: download(app / testApp / attachment / agentPackage)
+LocalStorageClient -> Agent.LocalStorageClientAdapter: downloaded file info
+Agent.LocalStorageClientAdapter -> LocalStorageClient: upload(deviceTestResult)
+LocalStorageClient -> Agent.LocalStorageClientAdapter: uploaded file info
 
 @enduml

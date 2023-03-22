@@ -125,7 +125,8 @@ public class TestRun implements Serializable, ITestRun {
     public void onTestEnded() {
         testEndTimeMillis = System.currentTimeMillis();
         logger.info("Test end on device {}, fail count: {}, total: {}", deviceName, failCount, totalCount);
-        int successCount = (int) testUnitList.stream().filter(u -> u.getStatusCode() == AndroidTestUnit.StatusCodes.OK).count();
+        int successCount = (int) testUnitList.stream().filter(u -> u.getStatusCode() == AndroidTestUnit.StatusCodes.OK
+                || u.getStatusCode() == AndroidTestUnit.StatusCodes.IGNORED).count();
         failCount = totalCount - successCount;
         logger.info("After recalc: Test end on device {}, fail count: {}, total: {}", deviceName, failCount, totalCount);
         success = failCount <= 0 && totalCount > 0;

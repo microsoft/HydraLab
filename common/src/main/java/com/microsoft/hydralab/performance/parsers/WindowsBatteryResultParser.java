@@ -3,10 +3,10 @@
 package com.microsoft.hydralab.performance.parsers;
 
 import com.microsoft.hydralab.common.util.MachineInfoUtils;
-import com.microsoft.hydralab.performance.Entity.WindowsBatteryParsedData;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import com.microsoft.hydralab.performance.entity.WindowsBatteryParsedData;
 import lombok.NonNull;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.slf4j.Logger;
