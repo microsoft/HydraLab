@@ -48,6 +48,7 @@ public class XCTestRunner extends TestRunner {
     private void initializeTest(TestDevice testDevice, TestTask testTask, TestRun testRun) {
         reportLogger = testRun.getLogger();
         testDevice.startScreenRecorder(testRun.getResultFolder(), testTask.getTimeOutSecond(), reportLogger);
+        testDevice.startLogCollector(testTask.getPkgName(), testRun, reportLogger);
         recordingStartTimeMillis = System.currentTimeMillis();
         testRun.addNewTimeTag("Initializing", 0);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
@@ -170,5 +171,6 @@ public class XCTestRunner extends TestRunner {
         }
         gitEncoder.finish();
         testDevice.stopScreenRecorder();
+        testDevice.stopLogCollector();
     }
 }
