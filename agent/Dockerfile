@@ -4,6 +4,10 @@
 # in project root DIR to generate the JAR_FILE (agent/build/libs/agent.jar).
 FROM mcr.microsoft.com/openjdk/jdk:11-ubuntu
 ARG JAR_FILE=build/libs/agent.jar
+ARG START_SCRIPT=start.sh
+ARG ARG_AGENT_ID
+ARG ARG_AGENT_SECRET
+ARG ARG_AGENT_NAME
 
 ENV TZ="Asia/Shanghai" \
     TIME_ZONE="Asia/Shanghai" \
@@ -22,7 +26,7 @@ RUN \
     mkdir -m 0750 /.android && \
     mkdir /hydra
 
-# set up environment for emulator, a example ref: https://andresand.medium.com/android-emulator-on-docker-container-f20c49b129ef
+# set up environment for emulator, an example ref: https://andresand.medium.com/android-emulator-on-docker-container-f20c49b129ef
 # We attempt to start an Android emulator in the docker container so that when the agent is started, we will have a initial Android emulator phone available.
 RUN \
     apt-get install -y unzip libnss3-dev libxcomposite-dev libxdamage1 && \
@@ -37,14 +41,16 @@ RUN \
 
 RUN \
     ls -al /opt/android-sdk-linux/cmdline-tools/latest && \
-    echo "y" | sdkmanager --install "platform-tools" "platforms;android-24" "emulator" "platforms;android-33" "platforms;android-30" && \
-    echo "y" | sdkmanager --install "system-images;android-30;default;armeabi-v7a" && \
+    echo "y" | sdkmanager --install "platform-tools" "emulator" "platforms;android-27" "platforms;android-30" "platforms;android-33" && \
+    # Use "sdkmanager --list" to fetch available sdk id list, when command want to install a newer android sdk.
+    echo "y" | sdkmanager --install "system-images;android-27;default;arm64-v8a"
+
+RUN \
     # echo "y" | sdkmanager --licenses && \
     # https://developer.android.com/studio/command-line/avdmanager
-    echo "no" | avdmanager create avd -n emuTestNexus -k "system-images;android-30;default;armeabi-v7a" -d "Pixel 5" -f && \
+    # Use "avdmanager list device" to fetch available device list value used in parameter "-d".
+    echo "no" | avdmanager create avd -n emuTestNexus -k "system-images;android-27;default;arm64-v8a" -d "pixel_5" -f
     # echo y | sdkmanager "system-images;android-24;default;armeabi-v7a"  --sdk_root=/opt/android-sdk-linux  && \
-    # The binary emulator-headless is now retired. Headless builds of the engine are now launched via emulator -no-window, thus unifying the previously separate (but similar) paths.
-    emulator -avd emuTestNexus -noaudio -no-boot-anim -gpu off -no-window
 
 # TODO: after we enable the smart test in Github, we will reactivate the following layers.
 # Install python/pip and smart test dependencies
@@ -54,8 +60,9 @@ RUN \
 # RUN pip3 install -r /requirements.txt
 
 COPY ${JAR_FILE} /app.jar
+COPY ${START_SCRIPT} /start.sh
 
 # Official doc about connecting package with repo: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
 LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
 
-ENTRYPOINT ["java","-jar","/app.jar","--spring.profiles.active=docker"]
+ENTRYPOINT ["sh", "start.sh"]
