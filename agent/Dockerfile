@@ -20,23 +20,23 @@ RUN \
     apt-get install -y python3.8 && \
     apt-get install -y python3-pip && \
     mkdir -m 0750 /.android && \
-    mkdir /hydra && \
-    wget -qO- "http://dl.google.com/android/android-sdk_r24.3.4-linux.tgz" | tar -zx -C /opt && \
-    echo y | android update sdk --no-ui --all --filter platform-tools --force
+    mkdir /hydra
 
 # set up environment for emulator, a example ref: https://andresand.medium.com/android-emulator-on-docker-container-f20c49b129ef
 # We attempt to start an Android emulator in the docker container so that when the agent is started, we will have a initial Android emulator phone available.
 RUN \
     apt-get install -y unzip libnss3-dev libxcomposite-dev libxdamage1 && \
     # Accepted values are: [add-on, doc, extra, platform, platform-tool, sample, source, system-image, tool]
-    android update sdk --no-ui --all --force --filter tool && \
+    mkdir -p /opt/android-sdk-linux/cmdline-tools/latest && \
     # https://developer.android.com/studio#command-tools
-    # https://developer.android.google.cn/studio/command-line#tools-sdk
+    # https://developer.android.google.cn/studio/command-line#tools-sdk \
     wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip && \
-    unzip commandlinetools-linux-9477386_latest.zip -d /opt/android-sdk-linux && \
+    unzip commandlinetools-linux-9477386_latest.zip && \
     # Either specify it explicitly with --sdk_root= or move this package into its expected location: <sdk>/cmdline-tools/latest/
-    mv /opt/android-sdk-linux/cmdline-tools /opt/android-sdk-linux/cmdline-tools/latest && \
-    echo "y" | sdkmanager --install "platforms;android-24" "emulator" && \
+    mv cmdline-tools /opt/android-sdk-linux/cmdline-tools/latest
+
+RUN \
+    echo "y" | sdkmanager --install "platform-tools" "platforms;android-24" "emulator" "platforms;android-33" && \
     echo "y" | sdkmanager --install "system-images;android-24;default;armeabi-v7a" && \
     echo "y" | sdkmanager --licenses && \
     # https://developer.android.com/studio/command-line/avdmanager
