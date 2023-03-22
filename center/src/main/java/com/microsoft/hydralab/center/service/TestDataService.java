@@ -40,7 +40,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -48,9 +47,6 @@ import java.util.Set;
 @Service
 @CacheConfig(cacheNames = "taskCache")
 public class TestDataService {
-    // Get the performance test history of the last 6 months
-    public static final long PERFORMANCE_TEST_HISTORY_TIME = 1000L * 3600 * 24 * 180;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDataService.class);
     private final Sort sortByStartMillis = Sort.by(Sort.Direction.DESC, "startTimeMillis");
     private final Sort sortByStartDate = Sort.by(Sort.Direction.DESC, "startDate");
@@ -247,10 +243,8 @@ public class TestDataService {
         }
     }
 
-    public List<PerformanceTestResultEntity> getPerformanceTestHistory(String testSuite, String pkgName, String runningType, String parserType) {
-        Date date = new Date(System.currentTimeMillis() - PERFORMANCE_TEST_HISTORY_TIME);
-        List<PerformanceTestResultEntity> resultEntities =
-                performanceTestResultRepository.findByTestSuiteAndPkgNameAndRunningTypeAndParserType(testSuite, pkgName, runningType, parserType, date);
-        return resultEntities;
+    public List<PerformanceTestResultEntity> getPerformanceTestHistory(List<CriteriaType> queryParams) {
+        Specification<PerformanceTestResultEntity> spec = new CriteriaTypeUtil<PerformanceTestResultEntity>().transferToSpecification(queryParams, false);
+        return performanceTestResultRepository.findAll(spec);
     }
 }

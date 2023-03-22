@@ -28,12 +28,12 @@ public class PerformanceTestResultEntity implements Serializable {
     private String summaryJSON;
     private String testSuite;
     private String runningType;
-    private String pkgName;
+    private String appId;
     private String deviceId;
     private boolean success;
 
     public PerformanceTestResultEntity(String testRunId, String testTaskId, String inspectorType, String parserType, String summaryJSON, String testSuite,
-                                       String runningType, String pkgName, String deviceId, boolean success) {
+                                       String runningType, String appId, String deviceId, boolean success) {
         this.testRunId = testRunId;
         this.testTaskId = testTaskId;
         this.inspectorType = inspectorType;
@@ -41,7 +41,7 @@ public class PerformanceTestResultEntity implements Serializable {
         this.summaryJSON = summaryJSON;
         this.testSuite = testSuite;
         this.runningType = runningType;
-        this.pkgName = pkgName;
+        this.appId = appId;
         this.deviceId = deviceId;
         this.success = success;
     }

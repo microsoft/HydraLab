@@ -11,6 +11,7 @@ import com.microsoft.hydralab.center.service.TestDataService;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
@@ -29,8 +30,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -195,22 +197,20 @@ public class TestDetailController {
         }
     }
 
-    @GetMapping(value = {"/api/test/performance/history"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = {"/api/test/performance/history"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<List<PerformanceTestResultEntity>> getPerformanceTestHistory(@CurrentSecurityContext SysUser requestor,
-                                                                               @RequestParam("testSuite") String testSuite,
-                                                                               @RequestParam("pkgName") String pkgName,
-                                                                               @RequestParam("runningType") String runningType,
-                                                                               @RequestParam("parserType") String parserType) {
+                                                                               @RequestBody List<CriteriaType> criteriaTypes) {
         try {
             if (requestor == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
-            if (StringUtils.isEmpty(testSuite) || StringUtils.isEmpty(pkgName) || StringUtils.isEmpty(runningType) || StringUtils.isEmpty(parserType)) {
-                return Result.error(HttpStatus.BAD_REQUEST.value(), "RequestParam should not be empty");
+            for (CriteriaType criteriaType : criteriaTypes) {
+                if (StringUtils.isEmpty(criteriaType.getValue())) {
+                    return Result.error(HttpStatus.BAD_REQUEST.value(), "RequestParam should not be empty");
+                }
             }
-
-            List<PerformanceTestResultEntity> performanceHistory = testDataService.getPerformanceTestHistory(testSuite, pkgName, runningType, parserType);
+            List<PerformanceTestResultEntity> performanceHistory = testDataService.getPerformanceTestHistory(criteriaTypes);
 
             return Result.ok(performanceHistory);
         } catch (Exception e) {

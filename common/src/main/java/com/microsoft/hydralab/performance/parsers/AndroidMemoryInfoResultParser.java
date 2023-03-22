@@ -13,13 +13,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
+    public static final int MEM_INFO_LENGTH = 19;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Map<String, Integer> MEMORY_FILE_TO_DB_INDEX_MAP = new HashMap<>() {
         {
@@ -41,55 +41,37 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
             return null;
         }
         List<PerformanceInspectionResult> inspectionResults = performanceTestResult.performanceInspectionResults;
-        for (PerformanceInspectionResult inspectionResult : inspectionResults) {
+        Double[] averageMemoryInfo = new Double[MEM_INFO_LENGTH];
+        Arrays.fill(averageMemoryInfo, 0.0);
+        for (int i = 0; i < inspectionResults.size(); i++) {
+            PerformanceInspectionResult inspectionResult = inspectionResults.get(i);
             File logFile = inspectionResult.rawResultFile;
             long[] memInfos = parseRawResultFile(logFile);
             inspectionResult.parsedData = buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, memInfos);
+            updateAverageMem(averageMemoryInfo, memInfos, i);
         }
 
-        performanceTestResult.setResultSummary(buildMemoryAverageSummary(inspectionResults));
+        performanceTestResult.setResultSummary(buildAverageMemoryInfo(averageMemoryInfo, inspectionResults.get(0)));
 
         return performanceTestResult;
     }
 
-    private AndroidMemoryInfo buildMemoryAverageSummary(List<PerformanceInspectionResult> inspectionResults) {
-        if (inspectionResults == null || inspectionResults.isEmpty()) {
-            return null;
+    private void updateAverageMem(Double[] averageMemoryInfo, long[] memInfoArray, int index) {
+        for (int i = 0; i < MEM_INFO_LENGTH; i++) {
+            averageMemoryInfo[i] = averageMemoryInfo[i] * index / (index + 1) + (double) memInfoArray[i] / (index + 1);
         }
+    }
 
-        AndroidMemoryInfo averageMemoryInfo = new AndroidMemoryInfo();
-        List<AndroidMemoryInfo> memoryInfos = new ArrayList<>();
-        for (PerformanceInspectionResult inspectionResult : inspectionResults) {
-            if (inspectionResult.parsedData != null) {
-                memoryInfos.add((AndroidMemoryInfo) inspectionResult.parsedData);
-            }
+    private AndroidMemoryInfo buildAverageMemoryInfo(Double[] averageMemoryInfo, PerformanceInspectionResult inspectionResult) {
+        long[] averageMemoryInfoLong = new long[averageMemoryInfo.length];
+        for (int i = 0; i < averageMemoryInfo.length; i++) {
+            averageMemoryInfoLong[i] = averageMemoryInfo[i].longValue();
         }
-
-        averageMemoryInfo.setJavaHeapPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getJavaHeapPss).average().orElse(-1)));
-        averageMemoryInfo.setJavaHeapRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getJavaHeapRss).average().orElse(-1)));
-        averageMemoryInfo.setNativeHeapPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getNativeHeapPss).average().orElse(-1)));
-        averageMemoryInfo.setNativeHeapRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getNativeHeapRss).average().orElse(-1)));
-        averageMemoryInfo.setCodePss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getCodePss).average().orElse(-1)));
-        averageMemoryInfo.setCodeRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getCodeRss).average().orElse(-1)));
-        averageMemoryInfo.setStackPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getStackPss).average().orElse(-1)));
-        averageMemoryInfo.setStackRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getStackRss).average().orElse(-1)));
-        averageMemoryInfo.setGraphicsPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getGraphicsPss).average().orElse(-1)));
-        averageMemoryInfo.setGraphicsRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getGraphicsRss).average().orElse(-1)));
-        averageMemoryInfo.setPrivateOtherPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getPrivateOtherPss).average().orElse(-1)));
-        averageMemoryInfo.setPrivateOtherRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getPrivateOtherRss).average().orElse(-1)));
-        averageMemoryInfo.setSystemPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getSystemPss).average().orElse(-1)));
-        averageMemoryInfo.setStackRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getSystemRss).average().orElse(-1)));
-        averageMemoryInfo.setUnknownPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getUnknownPss).average().orElse(-1)));
-        averageMemoryInfo.setUnknownRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getUnknownRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalPss).average().orElse(-1)));
-        averageMemoryInfo.setTotalRss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalRss).average().orElse(-1)));
-        averageMemoryInfo.setTotalSwapPss((long) (memoryInfos.stream().mapToLong(AndroidMemoryInfo::getTotalSwapPss).average().orElse(-1)));
-
-        return averageMemoryInfo;
+        return buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, averageMemoryInfoLong);
     }
 
     private AndroidMemoryInfo buildMemoryInfo(String packageName, String description, long timestamp, long[] memInfos) {
-        if (memInfos == null || memInfos.length != 19) {
+        if (memInfos == null || memInfos.length != MEM_INFO_LENGTH) {
             return null;
         }
         AndroidMemoryInfo androidMemoryInfo = new AndroidMemoryInfo();
@@ -120,7 +102,7 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
 
     private long[] parseRawResultFile(File rawFile) {
         String line;
-        long[] memoryValueArr = new long[19];
+        long[] memoryValueArr = new long[MEM_INFO_LENGTH];
         Arrays.fill(memoryValueArr, -1);
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(rawFile))) {
             while ((line = bufferedReader.readLine()) != null) {
