@@ -256,7 +256,8 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private void savePerformanceTestResults(List<PerformanceTestResult> resultList, TestRun testRun, TestTask testTask, Logger log) {
         if (resultList != null && !resultList.isEmpty()) {
             try {
-                FileUtil.writeToFile(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(resultList),
+                ObjectMapper objectMapper = new ObjectMapper();
+                FileUtil.writeToFile(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultList),
                         getTestRun().getResultFolder() + File.separator + "PerformanceReport.json");
 
                 for (PerformanceTestResult testResult : resultList) {
@@ -273,7 +274,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                             testTask.getId(),
                             testResult.inspectorType.name(),
                             testResult.parserType.name(),
-                            new ObjectMapper().writeValueAsString(testResult.getResultSummary()),
+                            objectMapper.writeValueAsString(testResult.getResultSummary()),
                             testTask.getTestSuite(),
                             testTask.getRunningType(),
                             inspection.appId,

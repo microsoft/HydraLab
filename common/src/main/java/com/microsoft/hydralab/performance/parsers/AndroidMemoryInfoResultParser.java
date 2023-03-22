@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
-    public static final int MEM_INFO_LENGTH = 19;
+    private static final int MEM_INFO_LENGTH = 19;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Map<String, Integer> MEMORY_FILE_TO_DB_INDEX_MAP = new HashMap<>() {
         {
@@ -41,7 +41,7 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
             return null;
         }
         List<PerformanceInspectionResult> inspectionResults = performanceTestResult.performanceInspectionResults;
-        Double[] averageMemoryInfo = new Double[MEM_INFO_LENGTH];
+        double[] averageMemoryInfo = new double[MEM_INFO_LENGTH];
         Arrays.fill(averageMemoryInfo, 0.0);
         for (int i = 0; i < inspectionResults.size(); i++) {
             PerformanceInspectionResult inspectionResult = inspectionResults.get(i);
@@ -56,16 +56,16 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
         return performanceTestResult;
     }
 
-    private void updateAverageMem(Double[] averageMemoryInfo, long[] memInfoArray, int index) {
+    private void updateAverageMem(double[] averageMemoryInfo, long[] memInfoArray, int index) {
         for (int i = 0; i < MEM_INFO_LENGTH; i++) {
             averageMemoryInfo[i] = averageMemoryInfo[i] * index / (index + 1) + (double) memInfoArray[i] / (index + 1);
         }
     }
 
-    private AndroidMemoryInfo buildAverageMemoryInfo(Double[] averageMemoryInfo, PerformanceInspectionResult inspectionResult) {
+    private AndroidMemoryInfo buildAverageMemoryInfo(double[] averageMemoryInfo, PerformanceInspectionResult inspectionResult) {
         long[] averageMemoryInfoLong = new long[averageMemoryInfo.length];
         for (int i = 0; i < averageMemoryInfo.length; i++) {
-            averageMemoryInfoLong[i] = averageMemoryInfo[i].longValue();
+            averageMemoryInfoLong[i] = Double.valueOf(averageMemoryInfo[i]).longValue();
         }
         return buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, averageMemoryInfoLong);
     }
