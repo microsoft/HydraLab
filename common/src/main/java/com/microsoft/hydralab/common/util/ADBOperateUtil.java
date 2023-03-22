@@ -143,10 +143,10 @@ public class ADBOperateUtil {
         }
     }
 
-    public void executeShellCommandOnDevice(DeviceInfo deviceInfo, String command, IShellOutputReceiver receiver, int testTimeOutSec) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
+    public void executeShellCommandOnDevice(DeviceInfo deviceInfo, String command, IShellOutputReceiver receiver, int testTimeOutSec,int responseTimeout) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
         IDevice device = getDeviceByInfo(deviceInfo);
         Assert.notNull(device, "Not such device is available " + deviceInfo.getSerialNum());
-        device.executeShellCommand(command, receiver, testTimeOutSec, 120, TimeUnit.SECONDS);
+        device.executeShellCommand(command, receiver, testTimeOutSec, responseTimeout, TimeUnit.SECONDS);
     }
 
     public Process executeDeviceCommandOnPC(DeviceInfo deviceInfo, String command, Logger logger) throws IOException {

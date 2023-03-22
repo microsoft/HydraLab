@@ -55,11 +55,7 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 <span id="quick-start"></span>
 ### Quick guide on out-of-box Uber docker image
 
-Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal, open an Azure blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
-and place it in the environment variable with the name of BLOB_CONNECTION_STR. Brief steps: [Login Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> Create new storage account (you may disable the public access for the container) -> In the created storage account, find `Access Keys` tab -> copy `Connection string`. 
-![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
-
-Hydra Lab offers an out-of-box experience of docker image called Uber. By providing the env variable BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
+Hydra Lab offers an out-of-box experience of docker image called Uber. You can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
 **Step 1. pull Docker image from container registry**
 
@@ -67,17 +63,45 @@ Hydra Lab offers an out-of-box experience of docker image called Uber. By provid
 docker pull ghcr.io/microsoft/hydra-lab-uber:latest
 ``` 
 
-**Step 2. run on your machine with BLOB_CONNECTION_STR**
+**Step 2. run on your machine**
 
-You may write the content `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` in an env file (e.g. env.properties), and pass the path of the file to docker container:
+Simply choose one of the following commands to start your experience on Hydra Lab:
+
+**1. use local storage service**
+
+Hydra Lab Uber image uses local file system as default storage, no extra environment variable is needed:
+
+```bash
+docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+```
+
+**2. use third-party storage service**
+
+Hydra Lab currently supports [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist various file types such as log files, video, app package, etc. 
+Any contribution to integrating other third-party storage services is welcome. (Here's the UML class diagram for this module as a reference: [storage service structure](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png).)
+
+Some extra environment variables need to be specified in the command according to the storage service type.
+
+If you want to use Azure Blob storage, please go to your Azure portal, open an Azure Blob storage account, and get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string).
+Brief steps: [Login Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> Create new storage account (you may disable the public access for the container) -> In the created storage account, find `Access Keys` tab -> copy `Connection string`.
+![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
+
+You may write the following content in an env file (e.g. env.properties):
+```
+STORAGE_TYPE=AZURE
+BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}
+```
+
+Then pass the path of the file to docker container
 
 ```bash
 docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
+
 Or simply run with the env parameter -e:
 
 ```bash
-docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
 **Step 3. visit front-end page and view your connected devices**

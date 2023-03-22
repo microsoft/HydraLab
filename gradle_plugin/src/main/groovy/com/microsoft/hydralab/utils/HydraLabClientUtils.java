@@ -37,12 +37,9 @@ public class HydraLabClientUtils {
 
         printlnf(maskCred(output));
 
-        isTestRunningFailed = false;
         try {
             runTestInner(reportFolderPath, apiConfig, testConfig);
-            markRunningSuccess();
         } catch (RuntimeException e) {
-            markRunningFail();
             throw e;
         }
     }
@@ -340,21 +337,6 @@ public class HydraLabClientUtils {
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
 
         displayFinalTestState();
-    }
-
-    private static void markRunningFail() {
-        if (isTestRunningFailed) {
-            return;
-        }
-        printlnf("##vso[build.addbuildtag]FAILURE");
-        isTestRunningFailed = true;
-    }
-
-    private static void markRunningSuccess() {
-        if (isTestRunningFailed) {
-            return;
-        }
-        printlnf("##vso[build.addbuildtag]SUCCESS");
     }
 
     private static void markTestResultFail() {
