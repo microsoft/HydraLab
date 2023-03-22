@@ -65,7 +65,7 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
     private AndroidMemoryInfo buildAverageMemoryInfo(double[] averageMemoryInfo, PerformanceInspectionResult inspectionResult) {
         long[] averageMemoryInfoLong = new long[averageMemoryInfo.length];
         for (int i = 0; i < averageMemoryInfo.length; i++) {
-            averageMemoryInfoLong[i] = Double.valueOf(averageMemoryInfo[i]).longValue();
+            averageMemoryInfoLong[i] = Math.round(averageMemoryInfo[i]);
         }
         return buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, averageMemoryInfoLong);
     }
