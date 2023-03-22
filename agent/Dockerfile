@@ -27,7 +27,7 @@ RUN \
 RUN \
     apt-get install -y unzip libnss3-dev libxcomposite-dev libxdamage1 && \
     # Accepted values are: [add-on, doc, extra, platform, platform-tool, sample, source, system-image, tool]
-    mkdir -p /opt/android-sdk-linux/cmdline-tools/latest && \
+    mkdir -p /opt/android-sdk-linux/cmdline-tools && \
     # https://developer.android.com/studio#command-tools
     # https://developer.android.google.cn/studio/command-line#tools-sdk \
     wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip && \
@@ -36,6 +36,7 @@ RUN \
     mv cmdline-tools /opt/android-sdk-linux/cmdline-tools/latest
 
 RUN \
+    ls -al /opt/android-sdk-linux/cmdline-tools/latest && \
     echo "y" | sdkmanager --install "platform-tools" "platforms;android-24" "emulator" "platforms;android-33" && \
     echo "y" | sdkmanager --install "system-images;android-24;default;armeabi-v7a" && \
     echo "y" | sdkmanager --licenses && \
