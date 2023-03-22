@@ -9,7 +9,7 @@ ENV TZ="Asia/Shanghai" \
     TIME_ZONE="Asia/Shanghai" \
     ANDROID_HOME=/opt/android-sdk-linux \
     ANDROID_SDK_ROOT=/opt/android-sdk-linux
-ENV PATH $PATH:${ANDROID_HOME}/tools:${ANDROID_HOME}/emulator:$ANDROID_HOME/cmdline-tools/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools/bin
+ENV PATH $PATH:${ANDROID_HOME}/tools:${ANDROID_HOME}/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools/bin
 
 RUN \
     ln -sf /usr/share/zoneinfo/{TZ} /etc/localtime && \
@@ -34,6 +34,8 @@ RUN \
     # https://developer.android.google.cn/studio/command-line#tools-sdk
     wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip && \
     unzip commandlinetools-linux-9477386_latest.zip -d /opt/android-sdk-linux && \
+    # Either specify it explicitly with --sdk_root= or move this package into its expected location: <sdk>/cmdline-tools/latest/
+    mv /opt/android-sdk-linux/cmdline-tools /opt/android-sdk-linux/cmdline-tools/latest && \
     echo "y" | sdkmanager --install "platforms;android-24" "emulator" && \
     echo "y" | sdkmanager --install "system-images;android-24;default;armeabi-v7a" && \
     echo "y" | sdkmanager --licenses && \
