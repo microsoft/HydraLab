@@ -11,6 +11,9 @@ ARG ARG_AGENT_NAME
 
 ENV TZ="Asia/Shanghai" \
     TIME_ZONE="Asia/Shanghai" \
+    AGENT_ID=${ARG_AGENT_ID} \
+    AGENT_SECRET=${ARG_AGENT_SECRET} \
+    AGENT_NAME=${ARG_AGENT_NAME} \
     ANDROID_HOME=/opt/android-sdk-linux \
     ANDROID_SDK_ROOT=/opt/android-sdk-linux
 ENV PATH $PATH:${ANDROID_HOME}/tools:${ANDROID_HOME}/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools/bin
@@ -29,7 +32,7 @@ RUN \
 # set up environment for emulator, an example ref: https://andresand.medium.com/android-emulator-on-docker-container-f20c49b129ef
 # We attempt to start an Android emulator in the docker container so that when the agent is started, we will have a initial Android emulator phone available.
 RUN \
-    apt-get install -y unzip libnss3-dev libxcomposite-dev libxdamage1 && \
+    apt-get install -y unzip libnss3-dev libxcomposite-dev libxdamage1 libfontconfig libglu1 libxcomposite1 libxcursor1 libpulse0 libasound2 && \
     # Accepted values are: [add-on, doc, extra, platform, platform-tool, sample, source, system-image, tool]
     mkdir -p /opt/android-sdk-linux/cmdline-tools && \
     # https://developer.android.com/studio#command-tools
