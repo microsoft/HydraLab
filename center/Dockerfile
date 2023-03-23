@@ -6,9 +6,16 @@ COPY ${JAR_FILE} app.jar
 
 # config files and sh script for running multiple services
 ARG STARTUP_FOLDER_PATH=./deploy_startup
+# config env, can be override by --build-arg through "docker run" command.
+ARG ARG_CENTER_PROFILE=docker
+ARG ARG_GRAFANA_ENABLED=false
+ARG ARG_PUSHGATEWAY_ENABLED=false
 
 ENV TZ="Asia/Shanghai" \
-TIME_ZONE="Asia/Shanghai"
+    TIME_ZONE="Asia/Shanghai" \
+    CENTER_APP_PROFILE=${ARG_CENTER_PROFILE} \
+    GRAFANA_ENABLED=${ARG_GRAFANA_ENABLED} \
+    PUSHGATEWAY_ENABLED=${ARG_PUSHGATEWAY_ENABLED}
 
 RUN \
     ln -sf /usr/share/zoneinfo/{TZ} /etc/localtime && \
@@ -19,7 +26,8 @@ RUN \
     apt-get install -y jq && \
     apt-get install -y cron && \
     apt-get install -y vim && \
-    apt-get install -y sysstat
+    apt-get install -y sysstat && \
+    mkdir -p /hydra/data
 
 COPY ${STARTUP_FOLDER_PATH}/prometheus-2.36.2.linux-amd64.tar.gz /opt/
 COPY ${STARTUP_FOLDER_PATH}/pushgateway-1.4.3.linux-amd64.tar.gz /opt/
