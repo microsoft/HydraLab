@@ -7,9 +7,9 @@ COPY ${JAR_FILE} app.jar
 # config files and sh script for running multiple services
 ARG STARTUP_FOLDER_PATH=./deploy_startup
 # config env, can be override by --build-arg through "docker run" command.
-ARG ARG_CENTER_PROFILE=docker
-ARG ARG_GRAFANA_ENABLED=false
-ARG ARG_PUSHGATEWAY_ENABLED=false
+ARG ARG_CENTER_PROFILE=release
+ARG ARG_GRAFANA_ENABLED=true
+ARG ARG_PUSHGATEWAY_ENABLED=true
 
 ENV TZ="Asia/Shanghai" \
     TIME_ZONE="Asia/Shanghai" \
