@@ -60,6 +60,9 @@ RUN echo '*/1 * * * *  ( sh /opt/pushgatewayDataClean.sh & ) ' >> /etc/crontab \
     && echo '0 0 * * *  ( sh /splitLog.sh ) ' >> /etc/crontab \
     && crontab -u root /etc/crontab
 
+# Official doc about connecting package with repo: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
+LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
+
 # Open port 2222 for SSH access, 80 for default app service
 EXPOSE 80
 ENTRYPOINT ["sh", "start.sh"]
