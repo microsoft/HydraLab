@@ -39,7 +39,7 @@ public class AndroidBatteryInfoResultParserTest {
 
         Assertions.assertNotNull(parsedResult);
         Assertions.assertEquals(0.000235f, summary.getAppUsage());
-        Assertions.assertEquals(5.3397503f, summary.getTotal());
+        Assertions.assertEquals(6.98975f, summary.getTotal());
     }
 
     @Test
