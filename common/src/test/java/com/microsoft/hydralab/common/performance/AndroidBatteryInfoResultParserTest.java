@@ -31,7 +31,7 @@ public class AndroidBatteryInfoResultParserTest {
     }
 
     @Test
-    public void testParseWithA12_ReturnNull() {
+    public void testParseWithA13_ReturnNull() {
         File batteryFile = new File(BATTERY_A13_FILE_PATH);
         PerformanceTestResult parsedResult = new AndroidBatteryInfoResultParser()
                 .parse(createPerformanceTestResultForTest(batteryFile));
