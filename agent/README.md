@@ -22,6 +22,7 @@ Then you can download the YAML config from the center service Web portal Authent
 docker run --mount type=bind,source={REPLACE_WITH_YAML_CONFIG_FILE_PATH},target=/application.yml \
            -v {REPLACE_WITH_HYDRA_DATA_FOLDER_PATH}:/hydra/data ghcr.io/microsoft/hydra-lab-agent:latest
 ```
+> Where can I get the proper agent YAML file? Please refer to: [Deploy-Agent-Docker-Container #1-get-the-agent-configuration-file-from-the-center-youd-like-to-connect-to](https://github.com/microsoft/HydraLab/wiki/Deploy-Agent-Docker-Container#1-get-the-agent-configuration-file-from-the-center-youd-like-to-connect-to)
 
 ### Build the Docker image locally and run it
 
