@@ -72,6 +72,8 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Android Battery Info
          */
+        var isAndroidBatteryInfoEmpty = true
+
         if (androidBatteryInfo && androidBatteryInfo.performanceInspectionResults && androidBatteryInfo.performanceInspectionResults.length > 0) {
             let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
             androidBatteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
@@ -79,6 +81,8 @@ export default class PerfTestDashboard extends React.Component {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     result.ratio = inspectionResult.parsedData.ratio * 100;
+                    isAndroidBatteryInfoEmpty = false;
+
                     androidBatteryMetrics.push(result);
                 }
             })
@@ -113,6 +117,8 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Android Memory Info
          */
+        var isAndroidMemoryInfoEmpty = true;
+
         if (androidMemoryInfo && androidMemoryInfo.performanceInspectionResults && androidMemoryInfo.performanceInspectionResults.length > 0) {
             let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
             androidMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
@@ -125,6 +131,7 @@ export default class PerfTestDashboard extends React.Component {
                         } else if (androidMemoryOptions.findIndex(item => item.value == key) != -1) {
                             // KB to MB 
                             result[key] = inspectionResult.parsedData[key] / 1024;
+                            isAndroidMemoryInfoEmpty = false;
                         }
                     })
                     androidMemoryMetrics.push(result);
@@ -160,6 +167,8 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Windows Memory Info
          */
+        var isWindowsMemoryInfoEmpty = true;
+
         if (windowsMemoryInfo && windowsMemoryInfo.performanceInspectionResults && windowsMemoryInfo.performanceInspectionResults.length > 0) {
             let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
             windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
@@ -183,6 +192,7 @@ export default class PerfTestDashboard extends React.Component {
                                 } else if (windowsMemoryOptions.findIndex(item => item.value == key) != -1) {
                                     // Byte to MB
                                     result[key] = windowsMemoryMetricsOfSingleProcess[key] / 1024 / 1024;
+                                    isWindowsMemoryInfoEmpty = false;
                                 }
                             })
                         }
@@ -220,17 +230,17 @@ export default class PerfTestDashboard extends React.Component {
 
 
         return <div id='perf_dashboard'>
-            {androidBatteryInfo && <div>
+            {!isAndroidBatteryInfoEmpty && <div>
                 <h3> Android Battery report</h3>
                 {androidBatteryMultiSelect}
                 {renderAndroidBatteryChart}
             </div>}
-            {androidMemoryInfo && <div>
+            {!isAndroidMemoryInfoEmpty && <div>
                 <h3> Android Memory report</h3>
                 {androidMemoryMultiSelect}
                 {renderAndroidMemoryChart}
             </div>}
-            {windowsMemoryInfo && <div>
+            {!isWindowsMemoryInfoEmpty && <div>
                 <h3> Windows Memory report</h3>
                 {windowsMemoryMultiSelect}
                 {renderWindowsMemoryChart}
