@@ -14,6 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +31,10 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
 
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+        WindowsMemoryParsedData averagedData = new WindowsMemoryParsedData();
+        performanceTestResult.setResultSummary(averagedData);
+        Map<Long, Integer> metricsCountPerProcess = new ConcurrentHashMap<>();
+
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
         {
             if (inspectionResult == null) {
@@ -53,6 +59,15 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
 
                         parsedData.getProcessIdProcessNameMap().put(processId, processName);
                         parsedData.getProcessIdWindowsMemoryMetricsMap().put(processId, windowsMemoryMetrics);
+
+                        averagedData.getProcessIdProcessNameMap().putIfAbsent(processId, processName);
+                        averagedData.getProcessIdWindowsMemoryMetricsMap().putIfAbsent(processId,
+                                new WindowsMemoryParsedData.WindowsMemoryMetrics());
+                        averagedData.getProcessIdWindowsMemoryMetricsMap().get(processId).accumulate(
+                                windowsMemoryMetrics);
+
+                        int count = metricsCountPerProcess.getOrDefault(processId, 0);
+                        metricsCountPerProcess.put(processId, count + 1);
                     }
                 }
 
@@ -62,6 +77,9 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
                 classLogger.error("Failed to read data from the file.", e);
             }
         }
+
+        averagedData.getProcessIdWindowsMemoryMetricsMap().forEach(
+                (processId, memoryMetrics) -> memoryMetrics.dividedBy(metricsCountPerProcess.get(processId)));
 
         return performanceTestResult;
     }
