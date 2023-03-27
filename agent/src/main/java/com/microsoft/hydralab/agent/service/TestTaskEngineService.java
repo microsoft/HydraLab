@@ -17,7 +17,6 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.TestDevice;
-import com.microsoft.hydralab.common.management.device.TestDeviceTag;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
@@ -78,7 +77,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 new DeviceTaskControlExecutor.DeviceTask() {
                     @Override
                     public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
-                        TestDevice testDevice = new TestDevice(deviceInfo, TestDeviceTag.DEFAULT);
+                        TestDevice testDevice = new TestDevice(deviceInfo, Const.TestDeviceTag.PRIMARY_PHONE);
                         runner.runTestOnDevice(testTask, testDevice, logger);
                         return false;
                     }

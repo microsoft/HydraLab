@@ -17,7 +17,7 @@ public class TestDeviceCombo extends TestDevice{
 
     private List<TestDevice> pairedDevices = new ArrayList<>();
 
-    public TestDeviceCombo(DeviceInfo deviceInfo, TestDeviceTag tag) {
+    public TestDeviceCombo(DeviceInfo deviceInfo, String tag) {
         super(deviceInfo, tag);
     }
 

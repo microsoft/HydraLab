@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
-interface TestDeviceOperation {
+interface TestDeviceCapability {
     File getScreenShot(@Nullable Logger logger) throws Exception;
 
     void wakeUpDevice(@Nullable Logger logger);
