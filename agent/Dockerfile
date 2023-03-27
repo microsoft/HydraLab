@@ -26,7 +26,8 @@ RUN \
 # set up environment for emulator, an example ref: https://andresand.medium.com/android-emulator-on-docker-container-f20c49b129ef
 # We attempt to start an Android emulator in the docker container so that when the agent is started, we will have a initial Android emulator phone available.
 RUN \
-    apt-get install -y unzip libnss3-dev libxcomposite-dev libxdamage1 libfontconfig libglu1 libxcomposite1 libxcursor1 libpulse0 libasound2 && \
+    apt-get install -y unzip libnss3-dev libxcomposite-dev libxdamage1 && \
+    # apt-get install -y unzip libnss3-dev libxcomposite-dev libxdamage1 libfontconfig libglu1 libxcomposite1 libxcursor1 libpulse0 libasound2 && \
     # Accepted values are: [add-on, doc, extra, platform, platform-tool, sample, source, system-image, tool]
     mkdir -p /opt/android-sdk-linux/cmdline-tools && \
     # https://developer.android.com/studio#command-tools
@@ -38,15 +39,20 @@ RUN \
 
 RUN \
     ls -al /opt/android-sdk-linux/cmdline-tools/latest && \
-    echo "y" | sdkmanager --install "platform-tools" "emulator" "platforms;android-27" "platforms;android-30" "platforms;android-33" && \
-    # Use "sdkmanager --list" to fetch available sdk id list, when command want to install a newer android sdk.
+    echo "y" | sdkmanager --install "platform-tools" "emulator" "platforms;android-27" && \
+    # Use "sdkmanager --list" to fetch available sdk id list, when command want to install a newer android sdk. \
+    # x86_64 needs hardward accelaration support; \
+    # arm can run on the android API of maximum 27: https://stackoverflow.com/questions/74760054/panic-avds-cpu-architecture-arm64-is-not-supported-by-the-qemu2-emulator-on; \
+    # TODO: Need an ARM PC for local debug, and the sample app should have a ARM version.
+#    echo "y" | sdkmanager --install "system-images;android-24;default;armeabi-v7a"
     echo "y" | sdkmanager --install "system-images;android-27;default;arm64-v8a"
 
 RUN \
-    # echo "y" | sdkmanager --licenses && \
+     echo "y" | sdkmanager --licenses && \
     # https://developer.android.com/studio/command-line/avdmanager
     # Use "avdmanager list device" to fetch available device list value used in parameter "-d".
-    echo "no" | avdmanager create avd -n emuTestNexus -k "system-images;android-27;default;arm64-v8a" -d "pixel_5" -f
+#    echo "no" | avdmanager create avd -n emuTestPixel -k "system-images;android-24;default;armeabi-v7a" -d "pixel_4_xl" -f
+    echo "no" | avdmanager create avd -n emuTestPixel -k "system-images;android-27;default;arm64-v8a" -d "pixel_4_xl" -f
     # echo y | sdkmanager "system-images;android-24;default;armeabi-v7a"  --sdk_root=/opt/android-sdk-linux  && \
 
 # TODO: after we enable the smart test in Github, we will reactivate the following layers.
