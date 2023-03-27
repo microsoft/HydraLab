@@ -50,15 +50,40 @@ const windowsMemoryOptions = [
     { value: 'peakVirtualMemorySize64', label: 'peakVirtualMemorySize64', color: '#FFCC00' },
 ]
 
+
+const iosEnergyOptions = [
+    { value: 'totalCost', label: 'totalCost', color: '#007FFF' },
+    { value: 'cpuCost', label: 'cpuCost', color: '#FFA500' },
+    { value: 'gpuCost', label: 'gpuCost', color: '#8B8970' },
+    { value: 'networkingCost', label: 'networkingCost', color: '#800000' },
+    { value: 'appStateCost', label: 'appStateCost', color: '#FFCC00' },
+    { value: 'locationCost', label: 'locationCost', color: '#808000' },
+    { value: 'thermalStateCost', label: 'thermalStateCost', color: '#4B0080' },
+    { value: 'totalOverhead', label: 'totalOverhead', color: '#8884d8' },
+    { value: 'cpuOverhead', label: 'cpuOverhead', color: '#8B008B' },
+    { value: 'gpuOverhead', label: 'gpuOverhead', color: '#EE7600' },
+    { value: 'networkingOverhead', label: 'networkingOverhead', color: '#CD5C5C' },
+    { value: 'appStateOverhead', label: 'appStateOverhead', color: '#BC8F8F' },
+    { value: 'locationOverhead', label: 'locationOverhead', color: '#8B8B7A' },
+    { value: 'thermalStateOverhead', label: 'thermalStateOverhead', color: '#006400' }
+]
+const iosMemoryOptions = [
+    { value: 'memoryMB', label: 'memoryMB', color: '#007FFF' }
+]
+
 export default class PerfTestDashboard extends React.Component {
     state = {
         perfTestResult: this.props.perfTestResult,
         androidMemoryInfo: undefined,
         androidBatteryInfo: undefined,
         windowsMemoryInfo: undefined,
+        iosEnergyInfo: undefined,
+        iosMemoryInfo: undefined,
         selectedAndroidBatteryOptions: androidBatteryOptions.slice(0, 4),
         selectedAndroidMemoryOptions: androidMemoryOptions.slice(0, 10),
         selectedWindowsMemoryOptions: windowsMemoryOptions.slice(0, 7)
+        selectedIosEnergyOptions: iosEnergyOptions.slice(0, 7)
+        selectedIosMemoryOptions: iosMemoryOptions
     };
 
     render() {
@@ -68,6 +93,10 @@ export default class PerfTestDashboard extends React.Component {
         const androidBatteryMetrics = [];
         const windowsMemoryInfo = this.state.windowsMemoryInfo;
         const windowsMemoryMetrics = [];
+        const iosEnergyInfo = this.state.iosEnergyInfo;
+        const iosEnergyMetrics = [];
+        const iosMemoryInfo = this.state.iosMemoryInfo;
+        const iosMemoryMetrics = [];
 
         /**
          * Android Battery Info
@@ -218,6 +247,88 @@ export default class PerfTestDashboard extends React.Component {
 
             </LineChart>)
 
+        /**
+         * iOS Energy Info
+         */
+        if (iosEnergyInfo && iosEnergyInfo.performanceInspectionResults && iosEnergyInfo.performanceInspectionResults.length > 0) {
+            let startTime = iosEnergyInfo.performanceInspectionResults[0].timestamp;
+            iosEnergyInfo.performanceInspectionResults.forEach((inspectionResult) => {
+
+                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                    var result = { ...inspectionResult.parsedData };
+                    let parsedData = { ...inspectionResult.parsedData };
+                    result.time = (inspectionResult.timestamp - startTime) / 1000;
+
+                    iosEnergyMetrics.push(result);
+                }
+            })
+        }
+
+        const iosEnergyMultiSelect = (
+            <Select
+                defaultValue={iosEnergyOptions.slice(0, 7)}
+                isMulti
+                components={animatedComponents}
+                options={iosEnergyOptions}
+                className="ios-energy-select"
+                classNamePrefix="select"
+                onChange={(e) => { this.setState({ selectedIosEnergyOptions: e }) }}
+            />
+        );
+
+        const renderIosEnergyChart = (
+            <LineChart width={800} height={400} data={iosEnergyMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <Legend verticalAlign="top" />
+                <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
+                <YAxis yAxisId="left" label={{ value: 'Energy Usage (mW)', angle: -90, position: 'left' }} />
+                {this.state.selectedIosEnergyOptions.map((key, index) => (
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
+                ))}
+                {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
+                <Tooltip />
+
+            </LineChart>)
+
+        /**
+         * iOS Memory Info
+         */
+        if (iosMemoryInfo && iosMemoryInfo.performanceInspectionResults && iosMemoryInfo.performanceInspectionResults.length > 0) {
+            let startTime = iosMemoryInfo.performanceInspectionResults[0].timestamp;
+            iosMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
+
+                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                    var result = { ...inspectionResult.parsedData };
+                    let parsedData = { ...inspectionResult.parsedData };
+                    result.time = (inspectionResult.timestamp - startTime) / 1000;
+                    iosMemoryMetrics.push(result);
+                }
+            })
+        }
+
+        const iosMemoryMultiSelect = (
+            <Select
+                defaultValue={iosMemoryOptions}
+                isMulti
+                components={animatedComponents}
+                options={iosMemoryOptions}
+                className="ios-memory-select"
+                classNamePrefix="select"
+                onChange={(e) => { this.setState({ selectedIosMemoryOptions: e }) }}
+            />
+        );
+
+        const renderIosMemoryChart = (
+            <LineChart width={800} height={400} data={iosMemoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <Legend verticalAlign="top" />
+                <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
+                <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
+                {this.state.selectedIosMemoryOptions.map((key, index) => (
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
+                ))}
+                {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
+                <Tooltip />
+
+            </LineChart>)
 
         return <div id='perf_dashboard'>
             {androidBatteryInfo && <div>
@@ -235,6 +346,16 @@ export default class PerfTestDashboard extends React.Component {
                 {windowsMemoryMultiSelect}
                 {renderWindowsMemoryChart}
             </div>}
+            {iosEnergyInfo && <div>
+                <h3> iOS Energy report</h3>
+                {iosEnergyMultiSelect}
+                {renderIosEnergyChart}
+            </div>}
+            {iosMemoryInfo && <div>
+                <h3> iOS Memory report</h3>
+                {iosMemoryMultiSelect}
+                {renderIosMemoryChart}
+            </div>}
         </div>
     };
 
@@ -250,6 +371,10 @@ export default class PerfTestDashboard extends React.Component {
                     this.setState({ androidMemoryInfo: info });
                 } else if (info.parserType == 'PARSER_WIN_MEMORY') {
                     this.setState({ windowsMemoryInfo: info });
+                } else if (info.parserType == 'PARSER_IOS_ENERGY') {
+                    this.setState({ iosEnergyInfo: info });
+                } else if (info.parserType == 'PARSER_IOS_MEMORY') {
+                    this.setState({ iosMemoryInfo: info });
                 }
             };
         })
