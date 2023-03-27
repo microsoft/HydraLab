@@ -177,10 +177,9 @@ public interface Const {
     }
 
     interface TestDeviceTag {
-        String ALL = "ALL";
         String PRIMARY_PHONE = "PRIMARY_PHONE";
-        String PRIMARY_PC = "PRIMARY_PC";
         String SECONDARY_PHONE = "SECONDARY_PHONE";
-        String SECONDARY_PC = "SECONDARY_PC";
+        String TERTIARY_PHONE = "TERTIARY_PHONE";
+        String PRIMARY_PC = "PRIMARY_PC";
     }
 }
