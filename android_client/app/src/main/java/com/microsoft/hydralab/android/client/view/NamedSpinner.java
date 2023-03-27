@@ -6,10 +6,12 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -62,11 +64,18 @@ public class NamedSpinner extends LinearLayout {
         CharSequence title = a.getText(R.styleable.NamedSpinner_android_name);
         mTitleView.setTextAppearance(context, textAppearance);
         setName(title);
-        LayoutParams titleParams = generateDefaultLayoutParams();
+        LinearLayout.LayoutParams titleParams = generateDefaultLayoutParams();
         float _16 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, context.getResources().getDisplayMetrics());
         titleParams.setMarginEnd(Math.round(_16));
+        titleParams.gravity = Gravity.CENTER_VERTICAL;
         addViewInLayout(mTitleView, -1, titleParams, true);
-        addViewInLayout(mSpinner, -1, generateDefaultLayoutParams(), true);
+
+        LinearLayout.LayoutParams spinnerParams = new LinearLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
+        spinnerParams.gravity = Gravity.CENTER_VERTICAL;
+        addViewInLayout(mSpinner, -1, spinnerParams, true);
 
         a.recycle();
     }
