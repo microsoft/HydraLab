@@ -81,8 +81,8 @@ export default class PerfTestDashboard extends React.Component {
         iosMemoryInfo: undefined,
         selectedAndroidBatteryOptions: androidBatteryOptions.slice(0, 4),
         selectedAndroidMemoryOptions: androidMemoryOptions.slice(0, 10),
-        selectedWindowsMemoryOptions: windowsMemoryOptions.slice(0, 7)
-        selectedIosEnergyOptions: iosEnergyOptions.slice(0, 7)
+        selectedWindowsMemoryOptions: windowsMemoryOptions.slice(0, 7),
+        selectedIosEnergyOptions: iosEnergyOptions.slice(0, 7),
         selectedIosMemoryOptions: iosMemoryOptions
     };
 
