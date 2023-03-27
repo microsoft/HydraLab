@@ -165,7 +165,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 || testConfig.runTimeOutSeconds == 0
                 || StringUtils.isBlank(testConfig.deviceConfig.deviceIdentifier)
         ) {
-            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIhost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')
+            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIHost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')
         }
 
         // running type specified params

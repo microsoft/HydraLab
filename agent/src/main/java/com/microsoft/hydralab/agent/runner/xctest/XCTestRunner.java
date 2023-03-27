@@ -18,17 +18,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import javax.imageio.ImageIO;
+
+import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
 
 public class XCTestRunner extends TestRunner {
     private static String folderPath = "";
     private File gifFile;
-    private final AnimatedGifEncoder gitEncoder = new AnimatedGifEncoder();
+    private final AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();
     private ScreenRecorder deviceScreenRecorder;
     private Logger reportLogger;
     private long recordingStartTimeMillis;
@@ -59,9 +64,9 @@ public class XCTestRunner extends TestRunner {
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         reportLogger.info("Start gif frames collection");
         gifFile = new File(testRun.getResultFolder(), testTask.getPkgName() + ".gif");
-        gitEncoder.start(gifFile.getAbsolutePath());
-        gitEncoder.setDelay(1000);
-        gitEncoder.setRepeat(0);
+        gifEncoder.start(gifFile.getAbsolutePath());
+        gifEncoder.setDelay(1000);
+        gifEncoder.setRepeat(0);
     }
 
     @Override
@@ -82,6 +87,7 @@ public class XCTestRunner extends TestRunner {
         if (deviceInfo == null) {
             throw new RuntimeException("No such device: " + deviceInfo);
         }
+        addFrame(deviceInfo, logger);
         StringBuilder argString = new StringBuilder();
         Map<String, String> instrumentationArgs = testTask.getInstrumentationArgs();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
@@ -116,6 +122,7 @@ public class XCTestRunner extends TestRunner {
             out.start();
             proc.waitFor();
             result = out.getResult();
+            addFrame(deviceInfo, logger);
         } catch (Exception e) {
             throw new RuntimeException("Execute XCTest failed");
         }
@@ -165,6 +172,20 @@ public class XCTestRunner extends TestRunner {
         testRun.setTotalCount(totalCases);
     }
 
+    private void addFrame(DeviceInfo deviceInfo, Logger logger){
+        testDeviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(0),
+                (imagePNGFile -> {
+                    if (imagePNGFile == null || !gifEncoder.isStarted()) {
+                        return;
+                    }
+                    try {
+                        gifEncoder.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }), logger);
+    }
+
     private void finishTest(TestRun testRun) {
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
@@ -174,7 +195,7 @@ public class XCTestRunner extends TestRunner {
         if (gifFile.exists() && gifFile.length() > 0) {
             testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
         }
-        gitEncoder.finish();
+        gifEncoder.finish();
         deviceScreenRecorder.finishRecording();
     }
 }
