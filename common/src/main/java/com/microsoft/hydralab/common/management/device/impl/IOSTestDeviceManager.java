@@ -133,6 +133,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     public void resetPackage(DeviceInfo deviceInfo, String packageName, Logger logger) {
         // todo Nothing Implemented for iOS in resetPackage replace with uninstallApp
         uninstallApp(deviceInfo, packageName, logger);
+        classLogger.warn("!!!  As there is no implementation for package reset in iOS, what we did here is uninstall the app, please be AWARE  !!!");
     }
 
     @Override
