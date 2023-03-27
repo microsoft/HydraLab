@@ -378,7 +378,6 @@ public class IOSTestDeviceManager extends TestDeviceManager {
             reportLogger.error("T2C Test Error: ", e);
             throw e;
         } finally {
-            appiumServerManager.quitIOSDriver(deviceInfo, reportLogger);
             reportLogger.info("Finish T2C Test");
         }
 

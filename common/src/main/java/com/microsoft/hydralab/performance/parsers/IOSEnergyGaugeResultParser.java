@@ -9,6 +9,8 @@ import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
 import com.microsoft.hydralab.performance.entity.IOSEnergyGaugeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,6 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
     private static final long ONE_SECOND_TIMESTAMP = 600;
+    protected Logger classLogger = LoggerFactory.getLogger(getClass());
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
         int inspectionSize = performanceTestResult.performanceInspectionResults.size();
@@ -30,8 +33,8 @@ public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
             String appId = firstInspection.appId;
             String deviceIdentifier = firstInspection.deviceIdentifier;
             File resultFolder = firstInspection.resultFolder;
-            IOSPerfTestHelper.getInstance().stop(inspectionKey);
             File rawFile = IOSPerfTestHelper.getInstance().getResultFile(inspectionKey);
+            IOSPerfTestHelper.getInstance().stop(inspectionKey);
             long startTimeStamp = IOSPerfTestHelper.getInstance().getStartTime(inspectionKey);
             if (rawFile != null) {
                 try (BufferedReader bufferedReader = new BufferedReader(new FileReader(rawFile))) {
@@ -51,8 +54,10 @@ public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
                             description = oldInspectionResults.get(currentInspection).inspection.description;
                             currentInspection++;
                         }
-                        IOSEnergyGaugeInfo energyInfo = JSON.parseObject(line, IOSEnergyGaugeInfo.class);
-                        JSONObject dataLineObj = JSON.parseObject(line);
+                        String lineSubString = line.substring(line.indexOf("{")).replace("'", "\"").replace("None", "null");
+                        classLogger.info("JsonLine: " + lineSubString);
+                        IOSEnergyGaugeInfo energyInfo = JSON.parseObject(lineSubString, IOSEnergyGaugeInfo.class);
+                        JSONObject dataLineObj = JSON.parseObject(lineSubString);
                         // Todo: Remove this block when typo from energy gauge is fixed
                         if (dataLineObj.containsKey("energy.networking.overhead")) {
                             energyInfo.setNetworkingOverhead(dataLineObj.getFloat("energy.networking.overhead"));

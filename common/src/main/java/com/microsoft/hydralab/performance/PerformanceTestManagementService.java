@@ -36,8 +36,8 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             INSPECTOR_ANDROID_MEMORY_INFO, new AndroidMemoryInfoInspector(),
             INSPECTOR_WIN_MEMORY, new WindowsMemoryInspector(),
             INSPECTOR_WIN_BATTERY, new WindowsBatteryInspector(),
-            INSPECTOR_IOS_MEMORY, new IOSEnergyGaugeInspector(),
-            INSPECTOR_IOS_ENERGY, new IOSMemoryPerfInspector()
+            INSPECTOR_IOS_MEMORY, new IOSMemoryPerfInspector(),
+            INSPECTOR_IOS_ENERGY, new IOSEnergyGaugeInspector()
     );
     private final Map<PerformanceResultParser.PerformanceResultParserType, PerformanceResultParser> performanceResultParserMap = Map.of(
             PARSER_ANDROID_MEMORY_INFO, new AndroidMemoryInfoResultParser(),

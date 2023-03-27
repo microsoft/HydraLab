@@ -7,6 +7,7 @@ import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import java.io.File;
 
@@ -22,6 +23,7 @@ public class IOSMemoryPerfInspector implements PerformanceInspector {
             rawResultFile = helper.getResultFile(inspectionKey);
         } else {
             File rawResultFolder = new File(performanceInspection.resultFolder, performanceInspection.appId);
+            Assert.isTrue(rawResultFolder.exists() || rawResultFolder.mkdir(), "rawResultFolder.mkdirs() failed in" + rawResultFolder.getAbsolutePath());
             rawResultFile = new File(rawResultFolder, String.format(RAW_RESULT_FILE_NAME_FORMAT,
                     getClass().getSimpleName(), performanceInspection.deviceIdentifier, performanceInspection.appId));
             Process p = ShellUtils.execLocalCommandWithRedirect(String.format("tidevice -u %s perf -B %s",

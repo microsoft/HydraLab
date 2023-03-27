@@ -18,11 +18,11 @@ import org.openqa.selenium.interactions.Sequence;
 import org.slf4j.Logger;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 
 public class IOSDriverController extends BaseDriverController {
     private final IOSDriver iosDriver;
+    private String clipboardString;
 
     public IOSDriverController(IOSDriver iosDriver, String udid, Logger logger) {
         super(iosDriver, udid, logger);
@@ -78,7 +78,7 @@ public class IOSDriverController extends BaseDriverController {
         Dimension dimension = iosDriver.manage().window().getSize();
         int width = dimension.getWidth();
         int height = dimension.getHeight();
-        ((JavascriptExecutor) iosDriver).executeScript("mobile: swipeGesture", ImmutableMap.of(
+        ((JavascriptExecutor) iosDriver).executeScript("mobile: swipe", ImmutableMap.of(
                 "left", width * 0.1, "top", height * 0.1, "width", width * 0.9, "height", height * 0.9,
                 "direction", direction,
                 "percent", 0.7
@@ -124,9 +124,10 @@ public class IOSDriverController extends BaseDriverController {
         iosDriver.perform(List.of(dragNDrop));
     }
 
+    // Todo: setClipboard() of Appium doesn't works for ios driver
     @Override
     public void setClipboard(String text) {
-        iosDriver.setClipboardText(text);
+        clipboardString = text;
     }
 
     @Override
@@ -151,7 +152,11 @@ public class IOSDriverController extends BaseDriverController {
 
     @Override
     public void paste(WebElement webElement) {
-        String text = iosDriver.getClipboardText();
-        input(webElement, text);
+        input(webElement, clipboardString);
+    }
+
+    @Override
+    public void backToHome() {
+        iosDriver.runAppInBackground(Duration.ofSeconds(-1));
     }
 }

@@ -33,7 +33,6 @@ import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.SerializeUtil;
-import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
 import com.microsoft.hydralab.t2c.runner.TestInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -761,10 +760,9 @@ public class DeviceAgentManagementService {
             return result;
         }
         updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
-        testTaskSpec.agentIds.add(testTaskSpec.deviceIdentifier);
+        testTaskSpec.agentIds.add(device.getAgentId());
         sendMessageToSession(agentSessionInfoByAgentId.session, message);
-        result.put(Const.Param.TEST_DEVICE_SN, device.getSerialNum());
-
+        result.put(Const.Param.TEST_DEVICE_SN, testTaskSpec.deviceIdentifier);
         return result;
     }
 

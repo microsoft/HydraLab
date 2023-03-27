@@ -172,9 +172,6 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
                             appiumServerManager.getAndroidDriver(deviceInfo, reportLogger),
                             deviceInfo.getSerialNum(), reportLogger);
                     driverControllerMap.put(driverInfo.getId(), androidDriverController);
-                    if (!StringUtils.isEmpty(driverInfo.getLauncherApp())) {
-                        androidDriverController.activateApp(driverInfo.getLauncherApp());
-                    }
                     reportLogger.info("Successfully init an Android driver: " + deviceInfo.getSerialNum());
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
@@ -218,12 +215,6 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
             reportLogger.error("T2C Test Error: ", e);
             throw e;
         } finally {
-            appiumServerManager.quitAndroidDriver(deviceInfo, reportLogger);
-            if (testWindowsApp.length() > 0) {
-                appiumServerManager.quitWindowsAppDriver(testWindowsApp, reportLogger);
-            }
-            appiumServerManager.quitEdgeDriver(reportLogger);
-            appiumServerManager.quitWindowsEdgeDriver(reportLogger);
             reportLogger.info("Finish T2C Test");
         }
 

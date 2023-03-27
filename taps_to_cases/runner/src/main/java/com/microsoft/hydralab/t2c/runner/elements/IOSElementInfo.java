@@ -4,6 +4,7 @@ public class IOSElementInfo extends BaseElementInfo {
     public IOSElementInfo(String xpath) {
         super(xpath);
     }
+
     private String type;
     private String name;
     private String label;
@@ -15,7 +16,6 @@ public class IOSElementInfo extends BaseElementInfo {
     private int width;
     private int height;
     private int index;
-
 
     public String getType() {
         return type;
