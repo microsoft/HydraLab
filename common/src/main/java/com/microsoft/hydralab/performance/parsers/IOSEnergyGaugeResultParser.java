@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
-    private static final long ONE_SECOND_TIMESTAMP = 600;
+    private static final long ONE_SECOND_TIMESTAMP = 1000;
     protected Logger classLogger = LoggerFactory.getLogger(getClass());
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
@@ -68,7 +68,7 @@ public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
 
                         PerformanceInspection newInspection = PerformanceInspection.createIOSEnergyInspection(appId, deviceIdentifier, description, false);
                         newInspection.resultFolder = resultFolder;
-                        PerformanceInspectionResult result = new PerformanceInspectionResult(rawFile, newInspection);
+                        PerformanceInspectionResult result = new PerformanceInspectionResult(rawFile, newInspection, timestampForThisLine);
                         result.parsedData = energyInfo;
                         newPerfInspectionResults.add(result);
                         lineNumber++;

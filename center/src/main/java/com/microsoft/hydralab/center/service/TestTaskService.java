@@ -146,8 +146,7 @@ public class TestTaskService {
     }
 
     public void checkTestTaskTeamConsistency(TestTaskSpec testTaskSpec) throws HydraLabRuntimeException {
-        if (TestTask.TestRunningType.APPIUM_CROSS.equals(testTaskSpec.runningType)
-                || TestTask.TestRunningType.T2C_JSON_TEST.equals(testTaskSpec.runningType)) {
+        if (TestTask.TestRunningType.APPIUM_CROSS.equals(testTaskSpec.runningType)) {
             AgentUser agent = agentManageService.getAgent(testTaskSpec.deviceIdentifier);
             if (agent == null) {
                 throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find AgentUser with given deviceIdentifier!");

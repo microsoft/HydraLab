@@ -63,7 +63,7 @@ public class IOSMemoryPerfResultParser implements PerformanceResultParser {
 
                                 PerformanceInspection newInspection = PerformanceInspection.createIOSEnergyInspection(appId, deviceIdentifier, description, false);
                                 newInspection.resultFolder = resultFolder;
-                                PerformanceInspectionResult result = new PerformanceInspectionResult(rawFile, newInspection);
+                                PerformanceInspectionResult result = new PerformanceInspectionResult(rawFile, newInspection, timestampForThisLine);
                                 result.parsedData = energyInfo;
                                 newPerfInspectionResults.add(result);
                             } catch (JSONException e) {
