@@ -55,6 +55,7 @@ import static com.microsoft.hydralab.android.client.ScreenRecorderService.VIDEO_
 
 public class MainActivity extends Activity {
     private static final String TAG = "ScreenRecorder";
+    private static final String DEFAULT_ACV_PROFILE = "Default";
     private static final int REQUEST_MEDIA_PROJECTION = 1;
     private static final int REQUEST_MEDIA_PROJECTION_AND_START = 3;
     private static final int REQUEST_PERMISSIONS = 2;
@@ -726,7 +727,8 @@ public class MainActivity extends Activity {
     }
 
     private MediaCodecInfo.CodecProfileLevel getSelectedProfileLevel() {
-        return mVideoProfileLevel != null ? Utils.toProfileLevel(mVideoProfileLevel.getSelectedItem()) : null;
+        return mVideoProfileLevel != null && mVideoProfileLevel.getSelectedItem() != null
+                ? Utils.toProfileLevel(mVideoProfileLevel.getSelectedItem()) : Utils.toProfileLevel(DEFAULT_ACV_PROFILE);
     }
 
     private int[] getSelectedWithHeight() {
