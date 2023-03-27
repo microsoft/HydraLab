@@ -25,7 +25,7 @@ public class MainApplication extends Application {
         AbstractCrashesListener crashesListener = new AbstractCrashesListener() {
             @Override
             public boolean shouldProcess(ErrorReport report) {
-                return !BuildConfig.DEBUG;
+                return true;
             }
         };
         Crashes.setListener(crashesListener);
