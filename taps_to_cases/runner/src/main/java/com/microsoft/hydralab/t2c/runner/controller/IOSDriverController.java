@@ -73,7 +73,6 @@ public class IOSDriverController extends BaseDriverController {
 
     @Override
     public void swipe(String direction) {
-        //androidDriver.executeScript("mobile: scroll", ImmutableMap.of("direction", direction));
         T2CAppiumUtils.safeSleep(1000);
         Dimension dimension = iosDriver.manage().window().getSize();
         int width = dimension.getWidth();
