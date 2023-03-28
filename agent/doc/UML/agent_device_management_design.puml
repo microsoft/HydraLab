@@ -22,50 +22,69 @@ class DeviceStatusListenerManager{
     onDeviceActive(DeviceInfo)
 }
 class TestTaskEngineService{
-    TestDevice chooseDevice(TestTask)
-    Map<String, TestDevice> taskDeviceMap
+    TestRunDevice chooseDevice(TestTask)
 }
 
 
 class DeviceInfo
-interface ITestDeviceCapability
-class TestDeviceCapability implements ITestDeviceCapability
-class TestDeviceComboCapability implements ITestDeviceCapability
-class TestDeviceCapabilityAdapter implements ITestDeviceCapability
 
-class TestDevice{
-String Tag
-DeviceInfo deviceInfo;
-ScreenRecorder screenRecorder;
-LogCollector logCollector;
-Map<Thread, String> currentCommand
-Map<Thread, String> currentProcess
-Map<Thread, TestTask> currentTask
+class TestRunDeviceOrchestrator{
+    void setup(List<TestRunDevice>, Logger);
+    void unset(List<TestRunDevice>, Logger);
+    void killAll(List<TestRunDevice>);
+    void wakeUpDevice(List<TestRunDevice>, Logger);
+    boolean installApp(List<TestRunDevice>,String packagePath, Logger);
+    boolean uninstallApp(List<TestRunDevice>, String packageName, Logger);
+    void resetPackage(List<TestRunDevice>, String packageName, Logger);
+    void startScreenRecorder(List<TestRunDevice>, File folder, int maxTimeInSecond, Logger);
+    void stopScreenRecorder(List<TestRunDevice>);
+    void startLogCollector(List<TestRunDevice>, String pkgName, @NotNull TestRun testRun, Logger);
+    void stopLogCollector(List<TestRunDevice>);
+    void setRunningTestName(List<TestRunDevice>, String runningTestName);
+    void addCurrentTask(List<TestRunDevice>, TestTask);
+    void finishTask(List<TestRunDevice>);
+    void quitMobileAppiumDriver(List<TestRunDevice>, Logger);
+    void updateScreenshotImageAsyncDelay(List<TestRunDevice>, long delayMillis, FileAvailableCallback, Logger);
+    void grantAllTaskNeededPermissions(List<TestRunDevice>, TestTask, Logger);
 }
 
-class TestDeviceCombo extends TestDevice{
-List<TestDevice> pairedTestDevices
-TestDevice getDeviceByTag(String tag)
+
+class TestRunDevice{
+    String Tag
+    DeviceInfo deviceInfo;
+    ScreenRecorder screenRecorder;
+    LogCollector logCollector;
+    Map<Thread, String> currentCommand
+    Map<Thread, String> currentProcess
+    Map<Thread, TestTask> currentTask
+    List<TestRunDevice> getDevices()
 }
 
+class TestRunDeviceCombo extends TestRunDevice{
+    List<TestRunDevice> pairedDevices
+    TestRunDevice getDeviceByTag(String tag)
+}
+Class TestRun{
+    TestRunDevice device
+}
 class TestRunner{
-    runTest(TestTask,TestDevice)
+    runTest(TestTask,TestRunDevice)
 }
 
 interface IDeviceDriver
 class DeviceDriverManager implements IDeviceDriver{
-Map<DeviceType, IDeviceDriver> deviceDrivers
+    Map<DeviceType, IDeviceDriver> deviceDrivers
 }
 abstract class AbstractDeviceDriver implements IDeviceDriver
 class AndroidDeviceDriver extends AbstractDeviceDriver
 class IOSDeviceDriver   extends AbstractDeviceDriver
 class WindowsDeviceDriver extends AbstractDeviceDriver
 
+TestRunner --> TestRun : create
+TestRun ---> TestRunDevice
+TestRunner -r--> TestRunDeviceOrchestrator
 
-TestRunner --> TestDevice
-TestRunner -r-> TestDeviceCapabilityAdapter
-TestDeviceCapability --> DeviceDriverManager
-TestDeviceComboCapability --> DeviceDriverManager
+TestRunDeviceOrchestrator --> DeviceDriverManager
 
 TestTaskEngineService --> TestRunner
 
