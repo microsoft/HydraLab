@@ -58,6 +58,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
 
         boolean baseLineFound = false;
         String baseLine = "";
+        WindowsBatteryParsedData.WindowsBatteryMetrics lastSummarizedWindowsBatteryMetrics = null;
 
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
         {
@@ -72,17 +73,13 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
                 WindowsBatteryParsedData.WindowsBatteryMetrics summarizedWindowsBatteryMetrics =
                         new WindowsBatteryParsedData.WindowsBatteryMetrics();
                 windowsBatteryParsedData.setSummarizedWindowsBatteryMetrics(summarizedWindowsBatteryMetrics);
+                lastSummarizedWindowsBatteryMetrics = summarizedWindowsBatteryMetrics;
 
                 Map<String, Integer> columnNameToIndexMap = getColumnNameToIndexMap(inspectionResult.rawResultFile);
                 String line;
 
                 while ((line = reversedReader.readLine()) != null)
                 {
-                    if (!line.contains(APP_ID_KEYWORD))
-                    {
-                        continue;
-                    }
-
                     if (!baseLineFound)
                     {
                         baseLineFound = true;
@@ -93,6 +90,11 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
                     if (line.equals(baseLine))
                     {
                         break;
+                    }
+
+                    if (!line.contains(APP_ID_KEYWORD))
+                    {
+                        continue;
                     }
 
                     String[] fieldValues = line.split(DELIMITER);
@@ -110,6 +112,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
             }
         }
 
+        performanceTestResult.setResultSummary(lastSummarizedWindowsBatteryMetrics);
         return performanceTestResult;
     }
 
