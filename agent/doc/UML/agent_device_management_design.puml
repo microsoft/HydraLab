@@ -1,35 +1,79 @@
 @startuml
 'https://plantuml.com/class-diagram
+enum DeviceType{
+    ANDROID
+    IOS
+    WINDOWS
+}
+
+class DeviceInfo{
+    DeviceType deviceType;
+}
 
 class AgentManagementService {
+    Map<String, DeviceInfo> deviceInfoMap
     File testBaseDir
     File deviceLogBaseDir
 }
-interface TestDeviceOperation
-class TestDevice implements TestDeviceOperation
-class TestDeviceCombo extends TestDevice
+class DeviceStatusListenerManager{
+    List<DeviceStatusListener> deviceStatusListeners
+    registerDeviceStatusListener(DeviceStatusListener)
+    onDeviceInactive(DeviceInfo)
+    onDeviceActive(DeviceInfo)
+}
+class TestTaskEngineService{
+    TestDevice chooseDevice(TestTask)
+    Map<String, TestDevice> taskDeviceMap
+}
+
+
 class DeviceInfo
-abstract class TestDeviceManager
-class AndroidTestDeviceManager
-class IOSTestDeviceManager
-class WindowsTestDeviceManager
+interface ITestDeviceCapability
+class TestDeviceCapability implements ITestDeviceCapability
+class TestDeviceComboCapability implements ITestDeviceCapability
+class TestDeviceCapabilityAdapter implements ITestDeviceCapability
 
-interface TestDriver
+class TestDevice{
+String Tag
+DeviceInfo deviceInfo;
+ScreenRecorder screenRecorder;
+LogCollector logCollector;
+Map<Thread, String> currentCommand
+Map<Thread, String> currentCommand
+Map<Thread, TestTask> currentTask
+}
 
-AndroidTestDeviceManager --|> TestDeviceManager
-IOSTestDeviceManager --|> TestDeviceManager
-WindowsTestDeviceManager --|> TestDeviceManager
+class TestDeviceCombo extends TestDevice{
+List<TestDevice> pairedTestDevices
+TestDevice getDeviceByTag(String tag)
+}
 
-AgentManagementService *--> AndroidTestDeviceManager
-AgentManagementService *--> IOSTestDeviceManager
-AgentManagementService *--> WindowsTestDeviceManager
+class TestRunner{
+    runTest(TestTask,TestDevice)
+}
 
-TestDeviceManager --> TestDriver
+interface IDeviceDriver
+class DeviceDriverManager implements IDeviceDriver{
+Map<DeviceType, IDeviceDriver> deviceDrivers
+}
+abstract class AbstractDeviceDriver implements IDeviceDriver
+class AndroidDeviceDriver extends AbstractDeviceDriver
+class IOSDeviceDriver   extends AbstractDeviceDriver
+class WindowsDeviceDriver extends AbstractDeviceDriver
 
-ADBDriver -u-|> TestDriver
-AppiumDriver -u-|> TestDriver
 
-TestRunner -r-> TestDevice
-TestDevice -r-> DeviceInfo
-DeviceInfo ---> TestDeviceManager
+TestRunner --> TestDevice
+TestRunner -r-> TestDeviceCapabilityAdapter
+TestDeviceCapability --> DeviceDriverManager
+TestDeviceComboCapability --> DeviceDriverManager
+
+TestTaskEngineService --> TestRunner
+
+IDeviceDriver -> DeviceInfo
+AndroidDeviceDriver *--> DeviceStatusListenerManager : notify
+IOSDeviceDriver *--> DeviceStatusListenerManager : notify
+WindowsDeviceDriver *--> DeviceStatusListenerManager : notify
+
+DeviceStatusListenerManager .. AgentManagementService : notify
+
 @enduml
