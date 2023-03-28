@@ -39,7 +39,7 @@ DeviceInfo deviceInfo;
 ScreenRecorder screenRecorder;
 LogCollector logCollector;
 Map<Thread, String> currentCommand
-Map<Thread, String> currentCommand
+Map<Thread, String> currentProcess
 Map<Thread, TestTask> currentTask
 }
 
