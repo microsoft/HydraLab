@@ -556,63 +556,63 @@ export default class RunnerView extends BaseView {
                 </StyledTableRow>)
             })
 
+            if (this.state.runTestType !== 'T2C_JSON') {
+                groupList.forEach((group) => {
+                    runnableRows.push(<StyledTableRow key={group.groupName} id={group.groupName}
+                        onClick={() => this.handleStatus('currentRunnable', group.groupName)}
+                        hover>
+                        <TableCell id={group.groupName} align="center">
+                            <Radio className="p-0 m-1" id={group.groupName} color="primary"
+                                checked={this.state.currentRunnable === group.groupName} />
+                        </TableCell>
+                        <TableCell id={group.groupName} align="center">
+                            Group
+                        </TableCell>
+                        <TableCell id={group.groupName} align="center">
+                            {group.groupDisplayName}
+                        </TableCell>
+                        <TableCell id={group.groupName} align="center">
+                            {group.isPrivate ? <span className="material-icons-outlined">lock</span>
+                                : <span className="material-icons-outlined">lock_open</span>}
+                        </TableCell>
+                        <TableCell id={group.groupName} align="center">
+                            Created by {group.owner}
+                        </TableCell>
+                    </StyledTableRow>)
+                })
 
-            groupList.forEach((group) => {
-                runnableRows.push(<StyledTableRow key={group.groupName} id={group.groupName}
-                    onClick={() => this.handleStatus('currentRunnable', group.groupName)}
-                    hover>
-                    <TableCell id={group.groupName} align="center">
-                        <Radio className="p-0 m-1" id={group.groupName} color="primary"
-                            checked={this.state.currentRunnable === group.groupName} />
-                    </TableCell>
-                    <TableCell id={group.groupName} align="center">
-                        Group
-                    </TableCell>
-                    <TableCell id={group.groupName} align="center">
-                        {group.groupDisplayName}
-                    </TableCell>
-                    <TableCell id={group.groupName} align="center">
-                        {group.isPrivate ? <span className="material-icons-outlined">lock</span>
-                            : <span className="material-icons-outlined">lock_open</span>}
-                    </TableCell>
-                    <TableCell id={group.groupName} align="center">
-                        Created by {group.owner}
-                    </TableCell>
-                </StyledTableRow>)
-            })
-
-            let selectedList
-            if (this.state.currentAppInstallerType === 'apk') {
-                selectedList = deviceList.filter((device) => device.brand !== 'Apple')
-            } else {
-                selectedList = deviceList.filter((device) => device.brand === brandMap.get(this.state.currentAppInstallerType))
+                let selectedList
+                if (this.state.currentAppInstallerType === 'apk') {
+                    selectedList = deviceList.filter((device) => device.brand !== 'Apple')
+                } else {
+                    selectedList = deviceList.filter((device) => device.brand === brandMap.get(this.state.currentAppInstallerType))
+                }
+                selectedList.forEach((device) => {
+                    runnableRows.push(<StyledTableRow key={device.serialNum} id={device.serialNum}
+                        onClick={() => this.handleStatus('currentRunnable', device.serialNum)}
+                        hover>
+                        <TableCell id={device.serialNum} align="center">
+                            <Radio className="p-0 m-1" id={device.serialNum} color="primary"
+                                checked={this.state.currentRunnable === device.serialNum} />
+                        </TableCell>
+                        <TableCell id={device.serialNum} align="center">
+                            Device
+                        </TableCell>
+                        <TableCell id={device.serialNum} align="center">
+                            {device.serialNum}
+                        </TableCell>
+                        <TableCell id={device.serialNum} align="center">
+                            {device.isPrivate || device.status !== "ONLINE" ? <span className="material-icons-outlined">lock</span>
+                                : <span className="material-icons-outlined">lock_open</span>
+                            }
+                        </TableCell>
+                        <TableCell id={device.serialNum} align="center">
+                            API{device.osSDKInt} / {device.brand} / {device.model} / {device.screenSize} /
+                            DPI{device.screenDensity}
+                        </TableCell>
+                    </StyledTableRow>)
+                })
             }
-            selectedList.forEach((device) => {
-                runnableRows.push(<StyledTableRow key={device.serialNum} id={device.serialNum}
-                    onClick={() => this.handleStatus('currentRunnable', device.serialNum)}
-                    hover>
-                    <TableCell id={device.serialNum} align="center">
-                        <Radio className="p-0 m-1" id={device.serialNum} color="primary"
-                            checked={this.state.currentRunnable === device.serialNum} />
-                    </TableCell>
-                    <TableCell id={device.serialNum} align="center">
-                        Device
-                    </TableCell>
-                    <TableCell id={device.serialNum} align="center">
-                        {device.serialNum}
-                    </TableCell>
-                    <TableCell id={device.serialNum} align="center">
-                        {device.isPrivate || device.status !== "ONLINE" ? <span className="material-icons-outlined">lock</span>
-                            : <span className="material-icons-outlined">lock_open</span>
-                        }
-                    </TableCell>
-                    <TableCell id={device.serialNum} align="center">
-                        API{device.osSDKInt} / {device.brand} / {device.model} / {device.screenSize} /
-                        DPI{device.screenDensity}
-                    </TableCell>
-                </StyledTableRow>)
-            })
-
         }
 
         runnableHeadItems.forEach((k) => runnableHeads.push(<StyledTableCell key={k} align="center">

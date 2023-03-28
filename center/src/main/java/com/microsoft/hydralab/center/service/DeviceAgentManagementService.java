@@ -33,7 +33,11 @@ import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.SerializeUtil;
+import com.microsoft.hydralab.t2c.runner.DriverInfo;
+import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
+import com.microsoft.hydralab.t2c.runner.TestInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -43,6 +47,7 @@ import org.springframework.util.Assert;
 import javax.annotation.Resource;
 import javax.websocket.CloseReason;
 import javax.websocket.Session;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -58,6 +63,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_FILE_BASE_DIR;
 
 @Slf4j
 @Component
@@ -697,26 +704,67 @@ public class DeviceAgentManagementService {
     }
 
     private JSONObject runT2CTest(TestTaskSpec testTaskSpec) {
+        // TODO: upgrade to assign task to agent and check the available device count on the agent
         JSONObject result = new JSONObject();
+        StorageFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
+        if (testAppFileInfo != null) {
+            File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
+            TestInfo testInfo;
+            try {
+                storageServiceClientProxy.download(testApkFile, testAppFileInfo);
+                T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
+                String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
+                testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
+            } finally {
+                testApkFile.delete();
+            }
+            Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
 
-        DeviceInfo device = deviceListMap.get(testTaskSpec.deviceIdentifier);
-        Assert.notNull(device, "error deviceIdentifier!");
-        Message message = new Message();
-        message.setBody(testTaskSpec);
-        message.setPath(Const.Path.TEST_TASK_RUN);
-        Assert.isTrue(device.isAlive(), "Device/Agent Offline!");
+            int androidCount = 0;
+            int edgeCount = 0;
+
+            for (DriverInfo driverInfo : testInfo.getDrivers()) {
+                if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
+                    androidCount++;
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
+                    edgeCount++;
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
+                    throw new RuntimeException("No iOS device connected to this agent");
+                }
+            }
+            Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
+            Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
+        }
+
+        // Todo: leveraged current E2E agent, need to update to agent level test
+        AgentDeviceGroup agentDeviceGroup = agentDeviceGroups.get(testTaskSpec.deviceIdentifier);
+        Assert.notNull(agentDeviceGroup, "Error identifier or agent offline");
+        List<DeviceInfo> devices = agentDeviceGroup.getDevices();
+        Assert.notNull(devices, "Agent has no device");
+        Assert.isTrue(devices.size() == 1, "The number of device is not suitable");
+        DeviceInfo device = devices.get(0);
+        Assert.isTrue(device.isAlive(), "Device offline");
+
         if (device.isTesting()) {
             return result;
         }
-        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(device.getAgentId());
+
+        Message message = new Message();
+        message.setBody(testTaskSpec);
+        message.setPath(Const.Path.TEST_TASK_RUN);
+
+        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(testTaskSpec.deviceIdentifier);
         Assert.notNull(agentSessionInfoByAgentId, "Device/Agent Offline!");
         if (isAgentUpdating(agentSessionInfoByAgentId.agentUser.getId())) {
             return result;
         }
         updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
-        testTaskSpec.agentIds.add(device.getAgentId());
+        testTaskSpec.agentIds.add(testTaskSpec.deviceIdentifier);
         sendMessageToSession(agentSessionInfoByAgentId.session, message);
-        result.put(Const.Param.TEST_DEVICE_SN, testTaskSpec.deviceIdentifier);
+        result.put(Const.Param.TEST_DEVICE_SN, device.getSerialNum());
+
         return result;
     }
 
