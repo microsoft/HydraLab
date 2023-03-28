@@ -17,8 +17,16 @@ import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
-import com.microsoft.hydralab.t2c.runner.*;
-import com.microsoft.hydralab.t2c.runner.controller.*;
+import com.microsoft.hydralab.t2c.runner.ActionInfo;
+import com.microsoft.hydralab.t2c.runner.DriverInfo;
+import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
+import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
+import com.microsoft.hydralab.t2c.runner.TestInfo;
+import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
+import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
+import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
+import com.microsoft.hydralab.t2c.runner.controller.IOSDriverController;
+import com.microsoft.hydralab.t2c.runner.controller.WindowsDriverController;
 import io.appium.java_client.windows.WindowsDriver;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -185,7 +193,7 @@ public class T2CRunner extends AppiumRunner {
                 if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
                     WindowsDriver windowsDriver;
                     String testWindowsApp = driverInfo.getLauncherApp();
-                    if (testWindowsApp.length() > 0 && !testWindowsApp.equalsIgnoreCase("root")) {
+                    if (testWindowsApp.length() > 0 && !"root".equalsIgnoreCase(testWindowsApp)) {
                         windowsDriver = appiumServerManager.getWindowsAppDriver(testWindowsApp, reportLogger);
                     } else {
                         testWindowsApp = "Root";
