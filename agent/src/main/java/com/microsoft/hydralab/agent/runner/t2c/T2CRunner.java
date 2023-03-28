@@ -13,13 +13,23 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
+import com.microsoft.hydralab.t2c.runner.*;
+import com.microsoft.hydralab.t2c.runner.controller.*;
+import io.appium.java_client.windows.WindowsDriver;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.springframework.util.Assert;
 
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class T2CRunner extends AppiumRunner {
@@ -126,7 +136,7 @@ public class T2CRunner extends AppiumRunner {
 
         // Run Test
         try {
-            testDeviceManager.runAppiumT2CTest(deviceInfo, jsonFile, reportLogger);
+            runAppiumT2CTest(deviceInfo, jsonFile, reportLogger);
             performanceTestManagementService.testSuccess(ongoingTest.getTitle());
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTest.setSuccess(true);
@@ -150,5 +160,76 @@ public class T2CRunner extends AppiumRunner {
         e.finish();
         deviceScreenRecorder.finishRecording();
         logCollector.stopAndAnalyse();
+    }
+
+    private void runAppiumT2CTest(DeviceInfo deviceInfo, File jsonFile, Logger reportLogger) {
+        reportLogger.info("Start T2C Test");
+        T2CJsonParser t2CJsonParser = new T2CJsonParser(reportLogger);
+        TestInfo testInfo = t2CJsonParser.parseJsonFile(jsonFile.getAbsolutePath());
+        Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
+
+        Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
+
+        try {
+            // TODO: Need to get appium service manager from the device info
+            AppiumServerManager appiumServerManager = testDeviceManager.getAppiumServerManager();
+            // Prepare drivers
+            for (DriverInfo driverInfo : testInfo.getDrivers()) {
+                if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
+                    AndroidDriverController androidDriverController = new AndroidDriverController(
+                            appiumServerManager.getAndroidDriver(deviceInfo, reportLogger),
+                            deviceInfo.getSerialNum(), reportLogger);
+                    driverControllerMap.put(driverInfo.getId(), androidDriverController);
+                    reportLogger.info("Successfully init an Android driver: " + deviceInfo.getSerialNum());
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
+                    WindowsDriver windowsDriver;
+                    String testWindowsApp = driverInfo.getLauncherApp();
+                    if (testWindowsApp.length() > 0 && !testWindowsApp.equalsIgnoreCase("root")) {
+                        windowsDriver = appiumServerManager.getWindowsAppDriver(testWindowsApp, reportLogger);
+                    } else {
+                        testWindowsApp = "Root";
+                        windowsDriver = appiumServerManager.getWindowsRootDriver(reportLogger);
+                    }
+                    driverControllerMap.put(driverInfo.getId(),
+                            new WindowsDriverController(windowsDriver, "Windows", reportLogger));
+
+                    reportLogger.info("Successfully init a Windows driver: " + testWindowsApp);
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
+                    appiumServerManager.getEdgeDriver(reportLogger);
+                    if (!StringUtils.isEmpty(driverInfo.getInitURL())) {
+                        appiumServerManager.getEdgeDriver(reportLogger).get(driverInfo.getInitURL());
+                    }
+                    // Waiting for loading url
+                    ThreadUtils.safeSleep(5000);
+                    driverControllerMap.put(driverInfo.getId(), new EdgeDriverController(
+                            appiumServerManager.getWindowsEdgeDriver(reportLogger),
+                            appiumServerManager.getEdgeDriver(reportLogger),
+                            "Edge", reportLogger));
+                    reportLogger.info("Successfully init a Edge driver");
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase("iOS")) {
+                    IOSDriverController iosDriverController = new IOSDriverController(
+                            appiumServerManager.getIOSDriver(deviceInfo, reportLogger),
+                            deviceInfo.getSerialNum(), reportLogger);
+                    driverControllerMap.put(driverInfo.getId(), iosDriverController);
+                }
+            }
+
+            ArrayList<ActionInfo> caseList = testInfo.getActions();
+
+            for (ActionInfo actionInfo : caseList) {
+                BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
+                reportLogger.info("Start step: " + actionInfo.getId() + ", description: " + actionInfo.getDescription() + "action: " + actionInfo.getActionType() + " on element: "
+                        + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
+                T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
+            }
+        } catch (Exception e) {
+            reportLogger.error("T2C Test Error: ", e);
+            throw e;
+        } finally {
+            reportLogger.info("Finish T2C Test");
+        }
     }
 }

@@ -11,29 +11,15 @@ import com.microsoft.hydralab.common.screen.AppiumE2ETestRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
-import com.microsoft.hydralab.t2c.runner.ActionInfo;
-import com.microsoft.hydralab.t2c.runner.DriverInfo;
-import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
-import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
-import com.microsoft.hydralab.t2c.runner.TestInfo;
-import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
-import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
-import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
-import com.microsoft.hydralab.t2c.runner.controller.WindowsDriverController;
-import io.appium.java_client.windows.WindowsDriver;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.OutputType;
 import org.slf4j.Logger;
-import org.springframework.util.Assert;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
 
@@ -134,90 +120,5 @@ public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
             return PCFile;
         }
         return outFile;
-    }
-
-    @Override
-    public boolean runAppiumT2CTest(DeviceInfo deviceInfo, File jsonFile, Logger reportLogger) {
-        reportLogger.info("Start T2C Test");
-        T2CJsonParser t2CJsonParser = new T2CJsonParser(reportLogger);
-        TestInfo testInfo = t2CJsonParser.parseJsonFile(jsonFile.getAbsolutePath());
-        Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
-
-        String testWindowsApp = "";
-        Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
-
-        // Check device requirements
-        int androidCount = 0, edgeCount = 0;
-
-        for (DriverInfo driverInfo : testInfo.getDrivers()) {
-            if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
-                androidCount++;
-            }
-            if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
-                edgeCount++;
-            }
-            if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
-                throw new RuntimeException("No iOS device connected to this agent");
-            }
-        }
-        // TODO: upgrade to check the available device count on the agent
-        Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
-        Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
-
-        try {
-            // Prepare drivers
-            for (DriverInfo driverInfo : testInfo.getDrivers()) {
-                if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
-                    AndroidDriverController androidDriverController = new AndroidDriverController(
-                            appiumServerManager.getAndroidDriver(deviceInfo, reportLogger),
-                            deviceInfo.getSerialNum(), reportLogger);
-                    driverControllerMap.put(driverInfo.getId(), androidDriverController);
-                    reportLogger.info("Successfully init an Android driver: " + deviceInfo.getSerialNum());
-                }
-                if (driverInfo.getPlatform().equalsIgnoreCase("windows")) {
-                    WindowsDriver windowsDriver;
-                    testWindowsApp = driverInfo.getLauncherApp();
-                    if (testWindowsApp.length() > 0 && !testWindowsApp.equalsIgnoreCase("root")) {
-                        windowsDriver = appiumServerManager.getWindowsAppDriver(testWindowsApp, reportLogger);
-                    } else {
-                        testWindowsApp = "Root";
-                        windowsDriver = appiumServerManager.getWindowsRootDriver(reportLogger);
-                    }
-                    driverControllerMap.put(driverInfo.getId(),
-                            new WindowsDriverController(windowsDriver, "Windows", reportLogger));
-
-                    reportLogger.info("Successfully init a Windows driver: " + testWindowsApp);
-                }
-                if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
-                    appiumServerManager.getEdgeDriver(reportLogger);
-                    if (!StringUtils.isEmpty(driverInfo.getInitURL())) {
-                        appiumServerManager.getEdgeDriver(reportLogger).get(driverInfo.getInitURL());
-                    }
-                    // Waiting for loading url
-                    ThreadUtils.safeSleep(5000);
-                    driverControllerMap.put(driverInfo.getId(), new EdgeDriverController(
-                            appiumServerManager.getWindowsEdgeDriver(reportLogger),
-                            appiumServerManager.getEdgeDriver(reportLogger),
-                            "Edge", reportLogger));
-                    reportLogger.info("Successfully init a Edge driver");
-                }
-            }
-
-            ArrayList<ActionInfo> caseList = testInfo.getActions();
-
-            for (ActionInfo actionInfo : caseList) {
-                BaseDriverController driverController = driverControllerMap.get(actionInfo.getDriverId());
-                reportLogger.info("Start step: " + actionInfo.getId() + ", description: " + actionInfo.getDescription() + "action: " + actionInfo.getActionType() + " on element: "
-                        + (actionInfo.getTestElement() != null ? actionInfo.getTestElement().getElementInfo() : "No Element"));
-                T2CAppiumUtils.doAction(driverController, actionInfo, reportLogger);
-            }
-        } catch (Exception e) {
-            reportLogger.error("T2C Test Error: ", e);
-            throw e;
-        } finally {
-            reportLogger.info("Finish T2C Test");
-        }
-
-        return true;
     }
 }
