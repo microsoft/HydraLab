@@ -29,25 +29,25 @@ class TestTaskEngineService{
 class DeviceInfo
 
 class TestRunDeviceOrchestrator{
-    void setup(List<TestRunDevice>, Logger);
-    void unset(List<TestRunDevice>, Logger);
-    void killAll(List<TestRunDevice>);
-    void getAppiumDriver(List<TestRunDevice>, Logger);
-    void quitAppiumDriver(List<TestRunDevice>, Logger);
-    void wakeUpDevice(List<TestRunDevice>, Logger);
-    boolean installApp(List<TestRunDevice>,String packagePath, Logger);
-    boolean uninstallApp(List<TestRunDevice>, String packageName, Logger);
-    void resetPackage(List<TestRunDevice>, String packageName, Logger);
-    void startScreenRecorder(List<TestRunDevice>, File folder, int maxTimeInSecond, Logger);
-    void stopScreenRecorder(List<TestRunDevice>);
-    void startLogCollector(List<TestRunDevice>, String pkgName, @NotNull TestRun testRun, Logger);
-    void stopLogCollector(List<TestRunDevice>);
-    void setRunningTestName(List<TestRunDevice>, String runningTestName);
-    void addCurrentTask(List<TestRunDevice>, TestTask);
-    void finishTask(List<TestRunDevice>);
-    void quitMobileAppiumDriver(List<TestRunDevice>, Logger);
-    void updateScreenshotImageAsyncDelay(List<TestRunDevice>, long delayMillis, FileAvailableCallback, Logger);
-    void grantAllTaskNeededPermissions(List<TestRunDevice>, TestTask, Logger);
+    void setup(TestRunDevice, Logger);
+    void unset(TestRunDevice, Logger);
+    void killAll(TestRunDevice);
+    void getAppiumDriver(TestRunDevice, Logger);
+    void quitAppiumDriver(TestRunDevice, Logger);
+    void wakeUpDevice(TestRunDevice, Logger);
+    boolean installApp(TestRunDevice,String packagePath, Logger);
+    boolean uninstallApp(TestRunDevice, String packageName, Logger);
+    void resetPackage(TestRunDevice, String packageName, Logger);
+    void startScreenRecorder(TestRunDevice, File folder, int maxTimeInSecond, Logger);
+    void stopScreenRecorder(TestRunDevice);
+    void startLogCollector(TestRunDevice, String pkgName, @NotNull TestRun testRun, Logger);
+    void stopLogCollector(TestRunDevice);
+    void setRunningTestName(TestRunDevice, String runningTestName);
+    void addCurrentTask(TestRunDevice, TestTask);
+    void finishTask(TestRunDevice);
+    void quitMobileAppiumDriver(TestRunDevice, Logger);
+    void updateScreenshotImageAsyncDelay(TestRunDevice, long delayMillis, FileAvailableCallback, Logger);
+    void grantAllTaskNeededPermissions(TestRunDevice, TestTask, Logger);
 }
 
 
@@ -60,12 +60,12 @@ class TestRunDevice{
     Map<Thread, String> currentCommand
     Map<Thread, String> currentProcess
     Map<Thread, TestTask> currentTask
-    List<TestRunDevice> getDevices()
 }
 
 class TestRunDeviceCombo extends TestRunDevice{
     List<TestRunDevice> pairedDevices
     TestRunDevice getDeviceByTag(String tag)
+    List<TestRunDevice> getDevices()
 }
 Class TestRun{
     TestRunDevice device
