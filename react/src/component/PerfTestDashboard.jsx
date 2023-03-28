@@ -224,7 +224,7 @@ export default class PerfTestDashboard extends React.Component {
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
                 {this.state.selectedWindowsMemoryOptions.map((key, index) => (
-                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
                 ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
                 <Tooltip />
