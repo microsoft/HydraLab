@@ -32,6 +32,8 @@ class TestRunDeviceOrchestrator{
     void setup(List<TestRunDevice>, Logger);
     void unset(List<TestRunDevice>, Logger);
     void killAll(List<TestRunDevice>);
+    void getAppiumDriver(List<TestRunDevice>, Logger);
+    void quitAppiumDriver(List<TestRunDevice>, Logger);
     void wakeUpDevice(List<TestRunDevice>, Logger);
     boolean installApp(List<TestRunDevice>,String packagePath, Logger);
     boolean uninstallApp(List<TestRunDevice>, String packageName, Logger);
@@ -52,6 +54,7 @@ class TestRunDeviceOrchestrator{
 class TestRunDevice{
     String Tag
     DeviceInfo deviceInfo;
+    WebDriver appiumDriver;
     ScreenRecorder screenRecorder;
     LogCollector logCollector;
     Map<Thread, String> currentCommand
