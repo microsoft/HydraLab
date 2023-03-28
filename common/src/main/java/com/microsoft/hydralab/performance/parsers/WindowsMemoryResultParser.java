@@ -13,7 +13,9 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -33,7 +35,9 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
         WindowsMemoryParsedData averagedData = new WindowsMemoryParsedData();
         performanceTestResult.setResultSummary(averagedData);
+
         Map<Long, Integer> metricsCountPerProcess = new ConcurrentHashMap<>();
+        Map<Long, BigInteger[]> metricsSumPerProcess = new ConcurrentHashMap<>();
 
         for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
         {
@@ -60,14 +64,16 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
                         parsedData.getProcessIdProcessNameMap().put(processId, processName);
                         parsedData.getProcessIdWindowsMemoryMetricsMap().put(processId, windowsMemoryMetrics);
 
-                        averagedData.getProcessIdProcessNameMap().putIfAbsent(processId, processName);
-                        averagedData.getProcessIdWindowsMemoryMetricsMap().putIfAbsent(processId,
-                                new WindowsMemoryParsedData.WindowsMemoryMetrics());
-                        averagedData.getProcessIdWindowsMemoryMetricsMap().get(processId).accumulate(
-                                windowsMemoryMetrics);
-
+                        if (!metricsSumPerProcess.containsKey(processId)) {
+                            BigInteger[] sumOfTheData = new BigInteger[8];
+                            Arrays.fill(sumOfTheData, BigInteger.ZERO);
+                            metricsSumPerProcess.put(processId, sumOfTheData);
+                        }
+                        accumulateToTheSum(windowsMemoryMetrics, metricsSumPerProcess.get(processId));
                         int count = metricsCountPerProcess.getOrDefault(processId, 0);
                         metricsCountPerProcess.put(processId, count + 1);
+
+                        averagedData.getProcessIdProcessNameMap().putIfAbsent(processId, processName);
                     }
                 }
 
@@ -78,8 +84,8 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
             }
         }
 
-        averagedData.getProcessIdWindowsMemoryMetricsMap().forEach(
-                (processId, memoryMetrics) -> memoryMetrics.dividedBy(metricsCountPerProcess.get(processId)));
+        calculateTheAverage(metricsCountPerProcess, metricsSumPerProcess,
+                averagedData.getProcessIdWindowsMemoryMetricsMap());
 
         return performanceTestResult;
     }
@@ -107,6 +113,52 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
         windowsMemoryMetrics.setWorkingSet64(workingSet64);
 
         return windowsMemoryMetrics;
+    }
+
+    private BigInteger[] accumulateToTheSum(WindowsMemoryParsedData.WindowsMemoryMetrics metrics,
+                                            BigInteger[] sumOfTheData)
+    {
+        sumOfTheData[0] = sumOfTheData[0].add(BigInteger.valueOf(metrics.getNonpagedSystemMemorySize64()));
+        sumOfTheData[1] = sumOfTheData[1].add(BigInteger.valueOf(metrics.getPagedMemorySize64()));
+        sumOfTheData[2] = sumOfTheData[2].add(BigInteger.valueOf(metrics.getPagedSystemMemorySize64()));
+        sumOfTheData[3] = sumOfTheData[3].add(BigInteger.valueOf(metrics.getPeakPagedMemorySize64()));
+        sumOfTheData[4] = sumOfTheData[4].add(BigInteger.valueOf(metrics.getPeakVirtualMemorySize64()));
+        sumOfTheData[5] = sumOfTheData[5].add(BigInteger.valueOf(metrics.getPeakWorkingSet64()));
+        sumOfTheData[6] = sumOfTheData[6].add(BigInteger.valueOf(metrics.getPrivateMemorySize64()));
+        sumOfTheData[7] = sumOfTheData[7].add(BigInteger.valueOf(metrics.getWorkingSet64()));
+
+        return sumOfTheData;
+    }
+
+    private void calculateTheAverage(Map<Long, Integer> metricsCountPerProcess,
+                                     Map<Long, BigInteger[]> metricsSumPerProcess,
+                                     Map<Long, WindowsMemoryParsedData.WindowsMemoryMetrics>
+                                             processIdWindowsMemoryMetricsMap)
+    {
+        metricsCountPerProcess.forEach((processId, count) -> {
+            BigInteger[] summedMetrics = metricsSumPerProcess.get(processId);
+            if (count <= 0) {
+                throw new ArithmeticException("The divisor cannot be less than or equal to zero.");
+            }
+
+            for (int i = 0; i < summedMetrics.length; ++i) {
+                summedMetrics[i] = summedMetrics[i].divide(BigInteger.valueOf(count));
+            }
+            BigInteger[] averagedMetrics = summedMetrics;
+
+            WindowsMemoryParsedData.WindowsMemoryMetrics windowsMemoryMetrics =
+                    new WindowsMemoryParsedData.WindowsMemoryMetrics();
+            processIdWindowsMemoryMetricsMap.put(processId, windowsMemoryMetrics);
+
+            windowsMemoryMetrics.setNonpagedSystemMemorySize64(averagedMetrics[0].longValue());
+            windowsMemoryMetrics.setPagedMemorySize64(averagedMetrics[1].longValue());
+            windowsMemoryMetrics.setPagedSystemMemorySize64(averagedMetrics[2].longValue());
+            windowsMemoryMetrics.setPeakPagedMemorySize64(averagedMetrics[3].longValue());
+            windowsMemoryMetrics.setPeakVirtualMemorySize64(averagedMetrics[4].longValue());
+            windowsMemoryMetrics.setPeakWorkingSet64(averagedMetrics[5].longValue());
+            windowsMemoryMetrics.setPrivateMemorySize64(averagedMetrics[6].longValue());
+            windowsMemoryMetrics.setWorkingSet64(averagedMetrics[7].longValue());
+        });
     }
 
 }
