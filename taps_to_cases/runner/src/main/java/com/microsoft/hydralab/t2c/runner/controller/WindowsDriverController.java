@@ -12,13 +12,11 @@ import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
 import org.slf4j.Logger;
 
-import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
@@ -99,13 +97,4 @@ public class WindowsDriverController extends BaseDriverController {
                 .inspect(PerformanceInspection.createWindowsBatteryInspection(
                         targetApp, this.udid, description, isReset));
     }
-
-    public static void keyPressWithCtrl(Robot robot, int key) {
-        robot.keyPress(KeyEvent.VK_CONTROL);
-        robot.keyPress(key);
-        robot.keyRelease(key);
-        robot.keyRelease(KeyEvent.VK_CONTROL);
-        robot.delay(100);
-    }
-
 }
