@@ -156,7 +156,7 @@ public class AttachmentService {
     public List<StorageFileInfo> getAttachments(String entityId, EntityType entityType) {
         List<StorageFileInfo> result = new ArrayList<>();
 
-        List<EntityFileRelation> fileRelations = entityFileRelationRepository.queryAllByEntityIdAndAndEntityTypeOrderByFileOrderAsc(entityId, entityType.typeName);
+        List<EntityFileRelation> fileRelations = entityFileRelationRepository.queryAllByEntityIdAndEntityTypeOrderByFileOrderAsc(entityId, entityType.typeName);
         for (EntityFileRelation fileRelation : fileRelations) {
             StorageFileInfo tempFileInfo = storageFileInfoRepository.findById(fileRelation.getFileId()).get();
             if (tempFileInfo != null) {
@@ -194,7 +194,7 @@ public class AttachmentService {
     }
 
     private int getMaxOrder(String entityId, EntityType entityType) {
-        EntityFileRelation latestRelation = entityFileRelationRepository.findTopByEntityIdAndAndEntityTypeOrderByFileOrderDesc(entityId, entityType.typeName);
+        EntityFileRelation latestRelation = entityFileRelationRepository.findTopByEntityIdAndEntityTypeOrderByFileOrderDesc(entityId, entityType.typeName);
         return latestRelation == null ? 0 : latestRelation.getFileOrder();
     }
 
