@@ -51,13 +51,9 @@ Hydra Lab 的特性包括：
 <span id="quick-start"></span>
 ### 开箱即用的 Uber docker 镜像快速指南
 
-Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单地配置环境变量 BLOB_CONNECTION_STR 后，你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
+Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
 
-**第1步. 从容器注册中心获取 Docker 镜像**
-
-```bash
-docker pull ghcr.io/microsoft/hydra-lab-uber:latest
-```
+**第1步. 从 https://www.docker.com 下载并安装 Docker**
 
 **第2步. 在你的机器上运行**
 

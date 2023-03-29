@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.microsoft.hydralab.agent.environment.EnvCapabilityDiscoveryService;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
@@ -40,6 +41,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -85,6 +87,13 @@ public class AppConfiguration {
             }
         }
         return dir;
+    }
+
+    @Bean
+    public EnvCapabilityDiscoveryService envCapabilityDiscoveryService() throws IOException {
+        EnvCapabilityDiscoveryService envCapabilityDiscoveryService = new EnvCapabilityDiscoveryService();
+        envCapabilityDiscoveryService.discover();
+        return envCapabilityDiscoveryService;
     }
 
     @Bean

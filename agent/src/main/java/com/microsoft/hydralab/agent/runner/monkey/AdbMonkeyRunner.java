@@ -168,7 +168,7 @@ public class AdbMonkeyRunner extends TestRunner {
             // make sure pass is not printed
             logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(), LogUtils.scrubSensitiveArgs(command));
             adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command,
-                    new MultiLineNoCancelLoggingReceiver(logger), -1);
+                    new MultiLineNoCancelLoggingReceiver(logger), -1, -1);
             checkTime = System.currentTimeMillis() - recordingStartTimeMillis;
             ongoingMonkeyTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingMonkeyTest.setSuccess(true);

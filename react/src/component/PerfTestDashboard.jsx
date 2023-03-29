@@ -72,13 +72,18 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Android Battery Info
          */
-        if (androidBatteryInfo && androidBatteryInfo.performanceInspectionResults && androidBatteryInfo.performanceInspectionResults.length > 0) {
+        var isAndroidBatteryInfoEnabled = androidBatteryInfo && androidBatteryInfo.performanceInspectionResults && androidBatteryInfo.performanceInspectionResults.length > 0
+        var isAndroidBatteryInfoEmpty = true
+
+        if (isAndroidBatteryInfoEnabled) {
             let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
             androidBatteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult.parsedData !== null) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     result.ratio = inspectionResult.parsedData.ratio * 100;
+                    isAndroidBatteryInfoEmpty = false;
+
                     androidBatteryMetrics.push(result);
                 }
             })
@@ -113,7 +118,10 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Android Memory Info
          */
-        if (androidMemoryInfo && androidMemoryInfo.performanceInspectionResults && androidMemoryInfo.performanceInspectionResults.length > 0) {
+        var isAndroidMemoryInfoEnabled = androidMemoryInfo && androidMemoryInfo.performanceInspectionResults && androidMemoryInfo.performanceInspectionResults.length > 0
+        var isAndroidMemoryInfoEmpty = true;
+
+        if (isAndroidMemoryInfoEnabled) {
             let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
             androidMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult.parsedData !== null) {
@@ -125,6 +133,7 @@ export default class PerfTestDashboard extends React.Component {
                         } else if (androidMemoryOptions.findIndex(item => item.value == key) != -1) {
                             // KB to MB 
                             result[key] = inspectionResult.parsedData[key] / 1024;
+                            isAndroidMemoryInfoEmpty = false;
                         }
                     })
                     androidMemoryMetrics.push(result);
@@ -150,7 +159,7 @@ export default class PerfTestDashboard extends React.Component {
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
                 {this.state.selectedAndroidMemoryOptions.map((key, index) => (
-                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
                 ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
                 <Tooltip />
@@ -160,7 +169,10 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Windows Memory Info
          */
-        if (windowsMemoryInfo && windowsMemoryInfo.performanceInspectionResults && windowsMemoryInfo.performanceInspectionResults.length > 0) {
+        var isWindowsMemoryInfoEnabled = windowsMemoryInfo && windowsMemoryInfo.performanceInspectionResults && windowsMemoryInfo.performanceInspectionResults.length > 0
+        var isWindowsMemoryInfoEmpty = true;
+
+        if (isWindowsMemoryInfoEnabled) {
             let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
             windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
@@ -183,6 +195,7 @@ export default class PerfTestDashboard extends React.Component {
                                 } else if (windowsMemoryOptions.findIndex(item => item.value == key) != -1) {
                                     // Byte to MB
                                     result[key] = windowsMemoryMetricsOfSingleProcess[key] / 1024 / 1024;
+                                    isWindowsMemoryInfoEmpty = false;
                                 }
                             })
                         }
@@ -211,7 +224,7 @@ export default class PerfTestDashboard extends React.Component {
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
                 {this.state.selectedWindowsMemoryOptions.map((key, index) => (
-                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
                 ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
                 <Tooltip />
@@ -220,21 +233,53 @@ export default class PerfTestDashboard extends React.Component {
 
 
         return <div id='perf_dashboard'>
-            {androidBatteryInfo && <div>
-                <h3> Android Battery report</h3>
-                {androidBatteryMultiSelect}
-                {renderAndroidBatteryChart}
-            </div>}
-            {androidMemoryInfo && <div>
-                <h3> Android Memory report</h3>
-                {androidMemoryMultiSelect}
-                {renderAndroidMemoryChart}
-            </div>}
-            {windowsMemoryInfo && <div>
-                <h3> Windows Memory report</h3>
-                {windowsMemoryMultiSelect}
-                {renderWindowsMemoryChart}
-            </div>}
+            {isAndroidBatteryInfoEnabled &&
+                <div>
+                    <h3> Android Battery report</h3>
+                    {isAndroidBatteryInfoEmpty ? 
+                        <div>
+                            There is something wrong when parsing the android battery report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {androidBatteryMultiSelect}
+                            {renderAndroidBatteryChart}
+                       </div>
+                    }
+                </div>
+            }
+
+            {isAndroidMemoryInfoEnabled &&
+                <div>
+                    <h3> Android Memory report</h3>
+                    {isAndroidMemoryInfoEmpty ? 
+                        <div>
+                            There is something wrong when parsing the android memory report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {androidMemoryMultiSelect}
+                            {renderAndroidMemoryChart}
+                       </div>
+                    }
+                </div>
+            }
+
+            {isWindowsMemoryInfoEnabled &&
+                <div>
+                    <h3> Windows Memory report</h3>
+                    {isWindowsMemoryInfoEmpty ? 
+                        <div>
+                            There is something wrong when parsing the windows memory report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {windowsMemoryMultiSelect}
+                            {renderWindowsMemoryChart}
+                       </div>
+                    }
+                </div>
+            }
         </div>
     };
 
