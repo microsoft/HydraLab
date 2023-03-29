@@ -400,33 +400,35 @@ export default class PerfTestDashboard extends React.Component {
                     }
                 </div>
             }
-            {iosEnergyInfo && <div>
-                <h3> iOS Energy report</h3>
-                {isIosEnergyInfoEmpty ?
-                    <div>
-                        There is something wrong when parsing the iOS energy report data, please check the request param or agent.
-                    </div>
-                    :
-                    <div>
-                        {iosEnergyMultiSelect}
-                        {renderIosEnergyChart}
-                   </div>
-                }
-            </div>}
-            {iosMemoryInfo && <div>
-                <h3> iOS Memory report</h3>
-                {isIosMemoryInfoEmpty ?
-                    <div>
-                        There is something wrong when parsing the iOS memory report data, please check the request param or agent.
-                    </div>
-                    :
-                    <div>
-                        {iosMemoryMultiSelect}
-                        {renderIosMemoryChart}
-                    </div>
-                }
-            </div>}
-        </div>
+            {iosEnergyInfo &&
+                <div>
+                    <h3> iOS Energy report</h3>
+                    {isIosEnergyInfoEmpty ?
+                        <div>
+                            There is something wrong when parsing the iOS energy report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {iosEnergyMultiSelect}
+                            {renderIosEnergyChart}
+                       </div>
+                    }
+                </div>}
+            {iosMemoryInfo &&
+                <div>
+                    <h3> iOS Memory report</h3>
+                    {isIosMemoryInfoEmpty ?
+                        <div>
+                            There is something wrong when parsing the iOS memory report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {iosMemoryMultiSelect}
+                            {renderIosMemoryChart}
+                        </div>
+                    }
+                </div>}
+            </div>
     };
 
     getPerfReportJson() {
