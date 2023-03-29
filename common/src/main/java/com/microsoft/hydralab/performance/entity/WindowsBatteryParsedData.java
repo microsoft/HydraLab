@@ -39,6 +39,10 @@ public class WindowsBatteryParsedData {
 
         public void accumulate(WindowsBatteryMetrics metrics)
         {
+            if (metrics == null) {
+                return;
+            }
+
             this.energyLoss += metrics.energyLoss;
             this.CPUEnergyConsumption += metrics.CPUEnergyConsumption;
             this.socEnergyConsumption += metrics.socEnergyConsumption;

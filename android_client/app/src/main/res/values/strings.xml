@@ -17,6 +17,8 @@
     <string name="aac_profile">AAC Profile</string>
     <string name="without_audio">Without Audio</string>
     <string name="with_audio">With Audio</string>
+    <string name="debug">Debug</string>
+    <string name="placeholder_image">Placeholder Image</string>
     <string name="start_recorder">Start Recorder</string>
     <string name="stop_recorder">Stop Recorder</string>
     <string name="restart_recorder">Restart recorder</string>
