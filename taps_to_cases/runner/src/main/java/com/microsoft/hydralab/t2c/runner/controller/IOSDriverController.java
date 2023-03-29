@@ -7,37 +7,33 @@ import com.google.common.collect.ImmutableMap;
 import com.microsoft.hydralab.performance.PerformanceInspection;
 import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
-import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.android.nativekey.AndroidKey;
-import io.appium.java_client.android.nativekey.KeyEvent;
 import io.appium.java_client.appmanagement.ApplicationState;
+import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
-import org.openqa.selenium.remote.RemoteWebElement;
 import org.slf4j.Logger;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-public class AndroidDriverController extends BaseDriverController {
-    private final AndroidDriver androidDriver;
+public class IOSDriverController extends BaseDriverController {
+    private final IOSDriver iosDriver;
+    private String clipboardString;
 
-    public AndroidDriverController(AndroidDriver androidDriver, String udid, Logger logger) {
-        super(androidDriver, udid, logger);
-        this.androidDriver = androidDriver;
+    public IOSDriverController(IOSDriver iosDriver, String udid, Logger logger) {
+        super(iosDriver, udid, logger);
+        this.iosDriver = iosDriver;
     }
 
     @Override
     public void activateApp(String appPackageName) {
-        if (androidDriver.isAppInstalled(appPackageName)) {
-            if (androidDriver.queryAppState(appPackageName) != ApplicationState.RUNNING_IN_FOREGROUND) {
-                androidDriver.activateApp(appPackageName);
+        if (iosDriver.isAppInstalled(appPackageName)) {
+            if (iosDriver.queryAppState(appPackageName) != ApplicationState.RUNNING_IN_FOREGROUND) {
+                iosDriver.activateApp(appPackageName);
             }
         } else {
             throw new RuntimeException("the app " + appPackageName + " is not installed");
@@ -46,22 +42,10 @@ public class AndroidDriverController extends BaseDriverController {
 
     @Override
     public void terminateApp(String appPackageName) {
-        if (androidDriver.queryAppState(appPackageName) != ApplicationState.NOT_RUNNING &&
-                androidDriver.queryAppState(appPackageName) != ApplicationState.NOT_INSTALLED) {
-            androidDriver.terminateApp(appPackageName);
+        if (iosDriver.queryAppState(appPackageName) != ApplicationState.NOT_RUNNING &&
+                iosDriver.queryAppState(appPackageName) != ApplicationState.NOT_INSTALLED) {
+            iosDriver.terminateApp(appPackageName);
         }
-    }
-
-    @Override
-    public void pressKey(AndroidKey key) {
-        androidDriver.pressKey(new KeyEvent(key));
-    }
-
-    @Override
-    public void pressKeyCode(String keyCode) {
-        List<String> keyEventArgs = Arrays.asList("keyevent", keyCode);
-        Map<String, Object> keyEventCmd = ImmutableMap.of("command", "input", "args", keyEventArgs);
-        androidDriver.executeScript("mobile: shell", keyEventCmd);
     }
 
     @Override
@@ -82,19 +66,18 @@ public class AndroidDriverController extends BaseDriverController {
         dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(700),
                 PointerInput.Origin.viewport(), centerX + xVector, centerY + yVector));
         dragNDrop.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        androidDriver.perform(Arrays.asList(dragNDrop));
+        iosDriver.perform(List.of(dragNDrop));
 
         logger.info("centerX" + centerX + "centerY" + centerY);
     }
 
     @Override
     public void swipe(String direction) {
-        //androidDriver.executeScript("mobile: scroll", ImmutableMap.of("direction", direction));
         T2CAppiumUtils.safeSleep(1000);
-        Dimension dimension = androidDriver.manage().window().getSize();
+        Dimension dimension = iosDriver.manage().window().getSize();
         int width = dimension.getWidth();
         int height = dimension.getHeight();
-        ((JavascriptExecutor) androidDriver).executeScript("mobile: swipeGesture", ImmutableMap.of(
+        ((JavascriptExecutor) iosDriver).executeScript("mobile: swipe", ImmutableMap.of(
                 "left", width * 0.1, "top", height * 0.1, "width", width * 0.9, "height", height * 0.9,
                 "direction", direction,
                 "percent", 0.7
@@ -110,14 +93,20 @@ public class AndroidDriverController extends BaseDriverController {
                 PointerInput.Origin.viewport(), x, y));
         tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
         tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        androidDriver.perform(Arrays.asList(tap));
+        iosDriver.perform(List.of(tap));
     }
 
     @Override
     public void longClick(Integer duration, WebElement element) {
-        ((JavascriptExecutor) androidDriver).executeScript("mobile: longClickGesture", ImmutableMap.of(
-                "elementId", ((RemoteWebElement) element).getId(), "duration", duration
-        ));
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence longClickActions = new Sequence(finger, 1);
+        longClickActions.addAction(finger.createPointerMove(Duration.ofMillis(0),
+                PointerInput.Origin.viewport(), element.getLocation().x, element.getLocation().y));
+        longClickActions.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        longClickActions.addAction(finger.createPointerMove(Duration.ofMillis(duration),
+                PointerInput.Origin.viewport(), element.getLocation().x, element.getLocation().y));
+        longClickActions.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        iosDriver.perform(List.of(longClickActions));
     }
 
     @Override
@@ -131,42 +120,42 @@ public class AndroidDriverController extends BaseDriverController {
         dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(700),
                 PointerInput.Origin.viewport(), toX, toY));
         dragNDrop.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        androidDriver.perform(Arrays.asList(dragNDrop));
+        iosDriver.perform(List.of(dragNDrop));
     }
 
+    // Todo: setClipboard() of Appium doesn't works for ios driver
     @Override
     public void setClipboard(String text) {
-        androidDriver.setClipboardText(text);
+        clipboardString = text;
     }
 
     @Override
     public String getPageSource() {
-        return androidDriver.getPageSource();
+        return iosDriver.getPageSource();
     }
 
     @Override
     public void inspectMemoryUsage(String targetApp, String description, boolean isReset) {
         // TODO: Need to add memory stack profiling inspector here
         PerformanceInspectionService.getInstance()
-                .inspect(PerformanceInspection.createAndroidMemoryInfoInspection(
+                .inspect(PerformanceInspection.createIOSMemoryInspection(
                         targetApp, this.udid, description, isReset));
     }
 
     @Override
     public void inspectBatteryUsage(String targetApp, String description, boolean isReset) {
         PerformanceInspectionService.getInstance()
-                .inspect(PerformanceInspection.createAndroidBatteryInfoInspection(
+                .inspect(PerformanceInspection.createIOSEnergyInspection(
                         targetApp, this.udid, description, isReset));
     }
 
     @Override
     public void paste(WebElement webElement) {
-        String text = androidDriver.getClipboardText();
-        input(webElement, text);
+        input(webElement, clipboardString);
     }
 
     @Override
     public void backToHome() {
-        pressKey(AndroidKey.HOME);
+        iosDriver.runAppInBackground(Duration.ofSeconds(-1));
     }
 }

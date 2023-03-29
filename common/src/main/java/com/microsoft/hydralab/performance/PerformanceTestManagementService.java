@@ -9,14 +9,8 @@ import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
-import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
-import com.microsoft.hydralab.performance.inspectors.AndroidMemoryInfoInspector;
-import com.microsoft.hydralab.performance.inspectors.WindowsBatteryInspector;
-import com.microsoft.hydralab.performance.inspectors.WindowsMemoryInspector;
-import com.microsoft.hydralab.performance.parsers.AndroidBatteryInfoResultParser;
-import com.microsoft.hydralab.performance.parsers.AndroidMemoryInfoResultParser;
-import com.microsoft.hydralab.performance.parsers.WindowsBatteryResultParser;
-import com.microsoft.hydralab.performance.parsers.WindowsMemoryResultParser;
+import com.microsoft.hydralab.performance.inspectors.*;
+import com.microsoft.hydralab.performance.parsers.*;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.util.Assert;
@@ -34,19 +28,24 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             INSPECTOR_ANDROID_BATTERY_INFO, PARSER_ANDROID_BATTERY_INFO,
             INSPECTOR_WIN_MEMORY, PARSER_WIN_MEMORY,
             INSPECTOR_WIN_BATTERY, PARSER_WIN_BATTERY,
-            INSPECTOR_ANDROID_MEMORY_INFO, PARSER_ANDROID_MEMORY_INFO
+            INSPECTOR_IOS_ENERGY, PARSER_IOS_ENERGY,
+            INSPECTOR_IOS_MEMORY, PARSER_IOS_MEMORY
     );
     private final Map<PerformanceInspector.PerformanceInspectorType, PerformanceInspector> performanceInspectorMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInfoInspector(),
+            INSPECTOR_ANDROID_MEMORY_INFO, new AndroidMemoryInfoInspector(),
             INSPECTOR_WIN_MEMORY, new WindowsMemoryInspector(),
             INSPECTOR_WIN_BATTERY, new WindowsBatteryInspector(),
-            INSPECTOR_ANDROID_MEMORY_INFO, new AndroidMemoryInfoInspector()
+            INSPECTOR_IOS_MEMORY, new IOSMemoryPerfInspector(),
+            INSPECTOR_IOS_ENERGY, new IOSEnergyGaugeInspector()
     );
     private final Map<PerformanceResultParser.PerformanceResultParserType, PerformanceResultParser> performanceResultParserMap = Map.of(
+            PARSER_ANDROID_MEMORY_INFO, new AndroidMemoryInfoResultParser(),
             PARSER_ANDROID_BATTERY_INFO, new AndroidBatteryInfoResultParser(),
             PARSER_WIN_MEMORY, new WindowsMemoryResultParser(),
             PARSER_WIN_BATTERY, new WindowsBatteryResultParser(),
-            PARSER_ANDROID_MEMORY_INFO, new AndroidMemoryInfoResultParser()
+            PARSER_IOS_ENERGY, new IOSEnergyGaugeResultParser(),
+            PARSER_IOS_MEMORY, new IOSMemoryPerfResultParser()
     );
 
     private final Map<String, List<ScheduledFuture<?>>> inspectPerformanceTimerMap = new ConcurrentHashMap<>();

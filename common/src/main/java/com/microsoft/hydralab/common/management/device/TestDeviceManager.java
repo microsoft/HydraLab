@@ -261,10 +261,6 @@ public abstract class TestDeviceManager {
         }
     }
 
-    public boolean runAppiumT2CTest(DeviceInfo deviceInfo, File jsonFile, Logger reportLogger) {
-        return true;
-    }
-
     public void setAppiumServerManager(AppiumServerManager appiumServerManager) {
         this.appiumServerManager = appiumServerManager;
     }

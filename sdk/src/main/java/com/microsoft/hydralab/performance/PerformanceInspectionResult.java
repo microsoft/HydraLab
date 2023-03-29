@@ -18,9 +18,13 @@ public class PerformanceInspectionResult {
     public Object parsedData;
 
     public PerformanceInspectionResult(File rawResultFile, PerformanceInspection inspection) {
-        this.timestamp = System.currentTimeMillis();
+        this(rawResultFile, inspection, System.currentTimeMillis());
+    }
+
+    public PerformanceInspectionResult(File rawResultFile, PerformanceInspection inspection, long timestamp) {
         this.rawResultFile = rawResultFile;
         this.inspection = inspection;
+        this.timestamp = timestamp;
     }
 
     //TODO: overwrite equals, toString, and hashcode methods
