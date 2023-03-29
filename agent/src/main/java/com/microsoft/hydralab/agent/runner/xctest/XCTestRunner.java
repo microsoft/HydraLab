@@ -4,7 +4,6 @@ import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -37,7 +36,7 @@ public class XCTestRunner extends TestRunner {
     protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
         initializeTest(testRunDevice, testTask, testRun);
         unzipXctestFolder(testTask.getAppFile(), testRun, logger);
-        List<String> result = runXctest(testRunDevice.getDeviceInfo(), logger, testTask, testRun);
+        List<String> result = runXctest(testRunDevice, logger, testTask, testRun);
         analysisXctestResult(result, testRun);
         FileUtil.deleteFile(new File(folderPath));
         finishTest(testRunDevice, testRun);
@@ -67,12 +66,12 @@ public class XCTestRunner extends TestRunner {
         ShellUtils.execLocalCommand(command, logger);
     }
 
-    private ArrayList<String> runXctest(DeviceInfo deviceInfo, Logger logger,
+    private ArrayList<String> runXctest(TestRunDevice testRunDevice, Logger logger,
                                         TestTask testTask, TestRun testRun) {
-        if (deviceInfo == null) {
-            throw new RuntimeException("No such device: " + deviceInfo);
+        if (testRunDevice.getDeviceInfo() == null) {
+            throw new RuntimeException("No such device: " + testRunDevice.getDeviceInfo());
         }
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice,);
+        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
         StringBuilder argString = new StringBuilder();
         Map<String, String> instrumentationArgs = testTask.getInstrumentationArgs();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
@@ -91,7 +90,7 @@ public class XCTestRunner extends TestRunner {
 
         commFormat += " -xctestrun " + xctestrun.getAbsolutePath();
 
-        String deviceId = "id=" + deviceInfo.getDeviceId();
+        String deviceId = "id=" + testRunDevice.getDeviceInfo().getDeviceId();
         String resultPath = testRun.getResultFolder().getAbsolutePath()
                 + "/" + Const.XCTestConfig.XCTEST_RESULT_FILE_NAME;
 
@@ -107,7 +106,7 @@ public class XCTestRunner extends TestRunner {
             out.start();
             proc.waitFor();
             result = out.getResult();
-            testRunDeviceOrchestrator.addGifFrameAsyncDelay();
+            testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
         } catch (Exception e) {
             throw new RuntimeException("Execute XCTest failed");
         }
