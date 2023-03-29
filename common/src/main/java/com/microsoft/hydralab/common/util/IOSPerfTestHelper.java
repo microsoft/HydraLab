@@ -4,21 +4,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class IOSPerfTestHelper {
-    private static IOSPerfTestHelper instance;
+    private volatile static IOSPerfTestHelper instance = null;
 
-    private Logger classLogger = LoggerFactory.getLogger(getClass());
+    private final Logger classLogger = LoggerFactory.getLogger(getClass());
 
     private static final String lowestVersion = "0.10.2";
     private static final String installCommand = "pip3 install -U tidevice[openssl]";
-    private Map<String, IOSPerfScriptProcessInfo> iOSPerfScriptProcesses;
+    private Map<String, IOSPerfScriptProcessWrapper> iOSPerfScriptProcesses;
 
     private IOSPerfTestHelper() {
         iOSPerfScriptProcesses = new ConcurrentHashMap<>();
@@ -47,7 +44,7 @@ public class IOSPerfTestHelper {
 
     public void add(String key, File resultFile, Process process) {
         if (!isRunning(key)) {
-            iOSPerfScriptProcesses.put(key, new IOSPerfScriptProcessInfo(resultFile, process));
+            iOSPerfScriptProcesses.put(key, new IOSPerfScriptProcessWrapper(resultFile, process));
         }
     }
 
@@ -57,7 +54,7 @@ public class IOSPerfTestHelper {
 
     @Nullable
     public File getResultFile(String key) {
-        IOSPerfScriptProcessInfo processInfo = iOSPerfScriptProcesses.get(key);
+        IOSPerfScriptProcessWrapper processInfo = iOSPerfScriptProcesses.get(key);
         if (processInfo != null) {
             File outputFile = processInfo.getResultFile();
             return outputFile;
@@ -66,7 +63,7 @@ public class IOSPerfTestHelper {
     }
 
     public long getStartTime(String key) {
-        IOSPerfScriptProcessInfo processInfo = iOSPerfScriptProcesses.get(key);
+        IOSPerfScriptProcessWrapper processInfo = iOSPerfScriptProcesses.get(key);
         if (processInfo != null) {
             return processInfo.getStartTimestamp();
         }
@@ -74,7 +71,7 @@ public class IOSPerfTestHelper {
     }
 
     public void stop(String key) {
-        IOSPerfScriptProcessInfo processInfo = iOSPerfScriptProcesses.get(key);
+        IOSPerfScriptProcessWrapper processInfo = iOSPerfScriptProcesses.get(key);
         if (processInfo != null) {
             processInfo.stopProcess();
             iOSPerfScriptProcesses.remove(key);
@@ -83,18 +80,22 @@ public class IOSPerfTestHelper {
 
     public static IOSPerfTestHelper getInstance() {
         if (instance == null) {
-            instance = new IOSPerfTestHelper();
+            synchronized (instance) {
+                if (instance == null) {
+                    instance = new IOSPerfTestHelper();
+                }
+            }
         }
         return instance;
     }
 
-    private static class IOSPerfScriptProcessInfo {
+    private static class IOSPerfScriptProcessWrapper {
         private File resultFile;
         private Process process;
 
         private long startTimestamp;
 
-        IOSPerfScriptProcessInfo(File resultFile, Process process) {
+        IOSPerfScriptProcessWrapper(File resultFile, Process process) {
             this.resultFile = resultFile;
             this.process = process;
             this.startTimestamp = System.currentTimeMillis();

@@ -82,8 +82,7 @@ export default class PerfTestDashboard extends React.Component {
         selectedAndroidBatteryOptions: androidBatteryOptions.slice(0, 4),
         selectedAndroidMemoryOptions: androidMemoryOptions.slice(0, 10),
         selectedWindowsMemoryOptions: windowsMemoryOptions.slice(0, 7),
-        selectedIosEnergyOptions: iosEnergyOptions.slice(0, 7),
-        selectedIosMemoryOptions: iosMemoryOptions
+        selectedIosEnergyOptions: iosEnergyOptions.slice(0, 7)
     };
 
     render() {
@@ -299,7 +298,7 @@ export default class PerfTestDashboard extends React.Component {
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Energy Usage (mW)', angle: -90, position: 'left' }} />
                 {this.state.selectedIosEnergyOptions.map((key, index) => (
-                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
                 ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
                 <Tooltip />
@@ -327,26 +326,11 @@ export default class PerfTestDashboard extends React.Component {
             })
         }
 
-        const iosMemoryMultiSelect = (
-            <Select
-                defaultValue={iosMemoryOptions}
-                isMulti
-                components={animatedComponents}
-                options={iosMemoryOptions}
-                className="ios-memory-select"
-                classNamePrefix="select"
-                onChange={(e) => { this.setState({ selectedIosMemoryOptions: e }) }}
-            />
-        );
-
         const renderIosMemoryChart = (
             <LineChart width={800} height={400} data={iosMemoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <Legend verticalAlign="top" />
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
-                {this.state.selectedIosMemoryOptions.map((key, index) => (
-                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
-                ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
                 <Tooltip />
 
@@ -423,7 +407,6 @@ export default class PerfTestDashboard extends React.Component {
                         </div>
                         :
                         <div>
-                            {iosMemoryMultiSelect}
                             {renderIosMemoryChart}
                         </div>
                     }
