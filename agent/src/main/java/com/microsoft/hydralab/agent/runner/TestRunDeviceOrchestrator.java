@@ -9,6 +9,7 @@ import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestRunDeviceCombo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.FFmpegConcatUtil;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
@@ -32,6 +33,10 @@ import java.util.concurrent.TimeUnit;
 public class TestRunDeviceOrchestrator {
     @Resource
     TestDeviceManager testDeviceManager;
+
+    public AppiumServerManager getAppiumServerManager() {
+        return testDeviceManager.getAppiumServerManager();
+    }
 
     public File getScreenShot(@NotNull TestRunDevice testRunDevice, @NotNull File screenshotDir, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
