@@ -164,4 +164,9 @@ public class AndroidDriverController extends BaseDriverController {
         String text = androidDriver.getClipboardText();
         input(webElement, text);
     }
+
+    @Override
+    public void backToHome() {
+        pressKey(AndroidKey.HOME);
+    }
 }

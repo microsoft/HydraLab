@@ -1159,5 +1159,4 @@ export default class RunnerView extends BaseView {
         this.refreshRunnableList()
         this.refreshTeamList()
     }
-
 }

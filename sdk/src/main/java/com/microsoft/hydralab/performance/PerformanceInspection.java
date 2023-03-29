@@ -10,6 +10,8 @@ import static com.microsoft.hydralab.performance.PerformanceInspector.Performanc
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_ENERGY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_MEMORY;
 
 public class PerformanceInspection implements Serializable {
 
@@ -65,4 +67,11 @@ public class PerformanceInspection implements Serializable {
         return new PerformanceInspection(description, INSPECTOR_WIN_MEMORY, appId, deviceIdentifier, isReset);
     }
 
+    public static PerformanceInspection createIOSEnergyInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
+        return new PerformanceInspection(description, INSPECTOR_IOS_ENERGY, appId, deviceIdentifier, isReset);
+    }
+
+    public static PerformanceInspection createIOSMemoryInspection(String appId, String deviceIdentifier, String description, boolean isReset) {
+        return new PerformanceInspection(description, INSPECTOR_IOS_MEMORY, appId, deviceIdentifier, isReset);
+    }
 }

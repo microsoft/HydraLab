@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.t2c.runner.controller;
 
+import com.microsoft.hydralab.t2c.runner.RobotUtils;
 import io.appium.java_client.windows.WindowsDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -63,6 +64,12 @@ public class EdgeDriverController extends BaseDriverController {
         } catch (UnsupportedFlavorException | IOException e) {
             throw new IllegalStateException("Could not get clipboard text on Edge", e);
         }
+    }
+
+    @Override
+    public void input(WebElement element, String content) {
+        click(element);
+        RobotUtils.keyPressString(content);
     }
 
     @Override

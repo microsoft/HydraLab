@@ -589,7 +589,7 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
         Assert.isTrue(deviceInfo.isAlive());
         final boolean[] locked = {false};
 
-        adbOperateUtil.execOnDevice(deviceInfo, "pm list", new MultiLineNoCancelReceiver() {
+        adbOperateUtil.execOnDevice(deviceInfo, "pm list packages", new MultiLineNoCancelReceiver() {
             @Override
             public void processNewLines(@NotNull String[] lines) {
                 for (String line : lines) {
@@ -614,6 +614,7 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
                                                        Logger logger) {
         boolean isProjectionPermissionGranted = false;
         stopPackageProcess(deviceInfo, recordPackageName, logger);
+        wakeUpDevice(deviceInfo, logger);
         startRecordActivity(deviceInfo, logger);
         ThreadUtils.safeSleep(2000);
         if (!clickNodeOnDeviceWithText(deviceInfo, logger, "Start now", "Allow", "允许")) {

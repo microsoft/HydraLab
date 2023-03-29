@@ -72,6 +72,7 @@ public class XCTestRunner extends TestRunner {
         if (deviceInfo == null) {
             throw new RuntimeException("No such device: " + deviceInfo);
         }
+        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice,);
         StringBuilder argString = new StringBuilder();
         Map<String, String> instrumentationArgs = testTask.getInstrumentationArgs();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
@@ -106,6 +107,7 @@ public class XCTestRunner extends TestRunner {
             out.start();
             proc.waitFor();
             result = out.getResult();
+            testRunDeviceOrchestrator.addGifFrameAsyncDelay();
         } catch (Exception e) {
             throw new RuntimeException("Execute XCTest failed");
         }

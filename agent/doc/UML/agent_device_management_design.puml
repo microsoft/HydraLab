@@ -99,3 +99,24 @@ WindowsDeviceDriver *--> DeviceStatusListenerManager : notify
 DeviceStatusListenerManager .. AgentManagementService : notify
 
 @enduml
+
+@startuml discovery_service_design
+
+class EnvCapabilityDiscoveryService {
+    +discover()
+}
+
+class EnvCapabilityScanner {
+    +List<EnvCapability> scan()
+}
+
+EnvCapabilityDiscoveryService *--> EnvCapabilityScanner
+EnvCapabilityDiscoveryService *--> EnvInfo
+EnvInfo *--> EnvCapability
+EnvCapability *--> CapabilityKeyword
+WindowsScanner -u-|> EnvCapabilityScanner
+LinuxScanner -u-|> EnvCapabilityScanner
+MacOSScanner -u-|> EnvCapabilityScanner
+
+EnvCapabilityScanner .. EnvCapability: produce
+@enduml

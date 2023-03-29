@@ -4,6 +4,7 @@ import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.BaseDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.EdgeDriverController;
 import com.microsoft.hydralab.t2c.runner.controller.WindowsDriverController;
+import com.microsoft.hydralab.t2c.runner.controller.IOSDriverController;
 import com.microsoft.hydralab.t2c.runner.elements.BaseElementInfo;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,6 +24,7 @@ public final class ElementFinderFactory {
         REGISTRY_MAP.put(AndroidDriverController.class, AndroidElementFinder.class);
         REGISTRY_MAP.put(EdgeDriverController.class, EdgeElementFinder.class);
         REGISTRY_MAP.put(WindowsDriverController.class, WindowsElementFinder.class);
+        REGISTRY_MAP.put(IOSDriverController.class, IOSElementFinder.class);
     }
 
     /**

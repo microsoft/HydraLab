@@ -50,15 +50,39 @@ const windowsMemoryOptions = [
     { value: 'peakVirtualMemorySize64', label: 'peakVirtualMemorySize64', color: '#FFCC00' },
 ]
 
+
+const iosEnergyOptions = [
+    { value: 'totalCost', label: 'totalCost', color: '#007FFF' },
+    { value: 'cpuCost', label: 'cpuCost', color: '#FFA500' },
+    { value: 'gpuCost', label: 'gpuCost', color: '#8B8970' },
+    { value: 'networkingCost', label: 'networkingCost', color: '#800000' },
+    { value: 'appStateCost', label: 'appStateCost', color: '#FFCC00' },
+    { value: 'locationCost', label: 'locationCost', color: '#808000' },
+    { value: 'thermalStateCost', label: 'thermalStateCost', color: '#4B0080' },
+    { value: 'totalOverhead', label: 'totalOverhead', color: '#8884d8' },
+    { value: 'cpuOverhead', label: 'cpuOverhead', color: '#8B008B' },
+    { value: 'gpuOverhead', label: 'gpuOverhead', color: '#EE7600' },
+    { value: 'networkingOverhead', label: 'networkingOverhead', color: '#CD5C5C' },
+    { value: 'appStateOverhead', label: 'appStateOverhead', color: '#BC8F8F' },
+    { value: 'locationOverhead', label: 'locationOverhead', color: '#8B8B7A' },
+    { value: 'thermalStateOverhead', label: 'thermalStateOverhead', color: '#006400' }
+]
+const iosMemoryOptions = [
+    { value: 'memoryMB', label: 'memoryMB', color: '#007FFF' }
+]
+
 export default class PerfTestDashboard extends React.Component {
     state = {
         perfTestResult: this.props.perfTestResult,
         androidMemoryInfo: undefined,
         androidBatteryInfo: undefined,
         windowsMemoryInfo: undefined,
+        iosEnergyInfo: undefined,
+        iosMemoryInfo: undefined,
         selectedAndroidBatteryOptions: androidBatteryOptions.slice(0, 4),
         selectedAndroidMemoryOptions: androidMemoryOptions.slice(0, 10),
-        selectedWindowsMemoryOptions: windowsMemoryOptions.slice(0, 7)
+        selectedWindowsMemoryOptions: windowsMemoryOptions.slice(0, 7),
+        selectedIosEnergyOptions: iosEnergyOptions.slice(0, 7)
     };
 
     render() {
@@ -68,17 +92,26 @@ export default class PerfTestDashboard extends React.Component {
         const androidBatteryMetrics = [];
         const windowsMemoryInfo = this.state.windowsMemoryInfo;
         const windowsMemoryMetrics = [];
+        const iosEnergyInfo = this.state.iosEnergyInfo;
+        const iosEnergyMetrics = [];
+        const iosMemoryInfo = this.state.iosMemoryInfo;
+        const iosMemoryMetrics = [];
 
         /**
          * Android Battery Info
          */
-        if (androidBatteryInfo && androidBatteryInfo.performanceInspectionResults && androidBatteryInfo.performanceInspectionResults.length > 0) {
+        var isAndroidBatteryInfoEnabled = androidBatteryInfo && androidBatteryInfo.performanceInspectionResults && androidBatteryInfo.performanceInspectionResults.length > 0
+        var isAndroidBatteryInfoEmpty = true
+
+        if (isAndroidBatteryInfoEnabled) {
             let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
             androidBatteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult.parsedData !== null) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     result.ratio = inspectionResult.parsedData.ratio * 100;
+                    isAndroidBatteryInfoEmpty = false;
+
                     androidBatteryMetrics.push(result);
                 }
             })
@@ -113,7 +146,10 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Android Memory Info
          */
-        if (androidMemoryInfo && androidMemoryInfo.performanceInspectionResults && androidMemoryInfo.performanceInspectionResults.length > 0) {
+        var isAndroidMemoryInfoEnabled = androidMemoryInfo && androidMemoryInfo.performanceInspectionResults && androidMemoryInfo.performanceInspectionResults.length > 0
+        var isAndroidMemoryInfoEmpty = true;
+
+        if (isAndroidMemoryInfoEnabled) {
             let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
             androidMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult.parsedData !== null) {
@@ -125,6 +161,7 @@ export default class PerfTestDashboard extends React.Component {
                         } else if (androidMemoryOptions.findIndex(item => item.value == key) != -1) {
                             // KB to MB 
                             result[key] = inspectionResult.parsedData[key] / 1024;
+                            isAndroidMemoryInfoEmpty = false;
                         }
                     })
                     androidMemoryMetrics.push(result);
@@ -150,7 +187,7 @@ export default class PerfTestDashboard extends React.Component {
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
                 {this.state.selectedAndroidMemoryOptions.map((key, index) => (
-                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
                 ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
                 <Tooltip />
@@ -160,7 +197,10 @@ export default class PerfTestDashboard extends React.Component {
         /**
          * Windows Memory Info
          */
-        if (windowsMemoryInfo && windowsMemoryInfo.performanceInspectionResults && windowsMemoryInfo.performanceInspectionResults.length > 0) {
+        var isWindowsMemoryInfoEnabled = windowsMemoryInfo && windowsMemoryInfo.performanceInspectionResults && windowsMemoryInfo.performanceInspectionResults.length > 0
+        var isWindowsMemoryInfoEmpty = true;
+
+        if (isWindowsMemoryInfoEnabled) {
             let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
             windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
@@ -183,6 +223,7 @@ export default class PerfTestDashboard extends React.Component {
                                 } else if (windowsMemoryOptions.findIndex(item => item.value == key) != -1) {
                                     // Byte to MB
                                     result[key] = windowsMemoryMetricsOfSingleProcess[key] / 1024 / 1024;
+                                    isWindowsMemoryInfoEmpty = false;
                                 }
                             })
                         }
@@ -211,6 +252,86 @@ export default class PerfTestDashboard extends React.Component {
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
                 {this.state.selectedWindowsMemoryOptions.map((key, index) => (
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
+                ))}
+                {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
+                <Tooltip />
+
+            </LineChart>)
+
+        /**
+         * iOS Energy Info
+         */
+        var isIosEnergyEnabled = iosEnergyInfo && iosEnergyInfo.performanceInspectionResults && iosEnergyInfo.performanceInspectionResults.length > 0
+        var isIosEnergyInfoEmpty = true;
+
+        if (iosEnergyInfo && iosEnergyInfo.performanceInspectionResults && iosEnergyInfo.performanceInspectionResults.length > 0) {
+            let startTime = iosEnergyInfo.performanceInspectionResults[0].timestamp;
+            iosEnergyInfo.performanceInspectionResults.forEach((inspectionResult) => {
+
+                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                    var result = { ...inspectionResult.parsedData };
+                    let parsedData = { ...inspectionResult.parsedData };
+                    result.time = (inspectionResult.timestamp - startTime) / 1000;
+                    isIosEnergyInfoEmpty = false;
+
+                    iosEnergyMetrics.push(result);
+                }
+            })
+        }
+
+        const iosEnergyMultiSelect = (
+            <Select
+                defaultValue={iosEnergyOptions.slice(0, 7)}
+                isMulti
+                components={animatedComponents}
+                options={iosEnergyOptions}
+                className="ios-energy-select"
+                classNamePrefix="select"
+                onChange={(e) => { this.setState({ selectedIosEnergyOptions: e }) }}
+            />
+        );
+
+        const renderIosEnergyChart = (
+            <LineChart width={800} height={400} data={iosEnergyMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <Legend verticalAlign="top" />
+                <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
+                <YAxis yAxisId="left" label={{ value: 'Energy Usage (mW)', angle: -90, position: 'left' }} />
+                {this.state.selectedIosEnergyOptions.map((key, index) => (
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
+                ))}
+                {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
+                <Tooltip />
+
+            </LineChart>)
+
+        /**
+         * iOS Memory Info
+         */
+
+        var isIosMemoryInfoEnabled = iosMemoryInfo && iosMemoryInfo.performanceInspectionResults && iosMemoryInfo.performanceInspectionResults.length > 0
+        var isIosMemoryInfoEmpty = true;
+
+        if (iosMemoryInfo && iosMemoryInfo.performanceInspectionResults && iosMemoryInfo.performanceInspectionResults.length > 0) {
+            let startTime = iosMemoryInfo.performanceInspectionResults[0].timestamp;
+            iosMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
+
+                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                    var result = { ...inspectionResult.parsedData };
+                    let parsedData = { ...inspectionResult.parsedData };
+                    result.time = (inspectionResult.timestamp - startTime) / 1000;
+                    isIosMemoryInfoEmpty = false;
+                    iosMemoryMetrics.push(result);
+                }
+            })
+        }
+
+        const renderIosMemoryChart = (
+            <LineChart width={800} height={400} data={iosMemoryMetrics} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <Legend verticalAlign="top" />
+                <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" />
+                <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
+                {iosMemoryOptions.map((key, index) => (
                     <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} />
                 ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
@@ -218,24 +339,82 @@ export default class PerfTestDashboard extends React.Component {
 
             </LineChart>)
 
-
         return <div id='perf_dashboard'>
-            {androidBatteryInfo && <div>
-                <h3> Android Battery report</h3>
-                {androidBatteryMultiSelect}
-                {renderAndroidBatteryChart}
-            </div>}
-            {androidMemoryInfo && <div>
-                <h3> Android Memory report</h3>
-                {androidMemoryMultiSelect}
-                {renderAndroidMemoryChart}
-            </div>}
-            {windowsMemoryInfo && <div>
-                <h3> Windows Memory report</h3>
-                {windowsMemoryMultiSelect}
-                {renderWindowsMemoryChart}
-            </div>}
-        </div>
+            {isAndroidBatteryInfoEnabled &&
+                <div>
+                    <h3> Android Battery report</h3>
+                    {isAndroidBatteryInfoEmpty ?
+                        <div>
+                            There is something wrong when parsing the android battery report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {androidBatteryMultiSelect}
+                            {renderAndroidBatteryChart}
+                       </div>
+                    }
+                </div>
+            }
+
+            {isAndroidMemoryInfoEnabled &&
+                <div>
+                    <h3> Android Memory report</h3>
+                    {isAndroidMemoryInfoEmpty ?
+                        <div>
+                            There is something wrong when parsing the android memory report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {androidMemoryMultiSelect}
+                            {renderAndroidMemoryChart}
+                       </div>
+                    }
+                </div>
+            }
+
+            {isWindowsMemoryInfoEnabled &&
+                <div>
+                    <h3> Windows Memory report</h3>
+                    {isWindowsMemoryInfoEmpty ?
+                        <div>
+                            There is something wrong when parsing the windows memory report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {windowsMemoryMultiSelect}
+                            {renderWindowsMemoryChart}
+                       </div>
+                    }
+                </div>
+            }
+            {iosEnergyInfo &&
+                <div>
+                    <h3> iOS Energy report</h3>
+                    {isIosEnergyInfoEmpty ?
+                        <div>
+                            There is something wrong when parsing the iOS energy report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {iosEnergyMultiSelect}
+                            {renderIosEnergyChart}
+                       </div>
+                    }
+                </div>}
+            {iosMemoryInfo &&
+                <div>
+                    <h3> iOS Memory report</h3>
+                    {isIosMemoryInfoEmpty ?
+                        <div>
+                            There is something wrong when parsing the iOS memory report data, please check the request param or agent.
+                        </div>
+                        :
+                        <div>
+                            {renderIosMemoryChart}
+                        </div>
+                    }
+                </div>}
+            </div>
     };
 
     getPerfReportJson() {
@@ -250,6 +429,10 @@ export default class PerfTestDashboard extends React.Component {
                     this.setState({ androidMemoryInfo: info });
                 } else if (info.parserType == 'PARSER_WIN_MEMORY') {
                     this.setState({ windowsMemoryInfo: info });
+                } else if (info.parserType == 'PARSER_IOS_ENERGY') {
+                    this.setState({ iosEnergyInfo: info });
+                } else if (info.parserType == 'PARSER_IOS_MEMORY') {
+                    this.setState({ iosMemoryInfo: info });
                 }
             };
         })

@@ -57,11 +57,7 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 
 Hydra Lab offers an out-of-box experience of docker image called Uber. You can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
-**Step 1. pull Docker image from container registry**
-
-```
-docker pull ghcr.io/microsoft/hydra-lab-uber:latest
-``` 
+**Step 1. download and install Docker from https://www.docker.com**
 
 **Step 2. run on your machine**
 
@@ -77,7 +73,7 @@ docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 
 **2. use third-party storage service**
 
-Hydra Lab currently supports [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist various file types such as log files, video, app package, etc. 
+Hydra Lab currently supports [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist various file types such as log files, video, app package, etc.
 Any contribution to integrating other third-party storage services is welcome. (Here's the UML class diagram for this module as a reference: [storage service structure](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png).)
 
 Some extra environment variables need to be specified in the command according to the storage service type.
@@ -110,7 +106,7 @@ docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_S
 
 Enjoy starting your journey of exploration!
 
-**Note: Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)** 
+**Note: Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)**
 
 ### Quick guide on build and run
 

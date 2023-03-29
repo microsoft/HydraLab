@@ -63,10 +63,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         if (!testDeviceManager.isAppInstalled(deviceInfo, recordPackageName, logger)) {
             try {
                 testDeviceManager.wakeUpDevice(deviceInfo, logger);
-                testDeviceManager.uninstallApp(deviceInfo, recordPackageName, logger);
-                testDeviceManager.installApp(deviceInfo, recordApk.getAbsolutePath(), logger);
                 installRecorderServiceApp();
-
                 testDeviceManager.grantAllPackageNeededPermissions(deviceInfo, recordApk, recordPackageName, false, logger);
                 testDeviceManager.grantPermission(deviceInfo, recordPackageName, "android.permission.FOREGROUND_SERVICE", logger);
                 testDeviceManager.addToBatteryWhiteList(deviceInfo, recordPackageName, logger);

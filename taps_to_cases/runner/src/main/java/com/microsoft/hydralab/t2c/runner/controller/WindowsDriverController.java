@@ -5,6 +5,7 @@ package com.microsoft.hydralab.t2c.runner.controller;
 
 import com.microsoft.hydralab.performance.PerformanceInspection;
 import com.microsoft.hydralab.performance.PerformanceInspectionService;
+import com.microsoft.hydralab.t2c.runner.RobotUtils;
 import io.appium.java_client.windows.WindowsDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.PointerInput;
@@ -18,7 +19,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.Collections;
 
 public class WindowsDriverController extends BaseDriverController {
     WindowsDriver windowsDriver;
@@ -40,7 +41,7 @@ public class WindowsDriverController extends BaseDriverController {
         dragNDrop.addAction(finger.createPointerMove(Duration.ofMillis(700),
                 PointerInput.Origin.viewport(), toX, toY));
         dragNDrop.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        windowsDriver.perform(Arrays.asList(dragNDrop));
+        windowsDriver.perform(Collections.singletonList(dragNDrop));
     }
 
     @Override
@@ -51,7 +52,7 @@ public class WindowsDriverController extends BaseDriverController {
                 PointerInput.Origin.viewport(), x, y));
         tap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
         tap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        windowsDriver.perform(Arrays.asList(tap));
+        windowsDriver.perform(Collections.singletonList(tap));
     }
 
     @Override
@@ -78,6 +79,12 @@ public class WindowsDriverController extends BaseDriverController {
     }
 
     @Override
+    public void input(WebElement element, String content) {
+        click(element);
+        RobotUtils.keyPressString(content);
+    }
+
+    @Override
     public void inspectMemoryUsage(String targetApp, String description, boolean isReset) {
         PerformanceInspectionService.getInstance()
                 .inspect(PerformanceInspection.createWindowsMemoryInspection(
@@ -90,5 +97,4 @@ public class WindowsDriverController extends BaseDriverController {
                 .inspect(PerformanceInspection.createWindowsBatteryInspection(
                         targetApp, this.udid, description, isReset));
     }
-
 }
