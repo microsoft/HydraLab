@@ -180,7 +180,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, null, logger);
+        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
 
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
     }

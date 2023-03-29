@@ -200,7 +200,7 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
-    public void addGifFrameAsyncDelay(@NotNull TestRunDevice testRunDevice, @NotNull File screenshotDir, int delaySeconds, @NotNull Callback callback, @NotNull Logger logger) {
+    public void addGifFrameAsyncDelay(@NotNull TestRunDevice testRunDevice, @NotNull File screenshotDir, int delaySeconds, @NotNull Logger logger) {
         ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(() -> {
             ThreadUtils.safeSleep(TimeUnit.SECONDS.toMillis(delaySeconds));
             File imageFile = getScreenShot(testRunDevice, screenshotDir, logger);
@@ -212,9 +212,6 @@ public class TestRunDeviceOrchestrator {
                 testRunDevice.setGifFrameCount(testRunDevice.getGifFrameCount() + 1);
             } catch (IOException e) {
                 logger.error("Failed to add frame to gif", e);
-            }
-            if (callback != null) {
-                callback.invoke();
             }
         });
     }
@@ -240,7 +237,7 @@ public class TestRunDeviceOrchestrator {
             return;
         }
         if (testRunDevice.getGifFrameCount() < 2) {
-            addGifFrameAsyncDelay(testRunDevice, screenshotDir, 0, null, logger);
+            addGifFrameAsyncDelay(testRunDevice, screenshotDir, 0, logger);
         }
         testRunDevice.getGifEncoder().finish();
     }
@@ -251,9 +248,5 @@ public class TestRunDeviceOrchestrator {
         } else {
             testDeviceManager.backToHome(testRunDevice.getDeviceInfo(), logger);
         }
-    }
-
-    public interface Callback {
-        void invoke();
     }
 }

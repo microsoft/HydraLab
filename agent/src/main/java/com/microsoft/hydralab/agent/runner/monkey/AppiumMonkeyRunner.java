@@ -67,7 +67,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         testRun.addNewTimeTag(1 + ". " + ongoingMonkeyTest.getTitle(),
                 System.currentTimeMillis() - recordingStartTimeMillis);
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, ongoingMonkeyTest.getTitle());
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, null, logger);
+        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
 
         performanceTestManagementService.testStarted(ongoingMonkeyTest.getTitle());

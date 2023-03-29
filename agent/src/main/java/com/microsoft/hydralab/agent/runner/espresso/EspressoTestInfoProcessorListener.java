@@ -135,7 +135,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, null, logger);
+        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
 
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
     }

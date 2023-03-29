@@ -122,7 +122,7 @@ public class AppiumListener extends RunListener {
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 15, null, logger);
+        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
     }
 
