@@ -8,5 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface EntityFileRelationRepository extends JpaRepository<EntityFileRelation, String> {
-    List<EntityFileRelation> queryAllByEntityIdAndAndEntityType(String entityId, String entityType);
+    List<EntityFileRelation> queryAllByEntityIdAndAndEntityTypeOrderByFileOrderAsc(String entityId, String entityType);
+    EntityFileRelation findTopByEntityIdAndAndEntityTypeOrderByFileOrderDesc(String entityId, String entityType);
 }

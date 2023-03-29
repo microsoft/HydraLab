@@ -156,7 +156,7 @@ public class AttachmentService {
     public List<StorageFileInfo> getAttachments(String entityId, EntityType entityType) {
         List<StorageFileInfo> result = new ArrayList<>();
 
-        List<EntityFileRelation> fileRelations = entityFileRelationRepository.queryAllByEntityIdAndAndEntityType(entityId, entityType.typeName);
+        List<EntityFileRelation> fileRelations = entityFileRelationRepository.queryAllByEntityIdAndAndEntityTypeOrderByFileOrderAsc(entityId, entityType.typeName);
         for (EntityFileRelation fileRelation : fileRelations) {
             StorageFileInfo tempFileInfo = storageFileInfoRepository.findById(fileRelation.getFileId()).get();
             if (tempFileInfo != null) {
@@ -167,10 +167,12 @@ public class AttachmentService {
     }
 
     public void saveRelation(String entityId, EntityType entityType, StorageFileInfo storageFileInfo) {
+        int maxOrder = getMaxOrder(entityId, entityType);
         EntityFileRelation entityFileRelation = new EntityFileRelation();
         entityFileRelation.setEntityId(entityId);
         entityFileRelation.setEntityType(entityType.typeName);
         entityFileRelation.setFileId(storageFileInfo.getFileId());
+        entityFileRelation.setFileOrder(maxOrder + 1);
         entityFileRelationRepository.save(entityFileRelation);
     }
 
@@ -178,15 +180,22 @@ public class AttachmentService {
         if (attachments == null) {
             return;
         }
+        int maxOrder = getMaxOrder(entityId, entityType);
         List<EntityFileRelation> relations = new ArrayList<>();
         for (StorageFileInfo attachment : attachments) {
             EntityFileRelation entityFileRelation = new EntityFileRelation();
             entityFileRelation.setFileId(attachment.getFileId());
             entityFileRelation.setEntityId(entityId);
             entityFileRelation.setEntityType(entityType.typeName);
+            entityFileRelation.setFileOrder(++maxOrder);
             relations.add(entityFileRelation);
         }
         entityFileRelationRepository.saveAll(relations);
+    }
+
+    private int getMaxOrder(String entityId, EntityType entityType) {
+        EntityFileRelation latestRelation = entityFileRelationRepository.findTopByEntityIdAndAndEntityTypeOrderByFileOrderDesc(entityId, entityType.typeName);
+        return latestRelation == null ? 0 : latestRelation.getFileOrder();
     }
 
     public void saveAttachments(String entityId, EntityType entityType, List<StorageFileInfo> attachments) {
