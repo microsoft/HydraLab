@@ -3,6 +3,7 @@ package com.microsoft.hydralab.agent.service;
 import com.microsoft.hydralab.agent.command.DeviceScriptCommandLoader;
 import com.microsoft.hydralab.agent.config.TestRunnerConfig;
 import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
@@ -13,10 +14,10 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
@@ -59,6 +60,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     AgentManagementService agentManagementService;
     @Resource
     DeviceScriptCommandLoader deviceScriptCommandLoader;
+    @Resource
+    TestRunDeviceOrchestrator testRunDeviceOrchestrator;
     private final Map<String, TestTask> runningTestTask = new HashMap<>();
 
     public TestTask runTestTask(TestTaskSpec testTaskSpec) {
@@ -77,8 +80,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 new DeviceTaskControlExecutor.DeviceTask() {
                     @Override
                     public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
-                        TestDevice testDevice = new TestDevice(deviceInfo, Const.TestDeviceTag.PRIMARY_PHONE);
-                        runner.runTestOnDevice(testTask, testDevice, logger);
+                        TestRunDevice testRunDevice = new TestRunDevice(deviceInfo, Const.TestDeviceTag.PRIMARY_PHONE);
+                        runner.runTestOnDevice(testTask, testRunDevice, logger);
                         return false;
                     }
                 },
@@ -194,9 +197,9 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, TestDevice testDevice, Logger logger, TestRun result) {
-        log.info("onOneDeviceComplete: {}", testDevice.getSerialNum());
-        testDevice.finishTask();
+    public void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result) {
+        log.info("onOneDeviceComplete: {}", testRunDeviceOrchestrator.getSerialNum(testRunDevice));
+        testRunDeviceOrchestrator.finishTask(testRunDevice);
         File deviceTestResultFolder = result.getResultFolder();
 
         File[] files = deviceTestResultFolder.listFiles();

@@ -7,7 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.TestDevice;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.management.device.impl.AndroidTestDeviceManager;
 import com.microsoft.hydralab.common.util.Const;
 import org.junit.jupiter.api.Assertions;
@@ -36,7 +36,7 @@ class ActionExecutorTest extends BaseTest {
         DeviceAction action1 = JSONObject.parseObject(actionJson.toJSONString(), DeviceAction.class);
         List<String> args1 = List.of("paramA", "paramB");
         action1.setArgs(args1);
-        actionExecutor.doAction(new TestDevice(deviceInfo, Const.TestDeviceTag.PRIMARY_PHONE), baseLogger, action1);
+        actionExecutor.doAction(new TestRunDevice(deviceInfo, Const.TestDeviceTag.PRIMARY_PHONE), baseLogger, action1);
         verify(deviceManager).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
 
         DeviceAction action2 = new DeviceAction("Android", "changeGlobalSetting");
@@ -45,7 +45,7 @@ class ActionExecutorTest extends BaseTest {
         List<DeviceAction> actions = new ArrayList<>();
         actions.add(action1);
         actions.add(action2);
-        List<Exception> exceptions = actionExecutor.doActions(new TestDevice(deviceInfo, Const.TestDeviceTag.PRIMARY_PHONE), baseLogger,
+        List<Exception> exceptions = actionExecutor.doActions(new TestRunDevice(deviceInfo, Const.TestDeviceTag.PRIMARY_PHONE), baseLogger,
                 Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
         Assertions.assertEquals(0, exceptions.size(), () -> exceptions.get(0).getMessage());
         verify(deviceManager, times(2)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);

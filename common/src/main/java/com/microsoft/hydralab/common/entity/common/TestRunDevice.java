@@ -1,0 +1,44 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+package com.microsoft.hydralab.common.entity.common;
+
+import cn.hutool.core.img.gif.AnimatedGifEncoder;
+import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import lombok.Getter;
+import lombok.Setter;
+import org.openqa.selenium.WebDriver;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+@Getter
+@Setter
+public class TestRunDevice {
+    private final DeviceInfo deviceInfo;
+    private final String tag;
+    private ScreenRecorder screenRecorder;
+    private LogCollector logCollector;
+    private String logPath;
+    private final AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();
+    private int gifFrameCount = 0;
+    private File gifFile;
+
+    private WebDriver webDriver;
+
+    Map<Thread, String> currentCommand = new HashMap<>();
+    Map<Thread, String> currentProcess = new HashMap<>();
+    Map<Thread, TestTask> currentTask = new HashMap<>();
+
+    public TestRunDevice(DeviceInfo deviceInfo, String tag) {
+        this.deviceInfo = deviceInfo;
+        this.tag = tag;
+    }
+
+    public void addCurrentTask(TestTask testTask) {
+        this.currentTask.put(Thread.currentThread(), testTask);
+    }
+
+}

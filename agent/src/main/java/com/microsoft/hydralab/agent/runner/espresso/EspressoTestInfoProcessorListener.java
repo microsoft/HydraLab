@@ -3,50 +3,46 @@
 
 package com.microsoft.hydralab.agent.runner.espresso;
 
-import cn.hutool.core.img.ImgUtil;
-import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import cn.hutool.core.lang.Assert;
 import com.android.ddmlib.testrunner.TestIdentifier;
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.slf4j.Logger;
 
-import javax.imageio.ImageIO;
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
-    private final TestDevice testDevice;
+    private final TestRunDevice testRunDevice;
     private final TestRun testRun;
     private final Logger logger;
-    private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
     private final AgentManagementService agentManagementService;
     private final PerformanceTestListener performanceTestListener;
+    private TestRunDeviceOrchestrator testRunDeviceOrchestrator;
     ADBOperateUtil adbOperateUtil;
     private long recordingStartTimeMillis;
     private int index;
-    private File gifFile;
     private boolean alreadyEnd = false;
     private AndroidTestUnit ongoingTestUnit;
     private int numTests;
     private int pid;
-    private int addedFrameCount;
 
     public EspressoTestInfoProcessorListener(AgentManagementService agentManagementService, ADBOperateUtil adbOperateUtil,
-                                             TestDevice testDevice, TestRun testRun, String pkgName,
+                                             TestRunDevice testRunDevice, TestRun testRun, String pkgName,
+                                             TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                              PerformanceTestListener performanceTestListener) {
-        this.testDevice = testDevice;
+        this.testRunDevice = testRunDevice;
+        this.testRunDeviceOrchestrator = testRunDeviceOrchestrator;
         this.agentManagementService = agentManagementService;
         this.adbOperateUtil = adbOperateUtil;
         this.testRun = testRun;
@@ -62,18 +58,18 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     }
 
     public File getGifFile() {
-        return gifFile;
+        return testRunDevice.getGifFile();
     }
 
     public void startRecording(int maxTime) {
         logger.info("Start adb logcat collection");
-        String logcatFilePath = testDevice.startLogCollector(pkgName, testRun, logger);
-        testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(logcatFilePath)));
+        testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
+        testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
         logger.info("Start record screen");
-        testDevice.startScreenRecorder(testRun.getResultFolder(), maxTime <= 0 ? 30 * 60 : maxTime, logger);
+        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime <= 0 ? 30 * 60 : maxTime, logger);
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
-        testDevice.setRunningTestName(initializing);
+        testRunDeviceOrchestrator.setRunningTestName(testRunDevice, initializing);
         testRun.addNewTimeTag(initializing, 0);
     }
 
@@ -84,7 +80,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         testRun.setTotalCount(numTests);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
-        testDevice.setRunningTestName(runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
+        testRunDeviceOrchestrator.setRunningTestName(testRunDevice, runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
         super.testRunStarted(runName, numTests);
         logEnter(runName, numTests);
         startTools(runName);
@@ -93,16 +89,13 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     private void startTools(String runName) {
         try {
-            pid = adbOperateUtil.getPackagePid(testDevice.getDeviceInfo(), pkgName, logger);
+            pid = adbOperateUtil.getPackagePid(testRunDevice.getDeviceInfo(), pkgName, logger);
             logger.info("{} is running test with pid {}", pkgName, pid);
         } catch (Exception exception) {
             exception.printStackTrace();
         }
         logger.info("Start gif frames collection");
-        gifFile = new File(testRun.getResultFolder(), runName + ".gif");
-        e.start(gifFile.getAbsolutePath());
-        e.setDelay(1000);
-        e.setRepeat(0);
+        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), runName + ".gif");
     }
 
     private void logEnter(Object... args) {
@@ -135,24 +128,14 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         ongoingTestUnit.setTestedClass(test.getClassName());
 
         testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
-        testDevice.setRunningTestName(ongoingTestUnit.getTitle());
+        testRunDeviceOrchestrator.setRunningTestName(testRunDevice, ongoingTestUnit.getTitle());
 
         ongoingTestUnit.setDeviceTestResultId(testRun.getId());
         ongoingTestUnit.setTestTaskId(testRun.getTestTaskId());
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        testDevice.updateScreenshotImageAsyncDelay(TimeUnit.SECONDS.toMillis(5), (imagePNGFile -> {
-            if (imagePNGFile == null || !e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                addedFrameCount++;
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), logger);
+        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, null, logger);
 
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
     }
@@ -203,22 +186,13 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     public void testRunFailed(String errorMessage) {
         logEnter("testRunFailed", errorMessage);
         testRun.addNewTimeTag("testRunFailed", System.currentTimeMillis() - recordingStartTimeMillis);
-        Assert.isTrue(testDevice.getDeviceInfo().isAlive(), Const.TaskResult.ERROR_DEVICE_OFFLINE);
+        Assert.isTrue(testRunDevice.getDeviceInfo().isAlive(), Const.TaskResult.ERROR_DEVICE_OFFLINE);
         super.testRunFailed(errorMessage);
         testRun.setTestErrorMessage(errorMessage);
         if (errorMessage != null && errorMessage.toLowerCase(Locale.US).contains("process crash")) {
             if (testRun.getCrashStack() == null) {
                 testRun.setCrashStack(errorMessage);
             }
-        }
-        if (e.isStarted() && addedFrameCount < 2) {
-            testDevice.updateScreenshotImageAsyncDelay(TimeUnit.SECONDS.toMillis(0), (imagePNGFile -> {
-                try {
-                    e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-            }), logger);
         }
         // releaseResource();
     }
@@ -242,16 +216,16 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
             super.testRunEnded(elapsedTime, runMetrics);
             testRun.onTestEnded();
-            testDevice.setRunningTestName(null);
+            testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
             releaseResource();
             alreadyEnd = true;
         }
     }
 
     private void releaseResource() {
-        e.finish();
-        testDevice.stopScreenRecorder();
-        testDevice.stopLogCollector();
+        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }
 
 }

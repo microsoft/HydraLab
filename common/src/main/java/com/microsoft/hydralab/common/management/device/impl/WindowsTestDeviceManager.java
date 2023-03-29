@@ -36,7 +36,7 @@ import java.util.Map;
 public class WindowsTestDeviceManager extends AndroidTestDeviceManager {
 
     @Override
-    public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
+    public File getScreenShot(DeviceInfo deviceInfo, Logger logger) {
         File deviceFile = super.getScreenShot(deviceInfo, logger);
         File pcScreenShotImageFile = deviceInfo.getPcScreenshotImageFile();
         if (pcScreenShotImageFile == null) {

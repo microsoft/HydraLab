@@ -7,7 +7,6 @@ import cn.hutool.core.img.ImgUtil;
 import cn.hutool.core.lang.Assert;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
-import com.android.ddmlib.InstallException;
 import com.android.ddmlib.RawImage;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
@@ -19,8 +18,6 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelReceiver;
 import com.microsoft.hydralab.common.logger.impl.ADBLogcatCollector;
-import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
@@ -45,10 +42,22 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static com.android.ddmlib.IDevice.*;
+import static com.android.ddmlib.IDevice.CHANGE_BUILD_INFO;
+import static com.android.ddmlib.IDevice.CHANGE_CLIENT_LIST;
+import static com.android.ddmlib.IDevice.CHANGE_STATE;
+import static com.android.ddmlib.IDevice.DeviceState;
+import static com.android.ddmlib.IDevice.PROP_BUILD_API_LEVEL;
+import static com.android.ddmlib.IDevice.PROP_BUILD_VERSION;
+import static com.android.ddmlib.IDevice.PROP_DEVICE_CPU_ABI_LIST;
+import static com.android.ddmlib.IDevice.PROP_DEVICE_MANUFACTURER;
+import static com.android.ddmlib.IDevice.PROP_DEVICE_MODEL;
 import static com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder.recordPackageName;
 
 public class AndroidTestDeviceManager extends TestDeviceManager {
@@ -285,15 +294,14 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
      * -t: Allow test APKs to be installed.
      * -g: Grant all permissions listed in the app manifest.
      */
-    public boolean installApp(DeviceInfo deviceInfo, String packagePath, @Nullable Logger logger)
-            throws InstallException {
+    public boolean installApp(DeviceInfo deviceInfo, String packagePath, @Nullable Logger logger) {
         File apk = new File(packagePath);
         Assert.isTrue(apk.exists(), "apk not exist!!");
         return adbOperateUtil.installApp(deviceInfo, apk.getAbsolutePath(), true, "-t -d -g", logger);
     }
 
     @Override
-    public boolean uninstallApp(DeviceInfo deviceInfo, String packageName, Logger logger) throws InstallException {
+    public boolean uninstallApp(DeviceInfo deviceInfo, String packageName, Logger logger) {
         return adbOperateUtil.uninstallApp(deviceInfo, packageName, logger);
     }
 
@@ -366,13 +374,13 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     }
 
 
-    private void enableTouchPositionDisplay(DeviceInfo deviceInfo, Logger logger) throws IOException {
+    private void enableTouchPositionDisplay(DeviceInfo deviceInfo, Logger logger) {
         //changeSystemSetting(deviceInfo, "show_touches", "1", logger);
         changeSystemSetting(deviceInfo, "pointer_location", "1", logger);
     }
 
     @Override
-    public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
+    public File getScreenShot(DeviceInfo deviceInfo, Logger logger) {
         File screenshotImageFile = deviceInfo.getScreenshotImageFile();
         if (screenshotImageFile == null) {
             screenshotImageFile = new File(agentManagementService.getScreenshotDir(),
@@ -386,7 +394,11 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
         }
         deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
         sendKeyEvent(deviceInfo, KEYCODE_WAKEUP, logger);
-        screenCapture(deviceInfo, screenshotImageFile.getAbsolutePath(), null);
+        try {
+            screenCapture(deviceInfo, screenshotImageFile.getAbsolutePath(), null);
+        } catch (Exception e) {
+            throw new HydraLabRuntimeException("Failed to capture screenshot for device " + deviceInfo.getName(), e);
+        }
         StorageFileInfo fileInfo =
                 new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(),
                         StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
@@ -689,7 +701,7 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void testDeviceSetup(@NotNull DeviceInfo deviceInfo, Logger logger) throws IOException {
+    public void testDeviceSetup(@NotNull DeviceInfo deviceInfo, Logger logger) {
         changeGlobalSetting(deviceInfo, "window_animation_scale", "0", logger);
         changeGlobalSetting(deviceInfo, "transition_animation_scale", "0", logger);
         changeGlobalSetting(deviceInfo, "animator_duration_scale", "0", logger);
@@ -710,12 +722,12 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public WebDriver getMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
+    public WebDriver getAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
         return appiumServerManager.getAndroidDriver(deviceInfo, logger);
     }
 
     @Override
-    public void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
+    public void quitAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
         appiumServerManager.quitAndroidDriver(deviceInfo, logger);
     }
 

@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +65,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public File getScreenShot(DeviceInfo deviceInfo, Logger logger) throws Exception {
+    public File getScreenShot(DeviceInfo deviceInfo, Logger logger) {
         File screenshotImageFile = deviceInfo.getScreenshotImageFile();
         if (screenshotImageFile == null) {
             screenshotImageFile = new File(agentManagementService.getScreenshotDir(),
@@ -281,7 +280,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public void testDeviceSetup(DeviceInfo deviceInfo, Logger logger) throws IOException {
+    public void testDeviceSetup(DeviceInfo deviceInfo, Logger logger) {
         IOSUtils.proxyWDA(deviceInfo, logger);
     }
 
@@ -296,12 +295,12 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     @Override
-    public WebDriver getMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
+    public WebDriver getAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
         return appiumServerManager.getIOSDriver(deviceInfo, logger);
     }
 
     @Override
-    public void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
+    public void quitAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
         appiumServerManager.quitIOSDriver(deviceInfo, logger);
     }
 
@@ -312,12 +311,5 @@ public class IOSTestDeviceManager extends TestDeviceManager {
 
     private String currentMethodName() {
         return Thread.currentThread().getStackTrace()[2].getMethodName();
-    }
-
-    @Override
-    public void runAppiumMonkey(DeviceInfo deviceInfo, String packageName, int round, Logger logger) {
-        IOSUtils.stopApp(deviceInfo.getSerialNum(), packageName, logger);
-        IOSUtils.launchApp(deviceInfo.getSerialNum(), packageName, logger);
-        super.runAppiumMonkey(deviceInfo, packageName, round, logger);
     }
 }

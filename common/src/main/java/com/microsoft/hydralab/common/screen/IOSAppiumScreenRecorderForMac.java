@@ -41,9 +41,9 @@ public class IOSAppiumScreenRecorderForMac extends IOSAppiumScreenRecorder {
     }
 
     @Override
-    public boolean finishRecording() {
+    public String finishRecording() {
         if (!isStarted) {
-            return false;
+            return null;
         }
         SimpleDateFormat format = new SimpleDateFormat(
                 "yyyy-MM-dd-HH-mm-ss");
@@ -61,8 +61,8 @@ public class IOSAppiumScreenRecorderForMac extends IOSAppiumScreenRecorder {
             System.out.println("-------------------------------Fail to Stop recording, Ignore it to unblocking the following tests-----------------------------");
             e.printStackTrace();
             System.out.println("-------------------------------------------------------Ignore End--------------------------------------------------------------");
-            return false;
+            return null;
         }
-        return true;
+        return destPath;
     }
 }

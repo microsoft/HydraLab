@@ -41,7 +41,7 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
     }
 
     @Override
-    public boolean finishRecording() {
+    public String finishRecording() {
         File PCVideoFile = null;
         File phoneVideoFile = null;
         super.finishRecording();
@@ -60,7 +60,7 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
         phoneVideoFile = new File(baseFolder.getAbsolutePath(), Const.ScreenRecoderConfig.PHONE_FILE_NAME);
 
         if (PCVideoFile == null || !PCVideoFile.exists() || !phoneVideoFile.exists()) {
-            return false;
+            return null;
         }
         // Merge two videos side-by-side if exist
         System.out.println("-------------Merge two videos side-by-side-------------");
@@ -68,7 +68,7 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
         FFmpegConcatUtil.mergeVideosSideBySide(phoneVideoFile.getAbsolutePath(), PCVideoFile.getAbsolutePath(), mergeDestinationPath, logger);
         // PCVideoFile.delete();
         // phoneVideoFile.delete();
-        return true;
+        return mergeDestinationPath;
     }
 
 }

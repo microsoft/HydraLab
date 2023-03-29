@@ -3,90 +3,74 @@
 
 package com.microsoft.hydralab.agent.runner.t2c;
 
-import cn.hutool.core.img.ImgUtil;
-import cn.hutool.core.img.gif.AnimatedGifEncoder;
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
-import javax.imageio.ImageIO;
 import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 public class T2CRunner extends AppiumRunner {
 
-    private final AnimatedGifEncoder e = new AnimatedGifEncoder();
-    private TestDevice testDevice;
+    private TestRunDevice testRunDevice;
     private String pkgName;
     String agentName;
     private int currentIndex = 0;
 
     public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                     TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                      PerformanceTestManagementService performanceTestManagementService, String agentName) {
-        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.agentName = agentName;
     }
 
     @Override
-    protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, TestDevice testDevice, TestTask testTask,
-                                TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
+    protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, TestRunDevice testRunDevice, TestTask testTask,
+                                TestRun testRun, File deviceTestResultFolder, Logger logger) {
         pkgName = testTask.getPkgName();
-        this.testDevice = testDevice;
+        this.testRunDevice = testRunDevice;
         // Test start
-        testDevice.startScreenRecorder(deviceTestResultFolder, testTask.getTimeOutSecond(), reportLogger);
+        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, deviceTestResultFolder, testTask.getTimeOutSecond(), logger);
         long recordingStartTimeMillis = System.currentTimeMillis();
 
-        testDevice.startLogCollector(pkgName, testRun, reportLogger);
-
+        testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
+        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
         testRun.setTotalCount(testTask.testJsonFileList.size() + (initialJsonFile == null ? 0 : 1));
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
 
         performanceTestManagementService.testRunStarted();
 
-        testDevice.setRunningTestName(pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
+        testRunDeviceOrchestrator.setRunningTestName(testRunDevice, pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
         currentIndex = 0;
 
-        File gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
-        e.start(gifFile.getAbsolutePath());
-        e.setDelay(1000);
-        e.setRepeat(0);
-
         if (initialJsonFile != null) {
-            runT2CJsonTestCase(initialJsonFile, testDevice, testRun, reportLogger, recordingStartTimeMillis);
+            runT2CJsonTestCase(initialJsonFile, testRunDevice, testRun, logger, recordingStartTimeMillis);
         }
         for (File jsonFile : testTask.testJsonFileList) {
-            runT2CJsonTestCase(jsonFile, testDevice, testRun, reportLogger, recordingStartTimeMillis);
+            runT2CJsonTestCase(jsonFile, testRunDevice, testRun, logger, recordingStartTimeMillis);
         }
 
         // Test finish
-        reportLogger.info(pkgName + ".end");
+        logger.info(pkgName + ".end");
         performanceTestManagementService.testRunFinished();
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
-        testDevice.setRunningTestName(null);
-        releaseResource();
-        return gifFile;
+        testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
+        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
+        return testRunDevice.getGifFile();
     }
 
-    @Override
-    public TestRun createTestRun(TestDevice testDevice, TestTask testTask, Logger parentLogger) {
-        TestRun testRun = super.createTestRun(testDevice, testTask, parentLogger);
-        String deviceName =
-                System.getProperties().getProperty("os.name") + "-" + agentName + "-" + testDevice.getName();
-        testRun.setDeviceName(deviceName);
-        return testRun;
-    }
-
-    private void runT2CJsonTestCase(File jsonFile, TestDevice testDevice, TestRun testRun,
-                                    Logger reportLogger, long recordingStartTimeMillis) {
+    private void runT2CJsonTestCase(File jsonFile, TestRunDevice testRunDevice, TestRun testRun,
+                                    Logger logger, long recordingStartTimeMillis) {
         AndroidTestUnit ongoingTest = new AndroidTestUnit();
         ongoingTest.setNumtests(testRun.getTotalCount());
         ongoingTest.setStartTimeMillis(System.currentTimeMillis());
@@ -97,7 +81,7 @@ public class T2CRunner extends AppiumRunner {
         ongoingTest.setDeviceTestResultId(testRun.getId());
         ongoingTest.setTestTaskId(testRun.getTestTaskId());
 
-        reportLogger.info(ongoingTest.getTitle());
+        logger.info(ongoingTest.getTitle());
 
         testRun.addNewTimeTag(currentIndex + ". " + ongoingTest.getTitle(),
                 System.currentTimeMillis() - recordingStartTimeMillis);
@@ -105,21 +89,11 @@ public class T2CRunner extends AppiumRunner {
 
         performanceTestManagementService.testStarted(ongoingTest.getTitle());
 
-        testDevice.updateScreenshotImageAsyncDelay(TimeUnit.SECONDS.toMillis(5),
-                (imagePNGFile -> {
-                    if (imagePNGFile == null || !e.isStarted()) {
-                        return;
-                    }
-                    try {
-                        e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    }
-                }), reportLogger);
+        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, null, logger);
 
         // Run Test
         try {
-            testDevice.runAppiumT2CTest(jsonFile, reportLogger);
+            //testRunDeviceOrchestrator.runAppiumT2CTest(testRunDevice, jsonFile, logger);
             performanceTestManagementService.testSuccess(ongoingTest.getTitle());
             ongoingTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingTest.setSuccess(true);
@@ -137,11 +111,5 @@ public class T2CRunner extends AppiumRunner {
         ongoingTest.setRelEndTimeInVideo(ongoingTest.getEndTimeMillis() - recordingStartTimeMillis);
         testRun.addNewTimeTag(ongoingTest.getTitle() + ".end",
                 System.currentTimeMillis() - recordingStartTimeMillis);
-    }
-
-    private void releaseResource() {
-        e.finish();
-        testDevice.stopScreenRecorder();
-        testDevice.stopLogCollector();
     }
 }

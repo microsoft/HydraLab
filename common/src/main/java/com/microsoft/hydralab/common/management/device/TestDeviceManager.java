@@ -3,7 +3,6 @@
 
 package com.microsoft.hydralab.common.management.device;
 
-import com.android.ddmlib.InstallException;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
@@ -34,7 +33,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -70,7 +68,7 @@ public abstract class TestDeviceManager {
         return appiumServerManager;
     }
 
-    public abstract File getScreenShot(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) throws Exception;
+    public abstract File getScreenShot(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
 
     public File getScreenShotWithStrategy(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger,
                                           @NotNull AgentUser.BatteryStrategy batteryStrategy) throws Exception {
@@ -101,11 +99,9 @@ public abstract class TestDeviceManager {
     public abstract void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
                                                @NotNull Logger logger);
 
-    public abstract boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath,
-                                       @Nullable Logger logger) throws InstallException;
+    public abstract boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath, @Nullable Logger logger);
 
-    public abstract boolean uninstallApp(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
-                                         @Nullable Logger logger) throws InstallException;
+    public abstract boolean uninstallApp(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @Nullable Logger logger);
 
     public abstract void resetPackage(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
                                       @Nullable Logger logger);
@@ -157,16 +153,15 @@ public abstract class TestDeviceManager {
                                                                 @NotNull String recordPackageName,
                                                                 @Nullable Logger logger);
 
-    public abstract void testDeviceSetup(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger)
-            throws IOException;
+    public abstract void testDeviceSetup(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
 
     public abstract void removeFileInDevice(DeviceInfo deviceInfo, String pathOnDevice, Logger logger);
 
     public abstract void testDeviceUnset(DeviceInfo deviceInfo, Logger logger);
 
-    abstract public WebDriver getMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
+    abstract public WebDriver getAppiumDriver(DeviceInfo deviceInfo, Logger logger);
 
-    abstract public void quitMobileAppiumDriver(DeviceInfo deviceInfo, Logger logger);
+    abstract public void quitAppiumDriver(DeviceInfo deviceInfo, Logger logger);
 
     abstract public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
 
@@ -180,63 +175,6 @@ public abstract class TestDeviceManager {
             newCommand = ShellUtils.parseHydraLabVariable(command, testRun, deviceInfo);
         }
         ShellUtils.execLocalCommand(newCommand, logger);
-    }
-
-    protected boolean isAppRunningForeground(DeviceInfo deviceInfo, String packageName, Logger logger) {
-        IOSDriver iOSDriver = appiumServerManager.getIOSDriver(deviceInfo, logger);
-        ApplicationState state = iOSDriver.queryAppState(packageName);
-        boolean result = (state == ApplicationState.RUNNING_IN_FOREGROUND);
-        if (!result) {
-            logger.info("State of App " + packageName + " is: " + state.toString());
-        }
-        return result;
-    }
-
-    public void runAppiumMonkey(DeviceInfo deviceInfo, String packageName, int round, Logger logger) {
-        try {
-            for (int i = 0; i < round; i++) {
-                logger.info("Monkey Test Round " + i + "[Started]");
-                WebDriver driver = getMobileAppiumDriver(deviceInfo, logger);
-                // Select all the leaf nodes
-                List<WebElement> eleList = driver.findElements(By.xpath("//*[not(*)]"));
-                int count = eleList.size();
-                logger.info("Found " + count + " element(s)");
-                if (StringUtils.isEmpty(packageName)) {
-                    if (count == 0) {
-                        logger.info("No element Found, Back to Home Screen.");
-                        backToHome(deviceInfo, logger);
-                        eleList = driver.findElements(By.xpath("//*"));
-                        count = eleList.size();
-                    }
-                } else {
-                    if (count == 0 || !isAppRunningForeground(deviceInfo, packageName, logger)) {
-                        logger.info(
-                                "No element Found or App is Running in Background, Back to Home Screen and Restart App.");
-                        backToHome(deviceInfo, logger);
-                        IOSUtils.launchApp(deviceInfo.getSerialNum(), packageName, logger);
-                        eleList = driver.findElements(By.xpath("//*"));
-                        count = eleList.size();
-                    }
-                }
-                if (count <= 0) {
-                    continue;
-                }
-                int r = new Random().nextInt(count);
-                WebElement e = eleList.get(r);
-                try {
-                    String name = e.getText();
-                    logger.info("Select NO. " + r + " element: " + name);
-                    e.click();
-                } catch (StaleElementReferenceException | ElementNotInteractableException ignore) {
-                    // Cached element is not exist any more skip this try.
-                }
-                logger.info("Monkey Test Round " + i + "[Done]");
-            }
-        } catch (WebDriverException e) {
-            e.printStackTrace();
-            logger.info("Monkey Test Exit with Error, Quit the Driver. ");
-            quitMobileAppiumDriver(deviceInfo, logger);
-        }
     }
 
     public boolean runAppiumT2CTest(DeviceInfo deviceInfo, File jsonFile, Logger reportLogger) {

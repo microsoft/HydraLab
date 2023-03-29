@@ -61,4 +61,6 @@ dependencies {
 
     implementation group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.5.2'
 
+    implementation 'io.appium:java-client:8.0.0'
+    implementation 'org.seleniumhq.selenium:selenium-java:4.1.4'
 }

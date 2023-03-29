@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
-import com.microsoft.hydralab.common.management.device.TestDevice;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
@@ -193,7 +193,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_FAILURE, description);
     }
 
-    public void testTearDown(TestDevice testDevice, Logger log) {
+    public void testTearDown(TestRunDevice testRunDevice, Logger log) {
         ITestRun testRun = getTestRun();
 
         List<ScheduledFuture<?>> timerList = inspectPerformanceTimerMap.get(testRun.getId());

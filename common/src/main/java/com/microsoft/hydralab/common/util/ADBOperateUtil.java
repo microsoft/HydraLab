@@ -176,7 +176,7 @@ public class ADBOperateUtil {
         return instanceLogger;
     }
 
-    public boolean installApp(DeviceInfo deviceInfo, String packagePath, boolean reinstall, String extArgs, Logger logger) throws InstallException {
+    public boolean installApp(DeviceInfo deviceInfo, String packagePath, boolean reinstall, String extArgs, Logger logger) {
         IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
         Assert.notNull(deviceByInfo, "No such device: " + deviceInfo);
         getNotNullLogger(logger).info("adb -H {} -s {} shell pm install {} {} {}", adbServerHost, deviceInfo.getSerialNum(),
@@ -201,7 +201,7 @@ public class ADBOperateUtil {
         return installAppWithADB(deviceInfo, packagePath, reinstall, extArgs, logger);
     }
 
-    private boolean installAppWithADB(DeviceInfo deviceInfo, String packagePath, boolean reinstall, String extArgs, Logger logger) throws InstallException {
+    private boolean installAppWithADB(DeviceInfo deviceInfo, String packagePath, boolean reinstall, String extArgs, Logger logger) {
         boolean success = false;
         Process process = null;
         try {
@@ -218,7 +218,7 @@ public class ADBOperateUtil {
             }
         } catch (IOException | InterruptedException e) {
             getNotNullLogger(logger).error("installAppWithADB error: {}", e.getMessage());
-            throw new InstallException(e);
+            throw new HydraLabRuntimeException("installAppWithADB error: " + e.getMessage(), e);
         } finally {
             if (process != null) {
                 process.destroy();
@@ -228,10 +228,15 @@ public class ADBOperateUtil {
     }
 
 
-    public boolean uninstallApp(DeviceInfo deviceInfo, String packageName, Logger logger) throws InstallException {
+    public boolean uninstallApp(DeviceInfo deviceInfo, String packageName, Logger logger) {
         IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
         Assert.notNull(deviceByInfo, "No such device: " + deviceInfo);
-        String msg = deviceByInfo.uninstallPackage(packageName);
+        String msg = null;
+        try {
+            msg = deviceByInfo.uninstallPackage(packageName);
+        } catch (InstallException e) {
+            throw new HydraLabRuntimeException("uninstallApp error: " + e.getMessage(), e);
+        }
         getNotNullLogger(logger).info("adb -H {} -s {} shell pm uninstall {}", adbServerHost, deviceInfo.getSerialNum(), packageName);
         if (msg != null) {
             getNotNullLogger(logger).error("uninstall error, msg: {}", msg);

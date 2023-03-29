@@ -5,13 +5,14 @@ package com.microsoft.hydralab.agent.runner.espresso;
 
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.testrunner.InstrumentationResultParser;
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -28,14 +29,14 @@ public class EspressoRunner extends TestRunner {
     final ADBOperateUtil adbOperateUtil;
 
     public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
-                          PerformanceTestManagementService performanceTestManagementService,
+                          TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService,
                           ADBOperateUtil adbOperateUtil) {
-        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 
     @Override
-    protected void run(TestDevice testDevice, TestTask testTask, TestRun testRun) throws Exception {
+    protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
         InstrumentationResultParser instrumentationResultParser = null;
         Logger reportLogger = testRun.getLogger();
 
@@ -44,8 +45,8 @@ public class EspressoRunner extends TestRunner {
             reportLogger.info("Start xml report: parse listener");
             EspressoTestInfoProcessorListener listener =
                     new EspressoTestInfoProcessorListener(agentManagementService,
-                            adbOperateUtil, testDevice, testRun, testTask.getPkgName(),
-                            performanceTestManagementService);
+                            adbOperateUtil, testRunDevice, testRun, testTask.getPkgName(),
+                            testRunDeviceOrchestrator, performanceTestManagementService);
             instrumentationResultParser =
                     new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
                         @Override
@@ -60,7 +61,7 @@ public class EspressoRunner extends TestRunner {
             listener.startRecording(testTask.getTimeOutSecond());
             String command = buildCommand(testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(),
                     testTask.getTestScope(), testTask.getInstrumentationArgs());
-            String result = startInstrument(testDevice.getDeviceInfo(), reportLogger,
+            String result = startInstrument(testRunDevice.getDeviceInfo(), reportLogger,
                     instrumentationResultParser, testTask.getTimeOutSecond(), command);
             if (Const.TaskResult.ERROR_DEVICE_OFFLINE.equals(result)) {
                 testTaskRunCallback.onDeviceOffline(testTask);

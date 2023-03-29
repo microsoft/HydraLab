@@ -6,7 +6,7 @@ package com.microsoft.hydralab.agent.runner;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.TestDevice;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
@@ -37,7 +37,7 @@ public class ActionExecutor {
                     "changeSystemSetting", "execCommandOnDevice", "execCommandOnAgent", "pushFileToDevice",
                     "pullFileFromDevice");
 
-    public List<Exception> doActions(@NotNull TestDevice testDevice,
+    public List<Exception> doActions(@NotNull TestRunDevice testRunDevice,
                                      @NotNull Logger logger,
                                      @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
         List<Exception> exceptions = new ArrayList<>();
@@ -49,7 +49,7 @@ public class ActionExecutor {
         logger.info("Start to execute actions! Current timing is {}, action size is {}", when, todoActions.size());
         for (DeviceAction deviceAction : todoActions) {
             try {
-                doAction(testDevice, logger, deviceAction);
+                doAction(testRunDevice, logger, deviceAction);
             } catch (InvocationTargetException | IllegalAccessException | HydraLabRuntimeException e) {
                 exceptions.add(e);
                 logger.error("Execute {} action: fail", deviceAction.getMethod(), e);
@@ -60,14 +60,14 @@ public class ActionExecutor {
         return exceptions;
     }
 
-    public void doAction(@NotNull TestDevice testDevice,
+    public void doAction(@NotNull TestRunDevice testRunDevice,
                          @NotNull Logger logger,
                          @NotNull DeviceAction deviceAction)
             throws InvocationTargetException, IllegalAccessException {
         if (!actionTypes.contains(deviceAction.getMethod())) {
             return;
         }
-        DeviceInfo deviceInfo = testDevice.getDeviceInfo();
+        DeviceInfo deviceInfo = testRunDevice.getDeviceInfo();
         TestDeviceManager testDeviceManager = deviceInfo.getTestDeviceManager();
         logger.info("Start to analysis action type! Current action is {}", deviceAction.getMethod());
         Method method = Arrays.stream(testDeviceManager.getClass().getMethods())

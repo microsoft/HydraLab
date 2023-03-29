@@ -1,14 +1,14 @@
 package com.microsoft.hydralab.agent.runner.xctest;
 
-import cn.hutool.core.img.gif.AnimatedGifEncoder;
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.device.TestDevice;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ShellUtils;
@@ -25,51 +25,46 @@ import java.util.Map;
 
 public class XCTestRunner extends TestRunner {
     private static String folderPath = "";
-    private File gifFile;
-    private final AnimatedGifEncoder gitEncoder = new AnimatedGifEncoder();
-    private Logger reportLogger;
+    private Logger logger;
     private long recordingStartTimeMillis;
 
     public XCTestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
-                        PerformanceTestManagementService performanceTestManagementService) {
-        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
+                        TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService) {
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @Override
-    protected void run(TestDevice testDevice, TestTask testTask, TestRun testRun) throws Exception {
-        initializeTest(testDevice, testTask, testRun);
-        unzipXctestFolder(testTask.getAppFile(), testRun, reportLogger);
-        List<String> result = runXctest(testDevice.getDeviceInfo(), reportLogger, testTask, testRun);
+    protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
+        initializeTest(testRunDevice, testTask, testRun);
+        unzipXctestFolder(testTask.getAppFile(), testRun, logger);
+        List<String> result = runXctest(testRunDevice.getDeviceInfo(), logger, testTask, testRun);
         analysisXctestResult(result, testRun);
         FileUtil.deleteFile(new File(folderPath));
-        finishTest(testDevice, testRun);
+        finishTest(testRunDevice, testRun);
     }
 
-    private void initializeTest(TestDevice testDevice, TestTask testTask, TestRun testRun) {
-        reportLogger = testRun.getLogger();
-        testDevice.startScreenRecorder(testRun.getResultFolder(), testTask.getTimeOutSecond(), reportLogger);
-        testDevice.startLogCollector(testTask.getPkgName(), testRun, reportLogger);
+    private void initializeTest(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
+        logger = testRun.getLogger();
+        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), testTask.getTimeOutSecond(), logger);
+        testRunDeviceOrchestrator.startLogCollector(testRunDevice, testTask.getPkgName(), testRun, logger);
+        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
+        testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
         recordingStartTimeMillis = System.currentTimeMillis();
         testRun.addNewTimeTag("Initializing", 0);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
-        reportLogger.info("Start gif frames collection");
-        gifFile = new File(testRun.getResultFolder(), testTask.getPkgName() + ".gif");
-        gitEncoder.start(gifFile.getAbsolutePath());
-        gitEncoder.setDelay(1000);
-        gitEncoder.setRepeat(0);
     }
 
     @Override
-    protected void reInstallApp(TestDevice testDevice, TestTask testTask, Logger reportLogger) {
+    protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger logger) {
     }
 
-    private void unzipXctestFolder(File zipFile, TestRun testRun, Logger reportLogger) {
-        reportLogger.info("start unzipping file");
+    private void unzipXctestFolder(File zipFile, TestRun testRun, Logger logger) {
+        logger.info("start unzipping file");
         folderPath = testRun.getResultFolder().getAbsolutePath() + "/"
                 + Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME + "/";
 
         String command = String.format("unzip -d %s %s", folderPath, zipFile.getAbsolutePath());
-        ShellUtils.execLocalCommand(command, reportLogger);
+        ShellUtils.execLocalCommand(command, logger);
     }
 
     private ArrayList<String> runXctest(DeviceInfo deviceInfo, Logger logger,
@@ -160,17 +155,14 @@ public class XCTestRunner extends TestRunner {
         testRun.setTotalCount(totalCases);
     }
 
-    private void finishTest(TestDevice testDevice, TestRun testRun) {
+    private void finishTest(TestRunDevice testRunDevice, TestRun testRun) {
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
-        testRun.setTestXmlReportPath(
-                agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-        if (gifFile.exists() && gifFile.length() > 0) {
-            testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
-        }
-        gitEncoder.finish();
-        testDevice.stopScreenRecorder();
-        testDevice.stopLogCollector();
+        testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+        testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(testRunDevice.getGifFile()));
+        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }
 }
