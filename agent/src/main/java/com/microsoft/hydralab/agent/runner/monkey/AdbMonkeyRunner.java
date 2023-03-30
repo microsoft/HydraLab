@@ -142,7 +142,7 @@ public class AdbMonkeyRunner extends TestRunner {
         try {
             String command = String.format(commFormat, pkgName, maxStepCount);
             // make sure pass is not printed
-            logger.info(">> adb -s {} shell {}", testRunDeviceOrchestrator.getSerialNum(testRunDevice), LogUtils.scrubSensitiveArgs(command));
+            logger.info(">> adb -s {} shell {}", testRunDevice.getDeviceInfo().getSerialNum(), LogUtils.scrubSensitiveArgs(command));
             adbOperateUtil.executeShellCommandOnDevice(testRunDevice.getDeviceInfo(), command,
                     new MultiLineNoCancelLoggingReceiver(logger), -1, -1);
             checkTime = System.currentTimeMillis() - recordingStartTimeMillis;

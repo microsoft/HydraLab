@@ -57,7 +57,7 @@ public abstract class TestRunner {
             checkTestTaskCancel(testTask);
             runByFutureTask(testRunDevice, testTask, testRun);
         } catch (Exception e) {
-            testRun.getLogger().error(testRunDeviceOrchestrator.getSerialNum(testRunDevice) + ": " + e.getMessage(), e);
+            testRun.getLogger().error(testRunDevice.getDeviceInfo().getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(testRun, e);
         } finally {
             tearDown(testRunDevice, testTask, testRun);
@@ -105,8 +105,8 @@ public abstract class TestRunner {
     }
 
     protected TestRun createTestRun(TestRunDevice testRunDevice, TestTask testTask, Logger parentLogger) {
-        TestRun testRun = new TestRun(testRunDeviceOrchestrator.getSerialNum(testRunDevice), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
-        File testRunResultFolder = new File(testTask.getResourceDir(), testRunDeviceOrchestrator.getSerialNum(testRunDevice));
+        TestRun testRun = new TestRun(testRunDevice.getDeviceInfo().getSerialNum(), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
+        File testRunResultFolder = new File(testTask.getResourceDir(), testRunDevice.getDeviceInfo().getSerialNum());
         parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
         if (!testRunResultFolder.exists()) {
             if (!testRunResultFolder.mkdirs()) {

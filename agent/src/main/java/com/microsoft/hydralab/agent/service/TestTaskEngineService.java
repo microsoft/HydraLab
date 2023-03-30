@@ -198,7 +198,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     @Override
     public void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result) {
-        log.info("onOneDeviceComplete: {}", testRunDeviceOrchestrator.getSerialNum(testRunDevice));
+        log.info("onOneDeviceComplete: {}", testRunDevice.getDeviceInfo().getSerialNum());
         testRunDeviceOrchestrator.finishTask(testRunDevice);
         File deviceTestResultFolder = result.getResultFolder();
 

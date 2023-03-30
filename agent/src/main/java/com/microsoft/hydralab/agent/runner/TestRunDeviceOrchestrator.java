@@ -165,10 +165,6 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
-    public String getSerialNum(TestRunDevice testRunDevice) {
-        return testRunDevice.getDeviceInfo().getSerialNum();
-    }
-
     public void killAll(TestRunDevice testRunDevice) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.killAll(testRunDevice1));
