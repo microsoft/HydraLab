@@ -1,12 +1,14 @@
 package com.microsoft.hydralab.performance.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.microsoft.hydralab.performance.IBaselineMetrics;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 
 @Data
-public class IOSEnergyGaugeInfo implements Serializable {
+public class IOSEnergyGaugeInfo implements Serializable, IBaselineMetrics {
     private String appPackageName;
     private long timeStamp;
     private String description;
@@ -61,4 +63,14 @@ public class IOSEnergyGaugeInfo implements Serializable {
     private float locationOverhead;
     @JSONField(name = "energy.thermalstate.overhead")
     private float thermalStateOverhead;
+
+    @Override
+    public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
+        return null;
+    }
+
+    @Override
+    public SummaryType getSummaryType() {
+        return null;
+    }
 }

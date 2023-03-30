@@ -28,8 +28,8 @@ public class AndroidBatteryInfoInspector implements PerformanceInspector {
         File rawResultFile = new File(rawResultFolder,
                 String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), performanceInspection.appId, TimeUtils.getTimestampForFilename()));
 
-        ShellUtils.execLocalCommandWithRedirect(String.format("adb -s %s shell dumpsys batterystats %s",
-                performanceInspection.deviceIdentifier, performanceInspection.appId), rawResultFile, false, classLogger);
+        ShellUtils.execLocalCommandWithResult(String.format("adb -s %s shell dumpsys batterystats %s | out-file %s -encoding utf8",
+                performanceInspection.deviceIdentifier, performanceInspection.appId, rawResultFile.getAbsolutePath()), classLogger);
         return new PerformanceInspectionResult(rawResultFile, performanceInspection);
     }
 

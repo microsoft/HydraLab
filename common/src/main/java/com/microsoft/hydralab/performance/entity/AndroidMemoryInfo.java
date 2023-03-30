@@ -1,11 +1,13 @@
 package com.microsoft.hydralab.performance.entity;
 
+import com.microsoft.hydralab.performance.IBaselineMetrics;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 
 @Data
-public class AndroidMemoryInfo implements Serializable {
+public class AndroidMemoryInfo implements Serializable, IBaselineMetrics {
     private String appPackageName;
     private long timeStamp;
     private String description;
@@ -44,4 +46,19 @@ public class AndroidMemoryInfo implements Serializable {
     private long totalRss;
     private long totalSwapPss;
 
+    @Override
+    public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
+        LinkedHashMap<String, Double> baselineMap = new LinkedHashMap<>();
+        baselineMap.put("totalPss", (double) totalPss);
+        baselineMap.put("javaHeapPss", (double) javaHeapPss);
+        baselineMap.put("nativeHeapPss", (double) nativeHeapPss);
+        baselineMap.put("graphicsPss", (double) graphicsPss);
+        baselineMap.put("codePss", (double) codePss);
+        return baselineMap;
+    }
+
+    @Override
+    public SummaryType getSummaryType() {
+        return SummaryType.AVERAGE;
+    }
 }

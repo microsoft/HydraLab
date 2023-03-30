@@ -163,7 +163,11 @@ public abstract class TestRunner {
     protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
         // stop performance test
         if (performanceTestManagementService != null) {
-            performanceTestManagementService.testTearDown(deviceInfo, testTask, testRun, log);
+            try {
+                performanceTestManagementService.testTearDown(deviceInfo, testTask, testRun, log);
+            } catch (Exception e) {
+                testRun.getLogger().error("Error in performance test tearDown", e);
+            }
         }
 
         //execute actions

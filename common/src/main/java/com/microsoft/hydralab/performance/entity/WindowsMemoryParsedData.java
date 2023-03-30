@@ -3,17 +3,28 @@
 
 package com.microsoft.hydralab.performance.entity;
 
+import com.microsoft.hydralab.performance.IBaselineMetrics;
 import lombok.Data;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Data
-public class WindowsMemoryParsedData {
+public class WindowsMemoryParsedData implements IBaselineMetrics {
+
+    @Override
+    public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
+        return null;
+    }
+
+    @Override
+    public SummaryType getSummaryType() {
+        return null;
+    }
 
     @Data
-    public static class WindowsMemoryMetrics
-    {
+    public static class WindowsMemoryMetrics {
         private long nonpagedSystemMemorySize64;
         private long pagedMemorySize64;
         private long pagedSystemMemorySize64;

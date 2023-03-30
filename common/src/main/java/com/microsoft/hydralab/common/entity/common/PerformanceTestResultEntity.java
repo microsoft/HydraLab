@@ -3,14 +3,18 @@
 
 package com.microsoft.hydralab.common.entity.common;
 
+import com.microsoft.hydralab.performance.IBaselineMetrics;
+import com.microsoft.hydralab.performance.PerformanceInspector;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
-import com.microsoft.hydralab.performance.entity.IBaselineMetrics;
 import lombok.Data;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.sql.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -20,12 +24,13 @@ import java.util.UUID;
 @Data
 @Entity
 public class PerformanceTestResultEntity implements Serializable {
+    private static final int MAX_METRICS_NUM = 5;
     @Id
     private String id = UUID.randomUUID().toString();
     private String testRunId;
     private String testTaskId;
     private Date date = new Date(System.currentTimeMillis());
-    private String inspectorType;
+    private PerformanceInspector.PerformanceInspectorType inspectorType;
     private PerformanceResultParser.PerformanceResultParserType parserType;
     private String testSuite;
     private String runningType;
@@ -33,25 +38,50 @@ public class PerformanceTestResultEntity implements Serializable {
     private String deviceId;
     private boolean success;
     private IBaselineMetrics.SummaryType summaryType;
-    private double metric1;
-    private double metric2;
-    private double metric3;
-    private double metric4;
-    private double metric5;
+    private String metric1Key;
+    private double metric1Value = -1;
+    private String metric2Key;
+    private double metric2Value = -1;
+    private String metric3Key;
+    private double metric3Value = -1;
+    private String metric4Key;
+    private double metric4Value = -1;
+    private String metric5Key;
+    private double metric5Value = -1;
 
-    public PerformanceTestResultEntity(String testRunId, String testTaskId, String inspectorType, String parserType, String summaryJSON, String testSuite,
-                                       String runningType, String appId, String deviceId, boolean success) {
+    public PerformanceTestResultEntity(String testRunId, String testTaskId, PerformanceInspector.PerformanceInspectorType inspectorType,
+                                       PerformanceResultParser.PerformanceResultParserType parserType, IBaselineMetrics baselineMetrics, String testSuite,
+                                       String runningType, String appId, String deviceId, boolean success) throws NoSuchFieldException, IllegalAccessException {
 
         this.testRunId = testRunId;
         this.testTaskId = testTaskId;
         this.inspectorType = inspectorType;
+        this.parserType = parserType;
         this.testSuite = testSuite;
         this.runningType = runningType;
         this.appId = appId;
         this.deviceId = deviceId;
         this.success = success;
+        this.summaryType = baselineMetrics.getSummaryType();
+        initBaselineMetrics(baselineMetrics.getBaselineMetricsKeyValue());
     }
 
     public PerformanceTestResultEntity() {
+    }
+
+    private void initBaselineMetrics(LinkedHashMap<String, Double> baselineMetrics) throws NoSuchFieldException, IllegalAccessException {
+        Class clazz = this.getClass();
+        int i = 1;
+        for (Map.Entry<String, Double> entry : baselineMetrics.entrySet()) {
+            if (i > Math.min(baselineMetrics.size(), MAX_METRICS_NUM)) {
+                break;
+            }
+
+            Field metricKeyField = clazz.getDeclaredField("metric" + i + "Key");
+            Field metricValueField = clazz.getDeclaredField("metric" + i + "Value");
+            metricKeyField.set(this, entry.getKey());
+            metricValueField.set(this, entry.getValue());
+            i++;
+        }
     }
 }

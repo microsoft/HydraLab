@@ -17,15 +17,15 @@ public class PerformanceTestResult {
     @SuppressWarnings("visibilitymodifier")
     public PerformanceResultParser.PerformanceResultParserType parserType;
     @SuppressWarnings("visibilitymodifier")
-    private Object resultSummary;
+    private IBaselineMetrics resultSummary;
 
     //TODO: overwrite equals, toString, and hashcode methods
 
-    public Object getResultSummary() {
+    public IBaselineMetrics getResultSummary() {
         return resultSummary;
     }
 
-    public void setResultSummary(Object resultSummary) {
+    public void setResultSummary(IBaselineMetrics resultSummary) {
         //TODO: restrict the usage
         this.resultSummary = resultSummary;
     }

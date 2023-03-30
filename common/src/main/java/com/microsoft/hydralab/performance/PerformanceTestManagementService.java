@@ -12,8 +12,18 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
-import com.microsoft.hydralab.performance.inspectors.*;
-import com.microsoft.hydralab.performance.parsers.*;
+import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
+import com.microsoft.hydralab.performance.inspectors.AndroidMemoryInfoInspector;
+import com.microsoft.hydralab.performance.inspectors.IOSEnergyGaugeInspector;
+import com.microsoft.hydralab.performance.inspectors.IOSMemoryPerfInspector;
+import com.microsoft.hydralab.performance.inspectors.WindowsBatteryInspector;
+import com.microsoft.hydralab.performance.inspectors.WindowsMemoryInspector;
+import com.microsoft.hydralab.performance.parsers.AndroidBatteryInfoResultParser;
+import com.microsoft.hydralab.performance.parsers.AndroidMemoryInfoResultParser;
+import com.microsoft.hydralab.performance.parsers.IOSEnergyGaugeResultParser;
+import com.microsoft.hydralab.performance.parsers.IOSMemoryPerfResultParser;
+import com.microsoft.hydralab.performance.parsers.WindowsBatteryResultParser;
+import com.microsoft.hydralab.performance.parsers.WindowsMemoryResultParser;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.util.Assert;
@@ -29,16 +39,21 @@ import java.util.concurrent.ScheduledFuture;
 
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_ENERGY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_BATTERY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_ENERGY;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_BATTERY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_MEMORY;
 
 public class PerformanceTestManagementService implements IPerformanceInspectionService, PerformanceTestListener {
     private static final Map<PerformanceInspector.PerformanceInspectorType, PerformanceResultParser.PerformanceResultParserType> inspectorParserTypeMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, PARSER_ANDROID_BATTERY_INFO,
+            INSPECTOR_ANDROID_MEMORY_INFO, PARSER_ANDROID_MEMORY_INFO,
             INSPECTOR_WIN_MEMORY, PARSER_WIN_MEMORY,
             INSPECTOR_WIN_BATTERY, PARSER_WIN_BATTERY,
             INSPECTOR_IOS_ENERGY, PARSER_IOS_ENERGY,
@@ -271,9 +286,9 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                     PerformanceTestResultEntity testResultEntity = new PerformanceTestResultEntity(
                             testRun.getId(),
                             testTask.getId(),
-                            testResult.inspectorType.name(),
-                            testResult.parserType.name(),
-                            objectMapper.writeValueAsString(testResult.getResultSummary()),
+                            testResult.inspectorType,
+                            testResult.parserType,
+                            testResult.getResultSummary(),
                             testTask.getTestSuite(),
                             testTask.getRunningType(),
                             inspection.appId,
@@ -281,7 +296,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                             testRun.isSuccess());
                     testRun.getPerformanceTestResultEntities().add(testResultEntity);
                 }
-            } catch (JsonProcessingException e) {
+            } catch (JsonProcessingException | NoSuchFieldException | IllegalAccessException e) {
                 log.error("Failed to save performance test results", e);
             }
         }
