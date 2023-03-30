@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, {PureComponent} from 'react'
+import React, {PureComponent, useEffect} from 'react'
 import { Link } from "react-router-dom";
 import cssObj from '@/css/style.scss'
 import 'bootstrap/dist/css/bootstrap.css'
@@ -12,6 +12,14 @@ import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Button from "@mui/material/Button";
 import axios from "@/axios";
 import PerfTestDashboard from './PerfTestDashboard';
+import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
+import Graph from "graphology";
+import {parse} from "graphology-gexf";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import {EdgeShapes, Filter, LoadGEXF, NodeShapes, Sigma} from "react-sigma";
+import Grid from "@material-ui/core/Grid";
+import Stack from "@mui/material/Stack";
 
 const COLORS = ['#00C49F', '#FF8042'];
 const badgeList = ['primary', 'info', 'secondary', 'light'];
@@ -44,7 +52,10 @@ const PieCustomizedLabel = ({cx, cy, midAngle, innerRadius, outerRadius, percent
 export default class TestReportView extends React.Component {
     state = {
         task: this.props.testTask,
-        history: null
+        history: null,
+        overNode: null,
+        clickNode: null,
+        selectedPath: []
     };
 
 
@@ -130,6 +141,8 @@ export default class TestReportView extends React.Component {
             chunkedSuccDeviceResult = _.chunk(dtrSuccFailMap['true'], 6)
         }
 
+        let graph = parse(Graph, String(this.state.gexf))
+
         return <div id='test_report'>
             <div id='test_report_head'>
                 <table className='table table-borderless'>
@@ -194,7 +207,7 @@ export default class TestReportView extends React.Component {
                             {task.pipelineLink ?
                                     <p className='mt-3'><a href={task.pipelineLink} rel="noopener noreferrer">Link to PipeLine</a></p> : null}
                         </td>
-                        <td>
+                        {task.runningType !== 'SMART' ? <td>
                             <h4>Overall success rate {task.overallSuccessRate} <span
                                 className='badge badge-primary ml-2'
                                 style={{fontSize: '1rem'}}>{task.totalTestCount - task.totalFailCount}/{task.totalTestCount}</span>
@@ -247,9 +260,8 @@ export default class TestReportView extends React.Component {
                                 </tr>
                                 </tbody>
                             </table>
-                        </td>
+                        </td>: null}
                     </tr>
-
                     </tbody>
                 </table>
             </div>
@@ -396,7 +408,7 @@ export default class TestReportView extends React.Component {
                 </div> : null}
             </div>
             <div id='test_report_content_2'>
-                {chunkedSuccDeviceResult ? <div>
+                {chunkedSuccDeviceResult && task.runningType !== 'SMART' ? <div>
                     <table className='table table-borderless'>
                         <thead className="thead-info">
                         <tr className="table-info">
@@ -470,7 +482,49 @@ export default class TestReportView extends React.Component {
                         </tbody>
                     </table>
                 </div> : null}
-            </div> 
+            </div>
+            <div id='test_report_content_4>'>
+                {task.runningType === 'SMART' ? <div>
+                    <table className='table table-borderless'>
+                        <thead className="thead-info">
+                        <tr className="table-info">
+                            <th style={{backgroundColor: '#2F5496', color: 'white'}}>
+                                Route Map:
+                            </th>
+                        </tr>
+                        </thead>
+                    </table>
+                    <Container maxWidth={false}>
+                        <Stack direction="row">
+                            <Box style={{width: '200px', height: '400px'}}>
+                                {this.state.overNode ? <img style={{width: '180px', height: '400px'}} src={`route_map/${this.state.overNode}/${this.state.overNode}-0.jpg`} alt={this.state.overNode}/> : null}
+                            </Box>
+                            <Sigma renderer="canvas" style={{width: '1000px', height: '400px'}}
+                                   onOverNode={(e) => {this.setState({ overNode: e.data.node.label })}}
+                                   onClickNode={e => {
+                                       this.setState({ selectedPath: this.state.selectedPath.concat([e.data.node.label]), clickNode: e.data.node.label })
+                                       console.log(this.state.selectedPath)
+                                   }}
+                            >
+                                <EdgeShapes default="arrow"/>
+                                <NodeShapes default="def"/>
+                                <LoadGEXF path={"route_map/directed_acyclic_graph.gexf"} />
+                                <Filter nodesBy={(node) => {
+                                    if (this.state.clickNode) {
+                                        return this.state.clickNode === node || graph.outNeighbors(this.state.clickNode).includes(node.label)
+                                    }
+                                    return true
+                                }}/>
+                            </Sigma>
+                        </Stack>
+                        <Stack direction="row">
+                            <h5 className='mt-1' style={{ width: '1000px' }}>Selected Path: [ {this.state.selectedPath.join(' --> ')} ]</h5>
+                            <Button variant="outlined" color="info" onClick={() => {this.setState({ selectedPath: [], clickNode: null })}}>Clear</Button>
+                            <Button variant="outlined" color="info" onClick={() => {}}>Generate</Button>
+                        </Stack>
+                    </Container>
+                </div> : null}
+            </div>
         </div>
     }
 
@@ -532,11 +586,22 @@ export default class TestReportView extends React.Component {
         }).catch(this.snackBarError)
     }
 
+    loadGEXF() {
+        fetch("route_map/directed_acyclic_graph.gexf")
+            .then((res) => res.text())
+            .then((gexf) => {
+                this.setState({
+                    gexf: gexf
+                })
+            })
+    }
+
     componentDidMount() {
         console.log("componentDidMount")
         console.log(this.props.testTask)
         this.queryTaskHistory()
         console.log(this.state.history)
+        this.loadGEXF()
     }
 
 }
