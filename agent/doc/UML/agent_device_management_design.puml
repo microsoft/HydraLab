@@ -26,7 +26,11 @@ class TestTaskEngineService{
 }
 
 
-class DeviceInfo
+class DeviceInfo{
+    Map<Thread, String> currentCommand
+    Map<Thread, String> currentProcess
+    Map<Thread, TestTask> currentTask
+}
 
 class TestRunDeviceOrchestrator{
     void setup(TestRunDevice, Logger);
@@ -40,7 +44,7 @@ class TestRunDeviceOrchestrator{
     void resetPackage(TestRunDevice, String packageName, Logger);
     void startScreenRecorder(TestRunDevice, File folder, int maxTimeInSecond, Logger);
     void stopScreenRecorder(TestRunDevice);
-    void startLogCollector(TestRunDevice, String pkgName, @NotNull TestRun testRun, Logger);
+    void startLogCollector(TestRunDevice, String pkgName, TestRun testRun, Logger);
     void stopLogCollector(TestRunDevice);
     void setRunningTestName(TestRunDevice, String runningTestName);
     void addCurrentTask(TestRunDevice, TestTask);
@@ -57,9 +61,6 @@ class TestRunDevice{
     WebDriver appiumDriver;
     ScreenRecorder screenRecorder;
     LogCollector logCollector;
-    Map<Thread, String> currentCommand
-    Map<Thread, String> currentProcess
-    Map<Thread, TestTask> currentTask
 }
 
 class TestRunDeviceCombo extends TestRunDevice{
@@ -74,11 +75,42 @@ class TestRunner{
     runTest(TestTask,TestRunDevice)
 }
 
-interface DeviceDriver
-class DeviceDriverManager implements IDeviceDriver{
-    Map<DeviceType, IDeviceDriver> deviceDrivers
+interface DeviceDriver{
+      File getScreenShot(DeviceInfo deviceInfo,  Logger logger);
+      File getScreenShotWithStrategy(DeviceInfo deviceInfo,  Logger logger, AgentUser.BatteryStrategy batteryStrategy);
+      void wakeUpDevice(DeviceInfo deviceInfo,  Logger logger);
+      void backToHome(DeviceInfo deviceInfo,  Logger logger);
+      void grantPermission(DeviceInfo deviceInfo, String packageName,String permissionName,  Logger logger);
+      void addToBatteryWhiteList(DeviceInfo deviceInfo, String packageName,Logger logger);
+      boolean installApp(DeviceInfo deviceInfo, String packagePath,  Logger logger);
+      boolean uninstallApp(DeviceInfo deviceInfo, String packageName,  Logger logger);
+      void resetPackage(DeviceInfo deviceInfo, String packageName,Logger logger);
+      void pushFileToDevice(DeviceInfo deviceInfo, String pathOnAgent,String pathOnDevice,  Logger logger) throws Exception;
+      void pullFileFromDevice(DeviceInfo deviceInfo, String pathOnDevice,Logger logger) throws Exception;
+      ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder,Logger logger);
+      boolean grantAllTaskNeededPermissions(DeviceInfo deviceInfo, TestTask task,Logger logger);
+      boolean grantAllPackageNeededPermissions(DeviceInfo deviceInfo, File packageFile,String targetPackage,boolean allowCustomizedPermissions,  Logger logger);
+      Logger getDeviceLogger(DeviceInfo device);
+      void updateAllDeviceInfo();
+      LogCollector getLogCollector(DeviceInfo deviceInfo, String pkgName,TestRun testRun, Logger logger);
+      void setProperty(DeviceInfo deviceInfo, String property, String val,Logger logger);
+      boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName,String defaultActivity,  Logger logger);
+      boolean isAppInstalled(DeviceInfo deviceInfo, String packageName,Logger logger);
+      boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo,String recordPackageName,Logger logger);
+      void testDeviceSetup(DeviceInfo deviceInfo,  Logger logger);
+      void removeFileInDevice(DeviceInfo deviceInfo, String pathOnDevice, Logger logger);
+      void testDeviceUnset(DeviceInfo deviceInfo, Logger logger);
+      WebDriver getAppiumDriver(DeviceInfo deviceInfo, Logger logger);
+      void quitAppiumDriver(DeviceInfo deviceInfo, Logger logger);
+      void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
+      void execCommandOnAgent(DeviceInfo deviceInfo, String command, Logger logger);
+      AppiumServerManager getAppiumServerManager();
+      void init();
 }
-abstract class AbstractDeviceDriver implements IDeviceDriver
+class DeviceDriverManager implements DeviceDriver{
+    Map<DeviceType, DeviceDriver> deviceDrivers
+}
+abstract class AbstractDeviceDriver implements DeviceDriver
 class AndroidDeviceDriver extends AbstractDeviceDriver
 class IOSDeviceDriver   extends AbstractDeviceDriver
 class WindowsDeviceDriver extends AbstractDeviceDriver
@@ -91,7 +123,10 @@ TestRunDeviceOrchestrator --> DeviceDriverManager
 
 TestTaskEngineService --> TestRunner
 
-IDeviceDriver -> DeviceInfo
+DeviceDriver -> DeviceInfo
+DeviceDriverManager *--> AndroidDeviceDriver
+DeviceDriverManager *--> IOSDeviceDriver
+DeviceDriverManager *--> WindowsDeviceDriver
 AndroidDeviceDriver *--> DeviceStatusListenerManager : notify
 IOSDeviceDriver *--> DeviceStatusListenerManager : notify
 WindowsDeviceDriver *--> DeviceStatusListenerManager : notify

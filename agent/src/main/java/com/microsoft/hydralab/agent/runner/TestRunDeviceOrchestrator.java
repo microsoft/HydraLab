@@ -58,7 +58,7 @@ public class TestRunDeviceOrchestrator {
 
     public boolean installApp(@NotNull TestRunDevice testRunDevice, @NotNull String packagePath, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            Boolean isInstalled = true;
+            boolean isInstalled = true;
             for (TestRunDevice testRunDevice1 : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
                 isInstalled = isInstalled && this.installApp(testRunDevice1, packagePath, logger);
             }
@@ -101,7 +101,12 @@ public class TestRunDeviceOrchestrator {
     public String stopScreenRecorder(@NotNull TestRunDevice testRunDevice, @NotNull File folder, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             List<String> videoFilePaths = new ArrayList<>();
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> videoFilePaths.add(this.stopScreenRecorder(testRunDevice1, folder, logger)));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
+                String path = this.stopScreenRecorder(testRunDevice1, folder, logger);
+                if (path != null && !path.isEmpty()) {
+                    videoFilePaths.add(path);
+                }
+            });
             return FFmpegConcatUtil.mergeVideosSideBySide(videoFilePaths, folder, logger).getAbsolutePath();
         } else {
             return testRunDevice.getScreenRecorder().finishRecording();
@@ -123,7 +128,7 @@ public class TestRunDeviceOrchestrator {
 
     public void stopLogCollector(@NotNull TestRunDevice testRunDevice) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.stopLogCollector(testRunDevice1));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(this::stopLogCollector);
         } else {
             testRunDevice.getLogCollector().stopAndAnalyse();
         }
@@ -141,9 +146,7 @@ public class TestRunDeviceOrchestrator {
 
     public void testDeviceUnset(@NotNull TestRunDevice testRunDevice, Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
-                this.testDeviceUnset(testRunDevice1, logger);
-            });
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.testDeviceUnset(testRunDevice1, logger));
         } else {
             testDeviceManager.testDeviceUnset(testRunDevice.getDeviceInfo(), logger);
         }
@@ -155,11 +158,11 @@ public class TestRunDeviceOrchestrator {
 
     public String getName(@NotNull TestRunDevice testRunDevice) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            String name = testRunDevice.getDeviceInfo().getName();
+            StringBuilder name = new StringBuilder(testRunDevice.getDeviceInfo().getName());
             for (TestRunDevice temp : ((TestRunDeviceCombo) testRunDevice).getPairedDevices()) {
-                name += "-" + temp.getDeviceInfo().getName();
+                name.append("-").append(temp.getDeviceInfo().getName());
             }
-            return name;
+            return name.toString();
         } else {
             return testRunDevice.getDeviceInfo().getName();
         }
@@ -167,19 +170,23 @@ public class TestRunDeviceOrchestrator {
 
     public void killAll(TestRunDevice testRunDevice) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.killAll(testRunDevice1));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(this::killAll);
         } else {
             testRunDevice.getDeviceInfo().killAll();
         }
     }
 
     public void addCurrentTask(@NotNull TestRunDevice testRunDevice, TestTask testTask) {
-        testRunDevice.addCurrentTask(testTask);
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.addCurrentTask(testRunDevice1, testTask));
+        } else {
+            testRunDevice.getDeviceInfo().addCurrentTask(testTask);
+        }
     }
 
     public void finishTask(@NotNull TestRunDevice testRunDevice) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.finishTask(testRunDevice1));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(this::finishTask);
         } else {
             testRunDevice.getDeviceInfo().finishTask();
         }
