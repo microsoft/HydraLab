@@ -23,8 +23,6 @@ public class HydraLabClientUtils {
     private static HydraLabAPIClient hydraLabAPIClient = new HydraLabAPIClient();
     private static final int waitStartSec = 30;
     private static final int minWaitFinishSec = 15;
-
-    private static boolean isTestRunningFailed = false;
     private static boolean isTestResultFailed = false;
 
     public static void switchClientInstance(HydraLabAPIClient client) {
@@ -336,16 +334,19 @@ public class HydraLabClientUtils {
         printlnf(testReportUrl);
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
 
-        displayFinalTestState();
+        displayFinalTestState(testConfig.enableFailingTask);
     }
 
     private static void markTestResultFail() {
         isTestResultFailed = true;
     }
 
-    private static void displayFinalTestState() {
+    private static void displayFinalTestState(boolean enableFailingTask) {
         if (isTestResultFailed) {
             printlnf("##[error]Final test state: fail.");
+            if (enableFailingTask) {
+                throw new RuntimeException("Test result failed, please check the output test result XML file.");
+            }
         } else {
             printlnf("Final test state: success.");
         }

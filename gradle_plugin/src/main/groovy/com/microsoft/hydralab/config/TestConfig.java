@@ -48,6 +48,7 @@ public class TestConfig {
     public int testRound = -1;
     public List<InspectionStrategy> inspectionStrategies = new ArrayList<>();
     public String inspectionStrategiesStr = "";
+    public boolean enableFailingTask = true;
 
     public void constructField(HashMap<String, Object> map) {
         Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");
@@ -100,6 +101,7 @@ public class TestConfig {
                 "\ttestRunArgs=" + testRunArgs + "\n" +
                 "\tmaxStepCount=" + maxStepCount + "\n" +
                 "\ttestRound=" + testRound + "\n" +
-                "\tinspectionStrategiesStr=" + inspectionStrategiesStr;
+                "\tinspectionStrategiesStr=" + inspectionStrategiesStr + "\n" +
+                "\tenableFailingTask=" + enableFailingTask;
     }
 }
