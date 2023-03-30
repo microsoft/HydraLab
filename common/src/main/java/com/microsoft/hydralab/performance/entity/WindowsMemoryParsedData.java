@@ -3,6 +3,7 @@
 
 package com.microsoft.hydralab.performance.entity;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.microsoft.hydralab.performance.IBaselineMetrics;
 import lombok.Data;
 
@@ -14,11 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WindowsMemoryParsedData implements IBaselineMetrics {
 
     @Override
+    @JSONField(serialize = false)
     public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
         return null;
     }
 
     @Override
+    @JSONField(serialize = false)
     public SummaryType getSummaryType() {
         return null;
     }

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance.entity;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.microsoft.hydralab.performance.IBaselineMetrics;
 import lombok.Data;
 
@@ -23,6 +24,7 @@ public class AndroidBatteryInfo implements Serializable, IBaselineMetrics {
     private String description;
 
     @Override
+    @JSONField(serialize = false)
     public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
         LinkedHashMap<String, Double> baselineMap = new LinkedHashMap<>();
         baselineMap.put("total", (double) total);
@@ -34,6 +36,7 @@ public class AndroidBatteryInfo implements Serializable, IBaselineMetrics {
     }
 
     @Override
+    @JSONField(serialize = false)
     public SummaryType getSummaryType() {
         return SummaryType.MAX;
     }

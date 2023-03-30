@@ -43,12 +43,15 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
         List<PerformanceInspectionResult> inspectionResults = performanceTestResult.performanceInspectionResults;
         double[] averageMemoryInfo = new double[MEM_INFO_LENGTH];
         Arrays.fill(averageMemoryInfo, 0.0);
-        for (int i = 0; i < inspectionResults.size(); i++) {
-            PerformanceInspectionResult inspectionResult = inspectionResults.get(i);
+        int validDataSize = 0;
+        for (PerformanceInspectionResult inspectionResult : inspectionResults) {
             File logFile = inspectionResult.rawResultFile;
             long[] memInfos = parseRawResultFile(logFile);
             inspectionResult.parsedData = buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, memInfos);
-            updateAverageMem(averageMemoryInfo, memInfos, i);
+            if (isValidMem(memInfos)) {
+                validDataSize++;
+                updateAverageMem(averageMemoryInfo, memInfos, validDataSize);
+            }
         }
 
         performanceTestResult.setResultSummary(buildAverageMemoryInfo(averageMemoryInfo, inspectionResults.get(0)));
@@ -57,9 +60,25 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
     }
 
     private void updateAverageMem(double[] averageMemoryInfo, long[] memInfoArray, int index) {
+        if (memInfoArray == null) {
+            return;
+        }
         for (int i = 0; i < MEM_INFO_LENGTH; i++) {
             averageMemoryInfo[i] = averageMemoryInfo[i] * index / (index + 1) + (double) memInfoArray[i] / (index + 1);
         }
+    }
+
+    private boolean isValidMem(long[] memInfo) {
+        if (memInfo == null) {
+            return false;
+        }
+
+        for (long i : memInfo) {
+            if (i != -1) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private AndroidMemoryInfo buildAverageMemoryInfo(double[] averageMemoryInfo, PerformanceInspectionResult inspectionResult) {

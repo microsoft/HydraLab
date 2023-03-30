@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.performance.entity;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.microsoft.hydralab.performance.IBaselineMetrics;
 import lombok.Data;
 
@@ -47,6 +48,7 @@ public class AndroidMemoryInfo implements Serializable, IBaselineMetrics {
     private long totalSwapPss;
 
     @Override
+    @JSONField(serialize = false)
     public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
         LinkedHashMap<String, Double> baselineMap = new LinkedHashMap<>();
         baselineMap.put("totalPss", (double) totalPss);
@@ -58,6 +60,7 @@ public class AndroidMemoryInfo implements Serializable, IBaselineMetrics {
     }
 
     @Override
+    @JSONField(serialize = false)
     public SummaryType getSummaryType() {
         return SummaryType.AVERAGE;
     }

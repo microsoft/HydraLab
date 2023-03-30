@@ -65,11 +65,13 @@ public class IOSEnergyGaugeInfo implements Serializable, IBaselineMetrics {
     private float thermalStateOverhead;
 
     @Override
+    @JSONField(serialize = false)
     public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
         return null;
     }
 
     @Override
+    @JSONField(serialize = false)
     public SummaryType getSummaryType() {
         return null;
     }

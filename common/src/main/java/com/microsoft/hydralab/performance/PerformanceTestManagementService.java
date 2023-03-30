@@ -2,8 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSON;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -270,8 +269,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private void savePerformanceTestResults(List<PerformanceTestResult> resultList, TestRun testRun, TestTask testTask, Logger log) {
         if (resultList != null && !resultList.isEmpty()) {
             try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                FileUtil.writeToFile(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultList),
+                FileUtil.writeToFile(JSON.toJSONString(resultList),
                         getTestRun().getResultFolder() + File.separator + "PerformanceReport.json");
 
                 for (PerformanceTestResult testResult : resultList) {
@@ -296,7 +294,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                             testRun.isSuccess());
                     testRun.getPerformanceTestResultEntities().add(testResultEntity);
                 }
-            } catch (JsonProcessingException | NoSuchFieldException | IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException e) {
                 log.error("Failed to save performance test results", e);
             }
         }

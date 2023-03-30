@@ -30,14 +30,14 @@ public class PerformanceTestResultEntity implements Serializable {
     private String testRunId;
     private String testTaskId;
     private Date date = new Date(System.currentTimeMillis());
-    private PerformanceInspector.PerformanceInspectorType inspectorType;
-    private PerformanceResultParser.PerformanceResultParserType parserType;
+    private String inspectorType;
+    private String parserType;
     private String testSuite;
     private String runningType;
     private String appId;
     private String deviceId;
     private boolean success;
-    private IBaselineMetrics.SummaryType summaryType;
+    private String summaryType;
     private String metric1Key;
     private double metric1Value = -1;
     private String metric2Key;
@@ -55,14 +55,14 @@ public class PerformanceTestResultEntity implements Serializable {
 
         this.testRunId = testRunId;
         this.testTaskId = testTaskId;
-        this.inspectorType = inspectorType;
-        this.parserType = parserType;
+        this.inspectorType = inspectorType.name();
+        this.parserType = parserType.name();
         this.testSuite = testSuite;
         this.runningType = runningType;
         this.appId = appId;
         this.deviceId = deviceId;
         this.success = success;
-        this.summaryType = baselineMetrics.getSummaryType();
+        this.summaryType = baselineMetrics.getSummaryType().name();
         initBaselineMetrics(baselineMetrics.getBaselineMetricsKeyValue());
     }
 
@@ -70,7 +70,7 @@ public class PerformanceTestResultEntity implements Serializable {
     }
 
     private void initBaselineMetrics(LinkedHashMap<String, Double> baselineMetrics) throws NoSuchFieldException, IllegalAccessException {
-        Class clazz = this.getClass();
+        Class<? extends PerformanceTestResultEntity> clazz = this.getClass();
         int i = 1;
         for (Map.Entry<String, Double> entry : baselineMetrics.entrySet()) {
             if (i > Math.min(baselineMetrics.size(), MAX_METRICS_NUM)) {

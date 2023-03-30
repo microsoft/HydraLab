@@ -4,6 +4,7 @@
 package com.microsoft.hydralab.performance.entity;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.microsoft.hydralab.performance.IBaselineMetrics;
 import lombok.Data;
 import lombok.NonNull;
@@ -63,11 +64,13 @@ public class WindowsBatteryParsedData {
         }
 
         @Override
+        @JSONField(serialize = false)
         public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
             return null;
         }
 
         @Override
+        @JSONField(serialize = false)
         public SummaryType getSummaryType() {
             return null;
         }
