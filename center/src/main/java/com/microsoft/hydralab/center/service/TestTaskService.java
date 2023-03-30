@@ -53,7 +53,12 @@ public class TestTaskService {
     public Boolean isDeviceFree(String deviceIdentifier) {
         Set<String> relatedIdentifiers = new HashSet<>();
         relatedIdentifiers.add(deviceIdentifier);
-        if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
+        if (deviceIdentifier.contains(",")) {
+            for (String tempIdentifier : deviceIdentifier.split(",")) {
+                relatedIdentifiers.add(tempIdentifier);
+                relatedIdentifiers.addAll(deviceAgentManagementService.queryGroupByDevice(deviceIdentifier));
+            }
+        } else if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
             relatedIdentifiers.addAll(deviceAgentManagementService.queryDeviceByGroup(deviceIdentifier));
         } else {
             relatedIdentifiers.addAll(deviceAgentManagementService.queryGroupByDevice(deviceIdentifier));

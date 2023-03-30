@@ -3,8 +3,12 @@
 
 package com.microsoft.hydralab.common.entity.common;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zhoule
@@ -12,11 +16,18 @@ import java.util.List;
  */
 
 public class TestRunDeviceCombo extends TestRunDevice {
+    Map<String, Integer> deviceCountMap = new HashMap<>();
 
     private List<TestRunDevice> pairedDevices = new ArrayList<>();
 
-    public TestRunDeviceCombo(DeviceInfo deviceInfo, String tag) {
-        super(deviceInfo, tag);
+    public TestRunDeviceCombo(@NotNull DeviceInfo mainDeviceInfo, @NotNull List<DeviceInfo> deviceInfos) {
+        super(mainDeviceInfo, mainDeviceInfo.getType() + "_" + 0);
+        deviceCountMap.put(mainDeviceInfo.getType(), 1);
+        List<TestRunDevice> pairedDevices = new ArrayList<>();
+        for (DeviceInfo deviceInfo : deviceInfos) {
+            pairedDevices.add(new TestRunDevice(deviceInfo, deviceInfo.getType() + "_" + deviceCountMap.getOrDefault(deviceInfo.getType(), 0)));
+            deviceCountMap.put(deviceInfo.getType(), deviceCountMap.get(deviceInfo.getType()) + 1);
+        }
     }
 
     public DeviceInfo getDeviceByTag(String tag) {

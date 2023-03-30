@@ -6,7 +6,7 @@ import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.common.entity.agent.DeviceStateChangeRecord;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.AbstractDeviceDriver;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.util.GlobalConstant;
@@ -56,7 +56,7 @@ public class DeviceStabilityMonitor implements DeviceStatusListener {
 
     // 2 triggering ways: new device state change, timer trigger
     public void stabilityCheck(DeviceInfo deviceInfo, IDevice.DeviceState adbState, String deviceBehaviour) {
-        stabilityCheck(deviceInfo, TestDeviceManager.mobileDeviceStateMapping(adbState), deviceBehaviour);
+        stabilityCheck(deviceInfo, AbstractDeviceDriver.mobileDeviceStateMapping(adbState), deviceBehaviour);
     }
 
     public void stabilityCheck(DeviceInfo deviceInfo, MobileDeviceState state, String deviceBehaviour) {

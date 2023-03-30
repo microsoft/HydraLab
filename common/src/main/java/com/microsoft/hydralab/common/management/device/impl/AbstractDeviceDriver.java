@@ -1,51 +1,51 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-package com.microsoft.hydralab.common.management.device;
+package com.microsoft.hydralab.common.management.device.impl;
 
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
+import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
-import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
-import io.appium.java_client.appmanagement.ApplicationState;
-import io.appium.java_client.ios.IOSDriver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.openqa.selenium.By;
-import org.openqa.selenium.ElementNotInteractableException;
-import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static com.android.ddmlib.IDevice.DeviceState;
 
 
-public abstract class TestDeviceManager {
-    static final Logger classLogger = LoggerFactory.getLogger(TestDeviceManager.class);
+public abstract class AbstractDeviceDriver implements DeviceDriver {
+    static final Logger classLogger = LoggerFactory.getLogger(AbstractDeviceDriver.class);
     protected AgentManagementService agentManagementService;
     protected AppiumServerManager appiumServerManager;
 
-    public abstract void init();
+    public AbstractDeviceDriver(AgentManagementService agentManagementService,
+                                AppiumServerManager appiumServerManager) {
+        this.agentManagementService = agentManagementService;
+        this.appiumServerManager = appiumServerManager;
+    }
+
+    public void init() {
+    }
 
     public static MobileDeviceState mobileDeviceStateMapping(DeviceState adbState) {
         if (adbState == null) {
@@ -68,10 +68,39 @@ public abstract class TestDeviceManager {
         return appiumServerManager;
     }
 
-    public abstract File getScreenShot(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
+    public abstract void screenCapture(@NotNull DeviceInfo deviceInfo, @NotNull String path, @Nullable Logger logger) throws Exception;
+
+    public File getScreenShot(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
+        File screenShotImageFile = deviceInfo.getScreenshotImageFile();
+        if (screenShotImageFile == null) {
+            screenShotImageFile = new File(agentManagementService.getScreenshotDir(), deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + ".jpg");
+            deviceInfo.setScreenshotImageFile(screenShotImageFile);
+            String imageRelPath = screenShotImageFile.getAbsolutePath().replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
+            imageRelPath = agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
+            deviceInfo.setImageRelPath(imageRelPath);
+        }
+        deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
+        wakeUpDevice(deviceInfo, logger);
+        try {
+            screenCapture(deviceInfo, screenShotImageFile.getAbsolutePath(), logger);
+        } catch (Exception e) {
+            classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
+        }
+        StorageFileInfo fileInfo = new StorageFileInfo(screenShotImageFile,
+                "device/screenshots/" + screenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl = agentManagementService.getStorageServiceClientProxy().upload(screenShotImageFile, fileInfo).getBlobUrl();
+        if (org.apache.commons.lang3.StringUtils.isBlank(fileDownloadUrl)) {
+            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
+        } else {
+            deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
+        }
+        return screenShotImageFile;
+    }
+
+    ;
 
     public File getScreenShotWithStrategy(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger,
-                                          @NotNull AgentUser.BatteryStrategy batteryStrategy) throws Exception {
+                                          @NotNull AgentUser.BatteryStrategy batteryStrategy) {
         File screenshotImageFile = deviceInfo.getScreenshotImageFile();
         if (screenshotImageFile == null || StringUtils.isEmpty(deviceInfo.getScreenshotImageUrl())) {
             return getScreenShot(deviceInfo, logger);
@@ -175,13 +204,5 @@ public abstract class TestDeviceManager {
             newCommand = ShellUtils.parseHydraLabVariable(command, testRun, deviceInfo);
         }
         ShellUtils.execLocalCommand(newCommand, logger);
-    }
-
-    public void setAppiumServerManager(AppiumServerManager appiumServerManager) {
-        this.appiumServerManager = appiumServerManager;
-    }
-
-    public void setAgentManagementService(AgentManagementService agentManagementService) {
-        this.agentManagementService = agentManagementService;
     }
 }

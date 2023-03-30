@@ -11,6 +11,7 @@ import '../css/imac.css';
 import '../css/androidTablet.css';
 import Tooltip from '@mui/material/Tooltip';
 import Stack from "@mui/material/Stack";
+
 const deviceStyle = {
     width: "210px",
     height: "420px"
@@ -22,7 +23,8 @@ const deviceStyleLand = {
 
 const pcDeviceStyle = {
     width: "600px",
-    height: "350px"
+    height: "415px",
+    paddingTop: "60px"
 };
 const tdStyle = {
     verticalAlign: "middle",
@@ -48,14 +50,13 @@ export default class DeviceDetailView extends React.Component {
         return <table className="table table-borderless">
             <tbody>
                 <tr>
-                    {item.pcScreenshotImageUrl && item.alive?
+                    {item.type == "WINDOWS" ?
                         <td width="75%" align="center" style={tdStyle}>
                             {this.getPCCase(item)}
-                        </td> : null
-                    }
-                    <td align="center" style={tdStyle}>
-                        {this.getProperPhoneCase(item)}
-                    </td>
+                        </td> :
+                        <td align="center" style={tdStyle}>
+                            {this.getProperPhoneCase(item)}
+                        </td>}
                 </tr>
                 <tr>
                     <td align='center' colSpan="2">
@@ -91,7 +92,7 @@ export default class DeviceDetailView extends React.Component {
                             <div>
                                 <span className={"badge " + badgeClass}
                                     style={{ fontSize: "1rem" }}>
-                                    {item.pcScreenshotImageUrl && item.alive ? this.getPCName(item) : this.getPhoneName(item)}</span>
+                                    {item.screenshotImageUrl && item.alive ? this.getPCName(item) : this.getPhoneName(item)}</span>
                                 <br />
                                 <span className="badge"
                                     style={{ fontSize: "0.9rem" }}>{item.serialNum}</span>
@@ -126,7 +127,7 @@ export default class DeviceDetailView extends React.Component {
                 <div className="base" />
                 <div className="content">
                     <img className={cssObj.device_screenshot}
-                        src={item.pcScreenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('FileToken')}
+                        src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('FileToken')}
                         alt={"Computer"} />
                 </div>
             </div>

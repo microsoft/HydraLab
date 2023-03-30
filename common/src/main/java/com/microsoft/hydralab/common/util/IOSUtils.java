@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.common.util;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.IOSDeviceDriver;
 import org.openqa.selenium.net.UrlChecker;
 import org.slf4j.Logger;
 
@@ -51,19 +51,19 @@ public class IOSUtils {
         return logProcess;
     }
 
-    public static void startIOSDeviceWatcher(Logger logger, IOSTestDeviceManager deviceManager) {
+    public static void startIOSDeviceWatcher(Logger logger, IOSDeviceDriver deviceDriver) {
         Process process = null;
         String command = "tidevice watch";
         ShellUtils.killProcessByCommandStr(command, logger);
         try {
             process = Runtime.getRuntime().exec(command);
-            IOSDeviceWatcher err = new IOSDeviceWatcher(process.getErrorStream(), logger, deviceManager);
-            IOSDeviceWatcher out = new IOSDeviceWatcher(process.getInputStream(), logger, deviceManager);
+            IOSDeviceWatcher err = new IOSDeviceWatcher(process.getErrorStream(), logger, deviceDriver);
+            IOSDeviceWatcher out = new IOSDeviceWatcher(process.getInputStream(), logger, deviceDriver);
             err.start();
             out.start();
             logger.info("Successfully run: " + command);
         } catch (Exception e) {
-            logger.error("Fail to run: " + command, e);
+            throw new HydraLabRuntimeException("Failed to run: " + command, e);
         }
     }
 

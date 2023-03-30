@@ -7,8 +7,10 @@ import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.entity.common.TestRunDeviceCombo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
@@ -36,11 +38,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class T2CRunner extends AppiumRunner {
-
-    private TestRunDevice testRunDevice;
     private String pkgName;
     String agentName;
     private int currentIndex = 0;
+
+    private Map<String, Integer> deviceCountMap = new HashMap<>();
 
     public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
@@ -53,7 +55,6 @@ public class T2CRunner extends AppiumRunner {
     protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, TestRunDevice testRunDevice, TestTask testTask,
                                 TestRun testRun, File deviceTestResultFolder, Logger logger) {
         pkgName = testTask.getPkgName();
-        this.testRunDevice = testRunDevice;
         // Test start
         testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, deviceTestResultFolder, testTask.getTimeOutSecond(), logger);
         long recordingStartTimeMillis = System.currentTimeMillis();
@@ -144,12 +145,14 @@ public class T2CRunner extends AppiumRunner {
             AppiumServerManager appiumServerManager = testRunDeviceOrchestrator.getAppiumServerManager();
             // Prepare drivers
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
+                DeviceInfo deviceInfo;
                 if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.ANDROID.name())) {
+                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.ANDROID.name());
                     AndroidDriverController androidDriverController = new AndroidDriverController(
-                            appiumServerManager.getAndroidDriver(testRunDevice.getDeviceInfo(), reportLogger),
-                            testRunDevice.getDeviceInfo().getSerialNum(), reportLogger);
+                            appiumServerManager.getAndroidDriver(deviceInfo, reportLogger),
+                            deviceInfo.getSerialNum(), reportLogger);
                     driverControllerMap.put(driverInfo.getId(), androidDriverController);
-                    reportLogger.info("Successfully init an Android driver: " + testRunDevice.getDeviceInfo().getSerialNum());
+                    reportLogger.info("Successfully init an Android driver: " + deviceInfo.getSerialNum());
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.WINDOWS.name())) {
                     WindowsDriver windowsDriver;
@@ -179,9 +182,10 @@ public class T2CRunner extends AppiumRunner {
                     reportLogger.info("Successfully init a Edge driver");
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.IOS.name())) {
+                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.ANDROID.name());
                     IOSDriverController iosDriverController = new IOSDriverController(
-                            appiumServerManager.getIOSDriver(testRunDevice.getDeviceInfo(), reportLogger),
-                            testRunDevice.getDeviceInfo().getSerialNum(), reportLogger);
+                            appiumServerManager.getIOSDriver(deviceInfo, reportLogger),
+                            deviceInfo.getSerialNum(), reportLogger);
                     driverControllerMap.put(driverInfo.getId(), iosDriverController);
                 }
             }
@@ -200,5 +204,17 @@ public class T2CRunner extends AppiumRunner {
         } finally {
             reportLogger.info("Finish T2C Test");
         }
+    }
+
+    private DeviceInfo getDeviceByType(TestRunDevice testRunDevice, String type) {
+        if (!(testRunDevice instanceof TestRunDeviceCombo)) {
+            return testRunDevice.getDeviceInfo();
+        }
+        String tag = type + "_" + deviceCountMap.getOrDefault(type, 0);
+        DeviceInfo deviceInfo = ((TestRunDeviceCombo) testRunDevice).getDeviceByTag(tag);
+        if (deviceInfo != null && !DeviceType.WINDOWS.name().equals(type)) {
+            deviceCountMap.put(type, deviceCountMap.get(type) + 1);
+        }
+        return deviceInfo;
     }
 }

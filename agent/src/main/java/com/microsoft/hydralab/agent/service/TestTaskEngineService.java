@@ -15,9 +15,11 @@ import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.entity.common.TestRunDeviceCombo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
@@ -35,8 +37,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -73,14 +77,13 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         String beanName = TestRunnerConfig.testRunnerMap.get(testTaskSpec.runningType);
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
 
-        Set<DeviceInfo> chosenDevices = chooseDevices(testTaskSpec, runner);
+        Set<TestRunDevice> chosenDevices = chooseDevices(testTaskSpec, runner);
 
         onTaskStart(testTask);
         DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices,
                 new DeviceTaskControlExecutor.DeviceTask() {
                     @Override
-                    public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
-                        TestRunDevice testRunDevice = new TestRunDevice(deviceInfo, Const.TestDeviceTag.PRIMARY_PHONE);
+                    public boolean doTask(TestRunDevice testRunDevice, Logger logger) throws Exception {
                         runner.runTestOnDevice(testTask, testRunDevice, logger);
                         return false;
                     }
@@ -113,27 +116,30 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         }
     }
 
-    protected Set<DeviceInfo> chooseDevices(TestTaskSpec testTaskSpec, TestRunner runner) {
-        if ((runner instanceof AppiumCrossRunner) || (runner instanceof T2CRunner)) {
-            Set<DeviceInfo> activeDeviceList = agentManagementService.getActiveDeviceList(log);
-            Assert.isTrue(activeDeviceList == null || activeDeviceList.size() <= 1, "No connected device!");
-            return activeDeviceList;
-        }
-
+    protected Set<TestRunDevice> chooseDevices(TestTaskSpec testTaskSpec, TestRunner runner) {
         String identifier = testTaskSpec.deviceIdentifier;
-        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getDeviceList(log);
+        Set<TestRunDevice> chosenDevices = new HashSet<>();
+        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getActiveDeviceList(log);
         log.info("Choosing devices from {}", allActiveConnectedDevice.size());
-
-        if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
-            List<String> devices = Arrays.asList(testTaskSpec.groupDevices.split(","));
-            return allActiveConnectedDevice.stream()
-                    .filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum()))
-                    .collect(Collectors.toSet());
+        if (!testTaskSpec.deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
+            testTaskSpec.groupDevices = identifier;
         }
-
-        return allActiveConnectedDevice.stream()
-                .filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum()))
-                .collect(Collectors.toSet());
+        List<String> deviceSerials = Arrays.asList(testTaskSpec.groupDevices.split(","));
+        List<DeviceInfo> devices = allActiveConnectedDevice.stream().filter(adbDeviceInfo -> deviceSerials.contains(adbDeviceInfo.getSerialNum())).collect(Collectors.toList());
+        Assert.isTrue(devices.size() > 0, "No device found for " + testTaskSpec.groupDevices);
+        if (((runner instanceof AppiumCrossRunner) || (runner instanceof T2CRunner)) && devices.size() > 1) {
+            Optional<DeviceInfo> mainDeviceInfo = devices.stream().filter(deviceInfo -> !DeviceType.WINDOWS.name().equals(deviceInfo.getType())).findFirst();
+            Assert.isTrue(mainDeviceInfo.isPresent(), "There are more than 1 device, but all of them is windows device!");
+            devices.remove(mainDeviceInfo.get());
+            TestRunDeviceCombo testRunDeviceCombo = new TestRunDeviceCombo(mainDeviceInfo.get(), devices);
+            chosenDevices.add(testRunDeviceCombo);
+        } else {
+            for (DeviceInfo deviceInfo : devices) {
+                TestRunDevice testRunDevice = new TestRunDevice(deviceInfo, deviceInfo.getType());
+                chosenDevices.add(testRunDevice);
+            }
+        }
+        return chosenDevices;
     }
 
     public void setupTestDir(TestTask testTask) {

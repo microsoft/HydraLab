@@ -6,6 +6,7 @@ package com.microsoft.hydralab.common.management.listener.impl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.DeviceType;
+import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FlowUtil;
@@ -24,16 +25,13 @@ import java.util.Set;
  */
 
 public class PreInstallListener implements DeviceStatusListener {
-    static Map<DeviceType, Set<String>> suffixMap = Map.of(
-            DeviceType.ANDROID, Set.of("apk"),
-            DeviceType.IOS, Set.of("ipa", "app"),
-            DeviceType.WINDOWS, Set.of("appx", "appxbundle")
-    );
     AgentManagementService agentManagementService;
+    DeviceDriverManager deviceDriverManager;
     private Logger classLogger = LoggerFactory.getLogger(PreInstallListener.class);
 
-    public PreInstallListener(AgentManagementService agentManagementService) {
+    public PreInstallListener(AgentManagementService agentManagementService, DeviceDriverManager deviceDriverManager) {
         this.agentManagementService = agentManagementService;
+        this.deviceDriverManager = deviceDriverManager;
     }
 
     @Override
@@ -46,14 +44,11 @@ public class PreInstallListener implements DeviceStatusListener {
         File appDir = agentManagementService.getPreAppDir();
         File[] appFiles = appDir.listFiles();
         for (File appFile : appFiles) {
-            if (!appFile.isFile() ||
-                    suffixMap.getOrDefault(DeviceType.valueOf(deviceInfo.getType()), Set.of())
-                            .stream().noneMatch(suffix -> appFile.getName().endsWith(suffix))) {
+            if (!appFile.isFile()) {
                 continue;
             }
             try {
-                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> deviceInfo.getTestDeviceManager()
-                        .installApp(deviceInfo, appFile.getAbsolutePath(), classLogger));
+                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger));
                 classLogger.info("Pre-Install {} successfully", appFile.getAbsolutePath());
                 break;
             } catch (Exception e) {

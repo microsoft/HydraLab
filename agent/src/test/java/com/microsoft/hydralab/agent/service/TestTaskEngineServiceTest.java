@@ -4,11 +4,10 @@ import com.microsoft.hydralab.agent.config.TestRunnerConfig;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
 import com.microsoft.hydralab.agent.test.BaseTest;
-import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
-import com.microsoft.hydralab.common.management.device.impl.AndroidTestDeviceManager;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
+import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,7 +20,7 @@ public class TestTaskEngineServiceTest extends BaseTest {
     @Resource
     TestTaskEngineService testTaskEngineService;
     @Resource
-    TestDeviceManager testDeviceManager;
+    DeviceDriverManager deviceDriverManager;
     @MockBean
     EspressoRunner espressoRunner;
     @Resource
@@ -50,11 +49,5 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForSingleDevice.testFileSet = new TestFileSet();
         taskSpecForSingleDevice.pkgName = "com.microsoft.test";
         testTaskEngineService.runTestTask(taskSpecForSingleDevice);
-    }
-
-    @Test
-    public void getDeviceManager() {
-        baseLogger.info(String.valueOf(testDeviceManager instanceof AndroidTestDeviceManager));
-        Assertions.assertTrue(testDeviceManager instanceof AndroidTestDeviceManager, "Init DeviceManager Bean Error!");
     }
 }

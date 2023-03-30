@@ -4,7 +4,7 @@ package com.microsoft.hydralab.common.screen;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.AbstractDeviceDriver;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FlowUtil;
@@ -28,7 +28,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
     protected final File baseFolder;
     protected final Logger logger;
     private final DeviceInfo deviceInfo;
-    private final TestDeviceManager testDeviceManager;
+    private final AbstractDeviceDriver abstractDeviceDriver;
     /* Send adb signal every 30s */
     public int preSleepSeconds = 30;
     protected String fileName = Const.ScreenRecoderConfig.DEFAULT_FILE_NAME;
@@ -36,8 +36,8 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
     ADBOperateUtil adbOperateUtil;
     private Thread keepAliveThread;
 
-    public PhoneAppScreenRecorder(TestDeviceManager testDeviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
-        this.testDeviceManager = testDeviceManager;
+    public PhoneAppScreenRecorder(AbstractDeviceDriver abstractDeviceDriver, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
+        this.abstractDeviceDriver = abstractDeviceDriver;
         this.adbOperateUtil = adbOperateUtil;
         this.deviceInfo = deviceInfo;
         this.baseFolder = baseFolder;
@@ -60,18 +60,18 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
 
     @Override
     public void setupDevice() {
-        if (!testDeviceManager.isAppInstalled(deviceInfo, recordPackageName, logger)) {
+        if (!abstractDeviceDriver.isAppInstalled(deviceInfo, recordPackageName, logger)) {
             try {
-                testDeviceManager.wakeUpDevice(deviceInfo, logger);
+                abstractDeviceDriver.wakeUpDevice(deviceInfo, logger);
                 installRecorderServiceApp();
-                testDeviceManager.grantAllPackageNeededPermissions(deviceInfo, recordApk, recordPackageName, false, logger);
-                testDeviceManager.grantPermission(deviceInfo, recordPackageName, "android.permission.FOREGROUND_SERVICE", logger);
-                testDeviceManager.addToBatteryWhiteList(deviceInfo, recordPackageName, logger);
+                abstractDeviceDriver.grantAllPackageNeededPermissions(deviceInfo, recordApk, recordPackageName, false, logger);
+                abstractDeviceDriver.grantPermission(deviceInfo, recordPackageName, "android.permission.FOREGROUND_SERVICE", logger);
+                abstractDeviceDriver.addToBatteryWhiteList(deviceInfo, recordPackageName, logger);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
         }
-        FlowUtil.retryWhenFalse(3, () -> testDeviceManager.grantProjectionAndBatteryPermission(deviceInfo, recordPackageName, logger));
+        FlowUtil.retryWhenFalse(3, () -> abstractDeviceDriver.grantProjectionAndBatteryPermission(deviceInfo, recordPackageName, logger));
     }
 
     @Override
@@ -146,7 +146,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
                 logger.error("Pull video file fail!");
             }
         }
-        testDeviceManager.removeFileInDevice(deviceInfo, pathOnDevice, logger);
+        abstractDeviceDriver.removeFileInDevice(deviceInfo, pathOnDevice, logger);
         started = false;
         if (tag) {
             return pathOnAgent;
@@ -193,12 +193,12 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
 
     private void installRecorderServiceApp() {
         try {
-            testDeviceManager.installApp(deviceInfo, recordApk.getAbsolutePath(), logger);
+            abstractDeviceDriver.installApp(deviceInfo, recordApk.getAbsolutePath(), logger);
         } catch (HydraLabRuntimeException e) {
             // if failed to install app, uninstall app and try again.
             logger.error(e.getMessage(), e);
-            testDeviceManager.uninstallApp(deviceInfo, recordPackageName, logger);
-            testDeviceManager.installApp(deviceInfo, recordApk.getAbsolutePath(), logger);
+            abstractDeviceDriver.uninstallApp(deviceInfo, recordPackageName, logger);
+            abstractDeviceDriver.installApp(deviceInfo, recordApk.getAbsolutePath(), logger);
         }
     }
 }
