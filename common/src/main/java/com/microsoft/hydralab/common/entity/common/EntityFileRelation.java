@@ -4,6 +4,7 @@ package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
@@ -20,6 +21,9 @@ public class EntityFileRelation implements Serializable {
     private String entityType;
     @Id
     private String fileId;
+
+    @Column(columnDefinition = "int default 0")
+    private int fileOrder;
 
     public EntityFileRelation() {
     }

@@ -7,37 +7,12 @@ public interface PerformanceResultParser {
     PerformanceTestResult parse(PerformanceTestResult performanceTestResult);
 
     enum PerformanceResultParserType {
-        PARSER_ANDROID_MEMORY_DUMP() {
-            @Override
-            public String[] getBaselineKeys() {
-                return new String[0];
-            }
-        },
-        PARSER_ANDROID_MEMORY_INFO {
-            @Override
-            public String[] getBaselineKeys() {
-                return new String[0];
-            }
-        },
-        PARSER_ANDROID_BATTERY_INFO {
-            @Override
-            public String[] getBaselineKeys() {
-                return new String[0];
-            }
-        },
-        PARSER_WIN_BATTERY {
-            @Override
-            public String[] getBaselineKeys() {
-                return new String[0];
-            }
-        },
-        PARSER_WIN_MEMORY {
-            @Override
-            public String[] getBaselineKeys() {
-                return new String[0];
-            }
-        };
-
-        public abstract String[] getBaselineKeys();
+        PARSER_ANDROID_MEMORY_DUMP,
+        PARSER_ANDROID_MEMORY_INFO,
+        PARSER_ANDROID_BATTERY_INFO,
+        PARSER_WIN_BATTERY,
+        PARSER_WIN_MEMORY,
+        PARSER_IOS_ENERGY,
+        PARSER_IOS_MEMORY
     }
 }

@@ -39,6 +39,7 @@ dependencies {
     testCompile 'me.paulschwarz:spring-dotenv:2.3.0'
 
     compile project(":common")
+    compile project(":taps_to_cases:runner")
 
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootWebVersion)
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springBootWebVersion)
@@ -61,4 +62,6 @@ dependencies {
 
     implementation group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.5.2'
 
+    implementation 'io.appium:java-client:8.0.0'
+    implementation 'org.seleniumhq.selenium:selenium-java:4.1.4'
 }

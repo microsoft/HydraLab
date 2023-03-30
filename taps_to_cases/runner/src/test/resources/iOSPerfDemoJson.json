@@ -1,0 +1,491 @@
+{
+  "drivers": [
+    {
+      "id": "00008110-0002710022DB801E",
+      "platform": "ios",
+      "setup": {
+        "launcherApp": ""
+      }
+    }
+  ],
+  "actions": [
+    {
+      "index": 0,
+      "elementInfo": {
+        "type": "XCUIElementTypeIcon",
+        "name": "uitestsample",
+        "label": "uitestsample",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "99",
+        "y": "468",
+        "width": "91",
+        "height": "90",
+        "index": "21",
+        "xpath": "//XCUIElementTypeIcon[@name=\"uitestsample\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 1,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "inspectMemoryUsage",
+        "arguments": {
+          "targetApp": "com.microsoft.msedge",
+          "description": "test1"
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 2,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "inspectBatteryUsage",
+        "arguments": {
+          "targetApp": "com.microsoft.msedge",
+          "description": "test2"
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 3,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 4,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 5,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 6,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 7,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 8,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "inspectMemoryUsage",
+        "arguments": {
+          "targetApp": "com.microsoft.msedge",
+          "description": "test3"
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 9,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 10,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 11,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "inspectBatteryUsage",
+        "arguments": {
+          "targetApp": "com.microsoft.msedge",
+          "description": "test4"
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 12,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 13,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "inspectMemoryUsage",
+        "arguments": {
+          "targetApp": "com.microsoft.es.uitestsample",
+          "description": "test5"
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 14,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 15,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 16,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 17,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "inspectBatteryUsage",
+        "arguments": {
+          "targetApp": "com.microsoft.es.uitestsample",
+          "description": "test6"
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 18,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    },
+    {
+      "index": 19,
+      "elementInfo": {
+        "type": "XCUIElementTypeButton",
+        "name": "Change Text",
+        "label": "Change Text",
+        "enabled": "true",
+        "visible": "true",
+        "accessible": "true",
+        "x": "140",
+        "y": "356",
+        "width": "96",
+        "height": "21",
+        "index": "2",
+        "xpath": "//XCUIElementTypeButton[@name=\"Change Text\"]"
+      },
+      "driverId": "00008110-0002710022DB801E",
+      "action": {
+        "actionType": "click",
+        "arguments": {}
+      },
+      "isOptional": false
+    }
+  ]
+}
