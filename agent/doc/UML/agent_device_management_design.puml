@@ -74,7 +74,7 @@ class TestRunner{
     runTest(TestTask,TestRunDevice)
 }
 
-interface IDeviceDriver
+interface DeviceDriver
 class DeviceDriverManager implements IDeviceDriver{
     Map<DeviceType, IDeviceDriver> deviceDrivers
 }
