@@ -49,8 +49,8 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
             long[] memInfos = parseRawResultFile(logFile);
             inspectionResult.parsedData = buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, memInfos);
             if (isValidMem(memInfos)) {
-                validDataSize++;
                 updateAverageMem(averageMemoryInfo, memInfos, validDataSize);
+                validDataSize++;
             }
         }
 
