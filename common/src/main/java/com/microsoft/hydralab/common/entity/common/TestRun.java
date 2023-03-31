@@ -71,6 +71,8 @@ public class TestRun implements Serializable, ITestRun {
     private String videoBlobUrl;
     @Transient
     private List<StorageFileInfo> attachments;
+    @Transient
+    private List<PerformanceTestResultEntity> performanceTestResultEntities = new ArrayList<>();
 
     @Transient
     private transient List<CommandlineAndTime> commandlineAndTimeList = new ArrayList<>();

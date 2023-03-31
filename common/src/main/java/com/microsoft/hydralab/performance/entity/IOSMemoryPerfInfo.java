@@ -1,12 +1,14 @@
 package com.microsoft.hydralab.performance.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.microsoft.hydralab.performance.IBaselineMetrics;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 
 @Data
-public class IOSMemoryPerfInfo implements Serializable {
+public class IOSMemoryPerfInfo implements Serializable, IBaselineMetrics {
     private String appPackageName;
     @JSONField(name = "timestamp")
     private long timeStamp;
@@ -18,4 +20,16 @@ public class IOSMemoryPerfInfo implements Serializable {
 
     @JSONField(name = "value")
     private float memoryMB;
+
+    @Override
+    @JSONField(serialize = false)
+    public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
+        return null;
+    }
+
+    @Override
+    @JSONField(serialize = false)
+    public SummaryType getSummaryType() {
+        return null;
+    }
 }
