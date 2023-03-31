@@ -7,6 +7,7 @@ import cn.hutool.core.img.ImgUtil;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.logger.impl.WindowsLogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
@@ -108,7 +109,7 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public LogCollector getLogCollector(@NotNull DeviceInfo deviceInfo, @NotNull String pkgName, @NotNull TestRun testRun, @NotNull Logger logger) {
-        return null;
+        return new WindowsLogCollector(deviceInfo, pkgName, testRun, logger);
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.persistence.Column;
@@ -20,6 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
@@ -76,7 +78,6 @@ public class TestRun implements Serializable, ITestRun {
     private transient File resultFolder;
     @Transient
     private transient Logger logger;
-
     @Transient
     private transient TestRunDevice device;
 
@@ -171,6 +172,21 @@ public class TestRun implements Serializable, ITestRun {
         String[] paths = path.split("/");
         String fileName = paths[paths.length - 1];
         return deviceTestResultFolderUrl + "/" + fileName;
+    }
+
+    @Override
+    public String getDeviceSerialNumberByType(@NotNull String type) {
+        if (device instanceof TestRunDeviceCombo) {
+            String serialNumber = "";
+            List<TestRunDevice> mappedDevice =
+                    ((TestRunDeviceCombo) device).getDevices().stream().filter(d -> type.equals(d.getDeviceInfo().getType())).collect(Collectors.toList());
+            for (TestRunDevice d : mappedDevice) {
+                serialNumber += d.getDeviceInfo().getSerialNum() + ",";
+            }
+            return serialNumber.isEmpty() ? "" : serialNumber.substring(0, serialNumber.length() - 1);
+        } else {
+            return deviceSerialNumber;
+        }
     }
 
     public static class CommandlineAndTime {

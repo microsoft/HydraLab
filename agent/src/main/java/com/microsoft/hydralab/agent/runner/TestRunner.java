@@ -104,7 +104,8 @@ public abstract class TestRunner {
     }
 
     protected TestRun createTestRun(TestRunDevice testRunDevice, TestTask testTask, Logger parentLogger) {
-        TestRun testRun = new TestRun(testRunDevice.getDeviceInfo().getSerialNum(), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
+        TestRun testRun = new TestRun(testRunDeviceOrchestrator.getSerialNum(testRunDevice), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
+        testRun.setDevice(testRunDevice);
         File testRunResultFolder = new File(testTask.getResourceDir(), testRunDevice.getDeviceInfo().getSerialNum());
         parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
         if (!testRunResultFolder.exists()) {

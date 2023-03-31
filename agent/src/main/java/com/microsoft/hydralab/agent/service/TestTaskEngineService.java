@@ -212,7 +212,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         List<StorageFileInfo> attachments = new ArrayList<>();
         Assert.notNull(files, "should have result file to upload");
         for (File file : files) {
-            if (file.isDirectory()) {
+            if (file.isDirectory() && file.listFiles().length > 0) {
                 File zipFile = FileUtil.zipFile(file.getAbsolutePath(),
                         deviceTestResultFolder + "/" + file.getName() + ".zip");
                 attachments.add(saveFileToBlob(zipFile, deviceTestResultFolder, logger));

@@ -213,7 +213,7 @@ public class T2CRunner extends AppiumRunner {
         String tag = type + "_" + deviceCountMap.getOrDefault(type, 0);
         DeviceInfo deviceInfo = ((TestRunDeviceCombo) testRunDevice).getDeviceByTag(tag);
         if (deviceInfo != null && !DeviceType.WINDOWS.name().equals(type)) {
-            deviceCountMap.put(type, deviceCountMap.get(type) + 1);
+            deviceCountMap.put(type, deviceCountMap.getOrDefault(type, 0) + 1);
         }
         return deviceInfo;
     }

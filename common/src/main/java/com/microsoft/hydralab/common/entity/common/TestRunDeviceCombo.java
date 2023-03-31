@@ -23,10 +23,9 @@ public class TestRunDeviceCombo extends TestRunDevice {
     public TestRunDeviceCombo(@NotNull DeviceInfo mainDeviceInfo, @NotNull List<DeviceInfo> deviceInfos) {
         super(mainDeviceInfo, mainDeviceInfo.getType() + "_" + 0);
         deviceCountMap.put(mainDeviceInfo.getType(), 1);
-        List<TestRunDevice> pairedDevices = new ArrayList<>();
         for (DeviceInfo deviceInfo : deviceInfos) {
             pairedDevices.add(new TestRunDevice(deviceInfo, deviceInfo.getType() + "_" + deviceCountMap.getOrDefault(deviceInfo.getType(), 0)));
-            deviceCountMap.put(deviceInfo.getType(), deviceCountMap.get(deviceInfo.getType()) + 1);
+            deviceCountMap.put(deviceInfo.getType(), deviceCountMap.getOrDefault(deviceInfo.getType(), 0) + 1);
         }
     }
 

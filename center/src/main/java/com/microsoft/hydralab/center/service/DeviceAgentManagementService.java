@@ -269,7 +269,10 @@ public class DeviceAgentManagementService {
                     if (isFinished) {
                         List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
                         for (TestRun deviceTestResult : deviceTestResults) {
-                            updateDeviceStatus(deviceTestResult.getDeviceSerialNumber(), DeviceInfo.ONLINE, null);
+                            String[] identifiers = deviceTestResult.getDeviceSerialNumber().split(",");
+                            for (String identifier : identifiers) {
+                                updateDeviceStatus(identifier, DeviceInfo.ONLINE, null);
+                            }
                         }
                         //run the task saved in queue
                         testTaskService.runTask();
@@ -331,7 +334,6 @@ public class DeviceAgentManagementService {
                     DeviceInfo device = deviceListMap.get(deviceInfo.getSerialNum());
                     device.setStatus(DeviceInfo.ONLINE);
                     deviceInfo.setRunningTaskId(null);
-                    break;
                 }
             }
         }

@@ -11,22 +11,21 @@ import lombok.Setter;
 import org.openqa.selenium.WebDriver;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
 
 @Getter
 @Setter
-public class TestRunDevice {
+public class TestRunDevice{
     private final DeviceInfo deviceInfo;
     private final String tag;
-    private ScreenRecorder screenRecorder;
-    private LogCollector logCollector;
+    private transient ScreenRecorder screenRecorder;
+    private transient LogCollector logCollector;
     private String logPath;
-    private final AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();
+    private final transient AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();
     private int gifFrameCount = 0;
-    private File gifFile;
+    private transient File gifFile;
 
-    private WebDriver webDriver;
+    private transient WebDriver webDriver;
 
     public TestRunDevice(DeviceInfo deviceInfo, String tag) {
         this.deviceInfo = deviceInfo;

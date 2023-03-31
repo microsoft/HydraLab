@@ -20,12 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class DeviceDriverManager implements DeviceDriver {
     static final Logger classLogger = LoggerFactory.getLogger(DeviceDriverManager.class);
-    Map<DeviceType, DeviceDriver> deviceDriverMap = new HashMap<>();
+    ConcurrentMap<DeviceType, DeviceDriver> deviceDriverMap = new ConcurrentHashMap<>();
 
     public void addDeviceDriver(DeviceType deviceType, DeviceDriver deviceDriver) {
         deviceDriverMap.put(deviceType, deviceDriver);

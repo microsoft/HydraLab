@@ -45,8 +45,8 @@ public class TestRunDeviceOrchestrator {
     public File getScreenShot(@NotNull TestRunDevice testRunDevice, @NotNull File screenshotDir, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             List<File> screenShots = new ArrayList<>();
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> screenShots.add(this.getScreenShot(testRunDevice1, screenshotDir, logger)));
-            return ImageUtil.joinImages(screenshotDir, "merged_pic.jpg", screenShots);
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> screenShots.add(deviceDriverManager.getScreenShot(testRunDevice1.getDeviceInfo(), logger)));
+            return ImageUtil.joinImages(screenshotDir, testRunDevice.getDeviceInfo().getSerialNum() + "-merged.jpg", screenShots);
         } else {
             return deviceDriverManager.getScreenShot(testRunDevice.getDeviceInfo(), logger);
         }
@@ -54,7 +54,7 @@ public class TestRunDeviceOrchestrator {
 
     public void wakeUpDevice(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.wakeUpDevice(testRunDevice1, logger));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> deviceDriverManager.wakeUpDevice(testRunDevice1.getDeviceInfo(), logger));
         } else {
             deviceDriverManager.wakeUpDevice(testRunDevice.getDeviceInfo(), logger);
         }
@@ -64,7 +64,7 @@ public class TestRunDeviceOrchestrator {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             boolean isInstalled = true;
             for (TestRunDevice testRunDevice1 : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
-                isInstalled = isInstalled && this.installApp(testRunDevice1, packagePath, logger);
+                isInstalled = isInstalled && deviceDriverManager.installApp(testRunDevice1.getDeviceInfo(), packagePath, logger);
             }
             return isInstalled;
         } else {
@@ -74,7 +74,7 @@ public class TestRunDeviceOrchestrator {
 
     public void uninstallApp(@NotNull TestRunDevice testRunDevice, @NotNull String packageName, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.uninstallApp(testRunDevice1, packageName, logger));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> deviceDriverManager.uninstallApp(testRunDevice1.getDeviceInfo(), packageName, logger));
         } else {
             deviceDriverManager.uninstallApp(testRunDevice.getDeviceInfo(), packageName, logger);
         }
@@ -82,7 +82,7 @@ public class TestRunDeviceOrchestrator {
 
     public void resetPackage(@NotNull TestRunDevice testRunDevice, @NotNull String packageName, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.resetPackage(testRunDevice1, packageName, logger));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> deviceDriverManager.resetPackage(testRunDevice1.getDeviceInfo(), packageName, logger));
         } else {
             deviceDriverManager.resetPackage(testRunDevice.getDeviceInfo(), packageName, logger);
         }
@@ -92,7 +92,11 @@ public class TestRunDeviceOrchestrator {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
                 File childFolder = new File(folder, testRunDevice1.getDeviceInfo().getSerialNum());
-                this.startScreenRecorder(testRunDevice1, childFolder, maxTimeInSecond, logger);
+                childFolder.mkdirs();
+                ScreenRecorder screenRecorder = deviceDriverManager.getScreenRecorder(testRunDevice1.getDeviceInfo(), childFolder, logger);
+                screenRecorder.setupDevice();
+                screenRecorder.startRecord(maxTimeInSecond);
+                testRunDevice1.setScreenRecorder(screenRecorder);
             });
         } else {
             ScreenRecorder screenRecorder = deviceDriverManager.getScreenRecorder(testRunDevice.getDeviceInfo(), folder, logger);
@@ -106,7 +110,7 @@ public class TestRunDeviceOrchestrator {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             List<String> videoFilePaths = new ArrayList<>();
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
-                String path = this.stopScreenRecorder(testRunDevice1, folder, logger);
+                String path = testRunDevice1.getScreenRecorder().finishRecording();
                 if (path != null && !path.isEmpty()) {
                     videoFilePaths.add(path);
                 }
@@ -120,8 +124,9 @@ public class TestRunDeviceOrchestrator {
     public void startLogCollector(@NotNull TestRunDevice testRunDevice, @NotNull String pkgName, @NotNull TestRun testRun, @NotNull Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
-                //todo: need to generate a new log path for each device
-                this.startLogCollector(testRunDevice1, pkgName, testRun, logger);
+                LogCollector logCollector = deviceDriverManager.getLogCollector(testRunDevice1.getDeviceInfo(), pkgName, testRun, logger);
+                testRunDevice1.setLogCollector(logCollector);
+                testRunDevice1.setLogPath(logCollector.start());
             });
         } else {
             LogCollector logCollector = deviceDriverManager.getLogCollector(testRunDevice.getDeviceInfo(), pkgName, testRun, logger);
@@ -132,7 +137,7 @@ public class TestRunDeviceOrchestrator {
 
     public void stopLogCollector(@NotNull TestRunDevice testRunDevice) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(this::stopLogCollector);
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> testRunDevice1.getLogCollector().stopAndAnalyse());
         } else {
             testRunDevice.getLogCollector().stopAndAnalyse();
         }
@@ -140,9 +145,7 @@ public class TestRunDeviceOrchestrator {
 
     public void testDeviceSetup(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
-                this.testDeviceSetup(testRunDevice1, logger);
-            });
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> deviceDriverManager.testDeviceSetup(testRunDevice1.getDeviceInfo(), logger));
         } else {
             deviceDriverManager.testDeviceSetup(testRunDevice.getDeviceInfo(), logger);
         }
@@ -150,14 +153,18 @@ public class TestRunDeviceOrchestrator {
 
     public void testDeviceUnset(@NotNull TestRunDevice testRunDevice, Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.testDeviceUnset(testRunDevice1, logger));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> deviceDriverManager.testDeviceUnset(testRunDevice1.getDeviceInfo(), logger));
         } else {
             deviceDriverManager.testDeviceUnset(testRunDevice.getDeviceInfo(), logger);
         }
     }
 
     public void setRunningTestName(TestRunDevice testRunDevice, String runningTestName) {
-        testRunDevice.getDeviceInfo().setRunningTestName(runningTestName);
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> testRunDevice1.getDeviceInfo().setRunningTestName(runningTestName));
+        } else {
+            testRunDevice.getDeviceInfo().setRunningTestName(runningTestName);
+        }
     }
 
     public String getSerialNum(@NotNull TestRunDevice testRunDevice) {
@@ -186,7 +193,7 @@ public class TestRunDeviceOrchestrator {
 
     public void killAll(TestRunDevice testRunDevice) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(this::killAll);
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> testRunDevice1.getDeviceInfo().killAll());
         } else {
             testRunDevice.getDeviceInfo().killAll();
         }
@@ -194,7 +201,7 @@ public class TestRunDeviceOrchestrator {
 
     public void addCurrentTask(@NotNull TestRunDevice testRunDevice, TestTask testTask) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.addCurrentTask(testRunDevice1, testTask));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> testRunDevice1.getDeviceInfo().addCurrentTask(testTask));
         } else {
             testRunDevice.getDeviceInfo().addCurrentTask(testTask);
         }
@@ -202,7 +209,7 @@ public class TestRunDeviceOrchestrator {
 
     public void finishTask(@NotNull TestRunDevice testRunDevice) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(this::finishTask);
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> testRunDevice1.getDeviceInfo().finishTask());
         } else {
             testRunDevice.getDeviceInfo().finishTask();
         }
@@ -210,7 +217,7 @@ public class TestRunDeviceOrchestrator {
 
     public void getAppiumDriver(@NotNull TestRunDevice testRunDevice, @NotNull Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.getAppiumDriver(testRunDevice1, logger));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> deviceDriverManager.getAppiumDriver(testRunDevice1.getDeviceInfo(), logger));
         } else {
             testRunDevice.setWebDriver(deviceDriverManager.getAppiumDriver(testRunDevice.getDeviceInfo(), logger));
         }
@@ -218,7 +225,7 @@ public class TestRunDeviceOrchestrator {
 
     public void quitAppiumDriver(@NotNull TestRunDevice testRunDevice, @NotNull Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.quitAppiumDriver(testRunDevice1, logger));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> deviceDriverManager.quitAppiumDriver(testRunDevice1.getDeviceInfo(), logger));
         } else {
             deviceDriverManager.quitAppiumDriver(testRunDevice.getDeviceInfo(), logger);
         }
@@ -242,7 +249,8 @@ public class TestRunDeviceOrchestrator {
 
     public void grantAllTaskNeededPermissions(@NotNull TestRunDevice testRunDevice, @NotNull TestTask testTask, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.grantAllTaskNeededPermissions(testRunDevice1, testTask, logger));
+            ((TestRunDeviceCombo) testRunDevice).getDevices()
+                    .forEach(testRunDevice1 -> deviceDriverManager.grantAllTaskNeededPermissions(testRunDevice1.getDeviceInfo(), testTask, logger));
         } else {
             deviceDriverManager.grantAllTaskNeededPermissions(testRunDevice.getDeviceInfo(), testTask, logger);
         }
@@ -268,7 +276,7 @@ public class TestRunDeviceOrchestrator {
 
     public void backToHome(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> this.backToHome(testRunDevice1, logger));
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> deviceDriverManager.backToHome(testRunDevice1.getDeviceInfo(), logger));
         } else {
             deviceDriverManager.backToHome(testRunDevice.getDeviceInfo(), logger);
         }
@@ -278,7 +286,7 @@ public class TestRunDeviceOrchestrator {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             Boolean isAlive = true;
             for (TestRunDevice testRunDevice1 : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
-                isAlive = isAlive && this.isAlive(testRunDevice1);
+                isAlive = isAlive && testRunDevice1.getDeviceInfo().isAlive();
             }
             return isAlive;
         } else {
@@ -290,7 +298,7 @@ public class TestRunDeviceOrchestrator {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             Boolean isTesting = false;
             for (TestRunDevice testRunDevice1 : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
-                isTesting = isTesting || this.isTesting(testRunDevice1);
+                isTesting = isTesting || testRunDevice1.getDeviceInfo().isTesting();
             }
             return isTesting;
         } else {
@@ -306,7 +314,7 @@ public class TestRunDeviceOrchestrator {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             List<Exception> exceptions = new ArrayList<>();
             for (TestRunDevice testRunDevice1 : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
-                exceptions.addAll(actionExecutor.doActions(deviceDriverManager, testRunDevice, logger, deviceActions, tearDown));
+                exceptions.addAll(actionExecutor.doActions(deviceDriverManager, testRunDevice1, logger, deviceActions, tearDown));
             }
             return exceptions;
         } else {

@@ -92,7 +92,7 @@ export default class DeviceDetailView extends React.Component {
                             <div>
                                 <span className={"badge " + badgeClass}
                                     style={{ fontSize: "1rem" }}>
-                                    {item.screenshotImageUrl && item.alive ? this.getPCName(item) : this.getPhoneName(item)}</span>
+                                    {this.getDeviceName(item)}</span>
                                 <br />
                                 <span className="badge"
                                     style={{ fontSize: "0.9rem" }}>{item.serialNum}</span>
@@ -108,11 +108,7 @@ export default class DeviceDetailView extends React.Component {
         return item.brand === "Apple" ? this.getApplePhoneCase(item) : item.model == 'Surface Duo' ? this.getSurfaceDuoCase(item) : this.getAndroidPhoneCase(item)
     }
 
-    getPCName(item) {
-        return "PC / " + item.model
-    }
-
-    getPhoneName(item) {
+    getDeviceName(item) {
         return item.model == '-' ? item.name : item.model
     }
 

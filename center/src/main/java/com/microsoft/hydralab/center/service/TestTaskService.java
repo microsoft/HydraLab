@@ -153,12 +153,9 @@ public class TestTaskService {
     public void checkTestTaskTeamConsistency(TestTaskSpec testTaskSpec) throws HydraLabRuntimeException {
         if (TestTask.TestRunningType.APPIUM_CROSS.equals(testTaskSpec.runningType)
                 || TestTask.TestRunningType.T2C_JSON_TEST.equals(testTaskSpec.runningType)) {
-            AgentUser agent = agentManageService.getAgent(testTaskSpec.deviceIdentifier);
-            if (agent == null) {
-                throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find AgentUser with given deviceIdentifier!");
-            }
-            if (!testTaskSpec.teamId.equals(agent.getTeamId())) {
-                throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "AgentUser doesn't belong to the given team in spec!");
+            String[] identifiers = testTaskSpec.deviceIdentifier.split(",");
+            for (String identifier : identifiers) {
+                checkDeviceTeamConsistency(identifier, testTaskSpec.teamId, testTaskSpec.accessKey);
             }
         } else {
             String deviceIdentifier = testTaskSpec.deviceIdentifier;
@@ -175,23 +172,27 @@ public class TestTaskService {
                 }
                 deviceAgentManagementService.checkAccessInfo(deviceIdentifier, testTaskSpec.accessKey);
             } else {
-                DeviceInfo device = deviceAgentManagementService.getDevice(deviceIdentifier);
-                if (device == null) {
-                    throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find device with given deviceIdentifier!");
-                }
-                AgentUser agent = agentManageService.getAgent(device.getAgentId());
-                if (agent == null) {
-                    throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find AgentUser with given agent id!");
-                }
-                if (testTaskSpec.teamId.equals(agent.getTeamId())) {
-                    return;
-                }
-                if (!device.getIsPrivate()) {
-                    return;
-                }
-                deviceAgentManagementService.checkAccessInfo(deviceIdentifier, testTaskSpec.accessKey);
+                checkDeviceTeamConsistency(deviceIdentifier, testTaskSpec.teamId, testTaskSpec.accessKey);
             }
         }
+    }
+
+    private void checkDeviceTeamConsistency(String deviceIdentifier, String teamId, String accessKey) {
+        DeviceInfo device = deviceAgentManagementService.getDevice(deviceIdentifier);
+        if (device == null) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find device with given deviceIdentifier!");
+        }
+        AgentUser agent = agentManageService.getAgent(device.getAgentId());
+        if (agent == null) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find AgentUser with given agent id!");
+        }
+        if (agent.getTeamId().equals(teamId)) {
+            return;
+        }
+        if (!device.getIsPrivate()) {
+            return;
+        }
+        deviceAgentManagementService.checkAccessInfo(deviceIdentifier, accessKey);
     }
 
     public void updateTaskTeam(String teamId, String teamName) {

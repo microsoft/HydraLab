@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
@@ -62,6 +63,14 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             INSPECTOR_WIN_BATTERY, new WindowsBatteryInspector(),
             INSPECTOR_IOS_MEMORY, new IOSMemoryPerfInspector(),
             INSPECTOR_IOS_ENERGY, new IOSEnergyGaugeInspector()
+    );
+    private final Map<PerformanceInspector.PerformanceInspectorType, DeviceType> inspectorDeviceTypeMap = Map.of(
+            INSPECTOR_ANDROID_BATTERY_INFO, DeviceType.ANDROID,
+            INSPECTOR_ANDROID_MEMORY_INFO, DeviceType.ANDROID,
+            INSPECTOR_WIN_MEMORY, DeviceType.WINDOWS,
+            INSPECTOR_WIN_BATTERY, DeviceType.WINDOWS,
+            INSPECTOR_IOS_MEMORY, DeviceType.IOS,
+            INSPECTOR_IOS_ENERGY, DeviceType.IOS
     );
     private final Map<PerformanceResultParser.PerformanceResultParserType, PerformanceResultParser> performanceResultParserMap = Map.of(
             PARSER_ANDROID_MEMORY_INFO, new AndroidMemoryInfoResultParser(),
@@ -249,7 +258,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private PerformanceInspection getDevicePerformanceInspection(PerformanceInspection inspection) {
         return new PerformanceInspection(inspection.description, inspection.inspectorType, inspection.appId,
                 // For windows inspector, the deviceIdentifier is useless
-                getTestRun().getDeviceSerialNumber(), inspection.isReset);
+                getTestRun().getDeviceSerialNumberByType(inspectorDeviceTypeMap.get(inspection.inspectorType).name()), inspection.isReset);
     }
 
     private List<PerformanceTestResult> parseForTestRun(ITestRun testRun) {
