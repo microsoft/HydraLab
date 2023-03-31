@@ -2,30 +2,57 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.performance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSON;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
+import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
-import com.microsoft.hydralab.performance.inspectors.*;
-import com.microsoft.hydralab.performance.parsers.*;
+import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
+import com.microsoft.hydralab.performance.inspectors.AndroidMemoryInfoInspector;
+import com.microsoft.hydralab.performance.inspectors.IOSEnergyGaugeInspector;
+import com.microsoft.hydralab.performance.inspectors.IOSMemoryPerfInspector;
+import com.microsoft.hydralab.performance.inspectors.WindowsBatteryInspector;
+import com.microsoft.hydralab.performance.inspectors.WindowsMemoryInspector;
+import com.microsoft.hydralab.performance.parsers.AndroidBatteryInfoResultParser;
+import com.microsoft.hydralab.performance.parsers.AndroidMemoryInfoResultParser;
+import com.microsoft.hydralab.performance.parsers.IOSEnergyGaugeResultParser;
+import com.microsoft.hydralab.performance.parsers.IOSMemoryPerfResultParser;
+import com.microsoft.hydralab.performance.parsers.WindowsBatteryResultParser;
+import com.microsoft.hydralab.performance.parsers.WindowsMemoryResultParser;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.util.Assert;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
-import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.*;
-import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.*;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_ENERGY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_MEMORY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_ENERGY;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_MEMORY;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_BATTERY;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_MEMORY;
 
 public class PerformanceTestManagementService implements IPerformanceInspectionService, PerformanceTestListener {
     private static final Map<PerformanceInspector.PerformanceInspectorType, PerformanceResultParser.PerformanceResultParserType> inspectorParserTypeMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, PARSER_ANDROID_BATTERY_INFO,
+            INSPECTOR_ANDROID_MEMORY_INFO, PARSER_ANDROID_MEMORY_INFO,
             INSPECTOR_WIN_MEMORY, PARSER_WIN_MEMORY,
             INSPECTOR_WIN_BATTERY, PARSER_WIN_BATTERY,
             INSPECTOR_IOS_ENERGY, PARSER_IOS_ENERGY,
@@ -182,9 +209,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_FAILURE, description);
     }
 
-    public void testTearDown(DeviceInfo deviceInfo, Logger log) {
-        ITestRun testRun = getTestRun();
-
+    public void testTearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun, Logger log) {
         List<ScheduledFuture<?>> timerList = inspectPerformanceTimerMap.get(testRun.getId());
         if (timerList != null) {
             for (ScheduledFuture<?> timer : timerList) {
@@ -192,7 +217,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             }
         }
         List<PerformanceTestResult> resultList = parseForTestRun(testRun);
-        savePerformanceTestResults(resultList, log);
+        savePerformanceTestResults(resultList, testRun, testTask, log);
 
         inspectPerformanceTimerMap.remove(testRun.getId());
         testLifeCycleStrategyMap.remove(testRun.getId());
@@ -241,15 +266,39 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         return resultList;
     }
 
-    private void savePerformanceTestResults(List<PerformanceTestResult> resultList, Logger log) {
-        //TODO save results to DB
+    private void savePerformanceTestResults(List<PerformanceTestResult> resultList, TestRun testRun, TestTask testTask, Logger log) {
         if (resultList != null && !resultList.isEmpty()) {
             try {
-                FileUtil.writeToFile(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(resultList),
+                FileUtil.writeToFile(JSON.toJSONString(resultList),
                         getTestRun().getResultFolder() + File.separator + "PerformanceReport.json");
-            } catch (JsonProcessingException e) {
-                log.error("Failed to save performance test results to file", e);
+
+                for (PerformanceTestResult testResult : resultList) {
+                    if (testResult.getResultSummary() == null
+                            || testResult.performanceInspectionResults == null
+                            || testResult.performanceInspectionResults.isEmpty()
+                            || testResult.performanceInspectionResults.get(0).inspection == null) {
+                        continue;
+                    }
+
+                    PerformanceInspection inspection = testResult.performanceInspectionResults.get(0).inspection;
+                    PerformanceTestResultEntity testResultEntity = new PerformanceTestResultEntity(
+                            testRun.getId(),
+                            testTask.getId(),
+                            testResult.inspectorType,
+                            testResult.parserType,
+                            testResult.getResultSummary(),
+                            testTask.getTestSuite(),
+                            testTask.getRunningType(),
+                            inspection.appId,
+                            inspection.deviceIdentifier,
+                            testRun.isSuccess());
+                    testRun.getPerformanceTestResultEntities().add(testResultEntity);
+                }
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                log.error("Failed to save performance test results", e);
             }
         }
     }
+
+
 }

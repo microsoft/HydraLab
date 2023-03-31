@@ -11,6 +11,8 @@ import com.microsoft.hydralab.center.service.TestDataService;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.CriteriaType;
+import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.file.AccessToken;
@@ -20,12 +22,16 @@ import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DownloadUtils;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,6 +39,7 @@ import javax.annotation.Resource;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 @RestController
 @RequestMapping
@@ -184,6 +191,28 @@ public class TestDetailController {
             String jsonStr = new String(byteData);
             JSONArray array = JSON.parseArray(jsonStr);
             return Result.ok(array);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+    }
+
+    @PostMapping(value = {"/api/test/performance/history"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<List<PerformanceTestResultEntity>> getPerformanceTestHistory(@CurrentSecurityContext SysUser requestor,
+                                                                               @RequestBody List<CriteriaType> criteriaTypes) {
+        try {
+            if (requestor == null) {
+                return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+            }
+
+            for (CriteriaType criteriaType : criteriaTypes) {
+                if (StringUtils.isEmpty(criteriaType.getValue())) {
+                    return Result.error(HttpStatus.BAD_REQUEST.value(), "RequestParam should not be empty");
+                }
+            }
+            List<PerformanceTestResultEntity> performanceHistory = testDataService.getPerformanceTestHistory(criteriaTypes);
+
+            return Result.ok(performanceHistory);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
