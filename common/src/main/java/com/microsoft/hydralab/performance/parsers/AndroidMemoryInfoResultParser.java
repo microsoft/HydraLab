@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
+    private static final int MEM_INFO_LENGTH = 19;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Map<String, Integer> MEMORY_FILE_TO_DB_INDEX_MAP = new HashMap<>() {
         {
@@ -40,18 +41,56 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
             return null;
         }
         List<PerformanceInspectionResult> inspectionResults = performanceTestResult.performanceInspectionResults;
+        double[] averageMemoryInfo = new double[MEM_INFO_LENGTH];
+        Arrays.fill(averageMemoryInfo, 0.0);
+        int validDataSize = 0;
         for (PerformanceInspectionResult inspectionResult : inspectionResults) {
             File logFile = inspectionResult.rawResultFile;
             long[] memInfos = parseRawResultFile(logFile);
             inspectionResult.parsedData = buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, memInfos);
+            if (isValidMem(memInfos)) {
+                updateAverageMem(averageMemoryInfo, memInfos, validDataSize);
+                validDataSize++;
+            }
         }
+
+        performanceTestResult.setResultSummary(buildAverageMemoryInfo(averageMemoryInfo, inspectionResults.get(0)));
 
         return performanceTestResult;
     }
 
+    private void updateAverageMem(double[] averageMemoryInfo, long[] memInfoArray, int index) {
+        if (memInfoArray == null) {
+            return;
+        }
+        for (int i = 0; i < MEM_INFO_LENGTH; i++) {
+            averageMemoryInfo[i] = averageMemoryInfo[i] * index / (index + 1) + (double) memInfoArray[i] / (index + 1);
+        }
+    }
+
+    private boolean isValidMem(long[] memInfo) {
+        if (memInfo == null) {
+            return false;
+        }
+
+        for (long i : memInfo) {
+            if (i != -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private AndroidMemoryInfo buildAverageMemoryInfo(double[] averageMemoryInfo, PerformanceInspectionResult inspectionResult) {
+        long[] averageMemoryInfoLong = new long[averageMemoryInfo.length];
+        for (int i = 0; i < averageMemoryInfo.length; i++) {
+            averageMemoryInfoLong[i] = Math.round(averageMemoryInfo[i]);
+        }
+        return buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, averageMemoryInfoLong);
+    }
 
     private AndroidMemoryInfo buildMemoryInfo(String packageName, String description, long timestamp, long[] memInfos) {
-        if (memInfos == null || memInfos.length != 19) {
+        if (memInfos == null || memInfos.length != MEM_INFO_LENGTH) {
             return null;
         }
         AndroidMemoryInfo androidMemoryInfo = new AndroidMemoryInfo();
@@ -82,7 +121,7 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
 
     private long[] parseRawResultFile(File rawFile) {
         String line;
-        long[] memoryValueArr = new long[19];
+        long[] memoryValueArr = new long[MEM_INFO_LENGTH];
         Arrays.fill(memoryValueArr, -1);
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(rawFile))) {
             while ((line = bufferedReader.readLine()) != null) {
