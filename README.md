@@ -57,13 +57,13 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 
 Hydra Lab offers an out-of-box experience of docker image called Uber. You can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
-**Step 1. download and install Docker from https://www.docker.com**
+**Step 1. Download and install Docker from https://www.docker.com**
 
-**Step 2. run on your machine**
+**Step 2. Run on your machine**
 
 Simply choose one of the following commands to start your experience on Hydra Lab:
 
-**1. use local storage service**
+**1. Use local storage service**
 
 Hydra Lab Uber image uses local file system as default storage, no extra environment variable is needed:
 
@@ -71,7 +71,7 @@ Hydra Lab Uber image uses local file system as default storage, no extra environ
 docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-**2. use third-party storage service**
+**2. Use third-party storage service**
 
 Hydra Lab currently supports [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist various file types such as log files, video, app package, etc.
 Any contribution to integrating other third-party storage services is welcome. (Here's the UML class diagram for this module as a reference: [storage service structure](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png).)
@@ -100,7 +100,7 @@ Or simply run with the env parameter -e:
 docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-**Step 3. visit front-end page and view your connected devices**
+**Step 3. Visit front-end page and view your connected devices**
 
 > Url: http://localhost:9886/portal/index.html#/ (or your custom port).
 
@@ -114,7 +114,7 @@ You can also run the center java Spring Boot service (a runnable Jar) separately
 
 > The build and run process will require JDK11 | NPM | Android SDK platform-tools in position.
 
-**Step 1. build and run Hydra Lab center service.**
+**Step 1. Build and run Hydra Lab center service.**
 
 ```bash
 # In project root, switch to react folder to build the Web front.
@@ -132,7 +132,7 @@ java -jar center/build/libs/center.jar
 
 > If you encounter the error: `Error: error:0308010C:digital envelope routines::unsupported`, set the System Variable `NODE_OPTIONS` as `--openssl-legacy-provider` and then restart the terminal.
 
-**Step 2. build and run Hydra Lab agent service.**
+**Step 2. Build and run Hydra Lab agent service.**
 
 ```bash
 # In project root, copy the sample config file and update the:
@@ -143,7 +143,7 @@ gradlew :agent:bootJar
 java -jar agent/build/libs/agent.jar
 ```
 
-**Step 3. visit http://localhost:9886/portal/index.html#/ and view your connected devices**
+**Step 3. Visit http://localhost:9886/portal/index.html#/ and view your connected devices**
 
 **Technical design overview:**
 
