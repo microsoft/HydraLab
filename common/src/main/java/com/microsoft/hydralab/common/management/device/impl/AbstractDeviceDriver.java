@@ -47,23 +47,6 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
     public void init() {
     }
 
-    public static MobileDeviceState mobileDeviceStateMapping(DeviceState adbState) {
-        if (adbState == null) {
-            return MobileDeviceState.OTHER;
-        }
-
-        switch (adbState) {
-            case ONLINE:
-                return MobileDeviceState.ONLINE;
-            case OFFLINE:
-                return MobileDeviceState.OFFLINE;
-            case DISCONNECTED:
-                return MobileDeviceState.DISCONNECTED;
-            default:
-                return MobileDeviceState.OTHER;
-        }
-    }
-
     public AppiumServerManager getAppiumServerManager() {
         return appiumServerManager;
     }

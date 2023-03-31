@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.common.screen;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.impl.AbstractDeviceDriver;
+import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
@@ -27,8 +27,9 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
     private final Timer timer = new Timer();
     private Process recordProcess;
     private String destPath;
-    public IOSAppiumScreenRecorderForWindows(AbstractDeviceDriver abstractDeviceDriver, DeviceInfo info, String recordDir) {
-        super(abstractDeviceDriver, info, recordDir);
+
+    public IOSAppiumScreenRecorderForWindows(DeviceDriver deviceDriver, DeviceInfo info, String recordDir) {
+        super(deviceDriver, info, recordDir);
     }
 
     public static void copyScript(File testBaseDir) {

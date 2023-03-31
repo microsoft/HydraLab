@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.common.screen;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.impl.AbstractDeviceDriver;
+import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.util.Const;
 import io.appium.java_client.windows.WindowsDriver;
 import io.appium.java_client.windows.WindowsStartScreenRecordingOptions;
@@ -17,18 +17,18 @@ import java.time.Duration;
 import java.util.Base64;
 
 public class WindowsScreenRecorder implements ScreenRecorder {
-    private final AbstractDeviceDriver abstractDeviceDriver;
+    private final DeviceDriver deviceDriver;
     private final DeviceInfo deviceInfo;
     private final File baseFolder;
     private final Logger logger;
     private WindowsDriver windowsDriver;
 
-    public WindowsScreenRecorder(AbstractDeviceDriver abstractDeviceDriver, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
-        this.abstractDeviceDriver = abstractDeviceDriver;
+    public WindowsScreenRecorder(DeviceDriver deviceDriver, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
+        this.deviceDriver = deviceDriver;
         this.deviceInfo = deviceInfo;
         this.baseFolder = baseFolder;
         this.logger = logger;
-        windowsDriver = abstractDeviceDriver.getAppiumServerManager().getWindowsRootDriver(logger);
+        windowsDriver = deviceDriver.getAppiumServerManager().getWindowsRootDriver(logger);
     }
 
     @Override
