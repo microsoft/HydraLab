@@ -33,6 +33,11 @@ public class DeviceDriverConfig {
     private String appiumServerHost;
 
     @Bean
+    public DeviceDriverManager deviceDriverManager() {
+        return new DeviceDriverManager();
+    }
+
+    @Bean
     public ADBOperateUtil adbOperateUtil() {
         ADBOperateUtil adbOperateUtil = new ADBOperateUtil();
         if (StringUtils.isNotBlank(adbServerHost)) {
@@ -77,10 +82,5 @@ public class DeviceDriverConfig {
         WindowsDeviceDriver windowsDeviceDriver = new WindowsDeviceDriver(agentManagementService, appiumServerManager);
         deviceDriverManager.addDeviceDriver(DeviceType.WINDOWS, windowsDeviceDriver);
         return windowsDeviceDriver;
-    }
-
-    @Bean
-    public DeviceDriverManager deviceDriverManager() {
-        return new DeviceDriverManager();
     }
 }

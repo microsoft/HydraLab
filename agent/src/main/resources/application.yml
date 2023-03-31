@@ -50,11 +50,11 @@ app:
   device:
     monitor:
       windows:
-        enabled: true
+        enabled: false
       android:
         enabled: true
       ios:
-        enabled: true
+        enabled: false
     state-change:
       count-threshold: ${STATE_CHANGE_COUNT_THRESHOLD:12}
       window-time: ${STATE_CHANGE_WINDOW_TIME:5}

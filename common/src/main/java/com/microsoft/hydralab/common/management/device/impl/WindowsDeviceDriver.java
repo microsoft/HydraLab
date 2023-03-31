@@ -148,7 +148,7 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public WebDriver getAppiumDriver(DeviceInfo deviceInfo, Logger logger) {
-        return null;
+        return appiumServerManager.getWindowsRootDriver(logger);
     }
 
     @Override
@@ -163,7 +163,7 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public void screenCapture(DeviceInfo deviceInfo, String outputFile, Logger logger) throws IOException {
-        File scrFile = appiumServerManager.getWindowsRootDriver(classLogger).getScreenshotAs(OutputType.FILE);
+        File scrFile = appiumServerManager.getWindowsRootDriver(logger).getScreenshotAs(OutputType.FILE);
         BufferedImage screenshot = ImageIO.read(scrFile);
         ImgUtil.scale(screenshot, new File(outputFile), 0.7f);
     }
