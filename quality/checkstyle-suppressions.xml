@@ -7,4 +7,15 @@
 <suppressions>
     <suppress checks="[a-zA-Z0-9]*" files="R.java"/>
     <suppress checks="[a-zA-Z0-9]*" files="BuildConfig.java"/>
+<!--    suppress temperately -->
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]common[\\/]util[\\/]" />
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]common[\\/]file[\\/]" />
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]common[\\/]entity[\\/]center[\\/]" />
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]common[\\/]entity[\\/]common[\\/]" />
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]common[\\/]logger[\\/]" />
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]common[\\/]management[\\/]" />
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]common[\\/]monitor[\\/]" />
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]common[\\/]repository[\\/]" />
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]common[\\/]screen[\\/]" />
+    <suppress checks="[a-zA-Z0-9]*" files="hydralab[\\/]performance[\\/]" />
 </suppressions>

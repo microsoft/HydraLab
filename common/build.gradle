@@ -4,6 +4,8 @@ version = '0.9.5'
 sourceCompatibility = 11
 targetCompatibility = 11
 
+apply from: "${project.rootDir}/quality/checkstyle.gradle"
+
 def env = System.getProperty("env") ?: "dev"
 
 sourceSets {
@@ -13,6 +15,8 @@ sourceSets {
         }
     }
 }
+
+classes.finalizedBy checkstyleMain
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
