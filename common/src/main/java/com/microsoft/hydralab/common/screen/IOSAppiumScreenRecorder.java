@@ -43,5 +43,5 @@ abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
     abstract public void startRecord(int maxTimeInSecond);
 
     @Override
-    abstract public boolean finishRecording();
+    abstract public String finishRecording();
 }

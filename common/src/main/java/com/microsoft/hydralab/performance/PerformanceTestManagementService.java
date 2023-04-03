@@ -5,9 +5,9 @@ package com.microsoft.hydralab.performance;
 import com.alibaba.fastjson.JSON;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
@@ -209,7 +209,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_FAILURE, description);
     }
 
-    public void testTearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun, Logger log) {
+    public void testTearDown(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun, Logger log) {
         List<ScheduledFuture<?>> timerList = inspectPerformanceTimerMap.get(testRun.getId());
         if (timerList != null) {
             for (ScheduledFuture<?> timer : timerList) {
@@ -299,6 +299,4 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             }
         }
     }
-
-
 }

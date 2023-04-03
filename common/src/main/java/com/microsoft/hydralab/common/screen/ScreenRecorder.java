@@ -7,7 +7,7 @@ public interface ScreenRecorder {
 
     void startRecord(int maxTimeInSecond);
 
-    boolean finishRecording();
+    String finishRecording();
 
     int getPreSleepSeconds();
 

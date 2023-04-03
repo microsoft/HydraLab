@@ -2,19 +2,23 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.screen;
 
-import com.android.ddmlib.InstallException;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FlowUtil;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 
 
@@ -97,10 +101,10 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
     }
 
     @Override
-    public boolean finishRecording() {
+    public String finishRecording() {
         logger.info("finishRecording :" + started);
         if (!started) {
-            return false;
+            return null;
         }
         boolean tag = false;
         // wait 5s to record more info after testing
@@ -144,7 +148,10 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         }
         testDeviceManager.removeFileInDevice(deviceInfo, pathOnDevice, logger);
         started = false;
-        return tag;
+        if (tag) {
+            return pathOnAgent;
+        }
+        return null;
     }
 
     @Override
@@ -184,10 +191,10 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         }
     }
 
-    private void installRecorderServiceApp() throws InstallException {
+    private void installRecorderServiceApp() {
         try {
             testDeviceManager.installApp(deviceInfo, recordApk.getAbsolutePath(), logger);
-        } catch (InstallException e) {
+        } catch (HydraLabRuntimeException e) {
             // if failed to install app, uninstall app and try again.
             logger.error(e.getMessage(), e);
             testDeviceManager.uninstallApp(deviceInfo, recordPackageName, logger);

@@ -5,6 +5,8 @@ import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.util.Const;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -33,7 +35,7 @@ public class TestRunnerTest extends BaseTest {
         testTask.setResourceDir(resourceDir);
         testTask.setTestSuite("TestSuite");
 
-        TestRun testRun = espressoRunner.createTestRun(deviceInfo, testTask, logger);
+        TestRun testRun = espressoRunner.createTestRun(new TestRunDevice(deviceInfo, Const.TestDeviceTag.PRIMARY_PHONE), testTask, logger);
 
         testRun.getLogger().info("Test TestRun logging function");
         testRun.getLogger().info("TestRun InstrumentReportPath {}", testRun.getInstrumentReportPath());

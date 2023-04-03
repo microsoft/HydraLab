@@ -4,8 +4,8 @@ package com.microsoft.hydralab.common.screen;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
+import com.microsoft.hydralab.common.util.Const;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
@@ -16,13 +16,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class FFmpegConcatUtil {
-
+    static final String fileName = Const.ScreenRecoderConfig.DEFAULT_FILE_NAME;
     public static File concatVideos(List<File> videos, File outputDir, Logger logger) {
         if (videos.isEmpty()) {
             return null;
         }
-        final String fileName = Const.ScreenRecoderConfig.DEFAULT_FILE_NAME;
-        if (videos.size() <= 1) {
+        if (videos.size() == 1) {
             File file = videos.get(0);
             Assert.isTrue(file.renameTo(new File(file.getParentFile(), fileName)), "rename fail");
             return file;
@@ -69,8 +68,33 @@ public class FFmpegConcatUtil {
             err.start();
             out.start();
             powerShellProcess.waitFor();
+            new File(leftVideoPath).delete();
+            new File(rightVideoPath).delete();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public static File mergeVideosSideBySide(List<String> videoPaths, File outputDir, Logger logger) {
+        if (videoPaths.isEmpty()) {
+            return null;
+        }
+        if (videoPaths.size() == 1) {
+            File file = new File(videoPaths.get(0));
+            Assert.isTrue(file.renameTo(new File(file.getParentFile(), fileName)), "rename fail");
+            return file;
+        }
+        int mergeTimes = videoPaths.size() - 1;
+        for (int i = 0; i < mergeTimes; i++) {
+            String tempPath = new File(outputDir, String.format("temp%d.mp4", i)).getAbsolutePath();
+            String leftVideoPath = videoPaths.get(i);
+            String rightVideoPath = videoPaths.get(i + 1);
+            mergeVideosSideBySide(leftVideoPath, rightVideoPath, tempPath, logger);
+            videoPaths.set(i + 1, tempPath);
+            if (i == mergeTimes - 1) {
+                FileUtil.rename(new File(tempPath), fileName, true);
+            }
+        }
+        return new File(outputDir, fileName);
     }
 }

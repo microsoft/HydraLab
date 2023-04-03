@@ -16,6 +16,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
@@ -246,7 +247,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result) {
+    public void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result) {
 
     }
 
