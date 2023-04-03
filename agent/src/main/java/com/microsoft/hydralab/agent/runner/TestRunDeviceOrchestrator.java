@@ -310,16 +310,15 @@ public class TestRunDeviceOrchestrator {
         return deviceDriverManager.getDeviceLogger(testRunDevice.getDeviceInfo());
     }
 
-    public List<Exception> doActions(TestRunDevice testRunDevice, Logger logger, Map<String, List<DeviceAction>> deviceActions, String tearDown) {
+    public List<Exception> doActions(TestRunDevice testRunDevice, Logger logger, Map<String, List<DeviceAction>> deviceActions, String when) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             List<Exception> exceptions = new ArrayList<>();
             for (TestRunDevice testRunDevice1 : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
-                exceptions.addAll(actionExecutor.doActions(deviceDriverManager, testRunDevice1, logger, deviceActions, tearDown));
+                exceptions.addAll(actionExecutor.doActions(deviceDriverManager, testRunDevice1, logger, deviceActions, when));
             }
             return exceptions;
         } else {
-            return actionExecutor.doActions(deviceDriverManager, testRunDevice, logger, deviceActions, tearDown);
+            return actionExecutor.doActions(deviceDriverManager, testRunDevice, logger, deviceActions, when);
         }
-
     }
 }

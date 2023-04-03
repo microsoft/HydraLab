@@ -7,7 +7,6 @@ import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
-import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -17,10 +16,8 @@ import javax.annotation.Resource;
 
 public class TestTaskEngineServiceTest extends BaseTest {
 
-    @Resource
+    @MockBean
     TestTaskEngineService testTaskEngineService;
-    @Resource
-    DeviceDriverManager deviceDriverManager;
     @MockBean
     EspressoRunner espressoRunner;
     @Resource

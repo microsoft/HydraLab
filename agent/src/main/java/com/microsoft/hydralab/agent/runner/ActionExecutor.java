@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -71,7 +72,7 @@ public class ActionExecutor {
         if (!actionTypes.contains(deviceAction.getMethod())) {
             return;
         }
-        if (!testRunDevice.getDeviceInfo().getType().equalsIgnoreCase(deviceAction.getDeviceType())) {
+        if (!StringUtils.isEmpty(deviceAction.getDeviceType()) && !testRunDevice.getDeviceInfo().getType().equalsIgnoreCase(deviceAction.getDeviceType())){
             return;
         }
         DeviceInfo deviceInfo = testRunDevice.getDeviceInfo();
