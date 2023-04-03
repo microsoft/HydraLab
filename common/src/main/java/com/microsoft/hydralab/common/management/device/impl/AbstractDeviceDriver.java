@@ -15,7 +15,6 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceDriver;
-import com.microsoft.hydralab.common.management.listener.MobileDeviceState;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
@@ -29,8 +28,6 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
-
-import static com.android.ddmlib.IDevice.DeviceState;
 
 
 public abstract class AbstractDeviceDriver implements DeviceDriver {

@@ -11,7 +11,6 @@ import lombok.Setter;
 import org.openqa.selenium.WebDriver;
 
 import java.io.File;
-import java.io.Serializable;
 
 @Getter
 @Setter
