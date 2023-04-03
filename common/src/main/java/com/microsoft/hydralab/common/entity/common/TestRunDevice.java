@@ -14,17 +14,17 @@ import java.io.File;
 
 @Getter
 @Setter
-public class TestRunDevice{
+public class TestRunDevice {
     private final DeviceInfo deviceInfo;
     private final String tag;
-    private transient ScreenRecorder screenRecorder;
-    private transient LogCollector logCollector;
+    private ScreenRecorder screenRecorder;
+    private LogCollector logCollector;
     private String logPath;
-    private final transient AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();
+    private final AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();
     private int gifFrameCount = 0;
-    private transient File gifFile;
+    private File gifFile;
 
-    private transient WebDriver webDriver;
+    private WebDriver webDriver;
 
     public TestRunDevice(DeviceInfo deviceInfo, String tag) {
         this.deviceInfo = deviceInfo;
