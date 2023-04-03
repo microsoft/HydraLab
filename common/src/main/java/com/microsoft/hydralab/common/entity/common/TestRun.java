@@ -83,9 +83,6 @@ public class TestRun implements Serializable, ITestRun {
     @Transient
     private transient TestRunDevice device;
 
-    @Transient
-    private transient TestRunDevice device;
-
     public TestRun() {
     }
 
