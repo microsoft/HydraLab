@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 
 public class TestTaskEngineServiceTest extends BaseTest {
 
-    @MockBean
+    @Resource
     TestTaskEngineService testTaskEngineService;
     @MockBean
     EspressoRunner espressoRunner;
@@ -38,13 +38,17 @@ public class TestTaskEngineServiceTest extends BaseTest {
 
         Assertions.assertTrue(runner instanceof EspressoRunner, "Get runner bean error!");
 
-        testTaskEngineService.runTestTask(taskSpecForGroupDevice);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            testTaskEngineService.runTestTask(taskSpecForGroupDevice);
+        }, "Should throw IllegalArgumentException when deviceIdentifier is not exist");
 
         TestTaskSpec taskSpecForSingleDevice = new TestTaskSpec();
         taskSpecForSingleDevice.runningType = TestTask.TestRunningType.INSTRUMENTATION;
         taskSpecForSingleDevice.deviceIdentifier = "TestDeviceSerial1";
         taskSpecForSingleDevice.testFileSet = new TestFileSet();
         taskSpecForSingleDevice.pkgName = "com.microsoft.test";
-        testTaskEngineService.runTestTask(taskSpecForSingleDevice);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            testTaskEngineService.runTestTask(taskSpecForSingleDevice);
+        }, "Should throw IllegalArgumentException when deviceIdentifier is not exist");
     }
 }
