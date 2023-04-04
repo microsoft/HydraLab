@@ -125,7 +125,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             testTaskSpec.groupDevices = identifier;
         }
         List<String> deviceSerials = Arrays.asList(testTaskSpec.groupDevices.split(","));
-        List<DeviceInfo> devices = allActiveConnectedDevice.stream().filter(adbDeviceInfo -> deviceSerials.contains(adbDeviceInfo.getSerialNum())).collect(Collectors.toList());
+        List<DeviceInfo> devices = allActiveConnectedDevice.stream().filter(deviceInfo -> deviceSerials.contains(deviceInfo.getSerialNum())).collect(Collectors.toList());
         Assert.isTrue(devices.size() > 0, "No device found for " + testTaskSpec.groupDevices);
         if (((runner instanceof AppiumCrossRunner) || (runner instanceof T2CRunner)) && devices.size() > 1) {
             Optional<DeviceInfo> mainDeviceInfo = devices.stream().filter(deviceInfo -> !DeviceType.WINDOWS.name().equals(deviceInfo.getType())).findFirst();
