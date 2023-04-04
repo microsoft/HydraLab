@@ -100,21 +100,6 @@ export default class PerfTestDashboard extends React.Component {
         selectedIosEnergyOptions: iosEnergyOptions.slice(0, 7)
     };
 
-    buildPerfHistoryOptions(historyList) {
-        if (historyList && historyList.length > 0) {
-            let historyData = historyList[0];
-            let options = [];
-            for (let i = 1; i <= 5; i++) {
-                options.push({
-                    value: "metric" + i + "Key",
-                    label: historyData["metric" + i + "Key"],
-                    color: COLORS[i - 1],
-                })
-            }
-            return options;
-        }
-    }
-
     render() {
         const androidMemoryInfo = this.state.androidMemoryInfo;
         const androidMemoryMetrics = [];
