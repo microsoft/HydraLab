@@ -20,6 +20,7 @@ import java.util.Map;
 
 public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
     private static final int MEM_INFO_LENGTH = 19;
+    private static final String SUMMARY_DESCRIPTION = "Android memory info summary";
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Map<String, Integer> MEMORY_FILE_TO_DB_INDEX_MAP = new HashMap<>() {
         {
@@ -54,7 +55,7 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
             }
         }
 
-        performanceTestResult.setResultSummary(buildAverageMemoryInfo(averageMemoryInfo, inspectionResults.get(0)));
+        performanceTestResult.setResultSummary(buildAverageMemoryInfo(averageMemoryInfo, inspectionResults.get(0), SUMMARY_DESCRIPTION));
 
         return performanceTestResult;
     }
@@ -81,12 +82,16 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
         return false;
     }
 
-    private AndroidMemoryInfo buildAverageMemoryInfo(double[] averageMemoryInfo, PerformanceInspectionResult inspectionResult) {
+    private AndroidMemoryInfo buildAverageMemoryInfo(double[] averageMemoryInfo, PerformanceInspectionResult inspectionResult, String description) {
         long[] averageMemoryInfoLong = new long[averageMemoryInfo.length];
+        boolean isValidSummary = false;
         for (int i = 0; i < averageMemoryInfo.length; i++) {
+            if (averageMemoryInfo[i] > 0) {
+                isValidSummary = true;
+            }
             averageMemoryInfoLong[i] = Math.round(averageMemoryInfo[i]);
         }
-        return buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, averageMemoryInfoLong);
+        return isValidSummary ? buildMemoryInfo(inspectionResult.inspection.appId, description, inspectionResult.timestamp, averageMemoryInfoLong) : null;
     }
 
     private AndroidMemoryInfo buildMemoryInfo(String packageName, String description, long timestamp, long[] memInfos) {
