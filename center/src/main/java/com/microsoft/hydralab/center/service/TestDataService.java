@@ -40,6 +40,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -245,6 +246,10 @@ public class TestDataService {
 
     public List<PerformanceTestResultEntity> getPerformanceTestHistory(List<CriteriaType> queryParams) {
         Specification<PerformanceTestResultEntity> spec = new CriteriaTypeUtil<PerformanceTestResultEntity>().transferToSpecification(queryParams, false);
-        return performanceTestResultRepository.findAll(spec);
+        //TODO set page
+        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "Date"));
+        List<PerformanceTestResultEntity> perfHistoryList = new ArrayList<>(performanceTestResultRepository.findAll(spec, pageRequest).getContent());
+        Collections.reverse(perfHistoryList);
+        return perfHistoryList;
     }
 }
