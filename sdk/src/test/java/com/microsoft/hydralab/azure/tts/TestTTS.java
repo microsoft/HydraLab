@@ -44,16 +44,52 @@ public class TestTTS {
 
     @Test
     public void testTtsSSML() throws IOException {
-        processScripts(11);
+        processScripts(51);
     }
 
     private void processScripts(int... index) throws IOException {
         for (int i : index) {
-            try (FileInputStream fileInputStream = new FileInputStream(String.format("scripts/script%d.xml", i))) {
+            try (FileInputStream fileInputStream = new FileInputStream(String.format("scripts/v2/script%d.xml", i))) {
                 String text = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
-                String filePath = String.format("scripts/output%d.wav", i);
+                String filePath = String.format("scripts/v2/output%d.wav", i);
                 speakSSMLAndSaveToFile(text, filePath);
             }
+        }
+    }
+
+    /**
+     * @param ssml
+     * @param filePath
+     */
+    private void speakSSMLAndSaveToFile(String ssml, String filePath) {
+        try (SpeechConfig config = SpeechConfig.fromSubscription(speechSubscriptionKey, serviceRegion)) {
+
+            // config.setSpeechSynthesisVoiceName(who);
+            try (SpeechSynthesizer synth = new SpeechSynthesizer(config)) {
+
+                // More about SSML: https://developers.google.com/assistant/df-asdk/ssml
+                Future<SpeechSynthesisResult> task = synth.SpeakSsmlAsync(ssml);
+
+                SpeechSynthesisResult result = task.get();
+                AudioDataStream stream = AudioDataStream.fromResult(result);
+                stream.saveToWavFile(filePath);
+
+                if (result.getReason() == ResultReason.SynthesizingAudioCompleted) {
+                    System.out.println("Speech synthesized to speaker for text [" + ssml + "]");
+                } else if (result.getReason() == ResultReason.Canceled) {
+                    SpeechSynthesisCancellationDetails cancellation = SpeechSynthesisCancellationDetails
+                            .fromResult(result);
+                    System.out.println("CANCELED: Reason=" + cancellation.getReason());
+
+                    if (cancellation.getReason() == CancellationReason.Error) {
+                        System.out.println("CANCELED: ErrorCode=" + cancellation.getErrorCode());
+                        System.out.println("CANCELED: ErrorDetails=" + cancellation.getErrorDetails());
+                        System.out.println("CANCELED: Did you update the subscription info?");
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Unexpected exception: " + ex.getMessage());
         }
     }
 
@@ -99,42 +135,6 @@ public class TestTTS {
 
             assert (false);
             System.exit(1);
-        }
-    }
-
-    /**
-     * @param ssml
-     * @param filePath
-     */
-    private void speakSSMLAndSaveToFile(String ssml, String filePath) {
-        try (SpeechConfig config = SpeechConfig.fromSubscription(speechSubscriptionKey, serviceRegion)) {
-
-            // config.setSpeechSynthesisVoiceName(who);
-            try (SpeechSynthesizer synth = new SpeechSynthesizer(config)) {
-
-                // More about SSML: https://developers.google.com/assistant/df-asdk/ssml
-                Future<SpeechSynthesisResult> task = synth.SpeakSsmlAsync(ssml);
-
-                SpeechSynthesisResult result = task.get();
-                AudioDataStream stream = AudioDataStream.fromResult(result);
-                stream.saveToWavFile(filePath);
-
-                if (result.getReason() == ResultReason.SynthesizingAudioCompleted) {
-                    System.out.println("Speech synthesized to speaker for text [" + ssml + "]");
-                } else if (result.getReason() == ResultReason.Canceled) {
-                    SpeechSynthesisCancellationDetails cancellation = SpeechSynthesisCancellationDetails
-                            .fromResult(result);
-                    System.out.println("CANCELED: Reason=" + cancellation.getReason());
-
-                    if (cancellation.getReason() == CancellationReason.Error) {
-                        System.out.println("CANCELED: ErrorCode=" + cancellation.getErrorCode());
-                        System.out.println("CANCELED: ErrorDetails=" + cancellation.getErrorDetails());
-                        System.out.println("CANCELED: Did you update the subscription info?");
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            System.out.println("Unexpected exception: " + ex.getMessage());
         }
     }
 }
