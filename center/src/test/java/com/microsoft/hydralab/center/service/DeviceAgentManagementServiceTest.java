@@ -28,9 +28,9 @@ public class DeviceAgentManagementServiceTest extends BaseTest {
     @Test
     public void testOnMessage() throws IOException {
         Session session = Mockito.mock(Session.class);
-        String agentId = "agentId";
-
         Mockito.when(session.getId()).thenReturn("123456");
+
+        String agentId = "agentId";
         AgentUser agentUser = new AgentUser();
         agentUser.setId(agentId);
         agentUser.setName("agentName");
@@ -48,9 +48,11 @@ public class DeviceAgentManagementServiceTest extends BaseTest {
         Message message = Message.ok(Const.Path.AUTH, agentUser);
         byte[] byteMsg = SerializeUtil.messageToByteArr(message);
         // will throw exception when invoking: com.microsoft.hydralab.center.service.StorageTokenManageService.generateWriteToken
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            deviceAgentManagementService.onMessage(SerializeUtil.byteArrToMessage(byteMsg), session);
-        }, "Current storage service doesn't config WRITE permission!");
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> deviceAgentManagementService.onMessage(SerializeUtil.byteArrToMessage(byteMsg), session),
+                "Current storage service doesn't config WRITE permission!");
+
+        session.close();
 
     }
 }
