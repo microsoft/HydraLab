@@ -83,6 +83,7 @@ public class AppConfiguration {
     @Bean
     public EnvCapabilityDiscoveryService envCapabilityDiscoveryService() throws IOException {
         EnvCapabilityDiscoveryService envCapabilityDiscoveryService = new EnvCapabilityDiscoveryService();
+        envCapabilityDiscoveryService.setEnableScan(true);
         envCapabilityDiscoveryService.discover();
         return envCapabilityDiscoveryService;
     }
