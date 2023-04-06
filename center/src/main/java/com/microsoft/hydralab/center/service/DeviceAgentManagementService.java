@@ -739,8 +739,7 @@ public class DeviceAgentManagementService {
                 deviceCountMap.put(DeviceType.WINDOWS.name(), 1);
             }
         }
-
-        // Todo: leveraged current E2E agent, need to update to agent level test
+        
         String[] deviceIdentifiers = testTaskSpec.deviceIdentifier.split(",");
         String agentId = null;
         List<DeviceInfo> devices = new ArrayList<>();
