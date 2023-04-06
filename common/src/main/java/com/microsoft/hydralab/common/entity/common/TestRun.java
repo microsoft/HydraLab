@@ -94,13 +94,11 @@ public class TestRun implements Serializable, ITestRun {
         this.testTaskId = testTaskId;
     }
 
-    @Transient
     public String getDisplayTotalTime() {
         float second = (testEndTimeMillis - testStartTimeMillis) / 1000f;
         return String.format("%.2fs", second);
     }
 
-    @Transient
     public String getSuccessRate() {
         if (totalCount == 0) {
             return "0%";
@@ -109,7 +107,6 @@ public class TestRun implements Serializable, ITestRun {
         return String.format("%.2f", rate) + '%';
     }
 
-    @Transient
     @JSONField(serialize = false)
     public String getOngoingTestUnitName() {
         if (testUnitList.size() == 0) {

@@ -37,7 +37,7 @@ public class PerformanceInspectionResult {
                 "timestamp=" + timestamp +
                 ", testCaseName='" + testCaseName + '\'' +
                 ", inspection=" + inspection +
-                ", rawResultFile=" + rawResultFile +
+                ", rawResultFile=" + rawResultFile.getAbsolutePath() +
                 ", parsedData=" + parsedData +
                 '}';
     }
