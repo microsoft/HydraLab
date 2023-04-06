@@ -702,7 +702,6 @@ public class DeviceAgentManagementService {
     }
 
     private JSONObject runT2CTest(TestTaskSpec testTaskSpec) {
-        // TODO: upgrade to assign task to agent and check the available device count on the agent
         JSONObject result = new JSONObject();
         StorageFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
         Map<String, Integer> deviceCountMap = new HashMap<>();
@@ -739,7 +738,7 @@ public class DeviceAgentManagementService {
                 deviceCountMap.put(DeviceType.WINDOWS.name(), 1);
             }
         }
-        
+
         String[] deviceIdentifiers = testTaskSpec.deviceIdentifier.split(",");
         String agentId = null;
         List<DeviceInfo> devices = new ArrayList<>();
