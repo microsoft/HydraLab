@@ -59,6 +59,7 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         ongoingMonkeyTest.setTestedClass(pkgName);
         ongoingMonkeyTest.setDeviceTestResultId(testRun.getId());
         ongoingMonkeyTest.setTestTaskId(testRun.getTestTaskId());
+        testRun.addNewTestUnit(ongoingMonkeyTest);
 
         logger.info(ongoingMonkeyTest.getTitle());
 
@@ -102,7 +103,6 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         performanceTestManagementService.testRunFinished();
         ongoingMonkeyTest.setEndTimeMillis(System.currentTimeMillis());
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
-        testRun.addNewTestUnit(ongoingMonkeyTest);
         testRun.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end",
                 System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();

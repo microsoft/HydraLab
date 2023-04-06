@@ -8,8 +8,8 @@ import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
-import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
@@ -132,6 +132,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         performanceInspection.resultFolder = inspectorFolder;
 
         PerformanceInspectionResult result = performanceInspector.inspect(performanceInspection);
+        result.testCaseName = testRun.getOngoingTestUnitName();
 
         testRunPerfResultMap.putIfAbsent(testRun.getId(), new HashMap<>());
         Map<String, PerformanceTestResult> performanceTestResultMap = testRunPerfResultMap.get(testRun.getId());

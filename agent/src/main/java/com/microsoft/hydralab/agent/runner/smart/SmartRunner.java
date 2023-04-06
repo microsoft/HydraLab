@@ -111,6 +111,7 @@ public class SmartRunner extends TestRunner {
         ongoingSmartTest.setTestedClass(pkgName);
         ongoingSmartTest.setDeviceTestResultId(testRun.getId());
         ongoingSmartTest.setTestTaskId(testRun.getTestTaskId());
+        testRun.addNewTestUnit(ongoingSmartTest);
 
         testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(), System.currentTimeMillis() - recordingStartTimeMillis);
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, ongoingSmartTest.getTitle());
@@ -158,7 +159,6 @@ public class SmartRunner extends TestRunner {
         ongoingSmartTest.setEndTimeMillis(System.currentTimeMillis());
         logger.info(ongoingSmartTest.getTitle() + ".end");
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
-        testRun.addNewTestUnit(ongoingSmartTest);
         testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".end",
                 System.currentTimeMillis() - recordingStartTimeMillis);
         if (ongoingSmartTest.isSuccess()) {

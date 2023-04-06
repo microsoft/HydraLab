@@ -122,6 +122,7 @@ public class AdbMonkeyRunner extends TestRunner {
         ongoingMonkeyTest.setTestedClass(pkgName);
         ongoingMonkeyTest.setDeviceTestResultId(testRun.getId());
         ongoingMonkeyTest.setTestTaskId(testRun.getTestTaskId());
+        testRun.addNewTestUnit(ongoingMonkeyTest);
 
         logger.info(ongoingMonkeyTest.getTitle());
         testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 2, logger);
@@ -163,7 +164,6 @@ public class AdbMonkeyRunner extends TestRunner {
         logger.info(ongoingMonkeyTest.getTitle() + ".end");
         ongoingMonkeyTest.setEndTimeMillis(System.currentTimeMillis());
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
-        testRun.addNewTestUnit(ongoingMonkeyTest);
         testRun.addNewTimeTag(ongoingMonkeyTest.getTitle() + ".end",
                 System.currentTimeMillis() - recordingStartTimeMillis);
         return checkTime;

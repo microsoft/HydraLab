@@ -113,7 +113,22 @@ export default class PerfTestDashboard extends React.Component {
         const iosMemoryMetrics = [];
         let perfHistoryList = this.state.perfHistoryList;
 
-        console.log("render history", perfHistoryList);
+        const CustomTooltip = ({ active, payload, label }) => {
+            if (active && payload && payload.length) {
+                return (
+                    <div style={{ backgroundColor: 'white', border: '1px solid #ccc', whiteSpace: 'nowrap', margin: 0, padding: 10 }}>
+                        <p style={{ margin: 0, padding: 5 }}>{"Time: " + label + "S"}</p>
+                        {payload[0].payload.testCase && payload[0].payload.testCase.length && <p style={{ margin: 0, padding: 5 }}>{"Test case: " + payload[0].payload.testCase}</p>}
+                        {payload.map((key) => (
+                            <p style={{ margin: 0, padding: 5 }}><font color={key.color}>{key.dataKey + ": " + key.value}</font></p>
+                        ))}
+                        {payload[0].payload.description && payload[0].payload.description.length && <p style={{ margin: 0, padding: 5 }}>{"Description: " + payload[0].payload.description}</p>}
+                    </div>
+                )
+            }
+
+            return null;
+        }
 
         /**
          * Android Battery Info
@@ -128,6 +143,7 @@ export default class PerfTestDashboard extends React.Component {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     result.ratio = inspectionResult.parsedData.ratio * 100;
+                    result.testCase = inspectionResult.testCaseName;
                     isAndroidBatteryInfoEmpty = false;
 
                     androidBatteryMetrics.push(result);
@@ -152,6 +168,7 @@ export default class PerfTestDashboard extends React.Component {
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" type='number' />
                 <YAxis yAxisId="left" label={{ value: 'Battery usage (mAh)', angle: -90, position: 'left' }} />
                 <YAxis yAxisId="right" label={{ value: 'Ratio', angle: -90, position: 'right' }} unit="%" orientation="right" />
+                <Tooltip content={<CustomTooltip />} />
                 {this.state.selectedAndroidBatteryOptions.map((key, index) => (
                     <Line type="monotone" yAxisId={key.value == "ratio" ? "right" : "left"} dataKey={key.value} stroke={key.color} />
                 ))}
@@ -182,6 +199,7 @@ export default class PerfTestDashboard extends React.Component {
                             isAndroidMemoryInfoEmpty = false;
                         }
                     })
+                    result.testCase = inspectionResult.testCaseName;
                     androidMemoryMetrics.push(result);
                 }
             })
@@ -204,6 +222,7 @@ export default class PerfTestDashboard extends React.Component {
                 <Legend verticalAlign="top" />
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" type='number' />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
+                <Tooltip content={<CustomTooltip />} />
                 {this.state.selectedAndroidMemoryOptions.map((key, index) => (
                     <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
                 ))}
@@ -247,6 +266,7 @@ export default class PerfTestDashboard extends React.Component {
                         }
                     })
 
+                    result.testCase = inspectionResult.testCaseName;
                     windowsMemoryMetrics.push(result);
                 }
             })
@@ -269,6 +289,7 @@ export default class PerfTestDashboard extends React.Component {
                 <Legend verticalAlign="top" />
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" type='number' />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
+                <Tooltip content={<CustomTooltip />} />
                 {this.state.selectedWindowsMemoryOptions.map((key, index) => (
                     <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
                 ))}
@@ -292,6 +313,7 @@ export default class PerfTestDashboard extends React.Component {
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     isIosEnergyInfoEmpty = false;
+                    result.testCase = inspectionResult.testCaseName;
 
                     iosEnergyMetrics.push(result);
                 }
@@ -315,6 +337,7 @@ export default class PerfTestDashboard extends React.Component {
                 <Legend verticalAlign="top" />
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" type='number' />
                 <YAxis yAxisId="left" label={{ value: 'Energy Usage (mW)', angle: -90, position: 'left' }} />
+                <Tooltip content={<CustomTooltip />} />
                 {this.state.selectedIosEnergyOptions.map((key, index) => (
                     <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
                 ))}
@@ -339,6 +362,7 @@ export default class PerfTestDashboard extends React.Component {
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     isIosMemoryInfoEmpty = false;
+                    result.testCase = inspectionResult.testCaseName;
                     iosMemoryMetrics.push(result);
                 }
             })
@@ -349,6 +373,7 @@ export default class PerfTestDashboard extends React.Component {
                 <Legend verticalAlign="top" />
                 <XAxis dataKey="time" label={{ value: 'Time', position: 'bottom' }} unit="s" type='number' />
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
+                <Tooltip content={<CustomTooltip />} />
                 {iosMemoryOptions.map((key, index) => (
                     <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false} />
                 ))}
