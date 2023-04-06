@@ -33,6 +33,8 @@ public class HydraLabClientUtils {
         String output = String.format("##[section]All args: reportFolderPath: %s\n%s\n%s",
                 reportFolderPath, apiConfig.toString(), testConfig.toString());
 
+        // re-init static fields to overlap the previous values from run of this task (daemon mode will reuse last context)
+        isTestResultFailed = false;
         printlnf(maskCred(output));
 
         try {
