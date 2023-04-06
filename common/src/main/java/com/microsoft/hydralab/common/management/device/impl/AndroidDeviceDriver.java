@@ -11,15 +11,14 @@ import com.android.ddmlib.RawImage;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.EntityType;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelReceiver;
 import com.microsoft.hydralab.common.logger.impl.ADBLogcatCollector;
+import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
@@ -60,14 +59,14 @@ import static com.android.ddmlib.IDevice.PROP_DEVICE_MANUFACTURER;
 import static com.android.ddmlib.IDevice.PROP_DEVICE_MODEL;
 import static com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder.recordPackageName;
 
-public class AndroidTestDeviceManager extends TestDeviceManager {
+public class AndroidDeviceDriver extends AbstractDeviceDriver {
 
     public static final int HOME_EVENT = 3;
     public static final String KEYCODE_WAKEUP = "KEYCODE_WAKEUP";
     public static final String KEYCODE_MENU = "KEYCODE_MENU";
     public static final String KEYCODE_BACK = "KEYCODE_BACK";
     public static final String KEYCODE_HOME = "KEYCODE_HOME";
-    static final Logger classLogger = LoggerFactory.getLogger(AndroidTestDeviceManager.class);
+    static final Logger classLogger = LoggerFactory.getLogger(AndroidDeviceDriver.class);
     private final Map<String, DeviceInfo> adbDeviceInfoMap = new HashMap<>();
     ADBOperateUtil adbOperateUtil;
 
@@ -138,13 +137,18 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
         return usesPermission.startsWith("android.");
     }
 
+    public AndroidDeviceDriver(AgentManagementService agentManagementService,
+                               AppiumServerManager appiumServerManager, ADBOperateUtil adbOperateUtil) {
+        super(agentManagementService, appiumServerManager);
+        this.adbOperateUtil = adbOperateUtil;
+    }
+
     @Override
     public void init() {
         try {
             adbOperateUtil.init(mListener);
             PhoneAppScreenRecorder.copyAPK(agentManagementService.getPreAppDir());
         } catch (Exception e) {
-            classLogger.error("init adbOperateUtil failed", e);
             throw new HydraLabRuntimeException(500, "adbOperateUtil init failed", e);
         }
     }
@@ -379,40 +383,6 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
         changeSystemSetting(deviceInfo, "pointer_location", "1", logger);
     }
 
-    @Override
-    public File getScreenShot(DeviceInfo deviceInfo, Logger logger) {
-        File screenshotImageFile = deviceInfo.getScreenshotImageFile();
-        if (screenshotImageFile == null) {
-            screenshotImageFile = new File(agentManagementService.getScreenshotDir(),
-                    deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + ".jpg");
-            deviceInfo.setScreenshotImageFile(screenshotImageFile);
-            String imageRelPath = screenshotImageFile.getAbsolutePath()
-                    .replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
-            imageRelPath =
-                    agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
-            deviceInfo.setImageRelPath(imageRelPath);
-        }
-        deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
-        sendKeyEvent(deviceInfo, KEYCODE_WAKEUP, logger);
-        try {
-            screenCapture(deviceInfo, screenshotImageFile.getAbsolutePath(), null);
-        } catch (Exception e) {
-            throw new HydraLabRuntimeException("Failed to capture screenshot for device " + deviceInfo.getName(), e);
-        }
-        StorageFileInfo fileInfo =
-                new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(),
-                        StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
-        String fileDownloadUrl =
-                agentManagementService.getStorageServiceClientProxy().upload(screenshotImageFile, fileInfo)
-                        .getBlobUrl();
-        if (StringUtils.isBlank(fileDownloadUrl)) {
-            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
-        } else {
-            deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
-        }
-        return screenshotImageFile;
-    }
-
     private void deviceInfoUpdate(IDevice device) {
         DeviceState state = device.getState();
         DeviceInfo deviceInfo;
@@ -451,7 +421,8 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
         }
     }
 
-    private void screenCapture(DeviceInfo deviceInfo, String outputFile, Logger logger) throws Exception {
+    @Override
+    public void screenCapture(DeviceInfo deviceInfo, String outputFile, Logger logger) throws Exception {
         RawImage image = adbOperateUtil.getScreenshot(deviceInfo, logger);
         if (image == null) {
             return;
@@ -488,7 +459,7 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
     }
 
     private DeviceInfo getADBDeviceInfoFromDevice(IDevice device) {
-        DeviceInfo adbDevice = new DeviceInfo(this);
+        DeviceInfo adbDevice = new DeviceInfo();
         updateADBDeviceInfoByDevice(device, adbDevice);
         return adbDevice;
     }
@@ -745,9 +716,5 @@ public class AndroidTestDeviceManager extends TestDeviceManager {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-    }
-
-    public void setADBOperateUtil(ADBOperateUtil adbOperateUtil) {
-        this.adbOperateUtil = adbOperateUtil;
     }
 }

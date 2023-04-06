@@ -3,7 +3,7 @@
 package com.microsoft.hydralab.common.screen;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import io.appium.java_client.ios.IOSDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
 
     protected static final int DEFAULT_TIMEOUT_IN_SECOND = 600;
     static final String INTERRUPT_SCRIPT_PATH = "InterruptProcess.ps1";
-    protected TestDeviceManager testDeviceManager;
+    protected DeviceDriver deviceDriver;
     protected IOSDriver iosDriver;
     protected DeviceInfo deviceInfo;
     protected String recordDir;
@@ -21,12 +21,12 @@ abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
     protected boolean isStarted = false;
 
 
-    public IOSAppiumScreenRecorder(TestDeviceManager testDeviceManager, DeviceInfo info, String recordDir) {
-        this.testDeviceManager = testDeviceManager;
+    public IOSAppiumScreenRecorder(DeviceDriver deviceDriver, DeviceInfo info, String recordDir) {
+        this.deviceDriver = deviceDriver;
         this.deviceInfo = info;
         this.recordDir = recordDir;
 
-        this.iosDriver = testDeviceManager.getAppiumServerManager().getIOSDriver(deviceInfo, CLASS_LOGGER);
+        this.iosDriver = deviceDriver.getAppiumServerManager().getIOSDriver(deviceInfo, CLASS_LOGGER);
     }
 
     @Override

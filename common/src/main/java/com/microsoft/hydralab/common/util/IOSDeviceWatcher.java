@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.util;
 
-import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.IOSDeviceDriver;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
@@ -16,12 +16,12 @@ public class IOSDeviceWatcher extends Thread {
     private final InputStream inputStream;
     private final Logger logger;
 
-    private final WeakReference<IOSTestDeviceManager> iosDeviceManagerRef;
+    private final WeakReference<IOSDeviceDriver> iosDeviceDriverRef;
 
-    public IOSDeviceWatcher(InputStream inputStream, Logger logger, IOSTestDeviceManager iosDeviceManager) {
+    public IOSDeviceWatcher(InputStream inputStream, Logger logger, IOSDeviceDriver iosDeviceDriver) {
         this.inputStream = inputStream;
         this.logger = logger;
-        this.iosDeviceManagerRef = new WeakReference<>(iosDeviceManager);
+        this.iosDeviceDriverRef = new WeakReference<>(iosDeviceDriver);
     }
 
     public void run() {
@@ -30,9 +30,11 @@ public class IOSDeviceWatcher extends Thread {
             BufferedReader bufferedReader = new BufferedReader(isr);
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                if (iosDeviceManagerRef.get() == null) break;
+                if (iosDeviceDriverRef.get() == null) {
+                    break;
+                }
                 if (line.contains("MessageType")) {
-                    Objects.requireNonNull(iosDeviceManagerRef.get()).updateAllDeviceInfo();
+                    Objects.requireNonNull(iosDeviceDriverRef.get()).updateAllDeviceInfo();
                 }
                 logger.info(line);
             }

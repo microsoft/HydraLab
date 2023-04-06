@@ -11,8 +11,6 @@ import lombok.Setter;
 import org.openqa.selenium.WebDriver;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 @Getter
 @Setter

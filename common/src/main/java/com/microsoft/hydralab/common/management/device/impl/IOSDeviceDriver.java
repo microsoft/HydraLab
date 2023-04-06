@@ -7,13 +7,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.EntityType;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.impl.IOSLogCollector;
+import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForMac;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForWindows;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
@@ -35,62 +34,35 @@ import java.util.Map;
 
 import static com.microsoft.hydralab.common.util.AgentConstant.UNKNOWN_IOS_MODEL;
 
-public class IOSTestDeviceManager extends TestDeviceManager {
+public class IOSDeviceDriver extends AbstractDeviceDriver {
     public static final String iOSDeviceManufacturer = "Apple";
-    static final Logger classLogger = LoggerFactory.getLogger(IOSTestDeviceManager.class);
+    static final Logger classLogger = LoggerFactory.getLogger(IOSDeviceDriver.class);
     private final Map<String, DeviceInfo> iOSDeviceInfoMap = new HashMap<>();
 
-    private boolean isConnectedToWindowsOS;
-
-    public boolean isDeviceConnectedToWindows() {
-        return isConnectedToWindowsOS;
+    public IOSDeviceDriver(AgentManagementService agentManagementService,
+                           AppiumServerManager appiumServerManager) {
+        super(agentManagementService, appiumServerManager);
+        if (ShellUtils.isConnectedToWindowsOS) {
+            IOSAppiumScreenRecorderForWindows.copyScript(agentManagementService.getTestBaseDir());
+        } else {
+            // Mac, unix or linux
+            // do nothing
+        }
     }
 
     @Override
     public void init() {
-        String osName = System.getProperty("os.name");
-        if (osName.startsWith("Windows")) {
-            isConnectedToWindowsOS = true;
-            IOSAppiumScreenRecorderForWindows.copyScript(agentManagementService.getTestBaseDir());
-        } else {
-            // Mac, unix or linux
-            isConnectedToWindowsOS = false;
-        }
         try {
             ShellUtils.killProcessByCommandStr("tidevice", classLogger);
             IOSUtils.startIOSDeviceWatcher(classLogger, this);
         } catch (Exception e) {
-            throw new HydraLabRuntimeException(500, "IOSDeviceManager init failed", e);
+            throw new HydraLabRuntimeException(500, "IOSDeviceDriver init failed", e);
         }
     }
 
     @Override
-    public File getScreenShot(DeviceInfo deviceInfo, Logger logger) {
-        File screenshotImageFile = deviceInfo.getScreenshotImageFile();
-        if (screenshotImageFile == null) {
-            screenshotImageFile = new File(agentManagementService.getScreenshotDir(),
-                    deviceInfo.getName().replace(" ", "") + "-" + deviceInfo.getSerialNum() + ".jpg");
-            deviceInfo.setScreenshotImageFile(screenshotImageFile);
-            String imageRelPath = screenshotImageFile.getAbsolutePath()
-                    .replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
-            imageRelPath =
-                    agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
-            deviceInfo.setImageRelPath(imageRelPath);
-        }
-        IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), screenshotImageFile.getAbsolutePath(), classLogger);
-        deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
-        StorageFileInfo fileInfo =
-                new StorageFileInfo(screenshotImageFile, "device/screenshots/" + screenshotImageFile.getName(),
-                        StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
-        String fileDownloadUrl =
-                agentManagementService.getStorageServiceClientProxy().upload(screenshotImageFile, fileInfo)
-                        .getBlobUrl();
-        if (StringUtils.isBlank(fileDownloadUrl)) {
-            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
-        } else {
-            deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
-        }
-        return screenshotImageFile;
+    public void screenCapture(@NotNull DeviceInfo deviceInfo, @NotNull String path, @Nullable Logger logger) {
+        IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), path, classLogger);
     }
 
     @Override
@@ -235,7 +207,7 @@ public class IOSTestDeviceManager extends TestDeviceManager {
     }
 
     public DeviceInfo parseJsonToDevice(JSONObject deviceObject) {
-        DeviceInfo deviceInfo = new DeviceInfo(this);
+        DeviceInfo deviceInfo = new DeviceInfo();
         String udid = deviceObject.getString("udid");
         deviceInfo.setSerialNum(udid);
         deviceInfo.setDeviceId(udid);

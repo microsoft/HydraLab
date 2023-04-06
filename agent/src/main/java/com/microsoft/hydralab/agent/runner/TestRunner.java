@@ -35,7 +35,6 @@ public abstract class TestRunner {
     protected final PerformanceTestManagementService performanceTestManagementService;
     protected final TestRunDeviceOrchestrator testRunDeviceOrchestrator;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
-    protected final ActionExecutor actionExecutor = new ActionExecutor();
 
     public TestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                       TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService) {
@@ -105,7 +104,8 @@ public abstract class TestRunner {
     }
 
     protected TestRun createTestRun(TestRunDevice testRunDevice, TestTask testTask, Logger parentLogger) {
-        TestRun testRun = new TestRun(testRunDevice.getDeviceInfo().getSerialNum(), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
+        TestRun testRun = new TestRun(testRunDeviceOrchestrator.getSerialNum(testRunDevice), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
+        testRun.setDevice(testRunDevice);
         File testRunResultFolder = new File(testTask.getResourceDir(), testRunDevice.getDeviceInfo().getSerialNum());
         parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
         if (!testRunResultFolder.exists()) {
@@ -138,7 +138,7 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing setUp actions.");
-            List<Exception> exceptions = actionExecutor.doActions(testRunDevice, testRun.getLogger(),
+            List<Exception> exceptions = testRunDeviceOrchestrator.doActions(testRunDevice, testRun.getLogger(),
                     testTask.getDeviceActions(), DeviceAction.When.SET_UP);
             Assert.isTrue(exceptions.size() == 0, () -> exceptions.get(0));
         }
@@ -171,7 +171,7 @@ public abstract class TestRunner {
         //execute actions
         if (testTask.getDeviceActions() != null) {
             testRun.getLogger().info("Start executing tearDown actions.");
-            List<Exception> exceptions = actionExecutor.doActions(testRunDevice, testRun.getLogger(),
+            List<Exception> exceptions = testRunDeviceOrchestrator.doActions(testRunDevice, testRun.getLogger(),
                     testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
             if (exceptions.size() > 0) {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
