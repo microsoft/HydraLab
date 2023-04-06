@@ -705,6 +705,7 @@ public class DeviceAgentManagementService {
         // TODO: upgrade to assign task to agent and check the available device count on the agent
         JSONObject result = new JSONObject();
         StorageFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
+        Map<String, Integer> deviceCountMap = new HashMap<>();
         if (testAppFileInfo != null) {
             File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
             TestInfo testInfo;
@@ -717,23 +718,26 @@ public class DeviceAgentManagementService {
                 testApkFile.delete();
             }
             Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
-
-            int androidCount = 0;
             int edgeCount = 0;
-
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
-                if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
-                    androidCount++;
+                if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.ANDROID.name())) {
+                    deviceCountMap.put(DeviceType.ANDROID.name(), deviceCountMap.getOrDefault(DeviceType.ANDROID.name(), 0) + 1);
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
                     edgeCount++;
                 }
-                if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
-                    throw new RuntimeException("No iOS device connected to this agent");
+                if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.IOS.name())) {
+                    deviceCountMap.put(DeviceType.IOS.name(), deviceCountMap.getOrDefault(DeviceType.IOS.name(), 0) + 1);
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.WINDOWS.name())) {
+                    deviceCountMap.put(DeviceType.WINDOWS.name(), deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) + 1);
                 }
             }
-            Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
+            Assert.isTrue(deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) <= 1, "No enough Windows device to run this test.");
             Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
+            if (deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) == 0 && edgeCount == 1) {
+                deviceCountMap.put(DeviceType.WINDOWS.name(), 1);
+            }
         }
 
         // Todo: leveraged current E2E agent, need to update to agent level test
@@ -751,7 +755,11 @@ public class DeviceAgentManagementService {
             if (device.isTesting()) {
                 return result;
             }
+            deviceCountMap.put(device.getType(), deviceCountMap.getOrDefault(device.getType(), 0) - 1);
             devices.add(device);
+        }
+        for (Map.Entry<String, Integer> entry : deviceCountMap.entrySet()) {
+            Assert.isTrue(entry.getValue() <= 0, "No enough " + entry.getKey() + " device to run this test.");
         }
         Message message = new Message();
         message.setBody(testTaskSpec);
