@@ -51,8 +51,6 @@ public class AppConfiguration {
     Logger logger = LoggerFactory.getLogger(getClass());
     @Resource
     private AppOptions appOptions;
-    @Value("${spring.profiles.active:@null}")
-    private String activeProfile;
     @Value("${app.registry.server}")
     private String registryServer;
     @Value("${app.device.state-change.count-threshold}")
@@ -61,12 +59,8 @@ public class AppConfiguration {
     private long deviceStateChangeWindowTime;
     @Value("${app.device.state-change.recovery-time}")
     private long deviceStateChangeRecoveryTime;
-    @Value("${app.adb.host:}")
-    private String adbServerHost;
     @Value("${app.pre-install.shutdown-if-fail:true}")
     private Boolean shutdownIfFail;
-    @Value("${app.appium.host:}")
-    private String appiumServerHost;
 
     @NotNull
     private File getScreenshotDir() {
