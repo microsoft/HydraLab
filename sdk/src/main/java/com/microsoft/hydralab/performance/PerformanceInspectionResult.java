@@ -10,6 +10,8 @@ public class PerformanceInspectionResult {
     @SuppressWarnings("visibilitymodifier")
     public final long timestamp;
     @SuppressWarnings("visibilitymodifier")
+    public String testCaseName;
+    @SuppressWarnings("visibilitymodifier")
     public PerformanceInspection inspection;
     @SuppressWarnings("visibilitymodifier")
     public File rawResultFile;
@@ -33,6 +35,7 @@ public class PerformanceInspectionResult {
     public String toString() {
         return "PerformanceInspectionResult{" +
                 "timestamp=" + timestamp +
+                ", testCaseName='" + testCaseName + '\'' +
                 ", inspection=" + inspection +
                 ", rawResultFile=" + rawResultFile.getAbsolutePath() +
                 ", parsedData=" + parsedData +

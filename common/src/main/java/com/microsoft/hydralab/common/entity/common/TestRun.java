@@ -4,6 +4,7 @@ package com.microsoft.hydralab.common.entity.common;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
@@ -21,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Data
@@ -72,7 +74,7 @@ public class TestRun implements Serializable, ITestRun {
     @Transient
     private List<StorageFileInfo> attachments;
     @Transient
-    private List<PerformanceTestResultEntity> performanceTestResultEntities = new ArrayList<>();
+    private List<PerformanceTestResultEntity> performanceTestResultEntities = new CopyOnWriteArrayList<>();
 
     @Transient
     private transient List<CommandlineAndTime> commandlineAndTimeList = new ArrayList<>();
@@ -92,13 +94,11 @@ public class TestRun implements Serializable, ITestRun {
         this.testTaskId = testTaskId;
     }
 
-    @Transient
     public String getDisplayTotalTime() {
         float second = (testEndTimeMillis - testStartTimeMillis) / 1000f;
         return String.format("%.2fs", second);
     }
 
-    @Transient
     public String getSuccessRate() {
         if (totalCount == 0) {
             return "0%";
@@ -106,6 +106,15 @@ public class TestRun implements Serializable, ITestRun {
         float rate = 100f * (totalCount - failCount) / totalCount;
         return String.format("%.2f", rate) + '%';
     }
+
+    @JSONField(serialize = false)
+    public String getOngoingTestUnitName() {
+        if (testUnitList.size() == 0) {
+            return "";
+        }
+        return testUnitList.get(testUnitList.size() - 1).getTestName();
+    }
+
 
     public void addNewTestUnit(AndroidTestUnit ongoingTestUnit) {
         testUnitList.add(ongoingTestUnit);

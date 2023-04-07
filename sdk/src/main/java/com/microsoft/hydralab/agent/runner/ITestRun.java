@@ -8,4 +8,6 @@ public interface ITestRun {
     String getId();
 
     String getDeviceSerialNumberByType(String type);
+
+    String getOngoingTestUnitName();
 }
