@@ -6,9 +6,9 @@ package com.microsoft.hydralab.agent.util;
 import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.FileUtil;
-import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -92,7 +92,7 @@ public class FileLoadUtil {
             CommandOutputReceiver out = new CommandOutputReceiver(process.getInputStream(), log);
             err.start();
             out.start();
-            process.waitFor(60, TimeUnit.SECONDS);
+            process.waitFor(300, TimeUnit.SECONDS);
             log.info("Install Win-App success");
         } catch (Exception e) {
             log.error("Install Win-App failed", e);
