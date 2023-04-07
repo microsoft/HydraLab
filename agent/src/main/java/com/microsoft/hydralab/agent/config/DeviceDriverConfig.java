@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,6 +25,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DeviceDriverConfig {
 
+    @Value("${app.device.monitor.android.enabled:false}")
+    boolean android;
+    @Value("${app.device.monitor.windows.enabled:false}")
+    boolean windows;
+    @Value("${app.device.monitor.ios.enabled:false}")
+    boolean ios;
     Logger logger = LoggerFactory.getLogger(getClass());
     @Value("${app.adb.host:}")
     private String adbServerHost;
@@ -33,8 +38,21 @@ public class DeviceDriverConfig {
     private String appiumServerHost;
 
     @Bean
-    public DeviceDriverManager deviceDriverManager() {
-        return new DeviceDriverManager();
+    public DeviceDriverManager deviceDriverManager(AgentManagementService agentManagementService, AppiumServerManager appiumServerManager, ADBOperateUtil adbOperateUtil) {
+        DeviceDriverManager deviceDriverManager = new DeviceDriverManager();
+        if (android) {
+            AndroidDeviceDriver androidDeviceDriver = new AndroidDeviceDriver(agentManagementService, appiumServerManager, adbOperateUtil);
+            deviceDriverManager.addDeviceDriver(DeviceType.ANDROID, androidDeviceDriver);
+        }
+        if (ios) {
+            IOSDeviceDriver iosDeviceDriver = new IOSDeviceDriver(agentManagementService, appiumServerManager);
+            deviceDriverManager.addDeviceDriver(DeviceType.IOS, iosDeviceDriver);
+        }
+        if (windows) {
+            WindowsDeviceDriver windowsDeviceDriver = new WindowsDeviceDriver(agentManagementService, appiumServerManager);
+            deviceDriverManager.addDeviceDriver(DeviceType.WINDOWS, windowsDeviceDriver);
+        }
+        return deviceDriverManager;
     }
 
     @Bean
@@ -55,32 +73,5 @@ public class DeviceDriverConfig {
             appiumServerManager.setAppiumServerHost(appiumServerHost);
         }
         return appiumServerManager;
-    }
-
-    @Bean(name = "androidDeviceDriver")
-    @ConditionalOnProperty(prefix = "app.device.monitor.android", name = "enabled", havingValue = "true")
-    public AndroidDeviceDriver androidDeviceDriver(DeviceDriverManager deviceDriverManager, AgentManagementService agentManagementService,
-                                                   AppiumServerManager appiumServerManager, ADBOperateUtil adbOperateUtil) {
-        AndroidDeviceDriver androidDeviceDriver = new AndroidDeviceDriver(agentManagementService, appiumServerManager, adbOperateUtil);
-        deviceDriverManager.addDeviceDriver(DeviceType.ANDROID, androidDeviceDriver);
-        return androidDeviceDriver;
-    }
-
-    @Bean(name = "iosDeviceDriver")
-    @ConditionalOnProperty(prefix = "app.device.monitor.ios", name = "enabled", havingValue = "true")
-    public IOSDeviceDriver iosDeviceDriver(DeviceDriverManager deviceDriverManager, AgentManagementService agentManagementService,
-                                           AppiumServerManager appiumServerManager) {
-        IOSDeviceDriver iosDeviceDriver = new IOSDeviceDriver(agentManagementService, appiumServerManager);
-        deviceDriverManager.addDeviceDriver(DeviceType.IOS, iosDeviceDriver);
-        return iosDeviceDriver;
-    }
-
-    @Bean(name = "windowsDeviceDriver")
-    @ConditionalOnProperty(prefix = "app.device.monitor.windows", name = "enabled", havingValue = "true")
-    public WindowsDeviceDriver windowsDeviceDriver(DeviceDriverManager deviceDriverManager, AgentManagementService agentManagementService,
-                                                   AppiumServerManager appiumServerManager) {
-        WindowsDeviceDriver windowsDeviceDriver = new WindowsDeviceDriver(agentManagementService, appiumServerManager);
-        deviceDriverManager.addDeviceDriver(DeviceType.WINDOWS, windowsDeviceDriver);
-        return windowsDeviceDriver;
     }
 }
