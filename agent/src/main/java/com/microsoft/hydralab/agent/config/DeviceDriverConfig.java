@@ -26,11 +26,11 @@ import org.springframework.context.annotation.Configuration;
 public class DeviceDriverConfig {
 
     @Value("${app.device.monitor.android.enabled:false}")
-    boolean android;
+    boolean enableAndroid;
     @Value("${app.device.monitor.windows.enabled:false}")
-    boolean windows;
+    boolean enableWindows;
     @Value("${app.device.monitor.ios.enabled:false}")
-    boolean ios;
+    boolean enableIos;
     Logger logger = LoggerFactory.getLogger(getClass());
     @Value("${app.adb.host:}")
     private String adbServerHost;
@@ -40,15 +40,15 @@ public class DeviceDriverConfig {
     @Bean
     public DeviceDriverManager deviceDriverManager(AgentManagementService agentManagementService, AppiumServerManager appiumServerManager, ADBOperateUtil adbOperateUtil) {
         DeviceDriverManager deviceDriverManager = new DeviceDriverManager();
-        if (android) {
+        if (enableAndroid) {
             AndroidDeviceDriver androidDeviceDriver = new AndroidDeviceDriver(agentManagementService, appiumServerManager, adbOperateUtil);
             deviceDriverManager.addDeviceDriver(DeviceType.ANDROID, androidDeviceDriver);
         }
-        if (ios) {
+        if (enableIos) {
             IOSDeviceDriver iosDeviceDriver = new IOSDeviceDriver(agentManagementService, appiumServerManager);
             deviceDriverManager.addDeviceDriver(DeviceType.IOS, iosDeviceDriver);
         }
-        if (windows) {
+        if (enableWindows) {
             WindowsDeviceDriver windowsDeviceDriver = new WindowsDeviceDriver(agentManagementService, appiumServerManager);
             deviceDriverManager.addDeviceDriver(DeviceType.WINDOWS, windowsDeviceDriver);
         }
