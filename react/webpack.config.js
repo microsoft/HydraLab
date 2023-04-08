@@ -30,7 +30,8 @@ module.exports = env => {
         mode: env.prod?"production":"development",
         output: {
             path: path.join(__dirname, distPath),
-            filename: 'bundle.js'
+            filename: 'bundle.js',
+            hashFunction: 'xxhash64'
         },
         devServer: {
             port: 9999,
@@ -55,11 +56,14 @@ module.exports = env => {
                     { from: path.join(__dirname, 'images'), to: path.join(__dirname, distPath + '/images') },
                 ],
             }),
-            new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+            new webpack.IgnorePlugin({
+                resourceRegExp: /^\.\/locale$/,
+                contextRegExp: /moment$/
+            }),
             new CompressionPlugin({
                 test: /\.js/,
                 algorithm: 'gzip'
-              })
+            })
         ],
         module: {
             rules: [
