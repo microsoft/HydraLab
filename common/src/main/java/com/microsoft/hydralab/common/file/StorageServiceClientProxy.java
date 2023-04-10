@@ -59,7 +59,7 @@ public class StorageServiceClientProxy {
         EntityType.setInstanceContainer(storageProperties);
     }
 
-    public boolean enableFileExpiry() {
+    public boolean fileLimitEnabled() {
         return storageServiceClient.getFileLimitDay() > 0;
     }
 

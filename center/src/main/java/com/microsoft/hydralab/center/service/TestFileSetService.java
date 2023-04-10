@@ -61,7 +61,7 @@ public class TestFileSetService {
     public Page<TestFileSet> queryFileSets(int page, int pageSize, List<CriteriaType> criteriaTypes) {
         Specification<TestFileSet> spec = null;
 
-        if (storageServiceClientProxy.enableFileExpiry()) {
+        if (storageServiceClientProxy.fileLimitEnabled()) {
             CriteriaType fileLimitCriteria = getFileLimitCriteria();
             if (criteriaTypes != null) {
                 criteriaTypes.add(fileLimitCriteria);
