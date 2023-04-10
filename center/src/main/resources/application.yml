@@ -64,7 +64,7 @@ app:
     local:
       token: ${CENTER_TOKEN:token=CENTER_LOCAL_STORAGE_TOKEN}
       endpoint: ${LOCAL_STORAGE_ENDPOINT:http://localhost:9886/}
-
+      fileLimitDay: 6
   location: ${user.dir}
 management:
   endpoints:
