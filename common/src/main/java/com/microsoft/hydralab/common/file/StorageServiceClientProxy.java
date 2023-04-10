@@ -19,7 +19,7 @@ import java.io.File;
  * @date 3/1/2023
  */
 
-public class StorageServiceClientProxy extends StorageServiceClient {
+public class StorageServiceClientProxy {
     private String storageType;
     private StorageServiceClient storageServiceClient;
     private ApplicationContext applicationContext;
@@ -59,31 +59,30 @@ public class StorageServiceClientProxy extends StorageServiceClient {
         EntityType.setInstanceContainer(storageProperties);
     }
 
+    public boolean enableFileExpiry() {
+        return storageServiceClient.getFileLimitDay() > 0;
+    }
+
     public int getStorageFileLimitDay() {
         return storageServiceClient.getFileLimitDay();
     }
 
-    @Override
     public void updateAccessToken(AccessToken token) {
         storageServiceClient.updateAccessToken(token);
     }
 
-    @Override
     public AccessToken generateAccessToken(String permissionType) {
         return storageServiceClient.generateAccessToken(permissionType);
     }
 
-    @Override
     public boolean isAccessTokenExpired(AccessToken token) {
         return storageServiceClient.isAccessTokenExpired(token);
     }
 
-    @Override
     public StorageFileInfo upload(File file, StorageFileInfo storageFileInfo) {
         return storageServiceClient.upload(file, storageFileInfo);
     }
 
-    @Override
     public StorageFileInfo download(File file, StorageFileInfo storageFileInfo) {
         return storageServiceClient.download(file, storageFileInfo);
     }
