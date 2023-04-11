@@ -31,7 +31,7 @@ public class FileLoadUtil {
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
 
-    private static final Set<String> blackListFolder = Set.of("config", "hydra", "logs", "SmartTest", "SmartTestString", "storage");
+    private static final Set<String> blacklistFolder = Set.of("config", "hydra", "logs", "SmartTest", "SmartTestString", "storage");
 
     public void clearAttachments(TestTask testTask) {
         List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
@@ -107,8 +107,8 @@ public class FileLoadUtil {
         try {
             File loadFolder = new File(appOptions.getLocation() + "/" + attachment.getLoadDir());
             String firstLevelFolder = attachment.getLoadDir().split("/")[0];
-            Assert.isTrue(!blackListFolder.contains(firstLevelFolder),
-                    "Load file error : " + loadFolder.getAbsolutePath() + " was contained in black list:" + blackListFolder);
+            Assert.isTrue(!blacklistFolder.contains(firstLevelFolder),
+                    "Load file error : " + loadFolder.getAbsolutePath() + " was contained in blacklist:" + blacklistFolder);
             log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
             File attachmentFile = downloadFile(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
             if (StorageFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {
