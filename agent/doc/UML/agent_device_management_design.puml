@@ -155,3 +155,44 @@ MacOSScanner -u-|> EnvCapabilityScanner
 
 EnvCapabilityScanner .. EnvCapability: produce
 @enduml
+
+@startuml agent_capability_design
+
+class AgentManagementService {
+    EnvInfo envInfo;
+    List<ServiceCapability> serviceCapability;
+    detectAndRegisterServiceCapability(ServiceCapability)
+}
+AgentManagementService -r-> EnvCapabilityDiscoveryService
+class TestRunnerConfig
+class TestRunner{
+    ServiceCapability serviceCapability;
+}
+class DeviceDriverConfig
+class DeviceDriver{
+    ServiceCapability serviceCapability;
+}
+TestRunnerConfig ..> TestRunner : create
+TestRunnerConfig -r-> AgentManagementService
+DeviceDriverConfig ..> DeviceDriver : create
+DeviceDriverConfig -r-> AgentManagementService
+TestRunner --> ServiceCapability
+DeviceDriver --> ServiceCapability
+
+class ServiceCapability{
+    +String serviceName
+    +enum serviceType
+    +Map<CapabilityKeyword, String miniVersion > reliantEnvCapabilities
+    +Map<CapabilityKeyword, boolean isReady> detectDetails
+    +boolean isReady
+}
+ServiceCapability *--> serviceType
+enum serviceType{
+    TEST_RUNNER
+    DEVICE_DRIVER
+}
+class AgentUser{
+    List<ServiceCapability> agentCapability;
+}
+AgentManagementService ..> AgentUser : provide
+@enduml
