@@ -168,6 +168,7 @@ public class AppiumServerManager {
         DesiredCapabilities caps = new DesiredCapabilities();
         caps.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, 4000);
         caps.setCapability(MobileCapabilityType.UDID, udid);
+
         try {
             androidDriver = new AndroidDriver(new URL(String.format("http://%s:%d/wd/hub", appiumServerHost, appiumServerPort)), caps);
             androidDrivers.put(udid, androidDriver);
