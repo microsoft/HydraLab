@@ -18,7 +18,6 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +30,8 @@ public class FileLoadUtil {
     private AppOptions appOptions;
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
+
+    private static final Set<String> blackListFolder = Set.of("config", "hydra", "logs", "SmartTest", "SmartTestString", "storage");
 
     public void clearAttachments(TestTask testTask) {
         List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
@@ -48,7 +49,6 @@ public class FileLoadUtil {
 
     public void loadAttachments(TestTask testTask) {
         List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
-        Set<String> whiteListFolder = new HashSet<>();
         if (attachments == null) {
             return;
         }
@@ -58,7 +58,7 @@ public class FileLoadUtil {
                     installWinApp(attachment);
                     break;
                 case StorageFileInfo.FileType.COMMON_FILE:
-                    loadCommonFile(attachment, whiteListFolder);
+                    loadCommonFile(attachment);
                     break;
                 case StorageFileInfo.FileType.APP_FILE:
                     File appFile = downloadFile(attachment);
@@ -103,14 +103,14 @@ public class FileLoadUtil {
 
     }
 
-    public void loadCommonFile(StorageFileInfo attachment, Set<String> whiteListFolder) {
+    public void loadCommonFile(StorageFileInfo attachment) {
         try {
             File loadFolder = new File(appOptions.getLocation() + "/" + attachment.getLoadDir());
-            Assert.isTrue(whiteListFolder.contains(attachment.getLoadDir()) || !loadFolder.exists(),
-                    "Load file error : " + loadFolder.getAbsolutePath() + " has been existed!");
+            String firstLevelFolder = attachment.getLoadDir().split("/")[0];
+            Assert.isTrue(!blackListFolder.contains(firstLevelFolder),
+                    "Load file error : " + loadFolder.getAbsolutePath() + " was contained in black list:" + blackListFolder);
             log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
             File attachmentFile = downloadFile(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
-            whiteListFolder.add(attachment.getLoadDir());
             if (StorageFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {
                 FileUtil.unzipFile(attachmentFile.getAbsolutePath(), loadFolder.getAbsolutePath());
             }
