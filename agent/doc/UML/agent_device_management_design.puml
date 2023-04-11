@@ -160,39 +160,78 @@ EnvCapabilityScanner .. EnvCapability: produce
 
 class AgentManagementService {
     EnvInfo envInfo;
-    List<ServiceCapability> serviceCapability;
-    detectAndRegisterServiceCapability(ServiceCapability)
+    List<ServiceAvailability> serviceAvailabilities;
+    checkServiceAvailability(String serviceName,ServiceType,boolean isEnabled, List<EnvCapabilityRequirement>)
 }
 AgentManagementService -r-> EnvCapabilityDiscoveryService
-class TestRunnerConfig
 class TestRunner{
-    ServiceCapability serviceCapability;
+    List<EnvCapabilityRequirement>
 }
-class DeviceDriverConfig
 class DeviceDriver{
-    ServiceCapability serviceCapability;
+    List<EnvCapabilityRequirement>
 }
-TestRunnerConfig ..> TestRunner : create
-TestRunnerConfig -r-> AgentManagementService
-DeviceDriverConfig ..> DeviceDriver : create
-DeviceDriverConfig -r-> AgentManagementService
-TestRunner --> ServiceCapability
-DeviceDriver --> ServiceCapability
 
-class ServiceCapability{
-    +String serviceName
-    +enum serviceType
-    +Map<CapabilityKeyword, String miniVersion > reliantEnvCapabilities
-    +Map<CapabilityKeyword, boolean isReady> detectDetails
-    +boolean isReady
+TestRunner -r-> AgentManagementService
+DeviceDriver -r-> AgentManagementService
+TestRunner --> EnvCapabilityRequirement
+DeviceDriver --> EnvCapabilityRequirement
+
+class EnvCapabilityRequirement{
+    +private boolean isReady
+    +EnvCapability envCapability
+    +boolean meet(EnvCapability envCapability)
 }
-ServiceCapability *--> serviceType
-enum serviceType{
+enum ServiceType{
     TEST_RUNNER
     DEVICE_DRIVER
 }
+class ServiceAvailability{
+    +ServiceType serviceType
+    +String serviceName
+    +List<EnvCapabilityRequirement> envCapabilityRequirements
+    +boolean isEnabled
+    +boolean isAvailable
+}
+AgentManagementService -->ServiceAvailability
+ServiceAvailability ..> ServiceType
 class AgentUser{
-    List<ServiceCapability> agentCapability;
+    List<ServiceAvailability> agentCapability;
 }
 AgentManagementService ..> AgentUser : provide
+@enduml
+
+@startuml agent_capability_design_sequence
+participant AgentApplication
+participant EnvCapabilityDiscoveryService
+participant AgentManagementService
+participant TestRunner
+participant DeviceDriverManager
+participant AgentWebSocketClientService
+participant CenterApplication
+
+activate AgentApplication
+activate CenterApplication
+AgentApplication --> EnvCapabilityDiscoveryService : createBean
+activate EnvCapabilityDiscoveryService
+EnvCapabilityDiscoveryService --> EnvCapabilityDiscoveryService : discoverEnvCapability
+AgentApplication --> AgentManagementService : createBean
+activate AgentManagementService
+EnvCapabilityDiscoveryService --> AgentManagementService : provideEnvCapability
+deactivate EnvCapabilityDiscoveryService
+AgentApplication --> TestRunner : createBean
+activate TestRunner
+TestRunner --> TestRunner : init
+TestRunner --> AgentManagementService : checkServiceAvailability
+AgentApplication --> DeviceDriverManager : createBean
+activate DeviceDriverManager
+DeviceDriverManager --> DeviceDriverManager : add deviceDrivers
+DeviceDriverManager --> AgentManagementService : checkServiceAvailability
+AgentApplication --> AgentWebSocketClientService : createBean
+activate AgentWebSocketClientService
+AgentWebSocketClientService --> AgentWebSocketClientService : buildAgentUser
+AgentWebSocketClientService --> AgentManagementService : getServiceAvailabilities
+AgentManagementService --> AgentWebSocketClientService : return serviceAvailabilities
+AgentWebSocketClientService --> CenterApplication : provide agent info
+CenterApplication --> CenterApplication : display agent info
+
 @enduml
