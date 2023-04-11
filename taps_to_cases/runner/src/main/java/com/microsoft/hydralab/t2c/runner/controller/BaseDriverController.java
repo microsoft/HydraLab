@@ -188,6 +188,18 @@ public abstract class BaseDriverController {
         return elementFound;
     }
 
+    @Nullable
+    public WebElement findElementByName(String name) {
+        WebElement elementFound = null;
+        try {
+            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
+                    .until(driver -> driver.findElement(AppiumBy.xpath("//*[@name='" + name + "']")));
+        } catch (Exception e) {
+            logger.info("Can not find element by name: " + name);
+        }
+        return elementFound;
+    }
+
 
     /**
      * In windows, id refers to {@link WindowsElementInfo#getName()}
@@ -213,4 +225,7 @@ public abstract class BaseDriverController {
     public abstract void inspectMemoryUsage(String targetApp, String description, boolean isReset);
 
     public abstract void inspectBatteryUsage(String targetApp, String description, boolean isReset);
+
+    public void backToHome() {
+    }
 }

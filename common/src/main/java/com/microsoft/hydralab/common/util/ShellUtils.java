@@ -39,7 +39,7 @@ public class ShellUtils {
             // Add execution policy to ensure powershell can run on most of Windows devices
             shellProcess = POWER_SHELL_PATH;
             args = "powershell -ExecutionPolicy Unrestricted -NoProfile -Command";
-            newCommand = command + " | Out-File -FilePath " + redirectOutputFullPath;
+            newCommand = command + " | Out-File -FilePath " + redirectOutputFullPath + " -encoding utf8";
         } else {
             shellProcess = "sh";
             args = "-c";

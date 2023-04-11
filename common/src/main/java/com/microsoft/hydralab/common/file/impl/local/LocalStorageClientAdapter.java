@@ -26,6 +26,7 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
     public LocalStorageClientAdapter(StorageProperties storageProperties) {
         LocalStorageProperty localStorageProperty = (LocalStorageProperty) storageProperties;
         this.localStorageClient = new LocalStorageClient(localStorageProperty);
+        fileLimitDay = localStorageProperty.getFileLimitDay();
         classLogger.info("Init Center local storage client successfully!");
     }
 

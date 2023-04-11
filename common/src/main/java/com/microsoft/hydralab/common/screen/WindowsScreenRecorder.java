@@ -3,8 +3,7 @@
 package com.microsoft.hydralab.common.screen;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
-import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.util.Const;
 import io.appium.java_client.windows.WindowsDriver;
 import io.appium.java_client.windows.WindowsStartScreenRecordingOptions;
@@ -17,19 +16,24 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Base64;
 
-public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
+public class WindowsScreenRecorder implements ScreenRecorder {
+    private final DeviceDriver deviceDriver;
+    private final DeviceInfo deviceInfo;
+    private final File baseFolder;
+    private final Logger logger;
     private WindowsDriver windowsDriver;
 
-    public AppiumE2ETestRecorder(TestDeviceManager testDeviceManager, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
-        super(testDeviceManager, adbOperateUtil, deviceInfo, baseFolder, logger);
-        windowsDriver = testDeviceManager.getAppiumServerManager().getWindowsRootDriver(logger);
+    public WindowsScreenRecorder(DeviceDriver deviceDriver, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
+        this.deviceDriver = deviceDriver;
+        this.deviceInfo = deviceInfo;
+        this.baseFolder = baseFolder;
+        this.logger = logger;
+        windowsDriver = deviceDriver.getAppiumServerManager().getWindowsRootDriver(logger);
     }
 
     @Override
     public void startRecord(int maxTime) {
-        super.fileName = Const.ScreenRecoderConfig.PHONE_FILE_NAME;
         logger.info("Start phone record screen");
-        super.startRecord(maxTime);
         logger.info("Start PC record screen");
         windowsDriver.startRecordingScreen(new WindowsStartScreenRecordingOptions().withTimeLimit(Duration.ofSeconds(maxTime)));
 
@@ -37,14 +41,12 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
 
     @Override
     public void setupDevice() {
-        super.setupDevice();
+        // Do nothing
     }
 
     @Override
-    public boolean finishRecording() {
+    public String finishRecording() {
         File PCVideoFile = null;
-        File phoneVideoFile = null;
-        super.finishRecording();
         try {
             String base64String = windowsDriver.stopRecordingScreen();
             byte[] data = Base64.getDecoder().decode(base64String);
@@ -57,18 +59,14 @@ public class AppiumE2ETestRecorder extends PhoneAppScreenRecorder {
             System.out.println("-------------------------------------------------------Ignore End--------------------------------------------------------------");
         }
 
-        phoneVideoFile = new File(baseFolder.getAbsolutePath(), Const.ScreenRecoderConfig.PHONE_FILE_NAME);
-
-        if (PCVideoFile == null || !PCVideoFile.exists() || !phoneVideoFile.exists()) {
-            return false;
+        if (PCVideoFile == null || !PCVideoFile.exists()) {
+            return null;
         }
-        // Merge two videos side-by-side if exist
-        System.out.println("-------------Merge two videos side-by-side-------------");
-        String mergeDestinationPath = new File(baseFolder.getAbsolutePath(), Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();
-        FFmpegConcatUtil.mergeVideosSideBySide(phoneVideoFile.getAbsolutePath(), PCVideoFile.getAbsolutePath(), mergeDestinationPath, logger);
-        // PCVideoFile.delete();
-        // phoneVideoFile.delete();
-        return true;
+        return PCVideoFile.getAbsolutePath();
     }
 
+    @Override
+    public int getPreSleepSeconds() {
+        return 0;
+    }
 }

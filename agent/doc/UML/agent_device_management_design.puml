@@ -1,30 +1,157 @@
 @startuml
 'https://plantuml.com/class-diagram
+enum DeviceType{
+    ANDROID
+    IOS
+    WINDOWS
+}
+
+class ConnectedDevice{
+    DeviceType deviceType;
+}
 
 class AgentManagementService {
+    Map<String, DeviceInfo> deviceInfoMap
     File testBaseDir
     File deviceLogBaseDir
 }
-class TestDevice
-abstract class TestDeviceManager
-class AndroidTestDeviceManager
-class IOSTestDeviceManager
-class WindowsTestDeviceManager
+class DeviceStatusListenerManager{
+    List<DeviceStatusListener> deviceStatusListeners
+    registerDeviceStatusListener(DeviceStatusListener)
+    onDeviceInactive(DeviceInfo)
+    onDeviceActive(DeviceInfo)
+}
+class TestTaskEngineService{
+    TestRunDevice chooseDevice(TestTask)
+}
 
-interface TestDriver
 
-AndroidTestDeviceManager --|> TestDeviceManager
-IOSTestDeviceManager --|> TestDeviceManager
-WindowsTestDeviceManager --|> TestDeviceManager
+class DeviceInfo{
+    Map<Thread, String> currentCommand
+    Map<Thread, String> currentProcess
+    Map<Thread, TestTask> currentTask
+}
 
-AgentManagementService *--> AndroidTestDeviceManager
-AgentManagementService *--> IOSTestDeviceManager
-AgentManagementService *--> WindowsTestDeviceManager
+class TestRunDeviceOrchestrator{
+    void setup(TestRunDevice, Logger);
+    void unset(TestRunDevice, Logger);
+    void killAll(TestRunDevice);
+    void getAppiumDriver(TestRunDevice, Logger);
+    void quitAppiumDriver(TestRunDevice, Logger);
+    void wakeUpDevice(TestRunDevice, Logger);
+    boolean installApp(TestRunDevice,String packagePath, Logger);
+    boolean uninstallApp(TestRunDevice, String packageName, Logger);
+    void resetPackage(TestRunDevice, String packageName, Logger);
+    void startScreenRecorder(TestRunDevice, File folder, int maxTimeInSecond, Logger);
+    void stopScreenRecorder(TestRunDevice);
+    void startLogCollector(TestRunDevice, String pkgName, TestRun testRun, Logger);
+    void stopLogCollector(TestRunDevice);
+    void setRunningTestName(TestRunDevice, String runningTestName);
+    void addCurrentTask(TestRunDevice, TestTask);
+    void finishTask(TestRunDevice);
+    void quitMobileAppiumDriver(TestRunDevice, Logger);
+    void updateScreenshotImageAsyncDelay(TestRunDevice, long delayMillis, FileAvailableCallback, Logger);
+    void grantAllTaskNeededPermissions(TestRunDevice, TestTask, Logger);
+}
 
-TestDeviceManager --> TestDriver
 
-ADBDriver -u-|> TestDriver
-AppiumDriver -u-|> TestDriver
+class TestRunDevice{
+    String Tag
+    DeviceInfo deviceInfo;
+    WebDriver appiumDriver;
+    ScreenRecorder screenRecorder;
+    LogCollector logCollector;
+}
 
-TestRunner -r-> TestDeviceManager
+class TestRunDeviceCombo extends TestRunDevice{
+    List<TestRunDevice> pairedDevices
+    TestRunDevice getDeviceByTag(String tag)
+    List<TestRunDevice> getDevices()
+}
+Class TestRun{
+    TestRunDevice device
+}
+class TestRunner{
+    runTest(TestTask,TestRunDevice)
+}
+
+interface DeviceDriver{
+      File getScreenShot(DeviceInfo deviceInfo,  Logger logger);
+      File getScreenShotWithStrategy(DeviceInfo deviceInfo,  Logger logger, AgentUser.BatteryStrategy batteryStrategy);
+      void wakeUpDevice(DeviceInfo deviceInfo,  Logger logger);
+      void backToHome(DeviceInfo deviceInfo,  Logger logger);
+      void grantPermission(DeviceInfo deviceInfo, String packageName,String permissionName,  Logger logger);
+      void addToBatteryWhiteList(DeviceInfo deviceInfo, String packageName,Logger logger);
+      boolean installApp(DeviceInfo deviceInfo, String packagePath,  Logger logger);
+      boolean uninstallApp(DeviceInfo deviceInfo, String packageName,  Logger logger);
+      void resetPackage(DeviceInfo deviceInfo, String packageName,Logger logger);
+      void pushFileToDevice(DeviceInfo deviceInfo, String pathOnAgent,String pathOnDevice,  Logger logger) throws Exception;
+      void pullFileFromDevice(DeviceInfo deviceInfo, String pathOnDevice,Logger logger) throws Exception;
+      ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder,Logger logger);
+      boolean grantAllTaskNeededPermissions(DeviceInfo deviceInfo, TestTask task,Logger logger);
+      boolean grantAllPackageNeededPermissions(DeviceInfo deviceInfo, File packageFile,String targetPackage,boolean allowCustomizedPermissions,  Logger logger);
+      Logger getDeviceLogger(DeviceInfo device);
+      void updateAllDeviceInfo();
+      LogCollector getLogCollector(DeviceInfo deviceInfo, String pkgName,TestRun testRun, Logger logger);
+      void setProperty(DeviceInfo deviceInfo, String property, String val,Logger logger);
+      boolean setDefaultLauncher(DeviceInfo deviceInfo, String packageName,String defaultActivity,  Logger logger);
+      boolean isAppInstalled(DeviceInfo deviceInfo, String packageName,Logger logger);
+      boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo,String recordPackageName,Logger logger);
+      void testDeviceSetup(DeviceInfo deviceInfo,  Logger logger);
+      void removeFileInDevice(DeviceInfo deviceInfo, String pathOnDevice, Logger logger);
+      void testDeviceUnset(DeviceInfo deviceInfo, Logger logger);
+      WebDriver getAppiumDriver(DeviceInfo deviceInfo, Logger logger);
+      void quitAppiumDriver(DeviceInfo deviceInfo, Logger logger);
+      void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger);
+      void execCommandOnAgent(DeviceInfo deviceInfo, String command, Logger logger);
+      AppiumServerManager getAppiumServerManager();
+      void init();
+}
+class DeviceDriverManager implements DeviceDriver{
+    Map<DeviceType, DeviceDriver> deviceDrivers
+}
+abstract class AbstractDeviceDriver implements DeviceDriver
+class AndroidDeviceDriver extends AbstractDeviceDriver
+class IOSDeviceDriver   extends AbstractDeviceDriver
+class WindowsDeviceDriver extends AbstractDeviceDriver
+
+TestRunner --> TestRun : create
+TestRun ---> TestRunDevice
+TestRunner -r--> TestRunDeviceOrchestrator
+
+TestRunDeviceOrchestrator --> DeviceDriverManager
+
+TestTaskEngineService --> TestRunner
+
+DeviceDriver -> DeviceInfo
+DeviceDriverManager *--> AndroidDeviceDriver
+DeviceDriverManager *--> IOSDeviceDriver
+DeviceDriverManager *--> WindowsDeviceDriver
+AndroidDeviceDriver *--> DeviceStatusListenerManager : notify
+IOSDeviceDriver *--> DeviceStatusListenerManager : notify
+WindowsDeviceDriver *--> DeviceStatusListenerManager : notify
+
+DeviceStatusListenerManager .. AgentManagementService : notify
+
+@enduml
+
+@startuml discovery_service_design
+
+class EnvCapabilityDiscoveryService {
+    +discover()
+}
+
+class EnvCapabilityScanner {
+    +List<EnvCapability> scan()
+}
+
+EnvCapabilityDiscoveryService *--> EnvCapabilityScanner
+EnvCapabilityDiscoveryService *--> EnvInfo
+EnvInfo *--> EnvCapability
+EnvCapability *--> CapabilityKeyword
+WindowsScanner -u-|> EnvCapabilityScanner
+LinuxScanner -u-|> EnvCapabilityScanner
+MacOSScanner -u-|> EnvCapabilityScanner
+
+EnvCapabilityScanner .. EnvCapability: produce
 @enduml

@@ -2,6 +2,14 @@
 #  $HydraLab_TestResultFolderPath: The full path of the test result folder
 #  $HydraLab_deviceUdid: The UDID of mobile device. (For Android, it will be equal to the serial number)
 app:
+  device:
+    monitor:
+      windows:
+        enabled: true
+      android:
+        enabled: true
+      ios:
+        enabled: true
   device-script:
     commands:
       - type: ADBShell

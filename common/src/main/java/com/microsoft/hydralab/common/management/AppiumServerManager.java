@@ -39,7 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 
-@Service
 public class AppiumServerManager {
     public static final String EDGE_DRIVER_DOWNLOAD_URL = "https://msedgedriver.azureedge.net/";
     public static final String EDGE_DRIVER_ZIP = "edgedriver_win64.zip";

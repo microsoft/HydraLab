@@ -4,6 +4,7 @@
 package com.microsoft.hydralab.agent.config;
 
 import com.microsoft.hydralab.agent.command.DeviceScriptCommand;
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
@@ -53,67 +54,75 @@ public class TestRunnerConfig {
     @Bean
     public EspressoRunner espressoRunner(AgentManagementService agentManagementService,
                                          TestTaskEngineService testTaskEngineService,
+                                         TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                          PerformanceTestManagementService performanceTestManagementService,
                                          ADBOperateUtil adbOperateUtil) {
-        return new EspressoRunner(agentManagementService, testTaskEngineService, performanceTestManagementService,
+        return new EspressoRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService,
                 adbOperateUtil);
     }
 
     @Bean
     public AdbMonkeyRunner adbMonkeyRunner(AgentManagementService agentManagementService,
                                            TestTaskEngineService testTaskEngineService,
+                                           TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                            PerformanceTestManagementService performanceTestManagementService,
                                            ADBOperateUtil adbOperateUtil) {
-        return new AdbMonkeyRunner(agentManagementService, testTaskEngineService, performanceTestManagementService,
+        return new AdbMonkeyRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService,
                 adbOperateUtil);
     }
 
     @Bean
     public AppiumMonkeyRunner appiumMonkeyRunner(AgentManagementService agentManagementService,
                                                  TestTaskEngineService testTaskEngineService,
+                                                 TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                                  PerformanceTestManagementService performanceTestManagementService) {
-        return new AppiumMonkeyRunner(agentManagementService, testTaskEngineService,
+        return new AppiumMonkeyRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator,
                 performanceTestManagementService);
     }
 
     @Bean
     public AppiumRunner appiumRunner(AgentManagementService agentManagementService,
                                      TestTaskEngineService testTaskEngineService,
+                                     TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                      PerformanceTestManagementService performanceTestManagementService) {
-        return new AppiumRunner(agentManagementService, testTaskEngineService, performanceTestManagementService);
+        return new AppiumRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @Bean
     public AppiumCrossRunner appiumCrossRunner(AgentManagementService agentManagementService,
                                                TestTaskEngineService testTaskEngineService,
+                                               TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                                PerformanceTestManagementService performanceTestManagementService) {
         return new AppiumCrossRunner(agentManagementService, testTaskEngineService,
-                performanceTestManagementService,
+                testRunDeviceOrchestrator, performanceTestManagementService,
                 agentName);
     }
 
     @Bean
     public SmartRunner smartRunner(AgentManagementService agentManagementService,
                                    TestTaskEngineService testTaskEngineService,
+                                   TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                    PerformanceTestManagementService performanceTestManagementService,
                                    SmartTestUtil smartTestUtil) {
-        return new SmartRunner(agentManagementService, testTaskEngineService, performanceTestManagementService,
+        return new SmartRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService,
                 smartTestUtil);
     }
 
     @Bean
     public T2CRunner t2cRunner(AgentManagementService agentManagementService,
                                TestTaskEngineService testTaskEngineService,
+                               TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                PerformanceTestManagementService performanceTestManagementService) {
-        return new T2CRunner(agentManagementService, testTaskEngineService, performanceTestManagementService,
+        return new T2CRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService,
                 agentName);
     }
 
     @Bean
     public XCTestRunner xctestRunner(AgentManagementService agentManagementService,
                                      TestTaskEngineService testTaskEngineService,
+                                     TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                      PerformanceTestManagementService performanceTestManagementService) {
-        return new XCTestRunner(agentManagementService, testTaskEngineService, performanceTestManagementService);
+        return new XCTestRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @ConfigurationProperties(prefix = "app.device-script.commands")

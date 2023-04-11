@@ -122,7 +122,7 @@ public final class T2CAppiumUtils {
                 driver.pressKey(AndroidKey.BACK);
                 break;
             case "home":
-                driver.pressKey(AndroidKey.HOME);
+                driver.backToHome();
                 break;
             case "pressKeyCode":
                 String keyCode = arguments.get("keyCode") + "";

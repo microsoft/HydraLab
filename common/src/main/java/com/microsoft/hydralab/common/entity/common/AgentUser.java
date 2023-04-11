@@ -4,7 +4,12 @@ package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.UUID;
 
 @Data
@@ -21,7 +26,6 @@ public class AgentUser {
     private String os;
     private String versionName;
     private String versionCode;
-    private int deviceType;
     private int capabilities;
     private int status;
     private String role;
@@ -30,11 +34,6 @@ public class AgentUser {
     private String teamName;
     @Transient
     private BatteryStrategy batteryStrategy;
-
-    public interface DeviceType {
-        int ANDROID = 1;
-        int WINDOWS = 2;
-    }
 
     public enum BatteryStrategy {
         /**

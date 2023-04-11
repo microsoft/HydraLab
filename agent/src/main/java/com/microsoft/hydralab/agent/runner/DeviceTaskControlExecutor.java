@@ -4,13 +4,14 @@
 package com.microsoft.hydralab.agent.runner;
 
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,26 +21,28 @@ import java.util.concurrent.CountDownLatch;
 public class DeviceTaskControlExecutor {
     @SuppressWarnings("constantname")
     static final Logger log = LoggerFactory.getLogger(DeviceTaskControlExecutor.class);
+    @Resource
+    TestRunDeviceOrchestrator testRunDeviceOrchestrator;
 
     @Nullable
-    public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task,
+    public DeviceTaskControl runForAllDeviceAsync(Collection<TestRunDevice> allDevices, DeviceTask task,
                                                   TaskCompletion taskCompletion) {
         //the status of device will be controlled by master, so the task will run no matter what the status saved in agent is
         return runForAllDeviceAsync(allDevices, task, taskCompletion, true, true);
     }
 
-    public DeviceTaskControl runForAllDeviceAsync(Collection<DeviceInfo> allDevices, DeviceTask task,
+    public DeviceTaskControl runForAllDeviceAsync(Collection<TestRunDevice> allDevices, DeviceTask task,
                                                   TaskCompletion taskCompletion, boolean logging,
                                                   boolean forceForTesting) {
         int activeDevice = 0;
         log.warn("All device count {}", allDevices.size());
-        for (DeviceInfo device : allDevices) {
-            if (!device.isAlive()) {
-                log.warn("Device {} not alive", device.getSerialNum());
+        for (TestRunDevice device : allDevices) {
+            if (!testRunDeviceOrchestrator.isAlive(device)) {
+                log.warn("Device {} not alive", testRunDeviceOrchestrator.getSerialNum(device));
                 continue;
             }
-            if (device.isTesting() && !forceForTesting) {
-                log.warn("Device {} is under testing", device.getSerialNum());
+            if (testRunDeviceOrchestrator.isTesting(device) && !forceForTesting) {
+                log.warn("Device {} is under testing", testRunDeviceOrchestrator.getSerialNum(device));
                 continue;
             }
             activeDevice++;
@@ -51,31 +54,31 @@ public class DeviceTaskControlExecutor {
         }
 
         CountDownLatch count = new CountDownLatch(activeDevice);
-        final Set<DeviceInfo> devices = new HashSet<>();
+        final Set<TestRunDevice> devices = new HashSet<>();
 
         if (logging) {
             log.info("RunForAllDeviceAsync: on {} devices", allDevices.size());
         }
 
-        for (DeviceInfo device : allDevices) {
-            if (!device.isAlive()) {
-                log.info("RunForAllDeviceAsync: device not alive: {}", device.getName());
+        for (TestRunDevice device : allDevices) {
+            if (!testRunDeviceOrchestrator.isAlive(device)) {
+                log.info("RunForAllDeviceAsync: device not alive: {}", testRunDeviceOrchestrator.getName(device));
                 continue;
             }
-            if (device.isTesting() && !forceForTesting) {
-                log.info("RunForAllDeviceAsync: [BUSY] device is testing: {}", device.getName());
+            if (testRunDeviceOrchestrator.isTesting(device) && !forceForTesting) {
+                log.info("RunForAllDeviceAsync: [BUSY] device is testing: {}", testRunDeviceOrchestrator.getName(device));
                 continue;
             }
             Logger logger = null;
             if (logging) {
-                logger = device.getTestDeviceManager().getDeviceLogger(device);
+                logger = testRunDeviceOrchestrator.getDeviceLogger(device);
             }
             final Logger fLogger = logger;
             devices.add(device);
             Runnable run = () -> {
                 try {
                     if (logging) {
-                        DeviceTaskControlExecutor.log.info("start do task: {}", device.getName());
+                        DeviceTaskControlExecutor.log.info("start do task: {}", testRunDeviceOrchestrator.getName(device));
                     }
                     task.doTask(device, fLogger);
                 } catch (Exception e) {
@@ -93,7 +96,7 @@ public class DeviceTaskControlExecutor {
     }
 
     public interface DeviceTask {
-        boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception;
+        boolean doTask(TestRunDevice testRunDevice, Logger logger) throws Exception;
     }
 
     public interface TaskCompletion {

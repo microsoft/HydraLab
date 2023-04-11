@@ -16,6 +16,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
@@ -38,9 +39,6 @@ import java.net.UnknownHostException;
 @Service("WebSocketClient")
 @Slf4j
 public class AgentWebSocketClientService implements TestTaskRunCallback {
-    @SuppressWarnings("visibilitymodifier")
-    @Value("${app.registry.agent-type}")
-    public int agentTypeValue;
     @Value("${app.registry.name}")
     String agentName;
     @Value("${app.registry.id}")
@@ -89,12 +87,12 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                 heartbeatResponse(message);
 
                 /** Sequence shouldn't be changed.
-                 * [agentUser.setTeamName -> meterRegistry.config().commonTags -> deviceManager.init
+                 * [agentUser.setTeamName -> meterRegistry.config().commonTags -> deviceDriver.init
                  *  -> (deviceControlService.provideDeviceList + deviceStatbilityMonitor.addDeviceMetricRegistration)].
                  */
                 if (!isAgentInit) {
                     registerAgentMetrics();
-                    deviceControlService.deviceManagerInit();
+                    deviceControlService.deviceDriverInit();
                     isAgentInit = true;
                 }
                 deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
@@ -219,7 +217,6 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         agentUser.setOs(System.getProperties().getProperty("os.name"));
         agentUser.setVersionName(versionName);
         agentUser.setVersionCode(versionCode);
-        agentUser.setDeviceType(agentTypeValue);
         responseAuth.setBody(agentUser);
         responseAuth.setPath(message.getPath());
         send(responseAuth);
@@ -246,7 +243,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result) {
+    public void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result) {
 
     }
 

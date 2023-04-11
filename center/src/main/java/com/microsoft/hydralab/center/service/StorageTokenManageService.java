@@ -31,7 +31,7 @@ public class StorageTokenManageService {
 
         if (accessToken == null || storageServiceClientProxy.isAccessTokenExpired(accessToken)) {
             accessToken = storageServiceClientProxy.generateAccessToken(Const.FilePermission.READ);
-            Assert.notNull(accessToken, "Current storage service doesn't config READ permission!");
+            Assert.notNull(accessToken, "Generate access token with READ permission failed! Access token generated is null!");
             accessTokenMap.put(uniqueId, accessToken);
         }
 
@@ -44,7 +44,7 @@ public class StorageTokenManageService {
 
         if (accessToken == null || storageServiceClientProxy.isAccessTokenExpired(accessToken)) {
             accessToken = storageServiceClientProxy.generateAccessToken(Const.FilePermission.WRITE);
-            Assert.notNull(accessToken, "Current storage service doesn't config WRITE permission!");
+            Assert.notNull(accessToken, "Generate access token with WRITE permission failed! Access token generated is null!");
             accessTokenMap.put(uniqueId, accessToken);
         }
 

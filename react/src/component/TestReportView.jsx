@@ -465,7 +465,7 @@ export default class TestReportView extends React.Component {
                     <table className='table table-borderless'>
                         <tbody>
                             {perfResults.map((perfTestResult) =>
-                                <PerfTestDashboard perfTestResult={perfTestResult} />
+                                <PerfTestDashboard perfTestResult={perfTestResult} testTask={task} />
                             )}
                         </tbody>
                     </table>

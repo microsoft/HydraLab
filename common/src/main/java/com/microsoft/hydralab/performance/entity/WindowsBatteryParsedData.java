@@ -4,10 +4,13 @@
 package com.microsoft.hydralab.performance.entity;
 
 import cn.hutool.core.collection.ConcurrentHashSet;
+import com.alibaba.fastjson.annotation.JSONField;
+import com.microsoft.hydralab.performance.IBaselineMetrics;
 import lombok.Data;
 import lombok.NonNull;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -20,8 +23,7 @@ public class WindowsBatteryParsedData {
             "CPUEnergyConsumptionAttributed", "TotalEnergyConsumption"};
 
     @Data
-    public static class WindowsBatteryMetrics
-    {
+    public static class WindowsBatteryMetrics implements IBaselineMetrics {
         private long energyLoss;
         private long CPUEnergyConsumption;
         private long socEnergyConsumption;
@@ -39,6 +41,10 @@ public class WindowsBatteryParsedData {
 
         public void accumulate(WindowsBatteryMetrics metrics)
         {
+            if (metrics == null) {
+                return;
+            }
+
             this.energyLoss += metrics.energyLoss;
             this.CPUEnergyConsumption += metrics.CPUEnergyConsumption;
             this.socEnergyConsumption += metrics.socEnergyConsumption;
@@ -55,6 +61,18 @@ public class WindowsBatteryParsedData {
             if (this.timeStamp.compareTo(metrics.timeStamp) < 0) {
                 this.timeStamp = metrics.timeStamp;
             }
+        }
+
+        @Override
+        @JSONField(serialize = false)
+        public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
+            return null;
+        }
+
+        @Override
+        @JSONField(serialize = false)
+        public SummaryType getSummaryType() {
+            return null;
         }
     }
 

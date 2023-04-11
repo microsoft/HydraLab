@@ -175,4 +175,11 @@ public interface Const {
     final class LocalStorageConst {
         public static final List<String> PATH_PREFIX_LIST = List.of(LocalStorageURL.CENTER_LOCAL_STORAGE_UPLOAD, LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD);
     }
+
+    interface TestDeviceTag {
+        String PRIMARY_PHONE = "PRIMARY_PHONE";
+        String SECONDARY_PHONE = "SECONDARY_PHONE";
+        String TERTIARY_PHONE = "TERTIARY_PHONE";
+        String PRIMARY_PC = "PRIMARY_PC";
+    }
 }
