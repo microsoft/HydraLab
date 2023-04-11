@@ -61,15 +61,15 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
     @Override
     public void setupDevice() {
         if (!deviceDriver.isAppInstalled(deviceInfo, recordPackageName, logger)) {
-            try {
-                deviceDriver.wakeUpDevice(deviceInfo, logger);
-                installRecorderServiceApp();
-                deviceDriver.grantAllPackageNeededPermissions(deviceInfo, recordApk, recordPackageName, false, logger);
-                deviceDriver.grantPermission(deviceInfo, recordPackageName, "android.permission.FOREGROUND_SERVICE", logger);
-                deviceDriver.addToBatteryWhiteList(deviceInfo, recordPackageName, logger);
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-            }
+            installRecorderServiceApp();
+        }
+        try {
+            deviceDriver.wakeUpDevice(deviceInfo, logger);
+            deviceDriver.grantAllPackageNeededPermissions(deviceInfo, recordApk, recordPackageName, false, logger);
+            deviceDriver.grantPermission(deviceInfo, recordPackageName, "android.permission.FOREGROUND_SERVICE", logger);
+            deviceDriver.addToBatteryWhiteList(deviceInfo, recordPackageName, logger);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
         FlowUtil.retryWhenFalse(3, () -> deviceDriver.grantProjectionAndBatteryPermission(deviceInfo, recordPackageName, logger));
     }
