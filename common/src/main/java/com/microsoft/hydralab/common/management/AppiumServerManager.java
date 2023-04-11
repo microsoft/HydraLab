@@ -10,7 +10,6 @@ import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.ios.IOSDriver;
-import io.appium.java_client.remote.AutomationName;
 import io.appium.java_client.remote.IOSMobileCapabilityType;
 import io.appium.java_client.remote.MobileCapabilityType;
 import io.appium.java_client.service.local.AppiumDriverLocalService;
@@ -169,7 +168,6 @@ public class AppiumServerManager {
         DesiredCapabilities caps = new DesiredCapabilities();
         caps.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, 4000);
         caps.setCapability(MobileCapabilityType.UDID, udid);
-        caps.setCapability(MobileCapabilityType.AUTOMATION_NAME, AutomationName.ANDROID_UIAUTOMATOR2);
         try {
             androidDriver = new AndroidDriver(new URL(String.format("http://%s:%d/wd/hub", appiumServerHost, appiumServerPort)), caps);
             androidDrivers.put(udid, androidDriver);
