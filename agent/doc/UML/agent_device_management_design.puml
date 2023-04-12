@@ -186,8 +186,8 @@ enum ServiceType{
     DEVICE_DRIVER
 }
 class AgentFunctionAvailability{
-    +ServiceType serviceType
-    +String serviceName
+    +AgentFunctionType functionType
+    +String functionName
     +List<EnvCapabilityRequirement> envCapabilityRequirements
     +boolean isEnabled
     +boolean isAvailable
