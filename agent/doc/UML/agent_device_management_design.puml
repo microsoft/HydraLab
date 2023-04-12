@@ -161,7 +161,7 @@ EnvCapabilityScanner .. EnvCapability: produce
 class AgentManagementService {
     EnvInfo envInfo;
     List<AgentFunctionAvailability> functionAvailabilities;
-    checkFunctionAvailability(String serviceName,ServiceType,boolean isEnabled, List<EnvCapabilityRequirement>)
+    registerFunctionAvailability(String serviceName,ServiceType,boolean isEnabled, List<EnvCapabilityRequirement>)
 }
 AgentManagementService -r-> EnvCapabilityDiscoveryService
 class TestRunner{
@@ -201,7 +201,7 @@ AgentManagementService ..> AgentUser : provide
 @enduml
 
 @startuml agent_capability_design_sequence
-participant AgentApplication
+participant SpringContainer
 participant EnvCapabilityDiscoveryService
 participant AgentManagementService
 participant DeviceDriverManager
@@ -209,26 +209,27 @@ participant TestRunner
 participant AgentWebSocketClientService
 participant CenterApplication
 
-activate AgentApplication
+activate SpringContainer
 activate CenterApplication
-AgentApplication --> EnvCapabilityDiscoveryService : createBean
+SpringContainer --> EnvCapabilityDiscoveryService : createBean
 activate EnvCapabilityDiscoveryService
 EnvCapabilityDiscoveryService --> EnvCapabilityDiscoveryService : discoverEnvCapability
-AgentApplication --> AgentManagementService : createBean
+SpringContainer --> AgentManagementService : createBean
 activate AgentManagementService
 EnvCapabilityDiscoveryService --> AgentManagementService : provideEnvCapability
 deactivate EnvCapabilityDiscoveryService
-AgentApplication --> DeviceDriverManager : createBean
+SpringContainer --> DeviceDriverManager : createDriverManager
 activate DeviceDriverManager
 DeviceDriverManager --> DeviceDriverManager : add deviceDrivers
-DeviceDriverManager --> AgentManagementService : checkFunctionAvailability
 deactivate DeviceDriverManager
-AgentApplication --> TestRunner : createBean
+SpringContainer --> AgentManagementService : checkDriverAvailability
+
+SpringContainer --> TestRunner : createBean
 activate TestRunner
 TestRunner --> TestRunner : init
-TestRunner --> AgentManagementService : checkFunctionAvailability
+TestRunner --> AgentManagementService : checkRunnerAvailability
 deactivate TestRunner
-AgentApplication --> AgentWebSocketClientService : createBean
+SpringContainer --> AgentWebSocketClientService : createBean
 activate AgentWebSocketClientService
 AgentWebSocketClientService --> AgentWebSocketClientService : buildAgentUser
 AgentWebSocketClientService --> AgentManagementService : getServiceAvailabilities
@@ -238,5 +239,5 @@ AgentWebSocketClientService --> CenterApplication : provide agent info
 CenterApplication --> CenterApplication : display agent info
 deactivate CenterApplication
 deactivate AgentWebSocketClientService
-deactivate AgentApplication
+deactivate SpringContainer
 @enduml
