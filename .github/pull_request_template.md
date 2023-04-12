@@ -27,6 +27,7 @@
 Please check the type of change your PR introduces:
 - [ ] Bugfix
 - [ ] Feature
+- [ ] Technical design
 - [ ] Build related changes
 - [ ] Refactoring (no functional changes, no api changes)
 - [ ] Code style update (formatting, renaming) or Documentation content changes
