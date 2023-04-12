@@ -160,8 +160,8 @@ EnvCapabilityScanner .. EnvCapability: produce
 
 class AgentManagementService {
     EnvInfo envInfo;
-    List<ServiceAvailability> serviceAvailabilities;
-    checkServiceAvailability(String serviceName,ServiceType,boolean isEnabled, List<EnvCapabilityRequirement>)
+    List<AgentFunctionAvailability> functionAvailabilities;
+    checkFunctionAvailability(String serviceName,ServiceType,boolean isEnabled, List<EnvCapabilityRequirement>)
 }
 AgentManagementService -r-> EnvCapabilityDiscoveryService
 class TestRunner{
@@ -192,10 +192,10 @@ class AgentFunctionAvailability{
     +boolean enabled
     +boolean available
 }
-AgentManagementService -->ServiceAvailability
-ServiceAvailability ..> ServiceType
+AgentManagementService -->AgentFunctionAvailability
+AgentFunctionAvailability ..> AgentFunctionType
 class AgentUser{
-    List<ServiceAvailability> agentCapability;
+    List<AgentFunctionAvailability> functionAvailabilities;
 }
 AgentManagementService ..> AgentUser : provide
 @enduml
@@ -204,8 +204,8 @@ AgentManagementService ..> AgentUser : provide
 participant AgentApplication
 participant EnvCapabilityDiscoveryService
 participant AgentManagementService
-participant TestRunner
 participant DeviceDriverManager
+participant TestRunner
 participant AgentWebSocketClientService
 participant CenterApplication
 
@@ -218,20 +218,25 @@ AgentApplication --> AgentManagementService : createBean
 activate AgentManagementService
 EnvCapabilityDiscoveryService --> AgentManagementService : provideEnvCapability
 deactivate EnvCapabilityDiscoveryService
-AgentApplication --> TestRunner : createBean
-activate TestRunner
-TestRunner --> TestRunner : init
-TestRunner --> AgentManagementService : checkServiceAvailability
 AgentApplication --> DeviceDriverManager : createBean
 activate DeviceDriverManager
 DeviceDriverManager --> DeviceDriverManager : add deviceDrivers
-DeviceDriverManager --> AgentManagementService : checkServiceAvailability
+DeviceDriverManager --> AgentManagementService : checkFunctionAvailability
+deactivate DeviceDriverManager
+AgentApplication --> TestRunner : createBean
+activate TestRunner
+TestRunner --> TestRunner : init
+TestRunner --> AgentManagementService : checkFunctionAvailability
+deactivate TestRunner
 AgentApplication --> AgentWebSocketClientService : createBean
 activate AgentWebSocketClientService
 AgentWebSocketClientService --> AgentWebSocketClientService : buildAgentUser
 AgentWebSocketClientService --> AgentManagementService : getServiceAvailabilities
 AgentManagementService --> AgentWebSocketClientService : return serviceAvailabilities
+deactivate AgentManagementService
 AgentWebSocketClientService --> CenterApplication : provide agent info
 CenterApplication --> CenterApplication : display agent info
-
+deactivate CenterApplication
+deactivate AgentWebSocketClientService
+deactivate AgentApplication
 @enduml
