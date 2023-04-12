@@ -189,8 +189,8 @@ class AgentFunctionAvailability{
     +AgentFunctionType functionType
     +String functionName
     +List<EnvCapabilityRequirement> envCapabilityRequirements
-    +boolean isEnabled
-    +boolean isAvailable
+    +boolean enabled
+    +boolean available
 }
 AgentManagementService -->ServiceAvailability
 ServiceAvailability ..> ServiceType
