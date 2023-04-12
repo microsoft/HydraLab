@@ -31,7 +31,7 @@ public class DeviceAgentManagementServiceTest extends BaseTest {
 
 
     @Test
-    public void testOnMessage() throws IOException {
+    public void testOnMessage_NoException() throws IOException {
         Session session = Mockito.mock(Session.class);
         RemoteEndpoint.Basic basicRemote = Mockito.mock(RemoteEndpoint.Basic.class);
         Mockito.when(session.getId()).thenReturn("123456");
