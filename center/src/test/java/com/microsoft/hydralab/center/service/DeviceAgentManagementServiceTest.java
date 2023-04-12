@@ -58,7 +58,7 @@ public class DeviceAgentManagementServiceTest extends BaseTest {
 
         Message message = Message.ok(Const.Path.AUTH, agentUser);
         byte[] byteMsg = SerializeUtil.messageToByteArr(message);
-        // will throw exception when invoking: com.microsoft.hydralab.center.service.StorageTokenManageService.generateWriteToken
+
         deviceAgentManagementService.onMessage(SerializeUtil.byteArrToMessage(byteMsg), session);
         session.close();
     }
