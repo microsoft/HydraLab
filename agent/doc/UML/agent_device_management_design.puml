@@ -185,7 +185,7 @@ enum ServiceType{
     TEST_RUNNER
     DEVICE_DRIVER
 }
-class ServiceAvailability{
+class AgentFunctionAvailability{
     +ServiceType serviceType
     +String serviceName
     +List<EnvCapabilityRequirement> envCapabilityRequirements
