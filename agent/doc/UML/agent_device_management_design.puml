@@ -181,7 +181,7 @@ class EnvCapabilityRequirement{
     +EnvCapability envCapability
     +boolean meet(EnvCapability envCapability)
 }
-enum ServiceType{
+enum AgentFunctionType{
     TEST_RUNNER
     DEVICE_DRIVER
 }
