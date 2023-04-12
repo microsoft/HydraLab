@@ -222,12 +222,12 @@ SpringContainer --> DeviceDriverManager : createDriverManager
 activate DeviceDriverManager
 DeviceDriverManager --> DeviceDriverManager : add deviceDrivers
 deactivate DeviceDriverManager
-SpringContainer --> AgentManagementService : checkDriverAvailability
+SpringContainer --> AgentManagementService : registerDriverAvailability
 
 SpringContainer --> TestRunner : createBean
 activate TestRunner
 TestRunner --> TestRunner : init
-TestRunner --> AgentManagementService : checkRunnerAvailability
+TestRunner --> AgentManagementService : registerRunnerAvailability
 deactivate TestRunner
 SpringContainer --> AgentWebSocketClientService : createBean
 activate AgentWebSocketClientService
