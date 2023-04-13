@@ -27,7 +27,7 @@ public class IOSPerfTestHelper {
             needUpdate = true;
         } else {
             String[] currentVersionParts = versionString.trim().split("\\.");
-            String[] lowestVersionParts = versionString.trim().split("\\.");
+            String[] lowestVersionParts = lowestVersion.trim().split("\\.");
             for (int i = 0; i < currentVersionParts.length; i++) {
                 int currentPart = Integer.parseInt(currentVersionParts[i]);
                 int requiredPart = Integer.parseInt(lowestVersionParts[i]);
