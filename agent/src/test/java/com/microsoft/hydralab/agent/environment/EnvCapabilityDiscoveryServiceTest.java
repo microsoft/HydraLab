@@ -50,6 +50,7 @@ public class EnvCapabilityDiscoveryServiceTest {
         EnvInfo evnInfo = Mockito.mock(EnvInfo.class);
         List<EnvCapability> envCapabilities = new ArrayList<>();
         envCapabilities.add(new EnvCapability(EnvCapability.CapabilityKeyword.appium, 1, 25));
+        EnvCapability.CapabilityKeyword.appium.setVersionOutput("1.25.0");
         given(evnInfo.getCapabilities()).willReturn(envCapabilities);
 
         List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
