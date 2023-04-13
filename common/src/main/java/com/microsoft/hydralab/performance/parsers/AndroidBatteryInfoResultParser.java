@@ -62,7 +62,7 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
     }
 
     private AndroidBatteryInfo parseRawResultFile(File rawFile, String packageName) {
-        if (!rawFile.isFile() || !rawFile.exists()) {
+        if (!rawFile.isFile()) {
             return null;
         }
 
