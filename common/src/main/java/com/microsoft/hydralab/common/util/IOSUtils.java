@@ -78,7 +78,7 @@ public class IOSUtils {
     }
 
     public static void installApp(String udid, String packagePath, Logger logger) {
-        ShellUtils.execLocalCommand(String.format("tidevice -u %s install %s", udid, packagePath.replace(" ", "\\ ")), logger);
+        ShellUtils.execLocalCommand(String.format("tidevice -u %s install \"%s\"", udid, packagePath.replace(" ", "\\ ")), logger);
     }
 
     @Nullable
@@ -129,7 +129,7 @@ public class IOSUtils {
     }
 
     public static void takeScreenshot(String udid, String screenshotFilePath, Logger logger) {
-        ShellUtils.execLocalCommand("tidevice -u " + udid + " screenshot " + screenshotFilePath, logger);
+        ShellUtils.execLocalCommand("tidevice -u " + udid + " screenshot \"" + screenshotFilePath + "\"", logger);
     }
 
     public static boolean isWdaRunningByPort(int port, Logger logger) {

@@ -10,6 +10,7 @@ classes.finalizedBy checkstyleMain
 
 dependencies {
     compile project(":sdk")
+    compile project(":common")
     implementation "com.google.guava:guava:30.1.1-jre"
     // implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation 'org.jetbrains:annotations:21.0.1'

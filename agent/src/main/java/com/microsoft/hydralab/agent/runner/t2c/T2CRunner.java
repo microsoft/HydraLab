@@ -183,7 +183,7 @@ public class T2CRunner extends AppiumRunner {
                     reportLogger.info("Successfully init a Edge driver");
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.IOS.name())) {
-                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.ANDROID.name());
+                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.IOS.name());
                     IOSDriverController iosDriverController = new IOSDriverController(
                             appiumServerManager.getIOSDriver(deviceInfo, reportLogger),
                             deviceInfo.getSerialNum(), reportLogger);

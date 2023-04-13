@@ -80,7 +80,7 @@ public class IOSPerfTestHelper {
 
     public static IOSPerfTestHelper getInstance() {
         if (instance == null) {
-            synchronized (instance) {
+            synchronized (IOSPerfTestHelper.class) {
                 if (instance == null) {
                     instance = new IOSPerfTestHelper();
                 }

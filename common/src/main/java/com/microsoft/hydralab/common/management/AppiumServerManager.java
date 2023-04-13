@@ -278,7 +278,7 @@ public class AppiumServerManager {
 
     public Boolean isDriverAlive(AppiumDriver driver) {
         try {
-            driver.getScreenshotAs(OutputType.FILE);
+            driver.getStatus();
             return true;
         } catch (WebDriverException e) {
             return false;
