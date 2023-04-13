@@ -138,7 +138,7 @@ public class EnvCapability {
     }
 
     public boolean meet(EnvCapability envCapability) {
-        if (envCapability == null || envCapability.keyword != keyword || !isReady()) {
+        if (envCapability == null || keyword != envCapability.keyword || !isReady()) {
             return false;
         }
 
