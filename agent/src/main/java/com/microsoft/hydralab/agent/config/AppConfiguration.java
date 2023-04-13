@@ -32,6 +32,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -123,7 +124,9 @@ public class AppConfiguration {
         return agentManagementService;
     }
 
+    // TODO: refactor test runner to remove DependsOn
     @Bean
+    @DependsOn({"espressoRunner", "appiumRunner", "appiumCrossRunner", "smartRunner", "adbMonkeyRunner", "appiumMonkeyRunner", "t2cRunner", "xctestRunner"})
     public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService)
             throws Exception {
         String wsUrl = String.format("ws://%s/agent/connect", registryServer);

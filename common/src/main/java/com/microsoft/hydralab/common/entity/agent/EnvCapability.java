@@ -3,7 +3,6 @@
 
 package com.microsoft.hydralab.common.entity.agent;
 
-import lombok.Data;
 import lombok.Getter;
 
 import java.io.File;
@@ -139,7 +138,7 @@ public class EnvCapability {
     }
 
     public boolean meet(EnvCapability envCapability) {
-        if (envCapability == null || envCapability.keyword != keyword) {
+        if (envCapability == null || envCapability.keyword != keyword || !isReady()) {
             return false;
         }
 
