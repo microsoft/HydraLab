@@ -4,10 +4,11 @@
 package com.microsoft.hydralab.common.entity.agent;
 
 import lombok.Data;
+import lombok.Getter;
 
 import java.io.File;
 
-@Data
+@Getter
 public class EnvCapability {
 
     @SuppressWarnings("checkstyle:VisibilityModifier")
@@ -36,7 +37,7 @@ public class EnvCapability {
             this.brokenIndicatorMessageParts = brokenIndicatorMessageParts;
         }
 
-        public final String fetchVersionParam;
+        final String fetchVersionParam;
         final String[] brokenIndicatorMessageParts;
         private String versionOutput;
         private int minimumViableMajorVersion;
@@ -71,6 +72,10 @@ public class EnvCapability {
 
         public String getVersionOutput() {
             return versionOutput;
+        }
+
+        public String getFetchVersionParam() {
+            return fetchVersionParam;
         }
     }
 

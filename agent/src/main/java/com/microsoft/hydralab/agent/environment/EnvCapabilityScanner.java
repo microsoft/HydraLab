@@ -70,7 +70,7 @@ public abstract class EnvCapabilityScanner {
     }
 
     private void extractAndParseVersionOutput(EnvCapability capability) throws IOException {
-        Process process = Runtime.getRuntime().exec(new String[]{capability.getFile().getAbsolutePath(), capability.getKeyword().fetchVersionParam});
+        Process process = Runtime.getRuntime().exec(new String[]{capability.getFile().getAbsolutePath(), capability.getKeyword().getFetchVersionParam()});
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
              BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
             // combine this in case that some output is provided through stdout and some through stderr
