@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -216,16 +217,16 @@ public class AgentManagementService {
                                              List<EnvCapabilityRequirement> requirements) {
         boolean available = true;
         for (EnvCapabilityRequirement requirement : requirements) {
-            EnvCapability envCapability =
-                    envInfo.getCapabilities().stream().filter(capability -> capability.getKeyword().equals(requirement.getEnvCapability().getKeyword())).findFirst().get();
-            if (envCapability == null) {
+            Optional<EnvCapability> envCapability =
+                    envInfo.getCapabilities().stream().filter(capability -> capability.getKeyword().equals(requirement.getEnvCapability().getKeyword())).findFirst();
+            if (!envCapability.isPresent()) {
                 available = false;
                 continue;
             }
-            boolean isReady = envCapability.meet(requirement.getEnvCapability());
+            boolean isReady = envCapability.get().meet(requirement.getEnvCapability());
             requirement.setReady(isReady);
             available = available && isReady;
         }
-        functionAvailabilities.add(new AgentFunctionAvailability(functionName, functionType, enabled, true, requirements));
+        functionAvailabilities.add(new AgentFunctionAvailability(functionName, functionType, enabled, available, requirements));
     }
 }
