@@ -8,6 +8,8 @@ import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.appium.AppiumParam;
 import com.microsoft.hydralab.appium.ThreadParam;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -28,7 +30,9 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -39,6 +43,13 @@ public class AppiumRunner extends TestRunner {
                         TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                         PerformanceTestManagementService performanceTestManagementService) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
+    }
+
+    @Override
+    protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, 1, -1));
+        return envCapabilityRequirements;
     }
 
     @Override

@@ -9,6 +9,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.agent.SmartTestParam;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.TestRun;
@@ -20,6 +22,8 @@ import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SmartRunner extends TestRunner {
     private final SmartTestUtil smartTestUtil;
@@ -37,6 +41,14 @@ public class SmartRunner extends TestRunner {
                        SmartTestUtil smartTestUtil) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.smartTestUtil = smartTestUtil;
+    }
+
+    @Override
+    protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, 1, -1));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.python, 3, 8));
+        return envCapabilityRequirements;
     }
 
     @Override

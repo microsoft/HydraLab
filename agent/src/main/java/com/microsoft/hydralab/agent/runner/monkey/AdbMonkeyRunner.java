@@ -6,6 +6,8 @@ package com.microsoft.hydralab.agent.runner.monkey;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
@@ -20,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class AdbMonkeyRunner extends TestRunner {
@@ -41,6 +45,13 @@ public class AdbMonkeyRunner extends TestRunner {
                            ADBOperateUtil adbOperateUtil) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
+    }
+
+    @Override
+    protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, 1, -1));
+        return envCapabilityRequirements;
     }
 
     @Override

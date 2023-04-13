@@ -32,6 +32,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -84,7 +85,8 @@ public class AppConfiguration {
 
     @Bean
     public AgentManagementService agentManagementService(StorageServiceClientProxy storageServiceClientProxy,
-                                                         DeviceStatusListenerManager deviceStatusListenerManager) {
+                                                         DeviceStatusListenerManager deviceStatusListenerManager,
+                                                         EnvCapabilityDiscoveryService envCapabilityDiscoveryService) {
         AgentManagementService agentManagementService = new AgentManagementService();
         File testBaseDir = new File(appOptions.getTestCaseResultLocation());
         if (!testBaseDir.exists()) {
@@ -116,6 +118,8 @@ public class AppConfiguration {
         agentManagementService.setScreenshotDir(getScreenshotDir());
         agentManagementService.setDeviceFolderUrlPrefix(AppOptions.DEVICE_STORAGE_MAPPING_REL_PATH);
         agentManagementService.setDeviceStoragePath(appOptions.getDeviceStorageLocation());
+
+        agentManagementService.setEnvInfo(envCapabilityDiscoveryService.getEnvInfo());
 
         return agentManagementService;
     }

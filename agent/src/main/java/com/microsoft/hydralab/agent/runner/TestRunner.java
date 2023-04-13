@@ -4,6 +4,8 @@
 package com.microsoft.hydralab.agent.runner;
 
 import cn.hutool.core.lang.Assert;
+import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
@@ -42,7 +44,14 @@ public abstract class TestRunner {
         this.testTaskRunCallback = testTaskRunCallback;
         this.performanceTestManagementService = performanceTestManagementService;
         this.testRunDeviceOrchestrator = testRunDeviceOrchestrator;
+        init();
     }
+
+    void init() {
+        agentManagementService.registerFunctionAvailability(getClass().getName(), AgentFunctionAvailability.AgentFunctionType.TEST_RUNNER, true, getEnvCapabilityRequirements());
+    }
+
+    protected abstract List<EnvCapabilityRequirement> getEnvCapabilityRequirements();
 
     public void runTestOnDevice(TestTask testTask, TestRunDevice testRunDevice, Logger logger) {
         checkTestTaskCancel(testTask);

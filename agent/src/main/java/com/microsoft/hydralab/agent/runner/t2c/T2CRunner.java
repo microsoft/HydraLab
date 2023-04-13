@@ -6,6 +6,8 @@ package com.microsoft.hydralab.agent.runner.t2c;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
@@ -35,6 +37,7 @@ import org.springframework.util.Assert;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class T2CRunner extends AppiumRunner {
@@ -49,6 +52,14 @@ public class T2CRunner extends AppiumRunner {
                      PerformanceTestManagementService performanceTestManagementService, String agentName) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.agentName = agentName;
+    }
+
+    @Override
+    protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, 1, -1));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.ffmpeg, 4, -1));
+        return envCapabilityRequirements;
     }
 
     @Override

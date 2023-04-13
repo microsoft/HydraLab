@@ -8,6 +8,8 @@ import com.android.ddmlib.testrunner.InstrumentationResultParser;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
@@ -22,7 +24,9 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class EspressoRunner extends TestRunner {
@@ -33,6 +37,13 @@ public class EspressoRunner extends TestRunner {
                           ADBOperateUtil adbOperateUtil) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
+    }
+
+    @Override
+    protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, 1, -1));
+        return envCapabilityRequirements;
     }
 
     @Override

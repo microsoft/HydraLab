@@ -1,11 +1,15 @@
-package com.microsoft.hydralab.agent.environment;
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
-import lombok.Getter;
+package com.microsoft.hydralab.common.entity.agent;
+
+import lombok.Data;
 
 import java.io.File;
 
-@Getter
+@Data
 public class EnvCapability {
+
     @SuppressWarnings("checkstyle:VisibilityModifier")
     public enum CapabilityKeyword {
         adb("--version"),
@@ -32,7 +36,7 @@ public class EnvCapability {
             this.brokenIndicatorMessageParts = brokenIndicatorMessageParts;
         }
 
-        final String fetchVersionParam;
+        public final String fetchVersionParam;
         final String[] brokenIndicatorMessageParts;
         private String versionOutput;
         private int minimumViableMajorVersion;
@@ -77,7 +81,7 @@ public class EnvCapability {
     }
 
     private final CapabilityKeyword keyword;
-    private final File file;
+    private transient final File file;
     private String version;
     private int majorVersion;
     private int minorVersion;
@@ -85,6 +89,13 @@ public class EnvCapability {
     public EnvCapability(CapabilityKeyword keyword, File file) {
         this.keyword = keyword;
         this.file = file;
+    }
+
+    public EnvCapability(CapabilityKeyword keyword, int majorVersion, int minorVersion) {
+        this.keyword = keyword;
+        this.file = null;
+        this.majorVersion = majorVersion;
+        this.minorVersion = minorVersion;
     }
 
     public void setVersion(String version) {
@@ -120,5 +131,19 @@ public class EnvCapability {
             }
         }
         return true;
+    }
+
+    public boolean meet(EnvCapability envCapability) {
+        if (envCapability == null || envCapability.keyword != keyword) {
+            return false;
+        }
+
+        if (envCapability.majorVersion < majorVersion) {
+            return true;
+        } else if (envCapability.majorVersion == majorVersion) {
+            return envCapability.minorVersion <= minorVersion;
+        }
+
+        return false;
     }
 }

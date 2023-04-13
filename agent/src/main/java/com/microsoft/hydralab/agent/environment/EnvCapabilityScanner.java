@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.agent.environment;
 
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;

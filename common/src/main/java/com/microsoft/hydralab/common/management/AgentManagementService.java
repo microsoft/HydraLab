@@ -3,6 +3,10 @@
 
 package com.microsoft.hydralab.common.management;
 
+import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
+import com.microsoft.hydralab.common.entity.agent.EnvInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
@@ -11,8 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,6 +41,20 @@ public class AgentManagementService {
     protected String deviceStoragePath;
     protected StorageServiceClientProxy storageServiceClientProxy;
     protected String preInstallFailurePolicy;
+    protected EnvInfo envInfo;
+    private List<AgentFunctionAvailability> functionAvailabilities = new ArrayList<>();
+
+    public List<AgentFunctionAvailability> getFunctionAvailabilities() {
+        return functionAvailabilities;
+    }
+
+    public EnvInfo getEnvInfo() {
+        return envInfo;
+    }
+
+    public void setEnvInfo(EnvInfo envInfo) {
+        this.envInfo = envInfo;
+    }
 
     public StorageServiceClientProxy getStorageServiceClientProxy() {
         return storageServiceClientProxy;
@@ -190,5 +210,22 @@ public class AgentManagementService {
         if (deviceInfo != null) {
             deviceInfo.setIsPrivate(isPrivate);
         }
+    }
+
+    public void registerFunctionAvailability(String functionName, AgentFunctionAvailability.AgentFunctionType functionType, boolean enabled,
+                                             List<EnvCapabilityRequirement> requirements) {
+        boolean available = true;
+        for (EnvCapabilityRequirement requirement : requirements) {
+            EnvCapability envCapability =
+                    envInfo.getCapabilities().stream().filter(capability -> capability.getKeyword().equals(requirement.getEnvCapability().getKeyword())).findFirst().get();
+            if (envCapability == null) {
+                available = false;
+                continue;
+            }
+            boolean isReady = envCapability.meet(requirement.getEnvCapability());
+            requirement.setReady(isReady);
+            available = available && isReady;
+        }
+        functionAvailabilities.add(new AgentFunctionAvailability(functionName, functionType, enabled, true, requirements));
     }
 }

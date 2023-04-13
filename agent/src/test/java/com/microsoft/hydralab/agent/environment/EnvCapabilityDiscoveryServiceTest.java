@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.agent.environment;
 
+import com.microsoft.hydralab.common.entity.agent.EnvInfo;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

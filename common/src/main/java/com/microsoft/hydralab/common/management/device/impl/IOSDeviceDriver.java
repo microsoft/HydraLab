@@ -6,6 +6,8 @@ package com.microsoft.hydralab.common.management.device.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
@@ -29,7 +31,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.hydralab.common.util.AgentConstant.UNKNOWN_IOS_MODEL;
@@ -58,6 +62,14 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "IOSDeviceDriver init failed", e);
         }
+    }
+
+    @Override
+    public List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, 1, -1));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.tidevice, 0, -1));
+        return envCapabilityRequirements;
     }
 
     @Override

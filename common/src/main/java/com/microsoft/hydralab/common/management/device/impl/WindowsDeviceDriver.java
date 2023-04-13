@@ -4,6 +4,8 @@
 package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
@@ -27,6 +29,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class WindowsDeviceDriver extends AbstractDeviceDriver {
@@ -60,6 +64,13 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "WindowsDeviceDriver init failed", e);
         }
+    }
+
+    @Override
+    public List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, 1, -1));
+        return envCapabilityRequirements;
     }
 
     @Override

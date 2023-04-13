@@ -592,6 +592,7 @@ public class DeviceAgentManagementService {
         user.setVersionName(agentUser.getVersionName());
         user.setVersionCode(agentUser.getVersionCode());
         user.setSecret(null);
+        user.setFunctionAvailabilities(agentUser.getFunctionAvailabilities());
         return user;
     }
 
