@@ -155,3 +155,89 @@ MacOSScanner -u-|> EnvCapabilityScanner
 
 EnvCapabilityScanner .. EnvCapability: produce
 @enduml
+
+@startuml agent_capability_design
+
+class AgentManagementService {
+    EnvInfo envInfo;
+    List<AgentFunctionAvailability> functionAvailabilities;
+    registerFunctionAvailability(String serviceName,ServiceType,boolean isEnabled, List<EnvCapabilityRequirement>)
+}
+AgentManagementService -r-> EnvCapabilityDiscoveryService
+class TestRunner{
+    List<EnvCapabilityRequirement>
+}
+class DeviceDriver{
+    List<EnvCapabilityRequirement>
+}
+
+TestRunner -r-> AgentManagementService
+DeviceDriver -r-> AgentManagementService
+TestRunner --> EnvCapabilityRequirement
+DeviceDriver --> EnvCapabilityRequirement
+
+class EnvCapabilityRequirement{
+    +private boolean isReady
+    +EnvCapability envCapability
+    +boolean meet(EnvCapability envCapability)
+}
+enum AgentFunctionType{
+    TEST_RUNNER
+    DEVICE_DRIVER
+}
+class AgentFunctionAvailability{
+    +AgentFunctionType functionType
+    +String functionName
+    +List<EnvCapabilityRequirement> envCapabilityRequirements
+    +boolean enabled
+    +boolean available
+}
+AgentManagementService -->AgentFunctionAvailability
+AgentFunctionAvailability ..> AgentFunctionType
+class AgentUser{
+    List<AgentFunctionAvailability> functionAvailabilities;
+}
+AgentManagementService ..> AgentUser : provide
+@enduml
+
+@startuml agent_capability_design_sequence
+participant SpringContainer
+participant EnvCapabilityDiscoveryService
+participant AgentManagementService
+participant DeviceDriverManager
+participant TestRunner
+participant AgentWebSocketClientService
+participant CenterApplication
+
+activate SpringContainer
+activate CenterApplication
+SpringContainer --> EnvCapabilityDiscoveryService : createBean
+activate EnvCapabilityDiscoveryService
+EnvCapabilityDiscoveryService --> EnvCapabilityDiscoveryService : discoverEnvCapability
+SpringContainer --> AgentManagementService : createBean
+activate AgentManagementService
+EnvCapabilityDiscoveryService --> AgentManagementService : provideEnvCapability
+deactivate EnvCapabilityDiscoveryService
+SpringContainer --> DeviceDriverManager : createDriverManager
+activate DeviceDriverManager
+DeviceDriverManager --> DeviceDriverManager : add deviceDrivers
+deactivate DeviceDriverManager
+SpringContainer --> AgentManagementService : registerDriverAvailability
+
+SpringContainer --> TestRunner : createBean
+activate TestRunner
+TestRunner --> TestRunner : init
+TestRunner --> AgentManagementService : registerRunnerAvailability
+deactivate TestRunner
+SpringContainer --> AgentWebSocketClientService : createBean
+activate AgentWebSocketClientService
+AgentWebSocketClientService --> AgentWebSocketClientService : buildAgentUser
+AgentWebSocketClientService --> AgentManagementService : getServiceAvailabilities
+AgentManagementService --> AgentWebSocketClientService : return serviceAvailabilities
+deactivate AgentManagementService
+AgentWebSocketClientService --> CenterApplication : provide agent info
+CenterApplication --> CenterApplication : display agent info
+deactivate CenterApplication
+deactivate AgentWebSocketClientService
+deactivate SpringContainer
+@enduml
