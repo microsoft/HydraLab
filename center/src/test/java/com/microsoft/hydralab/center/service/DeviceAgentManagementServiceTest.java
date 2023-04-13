@@ -23,12 +23,11 @@ import static org.mockito.BDDMockito.given;
 
 public class DeviceAgentManagementServiceTest extends BaseTest {
     @Resource
-    DeviceAgentManagementService deviceAgentManagementService;
-    @MockBean
+    LocalStorageProperty localStorageProperty;
+    @Resource
     AgentUserRepository agentUserRepository;
     @Resource
-    ApplicationContext applicationContext;
-
+    DeviceAgentManagementService deviceAgentManagementService;
 
     @Test
     public void testOnMessage_NoException() throws IOException {
@@ -50,11 +49,10 @@ public class DeviceAgentManagementServiceTest extends BaseTest {
         agentUser.setVersionName("versionName");
         agentUser.setVersionCode("versionCode");
 
-        given(agentUserRepository.findById(agentId)).willReturn(Optional.of(agentUser));
+        agentUserRepository.saveAndFlush(agentUser);
 
-        StorageServiceClientProxy storageServiceClientProxy = new StorageServiceClientProxy(applicationContext);
-        storageServiceClientProxy.initCenterStorageClient("LOCAL");
-        given(this.storageServiceClientProxy.generateAccessToken(Const.FilePermission.WRITE)).willReturn(storageServiceClientProxy.generateAccessToken(Const.FilePermission.WRITE));
+        LocalStorageClientAdapter localStorageClientAdapter = new LocalStorageClientAdapter(localStorageProperty);
+        given(this.storageServiceClientProxy.generateAccessToken(Const.FilePermission.WRITE)).willReturn(localStorageClientAdapter.generateAccessToken(Const.FilePermission.WRITE));
 
         Message message = Message.ok(Const.Path.AUTH, agentUser);
         byte[] byteMsg = SerializeUtil.messageToByteArr(message);
