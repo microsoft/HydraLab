@@ -44,11 +44,13 @@ public abstract class TestRunner {
         this.testRunDeviceOrchestrator = testRunDeviceOrchestrator;
     }
 
-    public void runTestOnDevice(TestTask testTask, TestRunDevice testRunDevice, Logger logger) {
+    public void runTestOnDevice(TestTask testTask, TestRunDevice testRunDevice) {
         checkTestTaskCancel(testTask);
-        logger.info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
+        if (testRunDevice.getLogger() != null) {
+            testRunDevice.getLogger().info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
+        }
 
-        TestRun testRun = createTestRun(testRunDevice, testTask, logger);
+        TestRun testRun = createTestRun(testRunDevice, testTask, testRunDevice.getLogger());
         checkTestTaskCancel(testTask);
 
         try {

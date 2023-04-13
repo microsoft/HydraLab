@@ -69,18 +69,16 @@ public class DeviceTaskControlExecutor {
                 log.info("RunForAllDeviceAsync: [BUSY] device is testing: {}", testRunDeviceOrchestrator.getName(device));
                 continue;
             }
-            Logger logger = null;
             if (logging) {
-                logger = testRunDeviceOrchestrator.getDeviceLogger(device);
+                device.setLogger(testRunDeviceOrchestrator.getDeviceLogger(device));
             }
-            final Logger fLogger = logger;
             devices.add(device);
             Runnable run = () -> {
                 try {
                     if (logging) {
                         DeviceTaskControlExecutor.log.info("start do task: {}", testRunDeviceOrchestrator.getName(device));
                     }
-                    task.doTask(device, fLogger);
+                    task.doTask(device);
                 } catch (Exception e) {
                     DeviceTaskControlExecutor.log.error(e.getMessage(), e);
                 } finally {
@@ -96,7 +94,7 @@ public class DeviceTaskControlExecutor {
     }
 
     public interface DeviceTask {
-        boolean doTask(TestRunDevice testRunDevice, Logger logger) throws Exception;
+        boolean doTask(TestRunDevice testRunDevice) throws Exception;
     }
 
     public interface TaskCompletion {
