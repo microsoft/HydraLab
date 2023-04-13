@@ -97,6 +97,9 @@ public class IOSUtils {
     public static void proxyWDA(DeviceInfo deviceInfo, Logger logger) {
         String udid = deviceInfo.getSerialNum();
         int wdaPort = getWdaPortByUdid(udid, logger);
+        if (isWdaRunningByPort(wdaPort, logger)) {
+            return;
+        }
         // String command = "tidevice -u " + udid + " wdaproxy -B " + WDA_BUNDLE_ID + " --port " + getWdaPortByUdid(udid, logger);
         String portRelayCommand = "tidevice -u " + udid + " relay " + wdaPort + " 8100";
         String startWDACommand = "tidevice -u " + udid + "  xctest --bundle_id " + WDA_BUNDLE_ID;
@@ -112,6 +115,7 @@ public class IOSUtils {
         String udid = deviceInfo.getSerialNum();
         int wdaPort = getWdaPortByUdid(udid, logger);
         // String command = "tidevice -u " + udid + " wdaproxy -B " + WDA_BUNDLE_ID + " --port " + getWdaPortByUdid(udid, logger);
+        // We can still try to kill the process even the proxy is not running.
         String portRelayCommand = "tidevice -u " + udid + " relay " + wdaPort + " 8100";
         String startWDACommand = "tidevice -u " + udid + "  xctest --bundle_id " + WDA_BUNDLE_ID;
 

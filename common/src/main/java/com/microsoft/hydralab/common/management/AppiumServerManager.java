@@ -112,6 +112,10 @@ public class AppiumServerManager {
         }
 
         int wdaPort = IOSUtils.getWdaPortByUdid(udid, logger);
+        if (!IOSUtils.isWdaRunningByPort(wdaPort, logger)) {
+            IOSUtils.proxyWDA(deviceInfo, logger);
+        }
+
         DesiredCapabilities caps = new DesiredCapabilities();
 
         caps.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, 4000);
@@ -393,6 +397,8 @@ public class AppiumServerManager {
             } catch (Exception e) {
                 logger.info("Error happened when quitting driver for device: " + udid);
                 e.printStackTrace();
+            } finally {
+                IOSUtils.killProxyWDA(deviceInfo, logger);
             }
         }
         iOSDrivers.remove(udid);
