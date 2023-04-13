@@ -5,6 +5,8 @@ import com.microsoft.hydralab.center.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.file.impl.local.LocalStorageClientAdapter;
+import com.microsoft.hydralab.common.file.impl.local.LocalStorageProperty;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.SerializeUtil;
 import org.junit.jupiter.api.Test;
