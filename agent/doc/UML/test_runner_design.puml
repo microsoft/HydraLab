@@ -1,23 +1,37 @@
 @startuml test_runner_class_relation
 abstract class TestRunner {
-    #createTestRun(...)
-    #setUp(TestTask)
-    #run(TestTaskSpec)
-    #tearDown(...)
 }
+
+interface TestRunEngine {
+    TestReport run(TestTask, TestRunDevice);
+}
+interface TestRunLifecycle {
+    TestRun setup(TestTask, TestRunDevice);
+    void execute(TestRun) throws Exception;
+    void teardown(TestRun);
+    TestResult analyze(TestRun);
+    TestReport report(TestRun, TestResult);
+    void help(TestRun testRun, TestResult);
+}
+
+TestRunner -u-|> TestRunEngine
+TestRunner -u-|> TestRunLifecycle
+
+AppiumRunner -u-|> TestRunner
+EspressoRunner -u-|> TestRunner
+AdbMonkeyRunner -u-|> TestRunner
+T2CRunner -u-|> AppiumRunner
+SmartRunner -u-|> TestRunner
+
+
 interface TestRunningCallback
+TestRunner -l-> TestRunningCallback
 
-AppiumRunner --|> TestRunner
-EspressoRunner --|> TestRunner
-AdbMonkeyRunner --|> TestRunner
-T2CRunner --|> AppiumRunner
-SmartRunner --|> TestRunner
+TestRunner *-r-> DeviceManager
 
-TestRunner --> TestRunningCallback
+AppiumCrossRunner -u-|> AppiumRunner
 
-TestRunner *--> DeviceManager
 
-AppiumCrossRunner --|> AppiumRunner
 @enduml
 
 @startuml running_sequence
@@ -62,6 +76,25 @@ deactivate TestRunningCallback
 TaskCompletion -> TestThreadPool.Executor
 deactivate TaskCompletion
 
+@enduml
+
+@startuml running_sequence_new
+AgentWebSocketClientService -> TestTask: convertToTestTask(static)
+AgentWebSocketClientService -> TestTaskEngineService :runTestTask(TestTask)
+activate TestTaskEngineService
+TestTaskEngineService -> TestTaskEngineService: chooseDevices
+TestTaskEngineService -> DeviceTaskControlExecutor: runForAllDeviceAsync
+deactivate TestTaskEngineService
+DeviceTaskControlExecutor --> TestRunnerManager: runTest
+TestRunnerManager --> TestRunEngine: run
+activate TestRunEngine
+TestRunEngine --> TestRunLifecycle: setup
+TestRunEngine --> TestRunLifecycle: execute
+TestRunEngine --> TestRunLifecycle: teardown
+TestRunEngine --> TestRunLifecycle: analyze
+TestRunEngine --> TestRunLifecycle: report
+TestRunEngine --> TestRunLifecycle: help
+deactivate TestRunEngine
 @enduml
 
 @startjson test_task_spec_design

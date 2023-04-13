@@ -1,18 +1,18 @@
 package com.microsoft.hydralab.agent.runner;
 
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestReport;
 import com.microsoft.hydralab.common.entity.common.TestResult;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 
 /**
- * We use this interface to define the test runner behaviors and test life cycle.
+ * We use this interface to define the test runner behaviors and test run lifecycle.
  * And in the book of "How we test software at Microsoft", it proposed an approach of "SEARCH"
  * to define each stage of testing. We take this approach as the basis of our test runner.
  * Yet we have our own implementation and name for each stage.
  */
-public interface TestLifecycle {
+public interface TestRunLifecycle {
     /**
      * The scope of preparing a system for test execution, including operating system installation (if
      * necessary) and configuring the application under test, can grow quickly when you consider operating
@@ -21,7 +21,7 @@ public interface TestLifecycle {
      * @param testTask
      * @return the test run, which contains the test task and the device info
      */
-    TestRun setup(TestTask testTask, DeviceInfo deviceInfo);
+    TestRun setup(TestTask testTask, TestRunDevice testRunDevice);
 
     /**
      * Running the steps of the test case is the heart of automated testing, and a variety of execution methods
