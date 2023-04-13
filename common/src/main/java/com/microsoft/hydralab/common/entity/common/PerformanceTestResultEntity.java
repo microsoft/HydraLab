@@ -12,7 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.sql.Date;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;

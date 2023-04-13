@@ -139,7 +139,7 @@ export default class PerfTestDashboard extends React.Component {
         if (isAndroidBatteryInfoEnabled) {
             let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
             androidBatteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
-                if (inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     result.ratio = inspectionResult.parsedData.ratio * 100;
@@ -187,7 +187,7 @@ export default class PerfTestDashboard extends React.Component {
         if (isAndroidMemoryInfoEnabled) {
             let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
             androidMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
-                if (inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     Object.keys(inspectionResult.parsedData).forEach((key) => {
@@ -241,7 +241,7 @@ export default class PerfTestDashboard extends React.Component {
             let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
             windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
-                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
@@ -308,7 +308,7 @@ export default class PerfTestDashboard extends React.Component {
             let startTime = iosEnergyInfo.performanceInspectionResults[0].timestamp;
             iosEnergyInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
-                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
@@ -357,7 +357,7 @@ export default class PerfTestDashboard extends React.Component {
             let startTime = iosMemoryInfo.performanceInspectionResults[0].timestamp;
             iosMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
-                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
