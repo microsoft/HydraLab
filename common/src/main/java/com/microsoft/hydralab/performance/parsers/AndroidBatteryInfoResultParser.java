@@ -6,7 +6,6 @@ import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
 import com.microsoft.hydralab.performance.entity.AndroidBatteryInfo;
-import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,13 +42,29 @@ public class AndroidBatteryInfoResultParser implements PerformanceResultParser {
         }
 
         // Use the battery usage at the end of the test as a summary
-        performanceTestResult.setResultSummary(SerializationUtils.clone(
-                (AndroidBatteryInfo) inspectionResults.get(inspectionResults.size() - 1).parsedData));
+        performanceTestResult.setResultSummary(getResultSummary(inspectionResults));
         return performanceTestResult;
     }
 
+    private AndroidBatteryInfo getResultSummary(List<PerformanceInspectionResult> inspectionResults) {
+        if (inspectionResults == null || inspectionResults.isEmpty()) {
+            return null;
+        }
+
+        for (int i = inspectionResults.size() - 1; i >= 0; i--) {
+            PerformanceInspectionResult inspectionResult = inspectionResults.get(i);
+            if (inspectionResult.parsedData != null) {
+                return (AndroidBatteryInfo) inspectionResult.parsedData;
+            }
+        }
+
+        return null;
+    }
+
     private AndroidBatteryInfo parseRawResultFile(File rawFile, String packageName) {
-        if (!rawFile.isFile() || !rawFile.exists()) return null;
+        if (!rawFile.isFile() || !rawFile.exists()) {
+            return null;
+        }
 
         AndroidBatteryInfo batteryInfo = new AndroidBatteryInfo();
         float totalUsage = 0.0f;
