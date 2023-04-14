@@ -111,7 +111,7 @@ public class TestRunDeviceOrchestrator {
             List<String> videoFilePaths = new ArrayList<>();
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
                 String path = testRunDevice1.getScreenRecorder().finishRecording();
-                if (path != null && !path.isEmpty()) {
+                if (path != null && !path.isEmpty() && new File(path).exists()) {
                     videoFilePaths.add(path);
                 }
             });
