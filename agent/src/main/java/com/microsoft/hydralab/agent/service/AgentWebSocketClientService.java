@@ -171,7 +171,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
             log.info("TestTaskSpec: {}", testTaskSpec);
             TestTask testTask = testTaskEngineService.runTestTask(TestTask.convertToTestTask(testTaskSpec));
             if (testTask.getTestDevicesCount() <= 0) {
-                response = Message.error(message, 404, "No device meet the requirement");
+                response = Message.error(message, 404, "No device meet the requirement on this agent: " + testTaskSpec);
             } else {
                 response = Message.response(message, testTask);
                 response.setPath(Const.Path.TEST_TASK_UPDATE);

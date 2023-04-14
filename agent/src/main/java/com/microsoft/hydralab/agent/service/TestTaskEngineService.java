@@ -69,6 +69,10 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
 
         Set<TestRunDevice> chosenDevices = chooseDevices(testTask);
+        if (chosenDevices.size() == 0) {
+            handleNoAvaiableDevice(testTask);
+            return testTask;
+        }
 
         onTaskStart(testTask);
         DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices,
@@ -89,21 +93,32 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 });
 
         if (deviceTaskControl == null) {
-            testTask.setTestDevicesCount(0);
+            handleNoAvaiableDevice(testTask);
         } else {
             testTask.setTestDevicesCount(deviceTaskControl.devices.size());
         }
         return testTask;
     }
 
+    private static void handleNoAvaiableDevice(TestTask testTask) {
+        testTask.setTestDevicesCount(0);
+        testTask.setStatus(TestTask.TestStatus.CANCELED);
+        log.warn("No available device found for {}, group devices: {}, task {} is canceled on this agent",
+                testTask.getDeviceIdentifier(), testTask.getGroupDevices(), testTask.getId());
+    }
+
     protected Set<TestRunDevice> chooseDevices(TestTask testTask) {
         String identifier = testTask.getDeviceIdentifier();
 
-        String targetedDevicesDescriptor = testTask.getGroupDevices();
-        if (!identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
+        String targetedDevicesDescriptor;
+        if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
+            targetedDevicesDescriptor = testTask.getGroupDevices();
+        } else {
             targetedDevicesDescriptor = identifier;
         }
-        Assert.notNull(targetedDevicesDescriptor, "No device found for is specified for " + testTask.getDeviceIdentifier());
+
+        Assert.notNull(targetedDevicesDescriptor, "targetedDevicesDescriptor is null: "
+                + testTask.getDeviceIdentifier() + ", group devices: " + testTask.getGroupDevices());
 
         List<String> deviceSerials = Arrays.asList(targetedDevicesDescriptor.split(","));
 
