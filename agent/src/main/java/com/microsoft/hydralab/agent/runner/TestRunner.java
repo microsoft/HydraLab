@@ -50,7 +50,7 @@ public abstract class TestRunner {
             testRunDevice.getLogger().info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
         }
 
-        TestRun testRun = createTestRun(testRunDevice, testTask, testRunDevice.getLogger());
+        TestRun testRun = createTestRun(testRunDevice, testTask);
         checkTestTaskCancel(testTask);
 
         try {
@@ -105,10 +105,11 @@ public abstract class TestRunner {
         Assert.isFalse(testTask.isCanceled(), "Task {} is canceled", testTask.getId());
     }
 
-    protected TestRun createTestRun(TestRunDevice testRunDevice, TestTask testTask, Logger parentLogger) {
+    protected TestRun createTestRun(TestRunDevice testRunDevice, TestTask testTask) {
         TestRun testRun = new TestRun(testRunDeviceOrchestrator.getSerialNum(testRunDevice), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
         testRun.setDevice(testRunDevice);
         File testRunResultFolder = new File(testTask.getResourceDir(), testRunDevice.getDeviceInfo().getSerialNum());
+        Logger parentLogger = testRunDevice.getLogger();
         parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
         if (!testRunResultFolder.exists()) {
             if (!testRunResultFolder.mkdirs()) {

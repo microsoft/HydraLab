@@ -36,7 +36,9 @@ public class TestRunnerTest extends BaseTest {
         testTask.setResourceDir(resourceDir);
         testTask.setTestSuite("TestSuite");
 
-        TestRun testRun = espressoRunner.createTestRun(new TestRunDevice(deviceInfo, deviceInfo.getType()), testTask, logger);
+        TestRunDevice testRunDevice = new TestRunDevice(deviceInfo, deviceInfo.getType());
+        testRunDevice.setLogger(logger);
+        TestRun testRun = espressoRunner.createTestRun(testRunDevice, testTask);
 
         testRun.getLogger().info("Test TestRun logging function");
         testRun.getLogger().info("TestRun InstrumentReportPath {}", testRun.getInstrumentReportPath());
