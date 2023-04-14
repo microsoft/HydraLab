@@ -39,7 +39,7 @@ public class TestTaskEngineServiceTest extends BaseTest {
         Assertions.assertTrue(runner instanceof EspressoRunner, "Get runner bean error!");
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            testTaskEngineService.runTestTask(taskSpecForGroupDevice);
+            testTaskEngineService.runTestTask(TestTask.convertToTestTask(taskSpecForGroupDevice));
         }, "Should throw IllegalArgumentException when deviceIdentifier is not exist");
 
         TestTaskSpec taskSpecForSingleDevice = new TestTaskSpec();
@@ -48,7 +48,7 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForSingleDevice.testFileSet = new TestFileSet();
         taskSpecForSingleDevice.pkgName = "com.microsoft.test";
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            testTaskEngineService.runTestTask(taskSpecForSingleDevice);
+            testTaskEngineService.runTestTask(TestTask.convertToTestTask(taskSpecForSingleDevice));
         }, "Should throw IllegalArgumentException when deviceIdentifier is not exist");
     }
 }
