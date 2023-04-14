@@ -92,6 +92,8 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForSingleDevice.updateWithDefaultValues();
         testTask = testTaskEngineService.runTestTask(TestTask.convertToTestTask(taskSpecForSingleDevice));
         Assertions.assertEquals(0, testTask.getTestDevicesCount(), "TestTask TestDevicesCount should be 0 as no device is available");
+        Assertions.assertEquals(3, testTask.getDeviceActions().get("tearDown").size(), "TestTask getDeviceActions should be 3 according to the config in application-test.yml");
+
     }
 
     @Test
