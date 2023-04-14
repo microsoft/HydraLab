@@ -205,8 +205,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
 
     private void prometheusPushgatewayInit(AgentMetadata agentMetadata) {
         if (isPrometheusEnabled && !pushGateway.isBasicAuthSet.get()) {
-            pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(agentMetadata.getPushgatewayUsername(),
-                    agentMetadata.getPushgatewayPassword()));
+            pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(agentMetadata.getPushgatewayUsername(), agentMetadata.getPushgatewayPassword()));
             ThreadUtils.safeSleep(1000);
             pushGateway.isBasicAuthSet.set(true);
             log.info("Pushgateway has set basic auth now, data can be pushed correctly.");
