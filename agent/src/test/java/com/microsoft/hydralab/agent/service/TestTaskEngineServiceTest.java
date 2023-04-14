@@ -82,7 +82,8 @@ public class TestTaskEngineServiceTest extends BaseTest {
         Assertions.assertTrue(runner instanceof EspressoRunner, "Get runner bean error!");
         TestTask testTask = testTaskEngineService.runTestTask(TestTask.convertToTestTask(taskSpecForGroupDevice));
         Assertions.assertEquals(0, testTask.getTestDevicesCount(), "TestTask TestDevicesCount should be 0 as no device is available");
-        Assertions.assertEquals(4, testTask.getDeviceActions().get("setUp").size(), "TestTask getDeviceActions should be 3 according to the config in application-test.yml");
+        Assertions.assertEquals(4, testTask.getDeviceActions().get("setUp").size(),
+                "TestTask setUp DeviceActions should be 4 according to the config in application-test.yml");
 
         TestTaskSpec taskSpecForSingleDevice = new TestTaskSpec();
         taskSpecForSingleDevice.runningType = TestTask.TestRunningType.INSTRUMENTATION;
@@ -92,7 +93,8 @@ public class TestTaskEngineServiceTest extends BaseTest {
         taskSpecForSingleDevice.updateWithDefaultValues();
         testTask = testTaskEngineService.runTestTask(TestTask.convertToTestTask(taskSpecForSingleDevice));
         Assertions.assertEquals(0, testTask.getTestDevicesCount(), "TestTask TestDevicesCount should be 0 as no device is available");
-        Assertions.assertEquals(3, testTask.getDeviceActions().get("tearDown").size(), "TestTask getDeviceActions should be 3 according to the config in application-test.yml");
+        Assertions.assertEquals(3, testTask.getDeviceActions().get("tearDown").size(),
+                "TestTask tearDown DeviceActions should be 3 according to the config in application-test.yml");
 
     }
 
