@@ -137,15 +137,15 @@ public class EnvCapability {
         return true;
     }
 
-    public boolean meet(EnvCapability envCapability) {
-        if (envCapability == null || keyword != envCapability.keyword || !isReady()) {
+    public boolean meet(EnvCapability envCapabilityRequirement) {
+        if (envCapabilityRequirement == null || keyword != envCapabilityRequirement.keyword || !isReady()) {
             return false;
         }
 
-        if (envCapability.majorVersion < majorVersion) {
+        if (envCapabilityRequirement.majorVersion < majorVersion) {
             return true;
-        } else if (envCapability.majorVersion == majorVersion) {
-            return envCapability.minorVersion <= minorVersion;
+        } else if (envCapabilityRequirement.majorVersion == majorVersion) {
+            return envCapabilityRequirement.minorVersion <= minorVersion;
         }
 
         return false;
