@@ -99,8 +99,6 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     protected Set<TestRunDevice> chooseDevices(TestTask testTask) {
         String identifier = testTask.getDeviceIdentifier();
 
-        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getActiveDeviceList(log);
-        log.info("Choosing devices from {}", allActiveConnectedDevice.size());
         String targetedDevicesDescriptor = testTask.getGroupDevices();
         if (!identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
             targetedDevicesDescriptor = identifier;
@@ -108,10 +106,19 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         Assert.notNull(targetedDevicesDescriptor, "No device found for is specified for " + testTask.getDeviceIdentifier());
 
         List<String> deviceSerials = Arrays.asList(targetedDevicesDescriptor.split(","));
-        List<DeviceInfo> devices = allActiveConnectedDevice.stream().filter(deviceInfo -> deviceSerials.contains(deviceInfo.getSerialNum())).collect(Collectors.toList());
-        Assert.isTrue(devices.size() > 0, "No device found for " + targetedDevicesDescriptor);
+
+        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getActiveDeviceList(log);
+        log.info("Choosing devices from {}", allActiveConnectedDevice.size());
+        List<DeviceInfo> devices = allActiveConnectedDevice.stream()
+                .filter(deviceInfo -> deviceSerials.contains(deviceInfo.getSerialNum()))
+                .collect(Collectors.toList());
 
         Set<TestRunDevice> chosenDevices = new HashSet<>();
+        if (devices.size() == 0) {
+            log.error("No device found for " + targetedDevicesDescriptor);
+            return chosenDevices;
+        }
+
         String runningType = testTask.getRunningType();
         if (((runningType.equals(TestTask.TestRunningType.APPIUM_CROSS)) || (runningType.equals(TestTask.TestRunningType.T2C_JSON_TEST))) && devices.size() > 1) {
             Optional<DeviceInfo> mainDeviceInfo = devices.stream().filter(deviceInfo -> !DeviceType.WINDOWS.name().equals(deviceInfo.getType())).findFirst();
