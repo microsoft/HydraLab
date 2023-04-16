@@ -144,6 +144,7 @@ agent ..> storage: download app package\n upload test result
 !include <azure/general/Azure>
 !include <tupadr3/devicons2/spring>
 !include <logos/sqlite>
+!include <logos/android>
 !include <tupadr3/govicons/script>
 !include <azure/Storage/AzureBlobStorage>
 !include <office/Servers/application_server>
@@ -160,7 +161,7 @@ backgroundColor #MintCream
 title Container Diagram - Hydra Lab Test Agent Service Architecture
 
 left to right direction
-package "Test agent machine" <<$application_server>> #Ivory {
+package "Test agent machine" <<$application_server>> as machine #Ivory {
 
     frame "Hydra Lab Test Agent Spring Boot Application" <<$spring>> as agent #MediumSpringGreen {
         node "Test center connection" as center_connection
@@ -173,6 +174,9 @@ package "Test agent machine" <<$application_server>> #Ivory {
             folder Driver {
                 node "Device Driver" as dd #Gold
                 node "Test framework driver" as tfd #Gold
+                component "Hydra Lab Android Client App" <<$android>> #LightGreen {
+                    node "Screen recording service"
+                }
             }
             pi ..> dd
             tr --> dd
@@ -198,9 +202,12 @@ cloud #Azure {
     frame "Hydra Lab Test Center Container" as center #LightSkyBlue
 }
 
+component "Connected Mobile Device" as device
+
 cloud "Azure Blob Storage" <<$AzureBlobStorage>> as storage #Azure
 starter --> agent: install, start
 center .u. center_connection: communicate, communicate, manage,\n update test result, sync status
 sca ..> storage: download, upload
+machine --> device: connect
 
 @enduml
