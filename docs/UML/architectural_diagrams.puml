@@ -47,8 +47,8 @@ dev ..>> gbs: run test
 dev ..>> ADO: trigger build
 ADO ..>> ADOExtension: integrate
 gbs ..>> gradle: run test
-ADOExtension ..> api: run test
-gradle ..> api: run test
+ADOExtension ..> api
+gradle ..> api: call run test task API
 
 dev -->> UI: Login, run test,\n manage team and device,\n view test result, get API token
 dev ..>> starter: run it on the test\n agent machine
