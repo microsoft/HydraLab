@@ -10,11 +10,14 @@ buildscript {
     }
 }
 ext {
-    if (project.hasProperty("authbrokerVersion")) {
+    if (project.hasProperty("clientVersionNumber")) {
         clientVersionNumber = project.property("clientVersionNumber")
-        clientVersionCode = project.property("clientVersionCode")
     } else {
         clientVersionNumber = '2.6.0'
+    }
+    if (project.hasProperty("clientVersionCode")) {
+        clientVersionCode = project.property("clientVersionCode")
+    } else {
         clientVersionCode = 17
     }
     println "version number: " + clientVersionNumber + ", version code: " + clientVersionCode
