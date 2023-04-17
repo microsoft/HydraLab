@@ -30,6 +30,7 @@ class DeviceInfo{
     Map<Thread, String> currentCommand
     Map<Thread, String> currentProcess
     Map<Thread, TestTask> currentTask
+    
 }
 
 class TestRunDeviceOrchestrator{
