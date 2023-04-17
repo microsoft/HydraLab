@@ -48,11 +48,33 @@ TEST_RUN_FINISHED
       "index": 1,
       "driverId": "13211FDD400183",
       "action": {
+        "actionType": "inspectLatencyStart",
+        "arguments": {
+          "description ": "Start LTW"
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 2,
+      "driverId": "13211FDD400183",
+      "action": {
         "actionType": "inspectMemoryUsage",
         "arguments": {
           "targetApp ": "com.microsoft.appmanager",
           "description ": "Start LTW",
           "isReset": true
+        }
+      },
+      "isOptional": false
+    },
+    {
+      "index": 3,
+      "driverId": "13211FDD400183",
+      "action": {
+        "actionType": "inspectLatencyEnd",
+        "arguments": {
+          "description ": "Start LTW"
         }
       },
       "isOptional": false
@@ -87,10 +109,17 @@ class PerformanceTestManagementService {
     Map<String, List<InspectionStrategy>> testLifeCycleStrategyMap
 }
 
+AndroidBatteryInspector -up--o PerformanceTestManagementService
+AndroidMemoryInfoInspector -up--o PerformanceTestManagementService
+AndroidMemoryDumpInspector -up--o PerformanceTestManagementService
+WindowsBatteryInspector -up--o PerformanceTestManagementService
+WindowsMemoryInspector -up--o PerformanceTestManagementService
+LatencyInspector -up--o PerformanceTestManagementService
+
 PerformanceTestManagementService -> InspectionStrategy
 PerformanceTestManagementService -u-|> PerformanceTestListener
 
-PerformanceTestManagementService -d-o TestRunner
+PerformanceTestManagementService -left-o TestRunner
 AppiumListener -d->  PerformanceTestListener
 Junit5Listener -d->  PerformanceTestListener
 EspressoTestInfoProcessorListener  -d->  PerformanceTestListener
@@ -104,5 +133,36 @@ EspressoPerformanceParser --|> InstrumentationResultParser
 TestRunner <|-- EspressoRunner
 EspressoRunner -> EspressoPerformanceParser
 EspressoPerformanceParser -> PerformanceInspectionService
+@enduml
+
+@startuml performance_latency_test_sequence
+TestRunner -> PerformanceTestManagementService : inspect(LatencyStartInspection)
+note left
+  LatencyStartInspection{
+    description: "Start LTW"
+    isRest: true
+  }
+  LatencyEndInspection {
+    description: "End LTW"
+    isRest:false
+  }
+end note
+PerformanceTestManagementService -> LatencyInspector : inspect(LatencyStartInspection)
+activate LatencyInspector
+LatencyInspector -> PerformanceTestManagementService : PerformanceInspectionResult
+deactivate LatencyInspector
+TestRunner -> PerformanceTestManagementService : inspect(LatencyEndInspection)
+PerformanceTestManagementService -> LatencyInspector : inspect(LatencyEndInspection)
+activate LatencyInspector
+LatencyInspector -> PerformanceTestManagementService : PerformanceInspectionResult
+deactivate LatencyInspector
+TestRunner -> PerformanceTestManagementService : tearDown()
+PerformanceTestManagementService -> LatencyParser : parse(PerformanceTestResult)
+activate LatencyParser
+LatencyParser -> PerformanceTestManagementService : LatencyTestResult
+deactivate LatencyParser
+note right
+  Parse the latency from "start" to "end"
+end note
 @enduml
 
