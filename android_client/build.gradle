@@ -16,7 +16,7 @@ ext {
         clientVersionNumber = '2.6.0'
     }
     if (project.hasProperty("clientVersionCode")) {
-        clientVersionCode = project.property("clientVersionCode")
+        clientVersionCode = Integer.parseInt(project.property("clientVersionCode"))
     } else {
         clientVersionCode = 17
     }

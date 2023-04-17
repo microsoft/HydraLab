@@ -7,8 +7,8 @@ android {
         applicationId "com.microsoft.hydralab.android.client"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 17
-        versionName '2.6.0'
+        versionCode rootProject.ext.clientVersionCode
+        versionName rootProject.ext.clientVersionNumber
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -29,6 +29,11 @@ android {
         }
     }
     namespace 'com.microsoft.hydralab.android.client'
+
+    lint {
+        xmlReport true
+        abortOnError false
+    }
 }
 
 dependencies {

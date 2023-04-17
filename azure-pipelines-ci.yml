@@ -155,6 +155,17 @@ stages:
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
       condition: eq(variables.fullBuild, 'true')
+    - task: Gradle@2
+      displayName: Package Android client APK
+      inputs:
+        workingDirectory: 'android_client'
+        gradleWrapperFile: 'android_client/gradlew'
+        tasks: 'assembleRelease'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        options: '-PclientVersionCode=$hydraVersionCode -PclientVersionNumber=$hydraVersion'
+      condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy agent jar
       inputs:
