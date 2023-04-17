@@ -9,6 +9,7 @@ import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import lombok.Getter;
 import lombok.Setter;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
 
 import java.io.File;
 
@@ -25,6 +26,7 @@ public class TestRunDevice {
     private File gifFile;
 
     private WebDriver webDriver;
+    private transient Logger logger;
 
     public TestRunDevice(DeviceInfo deviceInfo, String tag) {
         this.deviceInfo = deviceInfo;
