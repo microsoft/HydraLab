@@ -1,5 +1,5 @@
 # Back-end architectFront-end architect
-doc/UML @hydraxman @zhou9584
+**/doc/UML @hydraxman @zhou9584
 *.puml  @hydraxman @zhou9584
 
 # Front-end architect
@@ -32,24 +32,24 @@ TestTaskSpec.java @olivershen-wow
 
 # AgentManager,DeviceDriver,TestRunner,TestDevice
 /common/src/main/java/com/microsoft/hydralab/common/management/ @zhou9584 @TedaLIEz @AC-Phoenix
-runner/ @zhou9584 @TedaLIEz @AC-Phoenix
+**/runner/ @zhou9584 @TedaLIEz @AC-Phoenix
 
 # Smart Test
 
 # Espresso
-runner/espresso/ @zhou9584 @hydraxman
+**/runner/espresso/ @zhou9584 @hydraxman
 
 # Appium
-runner/appium/ @dinghong2233 @taoran6
+**/runner/appium/ @dinghong2233 @taoran6
 
 # Taps to cases
-runner/t2c/  @dinghong2233 @taoran6
+**/runner/t2c/  @dinghong2233 @taoran6
 /taps_to_cases/ @dinghong2233 @taoran6
 
 # XCTest(iOS)
-runner/xctest/ @lifesaver0129
+**/runner/xctest/ @lifesaver0129
 
 # Performance testing
-hydralab/performance/ @taoran6 @AC-Phoenix
+**/hydralab/performance/ @taoran6 @AC-Phoenix
 
 
