@@ -166,6 +166,18 @@ stages:
         jdkVersionOption: '1.11'
         options: '-PclientVersionCode=$hydraVersionCode -PclientVersionNumber=$hydraVersion'
       condition: eq(variables.fullBuild, 'true')
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Artifact: Production APK'
+      inputs:
+        targetPath: 'android_client/app/build/outputs/apk/release/app-release.apk'
+        ArtifactName: HydraLabRelease
+        publishLocation: 'apk'
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Artifact: Production APK'
+      inputs:
+        targetPath: 'android_client/app/build/outputs/mapping/release/mapping.txt'
+        ArtifactName: HydraLabRelease
+        publishLocation: 'mapping'
     - task: CopyFiles@2
       displayName: Copy agent jar
       inputs:
