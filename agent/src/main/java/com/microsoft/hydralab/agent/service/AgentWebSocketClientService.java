@@ -26,6 +26,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -148,21 +150,11 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                 testTaskEngineService.cancelTestTaskById(data.getString(Const.AgentConfig.TASK_ID_PARAM));
                 break;
             case Const.Path.TEST_TASK_RUN:
-                try {
-                    if (!(message.getBody() instanceof TestTaskSpec)) {
-                        break;
-                    }
-                    TestTask testTask = testTaskEngineService.runTestTask((TestTaskSpec) message.getBody());
-                    if (testTask == null) {
-                        response = Message.error(message, 404, "No device meet the requirement");
-                    } else {
-                        response = Message.response(message, testTask);
-                        response.setPath(Const.Path.TEST_TASK_UPDATE);
-                    }
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                    response = Message.error(message, 500, e.getMessage() + e.getClass().getName());
+                if (!(message.getBody() instanceof TestTaskSpec)) {
+                    response = Message.error(message, 400, "Invalid request body");
+                    break;
                 }
+                response = handleTestTaskRun(message);
                 break;
             default:
                 break;
@@ -171,6 +163,29 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
             return;
         }
         send(response);
+    }
+
+    @NotNull
+    private Message handleTestTaskRun(Message message) {
+        Message response;
+        try {
+            TestTaskSpec testTaskSpec = (TestTaskSpec) message.getBody();
+            testTaskSpec.updateWithDefaultValues();
+            log.info("TestTaskSpec: {}", testTaskSpec);
+            TestTask testTask = testTaskEngineService.runTestTask(TestTask.convertToTestTask(testTaskSpec));
+            if (testTask.getTestDevicesCount() <= 0) {
+                response = Message.error(message, 404, "No device meet the requirement on this agent: " + testTaskSpec);
+            } else {
+                response = Message.response(message, testTask);
+                response.setPath(Const.Path.TEST_TASK_UPDATE);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            response = Message.error(message, 500,
+                    String.format("%s\n%s\n%s", e.getClass().getName(), e.getMessage(),
+                            ExceptionUtils.getStackTrace(e)));
+        }
+        return response;
     }
 
     private void heartbeatResponse(Message message) {

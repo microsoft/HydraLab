@@ -63,6 +63,8 @@ public class TestTask implements Serializable {
     @Transient
     private String deviceIdentifier;
     @Transient
+    private String groupDevices;
+    @Transient
     private String groupTestType;
     @Transient
     private String accessKey;
@@ -106,6 +108,7 @@ public class TestTask implements Serializable {
         testTask.setId(testTaskSpec.testTaskId);
         testTask.setTestSuite(testTaskSpec.testSuiteClass);
         testTask.setDeviceIdentifier(testTaskSpec.deviceIdentifier);
+        testTask.setGroupDevices(testTaskSpec.groupDevices);
         testTask.setGroupTestType(testTaskSpec.groupTestType);
         testTask.setAccessKey(testTaskSpec.accessKey);
         testTask.setTestCommitId(testTaskSpec.testFileSet.getCommitId());

@@ -38,6 +38,7 @@ import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
 import com.microsoft.hydralab.t2c.runner.TestInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -167,52 +168,63 @@ public class DeviceAgentManagementService {
         sendMessageToSession(session, Message.auth());
     }
 
-    public void onMessage(Message message, Session session) {
+    public void onMessage(Message message, @NotNull Session session) throws IOException {
         AgentSessionInfo savedSession = agentSessionMap.get(session.getId());
-        if (savedSession == null) {
-            AgentUser agentUser = searchQualifiedAgent(message);
-            if (agentUser == null) {
-                try {
-                    session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Not permitted"));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                if (agentDeviceGroups.get(agentUser.getId()) != null && checkIsSessionAliveByAgentId(agentUser.getId())) {
-                    try {
-                        session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used"));
-                        return;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                agentSessionMap.put(session.getId(), new AgentSessionInfo(session, agentUser));
-                metricUtil.registerAgentAliveStatusMetric(agentUser);
-
-                log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
-
-                //check is not agent update success
-                AgentUpdateTask tempTask = agentUpdateMap.get(agentUser.getId());
-                if (tempTask != null) {
-                    log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
-
-                    AgentUpdateTask.UpdateMsg updateMag = null;
-                    String agentMessage = "Agent Reconnected After Updating.Version is " + agentUser.getVersionName();
-                    if (agentUser.getVersionName() == null || !agentUser.getVersionName().equals(tempTask.getTargetVersionName())) {
-                        tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_FAIL);
-                        updateMag = new AgentUpdateTask.UpdateMsg(false, agentMessage, agentUser.toString());
-                    } else {
-                        tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_SUCCESS);
-                        updateMag = new AgentUpdateTask.UpdateMsg(true, agentMessage, "");
-                    }
-
-                    tempTask.getUpdateMsgs().add(updateMag);
-                }
-                sendAgentMetadata(session, agentUser, Const.Path.AGENT_INIT);
-            }
-        } else {
+        if (savedSession != null) {
             handleQualifiedAgentMessage(message, savedSession);
+            return;
         }
+
+        AgentUser agentUser = searchQualifiedAgent(message);
+        if (agentUser == null) {
+            log.warn("Session {} is not registered agent, associated agent {}", session.getId(), message.getBody());
+            session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Not permitted"));
+            return;
+        }
+
+        if (agentDeviceGroups.get(agentUser.getId()) != null && checkIsSessionAliveByAgentId(agentUser.getId())) {
+            log.warn("Session {} is already connected under another agent, associated agent {}", session.getId(), message.getBody());
+            session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used"));
+            return;
+        }
+
+        agentSessionMap.put(session.getId(), new AgentSessionInfo(session, agentUser));
+        metricUtil.registerAgentAliveStatusMetric(agentUser);
+
+        log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
+
+        checkAgentUpdateStatus(message, session, agentUser);
+
+        sendAgentMetadata(session, agentUser, Const.Path.AGENT_INIT);
+    }
+
+    /**
+     * check is not agent update success
+     *
+     * @param message
+     * @param session
+     * @param agentUser
+     */
+    private void checkAgentUpdateStatus(Message message, Session session, AgentUser agentUser) {
+        AgentUpdateTask agentUpdateTask = agentUpdateMap.get(agentUser.getId());
+        if (agentUpdateTask == null) {
+            return;
+        }
+
+        log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
+
+        AgentUpdateTask.UpdateMsg updateMag = null;
+        String agentMessage = "Agent Reconnected After Updating.Version is " + agentUser.getVersionName();
+
+        if (agentUser.getVersionName() == null || !agentUser.getVersionName().equals(agentUpdateTask.getTargetVersionName())) {
+            agentUpdateTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_FAIL);
+            updateMag = new AgentUpdateTask.UpdateMsg(false, agentMessage, agentUser.toString());
+        } else {
+            agentUpdateTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_SUCCESS);
+            updateMag = new AgentUpdateTask.UpdateMsg(true, agentMessage, "");
+        }
+
+        agentUpdateTask.getUpdateMsgs().add(updateMag);
     }
 
     private void handleQualifiedAgentMessage(Message message, AgentSessionInfo savedSession) {

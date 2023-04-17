@@ -7,5 +7,11 @@ app:
     name: {YOUR_AGENT_NAME}
     id: {YOUR_REGISTERED_AGENT_ID}
     secret: {YOUR_REGISTERED_AGENT_SECRET}
-    # Agent Type {1 : 1*WINDOWS + n*ANDROIDS , 2 : 1*WINDOWS+1*ANDROID , 3 : iOS}
-    agent-type: 1
+  device:
+    monitor:
+      windows:
+        enabled: false
+      android:
+        enabled: true
+      ios:
+        enabled: false
