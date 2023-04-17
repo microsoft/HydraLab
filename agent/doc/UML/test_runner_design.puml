@@ -1,6 +1,5 @@
 @startuml test_runner_class_relation
-abstract class TestRunner {
-}
+abstract class TestRunner
 
 interface TestRunEngine {
     TestReport run(TestTask, TestRunDevice);
@@ -9,8 +8,8 @@ interface TestRunLifecycle {
     TestRun setup(TestTask, TestRunDevice);
     void execute(TestRun) throws Exception;
     TestResult analyze(TestRun);
-    void teardown(TestRun);
     TestReport report(TestRun, TestResult);
+    void teardown(TestRun);
     void help(TestRun testRun, TestResult);
 }
 
@@ -91,8 +90,8 @@ activate TestRunEngine
 TestRunEngine --> TestRunLifecycle: setup
 TestRunEngine --> TestRunLifecycle: execute
 TestRunEngine --> TestRunLifecycle: analyze
-TestRunEngine --> TestRunLifecycle: teardown
 TestRunEngine --> TestRunLifecycle: report
+TestRunEngine --> TestRunLifecycle: teardown
 TestRunEngine --> TestRunLifecycle: help
 deactivate TestRunEngine
 @enduml

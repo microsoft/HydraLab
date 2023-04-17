@@ -54,15 +54,6 @@ public interface TestRunLifecycle {
     TestResult analyze(TestRun testRun);
 
     /**
-     * The scope of teardown is similar to the scope of setup. This can also be referred to as "cleanup".
-     * We may need to clean up the system after the test execution and bring the system back to its original state
-     * to allow for a smooth next time execution.
-     *
-     * @param testRun
-     */
-    void teardown(TestRun testRun);
-
-    /**
      * The scope of reporting a test result is the test result itself. The test result can be written
      * in any format, but it must be able to communicate with the test runner.
      * <p>
@@ -73,6 +64,16 @@ public interface TestRunLifecycle {
      * @return the test report, which contains the processed test result and the test run in a more readable format.
      */
     TestReport report(TestRun testRun, TestResult testResult);
+
+    /**
+     * The scope of teardown is similar to the scope of setup. This can also be referred to as "cleanup".
+     * We may need to clean up the system after the test execution and bring the system back to its original state
+     * to allow for a smooth next time execution.
+     *
+     * @param testRun
+     */
+    void teardown(TestRun testRun);
+
 
     /**
      * The scope of HELP may not be relevant to the test runner, we can leave it empty for now.
