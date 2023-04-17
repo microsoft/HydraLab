@@ -9,7 +9,16 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.4.2'
     }
 }
-
+ext {
+    if (project.hasProperty("authbrokerVersion")) {
+        clientVersionNumber = project.property("clientVersionNumber")
+        clientVersionCode = project.property("clientVersionCode")
+    } else {
+        clientVersionNumber = '2.6.0'
+        clientVersionCode = 17
+    }
+    println "version number: " + clientVersionNumber + ", version code: " + clientVersionCode
+}
 allprojects {
     repositories {
         google()
