@@ -13,7 +13,7 @@ exit /B
 if exist "%temp%\getadmin.vbs" ( del "%temp%\getadmin.vbs" )
 
 echo newfile = %1
-set newfile = %1
+set newfile=%1
 ::stop hydra lab agent service
 net stop "Hydra Lab Agent Service"
 ::kill hydra lab agent java process

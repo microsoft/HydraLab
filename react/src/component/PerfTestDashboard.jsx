@@ -65,23 +65,23 @@ const windowsMemoryOptions = [
 
 
 const iosEnergyOptions = [
-    { value: 'totalCost', label: 'totalCost', color: COLORS[0] },
-    { value: 'cpuCost', label: 'cpuCost', color: COLORS[1] },
-    { value: 'gpuCost', label: 'gpuCost', color: COLORS[2] },
-    { value: 'networkingCost', label: 'networkingCost', color: COLORS[3] },
-    { value: 'appStateCost', label: 'appStateCost', color: COLORS[4] },
-    { value: 'locationCost', label: 'locationCost', color: COLORS[5] },
-    { value: 'thermalStateCost', label: 'thermalStateCost', color: COLORS[6] },
-    { value: 'totalOverhead', label: 'totalOverhead', color: COLORS[7] },
-    { value: 'cpuOverhead', label: 'cpuOverhead', color: COLORS[8] },
-    { value: 'gpuOverhead', label: 'gpuOverhead', color: COLORS[9] },
-    { value: 'networkingOverhead', label: 'networkingOverhead', color: COLORS[10] },
-    { value: 'appStateOverhead', label: 'appStateOverhead', color: COLORS[11] },
-    { value: 'locationOverhead', label: 'locationOverhead', color: COLORS[12] },
-    { value: 'thermalStateOverhead', label: 'thermalStateOverhead', color: COLORS[13] }
+    { value: 'energy.cost', label: 'totalCost', color: COLORS[0] },
+    { value: 'energy.cpu.cost', label: 'cpuCost', color: COLORS[1] },
+    { value: 'energy.gpu.cost', label: 'gpuCost', color: COLORS[2] },
+    { value: 'energy.networking.cost', label: 'networkingCost', color: COLORS[3] },
+    { value: 'energy.appstate.cost', label: 'appStateCost', color: COLORS[4] },
+    { value: 'energy.location.cost', label: 'locationCost', color: COLORS[5] },
+    { value: 'energy.thermalstate.cost', label: 'thermalStateCost', color: COLORS[6] },
+    { value: 'energy.overhead', label: 'totalOverhead', color: COLORS[7] },
+    { value: 'energy.cpu.overhead', label: 'cpuOverhead', color: COLORS[8] },
+    { value: 'energy.gpu.overhead', label: 'gpuOverhead', color: COLORS[9] },
+    { value: 'energy.networkning.overhead', label: 'networkingOverhead', color: COLORS[10] },
+    { value: 'energy.appstate.overhead', label: 'appStateOverhead', color: COLORS[11] },
+    { value: 'energy.location.overhead', label: 'locationOverhead', color: COLORS[12] },
+    { value: 'energy.thermalstate.overhead', label: 'thermalStateOverhead', color: COLORS[13] }
 ]
 const iosMemoryOptions = [
-    { value: 'memoryMB', label: 'memoryMB', color: COLORS[0] }
+    { value: 'value', label: 'memoryMB', color: COLORS[0] }
 ]
 
 export default class PerfTestDashboard extends React.Component {
@@ -120,7 +120,7 @@ export default class PerfTestDashboard extends React.Component {
                         <p style={{ margin: 0, padding: 5 }}>{"Time: " + label + "S"}</p>
                         {payload[0].payload.testCase && payload[0].payload.testCase.length && <p style={{ margin: 0, padding: 5 }}>{"Test case: " + payload[0].payload.testCase}</p>}
                         {payload.map((key) => (
-                            <p style={{ margin: 0, padding: 5 }}><font color={key.color}>{key.dataKey + ": " + key.value}</font></p>
+                            <p style={{ margin: 0, padding: 5 }}><font color={key.color}>{key.name + ": " + key.value}</font></p>
                         ))}
                         {payload[0].payload.description && payload[0].payload.description.length && <p style={{ margin: 0, padding: 5 }}>{"Description: " + payload[0].payload.description}</p>}
                     </div>
@@ -139,7 +139,7 @@ export default class PerfTestDashboard extends React.Component {
         if (isAndroidBatteryInfoEnabled) {
             let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
             androidBatteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
-                if (inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     result.ratio = inspectionResult.parsedData.ratio * 100;
@@ -187,7 +187,7 @@ export default class PerfTestDashboard extends React.Component {
         if (isAndroidMemoryInfoEnabled) {
             let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
             androidMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
-                if (inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     let result = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     Object.keys(inspectionResult.parsedData).forEach((key) => {
@@ -241,7 +241,7 @@ export default class PerfTestDashboard extends React.Component {
             let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
             windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
-                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
@@ -308,7 +308,7 @@ export default class PerfTestDashboard extends React.Component {
             let startTime = iosEnergyInfo.performanceInspectionResults[0].timestamp;
             iosEnergyInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
-                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
@@ -339,7 +339,7 @@ export default class PerfTestDashboard extends React.Component {
                 <YAxis yAxisId="left" label={{ value: 'Energy Usage (mW)', angle: -90, position: 'left' }} />
                 <Tooltip content={<CustomTooltip />} />
                 {this.state.selectedIosEnergyOptions.map((key, index) => (
-                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false}/>
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} name={key.label} stroke={key.color} dot={false} />
                 ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
                 <Tooltip />
@@ -357,7 +357,7 @@ export default class PerfTestDashboard extends React.Component {
             let startTime = iosMemoryInfo.performanceInspectionResults[0].timestamp;
             iosMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
-                if (inspectionResult !== null && inspectionResult.parsedData !== null) {
+                if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
@@ -375,7 +375,7 @@ export default class PerfTestDashboard extends React.Component {
                 <YAxis yAxisId="left" label={{ value: 'Memory usage (MB)', angle: -90, position: 'left' }} />
                 <Tooltip content={<CustomTooltip />} />
                 {iosMemoryOptions.map((key, index) => (
-                    <Line type="monotone" yAxisId="left" dataKey={key.value} stroke={key.color} dot={false} />
+                    <Line type="monotone" yAxisId="left" dataKey={key.value} name={key.label} stroke={key.color} dot={false} />
                 ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
                 <Tooltip />

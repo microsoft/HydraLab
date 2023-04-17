@@ -4,10 +4,10 @@
 package com.microsoft.hydralab.t2c.runner.controller;
 
 import com.google.common.collect.ImmutableMap;
+import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.performance.PerformanceInspection;
 import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import com.microsoft.hydralab.t2c.runner.T2CAppiumUtils;
-import io.appium.java_client.appmanagement.ApplicationState;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
@@ -16,6 +16,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
 public class IOSDriverController extends BaseDriverController {
     private final IOSDriver iosDriver;
     private String clipboardString;
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     public IOSDriverController(IOSDriver iosDriver, String udid, Logger logger) {
         super(iosDriver, udid, logger);
@@ -31,21 +33,12 @@ public class IOSDriverController extends BaseDriverController {
 
     @Override
     public void activateApp(String appPackageName) {
-        if (iosDriver.isAppInstalled(appPackageName)) {
-            if (iosDriver.queryAppState(appPackageName) != ApplicationState.RUNNING_IN_FOREGROUND) {
-                iosDriver.activateApp(appPackageName);
-            }
-        } else {
-            throw new RuntimeException("the app " + appPackageName + " is not installed");
-        }
+        IOSUtils.launchApp(udid, appPackageName, logger);
     }
 
     @Override
     public void terminateApp(String appPackageName) {
-        if (iosDriver.queryAppState(appPackageName) != ApplicationState.NOT_RUNNING &&
-                iosDriver.queryAppState(appPackageName) != ApplicationState.NOT_INSTALLED) {
-            iosDriver.terminateApp(appPackageName);
-        }
+        IOSUtils.stopApp(udid, appPackageName, logger);
     }
 
     @Override

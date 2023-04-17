@@ -54,7 +54,7 @@ public class DeviceGroupController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
-        if (!userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+        if (!userTeamManagementService.checkRequestorTeamAdmin(requestor, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "User doesn't belong to this Team");
         }
         SysTeam team = sysTeamService.queryTeamById(teamId);

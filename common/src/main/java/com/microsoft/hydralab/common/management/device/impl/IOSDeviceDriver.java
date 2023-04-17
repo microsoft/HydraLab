@@ -265,7 +265,7 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public void testDeviceSetup(DeviceInfo deviceInfo, Logger logger) {
-        IOSUtils.proxyWDA(deviceInfo, logger);
+
     }
 
     @Override
@@ -275,7 +275,7 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public void testDeviceUnset(DeviceInfo deviceInfo, Logger logger) {
-        IOSUtils.killProxyWDA(deviceInfo, logger);
+
     }
 
     @Override
