@@ -8,8 +8,8 @@ interface TestRunEngine {
 interface TestRunLifecycle {
     TestRun setup(TestTask, TestRunDevice);
     void execute(TestRun) throws Exception;
-    void teardown(TestRun);
     TestResult analyze(TestRun);
+    void teardown(TestRun);
     TestReport report(TestRun, TestResult);
     void help(TestRun testRun, TestResult);
 }
@@ -90,8 +90,8 @@ TestRunnerManager --> TestRunEngine: run
 activate TestRunEngine
 TestRunEngine --> TestRunLifecycle: setup
 TestRunEngine --> TestRunLifecycle: execute
-TestRunEngine --> TestRunLifecycle: teardown
 TestRunEngine --> TestRunLifecycle: analyze
+TestRunEngine --> TestRunLifecycle: teardown
 TestRunEngine --> TestRunLifecycle: report
 TestRunEngine --> TestRunLifecycle: help
 deactivate TestRunEngine

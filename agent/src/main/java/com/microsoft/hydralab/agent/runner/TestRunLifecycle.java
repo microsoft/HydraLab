@@ -18,7 +18,7 @@ public interface TestRunLifecycle {
      * necessary) and configuring the application under test, can grow quickly when you consider operating
      * system version and application version constraints.
      *
-     * @param testTask
+     * @param testTask the test task to be run
      * @return the test run, which contains the test task and the device info
      */
     TestRun setup(TestTask testTask, TestRunDevice testRunDevice);
@@ -34,15 +34,6 @@ public interface TestRunLifecycle {
      * @throws Exception
      */
     void execute(TestRun testRun) throws Exception;
-
-    /**
-     * The scope of teardown is similar to the scope of setup. This can also be referred to as "cleanup".
-     * We may need to clean up the system after the test execution and bring the system back to its original state
-     * to allow for a smooth next time execution.
-     *
-     * @param testRun
-     */
-    void teardown(TestRun testRun);
 
     /**
      * The scope of analyzing a test result is the test result itself. The test result can be written
@@ -61,6 +52,15 @@ public interface TestRunLifecycle {
      * {@link TestResult.TestState}
      */
     TestResult analyze(TestRun testRun);
+
+    /**
+     * The scope of teardown is similar to the scope of setup. This can also be referred to as "cleanup".
+     * We may need to clean up the system after the test execution and bring the system back to its original state
+     * to allow for a smooth next time execution.
+     *
+     * @param testRun
+     */
+    void teardown(TestRun testRun);
 
     /**
      * The scope of reporting a test result is the test result itself. The test result can be written
