@@ -46,9 +46,8 @@ public abstract class TestRunner {
 
     public void runTestOnDevice(TestTask testTask, TestRunDevice testRunDevice) {
         checkTestTaskCancel(testTask);
-        if (testRunDevice.getLogger() != null) {
-            testRunDevice.getLogger().info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
-        }
+        Assert.notNull(testRunDevice.getLogger(), "testRunDevice.getLogger() is null, but it's required for a test run");
+        testRunDevice.getLogger().info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
 
         TestRun testRun = createTestRun(testRunDevice, testTask);
         checkTestTaskCancel(testTask);
