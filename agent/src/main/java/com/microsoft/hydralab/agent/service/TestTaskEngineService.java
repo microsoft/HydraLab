@@ -6,8 +6,6 @@ import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
-import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
-import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -17,14 +15,12 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestRunDeviceCombo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.FileUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -68,16 +64,15 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     TestRunDeviceOrchestrator testRunDeviceOrchestrator;
     private final Map<String, TestTask> runningTestTask = new HashMap<>();
 
-    public TestTask runTestTask(TestTaskSpec testTaskSpec) {
-        updateTaskSpecWithDefaultValues(testTaskSpec);
-        log.info("TestTaskSpec: {}", testTaskSpec);
-        TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
-        setupTestDir(testTask);
-
-        String beanName = TestRunnerConfig.testRunnerMap.get(testTaskSpec.runningType);
+    public TestTask runTestTask(TestTask testTask) {
+        String beanName = TestRunnerConfig.testRunnerMap.get(testTask.getRunningType());
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
 
-        Set<TestRunDevice> chosenDevices = chooseDevices(testTaskSpec, runner);
+        Set<TestRunDevice> chosenDevices = chooseDevices(testTask);
+        if (chosenDevices.size() == 0) {
+            handleNoAvaiableDevice(testTask);
+            return testTask;
+        }
 
         onTaskStart(testTask);
         DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices,
@@ -98,36 +93,49 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 });
 
         if (deviceTaskControl == null) {
-            testTask.setTestDevicesCount(0);
+            handleNoAvaiableDevice(testTask);
         } else {
             testTask.setTestDevicesCount(deviceTaskControl.devices.size());
         }
         return testTask;
     }
 
-    private void updateTaskSpecWithDefaultValues(TestTaskSpec testTaskSpec) {
-        determineScopeOfTestCase(testTaskSpec);
-
-        if (StringUtils.isEmpty(testTaskSpec.runningType)) {
-            testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
-        }
-        if (StringUtils.isBlank(testTaskSpec.testSuiteClass)) {
-            testTaskSpec.testSuiteClass = testTaskSpec.pkgName;
-        }
+    private static void handleNoAvaiableDevice(TestTask testTask) {
+        testTask.setTestDevicesCount(0);
+        testTask.setStatus(TestTask.TestStatus.CANCELED);
+        log.warn("No available device found for {}, group devices: {}, task {} is canceled on this agent",
+                testTask.getDeviceIdentifier(), testTask.getGroupDevices(), testTask.getId());
     }
 
-    protected Set<TestRunDevice> chooseDevices(TestTaskSpec testTaskSpec, TestRunner runner) {
-        String identifier = testTaskSpec.deviceIdentifier;
-        Set<TestRunDevice> chosenDevices = new HashSet<>();
+    protected Set<TestRunDevice> chooseDevices(TestTask testTask) {
+        String identifier = testTask.getDeviceIdentifier();
+
+        String targetedDevicesDescriptor;
+        if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
+            targetedDevicesDescriptor = testTask.getGroupDevices();
+        } else {
+            targetedDevicesDescriptor = identifier;
+        }
+
+        Assert.notNull(targetedDevicesDescriptor, "targetedDevicesDescriptor is null: "
+                + testTask.getDeviceIdentifier() + ", group devices: " + testTask.getGroupDevices());
+
+        List<String> deviceSerials = Arrays.asList(targetedDevicesDescriptor.split(","));
+
         Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getActiveDeviceList(log);
         log.info("Choosing devices from {}", allActiveConnectedDevice.size());
-        if (!testTaskSpec.deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
-            testTaskSpec.groupDevices = identifier;
+        List<DeviceInfo> devices = allActiveConnectedDevice.stream()
+                .filter(deviceInfo -> deviceSerials.contains(deviceInfo.getSerialNum()))
+                .collect(Collectors.toList());
+
+        Set<TestRunDevice> chosenDevices = new HashSet<>();
+        if (devices.size() == 0) {
+            log.error("No device found for " + targetedDevicesDescriptor);
+            return chosenDevices;
         }
-        List<String> deviceSerials = Arrays.asList(testTaskSpec.groupDevices.split(","));
-        List<DeviceInfo> devices = allActiveConnectedDevice.stream().filter(deviceInfo -> deviceSerials.contains(deviceInfo.getSerialNum())).collect(Collectors.toList());
-        Assert.isTrue(devices.size() > 0, "No device found for " + testTaskSpec.groupDevices);
-        if (((runner instanceof AppiumCrossRunner) || (runner instanceof T2CRunner)) && devices.size() > 1) {
+
+        String runningType = testTask.getRunningType();
+        if (((runningType.equals(TestTask.TestRunningType.APPIUM_CROSS)) || (runningType.equals(TestTask.TestRunningType.T2C_JSON_TEST))) && devices.size() > 1) {
             Optional<DeviceInfo> mainDeviceInfo = devices.stream().filter(deviceInfo -> !DeviceType.WINDOWS.name().equals(deviceInfo.getType())).findFirst();
             Assert.isTrue(mainDeviceInfo.isPresent(), "There are more than 1 device, but all of them is windows device!");
             devices.remove(mainDeviceInfo.get());
@@ -152,16 +160,6 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         testTask.setResourceDir(baseDir);
     }
 
-    private void determineScopeOfTestCase(TestTaskSpec testTaskSpec) {
-        if (!StringUtils.isEmpty(testTaskSpec.testScope)) {
-            return;
-        }
-        testTaskSpec.testScope = TestTask.TestScope.CLASS;
-        if (StringUtils.isEmpty(testTaskSpec.testSuiteClass)) {
-            testTaskSpec.testScope = TestTask.TestScope.TEST_APP;
-        }
-    }
-
     public Map<String, TestTask> getRunningTestTask() {
         return runningTestTask;
     }
@@ -179,6 +177,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     @Override
     public void onTaskStart(TestTask testTask) {
+        setupTestDir(testTask);
         fileLoadUtil.loadAttachments(testTask);
         deviceScriptCommandLoader.loadCommandAction(testTask);
         runningTestTask.put(testTask.getId(), testTask);
