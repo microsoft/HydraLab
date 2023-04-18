@@ -2,7 +2,12 @@ package com.microsoft.hydralab.agent.runner;
 
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
 import com.microsoft.hydralab.agent.test.BaseTest;
-import com.microsoft.hydralab.common.entity.common.*;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.TestFileSet;
+import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
