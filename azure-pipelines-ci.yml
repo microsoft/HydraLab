@@ -168,7 +168,7 @@ stages:
         publishJUnitResults: false
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
-        options: '-PclientVersionCode=$hydraVersionCode -PclientVersionNumber=$hydraVersion'
+        options: '-PclientVersionCode=$(hydraVersionCode) -PclientVersionNumber=$(hydraVersion)'
     - task: PublishPipelineArtifact@1
       displayName: 'Publish Artifact: Production APK'
       inputs:
