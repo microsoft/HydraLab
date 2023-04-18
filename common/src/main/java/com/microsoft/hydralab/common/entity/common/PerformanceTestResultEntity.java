@@ -55,8 +55,8 @@ public class PerformanceTestResultEntity implements Serializable {
 
         this.testRunId = testRunId;
         this.testTaskId = testTaskId;
-        this.inspectorType = inspectorType.name();
-        this.parserType = parserType.name();
+        this.inspectorType = inspectorType == null ? null : inspectorType.name();
+        this.parserType = parserType == null ? null : parserType.name();
         this.testSuite = testSuite;
         this.runningType = runningType;
         this.appId = appId;
