@@ -42,8 +42,6 @@ public class T2CRunner extends AppiumRunner {
     String agentName;
     private int currentIndex = 0;
 
-    private Map<String, Integer> deviceCountMap = new HashMap<>();
-
     public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                      PerformanceTestManagementService performanceTestManagementService, String agentName) {
@@ -141,6 +139,7 @@ public class T2CRunner extends AppiumRunner {
         Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
 
         Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
+        Map<String, Integer> deviceCountMap = new HashMap<>();
 
         try {
             AppiumServerManager appiumServerManager = testRunDeviceOrchestrator.getAppiumServerManager();
@@ -148,7 +147,7 @@ public class T2CRunner extends AppiumRunner {
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
                 DeviceInfo deviceInfo;
                 if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.ANDROID.name())) {
-                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.ANDROID.name());
+                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.ANDROID.name(), deviceCountMap);
                     AndroidDriverController androidDriverController = new AndroidDriverController(
                             appiumServerManager.getAndroidDriver(deviceInfo, reportLogger),
                             deviceInfo.getSerialNum(), reportLogger);
@@ -183,7 +182,7 @@ public class T2CRunner extends AppiumRunner {
                     reportLogger.info("Successfully init a Edge driver");
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.IOS.name())) {
-                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.IOS.name());
+                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.IOS.name(), deviceCountMap);
                     IOSDriverController iosDriverController = new IOSDriverController(
                             appiumServerManager.getIOSDriver(deviceInfo, reportLogger),
                             deviceInfo.getSerialNum(), reportLogger);
@@ -207,7 +206,7 @@ public class T2CRunner extends AppiumRunner {
         }
     }
 
-    private DeviceInfo getDeviceByType(TestRunDevice testRunDevice, String type) {
+    private DeviceInfo getDeviceByType(TestRunDevice testRunDevice, String type, Map<String, Integer> deviceCountMap) {
         if (!(testRunDevice instanceof TestRunDeviceCombo)) {
             return testRunDevice.getDeviceInfo();
         }
