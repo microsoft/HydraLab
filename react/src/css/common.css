@@ -13,10 +13,10 @@
  * 
  * */
 
-.deviceContainer 
+.deviceDisplay 
 { display: inline-block; }
 
-.deviceContainer .content { overflow: hidden; }
+.deviceDisplay .content { overflow: hidden; }
 
 /* Colors */
 
