@@ -74,6 +74,7 @@ public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
                         lineNumber++;
                     }
                     performanceTestResult.performanceInspectionResults = newPerfInspectionResults;
+                    performanceTestResult.setResultSummary(getSumIOSEnergy(newPerfInspectionResults));
                     oldInspectionResults.clear();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -81,5 +82,36 @@ public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
             }
         }
         return performanceTestResult;
+    }
+
+    private IOSEnergyGaugeInfo getSumIOSEnergy(List<PerformanceInspectionResult> inspectionResults) {
+        if (inspectionResults == null || inspectionResults.size() == 0) {
+            return null;
+        }
+
+        IOSEnergyGaugeInfo sumEnergyInfo = new IOSEnergyGaugeInfo();
+        sumEnergyInfo.setAppPackageName(inspectionResults.get(0).inspection.appId);
+        sumEnergyInfo.setTimeStamp(System.currentTimeMillis());
+
+        for (PerformanceInspectionResult result : inspectionResults) {
+            IOSEnergyGaugeInfo energyInfo = (IOSEnergyGaugeInfo) result.parsedData;
+            sumEnergyInfo.setTotalCost(sumEnergyInfo.getTotalCost() + energyInfo.getTotalCost());
+            sumEnergyInfo.setCpuCost(sumEnergyInfo.getCpuCost() + energyInfo.getCpuCost());
+            sumEnergyInfo.setGpuCost(sumEnergyInfo.getGpuCost() + energyInfo.getGpuCost());
+            sumEnergyInfo.setNetworkingCost(sumEnergyInfo.getNetworkingCost() + energyInfo.getNetworkingCost());
+            sumEnergyInfo.setAppStateCost(sumEnergyInfo.getAppStateCost() + energyInfo.getAppStateCost());
+            sumEnergyInfo.setLocationCost(sumEnergyInfo.getLocationCost() + energyInfo.getLocationCost());
+            sumEnergyInfo.setThermalStateCost(sumEnergyInfo.getThermalStateCost() + energyInfo.getThermalStateCost());
+
+            sumEnergyInfo.setTotalOverhead(sumEnergyInfo.getTotalOverhead() + energyInfo.getTotalOverhead());
+            sumEnergyInfo.setCpuOverhead(sumEnergyInfo.getCpuOverhead() + energyInfo.getCpuOverhead());
+            sumEnergyInfo.setGpuOverhead(sumEnergyInfo.getGpuOverhead() + energyInfo.getGpuOverhead());
+            sumEnergyInfo.setNetworkingOverhead(sumEnergyInfo.getNetworkingOverhead() + energyInfo.getNetworkingOverhead());
+            sumEnergyInfo.setAppStateOverhead(sumEnergyInfo.getAppStateOverhead() + energyInfo.getAppStateOverhead());
+            sumEnergyInfo.setLocationOverhead(sumEnergyInfo.getLocationOverhead() + energyInfo.getLocationOverhead());
+            sumEnergyInfo.setThermalStateOverhead(sumEnergyInfo.getThermalStateOverhead() + energyInfo.getThermalStateOverhead());
+        }
+
+        return sumEnergyInfo;
     }
 }
