@@ -55,14 +55,14 @@ public class PerformanceTestResultEntity implements Serializable {
 
         this.testRunId = testRunId;
         this.testTaskId = testTaskId;
-        this.inspectorType = inspectorType.name();
-        this.parserType = parserType.name();
+        this.inspectorType = inspectorType == null ? null : inspectorType.name();
+        this.parserType = parserType == null ? null : parserType.name();
         this.testSuite = testSuite;
         this.runningType = runningType;
         this.appId = appId;
         this.deviceId = deviceId;
         this.success = success;
-        this.summaryType = baselineMetrics.getSummaryType().name();
+        this.summaryType = baselineMetrics.getSummaryType() == null ? null : baselineMetrics.getSummaryType().name();
         initBaselineMetrics(baselineMetrics.getBaselineMetricsKeyValue());
     }
 
@@ -70,6 +70,10 @@ public class PerformanceTestResultEntity implements Serializable {
     }
 
     private void initBaselineMetrics(LinkedHashMap<String, Double> baselineMetrics) throws NoSuchFieldException, IllegalAccessException {
+        if (baselineMetrics == null) {
+            return;
+        }
+
         Class<? extends PerformanceTestResultEntity> clazz = this.getClass();
         int i = 1;
         for (Map.Entry<String, Double> entry : baselineMetrics.entrySet()) {
