@@ -14,6 +14,8 @@ variables:
   # Agent VM image name
   vmImageName: 'windows-latest'
   fullBuild: $[ne(variables['Build.Reason'], 'PullRequest')]
+  hydraVersionCode: $(Build.BuildId)
+  hydraVersion: $[counter(format('{0}.{1}.{2}', variables['versionMajor'], variables['versionMinor'], eq(variables['build.reason'], 'PullRequest')), 1)]
 
 stages:
 - stage: Build
@@ -61,6 +63,8 @@ stages:
             (Get-Content agent/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content agent/src/main/resources/version.properties
             (Get-Content center/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content center/src/main/resources/version.properties
           }
+          echo "##vso[task.setvariable variable=hydraVersionCode;]$hydraVersionCode"
+          echo "##vso[task.setvariable variable=hydraVersion;]$hydraVersion"
         workingDirectory: '$(Build.Repository.LocalPath)'
       condition: eq(variables.fullBuild, 'true')
     - task: Gradle@3
