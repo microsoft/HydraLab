@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -201,6 +202,7 @@ public class DeviceDriverManager implements DeviceDriver {
 
     @Override
     public AppiumServerManager getAppiumServerManager() {
-        return getDeviceDriver(DeviceType.ANDROID.name()).getAppiumServerManager();
+        ArrayList<DeviceType> keys = new ArrayList<>(deviceDriverMap.keySet());
+        return deviceDriverMap.get(keys.get(0)).getAppiumServerManager();
     }
 }
