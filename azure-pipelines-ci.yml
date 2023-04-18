@@ -10,12 +10,21 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  version: '$(Build.BuildId)'
+- name: version
+  value: '$(Build.BuildId)'
   # Agent VM image name
-  vmImageName: 'windows-latest'
-  fullBuild: $[ne(variables['Build.Reason'], 'PullRequest')]
-  hydraVersionCode: $(Build.BuildId)
-  hydraVersion: $[counter(format('{0}.{1}.{2}', variables['versionMajor'], variables['versionMinor'], eq(variables['build.reason'], 'PullRequest')), 1)]
+- name: vmImageName
+  value: 'windows-latest'
+- name: fullBuild
+  value: $[ne(variables['Build.Reason'], 'PullRequest')]
+- name: versionMajor
+  value: 1
+- name: versionMinor
+  value: $[format('{0:yyMM}', pipeline.startTime)]
+- name: hydraVersionCode
+  value: $(Build.BuildId)
+- name: hydraVersion
+  value: $[counter(format('{0}.{1}.{2}', variables['versionMajor'], variables['versionMinor'], eq(variables['build.reason'], 'PullRequest')), 1)]
 
 stages:
 - stage: Build
