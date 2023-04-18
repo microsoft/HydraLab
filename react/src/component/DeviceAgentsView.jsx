@@ -33,78 +33,71 @@ export default class DeviceAgentsView extends BaseView {
         const agentRows = []
         if (agents) {
             const folderHeadBgColor = '#1565c0'
-            const topRadius = '10px'
-            agents.map((agent) => {
-                agentRows.push(
-                    <tbody key={agent.agentId}>
-                        <tr style={{ color: 'white' }}>
-                            <th width="100%" style={{ backgroundColor: folderHeadBgColor, color: 'white', borderRadius: topRadius + ' 0px 0px 0px' }} onClick={() => this.changeCollapseStatus(agent.agentId)}>
-                                {agent.agentName}: {agent.devices.length}
-                            </th>
-                            <th style={{ backgroundColor: folderHeadBgColor, color: 'white' }}>
-                                {Number(agent.agentVersionCode) >= Number(this.state.latestAgentVersion) ?
-                                    <Tooltip
-                                        title={
-                                            <Stack>
-                                                Host:{agent.hostname}<br />
-                                                Version:{agent.agentVersionName}<br />
-                                                OS:{agent.agentOS}
-                                            </Stack>}
-                                        style={{ padding: "0" }}>
-                                        <IconButton>
-                                            <span style={{ color: 'white', }}
-                                                className="material-icons-outlined">info</span>
-                                        </IconButton>
-                                    </Tooltip>
-                                    : agent.agentStatus === "UPDATING" ?
+            const topRadius = ' 10px '
+            agents.map(
+                (agent) => {
+                    agentRows.push(
+                        <tbody key={agent.agentId}>
+                            <tr style={{ color: 'white' }}>
+                                <th width="100%" style={{ backgroundColor: folderHeadBgColor, color: 'white', borderRadius: topRadius + '0px 0px' + topRadius }} onClick={() => this.changeCollapseStatus(agent.agentId)}>
+                                    {agent.agentName}: {agent.devices.length}
+                                </th>
+                                <th style={{ backgroundColor: folderHeadBgColor, color: 'white' }}>
+                                    {Number(agent.agentVersionCode) >= Number(this.state.latestAgentVersion) ?
                                         <Tooltip
-                                            title={this.state.agentUpdateStatus}
-                                            onOpen={() => this.getUpdateStatus(agent.agentId)}
+                                            title={
+                                                <Stack>
+                                                    Host:{agent.hostname}<br />
+                                                    Version:{agent.agentVersionName}<br />
+                                                    OS:{agent.agentOS}
+                                                </Stack>}
                                             style={{ padding: "0" }}>
-                                            <Button color="inherit" size="small" style={{ padding: "0" }}>
-                                                Updating
+                                            <IconButton>
+                                                <span style={{ color: 'white', }}
+                                                    className="material-icons-outlined">info</span>
+                                            </IconButton>
+                                        </Tooltip>
+                                        : agent.agentStatus === "UPDATING" ?
+                                            <Tooltip
+                                                title={this.state.agentUpdateStatus}
+                                                onOpen={() => this.getUpdateStatus(agent.agentId)}
+                                                style={{ padding: "0" }}>
+                                                <Button color="inherit" size="small" style={{ padding: "0" }}>
+                                                    Updating
+                                                </Button>
+                                            </Tooltip> :
+                                            <Button variant="contained" color="error" size="small"
+                                                style={{ padding: "0" }}
+                                                onClick={() => this.updateAgent(agent)}>
+                                                Update
                                             </Button>
-                                        </Tooltip> :
-                                        <Button variant="contained" color="error" size="small"
-                                            style={{ padding: "0" }}
-                                            onClick={() => this.updateAgent(agent)}>
-                                            Update
-                                        </Button>
-                                }
-                            </th>
-                            <th onClick={() => this.changeCollapseStatus(agent.agentId)} style={{ backgroundColor: folderHeadBgColor }}>
-                                {agent.userName}
-                            </th>
-                            <th align='right' onClick={() => this.changeCollapseStatus(agent.agentId)} style={{ backgroundColor: folderHeadBgColor, borderRadius: '0px ' + topRadius + ' 0px 0px' }}>
-                                {this.state.collapseStatus[agent.agentId] ?
-                                    <span className="material-icons-outlined">expand_less</span> :
-                                    <span className="material-icons-outlined">expand_more</span>}
-                            </th>
-                        </tr>
-                        <tr>
-                            <td align='center'
-                                colSpan='3'>
-                                {agent.groupedDevices.map((group) => {
-                                    return <table className="table table-borderless scrollable">
-                                        <tbody key={group[0].name}>
-                                            <tr><Collapse in={this.state.collapseStatus[agent.agentId]}>
-                                                {group.map((item) => {
-                                                    return <td key={item.deviceId}
-                                                        align='center'>
-                                                        <DeviceDetailView deviceItem={item} />
-                                                    </td>
-                                                })}
-                                            </Collapse>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                }
-                                )}
-                            </td>
-                        </tr>
-                    </tbody>)
-            }
-            )
+                                    }
+                                </th>
+                                <th onClick={() => this.changeCollapseStatus(agent.agentId)} style={{ backgroundColor: folderHeadBgColor }}>
+                                    {agent.userName}
+                                </th>
+                                <th align='right' onClick={() => this.changeCollapseStatus(agent.agentId)} style={{ backgroundColor: folderHeadBgColor, borderRadius: '0px' + topRadius + topRadius + '0px' }}>
+                                    {this.state.collapseStatus[agent.agentId] ?
+                                        <span className="material-icons-outlined">expand_less</span> :
+                                        <span className="material-icons-outlined">expand_more</span>}
+                                </th>
+                            </tr>
+                            <tr>
+                                <Collapse in={this.state.collapseStatus[agent.agentId]}>
+                                    <td colSpan='10' className='agentDevices'>
+                                        {
+                                            agent.devices.map((d) => {
+                                                return <td><DeviceDetailView deviceItem={d} /></td>
+                                            })
+                                        }
+                                    </td>
+                                </Collapse>
+                            </tr>
+                            <tr>
+                                <div style={{ height: '10px' }} />
+                            </tr>
+                        </tbody>)
+                })
         }
         return <div>
             <table className="table table-borderless">
@@ -120,10 +113,8 @@ export default class DeviceAgentsView extends BaseView {
                                 className="pl-4 pr-4"
                                 loading={refreshing}
                                 loadingPosition="end"
-                                endIcon={<span
-                                    className="material-icons-outlined">sync</span>}
+                                endIcon={<span className="material-icons-outlined">sync</span>}
                                 onClick={this.updateDeviceListData}
-
                             >
                                 Refresh
                             </LoadingButton>
@@ -133,12 +124,9 @@ export default class DeviceAgentsView extends BaseView {
                 <tbody>
                     <tr>
                         <td colSpan='3' align="center" hidden={!this.state.refreshing}>
-                            <Skeleton variant="text" className="w-100 p-3"
-                                height={100} />
-                            <Skeleton variant="text" className="w-100 p-3"
-                                height={100} />
-                            <Skeleton variant="text" className="w-100 p-3"
-                                height={100} />
+                            <Skeleton variant="text" className="w-100 p-3" height={100} />
+                            <Skeleton variant="text" className="w-100 p-3" height={100} />
+                            <Skeleton variant="text" className="w-100 p-3" height={100} />
                         </td>
                     </tr>
                 </tbody>
