@@ -106,6 +106,22 @@ stages:
         reportDirectory: 'build/reports/jacoco/jacocoRootReport/html'
       condition: eq(variables.fullBuild, 'false')
     - task: Gradle@2
+      displayName: Package Android client APK
+      inputs:
+        workingDirectory: 'android_client'
+        gradleWrapperFile: 'android_client/gradlew'
+        tasks: 'assembleRelease'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        options: '-PclientVersionCode=$(hydraVersionCode) -PclientVersionNumber=$(hydraVersion)'
+    - task: PowerShell@2
+      displayName: Copy APK to folder for deployment
+      inputs:
+        targetType: 'inline'
+        script: |
+          cp android_client/app/build/outputs/apk/release/app-release.apk common/src/main/java/record_release.apk -force
+    - task: Gradle@2
       displayName: Build center
       inputs:
         gradleWrapperFile: 'gradlew'
@@ -168,26 +184,22 @@ stages:
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
       condition: eq(variables.fullBuild, 'true')
-    - task: Gradle@2
-      displayName: Package Android client APK
+    - task: PowerShell@2
+      displayName: Copy APK to artifact
       inputs:
-        workingDirectory: 'android_client'
-        gradleWrapperFile: 'android_client/gradlew'
-        tasks: 'assembleRelease'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        options: '-PclientVersionCode=$(hydraVersionCode) -PclientVersionNumber=$(hydraVersion)'
-    - task: PublishPipelineArtifact@1
-      displayName: 'Publish Artifact: Production APK'
+        targetType: 'inline'
+        script: |
+          mkdir -p $(Build.ArtifactStagingDirectory)/android_client
+          cp android_client/app/build/outputs/apk/release/app-release.apk $(Build.ArtifactStagingDirectory)/android_client/app-release-$hydraVersion.apk
+      condition: eq(variables.fullBuild, 'true')
+    - task: PowerShell@2
+      displayName: Copy Mapping file to artifact
       inputs:
-        targetPath: 'android_client/app/build/outputs/apk/release/app-release.apk'
-        ArtifactName: HydraLabClientAPK
-    - task: PublishPipelineArtifact@1
-      displayName: 'Publish Artifact: Production mapping'
-      inputs:
-        targetPath: 'android_client/app/build/outputs/mapping/release/mapping.txt'
-        ArtifactName: HydraLabClientAPKMapping
+        targetType: 'inline'
+        script: |
+          mkdir -p $(Build.ArtifactStagingDirectory)/android_client
+          cp android_client/app/build/outputs/mapping/release/mapping.txt $(Build.ArtifactStagingDirectory)/android_client/
+      condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy agent jar
       inputs:
