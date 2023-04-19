@@ -24,12 +24,14 @@ public class IOSMemoryPerfInfo implements Serializable, IBaselineMetrics {
     @Override
     @JSONField(serialize = false)
     public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
-        return null;
+        LinkedHashMap<String, Double> baselineMap = new LinkedHashMap<>();
+        baselineMap.put("memoryMB", (double) memoryMB);
+        return baselineMap;
     }
 
     @Override
     @JSONField(serialize = false)
     public SummaryType getSummaryType() {
-        return null;
+        return SummaryType.AVERAGE;
     }
 }
