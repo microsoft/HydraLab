@@ -79,6 +79,6 @@ public class IOSEnergyGaugeInfo implements Serializable, IBaselineMetrics {
     @Override
     @JSONField(serialize = false)
     public SummaryType getSummaryType() {
-        return SummaryType.SUM;
+        return SummaryType.AVERAGE;
     }
 }

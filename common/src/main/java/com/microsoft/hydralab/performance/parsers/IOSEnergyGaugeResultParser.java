@@ -74,7 +74,8 @@ public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
                         lineNumber++;
                     }
                     performanceTestResult.performanceInspectionResults = newPerfInspectionResults;
-                    performanceTestResult.setResultSummary(getSumIOSEnergy(newPerfInspectionResults));
+//                    performanceTestResult.setResultSummary(getSumIOSEnergy(newPerfInspectionResults));
+                    performanceTestResult.setResultSummary(getAverageIOSEnergy(newPerfInspectionResults));
                     oldInspectionResults.clear();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -82,6 +83,38 @@ public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
             }
         }
         return performanceTestResult;
+    }
+
+    private IOSEnergyGaugeInfo getAverageIOSEnergy(List<PerformanceInspectionResult> inspectionResults) {
+        if (inspectionResults == null || inspectionResults.size() == 0) {
+            return null;
+        }
+
+        IOSEnergyGaugeInfo sumEnergyInfo = new IOSEnergyGaugeInfo();
+        sumEnergyInfo.setAppPackageName(inspectionResults.get(0).inspection.appId);
+        sumEnergyInfo.setTimeStamp(System.currentTimeMillis());
+
+        for (int i = 0; i < inspectionResults.size(); i++) {
+            PerformanceInspectionResult result = inspectionResults.get(i);
+            IOSEnergyGaugeInfo energyInfo = (IOSEnergyGaugeInfo) result.parsedData;
+            sumEnergyInfo.setTotalCost(sumEnergyInfo.getTotalCost() * i / (i + 1) + energyInfo.getTotalCost() / (i + 1));
+            sumEnergyInfo.setCpuCost(sumEnergyInfo.getCpuCost() * i / (i + 1) + energyInfo.getCpuCost() / (i + 1));
+            sumEnergyInfo.setGpuCost(sumEnergyInfo.getGpuCost() * i / (i + 1) + energyInfo.getGpuCost() / (i + 1));
+            sumEnergyInfo.setNetworkingCost(sumEnergyInfo.getNetworkingCost() * i / (i + 1) + energyInfo.getNetworkingCost() / (i + 1));
+            sumEnergyInfo.setAppStateCost(sumEnergyInfo.getAppStateCost() * i / (i + 1) + energyInfo.getAppStateCost() / (i + 1));
+            sumEnergyInfo.setLocationCost(sumEnergyInfo.getLocationCost() * i / (i + 1) + energyInfo.getLocationCost() / (i + 1));
+            sumEnergyInfo.setThermalStateCost(sumEnergyInfo.getThermalStateCost() * i / (i + 1) + energyInfo.getThermalStateCost() / (i + 1));
+
+            sumEnergyInfo.setTotalOverhead(sumEnergyInfo.getTotalOverhead() * i / (i + 1) + energyInfo.getTotalOverhead() / (i + 1));
+            sumEnergyInfo.setCpuOverhead(sumEnergyInfo.getCpuOverhead() * i / (i + 1) + energyInfo.getCpuOverhead() / (i + 1));
+            sumEnergyInfo.setGpuOverhead(sumEnergyInfo.getGpuOverhead() * i / (i + 1) + energyInfo.getGpuOverhead() / (i + 1));
+            sumEnergyInfo.setNetworkingOverhead(sumEnergyInfo.getNetworkingOverhead() * i / (i + 1) + energyInfo.getNetworkingOverhead() / (i + 1));
+            sumEnergyInfo.setAppStateOverhead(sumEnergyInfo.getAppStateOverhead() * i / (i + 1) + energyInfo.getAppStateOverhead() / (i + 1));
+            sumEnergyInfo.setLocationOverhead(sumEnergyInfo.getLocationOverhead() * i / (i + 1) + energyInfo.getLocationOverhead() / (i + 1));
+            sumEnergyInfo.setThermalStateOverhead(sumEnergyInfo.getThermalStateOverhead() * i / (i + 1) + energyInfo.getThermalStateOverhead() / (i + 1));
+        }
+
+        return sumEnergyInfo;
     }
 
     private IOSEnergyGaugeInfo getSumIOSEnergy(List<PerformanceInspectionResult> inspectionResults) {
