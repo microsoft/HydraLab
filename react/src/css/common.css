@@ -13,10 +13,10 @@
  * 
  * */
 
-.deviceDisplay 
+.deviceScreen 
 { display: inline-block; }
 
-.deviceDisplay .content { overflow: hidden; }
+.deviceScreen .content { overflow: hidden; }
 
 /* Colors */
 
@@ -37,8 +37,3 @@
 .black .speaker				{background: linear-gradient(#555 0%, #777 80%)}
 .black .homeButtonBorder	{background: #888}
 .black .homeButton			{background: radial-gradient(#555 0%, #333 80%)}
-
-.agentDevices {
-    display: flex;
-    flex-wrap: wrap;
-}

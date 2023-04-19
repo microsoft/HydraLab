@@ -113,7 +113,7 @@ export default class DeviceDetailView extends React.Component {
     }
 
     getPCCase(item) {
-        return <div className='deviceDisplay' style={pcDeviceStyle}>
+        return <div className='deviceScreen' style={pcDeviceStyle}>
             <div className="imac black portrait">
                 <div className="caseBorder" />
                 <div className="case" />
@@ -131,7 +131,7 @@ export default class DeviceDetailView extends React.Component {
     }
 
     getSurfaceDuoCase(item) {
-        return <div className='deviceDisplay' style={deviceStyleLand}>
+        return <div className='deviceScreen' style={deviceStyleLand}>
             <div className="androidTablet black landscape">
                 <div className="case" />
                 <div className="content">
@@ -144,7 +144,7 @@ export default class DeviceDetailView extends React.Component {
     }
 
     getAndroidPhoneCase(item) {
-        return <div className='deviceDisplay' style={deviceStyle}>
+        return <div className='deviceScreen' style={deviceStyle}>
             <div className="androidPhone black portrait">
                 <div className="case" />
                 <div className="camera" />
@@ -158,7 +158,7 @@ export default class DeviceDetailView extends React.Component {
     }
 
     getApplePhoneCase(item) {
-        return <div className='deviceDisplay' style={deviceStyle}>
+        return <div className='deviceScreen' style={deviceStyle}>
             <div className="iphonex white portrait">
                 <div className="caseBorder" />
                 <div className="case" />
