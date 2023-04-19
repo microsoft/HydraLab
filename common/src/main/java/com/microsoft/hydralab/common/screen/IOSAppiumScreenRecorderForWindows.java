@@ -87,6 +87,7 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
                 if (recordProcess != null) {
                     long pid = recordProcess.pid();
                     ShellUtils.execLocalCommand(POWER_SHELL_PATH + " -Command " + scriptFile.getPath() + " " + pid, CLASS_LOGGER);
+                    recordProcess.waitFor();
                     recordProcess = null;
                 }
                 isStarted = false;

@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashSet;
@@ -31,12 +30,7 @@ public class IOSUtils {
     }};
 
     public static void collectCrashInfo(String folder, DeviceInfo deviceInfo, Logger logger) {
-        try {
-            Process process = Runtime.getRuntime().exec(new String[]{"tidevice", "-u", deviceInfo.getSerialNum(), "crashreport ", folder});
-            process.waitFor();
-        } catch (InterruptedException | IOException e) {
-            logger.error("Ignored Error: ", e);
-        }
+        ShellUtils.execLocalCommand("tidevice -u " + deviceInfo.getSerialNum() + " crashreport " + folder, logger);
     }
 
     @Nullable
