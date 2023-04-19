@@ -182,12 +182,12 @@ stages:
       displayName: 'Publish Artifact: Production APK'
       inputs:
         targetPath: 'android_client/app/build/outputs/apk/release/app-release.apk'
-        ArtifactName: HydraLabRelease
+        ArtifactName: HydraLabClientAPK
     - task: PublishPipelineArtifact@1
-      displayName: 'Publish Artifact: Production APK'
+      displayName: 'Publish Artifact: Production mapping'
       inputs:
         targetPath: 'android_client/app/build/outputs/mapping/release/mapping.txt'
-        ArtifactName: HydraLabRelease
+        ArtifactName: HydraLabClientAPKMapping
     - task: CopyFiles@2
       displayName: Copy agent jar
       inputs:
