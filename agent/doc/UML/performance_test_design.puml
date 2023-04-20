@@ -74,7 +74,7 @@ TEST_RUN_FINISHED
       "action": {
         "actionType": "inspectEventEnd",
         "arguments": {
-          "description ": "Start LTW"
+          "description ": "End LTW"
         }
       },
       "isOptional": false
