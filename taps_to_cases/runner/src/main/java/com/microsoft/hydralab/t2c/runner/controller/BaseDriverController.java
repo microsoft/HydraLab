@@ -3,8 +3,6 @@
 
 package com.microsoft.hydralab.t2c.runner.controller;
 
-import com.microsoft.hydralab.performance.PerformanceInspection;
-import com.microsoft.hydralab.performance.PerformanceInspectionService;
 import com.microsoft.hydralab.t2c.runner.elements.AndroidElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
 import io.appium.java_client.AppiumBy;
@@ -229,15 +227,5 @@ public abstract class BaseDriverController {
     public abstract void inspectBatteryUsage(String targetApp, String description, boolean isReset);
 
     public void backToHome() {
-    }
-
-    public void inspectLatencyStart(String description) {
-        PerformanceInspectionService.getInstance()
-                .inspect(PerformanceInspection.createLatencyStartInspection(this.udid, description));
-    }
-
-    public void inspectLatencyEnd(String description) {
-        PerformanceInspectionService.getInstance()
-                .inspect(PerformanceInspection.createLatencyEndInspection(this.udid, description));
     }
 }

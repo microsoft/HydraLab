@@ -12,7 +12,7 @@ import com.microsoft.hydralab.performance.PerformanceInspector;
  * @date 4/17/2023
  */
 
-public class LatencyInspector implements PerformanceInspector {
+public class EventTimeInspector implements PerformanceInspector {
     @Override
     public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
         return new PerformanceInspectionResult(null, performanceInspection);

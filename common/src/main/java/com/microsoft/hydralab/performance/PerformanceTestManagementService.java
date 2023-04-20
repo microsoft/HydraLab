@@ -39,26 +39,28 @@ import java.util.concurrent.ScheduledFuture;
 
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_EVENT_TIME;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_ENERGY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_BATTERY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_EVENT_TIME;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_ENERGY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_BATTERY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_MEMORY;
 
 public class PerformanceTestManagementService implements IPerformanceInspectionService, PerformanceTestListener {
-    // todo: Add latency inspector and parser to the Maps
     private static final Map<PerformanceInspector.PerformanceInspectorType, PerformanceResultParser.PerformanceResultParserType> inspectorParserTypeMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, PARSER_ANDROID_BATTERY_INFO,
             INSPECTOR_ANDROID_MEMORY_INFO, PARSER_ANDROID_MEMORY_INFO,
             INSPECTOR_WIN_MEMORY, PARSER_WIN_MEMORY,
             INSPECTOR_WIN_BATTERY, PARSER_WIN_BATTERY,
             INSPECTOR_IOS_ENERGY, PARSER_IOS_ENERGY,
-            INSPECTOR_IOS_MEMORY, PARSER_IOS_MEMORY
+            INSPECTOR_IOS_MEMORY, PARSER_IOS_MEMORY,
+            INSPECTOR_EVENT_TIME, PARSER_EVENT_TIME
     );
     private final Map<PerformanceInspector.PerformanceInspectorType, PerformanceInspector> performanceInspectorMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInfoInspector(),
@@ -259,10 +261,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
      * For giving inspection return the inspection with device id that related to test run
      */
     private PerformanceInspection getDevicePerformanceInspection(PerformanceInspection inspection) {
-        //For latency inspector, use test run id as app id to ensure the same app id for all latency inspections within a test run
-        String appId = inspection.appId == null ? getTestRun().getId() : inspection.appId;
-
-        return new PerformanceInspection(inspection.description, inspection.inspectorType, appId,
+        return new PerformanceInspection(inspection.description, inspection.inspectorType, inspection.appId,
                 // For windows inspector, the deviceIdentifier is useless
                 getTestRun().getDeviceSerialNumberByType(inspectorDeviceTypeMap.get(inspection.inspectorType).name()), inspection.isReset);
     }
@@ -295,8 +294,6 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                     }
 
                     PerformanceInspection inspection = testResult.performanceInspectionResults.get(0).inspection;
-                    // For latency inspector, the app id is package name
-                    String appId = inspection.appId.equals(testRun.getId()) ? testTask.getPkgName() : inspection.appId;
                     PerformanceTestResultEntity testResultEntity = new PerformanceTestResultEntity(
                             testRun.getId(),
                             testTask.getId(),
@@ -305,7 +302,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                             testResult.getResultSummary(),
                             testTask.getTestSuite(),
                             testTask.getRunningType(),
-                            appId,
+                            inspection.appId,
                             inspection.deviceIdentifier,
                             testRun.isSuccess());
                     testRun.getPerformanceTestResultEntities().add(testResultEntity);

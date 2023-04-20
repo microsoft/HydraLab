@@ -232,14 +232,6 @@ public final class T2CAppiumUtils {
                 isReset = (Boolean) arguments.getOrDefault("isReset", false);
                 driver.inspectMemoryUsage(targetApp, description, isReset);
                 break;
-            case "inspectLatencyStart":
-                description = (String) arguments.get("description");
-                driver.inspectLatencyStart(description);
-                break;
-            case "inspectLatencyEnd":
-                description = (String) arguments.get("description");
-                driver.inspectLatencyEnd(description);
-                break;
             default:
                 throw new IllegalStateException("action fail" +
                         "" +

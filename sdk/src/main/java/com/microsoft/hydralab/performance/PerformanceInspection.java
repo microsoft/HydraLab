@@ -75,11 +75,11 @@ public class PerformanceInspection implements Serializable {
         return new PerformanceInspection(description, INSPECTOR_IOS_MEMORY, appId, deviceIdentifier, isReset);
     }
 
-    public static PerformanceInspection createLatencyStartInspection(String deviceIdentifier, String description) {
-        return new PerformanceInspection(description, PerformanceInspector.PerformanceInspectorType.INSPECTOR_LATENCY, null, deviceIdentifier, true);
+    public static PerformanceInspection createEventStartInspection(String deviceIdentifier, String description) {
+        return new PerformanceInspection(description, PerformanceInspector.PerformanceInspectorType.INSPECTOR_EVENT_TIME, null, deviceIdentifier, true);
     }
 
-    public static PerformanceInspection createLatencyEndInspection(String deviceIdentifier, String description) {
-        return new PerformanceInspection(description, PerformanceInspector.PerformanceInspectorType.INSPECTOR_LATENCY, null, deviceIdentifier, false);
+    public static PerformanceInspection createEventEndInspection(String deviceIdentifier, String description) {
+        return new PerformanceInspection(description, PerformanceInspector.PerformanceInspectorType.INSPECTOR_EVENT_TIME, null, deviceIdentifier, false);
     }
 }

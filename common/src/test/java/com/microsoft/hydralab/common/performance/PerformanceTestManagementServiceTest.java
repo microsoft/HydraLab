@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.performance;
 
+import com.microsoft.hydralab.performance.PerformanceInspection;
+import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,5 +19,20 @@ public class PerformanceTestManagementServiceTest {
     @Test
     public void testParse_ReturnNull() {
         Assertions.assertNull(performanceTestManagementService.parse(null));
+    }
+
+    @Test
+    public void testInspectEvent_ReturnNull() {
+        PerformanceInspection eventStartInspection = PerformanceInspection.createEventStartInspection("", "event start");
+        PerformanceInspectionResult eventStartResult = performanceTestManagementService.inspect(eventStartInspection);
+        Assertions.assertNull(eventStartResult);
+
+
+        /* perform an UI action and waiting for the UI change */
+
+        PerformanceInspection eventEndInspection = PerformanceInspection.createEventEndInspection("", "event end");
+        PerformanceInspectionResult eventEndResult = performanceTestManagementService.inspect(eventEndInspection);
+        Assertions.assertNull(eventEndResult);
+
     }
 }

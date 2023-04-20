@@ -15,7 +15,7 @@ public interface PerformanceInspector {
         INSPECTOR_WIN_BATTERY,
         INSPECTOR_IOS_MEMORY,
         INSPECTOR_IOS_ENERGY,
-        INSPECTOR_LATENCY,
+        INSPECTOR_EVENT_TIME
     }
 
 }
