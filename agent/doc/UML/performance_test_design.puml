@@ -154,7 +154,7 @@ PerformanceTestManagementService -> EventTimeInspector : inspect(EventEndInspect
 activate EventTimeInspector
 EventTimeInspector -> PerformanceTestManagementService : PerformanceInspectionResult
 deactivate EventTimeInspector
-TestRunner -> PerformanceTestManagementService : tearDown()
+TestRunner -> PerformanceTestManagementService : analyse()
 PerformanceTestManagementService -> EventTimeParser : parse(PerformanceTestResult)
 activate EventTimeParser
 EventTimeParser -> PerformanceTestManagementService : PerformanceTestResult
