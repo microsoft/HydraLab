@@ -27,9 +27,6 @@ public class PerformanceTestManagementServiceTest {
         PerformanceInspectionResult eventStartResult = performanceTestManagementService.inspect(eventStartInspection);
         Assertions.assertNull(eventStartResult);
 
-
-        /* perform an UI action and waiting for the UI change */
-
         PerformanceInspection eventEndInspection = PerformanceInspection.createEventEndInspection("", "event end");
         PerformanceInspectionResult eventEndResult = performanceTestManagementService.inspect(eventEndInspection);
         Assertions.assertNull(eventEndResult);
