@@ -23,12 +23,11 @@ public class PerformanceTestManagementServiceTest {
 
     @Test
     public void testInspectEvent_ReturnNull() {
-        String deviceIdentifier = "";
-        PerformanceInspection eventStartInspection = PerformanceInspection.createEventStartInspection(deviceIdentifier, "event start");
+        PerformanceInspection eventStartInspection = PerformanceInspection.createEventStartInspection("event start");
         PerformanceInspectionResult eventStartResult = performanceTestManagementService.inspect(eventStartInspection);
         Assertions.assertNull(eventStartResult);
 
-        PerformanceInspection eventEndInspection = PerformanceInspection.createEventEndInspection("", "event end");
+        PerformanceInspection eventEndInspection = PerformanceInspection.createEventEndInspection("event end");
         PerformanceInspectionResult eventEndResult = performanceTestManagementService.inspect(eventEndInspection);
         Assertions.assertNull(eventEndResult);
 
