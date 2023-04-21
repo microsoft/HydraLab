@@ -1,10 +1,10 @@
 {
     "devServer": {
-        "target": "http://hydradevicenetwork.azurewebsites.net",
+        "target": "http://localhost:9886",
         "secure": false,
         "changeOrigin": true,
         "headers": {
-            "Authorization": "2a10ggIv7RB78EGCHlT58KFFCuGgBtPH52j5oOCzs77FqE6hnVpG1Zi"
+            "Authorization": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         }
     }
 }
