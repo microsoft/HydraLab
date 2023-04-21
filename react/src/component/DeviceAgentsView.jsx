@@ -40,10 +40,15 @@ export default class DeviceAgentsView extends BaseView {
                 (agent) => {
                     agentRows.push(
                         <div class='deviceAgents-agent'>
-                            <div class='deviceAgents-agentBanner' style={{ backgroundColor: folderHeadBgColor }} onClick={() => this.changeCollapseStatus(agent.agentId)}>
+                            <div
+                                class='deviceAgents-agentBanner'
+                                style={{ backgroundColor: folderHeadBgColor }}
+                                onClick={() => this.changeCollapseStatus(agent.agentId)}>
+
                                 <div style={{ color: 'white', fontSize: 'large', fontWeight: 'bold'}}>
                                     {agent.agentName}: {agent.devices.length}
                                 </div>
+
                                 <div class='deviceAgents-agentBanner-tail'>
                                     <div style={{ color: 'white' }}>
                                         {

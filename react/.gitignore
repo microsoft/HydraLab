@@ -1,4 +1,4 @@
 node_modules
 dist
 
-webpack.config.json
+webpackUserConfig.json

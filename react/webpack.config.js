@@ -1,5 +1,5 @@
 const path = require('path')
-const userConfig = require('./webpack.config.json');
+const userConfig = require('./webpackUserConfig.json');
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require("copy-webpack-plugin")
 const TerserPlugin = require("terser-webpack-plugin")
