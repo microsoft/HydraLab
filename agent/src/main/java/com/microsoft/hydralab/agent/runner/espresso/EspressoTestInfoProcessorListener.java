@@ -150,7 +150,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     @Override
     public void testFailed(TestIdentifier test, String trace) {
-        infoLogEnter("testFailed", test, trace);
+        errorLogEnter("testFailed", test, trace);
         super.testFailed(test, trace);
         ongoingTestUnit.setStack(trace);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
@@ -161,7 +161,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     @Override
     public void testAssumptionFailure(TestIdentifier test, String trace) {
-        infoLogEnter("testAssumptionFailure", test, trace);
+        errorLogEnter("testAssumptionFailure", test, trace);
         super.testAssumptionFailure(test, trace);
         ongoingTestUnit.setStack(trace);
         testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail", System.currentTimeMillis() - recordingStartTimeMillis);
