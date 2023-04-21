@@ -3,9 +3,11 @@ package com.microsoft.hydralab.agent.runner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -44,5 +46,19 @@ public class TestRunnerTest extends BaseTest {
         testRun.getLogger().info("TestRun InstrumentReportPath {}", testRun.getInstrumentReportPath());
 
         Assertions.assertTrue(new File(testRun.getInstrumentReportPath()).exists());
+    }
+
+    @Test
+    public void testTestRunnerRun() {
+        TestTaskSpec taskSpecForGroupDevice = new TestTaskSpec();
+        taskSpecForGroupDevice.runningType = TestTask.TestRunningType.APPIUM_CROSS;
+        taskSpecForGroupDevice.deviceIdentifier = "TestDeviceSerial1,TestDeviceSerial2";
+        taskSpecForGroupDevice.testFileSet = new TestFileSet();
+
+        TestRunnerManager testRunnerManager = new TestRunnerManager();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            testRunnerManager.runTestTask(TestTask.convertToTestTask(taskSpecForGroupDevice), null);
+        }, "Should throw IllegalArgumentException when there is no runner for the test task");
+
     }
 }
