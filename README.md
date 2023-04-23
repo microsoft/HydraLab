@@ -106,7 +106,34 @@ docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_S
 
 Enjoy starting your journey of exploration!
 
+**Step 4. try to set up a new test procedure**
+
+**1. If you are using Uber image with local storage service enabled, you can have a try to run an overall test with our built-in app & test app.**
+- Go to the front-end page, click the `Runner` tab on the left navigator.
+- Select the existing app `HydraLab Client`.
+- Click `Run` button on the right top corner.
+- Change the value of "Espresso test scope" to `Test app`, click `Next` to go on.
+- Select an available device, click `Next` to go on.
+- Click `Run` to start the test.
+- After the test is finished, you can view the test result in the `Task` tab on the left navigator of the front-end page.
+
+![Test trigger steps](docs/images/test-trigger-steps.png)
+
+**2. If you are using Uber image with your own specified storage service, some additional steps are required to run the test (before the same steps in `1.` to be done).**
+- Download the following files in our GitHub repo, which would be the app and test app used for the incoming test:
+    - [record_release.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_release.apk)
+    - [record_androidTest.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_androidTest.apk)
+- Go to the front-end page, click the `Runner` tab on the left navigator.
+- Click `Upload` button on the right top corner.
+- For the `APK/IPA FILE` field, select the downloaded `record_release.apk` file.
+- For the `TEST APK/JAR/JSON FILE` field, select the downloaded `record_androidTest.apk` file.
+- Click `Upload` button to upload the apps.
+- Wait for the upload process to finish, then you can follow the same steps of `1.` to run the test.
+
+![Package upload steps](docs/images/package-upload-steps.png)
+
 **Note: Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)**
+
 
 ### Quick guide on build and run
 
