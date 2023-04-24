@@ -4,7 +4,7 @@
         "secure": false,
         "changeOrigin": true,
         "headers": {
-            "Authorization": "Dummy"
+            "Authorization": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         }
     }
 }
