@@ -61,13 +61,13 @@ public class TestFileSetService {
     public Page<TestFileSet> queryFileSets(int page, int pageSize, List<CriteriaType> criteriaTypes) {
         Specification<TestFileSet> spec = null;
 
-        if (storageServiceClientProxy.fileLimitEnabled()) {
-            CriteriaType fileLimitCriteria = getFileLimitCriteria();
+        if (storageServiceClientProxy.fileExpiryEnabled()) {
+            CriteriaType fileExpiryCriteria = getFileExpiryCriteria();
             if (criteriaTypes != null) {
-                criteriaTypes.add(fileLimitCriteria);
+                criteriaTypes.add(fileExpiryCriteria);
                 spec = new CriteriaTypeUtil<TestFileSet>().transferToSpecification(criteriaTypes, false);
             } else {
-                spec = new CriteriaTypeUtil<TestFileSet>().transferToSpecification(List.of(fileLimitCriteria), false);
+                spec = new CriteriaTypeUtil<TestFileSet>().transferToSpecification(List.of(fileExpiryCriteria), false);
             }
         }
         Sort sortByDate = Sort.by(Sort.Direction.DESC, "ingestTime");
@@ -75,16 +75,16 @@ public class TestFileSetService {
         return pageObj;
     }
 
-    private CriteriaType getFileLimitCriteria() {
-        CriteriaType fileLimitCriteria = new CriteriaType();
-        fileLimitCriteria.setKey("ingestTime");
-        fileLimitCriteria.setOp(CriteriaType.OpType.GreaterThan);
+    private CriteriaType getFileExpiryCriteria() {
+        CriteriaType fileExpiryCriteria = new CriteriaType();
+        fileExpiryCriteria.setKey("ingestTime");
+        fileExpiryCriteria.setOp(CriteriaType.OpType.GreaterThan);
         String dateFormat = "yyyy-MM-dd HH:mm:ss";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-        fileLimitCriteria.setValue(sdf.format(DateUtils.addDays(new Date(), -1 * storageServiceClientProxy.getStorageFileLimitDay())));
-        fileLimitCriteria.setDateFormatString(dateFormat);
+        fileExpiryCriteria.setValue(sdf.format(DateUtils.addDays(new Date(), -1 * storageServiceClientProxy.getStorageFileExpiryDay())));
+        fileExpiryCriteria.setDateFormatString(dateFormat);
 
-        return fileLimitCriteria;
+        return fileExpiryCriteria;
     }
 
     public void updateFileSetTeam(String teamId, String teamName) {
