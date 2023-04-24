@@ -94,6 +94,11 @@ export default class PerfTestDashboard extends React.Component {
         windowsMemoryInfo: undefined,
         iosEnergyInfo: undefined,
         iosMemoryInfo: undefined,
+        androidBatteryAppsOptions: [],
+        androidMemoryAppsOptions: [],
+        windowsMemoryAppsOptions: [],
+        iosEnergyAppsOptions: [],
+        iosMemoryAppsOptions: [],
         selectedAndroidBatteryOptions: androidBatteryOptions.slice(0, 7),
         selectedAndroidMemoryOptions: androidMemoryOptions.slice(0, 10),
         selectedWindowsMemoryOptions: windowsMemoryOptions.slice(0, 7),
@@ -170,7 +175,7 @@ export default class PerfTestDashboard extends React.Component {
                 <YAxis yAxisId="right" label={{ value: 'Ratio', angle: -90, position: 'right' }} unit="%" orientation="right" />
                 <Tooltip content={<CustomTooltip />} />
                 {this.state.selectedAndroidBatteryOptions.map((key, index) => (
-                    <Line type="monotone" yAxisId={key.value == "ratio" ? "right" : "left"} dataKey={key.value} stroke={key.color} />
+                    <Line type="monotone" yAxisId={key.value == "ratio" ? "right" : "left"} dataKey={key.value} stroke={key.color} dot={false} />
                 ))}
                 {/* <CartesianGrid stroke="#ccc" strokeDasharray="5 5" /> */}
                 <Tooltip />
@@ -459,6 +464,15 @@ export default class PerfTestDashboard extends React.Component {
             {isAndroidBatteryInfoEnabled &&
                 <div>
                     <h3> Android Battery report</h3>
+                    {this.state.androidBatteryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Select
+                            defaultValue={this.state.androidBatteryAppsOptions[0]}
+                            components={animatedComponents}
+                            options={this.state.androidBatteryAppsOptions}
+                            className="android-battery-app-select"
+                            onChange={(e) => { this.setState({ androidBatteryInfo: e.value }) }}
+                        />
+                    </div>}
                     {isAndroidBatteryInfoEmpty ?
                         <ErrorPlaceholder title="Android battery" />
                         :
@@ -473,6 +487,15 @@ export default class PerfTestDashboard extends React.Component {
             {isAndroidMemoryInfoEnabled &&
                 <div>
                     <h3> Android Memory report</h3>
+                    {this.state.androidMemoryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Select
+                            defaultValue={this.state.androidMemoryAppsOptions[0]}
+                            components={animatedComponents}
+                            options={this.state.androidMemoryAppsOptions}
+                            className="android-memory-app-select"
+                            onChange={(e) => { this.setState({ androidMemoryInfo: e.value }) }}
+                        />
+                    </div>}
                     {isAndroidMemoryInfoEmpty ?
                         <ErrorPlaceholder title="Android memory" />
                         :
@@ -487,6 +510,15 @@ export default class PerfTestDashboard extends React.Component {
             {isWindowsMemoryInfoEnabled &&
                 <div>
                     <h3> Windows Memory report</h3>
+                    {this.state.windowsMemoryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Select
+                            defaultValue={this.state.windowsMemoryAppsOptions[0]}
+                            components={animatedComponents}
+                            options={this.state.windowsMemoryAppsOptions}
+                            className="windows-memory-app-select"
+                            onChange={(e) => { this.setState({ windowsMemoryInfo: e.value }) }}
+                        />
+                    </div>}
                     {isWindowsMemoryInfoEmpty ?
                         <ErrorPlaceholder title="Windows memory" />
                         :
@@ -500,6 +532,15 @@ export default class PerfTestDashboard extends React.Component {
             {isIosEnergyEnabled &&
                 <div>
                     <h3> iOS Energy report</h3>
+                    {this.state.iosEnergyAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Select
+                            defaultValue={this.state.iosEnergyAppsOptions[0]}
+                            components={animatedComponents}
+                            options={this.state.iosEnergyAppsOptions}
+                            className="iOS-energy-app-select"
+                            onChange={(e) => { this.setState({ iosEnergyInfo: e.value }) }}
+                        />
+                    </div>}
                     {isIosEnergyInfoEmpty ?
                         <ErrorPlaceholder title="iOS energy" />
                         :
@@ -512,6 +553,15 @@ export default class PerfTestDashboard extends React.Component {
             {isIosMemoryInfoEnabled &&
                 <div>
                     <h3> iOS Memory report</h3>
+                    {this.state.iosMemoryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Select
+                            defaultValue={this.state.iosMemoryAppsOptions[0]}
+                            components={animatedComponents}
+                            options={this.state.iosMemoryAppsOptions}
+                            className="iOS-memory-app-select"
+                            onChange={(e) => { this.setState({ iosMemoryInfo: e.value }) }}
+                        />
+                    </div>}
                     {isIosMemoryInfoEmpty ?
                         <ErrorPlaceholder title="iOS memory" />
                         :
@@ -521,10 +571,16 @@ export default class PerfTestDashboard extends React.Component {
                     }
                 </div>}
 
-            {perfHistoryList.map((entry) =>
-                entry && entry.length > 0 && <HistoryChart state={this.state} data={entry} />
-            )}
-            </div>
+            {perfHistoryList.length > 0 &&
+                <div>
+                    <div style={{ backgroundColor: '#2F5496', color: 'white', padding: '10px', fontSize: 'medium', fontWeight: 'bold', marginBottom: '20px' }}>
+                        Performance Test History
+                    </div>
+                    {perfHistoryList.map((entry) =>
+                        entry && entry.length > 0 && <HistoryChart state={this.state} data={entry} />
+                    )}
+                </div>}
+        </div>
     };
 
     getPerfReportJson() {
@@ -534,15 +590,30 @@ export default class PerfTestDashboard extends React.Component {
             for (var info of res.data.content) {
                 console.log(info);
                 if (info.parserType == 'PARSER_ANDROID_BATTERY_INFO') {
-                    this.setState({ androidBatteryInfo: info });
+                    this.updatePackageOptions(info, this.state.androidBatteryAppsOptions);
+                    if (!this.state.androidBatteryInfo) {
+                        this.setState({ androidBatteryInfo: info });
+                    }
                 } else if (info.parserType == 'PARSER_ANDROID_MEMORY_INFO') {
-                    this.setState({ androidMemoryInfo: info });
+                    this.updatePackageOptions(info, this.state.androidMemoryAppsOptions);
+                    if (!this.state.androidMemoryInfo) {
+                        this.setState({ androidMemoryInfo: info });
+                    }
                 } else if (info.parserType == 'PARSER_WIN_MEMORY') {
-                    this.setState({ windowsMemoryInfo: info });
+                    this.updatePackageOptions(info, this.state.windowsMemoryAppsOptions);
+                    if (!this.state.windowsMemoryInfo) {
+                        this.setState({ windowsMemoryInfo: info });
+                    }
                 } else if (info.parserType == 'PARSER_IOS_ENERGY') {
-                    this.setState({ iosEnergyInfo: info });
+                    this.updatePackageOptions(info, this.state.iosEnergyAppsOptions);
+                    if (!this.state.iosEnergyInfo) {
+                        this.setState({ iosEnergyInfo: info });
+                    }
                 } else if (info.parserType == 'PARSER_IOS_MEMORY') {
-                    this.setState({ iosMemoryInfo: info });
+                    this.updatePackageOptions(info, this.state.iosMemoryAppsOptions);
+                    if (!this.state.iosMemoryInfo) {
+                        this.setState({ iosMemoryInfo: info });
+                    }
                 }
 
                 //Get history list
@@ -550,6 +621,15 @@ export default class PerfTestDashboard extends React.Component {
 
             };
         })
+    }
+
+    updatePackageOptions(info, options) {
+        if (info && info.performanceInspectionResults && info.performanceInspectionResults.length > 0) {
+            let inspection = info.performanceInspectionResults[0].inspection;
+            if (inspection && inspection.appId) {
+                return options.push({ value: info, label: inspection.appId });
+            }
+        }
     }
 
     getPerfHistory(perfResult) {
@@ -570,7 +650,6 @@ export default class PerfTestDashboard extends React.Component {
                 console.log("Perf History", this.state.perfHistoryList);
             })
         }
-
     }
 
     componentDidMount() {
