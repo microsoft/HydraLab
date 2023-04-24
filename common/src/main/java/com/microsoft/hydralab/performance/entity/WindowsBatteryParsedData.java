@@ -72,7 +72,7 @@ public class WindowsBatteryParsedData {
         @Override
         @JSONField(serialize = false)
         public SummaryType getSummaryType() {
-            return null;
+            return SummaryType.MAX;
         }
     }
 

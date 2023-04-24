@@ -7,6 +7,8 @@ import cn.hutool.core.lang.Assert;
 import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
 import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
+import com.microsoft.hydralab.common.entity.common.TestReport;
+import com.microsoft.hydralab.common.entity.common.TestResult;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -30,7 +32,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public abstract class TestRunner {
+public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
     protected final Logger log = LoggerFactory.getLogger(TestRunner.class);
     protected final AgentManagementService agentManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
@@ -52,6 +54,63 @@ public abstract class TestRunner {
     }
 
     protected abstract List<EnvCapabilityRequirement> getEnvCapabilityRequirements();
+
+    @Override
+    public TestReport run(TestTask testTask, TestRunDevice testRunDevice) {
+        checkTestTaskCancel(testTask);
+        TestRun testRun = setup(testTask, testRunDevice);
+        checkTestTaskCancel(testTask);
+
+        TestReport testReport = null;
+        TestResult testResult = null;
+        try {
+            execute(testRun);
+            checkTestTaskCancel(testTask);
+
+            testResult = analyze(testRun);
+            checkTestTaskCancel(testTask);
+
+            testReport = report(testRun, testResult);
+            checkTestTaskCancel(testTask);
+        } catch (Exception e) {
+            testRun.getLogger().error(testRunDevice.getDeviceInfo().getSerialNum() + ": " + e.getMessage(), e);
+            saveErrorSummary(testRun, e);
+        } finally {
+            teardown(testRun);
+            help(testRun, testResult);
+        }
+        return testReport;
+    }
+
+    @Override
+    public TestRun setup(TestTask testTask, TestRunDevice testRunDevice) {
+        return null;
+    }
+
+    @Override
+    public void execute(TestRun testRun) throws Exception {
+
+    }
+
+    @Override
+    public TestResult analyze(TestRun testRun) {
+        return null;
+    }
+
+    @Override
+    public TestReport report(TestRun testRun, TestResult testResult) {
+        return null;
+    }
+
+    @Override
+    public void teardown(TestRun testRun) {
+
+    }
+
+    @Override
+    public void help(TestRun testRun, TestResult testResult) {
+
+    }
 
     public void runTestOnDevice(TestTask testTask, TestRunDevice testRunDevice) {
         checkTestTaskCancel(testTask);

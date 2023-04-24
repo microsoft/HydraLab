@@ -284,6 +284,8 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
                 for (PerformanceTestResult testResult : resultList) {
                     if (testResult.getResultSummary() == null
+                            || testResult.getResultSummary().getBaselineMetricsKeyValue() == null
+                            || testResult.getResultSummary().getSummaryType() == null
                             || testResult.performanceInspectionResults == null
                             || testResult.performanceInspectionResults.isEmpty()
                             || testResult.performanceInspectionResults.get(0).inspection == null) {

@@ -75,14 +75,14 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     @Override
     public void testRunStarted(String runName, int numTests) {
-        logEnter("testRunStarted", runName, numTests);
+        infoLogEnter("testRunStarted", runName, numTests);
         this.numTests = numTests;
         testRun.setTotalCount(numTests);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
         super.testRunStarted(runName, numTests);
-        logEnter(runName, numTests);
+        infoLogEnter(runName, numTests);
         startTools(runName);
         performanceTestListener.testRunStarted();
     }
@@ -98,7 +98,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), runName + ".gif");
     }
 
-    private void logEnter(Object... args) {
+    private void infoLogEnter(Object... args) {
         StringBuilder builder = new StringBuilder();
         for (Object arg : args) {
             builder.append(" >").append(arg);
@@ -106,9 +106,17 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         logger.info("TestRunListener: {}", builder);
     }
 
+    private void errorLogEnter(Object... args) {
+        StringBuilder builder = new StringBuilder();
+        for (Object arg : args) {
+            builder.append(" >").append(arg);
+        }
+        logger.error("TestRunListener: {}", builder);
+    }
+
     @Override
     public void testStarted(TestIdentifier test) {
-        logEnter("testStarted", test);
+        infoLogEnter("testStarted", test);
         super.testStarted(test);
         ongoingTestUnit = new AndroidTestUnit();
         ongoingTestUnit.setNumtests(numTests);
@@ -142,7 +150,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     @Override
     public void testFailed(TestIdentifier test, String trace) {
-        logEnter("testFailed", test, trace);
+        errorLogEnter("testFailed", test, trace);
         super.testFailed(test, trace);
         ongoingTestUnit.setStack(trace);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
@@ -153,7 +161,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     @Override
     public void testAssumptionFailure(TestIdentifier test, String trace) {
-        logEnter("testAssumptionFailure", test, trace);
+        errorLogEnter("testAssumptionFailure", test, trace);
         super.testAssumptionFailure(test, trace);
         ongoingTestUnit.setStack(trace);
         testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".assumptionFail", System.currentTimeMillis() - recordingStartTimeMillis);
@@ -162,14 +170,14 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     @Override
     public void testIgnored(TestIdentifier test) {
-        logEnter("testIgnored", test);
+        infoLogEnter("testIgnored", test);
         super.testIgnored(test);
         ongoingTestUnit.setStatusCode(AndroidTestUnit.StatusCodes.IGNORED);
     }
 
     @Override
     public void testEnded(TestIdentifier test, Map<String, String> testMetrics) {
-        logEnter("testEnded", test, testMetrics);
+        infoLogEnter("testEnded", test, testMetrics);
         testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end", System.currentTimeMillis() - recordingStartTimeMillis);
         super.testEnded(test, testMetrics);
         if (ongoingTestUnit.getStatusCode() == 0 || ongoingTestUnit.getStatusCode() == AndroidTestUnit.StatusCodes.ASSUMPTION_FAILURE ||
@@ -184,7 +192,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     @Override
     public void testRunFailed(String errorMessage) {
-        logEnter("testRunFailed", errorMessage);
+        errorLogEnter("testRunFailed", errorMessage);
         testRun.addNewTimeTag("testRunFailed", System.currentTimeMillis() - recordingStartTimeMillis);
         Assert.isTrue(testRunDevice.getDeviceInfo().isAlive(), Const.TaskResult.ERROR_DEVICE_OFFLINE);
         super.testRunFailed(errorMessage);
@@ -199,7 +207,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     @Override
     public void testRunStopped(long elapsedTime) {
-        logEnter("testRunStopped", elapsedTime);
+        infoLogEnter("testRunStopped", elapsedTime);
         testRun.addNewTimeTag("testRunStopped", System.currentTimeMillis() - recordingStartTimeMillis);
         super.testRunStopped(elapsedTime);
         // releaseResource();
@@ -207,7 +215,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
 
     @Override
     public void testRunEnded(long elapsedTime, Map<String, String> runMetrics) {
-        logEnter("testRunEnded", elapsedTime, runMetrics, Thread.currentThread().getName());
+        infoLogEnter("testRunEnded", elapsedTime, runMetrics, Thread.currentThread().getName());
         synchronized (this) {
             if (alreadyEnd) {
                 return;

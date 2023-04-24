@@ -16,8 +16,10 @@ import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import '../css/deviceAgentsView.css';
 
 export default class DeviceAgentsView extends BaseView {
+
     state = {
         agents: null,
         collapseStatus: {},
@@ -33,137 +35,134 @@ export default class DeviceAgentsView extends BaseView {
         const agentRows = []
         if (agents) {
             const folderHeadBgColor = '#1565c0'
-            const topRadius = '10px'
-            agents.map((agent) => {
-                agentRows.push(
-                    <tbody key={agent.agentId}>
-                        <tr style={{ color: 'white' }}>
-                            <th width="100%" style={{ backgroundColor: folderHeadBgColor, color: 'white', borderRadius: topRadius + ' 0px 0px 0px' }} onClick={() => this.changeCollapseStatus(agent.agentId)}>
-                                {agent.agentName}: {agent.devices.length}
-                            </th>
-                            <th style={{ backgroundColor: folderHeadBgColor, color: 'white' }}>
-                                {Number(agent.agentVersionCode) >= Number(this.state.latestAgentVersion) ?
-                                    <Tooltip
-                                        title={
-                                            <Stack>
-                                                Host:{agent.hostname}<br />
-                                                Version:{agent.agentVersionName}<br />
-                                                OS:{agent.agentOS}
-                                            </Stack>}
-                                        style={{ padding: "0" }}>
-                                        <IconButton>
-                                            <span style={{ color: 'white', }}
-                                                className="material-icons-outlined">info</span>
-                                        </IconButton>
-                                    </Tooltip>
-                                    : agent.agentStatus === "UPDATING" ?
-                                        <Tooltip
-                                            title={this.state.agentUpdateStatus}
-                                            onOpen={() => this.getUpdateStatus(agent.agentId)}
-                                            style={{ padding: "0" }}>
-                                            <Button color="inherit" size="small" style={{ padding: "0" }}>
-                                                Updating
-                                            </Button>
-                                        </Tooltip> :
-                                        <Button variant="contained" color="error" size="small"
-                                            style={{ padding: "0" }}
-                                            onClick={() => this.updateAgent(agent)}>
-                                            Update
-                                        </Button>
-                                }
-                            </th>
-                            <th onClick={() => this.changeCollapseStatus(agent.agentId)} style={{ backgroundColor: folderHeadBgColor }}>
-                                {agent.userName}
-                            </th>
-                            <th align='right' onClick={() => this.changeCollapseStatus(agent.agentId)} style={{ backgroundColor: folderHeadBgColor, borderRadius: '0px ' + topRadius + ' 0px 0px' }}>
-                                {this.state.collapseStatus[agent.agentId] ?
-                                    <span className="material-icons-outlined">expand_less</span> :
-                                    <span className="material-icons-outlined">expand_more</span>}
-                            </th>
-                        </tr>
-                        <tr>
-                            <td align='center'
-                                colSpan='3'>
-                                {agent.groupedDevices.map((group) => {
-                                    return <table className="table table-borderless scrollable">
-                                        <tbody key={group[0].name}>
-                                            <tr><Collapse in={this.state.collapseStatus[agent.agentId]}>
-                                                {group.map((item) => {
-                                                    return <td key={item.deviceId}
-                                                        align='center'>
-                                                        <DeviceDetailView deviceItem={item} />
-                                                    </td>
-                                                })}
-                                            </Collapse>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                }
-                                )}
-                            </td>
-                        </tr>
-                    </tbody>)
-            }
-            )
-        }
-        return <div>
-            <table className="table table-borderless">
-                <thead>
-                    <tr>
-                        <th colSpan="2">
-                            <Typography variant="h4" className="mt-2 mb-2">
-                                Connected Devices</Typography>
-                        </th>
-                        <th colSpan="2" style={{ textAlign: "right", verticalAlign: "middle" }}>
-                            <LoadingButton
-                                variant="contained"
-                                className="pl-4 pr-4"
-                                loading={refreshing}
-                                loadingPosition="end"
-                                endIcon={<span
-                                    className="material-icons-outlined">sync</span>}
-                                onClick={this.updateDeviceListData}
+            const topRadius = ' 10px '
+            agents.map(
+                (agent) => {
+                    agentRows.push(
+                        <div class='deviceAgents-agent'>
+                            <div
+                                class='deviceAgents-agentBanner'
+                                style={{ backgroundColor: folderHeadBgColor }}
+                                onClick={() => this.changeCollapseStatus(agent.agentId)}>
 
-                            >
-                                Refresh
-                            </LoadingButton>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colSpan='3' align="center" hidden={!this.state.refreshing}>
-                            <Skeleton variant="text" className="w-100 p-3"
-                                height={100} />
-                            <Skeleton variant="text" className="w-100 p-3"
-                                height={100} />
-                            <Skeleton variant="text" className="w-100 p-3"
-                                height={100} />
-                        </td>
-                    </tr>
-                </tbody>
+                                <div style={{ color: 'white', fontSize: 'large', fontWeight: 'bold'}}>
+                                    {agent.agentName}: {agent.devices.length}
+                                </div>
+
+                                <div class='deviceAgents-agentBanner-tail'>
+                                    <div style={{ color: 'white' }}>
+                                        {
+                                            Number(agent.agentVersionCode) >= Number(this.state.latestAgentVersion) ?
+                                                <Tooltip
+                                                    title={
+                                                        <Stack>
+                                                            Host:{agent.hostname}<br />
+                                                            Version:{agent.agentVersionName}<br />
+                                                            OS:{agent.agentOS}
+                                                        </Stack>}
+                                                    style={{ padding: "0" }}>
+                                                    <IconButton>
+                                                        <span style={{ color: 'white', }}
+                                                            className="material-icons-outlined">info</span>
+                                                    </IconButton>
+                                                </Tooltip>
+                                                :
+                                                    agent.agentStatus === "UPDATING" ?
+                                                    <Tooltip
+                                                        title={this.state.agentUpdateStatus}
+                                                        onOpen={() => this.getUpdateStatus(agent.agentId)}
+                                                        style={{ padding: "0" }}>
+                                                        <Button color="inherit" size="small" style={{ padding: "0" }}>
+                                                            Updating
+                                                        </Button>
+                                                    </Tooltip>
+                                                    :
+                                                    <Button variant="contained" color="error" size="small"
+                                                        style={{ padding: "0" }}
+                                                        onClick={() => this.updateAgent(agent)}>
+                                                        Update
+                                                    </Button>
+                                        }
+                                    </div>
+                                    <div style={{ color: 'white' }}>
+                                        {agent.userName}
+                                    </div>
+                                    <div style={{ color: 'white' }}>
+                                        {
+                                            this.state.collapseStatus[agent.agentId] ?
+                                                <span className="material-icons-outlined">expand_less</span> :
+                                                <span className="material-icons-outlined">expand_more</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <Collapse in={this.state.collapseStatus[agent.agentId]}>
+                                <div className='deviceAgents-devicesList'>
+                                    {
+                                        agent.devices.map((d) => {
+                                            return <DeviceDetailView deviceItem={d} />
+                                        })
+                                    }
+                                </div>
+                            </Collapse>
+                        </div>)
+                })
+        }
+        return (
+            <div class='deviceAgents'>
+                <div class='deviceAgents-header'>
+                    <Typography variant="h4" className="mt-2 mb-2">Connected Devices</Typography>
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                        <Button
+                            variant="outlined"
+                            className="pl-4 pr-4"
+                            endIcon={<span className="material-icons-outlined">auto_awesome_motion</span>}
+                            onClick={this.setAllCollapseStatus}>
+                            Collapse
+                        </Button>
+                        <LoadingButton
+                            variant="contained"
+                            className="pl-4 pr-4"
+                            loading={refreshing}
+                            loadingPosition="end"
+                            endIcon={<span className="material-icons-outlined">sync</span>}
+                            onClick={this.updateDeviceListData}>
+                            Refresh
+                        </LoadingButton>
+                    </div>
+                </div>
                 {agentRows}
-            </table>
-            <Snackbar
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'center'
-                }}
-                open={snackbarIsShown}
-                autoHideDuration={3000}
-                onClose={() => this.handleStatus("snackbarIsShown", false)}>
-                <Alert
-                    onClose={() => this.handleStatus("snackbarIsShown", false)}
-                    severity={snackbarSeverity}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
-        </div>
+                <Snackbar
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center'
+                    }}
+                    open={snackbarIsShown}
+                    autoHideDuration={3000}
+                    onClose={() => this.handleStatus("snackbarIsShown", false)}>
+                    <Alert
+                        onClose={() => this.handleStatus("snackbarIsShown", false)}
+                        severity={snackbarSeverity}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
+            </div>
+        )
     }
 
     changeCollapseStatus(agentId) {
         const collapseStatusNew = this.state.collapseStatus
         collapseStatusNew[agentId] = !this.state.collapseStatus[agentId]
+        this.setState({
+            collapseStatus: collapseStatusNew,
+        })
+    }
+
+    setAllCollapseStatus = () => {
+        const collapseStatusNew = this.state.collapseStatus
+        for (const key in collapseStatusNew) {
+            collapseStatusNew[key] = false
+        }
         this.setState({
             collapseStatus: collapseStatusNew,
         })

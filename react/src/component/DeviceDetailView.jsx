@@ -9,6 +9,7 @@ import '../css/androidPhone.css';
 import '../css/iphonex.css';
 import '../css/imac.css';
 import '../css/androidTablet.css';
+import '../css/DeviceDetailView.css';
 import Tooltip from '@mui/material/Tooltip';
 import Stack from "@mui/material/Stack";
 
@@ -26,14 +27,17 @@ const pcDeviceStyle = {
     height: "415px",
     paddingTop: "60px"
 };
+
 const tdStyle = {
     verticalAlign: "middle",
 };
+
 const map = {
     ONLINE: "badge-success",
     TESTING: "badge-primary",
     UNSTABLE: "badge-warning"
 };
+
 export default class DeviceDetailView extends React.Component {
     constructor(props) {
         super(props)
@@ -47,61 +51,57 @@ export default class DeviceDetailView extends React.Component {
             badgeClass = map[displayStatus]
         }
 
-        return <table className="table table-borderless">
-            <tbody>
-                <tr>
-                    {item.type == "WINDOWS" ?
-                        <td width="75%" align="center" style={tdStyle}>
-                            {this.getPCCase(item)}
-                        </td> :
-                        <td align="center" style={tdStyle}>
-                            {this.getProperPhoneCase(item)}
-                        </td>}
-                </tr>
-                <tr>
-                    <td align='center' colSpan="2">
-                        <Tooltip title={
-                            <Stack>
-                                {item.runningTestName ?
-                                    <span className="badge"
-                                        style={{ fontSize: '0.8rem' }}>{_.truncate(item.runningTestName, 32)}</span> : null}
-                                <span className={"badge " + badgeClass}
-                                    style={{ fontSize: "0.8rem" }}>
-                                    {item.status}</span>
-                                {item.brand ?
-                                    <span className="badge badge-dark"
-                                        style={{ fontSize: '0.8rem' }}> {item.brand.toUpperCase()}</span> : null}
-                                {item.brand !== "Apple" ?
-                                    <span className="badge badge-warning" style={{
-                                        fontSize: '0.8rem',
-                                        alignContent: "center"
-                                    }}>API{item.osSDKInt}</span> : null}
-                                {item.brand !== "Apple" ?
-                                    <span className="badge badge-primary"
-                                        style={{ fontSize: '0.8rem' }}>{item.screenSize}</span>
-                                    : null}
-                                {item.brand !== "Apple" ?
-                                    <span className="badge badge-info"
-                                        style={{ fontSize: '0.8rem' }}>DPI{item.screenDensity}</span>
-                                    : null}
-                                {item.deviceGroup ?
-                                    <span className='badge'
-                                        style={{ fontSize: '0.8rem' }}>{item.deviceGroup.join(' ')}</span> : null}
-                            </Stack>
-                        }>
-                            <div>
-                                <span className={"badge " + badgeClass}
-                                    style={{ fontSize: "1rem" }}>
-                                    {this.getDeviceName(item)}</span>
-                                <br />
-                                <span className="badge"
-                                    style={{ fontSize: "0.9rem" }}>{item.serialNum}</span>
-                            </div>
-                        </Tooltip>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        return (
+            <div className='deviceContainer'>
+                {
+                    item.type == "WINDOWS" ? this.getPCCase(item) : this.getProperPhoneCase(item)
+                }
+                <div>
+                    <Tooltip title={
+                        <Stack>
+                            {
+                                item.runningTestName ?
+                                <span className="badge" style={{ fontSize: '0.8rem' }}>{_.truncate(item.runningTestName, 32)}</span> : null
+                            }
+
+                            <span className={"badge " + badgeClass} style={{ fontSize: "0.8rem" }}>{item.status}</span>
+
+                            {
+                                item.brand ?
+                                <span className="badge badge-dark" style={{ fontSize: '0.8rem' }}> {item.brand.toUpperCase()}</span> : null
+                            }
+
+                            {
+                                item.brand !== "Apple" ?
+                                <span className="badge badge-warning" style={{ fontSize: '0.8rem', alignContent: "center" }}>API{item.osSDKInt}</span> : null
+                            }
+
+                            {
+                                item.brand !== "Apple" ?
+                                <span className="badge badge-primary" style={{ fontSize: '0.8rem' }}>{item.screenSize}</span> : null
+                            }
+
+                            {
+                                item.brand !== "Apple" ?
+                                <span className="badge badge-info" style={{ fontSize: '0.8rem' }}>DPI{item.screenDensity}</span> : null
+                            }
+
+                            {
+                                item.deviceGroup ?
+                                <span className='badge' style={{ fontSize: '0.8rem' }}>{item.deviceGroup.join(' ')}</span> : null
+                            }
+                        </Stack>
+                    }>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <span className={"badge " + badgeClass} style={{ fontSize: "1rem" }}>
+                                {this.getDeviceName(item)}
+                            </span>
+                            <span className="badge" style={{ fontSize: "0.6rem" }}>{item.serialNum}</span>
+                        </div>
+                    </Tooltip>
+                </div>
+            </div>
+        )
     }
 
     getProperPhoneCase(item) {
@@ -113,7 +113,7 @@ export default class DeviceDetailView extends React.Component {
     }
 
     getPCCase(item) {
-        return <div className='deviceContainer' style={pcDeviceStyle}>
+        return <div className='deviceScreen' style={pcDeviceStyle}>
             <div className="imac black portrait">
                 <div className="caseBorder" />
                 <div className="case" />
@@ -131,7 +131,7 @@ export default class DeviceDetailView extends React.Component {
     }
 
     getSurfaceDuoCase(item) {
-        return <div className='deviceContainer' style={deviceStyleLand}>
+        return <div className='deviceScreen' style={deviceStyleLand}>
             <div className="androidTablet black landscape">
                 <div className="case" />
                 <div className="content">
@@ -144,7 +144,7 @@ export default class DeviceDetailView extends React.Component {
     }
 
     getAndroidPhoneCase(item) {
-        return <div className='deviceContainer' style={deviceStyle}>
+        return <div className='deviceScreen' style={deviceStyle}>
             <div className="androidPhone black portrait">
                 <div className="case" />
                 <div className="camera" />
@@ -158,7 +158,7 @@ export default class DeviceDetailView extends React.Component {
     }
 
     getApplePhoneCase(item) {
-        return <div className='deviceContainer' style={deviceStyle}>
+        return <div className='deviceScreen' style={deviceStyle}>
             <div className="iphonex white portrait">
                 <div className="caseBorder" />
                 <div className="case" />

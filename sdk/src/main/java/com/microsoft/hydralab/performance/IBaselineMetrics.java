@@ -10,6 +10,7 @@ public interface IBaselineMetrics {
 
     enum SummaryType {
         AVERAGE,
-        MAX
+        MAX,
+        SUM
     }
 }
