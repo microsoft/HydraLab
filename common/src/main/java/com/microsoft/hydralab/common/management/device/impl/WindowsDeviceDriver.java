@@ -36,6 +36,8 @@ import java.util.UUID;
 public class WindowsDeviceDriver extends AbstractDeviceDriver {
 
     static final Logger classLogger = LoggerFactory.getLogger(WindowsDeviceDriver.class);
+    private static final int MAJOR_APPIUM_VERSION = 1;
+    private static final int MINOR_APPIUM_VERSION = -1;
 
     public WindowsDeviceDriver(AgentManagementService agentManagementService,
                                AppiumServerManager appiumServerManager) {
@@ -69,7 +71,7 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
     @Override
     public List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
         List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, 1, -1));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION));
         return envCapabilityRequirements;
     }
 

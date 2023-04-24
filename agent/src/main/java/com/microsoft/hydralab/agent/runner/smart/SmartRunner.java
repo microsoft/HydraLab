@@ -35,6 +35,11 @@ public class SmartRunner extends TestRunner {
     private TestRunDevice testRunDevice;
     private Logger logger;
 
+    private static final int MAJOR_APPIUM_VERSION = 1;
+    private static final int MINOR_APPIUM_VERSION = -1;
+    private static final int MAJOR_PYTHON_VERSION = 3;
+    private static final int MINOR_PYTHON_VERSION = 8;
+
     public SmartRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                        TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                        PerformanceTestManagementService performanceTestManagementService,
@@ -46,8 +51,8 @@ public class SmartRunner extends TestRunner {
     @Override
     protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
         List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, 1, -1));
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.python, 3, 8));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.python, MAJOR_PYTHON_VERSION, MINOR_PYTHON_VERSION));
         return envCapabilityRequirements;
     }
 

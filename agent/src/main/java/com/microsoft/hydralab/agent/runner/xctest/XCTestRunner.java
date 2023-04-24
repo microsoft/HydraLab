@@ -28,6 +28,10 @@ public class XCTestRunner extends TestRunner {
     private static String folderPath = "";
     private Logger logger;
     private long recordingStartTimeMillis;
+    private static final int MAJOR_APPIUM_VERSION = 1;
+    private static final int MINOR_APPIUM_VERSION = -1;
+    private static final int MAJOR_TIDEVICE_VERSION = 0;
+    private static final int MINOR_TIDEVICE_VERSION = 10;
 
     public XCTestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                         TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService) {
@@ -37,8 +41,8 @@ public class XCTestRunner extends TestRunner {
     @Override
     protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
         List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, 1, -1));
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.tidevice, 0, -1));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.tidevice, MAJOR_TIDEVICE_VERSION, MINOR_TIDEVICE_VERSION));
         return envCapabilityRequirements;
     }
 

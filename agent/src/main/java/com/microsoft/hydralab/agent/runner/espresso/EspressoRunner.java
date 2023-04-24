@@ -31,6 +31,8 @@ import java.util.Map;
 
 public class EspressoRunner extends TestRunner {
     final ADBOperateUtil adbOperateUtil;
+    private static final int MAJOR_ADB_VERSION = 1;
+    private static final int MINOR_ADB_VERSION = -1;
 
     public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                           TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService,
@@ -42,7 +44,7 @@ public class EspressoRunner extends TestRunner {
     @Override
     protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
         List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, 1, -1));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, MAJOR_ADB_VERSION, MINOR_ADB_VERSION));
         return envCapabilityRequirements;
     }
 

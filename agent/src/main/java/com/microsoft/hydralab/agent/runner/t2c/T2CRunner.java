@@ -44,6 +44,10 @@ public class T2CRunner extends AppiumRunner {
     private String pkgName;
     String agentName;
     private int currentIndex = 0;
+    private static final int MAJOR_APPIUM_VERSION = 1;
+    private static final int MINOR_APPIUM_VERSION = -1;
+    private static final int MAJOR_FFMPEG_VERSION = 4;
+    private static final int MINOR_FFMPEG_VERSION = -1;
 
     public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
@@ -55,8 +59,8 @@ public class T2CRunner extends AppiumRunner {
     @Override
     protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
         List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, 1, -1));
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.ffmpeg, 4, -1));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.ffmpeg, MAJOR_FFMPEG_VERSION, MINOR_FFMPEG_VERSION));
         return envCapabilityRequirements;
     }
 

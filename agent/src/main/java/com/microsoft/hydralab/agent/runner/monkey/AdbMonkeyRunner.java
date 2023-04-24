@@ -38,6 +38,8 @@ public class AdbMonkeyRunner extends TestRunner {
 
     private TestRunDevice testRunDevice;
     private Logger logger;
+    private static final int MAJOR_ADB_VERSION = 1;
+    private static final int MINOR_ADB_VERSION = -1;
 
     public AdbMonkeyRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                            TestRunDeviceOrchestrator testRunDeviceOrchestrator,
@@ -50,7 +52,7 @@ public class AdbMonkeyRunner extends TestRunner {
     @Override
     protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
         List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, 1, -1));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, MAJOR_ADB_VERSION, MINOR_ADB_VERSION));
         return envCapabilityRequirements;
     }
 

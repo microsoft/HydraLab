@@ -72,6 +72,8 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     public static final String KEYCODE_HOME = "KEYCODE_HOME";
     static final Logger classLogger = LoggerFactory.getLogger(AndroidDeviceDriver.class);
     private final Map<String, DeviceInfo> adbDeviceInfoMap = new HashMap<>();
+    private static final int MAJOR_ADB_VERSION = 1;
+    private static final int MINOR_ADB_VERSION = -1;
     ADBOperateUtil adbOperateUtil;
 
     private final AndroidDebugBridge.IDeviceChangeListener mListener =
@@ -160,7 +162,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     @Override
     public List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
         List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, 1, -1));
+        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, MAJOR_ADB_VERSION, MINOR_ADB_VERSION));
         return envCapabilityRequirements;
     }
 
