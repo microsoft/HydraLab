@@ -591,27 +591,27 @@ export default class PerfTestDashboard extends React.Component {
             for (var info of res.data.content) {
                 console.log(info);
                 if (info.parserType == 'PARSER_ANDROID_BATTERY_INFO') {
-                    this.updatePackageOptions(info, this.state.androidBatteryAppsOptions);
+                    this.setState({ androidBatteryAppsOptions: this.updatePackageOptions(info, this.state.androidBatteryAppsOptions) });
                     if (!this.state.androidBatteryInfo) {
                         this.setState({ androidBatteryInfo: info });
                     }
                 } else if (info.parserType == 'PARSER_ANDROID_MEMORY_INFO') {
-                    this.updatePackageOptions(info, this.state.androidMemoryAppsOptions);
+                    this.setState({ androidMemoryAppsOptions: this.updatePackageOptions(info, this.state.androidMemoryAppsOptions) });
                     if (!this.state.androidMemoryInfo) {
                         this.setState({ androidMemoryInfo: info });
                     }
                 } else if (info.parserType == 'PARSER_WIN_MEMORY') {
-                    this.updatePackageOptions(info, this.state.windowsMemoryAppsOptions);
+                    this.setState({ windowsMemoryAppsOptions: this.updatePackageOptions(info, this.state.windowsMemoryAppsOptions) });
                     if (!this.state.windowsMemoryInfo) {
                         this.setState({ windowsMemoryInfo: info });
                     }
                 } else if (info.parserType == 'PARSER_IOS_ENERGY') {
-                    this.updatePackageOptions(info, this.state.iosEnergyAppsOptions);
+                    this.setState({ iosEnergyAppsOptions: this.updatePackageOptions(info, this.state.iosEnergyAppsOptions) });
                     if (!this.state.iosEnergyInfo) {
                         this.setState({ iosEnergyInfo: info });
                     }
                 } else if (info.parserType == 'PARSER_IOS_MEMORY') {
-                    this.updatePackageOptions(info, this.state.iosMemoryAppsOptions);
+                    this.setState({ iosMemoryAppsOptions: this.updatePackageOptions(info, this.state.iosMemoryAppsOptions) });
                     if (!this.state.iosMemoryInfo) {
                         this.setState({ iosMemoryInfo: info });
                     }
@@ -628,7 +628,9 @@ export default class PerfTestDashboard extends React.Component {
         if (info && info.performanceInspectionResults && info.performanceInspectionResults.length > 0) {
             let inspection = info.performanceInspectionResults[0].inspection;
             if (inspection && inspection.appId) {
-                return options.push({ value: info, label: inspection.appId });
+                let newOptions = [...options];
+                newOptions.push({ value: info, label: inspection.appId });
+                return newOptions;
             }
         }
     }
