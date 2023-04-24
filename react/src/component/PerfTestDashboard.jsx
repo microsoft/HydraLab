@@ -428,7 +428,8 @@ export default class PerfTestDashboard extends React.Component {
             const [opt, setOptions] = React.useState({ selectedOptions: options });
 
             return <div> {!isHistoryEmpty && <div>
-                <h3> {perfTitleMap[historyMetrics[0].parserType].title} history report</h3>
+                <h3> {perfTitleMap[historyMetrics[0].parserType].title} history report </h3>
+                <h4> {"App: " + historyMetrics[0].appId} </h4>
                 <Select
                     defaultValue={options}
                     isMulti
