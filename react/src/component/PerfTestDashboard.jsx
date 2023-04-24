@@ -628,9 +628,7 @@ export default class PerfTestDashboard extends React.Component {
         if (info && info.performanceInspectionResults && info.performanceInspectionResults.length > 0) {
             let inspection = info.performanceInspectionResults[0].inspection;
             if (inspection && inspection.appId) {
-                let newOptions = [...options];
-                newOptions.push({ value: info, label: inspection.appId });
-                return newOptions;
+                return [...options, { value: info, label: inspection.appId }];
             }
         }
     }
