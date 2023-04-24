@@ -39,7 +39,6 @@ storage
 access_log
 *.sqlite
 !/center/uber_image/hydra_lab_center_docker_db.sqlite
-!/center/deploy_startup/hydra_lab_center_docker_db.sqlite
 log
 
 # MacOS

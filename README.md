@@ -133,9 +133,9 @@ Note: Uber image now only provides the **Espresso/Instrumentation test** feature
 - Wait for the upload process to finish, then you can follow the same steps of `1.` to run the test.
 
 Notice: 
-- The existing package record in the page is preset only for LOCAL storage usage, and running directly with that record would lead to error. 
-- You need to upload the package again if you are using your own storage service.
-- Multiple storage types are not allowed to be used together in one service, and this specific situation is happening only in Uber image where context and database has been predefined assuming default storage type is LOCAL for onboarding users.
+- The package record shown on the page is preloaded for LOCAL storage only. If you try to run it with a different storage type, you will get an error.
+- You need to upload the package again if you want to use your own storage service instead of LOCAL storage.
+- You can never use more than one storage type in the official service. The above specific situation only occurs in Uber image where the context and database are set up with LOCAL storage as the default option for new users.
 
 ![Package upload steps](docs/images/package-upload-steps.png)
 
