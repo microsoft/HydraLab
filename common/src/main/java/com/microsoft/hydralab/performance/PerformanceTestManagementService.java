@@ -39,12 +39,14 @@ import java.util.concurrent.ScheduledFuture;
 
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_EVENT_TIME;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_ENERGY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_BATTERY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_EVENT_TIME;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_ENERGY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_BATTERY;
@@ -57,7 +59,8 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             INSPECTOR_WIN_MEMORY, PARSER_WIN_MEMORY,
             INSPECTOR_WIN_BATTERY, PARSER_WIN_BATTERY,
             INSPECTOR_IOS_ENERGY, PARSER_IOS_ENERGY,
-            INSPECTOR_IOS_MEMORY, PARSER_IOS_MEMORY
+            INSPECTOR_IOS_MEMORY, PARSER_IOS_MEMORY,
+            INSPECTOR_EVENT_TIME, PARSER_EVENT_TIME
     );
     private final Map<PerformanceInspector.PerformanceInspectorType, PerformanceInspector> performanceInspectorMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInfoInspector(),

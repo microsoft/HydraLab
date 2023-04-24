@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:sqlite:${app.location}/hydra_lab_uber_center_db.sqlite
+    url: jdbc:sqlite:${app.location}/hydra_lab_center_docker_db.sqlite
 
 app:
   location: /hydra/data
