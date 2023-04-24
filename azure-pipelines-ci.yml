@@ -170,7 +170,16 @@ stages:
         TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
       condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
-      displayName: Copy deploy uber files
+      displayName: Copy deploy uber files 1
+      inputs:
+        SourceFolder: 'common/src/main/resources/'
+        Contents: |
+          record_release.apk
+          record_androidTest.apk
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/uber_image'
+      condition: eq(variables.fullBuild, 'true')
+    - task: CopyFiles@2
+      displayName: Copy deploy uber files 2
       inputs:
         SourceFolder: 'center/uber_image/'
         Contents: '**'
