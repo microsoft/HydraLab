@@ -134,7 +134,8 @@ public class T2CJsonParser {
         ArrayList<ActionInfo> actionsToInitDriver = new ArrayList<>();
         //Setup Activate App for each driver
         for (DriverInfo driver : driverList) {
-            if (driver.getPlatform().equalsIgnoreCase("ios")) {
+            if (driver.getPlatform().equalsIgnoreCase("ios")
+                    || driver.getPlatform().equalsIgnoreCase("android")) {
                 if (!StringUtils.isEmpty(driver.getLauncherApp())) {
                     Map<String, Object> arguments = new HashMap<>() {
                         {
