@@ -106,9 +106,9 @@ docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_S
 
 Enjoy starting your journey of exploration!
 
-**Step 4. try the test procedure with simple setup**
+**Step 4. Perform the test procedure with a minimal setup**
 
-Note: Uber image now only provides the **Espresso/Instrumentation test** feature for Android, please refer to the links within "User manual" section of this page for more features: [Hydra Lab Wikis](https://github.com/microsoft/HydraLab/wiki).
+Note: For Android, Uber image only supports **Espresso/Instrumentation** test. See "User manual" section on this page for more features: [Hydra Lab Wikis](https://github.com/microsoft/HydraLab/wiki).
 
 **1. If you are using Uber image with local storage service enabled, you can have a try to run an overall test with our built-in app & test app:**
 - Go to the front-end page, click the `Runner` tab on the left navigator.
