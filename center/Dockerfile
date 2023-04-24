@@ -54,8 +54,8 @@ COPY ${STARTUP_FOLDER_PATH}/restartMonitorService.sh restartMonitorService.sh
 COPY ${STARTUP_FOLDER_PATH}/splitLog.sh splitLog.sh
 COPY ${STARTUP_FOLDER_PATH}/start.sh start.sh
 COPY uber_image/${CENTER_INIT_SQLITE} /hydra/data/${CENTER_INIT_SQLITE}
-COPY uber_image/record_release.apk /storage/local/pkgstore/2023/04/23/record_release.apk
-COPY uber_image/record_androidTest.apk /storage/local/pkgstore/2023/04/23/record_androidTest.apk
+COPY uber_image/record_release.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_release.apk
+COPY uber_image/record_androidTest.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_androidTest.apk
 
 # Add config of scheduled cleaning pushgateway outdated data, run script every 1 minute
 RUN echo '*/1 * * * *  ( sh /opt/pushgatewayDataClean.sh & ) ' >> /etc/crontab \

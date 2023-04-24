@@ -36,8 +36,8 @@ COPY ${CENTER_JAR_FILE} ${CENTER_JAR_FILE}
 COPY ${AGENT_JAR_FILE} ${AGENT_JAR_FILE}
 COPY ${STARTUP_FOLDER_PATH}/${CENTER_INIT_SQLITE} /hydra/data/${CENTER_INIT_SQLITE}
 COPY ${STARTUP_FOLDER_PATH}/start.sh start.sh
-COPY record_release.apk /storage/local/pkgstore/2023/04/23/record_release.apk
-COPY record_androidTest.apk /storage/local/pkgstore/2023/04/23/record_androidTest.apk
+COPY record_release.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_release.apk
+COPY record_androidTest.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_androidTest.apk
 
 # Official doc about connecting package with repo: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
 LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
