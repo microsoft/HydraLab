@@ -575,7 +575,7 @@ export default class PerfTestDashboard extends React.Component {
             {perfHistoryList.length > 0 &&
                 <div>
                     <div style={{ backgroundColor: '#2F5496', color: 'white', padding: '10px', fontSize: 'medium', fontWeight: 'bold', marginBottom: '20px' }}>
-                        Performance Test History
+                        Performance Test History:
                     </div>
                     {perfHistoryList.map((entry) =>
                         entry && entry.length > 0 && <HistoryChart state={this.state} data={entry} />
