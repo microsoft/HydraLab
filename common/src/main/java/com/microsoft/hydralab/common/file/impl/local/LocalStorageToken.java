@@ -17,6 +17,7 @@ public class LocalStorageToken implements AccessToken {
     private String signature;
     private String token;
     private String endpoint;
+    private int fileExpiryDay;
 
     @Override
     public String getToken() {
