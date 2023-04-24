@@ -106,11 +106,13 @@ docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_S
 
 Enjoy starting your journey of exploration!
 
-**Step 4. try to set up a new test procedure**
+**Step 4. try the test procedure with simple setup**
 
-**1. If you are using Uber image with local storage service enabled, you can have a try to run an overall test with our built-in app & test app.**
+Note: Uber image now only provides the **Espresso/Instrumentation test** feature for Android, please refer to the links within "User manual" section of this page for more features: [Hydra Lab Wikis](https://github.com/microsoft/HydraLab/wiki).
+
+**1. If you are using Uber image with local storage service enabled, you can have a try to run an overall test with our built-in app & test app:**
 - Go to the front-end page, click the `Runner` tab on the left navigator.
-- Select the existing app `HydraLab Client`.
+- Select the app in the first line: `HydraLab Client`.
 - Click `Run` button on the right top corner.
 - Change the value of "Espresso test scope" to `Test app`, click `Next` to go on.
 - Select an available device, click `Next` to go on.
@@ -119,10 +121,10 @@ Enjoy starting your journey of exploration!
 
 ![Test trigger steps](docs/images/test-trigger-steps.png)
 
-**2. If you are using Uber image with your own specified storage service, some additional steps are required to run the test (before the same steps in `1.` to be done).**
-- Download the following files in our GitHub repo, which would be the app and test app used for the incoming test:
-    - [record_release.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_release.apk)
-    - [record_androidTest.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_androidTest.apk)
+**2. If you are using Uber image with your own specified storage service, some additional steps are required to run the test before the same steps in `1.` to be done:**
+- Download the following files in our GitHub repo:
+    - [record_release.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_release.apk): the app to be tested.
+    - [record_androidTest.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_androidTest.apk): the test app with tests included.
 - Go to the front-end page, click the `Runner` tab on the left navigator.
 - Click `Upload` button on the right top corner.
 - For the `APK/IPA FILE` field, select the downloaded `record_release.apk` file.
@@ -130,9 +132,12 @@ Enjoy starting your journey of exploration!
 - Click `Upload` button to upload the apps.
 - Wait for the upload process to finish, then you can follow the same steps of `1.` to run the test.
 
-![Package upload steps](docs/images/package-upload-steps.png)
+Notice: 
+- The existing package record in the page is preset only for LOCAL storage usage, and running directly with that record would lead to error. 
+- You need to upload the package again if you are using your own storage service.
+- Multiple storage types are not allowed to be used together in one service, and this specific situation is happening only in Uber image where context and database has been predefined assuming default storage type is LOCAL for onboarding users.
 
-**Note: Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)**
+![Package upload steps](docs/images/package-upload-steps.png)
 
 
 ### Quick guide on build and run
