@@ -106,7 +106,32 @@ docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_S
 
 Enjoy starting your journey of exploration!
 
-**Note: Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)**
+**Step 4. Perform the test procedure with a minimal setup**
+
+Note: For Android, Uber image only supports **Espresso/Instrumentation** test. See "User manual" section on this page for more features: [Hydra Lab Wikis](https://github.com/microsoft/HydraLab/wiki).
+
+**1. To run a test with Uber image and local storage:**
+- On the front-end page, go to `Runner` tab and select `HydraLab Client`.
+- Click `Run` and change "Espresso test scope" to `Test app`, click `Next`.
+- Pick an available device, click `Next` again, and click `Run` to start the test.
+- When the test is finished, you can view the test result in the `Task` tab on the left navigator of the front-end page.
+
+![Test trigger steps](docs/images/test-trigger-steps.png)
+
+**2. To run a test with Uber image and any third-party storage service, additional steps are required before the same steps in `1.`:**
+- Download [record_release.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_release.apk) and [record_androidTest.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_androidTest.apk) from GitHub.
+- On the front-end page, go to `Runner` tab and click `Upload`.
+- Select the downloaded app `record_release.apk` for `APK/IPA FILE` and test app `record_androidTest.apk` for `TEST APK/JAR/JSON FILE`.
+- Click `Upload` and wait for it to finish.
+- Follow the steps of 1. to run the test.
+
+Notice: 
+- The package record shown on the page is preloaded for LOCAL storage only. If you try to run it with a different storage type, you will get an error.
+- You need to upload the package again if you want to use your own storage service instead of LOCAL storage.
+- You can never use more than one storage type in the official service. The above specific situation only occurs in Uber image where the context and database are set up with LOCAL storage as the default option for new users.
+
+![Package upload steps](docs/images/package-upload-steps.png)
+
 
 ### Quick guide on build and run
 
