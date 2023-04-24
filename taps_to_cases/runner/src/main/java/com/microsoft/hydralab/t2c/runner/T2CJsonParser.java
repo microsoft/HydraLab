@@ -134,20 +134,18 @@ public class T2CJsonParser {
         ArrayList<ActionInfo> actionsToInitDriver = new ArrayList<>();
         //Setup Activate App for each driver
         for (DriverInfo driver : driverList) {
-            if (driver.getPlatform().equalsIgnoreCase("ios")) {
-                if (!StringUtils.isEmpty(driver.getLauncherApp())) {
-                    Map<String, Object> arguments = new HashMap<>() {
-                        {
-                            put("appPackageName", driver.getLauncherApp());
-                        }
-                    };
-                    ActionInfo initAction = new ActionInfo(-1, null, "activateApp", arguments, driver.getId(), "Activate App: " + driver.getLauncherApp(), true);
-                    actionsToInitDriver.add(initAction);
-                } else {
-                    Map<String, Object> arguments = new HashMap<>();
-                    ActionInfo initAction = new ActionInfo(-1, null, "home", arguments, driver.getId(), "Back To Home", true);
-                    actionsToInitDriver.add(initAction);
-                }
+            if (!StringUtils.isEmpty(driver.getLauncherApp())) {
+                Map<String, Object> arguments = new HashMap<>() {
+                    {
+                        put("appPackageName", driver.getLauncherApp());
+                    }
+                };
+                ActionInfo initAction = new ActionInfo(-1, null, "activateApp", arguments, driver.getId(), "Activate App: " + driver.getLauncherApp(), true);
+                actionsToInitDriver.add(initAction);
+            } else {
+                Map<String, Object> arguments = new HashMap<>();
+                ActionInfo initAction = new ActionInfo(-1, null, "home", arguments, driver.getId(), "Back To Home", true);
+                actionsToInitDriver.add(initAction);
             }
         }
 
