@@ -110,27 +110,20 @@ Enjoy starting your journey of exploration!
 
 Note: For Android, Uber image only supports **Espresso/Instrumentation** test. See "User manual" section on this page for more features: [Hydra Lab Wikis](https://github.com/microsoft/HydraLab/wiki).
 
-**1. If you are using Uber image with local storage service enabled, you can have a try to run an overall test with our built-in app & test app:**
-- Go to the front-end page, click the `Runner` tab on the left navigator.
-- Select the app in the first line: `HydraLab Client`.
-- Click `Run` button on the right top corner.
-- Change the value of "Espresso test scope" to `Test app`, click `Next` to go on.
-- Select an available device, click `Next` to go on.
-- Click `Run` to start the test.
-- After the test is finished, you can view the test result in the `Task` tab on the left navigator of the front-end page.
+**1. To run a test with Uber image and local storage:**
+- On the front-end page, go to `Runner` tab and select `HydraLab Client`.
+- Click `Run` and change "Espresso test scope" to `Test app`, click `Next`.
+- Pick an available device, click `Next` again, and click `Run` to start the test.
+- When the test is finished, you can view the test result in the `Task` tab on the left navigator of the front-end page.
 
 ![Test trigger steps](docs/images/test-trigger-steps.png)
 
-**2. If you are using Uber image with your own specified storage service, some additional steps are required to run the test before the same steps in `1.` to be done:**
-- Download the following files in our GitHub repo:
-    - [record_release.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_release.apk): the app to be tested.
-    - [record_androidTest.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_androidTest.apk): the test app with tests included.
-- Go to the front-end page, click the `Runner` tab on the left navigator.
-- Click `Upload` button on the right top corner.
-- For the `APK/IPA FILE` field, select the downloaded `record_release.apk` file.
-- For the `TEST APK/JAR/JSON FILE` field, select the downloaded `record_androidTest.apk` file.
-- Click `Upload` button to upload the apps.
-- Wait for the upload process to finish, then you can follow the same steps of `1.` to run the test.
+**2. To run a test with Uber image and any third-party storage service, additional steps are required before the same steps in `1.`:**
+- Download [record_release.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_release.apk) and [record_androidTest.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_androidTest.apk) from GitHub.
+- On the front-end page, go to `Runner` tab and click `Upload`.
+- Select the downloaded app `record_release.apk` for `APK/IPA FILE` and test app `record_androidTest.apk` for `TEST APK/JAR/JSON FILE`.
+- Click `Upload` and wait for it to finish.
+- Follow the steps of 1. to run the test.
 
 Notice: 
 - The package record shown on the page is preloaded for LOCAL storage only. If you try to run it with a different storage type, you will get an error.
