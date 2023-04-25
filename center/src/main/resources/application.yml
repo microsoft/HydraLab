@@ -55,7 +55,7 @@ app:
     type: ${STORAGE_TYPE:LOCAL} # current available options: LOCAL (default), AZURE
     azure:
       connection: ${BLOB_CONNECTION_STR:}
-      fileLimitDay: ${FILE_LIMIT_DAY:6}
+      fileLimitDay: 6
       CDNUrl: ${CDN_URL:}
       SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
       SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
@@ -64,7 +64,7 @@ app:
     local:
       token: ${CENTER_TOKEN:token=CENTER_LOCAL_STORAGE_TOKEN}
       endpoint: ${LOCAL_STORAGE_ENDPOINT:http://localhost:9886/}
-      fileLimitDay: ${FILE_LIMIT_DAY:-1}
+      fileLimitDay: 6
   location: ${user.dir}
 management:
   endpoints:

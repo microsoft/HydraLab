@@ -38,7 +38,7 @@ gen
 storage
 access_log
 *.sqlite
-!/center/uber_image/hydra_lab_center_docker_db.sqlite
+!/center/uber_image/hydra_lab_uber_center_db.sqlite
 log
 
 # MacOS

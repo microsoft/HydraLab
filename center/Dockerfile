@@ -10,8 +10,6 @@ ARG STARTUP_FOLDER_PATH=./deploy_startup
 ARG ARG_CENTER_PROFILE=release
 ARG ARG_GRAFANA_ENABLED=true
 ARG ARG_PUSHGATEWAY_ENABLED=true
-# Sqlite file under the same directory, storing pre-defined data for center-image
-ARG CENTER_INIT_SQLITE=hydra_lab_center_docker_db.sqlite
 
 ENV TZ="Asia/Shanghai" \
     TIME_ZONE="Asia/Shanghai" \
@@ -53,9 +51,6 @@ COPY ${STARTUP_FOLDER_PATH}/nginx.conf /etc/nginx/
 COPY ${STARTUP_FOLDER_PATH}/restartMonitorService.sh restartMonitorService.sh
 COPY ${STARTUP_FOLDER_PATH}/splitLog.sh splitLog.sh
 COPY ${STARTUP_FOLDER_PATH}/start.sh start.sh
-COPY uber_image/${CENTER_INIT_SQLITE} /hydra/data/${CENTER_INIT_SQLITE}
-COPY uber_image/record_release.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_release.apk
-COPY uber_image/record_androidTest.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_androidTest.apk
 
 # Add config of scheduled cleaning pushgateway outdated data, run script every 1 minute
 RUN echo '*/1 * * * *  ( sh /opt/pushgatewayDataClean.sh & ) ' >> /etc/crontab \
