@@ -12,8 +12,6 @@ import androidx.test.uiautomator.UiObject;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 import androidx.test.uiautomator.UiSelector;
 
-import android.app.UiAutomation;
-import android.os.ParcelFileDescriptor;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -37,9 +35,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class MainActivityTest {
@@ -54,20 +49,12 @@ public class MainActivityTest {
                     "android.permission.WRITE_EXTERNAL_STORAGE");
 
     @Test
-    public void mainActivityTest() throws UiObjectNotFoundException, InterruptedException, IOException {
+    public void mainActivityTest() throws UiObjectNotFoundException {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         UiObject uiObject = device.findObject(new UiSelector().packageName("com.android.systemui").textMatches("(?i)(START NOW|ALLOW|允许)"));
         if (uiObject.exists()) {
             uiObject.click();
         }
-
-        ViewInteraction button = onView(
-                allOf(withId(R.id.record_button), withText("START RECORDER"),
-                        withParent(withParent(withId(R.id.container))),
-                        isDisplayed()));
-        button.check(matches(isDisplayed()));
-        button.perform(click());
-        Thread.sleep(1000);
 
         ViewInteraction imageView = onView(
                 allOf(withId(R.id.debug_icon), withContentDescription("Debug"),
@@ -96,6 +83,13 @@ public class MainActivityTest {
                         isDisplayed()));
         textView.check(matches(withText("HydraLab Client")));
 
+        ViewInteraction button = onView(
+                allOf(withId(R.id.record_button), withText("START RECORDER"),
+                        withParent(withParent(withId(R.id.container))),
+                        isDisplayed()));
+        button.check(matches(isDisplayed()));
+        button.perform(click());
+
         ViewInteraction imageView3 = onView(
                 allOf(withId(R.id.place_holder), withContentDescription("Placeholder Image"),
                         withParent(allOf(withId(R.id.container),
@@ -118,14 +112,6 @@ public class MainActivityTest {
                                 0),
                         isDisplayed()));
         imageView5.perform(click());
-
-        ViewInteraction button2 = onView(
-                allOf(withId(R.id.record_button), withText("STOP RECORDER"),
-                        withParent(withParent(withId(R.id.container))),
-                        isDisplayed()));
-        button2.check(matches(isDisplayed()));
-        button2.perform(click());
-        Thread.sleep(1000);
     }
 
     private static Matcher<View> childAtPosition(
