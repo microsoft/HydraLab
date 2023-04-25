@@ -127,6 +127,15 @@ stages:
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
       condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
+      displayName: Copy deploy center files 3
+      inputs:
+        SourceFolder: 'common/src/main/resources/'
+        Contents: |
+          record_release.apk
+          record_androidTest.apk
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
+      condition: eq(variables.fullBuild, 'true')
+    - task: CopyFiles@2
       displayName: Copy center jar
       inputs:
         SourceFolder: 'center/build/libs/'
