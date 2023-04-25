@@ -90,17 +90,17 @@ public class MainActivityTest {
                         isDisplayed()));
         imageView3.check(matches(isDisplayed()));
 
-        ViewInteraction button = onView(
-                allOf(withId(R.id.record_button), withText("START RECORDER"),
-                        withParent(withParent(withId(R.id.container))),
-                        isDisplayed()));
-        button.check(matches(isDisplayed()));
-
         ViewInteraction imageView4 = onView(
                 allOf(withId(R.id.debug_icon), withContentDescription("Debug"),
                         withParent(withParent(withId(R.id.container))),
                         isDisplayed()));
         imageView4.check(matches(isDisplayed()));
+
+        ViewInteraction button = onView(
+                allOf(withId(R.id.record_button), withText("START RECORDER"),
+                        withParent(withParent(withId(R.id.container))),
+                        isDisplayed()));
+        button.check(matches(isDisplayed()));
 
         ViewInteraction imageView5 = onView(
                 allOf(withId(R.id.debug_icon), withContentDescription("Debug"),
