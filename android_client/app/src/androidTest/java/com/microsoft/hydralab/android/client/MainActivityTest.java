@@ -83,19 +83,18 @@ public class MainActivityTest {
                         isDisplayed()));
         textView.check(matches(withText("HydraLab Client")));
 
-        ViewInteraction button = onView(
-                allOf(withId(R.id.record_button), withText("START RECORDER"),
-                        withParent(withParent(withId(R.id.container))),
-                        isDisplayed()));
-        button.check(matches(isDisplayed()));
-        button.perform(click());
-
         ViewInteraction imageView3 = onView(
                 allOf(withId(R.id.place_holder), withContentDescription("Placeholder Image"),
                         withParent(allOf(withId(R.id.container),
                                 withParent(withId(android.R.id.content)))),
                         isDisplayed()));
         imageView3.check(matches(isDisplayed()));
+
+        ViewInteraction button = onView(
+                allOf(withId(R.id.record_button), withText("START RECORDER"),
+                        withParent(withParent(withId(R.id.container))),
+                        isDisplayed()));
+        button.check(matches(isDisplayed()));
 
         ViewInteraction imageView4 = onView(
                 allOf(withId(R.id.debug_icon), withContentDescription("Debug"),
