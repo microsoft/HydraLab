@@ -40,7 +40,7 @@ class BlobClientTest extends BaseTest {
         }
 
         property.setConnection(connectionString);
-        property.setFileExpiryDay(6);
+        property.setFileLimitDay(6);
         property.setSASExpiryTimeAgent(30);
         property.setSASExpiryTimeFront(5);
         property.setSASExpiryUpdate(0);

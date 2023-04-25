@@ -21,5 +21,5 @@ import org.springframework.stereotype.Component;
 public class LocalStorageProperty extends StorageProperties {
     private String endpoint;
     private String token;
-    private int fileExpiryDay;
+    private int fileLimitDay;
 }

@@ -26,7 +26,7 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
     public LocalStorageClientAdapter(StorageProperties storageProperties) {
         LocalStorageProperty localStorageProperty = (LocalStorageProperty) storageProperties;
         this.localStorageClient = new LocalStorageClient(localStorageProperty);
-        fileExpiryDay = localStorageProperty.getFileExpiryDay();
+        fileLimitDay = localStorageProperty.getFileLimitDay();
         classLogger.info("Init Center local storage client successfully!");
     }
 
@@ -41,7 +41,6 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
 
         LocalStorageToken localStorageToken = (LocalStorageToken) accessToken;
         localStorageClient = new LocalStorageClient(localStorageToken);
-        fileExpiryDay = localStorageToken.getFileExpiryDay();
         isInitiated = true;
         classLogger.info("Init Agent local storage client successfully!");
     }
@@ -54,7 +53,6 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
         LocalStorageToken localStorageToken = new LocalStorageToken();
         localStorageToken.setEndpoint(localStorageClient.getEndpoint());
         localStorageToken.setToken("token=" + UUID.randomUUID());
-        localStorageToken.setFileExpiryDay(fileExpiryDay);
         return localStorageToken;
     }
 

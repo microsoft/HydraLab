@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.common.file.impl.azure;
 
 import com.microsoft.hydralab.common.file.StorageProperties;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -23,6 +24,6 @@ public class AzureBlobProperty extends StorageProperties {
     private long SASExpiryTimeAgent;
     private long SASExpiryUpdate;
     private String timeUnit;
-    private int fileExpiryDay;
+    private int fileLimitDay;
     private String CDNUrl;
 }
