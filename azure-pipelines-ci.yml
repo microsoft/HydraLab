@@ -125,9 +125,16 @@ stages:
         SourceFolder: 'center/deploy_startup/'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
-      condition: eq(variables.fullBuild, 'true')
+      condition: eq(variables.fullBuild, 'true')    
     - task: CopyFiles@2
       displayName: Copy deploy center files 3
+      inputs:
+        SourceFolder: 'center/uber_image/'
+        Contents: 'hydra_lab_center_docker_db.sqlite'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
+      condition: eq(variables.fullBuild, 'true')
+    - task: CopyFiles@2
+      displayName: Copy deploy center files 4
       inputs:
         SourceFolder: 'common/src/main/resources/'
         Contents: |
