@@ -1,7 +1,7 @@
 @startuml
 
 interface AccessToken
-interface ContainerConstants {
+abstract class StorageProperties {
 getContainerName()
 }
 abstract class StorageServiceClient {
@@ -19,35 +19,55 @@ class SASData
 enum SASPermission {
 READ
 WRITE
-ADMIN
 +setExpiryTime(AzureBlobProperty)
 }
 
 class SomeStorageAdapter
 class SomeProperty
-class SomeToken
+class SomeToken {
+a specific object extends AccessToken of some storage service
+}
 enum SomePermission {
 READ
 WRITE
-ADMIN
 +setExpiryTime(SomeProperty)
 }
+
+note top of SomeStorageAdapter
+  The adapter class extends StorageServiceClient
+  for a new third-party storage service.
+end note
+
+note left of SomeProperty
+  The property class extends StorageProperties
+  for a new third-party storage service.
+end note
+
+note bottom of SomeToken
+  The token class extends AccessToken
+  for a new third-party storage service.
+end note
+
+note bottom of SomePermission
+  Some ENUM permission class containing specific
+  permission strings of a new third-party storage service.
+end note
 
 StorageServiceClient --> AccessToken
 StorageServiceClient -> StorageFileInfo
 
 StorageServiceClient <|-- AzureBlobClientAdapter
 AccessToken <|-- SASData
-SASPermission --o SASData
+SASPermission <-- SASData
 AzureBlobProperty <-- SASPermission
 AzureBlobProperty <-- AzureBlobClientAdapter
-ContainerConstants <|-- AzureBlobProperty
+StorageProperties <|-- AzureBlobProperty
 
 StorageServiceClient <|-- SomeStorageAdapter
 AccessToken <|-- SomeToken
-SomePermission -o SomeToken
+SomePermission <- SomeToken
 SomeProperty <-- SomePermission
 SomeProperty <-- SomeStorageAdapter
-ContainerConstants <|-- SomeProperty
+StorageProperties <|-- SomeProperty
 
 @enduml

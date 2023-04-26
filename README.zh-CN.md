@@ -51,28 +51,47 @@ Hydra Lab 的特性包括：
 <span id="quick-start"></span>
 ### 开箱即用的 Uber docker 镜像快速指南
 
-Hydra Lab 使用 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储日志文件、视频、应用包等。请访问你的 Azure 门户，打开一个 Azure Blob 存储账户，获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string) 。
-并将其放入环境变量中，名称为 BLOB_CONNECTION_STR。
+Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
 
-Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单地配置环境变量 BLOB_CONNECTION_STR 后，你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
+**第1步. 从 https://www.docker.com 下载并安装 Docker**
 
-**第1步. 从容器注册中心获取 Docker 镜像**
+**第2步. 在你的机器上运行**
+
+只需选择以下其中一个命令，即可开始您在 Hydra Lab 的体验：
+
+**1. 使用本地存储服务**
+
+Hydra Lab 默认使用本地文件系统作为存储，不需要额外的环境变量：
 
 ```bash
-docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-**第2步. 在你的机器上运行，并使用 BLOB_CONNECTION_STR 作为参数**
+**2. 使用第三方存储服务**
 
-可以通过提供包含 `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` 的配置文件env.properties在运行目录，然后通过如下方式传入文件相对路径参数：
+Hydra Lab 目前支持 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储多种文件类型，例如日志文件、视频、应用程序包等。欢迎为集成其他第三方存储服务做出贡献。（附上此模块的 UML 类图作为参考：[存储服务架构](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png)。）
+
+根据存储服务的类型，你需要在命令中额外指定一些环境变量。
+
+如果你想要使用 Azure Blob 存储，请访问你的 Azure 门户，创建一个 Azure Blob 存储账户，并获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string)。简要步骤：[登录 Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> 创建新的存储账户（你可以限制容器的公共读写） -> 在创建的存储账户中, 找到 `Access Keys` 页面 -> 复制 `Connection string`。
+![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
+
+你可以将以下内容写入一个配置文件（例如 env.properties）:
+```
+STORAGE_TYPE=AZURE
+BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}
+```
+
+然后将文件路径传给 docker container：
 
 ```bash
 docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-或者通过直接设置环境变量传参：
+或者设置环境参数 -e 直接运行：
+
 ```bash
-docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
 **第3步. 访问前端页面并查看你的已连接设备**

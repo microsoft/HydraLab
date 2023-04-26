@@ -3,12 +3,13 @@
 
 package com.microsoft.hydralab.agent.runner.appium;
 
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.appium.AppiumParam;
 import com.microsoft.hydralab.appium.ThreadParam;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.IOSUtils;
@@ -35,17 +36,18 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 public class AppiumRunner extends TestRunner {
 
     public AppiumRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                        TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                         PerformanceTestManagementService performanceTestManagementService) {
-        super(agentManagementService, testTaskRunCallback, performanceTestManagementService);
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
+    protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
 
         Logger reportLogger = testRun.getLogger();
         try {
             File gifFile =
-                    runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), deviceInfo, testTask, testRun,
+                    runAndGetGif(testTask.getTestAppFile(), testTask.getTestSuite(), testRunDevice, testTask, testRun,
                             testRun.getResultFolder(), reportLogger);
             if (gifFile != null && gifFile.exists() && gifFile.length() > 0) {
                 testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
@@ -57,16 +59,16 @@ public class AppiumRunner extends TestRunner {
     }
 
     @Override
-    protected void tearDown(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) {
-        quitAppiumDrivers(deviceInfo, testTask, testRun.getLogger());
-        super.tearDown(deviceInfo, testTask, testRun);
+    protected void tearDown(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
+        quitAppiumDrivers(testRunDevice, testTask, testRun.getLogger());
+        super.tearDown(testRunDevice, testTask, testRun);
     }
 
-    protected void quitAppiumDrivers(DeviceInfo deviceInfo, TestTask testTask, Logger reportLogger) {
-        testDeviceManager.quitMobileAppiumDriver(deviceInfo, reportLogger);
+    protected void quitAppiumDrivers(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) {
+        testRunDeviceOrchestrator.quitAppiumDriver(testRunDevice, reportLogger);
     }
 
-    protected File runAndGetGif(File appiumJarFile, String appiumCommand, DeviceInfo deviceInfo, TestTask testTask,
+    protected File runAndGetGif(File appiumJarFile, String appiumCommand, TestRunDevice testRunDevice, TestTask testTask,
                                 TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         //set appium test property
         reportLogger.info("Start set appium test property");
@@ -78,10 +80,13 @@ public class AppiumRunner extends TestRunner {
         if (testTask.getAppFile() != null) {
             appAbsolutePath = testTask.getAppFile().getAbsolutePath();
         }
-        AppiumParam appiumParam =
-                new AppiumParam(deviceInfo.getSerialNum(), deviceInfo.getName(), deviceInfo.getOsVersion(),
-                        IOSUtils.getWdaPortByUdid(deviceInfo.getSerialNum(), reportLogger),
-                        appAbsolutePath, deviceTestResultFolder.getAbsolutePath());
+        AppiumParam appiumParam = new AppiumParam(
+                testRunDevice.getDeviceInfo().getSerialNum(),
+                testRunDevice.getDeviceInfo().getName(),
+                testRunDevice.getDeviceInfo().getOsVersion(),
+                IOSUtils.getWdaPortByUdid(testRunDevice.getDeviceInfo().getSerialNum(), reportLogger),
+                appAbsolutePath,
+                deviceTestResultFolder.getAbsolutePath());
         ThreadParam.init(appiumParam, instrumentationArgs);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam,
                 LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
@@ -89,8 +94,8 @@ public class AppiumRunner extends TestRunner {
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");
             Junit5Listener junit5Listener =
-                    new Junit5Listener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(),
-                            performanceTestManagementService, reportLogger);
+                    new Junit5Listener(agentManagementService, testRunDevice, testRun, testTask.getPkgName(),
+                            testRunDeviceOrchestrator, performanceTestManagementService, reportLogger);
 
             /** run the test */
             reportLogger.info("Start appium test with junit5");
@@ -103,8 +108,8 @@ public class AppiumRunner extends TestRunner {
             /** xml report: parse listener */
             reportLogger.info("Start init listener");
             AppiumListener listener =
-                    new AppiumListener(agentManagementService, deviceInfo, testRun, testTask.getPkgName(),
-                            performanceTestManagementService, reportLogger);
+                    new AppiumListener(agentManagementService, testRunDevice, testRun, testTask.getPkgName(),
+                            testRunDeviceOrchestrator, performanceTestManagementService, reportLogger);
 
             /** run the test */
             reportLogger.info("Start appium test with junit4");

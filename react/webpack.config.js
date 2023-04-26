@@ -1,4 +1,5 @@
 const path = require('path')
+const userConfig = require('./webpackUserConfig.json');
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require("copy-webpack-plugin")
 const TerserPlugin = require("terser-webpack-plugin")
@@ -10,18 +11,9 @@ const htmlPlugin = new HtmlWebPackPlugin({
     filename: 'index.html'
 })
 const distPath = '../center/src/main/resources/static/dist'
-// Change the following endpoint address to point it to your Hydra Lab API service
-const devHydraLabServerEndpoint = 'http://localhost:9886'
-const devHydraLabServer = {
-    target: devHydraLabServerEndpoint,
-    secure: false,
-    changeOrigin: true,
-    // if you Hydra Lab Center Service enabled the OAuth, this node needed to be configured/uncommented.
-    // The Authorization token is accessible in page Authentication -> TOKENS, click the add token button to create if there isn't one.
-    // headers: {
-    //     'Authorization': '*******',
-    // }
-}
+// Change the 'webpack.config.json' to point it to your Hydra Lab API service
+const devHydraLabServer = userConfig.devServer
+
 // About Terser https://webpack.js.org/plugins/terser-webpack-plugin/
 // about ENV usage: https://webpack.js.org/guides/environment-variables/
 module.exports = env => {
@@ -30,7 +22,8 @@ module.exports = env => {
         mode: env.prod?"production":"development",
         output: {
             path: path.join(__dirname, distPath),
-            filename: 'bundle.js'
+            filename: 'bundle.js',
+            hashFunction: 'xxhash64'
         },
         devServer: {
             port: 9999,
@@ -55,11 +48,14 @@ module.exports = env => {
                     { from: path.join(__dirname, 'images'), to: path.join(__dirname, distPath + '/images') },
                 ],
             }),
-            new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+            new webpack.IgnorePlugin({
+                resourceRegExp: /^\.\/locale$/,
+                contextRegExp: /moment$/
+            }),
             new CompressionPlugin({
                 test: /\.js/,
                 algorithm: 'gzip'
-              })
+            })
         ],
         module: {
             rules: [

@@ -21,7 +21,7 @@ public class PkgUtilTest extends BaseTest {
         JSONObject res = PkgUtil.analysisFile(recordFile, EntityType.APP_FILE_SET);
 
         logger.info(res.toString(SerializerFeature.PrettyFormat));
-        Assertions.assertTrue("com.microsoft.hydralab.android.client".equals(res.getString(StorageFileInfo.ParserKey.PKG_NAME)), "Analysis apk error!");
+        Assertions.assertEquals("com.microsoft.hydralab.android.client", res.getString(StorageFileInfo.ParserKey.PKG_NAME), "Analysis apk error!");
 
         try (ApkFile apkFile = new ApkFile(recordFile)) {
             List<String> usesPermissions = apkFile.getApkMeta().getUsesPermissions();

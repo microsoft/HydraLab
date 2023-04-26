@@ -6,12 +6,15 @@ package com.microsoft.hydralab.agent.runner;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
  * @date 12/20/2022
  */
 
+@Service
 public class ActionExecutor {
     /**
      * the implementation of supported actions should not be overload
@@ -36,7 +40,8 @@ public class ActionExecutor {
                     "changeSystemSetting", "execCommandOnDevice", "execCommandOnAgent", "pushFileToDevice",
                     "pullFileFromDevice");
 
-    public List<Exception> doActions(@NotNull TestDeviceManager testDeviceManager, @NotNull DeviceInfo deviceInfo,
+    public List<Exception> doActions(@NotNull DeviceDriver deviceDriverManager,
+                                     @NotNull TestRunDevice testRunDevice,
                                      @NotNull Logger logger,
                                      @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
         List<Exception> exceptions = new ArrayList<>();
@@ -48,7 +53,7 @@ public class ActionExecutor {
         logger.info("Start to execute actions! Current timing is {}, action size is {}", when, todoActions.size());
         for (DeviceAction deviceAction : todoActions) {
             try {
-                doAction(testDeviceManager, deviceInfo, logger, deviceAction);
+                doAction(deviceDriverManager, testRunDevice, logger, deviceAction);
             } catch (InvocationTargetException | IllegalAccessException | HydraLabRuntimeException e) {
                 exceptions.add(e);
                 logger.error("Execute {} action: fail", deviceAction.getMethod(), e);
@@ -59,18 +64,23 @@ public class ActionExecutor {
         return exceptions;
     }
 
-    public void doAction(@NotNull TestDeviceManager testDeviceManager, @NotNull DeviceInfo deviceInfo,
+    public void doAction(@NotNull DeviceDriver deviceDriverManager,
+                         @NotNull TestRunDevice testRunDevice,
                          @NotNull Logger logger,
                          @NotNull DeviceAction deviceAction)
             throws InvocationTargetException, IllegalAccessException {
         if (!actionTypes.contains(deviceAction.getMethod())) {
             return;
         }
+        if (!StringUtils.isEmpty(deviceAction.getDeviceType()) && !testRunDevice.getDeviceInfo().getType().equalsIgnoreCase(deviceAction.getDeviceType())){
+            return;
+        }
+        DeviceInfo deviceInfo = testRunDevice.getDeviceInfo();
         logger.info("Start to analysis action type! Current action is {}", deviceAction.getMethod());
-        Method method = Arrays.stream(testDeviceManager.getClass().getMethods())
+        Method method = Arrays.stream(deviceDriverManager.getClass().getMethods())
                 .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getMethod()))
                 .findFirst().orElse(
-                        Arrays.stream(testDeviceManager.getClass().getDeclaredMethods())
+                        Arrays.stream(deviceDriverManager.getClass().getDeclaredMethods())
                                 .filter(tempMethod -> tempMethod.getName().equals(deviceAction.getMethod()))
                                 .findFirst().orElse(null)
                 );
@@ -85,7 +95,7 @@ public class ActionExecutor {
 
         logger.info("Start to execute action! Current action is {}", deviceAction.getMethod());
         method.setAccessible(true);
-        method.invoke(testDeviceManager, methodArgs);
+        method.invoke(deviceDriverManager, methodArgs);
     }
 
     private Object[] convertArgs(@NotNull DeviceInfo deviceInfo, @NotNull Logger logger,

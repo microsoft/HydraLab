@@ -183,6 +183,11 @@ public class MockDriverT2CTest {
             return new MockElement();
         }
 
+        public WebElement findElementByLabel(String text) {
+            logger.info("Called " + currentMethodName());
+            return new MockElement();
+        }
+
         @Override
         public @Nullable WebElement findElementById(String id) {
             logger.info("Called " + currentMethodName());

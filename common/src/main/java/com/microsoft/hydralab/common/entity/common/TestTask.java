@@ -76,6 +76,8 @@ public class TestTask implements Serializable {
     @Transient
     private String deviceIdentifier;
     @Transient
+    private String groupDevices;
+    @Transient
     private String groupTestType;
     @Transient
     private String accessKey;
@@ -119,6 +121,7 @@ public class TestTask implements Serializable {
         testTask.setId(testTaskSpec.testTaskId);
         testTask.setTestSuite(testTaskSpec.testSuiteClass);
         testTask.setDeviceIdentifier(testTaskSpec.deviceIdentifier);
+        testTask.setGroupDevices(testTaskSpec.groupDevices);
         testTask.setGroupTestType(testTaskSpec.groupTestType);
         testTask.setAccessKey(testTaskSpec.accessKey);
         testTask.setTestCommitId(testTaskSpec.testFileSet.getCommitId());
@@ -306,6 +309,7 @@ public class TestTask implements Serializable {
         String MONKEY_TEST = "MONKEY";
         String APPIUM_MONKEY_TEST = "APPIUM_MONKEY";
         String T2C_JSON_TEST = "T2C_JSON";
+        String XCTEST = "XCTEST";
     }
 
     public interface TestFrameworkType {

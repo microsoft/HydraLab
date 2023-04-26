@@ -32,9 +32,10 @@ import android.util.Range;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SpinnerAdapter;
+import android.widget.Switch;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.microsoft.hydralab.android.client.view.NamedSpinner;
 
@@ -54,6 +55,7 @@ import static com.microsoft.hydralab.android.client.ScreenRecorderService.VIDEO_
 
 public class MainActivity extends Activity {
     private static final String TAG = "ScreenRecorder";
+    private static final String DEFAULT_ACV_PROFILE = "Default";
     private static final int REQUEST_MEDIA_PROJECTION = 1;
     private static final int REQUEST_MEDIA_PROJECTION_AND_START = 3;
     private static final int REQUEST_PERMISSIONS = 2;
@@ -61,7 +63,9 @@ public class MainActivity extends Activity {
     // members below will be initialized in onCreate()
     private MediaProjectionManager mMediaProjectionManager;
     private Button mButton;
-    private ToggleButton mAudioToggle;
+    private Switch mAudioSwitch;
+    private ImageView mPlaceHolderView;
+    private View mSettingsView;
     private NamedSpinner mVieoResolution;
     private NamedSpinner mVideoFramerate;
     private NamedSpinner mIFrameInterval;
@@ -130,9 +134,9 @@ public class MainActivity extends Activity {
             mAudioCodec.setAdapter(codecsAdapter);
             restoreSelections(mAudioCodec, mAudioChannelCount);
         });
-        mAudioToggle.setChecked(
+        mAudioSwitch.setChecked(
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                        .getBoolean(getResources().getResourceEntryName(mAudioToggle.getId()), false));
+                        .getBoolean(getResources().getResourceEntryName(mAudioSwitch.getId()), false));
     }
 
     @Override
@@ -287,7 +291,7 @@ public class MainActivity extends Activity {
 
 
     private AudioEncodeConfig createAudioConfig() {
-        if (!mAudioToggle.isChecked()) return null;
+        if (!mAudioSwitch.isChecked()) return null;
         String codec = getSelectedAudioCodec();
         if (codec == null) {
             return null;
@@ -353,6 +357,11 @@ public class MainActivity extends Activity {
         mButton.setEnabled(false);
         mButton.setOnClickListener(this::onButtonClick);
 
+        ImageView mDebugIcon = findViewById(R.id.debug_icon);
+        mDebugIcon.setOnClickListener(this::onDebugIconClick);
+        mSettingsView = findViewById(R.id.media_format_chooser);
+        mPlaceHolderView = findViewById(R.id.place_holder);
+
         mVideoCodec = findViewById(R.id.video_codec);
         mVieoResolution = findViewById(R.id.resolution);
         mVideoFramerate = findViewById(R.id.framerate);
@@ -367,8 +376,8 @@ public class MainActivity extends Activity {
         mAudioProfile = findViewById(R.id.aac_profile);
         mAudioChannelCount = findViewById(R.id.audio_channel_count);
 
-        mAudioToggle = findViewById(R.id.with_audio);
-        mAudioToggle.setOnCheckedChangeListener((buttonView, isChecked) ->
+        mAudioSwitch = findViewById(R.id.with_audio);
+        mAudioSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
                 findViewById(R.id.audio_format_chooser)
                         .setVisibility(isChecked ? View.VISIBLE : View.GONE)
         );
@@ -409,6 +418,12 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void onDebugIconClick(View v) {
+        // if this icon is clicked, display or hide mSettingsView
+        mSettingsView.setVisibility(mSettingsView.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        mPlaceHolderView.setVisibility(mPlaceHolderView.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+    }
+
 
     private void cancelRecorder() {
         Toast.makeText(this, getString(R.string.permission_denied_screen_recorder_cancel), Toast.LENGTH_SHORT).show();
@@ -417,7 +432,7 @@ public class MainActivity extends Activity {
 
     @TargetApi(M)
     private void requestPermissions() {
-        String[] permissions = mAudioToggle.isChecked()
+        String[] permissions = mAudioSwitch.isChecked()
                 ? new String[]{WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}
                 : new String[]{WRITE_EXTERNAL_STORAGE};
         boolean showRationale = false;
@@ -441,7 +456,7 @@ public class MainActivity extends Activity {
     private boolean hasPermissions() {
         PackageManager pm = getPackageManager();
         String packageName = getPackageName();
-        int granted = (mAudioToggle.isChecked() ? pm.checkPermission(RECORD_AUDIO, packageName) : PackageManager.PERMISSION_GRANTED)
+        int granted = (mAudioSwitch.isChecked() ? pm.checkPermission(RECORD_AUDIO, packageName) : PackageManager.PERMISSION_GRANTED)
                 | pm.checkPermission(WRITE_EXTERNAL_STORAGE, packageName);
         return granted == PackageManager.PERMISSION_GRANTED;
     }
@@ -712,7 +727,8 @@ public class MainActivity extends Activity {
     }
 
     private MediaCodecInfo.CodecProfileLevel getSelectedProfileLevel() {
-        return mVideoProfileLevel != null ? Utils.toProfileLevel(mVideoProfileLevel.getSelectedItem()) : null;
+        return mVideoProfileLevel != null && mVideoProfileLevel.getSelectedItem() != null
+                ? Utils.toProfileLevel(mVideoProfileLevel.getSelectedItem()) : Utils.toProfileLevel(DEFAULT_ACV_PROFILE);
     }
 
     private int[] getSelectedWithHeight() {
@@ -842,7 +858,7 @@ public class MainActivity extends Activity {
         }) {
             saveSelectionToPreferences(edit, spinner);
         }
-        edit.putBoolean(getResources().getResourceEntryName(mAudioToggle.getId()), mAudioToggle.isChecked());
+        edit.putBoolean(getResources().getResourceEntryName(mAudioSwitch.getId()), mAudioSwitch.isChecked());
         edit.apply();
     }
 

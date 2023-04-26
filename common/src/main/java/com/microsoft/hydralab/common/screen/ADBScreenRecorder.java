@@ -23,6 +23,8 @@ public class ADBScreenRecorder implements ScreenRecorder {
     private final DeviceInfo deviceInfo;
     private final Logger logger;
     private final File baseFolder;
+
+    private File mergedVideo;
     public int preSleepSeconds = 0;
     ADBOperateUtil adbOperateUtil;
     private Process recordingProcess;
@@ -109,7 +111,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
                 }
 
                 shouldInterrupt = false;
-                final File mergedVideo = FFmpegConcatUtil.concatVideos(list, baseFolder, logger);
+                mergedVideo = FFmpegConcatUtil.concatVideos(list, baseFolder, logger);
                 ThreadUtil.safeSleep(2000);
                 if (mergedVideo != null && mergedVideo.exists()) {
                     logger.info("deleting merged old videos " + list);
@@ -135,9 +137,9 @@ public class ADBScreenRecorder implements ScreenRecorder {
     }
 
     @Override
-    public boolean finishRecording() {
+    public String finishRecording() {
         if (shouldStop) {
-            return false;
+            return null;
         }
         shouldStop = true;
         if (recordingThread != null && shouldInterrupt) {
@@ -156,10 +158,10 @@ public class ADBScreenRecorder implements ScreenRecorder {
             }
         } catch (Exception e) {
             logger.warn("Exception from recordingThread {} {}", e.getClass().getName(), e.getMessage());
-            return false;
+            return null;
         }
         logger.info("Complete waiting: {}", (System.currentTimeMillis() - time) / 1000f);
-        return true;
+        return mergedVideo.getAbsolutePath();
     }
 
 }

@@ -15,8 +15,8 @@ public class ShellUtils {
 
     private static String[] getFullCommand(String command)
     {
-        String shellProcess = "";
-        String args = "";
+        String shellProcess;
+        String args;
 
         if (isConnectedToWindowsOS) {
             // Add execution policy to ensure powershell can run on most of Windows devices
@@ -28,6 +28,25 @@ public class ShellUtils {
         }
 
         return new String[]{shellProcess, args, command};
+    }
+
+    private static String[] getFullCommand(String command, String redirectOutputFullPath)
+    {
+        String shellProcess;
+        String args;
+        String newCommand;
+        if (isConnectedToWindowsOS) {
+            // Add execution policy to ensure powershell can run on most of Windows devices
+            shellProcess = POWER_SHELL_PATH;
+            args = "powershell -ExecutionPolicy Unrestricted -NoProfile -Command";
+            newCommand = command + " | Out-File -FilePath " + redirectOutputFullPath + " -encoding utf8";
+        } else {
+            shellProcess = "sh";
+            args = "-c";
+            newCommand = command + " > " + redirectOutputFullPath + " 2>&1";
+        }
+
+        return new String[]{shellProcess, args, newCommand};
     }
 
     @Nullable
@@ -60,7 +79,7 @@ public class ShellUtils {
     @Nullable
     public static Process execLocalCommandWithRedirect(String command, File redirectTo, boolean needWait, Logger classLogger) {
         Process process = null;
-        String[] fullCommand = getFullCommand(command + " | Out-File -FilePath " + redirectTo.getAbsolutePath());
+        String[] fullCommand = getFullCommand(command, redirectTo.getAbsolutePath());
 
         try {
             process = Runtime.getRuntime().exec(fullCommand);

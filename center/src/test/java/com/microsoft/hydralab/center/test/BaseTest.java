@@ -32,7 +32,7 @@ import javax.transaction.Transactional;
 public class BaseTest {
     protected Logger baseLogger = LoggerFactory.getLogger(BaseTest.class);
     @MockBean
-    StorageServiceClientProxy storageServiceClientProxy;
+    protected StorageServiceClientProxy storageServiceClientProxy;
     @MockBean
     AuthUtil authUtil;
 }

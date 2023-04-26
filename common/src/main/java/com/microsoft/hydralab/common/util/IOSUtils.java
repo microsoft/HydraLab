@@ -3,13 +3,12 @@
 package com.microsoft.hydralab.common.util;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.device.impl.IOSTestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.IOSDeviceDriver;
 import org.openqa.selenium.net.UrlChecker;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashSet;
@@ -31,12 +30,7 @@ public class IOSUtils {
     }};
 
     public static void collectCrashInfo(String folder, DeviceInfo deviceInfo, Logger logger) {
-        try {
-            Process process = Runtime.getRuntime().exec(new String[]{"tidevice", "-u", deviceInfo.getSerialNum(), "crashreport ", folder});
-            process.waitFor();
-        } catch (InterruptedException | IOException e) {
-            logger.error("Ignored Error: ", e);
-        }
+        ShellUtils.execLocalCommand("tidevice -u " + deviceInfo.getSerialNum() + " crashreport " + folder, logger);
     }
 
     @Nullable
@@ -51,19 +45,19 @@ public class IOSUtils {
         return logProcess;
     }
 
-    public static void startIOSDeviceWatcher(Logger logger, IOSTestDeviceManager deviceManager) {
+    public static void startIOSDeviceWatcher(Logger logger, IOSDeviceDriver deviceDriver) {
         Process process = null;
         String command = "tidevice watch";
         ShellUtils.killProcessByCommandStr(command, logger);
         try {
             process = Runtime.getRuntime().exec(command);
-            IOSDeviceWatcher err = new IOSDeviceWatcher(process.getErrorStream(), logger, deviceManager);
-            IOSDeviceWatcher out = new IOSDeviceWatcher(process.getInputStream(), logger, deviceManager);
+            IOSDeviceWatcher err = new IOSDeviceWatcher(process.getErrorStream(), logger, deviceDriver);
+            IOSDeviceWatcher out = new IOSDeviceWatcher(process.getInputStream(), logger, deviceDriver);
             err.start();
             out.start();
             logger.info("Successfully run: " + command);
         } catch (Exception e) {
-            logger.error("Fail to run: " + command, e);
+            throw new HydraLabRuntimeException("Failed to run: " + command, e);
         }
     }
 
@@ -78,7 +72,7 @@ public class IOSUtils {
     }
 
     public static void installApp(String udid, String packagePath, Logger logger) {
-        ShellUtils.execLocalCommand(String.format("tidevice -u %s install %s", udid, packagePath.replace(" ", "\\ ")), logger);
+        ShellUtils.execLocalCommand(String.format("tidevice -u %s install \"%s\"", udid, packagePath.replace(" ", "\\ ")), logger);
     }
 
     @Nullable
@@ -97,6 +91,9 @@ public class IOSUtils {
     public static void proxyWDA(DeviceInfo deviceInfo, Logger logger) {
         String udid = deviceInfo.getSerialNum();
         int wdaPort = getWdaPortByUdid(udid, logger);
+        if (isWdaRunningByPort(wdaPort, logger)) {
+            return;
+        }
         // String command = "tidevice -u " + udid + " wdaproxy -B " + WDA_BUNDLE_ID + " --port " + getWdaPortByUdid(udid, logger);
         String portRelayCommand = "tidevice -u " + udid + " relay " + wdaPort + " 8100";
         String startWDACommand = "tidevice -u " + udid + "  xctest --bundle_id " + WDA_BUNDLE_ID;
@@ -112,6 +109,7 @@ public class IOSUtils {
         String udid = deviceInfo.getSerialNum();
         int wdaPort = getWdaPortByUdid(udid, logger);
         // String command = "tidevice -u " + udid + " wdaproxy -B " + WDA_BUNDLE_ID + " --port " + getWdaPortByUdid(udid, logger);
+        // We can still try to kill the process even the proxy is not running.
         String portRelayCommand = "tidevice -u " + udid + " relay " + wdaPort + " 8100";
         String startWDACommand = "tidevice -u " + udid + "  xctest --bundle_id " + WDA_BUNDLE_ID;
 
@@ -125,7 +123,7 @@ public class IOSUtils {
     }
 
     public static void takeScreenshot(String udid, String screenshotFilePath, Logger logger) {
-        ShellUtils.execLocalCommand("tidevice -u " + udid + " screenshot " + screenshotFilePath, logger);
+        ShellUtils.execLocalCommand("tidevice -u " + udid + " screenshot \"" + screenshotFilePath + "\"", logger);
     }
 
     public static boolean isWdaRunningByPort(int port, Logger logger) {

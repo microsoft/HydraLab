@@ -3,24 +3,24 @@ package com.microsoft.hydralab.agent.service;
 import com.microsoft.hydralab.agent.command.DeviceScriptCommandLoader;
 import com.microsoft.hydralab.agent.config.TestRunnerConfig;
 import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
-import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
-import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.entity.common.TestRunDeviceCombo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.FileUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -33,8 +33,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,25 +60,26 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     AgentManagementService agentManagementService;
     @Resource
     DeviceScriptCommandLoader deviceScriptCommandLoader;
+    @Resource
+    TestRunDeviceOrchestrator testRunDeviceOrchestrator;
     private final Map<String, TestTask> runningTestTask = new HashMap<>();
 
-    public TestTask runTestTask(TestTaskSpec testTaskSpec) {
-        updateTaskSpecWithDefaultValues(testTaskSpec);
-        log.info("TestTaskSpec: {}", testTaskSpec);
-        TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
-        setupTestDir(testTask);
-
-        String beanName = TestRunnerConfig.testRunnerMap.get(testTaskSpec.runningType);
+    public TestTask runTestTask(TestTask testTask) {
+        String beanName = TestRunnerConfig.testRunnerMap.get(testTask.getRunningType());
         TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
 
-        Set<DeviceInfo> chosenDevices = chooseDevices(testTaskSpec, runner);
+        Set<TestRunDevice> chosenDevices = chooseDevices(testTask);
+        if (chosenDevices.size() == 0) {
+            handleNoAvaiableDevice(testTask);
+            return testTask;
+        }
 
         onTaskStart(testTask);
         DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices,
                 new DeviceTaskControlExecutor.DeviceTask() {
                     @Override
-                    public boolean doTask(DeviceInfo deviceInfo, Logger logger) throws Exception {
-                        runner.runTestOnDevice(testTask, deviceInfo, logger);
+                    public boolean doTask(TestRunDevice testRunDevice) throws Exception {
+                        runner.runTestOnDevice(testTask, testRunDevice);
                         return false;
                     }
                 },
@@ -90,45 +93,61 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 });
 
         if (deviceTaskControl == null) {
-            testTask.setTestDevicesCount(0);
+            handleNoAvaiableDevice(testTask);
         } else {
             testTask.setTestDevicesCount(deviceTaskControl.devices.size());
         }
         return testTask;
     }
 
-    private void updateTaskSpecWithDefaultValues(TestTaskSpec testTaskSpec) {
-        determineScopeOfTestCase(testTaskSpec);
-
-        if (StringUtils.isEmpty(testTaskSpec.runningType)) {
-            testTaskSpec.runningType = TestTask.TestRunningType.INSTRUMENTATION;
-        }
-        if (StringUtils.isBlank(testTaskSpec.testSuiteClass)) {
-            testTaskSpec.testSuiteClass = testTaskSpec.pkgName;
-        }
+    private static void handleNoAvaiableDevice(TestTask testTask) {
+        testTask.setTestDevicesCount(0);
+        testTask.setStatus(TestTask.TestStatus.CANCELED);
+        log.warn("No available device found for {}, group devices: {}, task {} is canceled on this agent",
+                testTask.getDeviceIdentifier(), testTask.getGroupDevices(), testTask.getId());
     }
 
-    protected Set<DeviceInfo> chooseDevices(TestTaskSpec testTaskSpec, TestRunner runner) {
-        if ((runner instanceof AppiumCrossRunner) || (runner instanceof T2CRunner)) {
-            Set<DeviceInfo> activeDeviceList = agentManagementService.getActiveDeviceList(log);
-            Assert.isTrue(activeDeviceList == null || activeDeviceList.size() <= 1, "No connected device!");
-            return activeDeviceList;
-        }
+    protected Set<TestRunDevice> chooseDevices(TestTask testTask) {
+        String identifier = testTask.getDeviceIdentifier();
 
-        String identifier = testTaskSpec.deviceIdentifier;
-        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getDeviceList(log);
-        log.info("Choosing devices from {}", allActiveConnectedDevice.size());
-
+        String targetedDevicesDescriptor;
         if (identifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
-            List<String> devices = Arrays.asList(testTaskSpec.groupDevices.split(","));
-            return allActiveConnectedDevice.stream()
-                    .filter(adbDeviceInfo -> devices.contains(adbDeviceInfo.getSerialNum()))
-                    .collect(Collectors.toSet());
+            targetedDevicesDescriptor = testTask.getGroupDevices();
+        } else {
+            targetedDevicesDescriptor = identifier;
         }
 
-        return allActiveConnectedDevice.stream()
-                .filter(adbDeviceInfo -> identifier.equals(adbDeviceInfo.getSerialNum()))
-                .collect(Collectors.toSet());
+        Assert.notNull(targetedDevicesDescriptor, "targetedDevicesDescriptor is null: "
+                + testTask.getDeviceIdentifier() + ", group devices: " + testTask.getGroupDevices());
+
+        List<String> deviceSerials = Arrays.asList(targetedDevicesDescriptor.split(","));
+
+        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getActiveDeviceList(log);
+        log.info("Choosing devices from {}", allActiveConnectedDevice.size());
+        List<DeviceInfo> devices = allActiveConnectedDevice.stream()
+                .filter(deviceInfo -> deviceSerials.contains(deviceInfo.getSerialNum()))
+                .collect(Collectors.toList());
+
+        Set<TestRunDevice> chosenDevices = new HashSet<>();
+        if (devices.size() == 0) {
+            log.error("No device found for " + targetedDevicesDescriptor);
+            return chosenDevices;
+        }
+
+        String runningType = testTask.getRunningType();
+        if (((runningType.equals(TestTask.TestRunningType.APPIUM_CROSS)) || (runningType.equals(TestTask.TestRunningType.T2C_JSON_TEST))) && devices.size() > 1) {
+            Optional<DeviceInfo> mainDeviceInfo = devices.stream().filter(deviceInfo -> !DeviceType.WINDOWS.name().equals(deviceInfo.getType())).findFirst();
+            Assert.isTrue(mainDeviceInfo.isPresent(), "There are more than 1 device, but all of them is windows device!");
+            devices.remove(mainDeviceInfo.get());
+            TestRunDeviceCombo testRunDeviceCombo = new TestRunDeviceCombo(mainDeviceInfo.get(), devices);
+            chosenDevices.add(testRunDeviceCombo);
+        } else {
+            for (DeviceInfo deviceInfo : devices) {
+                TestRunDevice testRunDevice = new TestRunDevice(deviceInfo, deviceInfo.getType());
+                chosenDevices.add(testRunDevice);
+            }
+        }
+        return chosenDevices;
     }
 
     public void setupTestDir(TestTask testTask) {
@@ -139,16 +158,6 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             }
         }
         testTask.setResourceDir(baseDir);
-    }
-
-    private void determineScopeOfTestCase(TestTaskSpec testTaskSpec) {
-        if (!StringUtils.isEmpty(testTaskSpec.testScope)) {
-            return;
-        }
-        testTaskSpec.testScope = TestTask.TestScope.CLASS;
-        if (StringUtils.isEmpty(testTaskSpec.testSuiteClass)) {
-            testTaskSpec.testScope = TestTask.TestScope.TEST_APP;
-        }
     }
 
     public Map<String, TestTask> getRunningTestTask() {
@@ -168,6 +177,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     @Override
     public void onTaskStart(TestTask testTask) {
+        setupTestDir(testTask);
         fileLoadUtil.loadAttachments(testTask);
         deviceScriptCommandLoader.loadCommandAction(testTask);
         runningTestTask.put(testTask.getId(), testTask);
@@ -175,7 +185,12 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     @Override
     public void onTaskComplete(TestTask testTask) {
-        fileLoadUtil.clearAttachments(testTask);
+        try {
+            fileLoadUtil.clearAttachments(testTask);
+        } catch (Exception e) {
+            log.error("clear attachments error", e);
+        }
+
         if (testTask.isCanceled()) {
             log.warn("test task {} is canceled, no data will be saved", testTask.getId());
             return;
@@ -192,22 +207,22 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result) {
-        log.info("onOneDeviceComplete: {}", deviceControl.getSerialNum());
-        deviceControl.finishTask();
+    public void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result) {
+        log.info("onOneDeviceComplete: {}", testRunDevice.getDeviceInfo().getSerialNum());
+        testRunDeviceOrchestrator.finishTask(testRunDevice);
         File deviceTestResultFolder = result.getResultFolder();
 
         File[] files = deviceTestResultFolder.listFiles();
         List<StorageFileInfo> attachments = new ArrayList<>();
         Assert.notNull(files, "should have result file to upload");
         for (File file : files) {
-            if (file.isDirectory()) {
+            if (!file.isDirectory()) {
+                attachments.add(saveFileToBlob(file, deviceTestResultFolder, logger));
+            } else if (file.listFiles().length > 0) {
                 File zipFile = FileUtil.zipFile(file.getAbsolutePath(),
                         deviceTestResultFolder + "/" + file.getName() + ".zip");
                 attachments.add(saveFileToBlob(zipFile, deviceTestResultFolder, logger));
-                continue;
             }
-            attachments.add(saveFileToBlob(file, deviceTestResultFolder, logger));
         }
         result.setAttachments(attachments);
         processAndSaveDeviceTestResultBlobUrl(result);

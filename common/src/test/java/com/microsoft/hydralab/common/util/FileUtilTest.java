@@ -10,10 +10,13 @@ class FileUtilTest extends BaseTest {
     void isLegalFolderPath() {
         String legalFilePath = "test/aaa";
         String illegalFilePath = "/test";
+        String illegalFilePath1 = "test/../../../aaa";
         logger.info("Verify legal path: " + legalFilePath);
         Assertions.assertTrue(FileUtil.isLegalFolderPath(legalFilePath), "Verify folder error!");
         logger.info("Verify illegal path: " + illegalFilePath);
-        Assertions.assertTrue(!FileUtil.isLegalFolderPath(illegalFilePath), "Verify folder error!");
+        Assertions.assertFalse(FileUtil.isLegalFolderPath(illegalFilePath), "Verify folder error!");
+        logger.info("Verify illegal path: " + illegalFilePath1);
+        Assertions.assertFalse(FileUtil.isLegalFolderPath(illegalFilePath1), "Verify folder error!");
     }
 
     @Test

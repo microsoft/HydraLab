@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -29,6 +30,8 @@ public class FileLoadUtil {
     private AppOptions appOptions;
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
+
+    private static final Set<String> BLACKLIST_FOLDER = Set.of("config", "hydra", "logs", "SmartTest", "SmartTestString", "storage");
 
     public void clearAttachments(TestTask testTask) {
         List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
@@ -94,7 +97,7 @@ public class FileLoadUtil {
             CommandOutputReceiver out = new CommandOutputReceiver(process.getInputStream(), log);
             err.start();
             out.start();
-            process.waitFor(60, TimeUnit.SECONDS);
+            process.waitFor(300, TimeUnit.SECONDS);
             log.info("Install Win-App success");
         } catch (Exception e) {
             log.error("Install Win-App failed", e);
@@ -105,7 +108,9 @@ public class FileLoadUtil {
     public void loadCommonFile(StorageFileInfo attachment) {
         try {
             File loadFolder = new File(appOptions.getLocation() + "/" + attachment.getLoadDir());
-            Assert.isTrue(!loadFolder.exists(), "Load file error : folder has been existed!");
+            String firstLevelFolder = attachment.getLoadDir().split("/")[0];
+            Assert.isTrue(!BLACKLIST_FOLDER.contains(firstLevelFolder),
+                    "Load file error : " + loadFolder.getAbsolutePath() + " was contained in blacklist:" + BLACKLIST_FOLDER);
             log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
             File attachmentFile = downloadFile(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
             if (StorageFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {

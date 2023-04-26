@@ -55,29 +55,49 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 <span id="quick-start"></span>
 ### Quick guide on out-of-box Uber docker image
 
-Hydra Lab uses [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist log files, video, app package, etc. Please go to your Azure portal, open an Azure blob storage account, get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string),
-and place it in the environment variable with the name of BLOB_CONNECTION_STR. Brief steps: [Login Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> Create new storage account (you may disable the public access for the container) -> In the created storage account, find `Access Keys` tab -> copy `Connection string`. 
+Hydra Lab offers an out-of-box experience of docker image called Uber. You can follow the below steps and start your docker container with a center instance and an agent instance built in:
+
+**Step 1. download and install Docker from https://www.docker.com**
+
+**Step 2. run on your machine**
+
+Simply choose one of the following commands to start your experience on Hydra Lab:
+
+**1. use local storage service**
+
+Hydra Lab Uber image uses local file system as default storage, no extra environment variable is needed:
+
+```bash
+docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+```
+
+**2. use third-party storage service**
+
+Hydra Lab currently supports [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist various file types such as log files, video, app package, etc.
+Any contribution to integrating other third-party storage services is welcome. (Here's the UML class diagram for this module as a reference: [storage service structure](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png).)
+
+Some extra environment variables need to be specified in the command according to the storage service type.
+
+If you want to use Azure Blob storage, please go to your Azure portal, open an Azure Blob storage account, and get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string).
+Brief steps: [Login Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> Create new storage account (you may disable the public access for the container) -> In the created storage account, find `Access Keys` tab -> copy `Connection string`.
 ![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
 
-Hydra Lab offers an out-of-box experience of docker image called Uber. By providing the env variable BLOB_CONNECTION_STR simply, you can follow the below steps and start your docker container with a center instance and an agent instance built in:
-
-**Step 1. pull Docker image from container registry**
-
+You may write the following content in an env file (e.g. env.properties):
 ```
-docker pull ghcr.io/microsoft/hydra-lab-uber:latest
-``` 
+STORAGE_TYPE=AZURE
+BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}
+```
 
-**Step 2. run on your machine with BLOB_CONNECTION_STR**
-
-You may write the content `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` in an env file (e.g. env.properties), and pass the path of the file to docker container:
+Then pass the path of the file to docker container
 
 ```bash
 docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
+
 Or simply run with the env parameter -e:
 
 ```bash
-docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
 **Step 3. visit front-end page and view your connected devices**
@@ -86,7 +106,32 @@ docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --nam
 
 Enjoy starting your journey of exploration!
 
-**Note: Uber now only provides the Espresso test feature for Android, please refer to this section for more features: [For Hydra Lab User](#for-user)** 
+**Step 4. Perform the test procedure with a minimal setup**
+
+Note: For Android, Uber image only supports **Espresso/Instrumentation** test. See "User manual" section on this page for more features: [Hydra Lab Wikis](https://github.com/microsoft/HydraLab/wiki).
+
+**1. To run a test with Uber image and local storage:**
+- On the front-end page, go to `Runner` tab and select `HydraLab Client`.
+- Click `Run` and change "Espresso test scope" to `Test app`, click `Next`.
+- Pick an available device, click `Next` again, and click `Run` to start the test.
+- When the test is finished, you can view the test result in the `Task` tab on the left navigator of the front-end page.
+
+![Test trigger steps](docs/images/test-trigger-steps.png)
+
+**2. To run a test with Uber image and any third-party storage service, additional steps are required before the same steps in `1.`:**
+- Download [record_release.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_release.apk) and [record_androidTest.apk](https://github.com/microsoft/HydraLab/tree/main/common/src/main/resources/record_androidTest.apk) from GitHub.
+- On the front-end page, go to `Runner` tab and click `Upload`.
+- Select the downloaded app `record_release.apk` for `APK/IPA FILE` and test app `record_androidTest.apk` for `TEST APK/JAR/JSON FILE`.
+- Click `Upload` and wait for it to finish.
+- Follow the steps of 1. to run the test.
+
+Notice: 
+- The package record shown on the page is preloaded for LOCAL storage only. If you try to run it with a different storage type, you will get an error.
+- You need to upload the package again if you want to use your own storage service instead of LOCAL storage.
+- You can never use more than one storage type in the official service. The above specific situation only occurs in Uber image where the context and database are set up with LOCAL storage as the default option for new users.
+
+![Package upload steps](docs/images/package-upload-steps.png)
+
 
 ### Quick guide on build and run
 

@@ -5,15 +5,12 @@ package com.microsoft.hydralab.agent.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.repository.MobileDeviceRepository;
-import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
-import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
-import com.microsoft.hydralab.common.management.device.impl.WindowsTestDeviceManager;
+import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
@@ -22,15 +19,12 @@ import com.microsoft.hydralab.common.util.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,13 +35,11 @@ public class DeviceControlService {
     @Resource
     AgentManagementService agentManagementService;
     @Resource
-    TestDeviceManager testDeviceManager;
+    DeviceDriverManager deviceDriverManager;
     @Resource
     MobileDeviceRepository mobileDeviceRepository;
     @Resource
     AgentWebSocketClientService agentWebSocketClientService;
-    @Resource
-    DeviceTaskControlExecutor deviceTaskControlExecutor;
     @Resource
     DeviceStabilityMonitor deviceStabilityMonitor;
     @Resource
@@ -73,30 +65,9 @@ public class DeviceControlService {
 
     public void captureAllScreensSync(AgentUser.BatteryStrategy batteryStrategy) {
         Set<DeviceInfo> allConnectedDevices = agentManagementService.getActiveDeviceList(log);
-        if (testDeviceManager instanceof WindowsTestDeviceManager) {
-            Assert.isTrue(allConnectedDevices.size() == 1, "expect only 1 device");
-        }
-        captureDevicesScreenSync(allConnectedDevices, false, batteryStrategy);
-    }
-
-    private void captureDevicesScreenSync(Collection<DeviceInfo> allDevices, boolean logging,
-                                          AgentUser.BatteryStrategy batteryStrategy) {
-        DeviceTaskControl deviceTaskControl =
-                deviceTaskControlExecutor.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
-                    testDeviceManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
-                    return true;
-                }, null, logging, true);
-
-        if (deviceTaskControl == null) {
-            return;
-        }
-
-        CountDownLatch countDownLatch = deviceTaskControl.countDownLatch;
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            log.error(e.getMessage(), e);
-        }
+        allConnectedDevices.forEach(deviceInfo -> {
+            deviceDriverManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
+        });
     }
 
     private void updateAllDeviceScope() {
@@ -138,11 +109,7 @@ public class DeviceControlService {
         return device;
     }
 
-    public TestDeviceManager getDeviceManager() {
-        return testDeviceManager;
-    }
-
-    public void deviceManagerInit() {
+    public void deviceDriverInit() {
         deviceStatusListenerManager.registerListener(new DeviceStatusListener() {
 
             @Override
@@ -171,12 +138,9 @@ public class DeviceControlService {
                 agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
             }
         });
-        deviceStatusListenerManager.registerListener(new PreInstallListener(agentManagementService));
+        deviceStatusListenerManager.registerListener(new PreInstallListener(agentManagementService, deviceDriverManager));
         deviceStatusListenerManager.registerListener(deviceStabilityMonitor);
-        try {
-            testDeviceManager.init();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
+        deviceDriverManager.init();
     }
 }

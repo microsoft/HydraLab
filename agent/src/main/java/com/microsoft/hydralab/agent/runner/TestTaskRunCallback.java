@@ -3,9 +3,9 @@
 
 package com.microsoft.hydralab.agent.runner;
 
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import org.slf4j.Logger;
 
 public interface TestTaskRunCallback {
@@ -13,7 +13,7 @@ public interface TestTaskRunCallback {
 
     void onTaskComplete(TestTask testTask);
 
-    void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result);
+    void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result);
 
     void onDeviceOffline(TestTask testTask);
 }

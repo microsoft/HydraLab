@@ -72,6 +72,7 @@ public final class T2CAppiumUtils {
             safeSleep(3000);
         }
         logger.info("chooseActionType, action id: " + actionInfo.getId() + ", description: " + actionInfo.getDescription() + " on element: "  + webElement);
+        logger.info("chooseActionType, page source: \n" + driver.getPageSource());
         switch (actionType) {
             case "click":
                 driver.click(webElement);
@@ -121,7 +122,7 @@ public final class T2CAppiumUtils {
                 driver.pressKey(AndroidKey.BACK);
                 break;
             case "home":
-                driver.pressKey(AndroidKey.HOME);
+                driver.backToHome();
                 break;
             case "pressKeyCode":
                 String keyCode = arguments.get("keyCode") + "";

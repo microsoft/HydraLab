@@ -36,7 +36,6 @@ public class AgentManageService {
         agentUserInfo.setMailAddress(mailAddress);
         agentUserInfo.setOs(os);
         agentUserInfo.setName(name);
-        agentUserInfo.setDeviceType(AgentUser.DeviceType.ANDROID);
         agentUserInfo.setTeamId(teamId);
         agentUserInfo.setTeamName(teamName);
 
@@ -159,8 +158,14 @@ public class AgentManageService {
                         "    name: " + agentUser.getName() + "\n" +
                         "    id: " + agentUser.getId() + "\n" +
                         "    secret: " + agentUser.getSecret() + "\n" +
-                        "    # Agent Type {1 : 1*WINDOWS + n*ANDROIDS , 2 : 1*WINDOWS+1*ANDROID , 3 : iOS}\n" +
-                        "    agent-type: 1");
+                        "  device:\n" +
+                        "    monitor:\n" +
+                        "      windows:\n" +
+                        "        enabled: false\n" +
+                        "      android:\n" +
+                        "        enabled: true\n" +
+                        "      ios:\n" +
+                        "        enabled: false");
                 fileWriter.flush();
                 fileWriter.close();
 

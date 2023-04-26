@@ -8,7 +8,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.t2c.runner.elements.AndroidElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.EdgeElementInfo;
+import com.microsoft.hydralab.t2c.runner.elements.IOSElementInfo;
 import com.microsoft.hydralab.t2c.runner.elements.WindowsElementInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -37,7 +39,7 @@ public class T2CJsonParser {
         }
 
         ArrayList<DriverInfo> driverList = getDriverList(driverJsonArray);
-        ArrayList<ActionInfo> caseList = getActionList(caseJsonArray);
+        ArrayList<ActionInfo> caseList = getActionList(caseJsonArray, driverList);
 
         return new TestInfo(driverList, caseList);
     }
@@ -69,7 +71,7 @@ public class T2CJsonParser {
         return driverList;
     }
 
-    private ArrayList<ActionInfo> getActionList(JSONArray caseJsonArray) {
+    private ArrayList<ActionInfo> getActionList(JSONArray caseJsonArray, ArrayList<DriverInfo> driverList) {
         ArrayList<ActionInfo> actionListInJson = new ArrayList<>();
         PerformanceActionInitializer batteryTestInitializer = new PerformanceActionInitializer(ActionInfo.ACTION_TYPE_INSPECT_BATTERY_USAGE);
         PerformanceActionInitializer memoryTestInitializer = new PerformanceActionInitializer(ActionInfo.ACTION_TYPE_INSPECT_MEM_USAGE);
@@ -77,6 +79,7 @@ public class T2CJsonParser {
         AndroidElementInfo androidElement = null;
         WindowsElementInfo windowsElement = null;
         EdgeElementInfo edgeElement = null;
+        IOSElementInfo iosElement = null;
 
         for (int i = 0; i < caseJsonArray.size(); i++) {
             JSONObject caseJsonObject = caseJsonArray.getJSONObject(i);
@@ -97,17 +100,21 @@ public class T2CJsonParser {
                             false;
 
             if (elementInfo != null && !elementInfo.isEmpty()) {
-                if (driveIdToTypeMap.get(driverId).equals("android")) {
+                if (driveIdToTypeMap.get(driverId).equalsIgnoreCase("android")) {
                     androidElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), AndroidElementInfo.class);
                     actionInfo = new ActionInfo(i, androidElement, actionType, arguments, driverId, description, isOptional);
                 }
-                if (driveIdToTypeMap.get(driverId).equals("windows")) {
+                if (driveIdToTypeMap.get(driverId).equalsIgnoreCase("windows")) {
                     windowsElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), WindowsElementInfo.class);
                     actionInfo = new ActionInfo(i, windowsElement, actionType, arguments, driverId, description, isOptional);
                 }
-                if (driveIdToTypeMap.get(driverId).equals("browser")) {
+                if (driveIdToTypeMap.get(driverId).equalsIgnoreCase("browser")) {
                     edgeElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), EdgeElementInfo.class);
                     actionInfo = new ActionInfo(i, edgeElement, actionType, arguments, driverId, description, isOptional);
+                }
+                if (driveIdToTypeMap.get(driverId).equalsIgnoreCase("ios")) {
+                    iosElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), IOSElementInfo.class);
+                    actionInfo = new ActionInfo(i, iosElement, actionType, arguments, driverId, description, isOptional);
                 }
             } else {
                 actionInfo = new ActionInfo(i, null, actionType, arguments, driverId, description, isOptional);
@@ -124,9 +131,31 @@ public class T2CJsonParser {
             }
         }
 
+        ArrayList<ActionInfo> actionsToInitDriver = new ArrayList<>();
+        //Setup Activate App for each driver
+        for (DriverInfo driver : driverList) {
+            if (driver.getPlatform().equalsIgnoreCase("ios")
+                    || driver.getPlatform().equalsIgnoreCase("android")) {
+                if (!StringUtils.isEmpty(driver.getLauncherApp())) {
+                    Map<String, Object> arguments = new HashMap<>() {
+                        {
+                            put("appPackageName", driver.getLauncherApp());
+                        }
+                    };
+                    ActionInfo initAction = new ActionInfo(-1, null, "activateApp", arguments, driver.getId(), "Activate App: " + driver.getLauncherApp(), true);
+                    actionsToInitDriver.add(initAction);
+                } else {
+                    Map<String, Object> arguments = new HashMap<>();
+                    ActionInfo initAction = new ActionInfo(-1, null, "home", arguments, driver.getId(), "Back To Home", true);
+                    actionsToInitDriver.add(initAction);
+                }
+            }
+        }
+
         ArrayList<ActionInfo> fullList = new ArrayList<>();
         fullList.addAll(memoryTestInitializer.exportInitActionInfoList());
         fullList.addAll(batteryTestInitializer.exportInitActionInfoList());
+        fullList.addAll(actionsToInitDriver);
         fullList.addAll(actionListInJson);
         return fullList;
     }

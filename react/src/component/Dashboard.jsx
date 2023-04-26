@@ -278,7 +278,7 @@ export default function Dashboard() {
                     </Drawer>
                     <main id='main_top' className={classes.content}>
                         <div id='main_sub' className={classes.appBarSpacer}/>
-                        <Container id='main_container' maxWidth="xl" className={classes.container}>
+                        <Container id='main_container' maxWidth="false" className={classes.container}>
                             <Grid container spacing={3}>
                                 <Grid item xs={12}>
                                     <Paper className={classes.paper}>

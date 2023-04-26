@@ -7,25 +7,20 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.microsoft.hydralab.agent.environment.EnvCapabilityDiscoveryService;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.common.management.AgentType;
-import com.microsoft.hydralab.common.management.AppiumServerManager;
-import com.microsoft.hydralab.common.management.device.TestDeviceManager;
-import com.microsoft.hydralab.common.management.device.impl.AndroidTestDeviceManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
-import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +35,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -52,14 +48,9 @@ import java.util.Map;
  */
 @Configuration
 public class AppConfiguration {
-    @SuppressWarnings("visibilitymodifier")
-    @Value("${app.registry.agent-type}")
-    public int agentTypeValue;
     Logger logger = LoggerFactory.getLogger(getClass());
     @Resource
     private AppOptions appOptions;
-    @Value("${spring.profiles.active:@null}")
-    private String activeProfile;
     @Value("${app.registry.server}")
     private String registryServer;
     @Value("${app.device.state-change.count-threshold}")
@@ -68,12 +59,8 @@ public class AppConfiguration {
     private long deviceStateChangeWindowTime;
     @Value("${app.device.state-change.recovery-time}")
     private long deviceStateChangeRecoveryTime;
-    @Value("${app.adb.host:}")
-    private String adbServerHost;
     @Value("${app.pre-install.shutdown-if-fail:true}")
     private Boolean shutdownIfFail;
-    @Value("${app.appium.host:}")
-    private String appiumServerHost;
 
     @NotNull
     private File getScreenshotDir() {
@@ -85,6 +72,14 @@ public class AppConfiguration {
             }
         }
         return dir;
+    }
+
+    @Bean
+    public EnvCapabilityDiscoveryService envCapabilityDiscoveryService() throws IOException {
+        EnvCapabilityDiscoveryService envCapabilityDiscoveryService = new EnvCapabilityDiscoveryService();
+        envCapabilityDiscoveryService.setEnableScan(true);
+        envCapabilityDiscoveryService.discover();
+        return envCapabilityDiscoveryService;
     }
 
     @Bean
@@ -134,31 +129,6 @@ public class AppConfiguration {
                 new AgentWebSocketClient(new URI(wsUrl), agentWebSocketClientService);
         agentWebSocketClient.connect();
         return agentWebSocketClient;
-    }
-
-    @Bean
-    public TestDeviceManager initDeviceManager(AgentManagementService agentManagementService,
-                                               ADBOperateUtil adbOperateUtil,
-                                               AppiumServerManager appiumServerManager) {
-        AgentType agentType = AgentType.formAgentType(agentTypeValue);
-        TestDeviceManager testDeviceManager = agentType.getManager();
-        if (testDeviceManager instanceof AndroidTestDeviceManager) {
-            ((AndroidTestDeviceManager) testDeviceManager).setADBOperateUtil(adbOperateUtil);
-        }
-        if (StringUtils.isNotBlank(adbServerHost)) {
-            logger.info("Setting the adb server hostname to {}", adbServerHost);
-            adbOperateUtil.setAdbServerHost(adbServerHost);
-        }
-
-        if (StringUtils.isNotBlank(appiumServerHost)) {
-            logger.info("Setting the appium server hostname to {}", appiumServerHost);
-            appiumServerManager.setAppiumServerHost(appiumServerHost);
-        }
-        appiumServerManager.setWorkspacePath(appOptions.getLocation());
-
-        testDeviceManager.setAgentManagementService(agentManagementService);
-        testDeviceManager.setAppiumServerManager(appiumServerManager);
-        return testDeviceManager;
     }
 
     @Bean

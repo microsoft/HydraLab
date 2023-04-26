@@ -19,7 +19,7 @@ import java.io.File;
  * @date 3/1/2023
  */
 
-public class StorageServiceClientProxy extends StorageServiceClient {
+public class StorageServiceClientProxy {
     private String storageType;
     private StorageServiceClient storageServiceClient;
     private ApplicationContext applicationContext;
@@ -29,7 +29,6 @@ public class StorageServiceClientProxy extends StorageServiceClient {
     }
 
     public void initCenterStorageClient(String storageType) {
-        this.storageType = storageType;
         StorageProperties storageProperties;
         switch (storageType) {
             case Const.StorageType.AZURE:
@@ -46,7 +45,6 @@ public class StorageServiceClientProxy extends StorageServiceClient {
     }
 
     public void initAgentStorageClient(String storageType) {
-        this.storageType = storageType;
         StorageProperties storageProperties;
         switch (storageType) {
             case Const.StorageType.AZURE:
@@ -61,36 +59,31 @@ public class StorageServiceClientProxy extends StorageServiceClient {
         EntityType.setInstanceContainer(storageProperties);
     }
 
-    public int getStorageFileLimitDay() {
-        return storageServiceClient.getFileLimitDay();
+    public boolean fileExpiryEnabled() {
+        return storageServiceClient.getFileExpiryDay() > 0;
     }
 
-    @Override
+    public int getStorageFileExpiryDay() {
+        return storageServiceClient.getFileExpiryDay();
+    }
+
     public void updateAccessToken(AccessToken token) {
         storageServiceClient.updateAccessToken(token);
     }
 
-    @Override
     public AccessToken generateAccessToken(String permissionType) {
         return storageServiceClient.generateAccessToken(permissionType);
     }
 
-    @Override
     public boolean isAccessTokenExpired(AccessToken token) {
         return storageServiceClient.isAccessTokenExpired(token);
     }
 
-    @Override
     public StorageFileInfo upload(File file, StorageFileInfo storageFileInfo) {
         return storageServiceClient.upload(file, storageFileInfo);
     }
 
-    @Override
     public StorageFileInfo download(File file, StorageFileInfo storageFileInfo) {
         return storageServiceClient.download(file, storageFileInfo);
-    }
-
-    public String getStorageType() {
-        return storageType;
     }
 }

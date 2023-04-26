@@ -10,15 +10,14 @@ ARG ARG_STORAGE_TYPE
 ARG CENTER_JAR_FILE=center.jar
 ARG AGENT_JAR_FILE=agent.jar
 # Sqlite file under the same directory, storing pre-defined data for uber-image
-ARG CENTER_INIT_SQLITE=hydra_lab_uber_center_db.sqlite
+ARG CENTER_INIT_SQLITE=hydra_lab_center_docker_db.sqlite
 
 ENV TZ="Asia/Shanghai" \
     TIME_ZONE="Asia/Shanghai" \
     ANDROID_HOME=/opt/android-sdk-linux \
     AGENT_ID=${ARG_AGENT_ID} \
     AGENT_SECRET=${ARG_AGENT_SECRET} \
-    AGENT_NAME=${ARG_AGENT_NAME} \
-    STORAGE_TYPE=${ARG_STORAGE_TYPE}
+    AGENT_NAME=${ARG_AGENT_NAME}
 ENV PATH $PATH:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 
 RUN \
@@ -37,6 +36,8 @@ COPY ${CENTER_JAR_FILE} ${CENTER_JAR_FILE}
 COPY ${AGENT_JAR_FILE} ${AGENT_JAR_FILE}
 COPY ${STARTUP_FOLDER_PATH}/${CENTER_INIT_SQLITE} /hydra/data/${CENTER_INIT_SQLITE}
 COPY ${STARTUP_FOLDER_PATH}/start.sh start.sh
+COPY record_release.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_release.apk
+COPY record_androidTest.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_androidTest.apk
 
 # Official doc about connecting package with repo: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
 LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
