@@ -143,8 +143,7 @@ public class PackageSetController {
             testFileSet.setPackageName(appFileParser.getString(ParserKey.PKG_NAME));
             if (StringUtils.isBlank(appVersion)) {
                 testFileSet.setVersion(appFileParser.getString(ParserKey.VERSION));
-            }
-            else {
+            } else {
                 testFileSet.setVersion(appVersion);
             }
             testFileSet.getAttachments().add(appFileInfo);
