@@ -59,8 +59,10 @@ public class TestTask implements Serializable {
     private String testCommitMsg;
     private String testErrorMsg;
     private String pipelineLink;
-    private Boolean needInstall = true;
+    @Column(name = "require_reinstall")
     private Boolean needUninstall = true;
+    private Boolean needInstall = true;
+    @Column(name = "require_clear_data")
     private Boolean needClearData = true;
     private String type = TestType.API;
     private String runningType = TestRunningType.INSTRUMENTATION;

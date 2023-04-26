@@ -34,7 +34,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 }
 
                 if (project.hasProperty('appPath')) {
-                    testConfig.appPath = CommonUtils.validateAndReturnFilePath(project.appPath, "appPath",)
+                    testConfig.appPath = CommonUtils.validateAndReturnFilePath(project.appPath, "appPath")
                 }
                 if (project.hasProperty('testAppPath')) {
                     testConfig.testAppPath = CommonUtils.validateAndReturnFilePath(project.testAppPath, "testAppPath")
