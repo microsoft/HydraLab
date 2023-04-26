@@ -34,13 +34,13 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 }
 
                 if (project.hasProperty('appPath')) {
-                    testConfig.appPath = CommonUtils.validateAndReturnFilePath(project.appPath, "appPath", false)
+                    testConfig.appPath = CommonUtils.validateAndReturnFilePath(project.appPath, "appPath",)
                 }
                 if (project.hasProperty('testAppPath')) {
-                    testConfig.testAppPath = CommonUtils.validateAndReturnFilePath(project.testAppPath, "testAppPath", false)
+                    testConfig.testAppPath = CommonUtils.validateAndReturnFilePath(project.testAppPath, "testAppPath")
                 }
                 if (project.hasProperty('attachmentConfigPath')) {
-                    testConfig.attachmentConfigPath = CommonUtils.validateAndReturnFilePath(project.attachmentConfigPath, "attachmentConfigPath", false)
+                    testConfig.attachmentConfigPath = CommonUtils.validateAndReturnFilePath(project.attachmentConfigPath, "attachmentConfigPath")
                 }
 
                 if (project.hasProperty('hydraLabAPISchema')) {

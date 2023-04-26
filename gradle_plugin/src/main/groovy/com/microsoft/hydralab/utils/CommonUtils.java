@@ -47,11 +47,11 @@ public class CommonUtils {
                 }
             }).create();
 
-    public static String validateAndReturnFilePath(String filePath, String paramName, boolean canBeDirectory) throws IllegalArgumentException {
+    public static String validateAndReturnFilePath(String filePath, String paramName) throws IllegalArgumentException {
         assertNotNull(filePath, paramName);
         File file = new File(filePath);
         assertTrue(file.exists(), filePath + " file not exist!", null);
-        if (!canBeDirectory && file.isDirectory()) {
+        if (file.isDirectory()) {
             throw new IllegalArgumentException(paramName + " should be the path to the specific file.");
         }
 

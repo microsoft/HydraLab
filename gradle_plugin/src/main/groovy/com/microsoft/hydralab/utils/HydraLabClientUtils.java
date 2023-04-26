@@ -77,10 +77,7 @@ public class HydraLabClientUtils {
             throw new IllegalArgumentException("Get commit info failed: " + e.getMessage(), e);
         }
 
-        File app = null;
-        if (StringUtils.isNotEmpty(testConfig.appPath)) {
-            app = new File(testConfig.appPath);
-        }
+        File app = new File(testConfig.appPath);
         File testApp = null;
         if (StringUtils.isNotEmpty(testConfig.testAppPath)) {
             testApp = new File(testConfig.testAppPath);
