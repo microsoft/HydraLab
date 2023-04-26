@@ -30,6 +30,7 @@ testSpec:
   frameworkType: # <Optional>
   runTimeOutSeconds: # <Required>
   queueTimeOutSeconds: # <Optional>
+  appVersion: # <Optional>
   needInstall: # <Optional, not working for type SMART>
   needUninstall: # <Optional>
   needClearData: # <Optional>

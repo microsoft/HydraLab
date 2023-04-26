@@ -108,6 +108,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         testConfig.queueTimeOutSeconds = testConfig.runTimeOutSeconds
                     }
                 }
+                if (project.hasProperty('appVersion')) {
+                    testConfig.appVersion = project.appVersion
+                }
                 if (project.hasProperty('needInstall')) {
                     testConfig.needInstall = Boolean.parseBoolean(project.needInstall)
                 }

@@ -85,6 +85,9 @@ public class HydraLabAPIClient {
         if (testApp != null) {
             multipartBodyBuilder.addFormDataPart("testAppFile", testApp.getName(), RequestBody.create(contentType, testApp));
         }
+        if (StringUtils.isNotBlank(testConfig.appVersion)) {
+            multipartBodyBuilder.addFormDataPart("appVersion", testConfig.appVersion);
+        }
 
         Request req = new Request.Builder()
                 .addHeader("Authorization", "Bearer " + apiConfig.authToken)

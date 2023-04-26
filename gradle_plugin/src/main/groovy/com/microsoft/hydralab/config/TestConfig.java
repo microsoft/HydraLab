@@ -36,6 +36,7 @@ public class TestConfig {
     public int runTimeOutSeconds = 0;
     public int queueTimeOutSeconds = 0;
     public String pipelineLink = "";
+    public String appVersion = "";
     public boolean needInstall = true;
     public boolean needUninstall = true;
     public boolean needClearData = true;
@@ -93,6 +94,7 @@ public class TestConfig {
                 "\trunTimeOutSeconds=" + runTimeOutSeconds + "\n" +
                 "\tqueueTimeOutSeconds=" + queueTimeOutSeconds + "\n" +
                 "\tpipelineLink=" + pipelineLink + "\n" +
+                "\tappVersion=" + appVersion + "\n" +
                 "\tneedInstall=" + needInstall + "\n" +
                 "\tneedUninstall=" + needUninstall + "\n" +
                 "\tneedClearData=" + needClearData + "\n" +
