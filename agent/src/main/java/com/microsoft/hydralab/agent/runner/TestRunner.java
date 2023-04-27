@@ -261,19 +261,17 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
     }
 
     protected void reinstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
+        checkTestTaskCancel(testTask);
         if (testTask.getNeedReinstall()) {
             testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getPkgName(), reportLogger);
             ThreadUtils.safeSleep(3000);
-        } else if (testTask.getNeedClearData()) {
-            testRunDeviceOrchestrator.resetPackage(testRunDevice, testTask.getPkgName(), reportLogger);
-        }
-        checkTestTaskCancel(testTask);
-        if (testTask.getNeedReinstall()) {
             try {
                 FlowUtil.retryAndSleepWhenFalse(3, 10, () -> testRunDeviceOrchestrator.installApp(testRunDevice, testTask.getAppFile().getAbsolutePath(), reportLogger));
             } catch (Exception e) {
                 throw new Exception(e);
             }
+        } else if (testTask.getNeedClearData()) {
+            testRunDeviceOrchestrator.resetPackage(testRunDevice, testTask.getPkgName(), reportLogger);
         }
     }
 
