@@ -111,11 +111,12 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('appVersion')) {
                     testConfig.appVersion = project.appVersion
                 }
-                if (project.hasProperty('needInstall')) {
-                    testConfig.needInstall = Boolean.parseBoolean(project.needInstall)
+                if (project.hasProperty('needReinstall')) {
+                    testConfig.needReinstall = Boolean.parseBoolean(project.needReinstall)
                 }
-                if (project.hasProperty('needUninstall')) {
-                    testConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
+                // @Deprecated
+                else if (project.hasProperty('needUninstall')) {
+                    testConfig.needReinstall = Boolean.parseBoolean(project.needUninstall)
                 }
                 if (project.hasProperty('needClearData')) {
                     testConfig.needClearData = Boolean.parseBoolean(project.needClearData)

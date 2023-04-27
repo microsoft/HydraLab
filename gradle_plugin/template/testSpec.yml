@@ -31,8 +31,7 @@ testSpec:
   runTimeOutSeconds: # <Required>
   queueTimeOutSeconds: # <Optional>
   appVersion: # <Optional>
-  needInstall: # <Optional, not working for type SMART>
-  needUninstall: # <Optional>
+  needReinstall: # <Optional>
   needClearData: # <Optional>
   neededPermissions: # <Optional> <Array>
     - xxx
