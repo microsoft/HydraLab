@@ -254,14 +254,12 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
         if (task.getNeededPermissions() != null) {
             permissionToGrant.addAll(task.getNeededPermissions());
         }
-        if (task.getNeedReinstall()) {
-            try (ApkFile apkFile = new ApkFile(task.appFile)) {
-                ApkMeta meta = apkFile.getApkMeta();
-                permissionToGrant.addAll(meta.getUsesPermissions());
-            } catch (IOException e) {
-                myLogger.warn("Parsing the apk file failed, file path: " + task.appFile.getAbsolutePath(), e);
-                succeeded = false;
-            }
+        try (ApkFile apkFile = new ApkFile(task.appFile)) {
+            ApkMeta meta = apkFile.getApkMeta();
+            permissionToGrant.addAll(meta.getUsesPermissions());
+        } catch (IOException e) {
+            myLogger.warn("Parsing the apk file failed, file path: " + task.appFile.getAbsolutePath(), e);
+            succeeded = false;
         }
         for (String usesPermission : permissionToGrant) {
             if (StringUtils.isEmpty(usesPermission)) {
