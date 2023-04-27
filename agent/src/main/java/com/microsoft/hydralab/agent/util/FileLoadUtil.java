@@ -62,7 +62,7 @@ public class FileLoadUtil {
                     break;
                 case StorageFileInfo.FileType.APP_FILE:
                     File appFile = downloadFile(attachment);
-                    if (testTask.getNeedInstall()) {
+                    if (testTask.getNeedReinstall()) {
                         Assert.isTrue(appFile != null && appFile.exists(), "Download app file failed!");
                     }
                     testTask.setAppFile(appFile);

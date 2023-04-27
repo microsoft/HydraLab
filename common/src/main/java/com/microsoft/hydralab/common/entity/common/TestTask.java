@@ -60,8 +60,7 @@ public class TestTask implements Serializable {
     private String testErrorMsg;
     private String pipelineLink;
     @Column(name = "require_reinstall")
-    private Boolean needUninstall = true;
-    private Boolean needInstall = true;
+    private Boolean needReinstall = true;
     @Column(name = "require_clear_data")
     private Boolean needClearData = true;
     private String type = TestType.API;
@@ -145,8 +144,7 @@ public class TestTask implements Serializable {
         TestFileSet testFileSet = new TestFileSet();
         BeanUtil.copyProperties(testTaskSpec.testFileSet, testFileSet);
         testTask.setTestFileSet(testFileSet);
-        testTask.setNeedInstall(testTaskSpec.needInstall);
-        testTask.setNeedUninstall(testTaskSpec.needUninstall);
+        testTask.setNeedReinstall(testTaskSpec.needReinstall);
         testTask.setNeedClearData(testTaskSpec.needClearData);
         if (StringUtils.isNotBlank(testTaskSpec.type)) {
             testTask.setType(testTaskSpec.type);
@@ -184,8 +182,7 @@ public class TestTask implements Serializable {
         BeanUtil.copyProperties(testTask.getTestFileSet(), testFileSet);
         testTaskSpec.testFileSet = testFileSet;
         testTaskSpec.testTimeOutSec = testTask.getTimeOutSecond();
-        testTaskSpec.needInstall = testTask.getNeedInstall();
-        testTaskSpec.needUninstall = testTask.getNeedUninstall();
+        testTaskSpec.needReinstall = testTask.getNeedReinstall();
         testTaskSpec.needClearData = testTask.getNeedClearData();
         testTaskSpec.neededPermissions = testTask.getNeededPermissions();
         testTaskSpec.deviceActions = testTask.getDeviceActions();
@@ -209,7 +206,7 @@ public class TestTask implements Serializable {
         testTask.setType(null);
         testTask.setStartDate(null);
         testTask.setStatus(null);
-        testTask.setNeedUninstall(null);
+        testTask.setNeedReinstall(null);
         testTask.setNeedClearData(null);
 
         return testTask;

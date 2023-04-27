@@ -40,7 +40,8 @@ testSpec:
     frameworkType: JUNIT4
     runTimeOutSeconds: 1000
     queueTimeOutSeconds: 500
-    needUninstall: true
+    appVersion: 1.0.0
+    needReinstall: true
     needClearData: true
     neededPermissions:
         - android.permission.READ_CONTACTS

@@ -254,7 +254,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
         if (task.getNeededPermissions() != null) {
             permissionToGrant.addAll(task.getNeededPermissions());
         }
-        if (task.getNeedInstall()) {
+        if (task.getNeedReinstall()) {
             try (ApkFile apkFile = new ApkFile(task.appFile)) {
                 ApkMeta meta = apkFile.getApkMeta();
                 permissionToGrant.addAll(meta.getUsesPermissions());

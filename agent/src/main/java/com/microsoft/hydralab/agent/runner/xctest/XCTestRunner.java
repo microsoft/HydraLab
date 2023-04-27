@@ -54,7 +54,7 @@ public class XCTestRunner extends TestRunner {
     }
 
     @Override
-    protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger logger) {
+    protected void reinstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger logger) {
     }
 
     private void unzipXctestFolder(File zipFile, TestRun testRun, Logger logger) {

@@ -193,8 +193,8 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         testRunDeviceOrchestrator.wakeUpDevice(testRunDevice, testRun.getLogger());
         ThreadUtils.safeSleep(1000);
         checkTestTaskCancel(testTask);
-        reInstallApp(testRunDevice, testTask, testRun.getLogger());
-        reInstallTestApp(testRunDevice, testTask, testRun.getLogger());
+        reinstallApp(testRunDevice, testTask, testRun.getLogger());
+        reinstallTestApp(testRunDevice, testTask, testRun.getLogger());
 
         //execute actions
         if (testTask.getDeviceActions() != null) {
@@ -260,15 +260,15 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         LogUtils.releaseLogger(testRun.getLogger());
     }
 
-    protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
-        if (testTask.getNeedUninstall()) {
+    protected void reinstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
+        if (testTask.getNeedReinstall()) {
             testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getPkgName(), reportLogger);
             ThreadUtils.safeSleep(3000);
         } else if (testTask.getNeedClearData()) {
             testRunDeviceOrchestrator.resetPackage(testRunDevice, testTask.getPkgName(), reportLogger);
         }
         checkTestTaskCancel(testTask);
-        if (testTask.getNeedInstall()) {
+        if (testTask.getNeedReinstall()) {
             try {
                 FlowUtil.retryAndSleepWhenFalse(3, 10, () -> testRunDeviceOrchestrator.installApp(testRunDevice, testTask.getAppFile().getAbsolutePath(), reportLogger));
             } catch (Exception e) {
@@ -277,7 +277,7 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         }
     }
 
-    protected void reInstallTestApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger)
+    protected void reinstallTestApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger)
             throws Exception {
         if (!shouldInstallTestPackageAsApp()) {
             return;
@@ -291,7 +291,7 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         if (!testTask.getTestAppFile().exists()) {
             return;
         }
-        if (testTask.getNeedUninstall()) {
+        if (testTask.getNeedReinstall()) {
             testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getTestPkgName(), reportLogger);
             // test package uninstall should be faster than app package removal.
             ThreadUtils.safeSleep(2000);
