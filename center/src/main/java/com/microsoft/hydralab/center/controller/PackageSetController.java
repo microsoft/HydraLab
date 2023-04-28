@@ -85,7 +85,7 @@ public class PackageSetController {
                       @RequestParam(value = "commitMessage", defaultValue = "") String commitMessage,
                       @RequestParam(value = "buildType", defaultValue = "debug") String buildType,
                       @RequestParam("appFile") MultipartFile appFile,
-                      @RequestParam(value = "appVersion", required = false) String appVersion, // required only for apps with param needReinstall = false
+                      @RequestParam(value = "appVersion", required = false) String appVersion, // required only for apps with param skipInstall = true
                       @RequestParam(value = "testAppFile", required = false) MultipartFile testAppFile) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
