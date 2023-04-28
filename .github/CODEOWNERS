@@ -15,7 +15,7 @@ ehcache.xml @zhou9584 @olivershen-wow
 /android_client/ @lifesaver0129 @TedaLIEz
 
 # TestTaskSpec
-TestTaskSpec.java @olivershen-wow
+TestTaskSpec.java @olivershen-wow @zhou9584
 
 # Gradle Plugin
 /gradle_plugin/ @olivershen-wow @taoran6
@@ -24,8 +24,8 @@ TestTaskSpec.java @olivershen-wow
 /vsts_extension/ @olivershen-wow @dexterdreeeam
 
 # Grafana/Prometheus
-/center/deploy_startup/ @olivershen-wow
-/center/* @olivershen-wow
+/center/deploy_startup/ @olivershen-wow @zhou9584
+/center/* @olivershen-wow @zhou9584
 
 # File Storage
 /common/src/main/java/com/microsoft/hydralab/common/file/ @olivershen-wow @AC-Phoenix
@@ -47,7 +47,7 @@ TestTaskSpec.java @olivershen-wow
 /taps_to_cases/ @dinghong2233 @taoran6
 
 # XCTest(iOS)
-**/runner/xctest/ @lifesaver0129
+**/runner/xctest/ @lifesaver0129 @zhou9584
 
 # Performance testing
 **/hydralab/performance/ @taoran6 @AC-Phoenix
