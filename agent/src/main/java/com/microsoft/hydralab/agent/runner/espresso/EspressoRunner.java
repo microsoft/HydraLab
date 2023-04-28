@@ -24,15 +24,14 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public class EspressoRunner extends TestRunner {
-    final ADBOperateUtil adbOperateUtil;
     private static final int MAJOR_ADB_VERSION = 1;
     private static final int MINOR_ADB_VERSION = -1;
+    final ADBOperateUtil adbOperateUtil;
 
     public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                           TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService,

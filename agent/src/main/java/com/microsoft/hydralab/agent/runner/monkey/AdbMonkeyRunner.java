@@ -22,24 +22,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class AdbMonkeyRunner extends TestRunner {
-    private static final String TEST_RUN_NAME = "ADB monkey test";
     @SuppressWarnings("constantname")
     static final Logger classLogger = LoggerFactory.getLogger(AdbMonkeyRunner.class);
+    private static final String TEST_RUN_NAME = "ADB monkey test";
+    private static final int MAJOR_ADB_VERSION = 1;
+    private static final int MINOR_ADB_VERSION = -1;
     final ADBOperateUtil adbOperateUtil;
     private long recordingStartTimeMillis;
     private int index;
     private String pkgName;
     private AndroidTestUnit ongoingMonkeyTest;
-
     private TestRunDevice testRunDevice;
     private Logger logger;
-    private static final int MAJOR_ADB_VERSION = 1;
-    private static final int MINOR_ADB_VERSION = -1;
 
     public AdbMonkeyRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                            TestRunDeviceOrchestrator testRunDeviceOrchestrator,

@@ -22,23 +22,20 @@ import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 public class SmartRunner extends TestRunner {
+    private static final int MAJOR_APPIUM_VERSION = 1;
+    private static final int MINOR_APPIUM_VERSION = -1;
+    private static final int MAJOR_PYTHON_VERSION = 3;
+    private static final int MINOR_PYTHON_VERSION = 8;
     private final SmartTestUtil smartTestUtil;
     private long recordingStartTimeMillis;
     private int index;
     private String pkgName;
     private SmartTestParam smartTestParam;
-
     private TestRunDevice testRunDevice;
     private Logger logger;
-
-    private static final int MAJOR_APPIUM_VERSION = 1;
-    private static final int MINOR_APPIUM_VERSION = -1;
-    private static final int MAJOR_PYTHON_VERSION = 3;
-    private static final int MINOR_PYTHON_VERSION = 8;
 
     public SmartRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                        TestRunDeviceOrchestrator testRunDeviceOrchestrator,

@@ -10,7 +10,6 @@ import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AppiumCrossRunner extends AppiumRunner {

@@ -41,13 +41,13 @@ import java.util.List;
 import java.util.Map;
 
 public class T2CRunner extends AppiumRunner {
-    private String pkgName;
-    String agentName;
-    private int currentIndex = 0;
     private static final int MAJOR_APPIUM_VERSION = 1;
     private static final int MINOR_APPIUM_VERSION = -1;
     private static final int MAJOR_FFMPEG_VERSION = 4;
     private static final int MINOR_FFMPEG_VERSION = -1;
+    String agentName;
+    private String pkgName;
+    private int currentIndex = 0;
 
     public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,

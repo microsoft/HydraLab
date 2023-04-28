@@ -25,13 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 public class XCTestRunner extends TestRunner {
-    private static String folderPath = "";
-    private Logger logger;
-    private long recordingStartTimeMillis;
     private static final int MAJOR_APPIUM_VERSION = 1;
     private static final int MINOR_APPIUM_VERSION = -1;
     private static final int MAJOR_TIDEVICE_VERSION = 0;
     private static final int MINOR_TIDEVICE_VERSION = 10;
+    private static String folderPath = "";
+    private Logger logger;
+    private long recordingStartTimeMillis;
 
     public XCTestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                         TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService) {
