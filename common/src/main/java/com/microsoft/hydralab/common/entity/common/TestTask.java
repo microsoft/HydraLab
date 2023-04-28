@@ -59,7 +59,7 @@ public class TestTask implements Serializable {
     private String testCommitMsg;
     private String testErrorMsg;
     private String pipelineLink;
-    private Boolean skipInstall = true;
+    private Boolean skipInstall = false;
     @Column(name = "require_reinstall")
     private Boolean needUninstall = true;
     @Column(name = "require_clear_data")

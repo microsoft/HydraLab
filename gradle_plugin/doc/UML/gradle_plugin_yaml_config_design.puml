@@ -41,7 +41,8 @@ testSpec:
     runTimeOutSeconds: 1000
     queueTimeOutSeconds: 500
     appVersion: 1.0.0
-    needReinstall: true
+    skipInstall: false
+    needUninstall: true
     needClearData: true
     neededPermissions:
         - android.permission.READ_CONTACTS
