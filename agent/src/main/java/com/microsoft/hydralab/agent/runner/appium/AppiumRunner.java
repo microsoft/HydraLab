@@ -49,9 +49,7 @@ public class AppiumRunner extends TestRunner {
 
     @Override
     protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
-        List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION));
-        return envCapabilityRequirements;
+        return List.of(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION));
     }
 
     @Override

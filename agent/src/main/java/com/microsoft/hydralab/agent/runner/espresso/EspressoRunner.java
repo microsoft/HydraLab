@@ -43,9 +43,7 @@ public class EspressoRunner extends TestRunner {
 
     @Override
     protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
-        List<EnvCapabilityRequirement> envCapabilityRequirements = new ArrayList<>();
-        envCapabilityRequirements.add(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, MAJOR_ADB_VERSION, MINOR_ADB_VERSION));
-        return envCapabilityRequirements;
+        return List.of(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, MAJOR_ADB_VERSION, MINOR_ADB_VERSION));
     }
 
     @Override
