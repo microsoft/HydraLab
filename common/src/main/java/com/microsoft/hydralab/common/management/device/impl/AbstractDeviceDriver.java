@@ -100,6 +100,8 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
 
     public abstract void wakeUpDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
 
+    public abstract void unlockDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
+
     public abstract void backToHome(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
 
     public abstract void grantPermission(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,

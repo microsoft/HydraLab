@@ -60,6 +60,14 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
+    public void unlockDevice(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> deviceDriverManager.unlockDevice(testRunDevice1.getDeviceInfo(), logger));
+        } else {
+            deviceDriverManager.unlockDevice(testRunDevice.getDeviceInfo(), logger);
+        }
+    }
+
     public boolean installApp(@NotNull TestRunDevice testRunDevice, @NotNull String packagePath, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             boolean isInstalled = true;

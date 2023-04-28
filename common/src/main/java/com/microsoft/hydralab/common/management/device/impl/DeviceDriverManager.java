@@ -71,6 +71,11 @@ public class DeviceDriverManager implements DeviceDriver {
     }
 
     @Override
+    public void unlockDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
+        getDeviceDriver(deviceInfo.getType()).unlockDevice(deviceInfo, logger);
+    }
+
+    @Override
     public void backToHome(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
         getDeviceDriver(deviceInfo.getType()).backToHome(deviceInfo, logger);
     }

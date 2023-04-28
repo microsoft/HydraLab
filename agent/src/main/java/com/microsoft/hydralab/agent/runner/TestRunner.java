@@ -191,6 +191,7 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         testRun.getLogger().info("Start setup device");
         testRunDeviceOrchestrator.testDeviceSetup(testRunDevice, testRun.getLogger());
         testRunDeviceOrchestrator.wakeUpDevice(testRunDevice, testRun.getLogger());
+        testRunDeviceOrchestrator.unlockDevice(testRunDevice, testRun.getLogger());
         ThreadUtils.safeSleep(1000);
         checkTestTaskCancel(testTask);
         reInstallApp(testRunDevice, testTask, testRun.getLogger());

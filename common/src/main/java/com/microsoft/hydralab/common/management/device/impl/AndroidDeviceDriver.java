@@ -156,6 +156,10 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     @Override
     public void wakeUpDevice(DeviceInfo deviceInfo, Logger logger) {
         sendKeyEvent(deviceInfo, KEYCODE_WAKEUP, logger);
+    }
+
+    @Override
+    public void unlockDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
         sendKeyEvent(deviceInfo, KEYCODE_MENU, logger);
     }
 
@@ -586,6 +590,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
         boolean isProjectionPermissionGranted = false;
         stopPackageProcess(deviceInfo, recordPackageName, logger);
         wakeUpDevice(deviceInfo, logger);
+        unlockDevice(deviceInfo, logger);
         startRecordActivity(deviceInfo, logger);
         ThreadUtils.safeSleep(2000);
         if (!clickNodeOnDeviceWithText(deviceInfo, logger, "Start now", "Allow", "允许")) {
