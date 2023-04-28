@@ -193,8 +193,8 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         testRunDeviceOrchestrator.wakeUpDevice(testRunDevice, testRun.getLogger());
         ThreadUtils.safeSleep(1000);
         checkTestTaskCancel(testTask);
-        reinstallApp(testRunDevice, testTask, testRun.getLogger());
-        reinstallTestApp(testRunDevice, testTask, testRun.getLogger());
+        reInstallApp(testRunDevice, testTask, testRun.getLogger());
+        reInstallTestApp(testRunDevice, testTask, testRun.getLogger());
 
         //execute actions
         if (testTask.getDeviceActions() != null) {
@@ -260,7 +260,7 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         LogUtils.releaseLogger(testRun.getLogger());
     }
 
-    protected void reinstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
+    protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
         checkTestTaskCancel(testTask);
         if (testTask.getNeedUninstall()) {
             testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getPkgName(), reportLogger);
@@ -279,7 +279,7 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         }
     }
 
-    protected void reinstallTestApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger)
+    protected void reInstallTestApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger)
             throws Exception {
         if (!shouldInstallTestPackageAsApp()) {
             return;
