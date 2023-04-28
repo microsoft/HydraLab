@@ -85,6 +85,7 @@ public class PackageSetController {
                       @RequestParam(value = "commitMessage", defaultValue = "") String commitMessage,
                       @RequestParam(value = "buildType", defaultValue = "debug") String buildType,
                       @RequestParam("appFile") MultipartFile appFile,
+                      @RequestParam(value = "appVersion", required = false) String appVersion, // required only for apps with param skipInstall = true
                       @RequestParam(value = "testAppFile", required = false) MultipartFile testAppFile) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
@@ -140,7 +141,11 @@ public class PackageSetController {
             JSONObject appFileParser = appFileInfo.getFileParser();
             testFileSet.setAppName(appFileParser.getString(ParserKey.APP_NAME));
             testFileSet.setPackageName(appFileParser.getString(ParserKey.PKG_NAME));
-            testFileSet.setVersion(appFileParser.getString(ParserKey.VERSION));
+            if (StringUtils.isBlank(appVersion)) {
+                testFileSet.setVersion(appFileParser.getString(ParserKey.VERSION));
+            } else {
+                testFileSet.setVersion(appVersion);
+            }
             testFileSet.getAttachments().add(appFileInfo);
 
             //Save test app file to server if exist

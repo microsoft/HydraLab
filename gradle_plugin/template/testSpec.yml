@@ -30,6 +30,8 @@ testSpec:
   frameworkType: # <Optional>
   runTimeOutSeconds: # <Required>
   queueTimeOutSeconds: # <Optional>
+  appVersion: # <Optional>
+  skipInstall: # <Optional>
   needUninstall: # <Optional>
   needClearData: # <Optional>
   neededPermissions: # <Optional> <Array>

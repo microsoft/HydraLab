@@ -1,13 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.utils;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.microsoft.hydralab.config.DeviceConfig;
 import com.microsoft.hydralab.config.HydraLabAPIConfig;
 import com.microsoft.hydralab.config.TestConfig;
-import com.microsoft.hydralab.entity.*;
-import okhttp3.*;
+import com.microsoft.hydralab.entity.AttachmentInfo;
+import com.microsoft.hydralab.entity.TestTask;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -15,10 +26,13 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.microsoft.hydralab.utils.CommonUtils.*;
+import static com.microsoft.hydralab.utils.CommonUtils.GSON;
+import static com.microsoft.hydralab.utils.CommonUtils.assertNotNull;
+import static com.microsoft.hydralab.utils.CommonUtils.assertTrue;
+import static com.microsoft.hydralab.utils.CommonUtils.maskCred;
+import static com.microsoft.hydralab.utils.CommonUtils.printlnf;
 
 
 public class HydraLabAPIClient {
@@ -70,6 +84,9 @@ public class HydraLabAPIClient {
         }
         if (testApp != null) {
             multipartBodyBuilder.addFormDataPart("testAppFile", testApp.getName(), RequestBody.create(contentType, testApp));
+        }
+        if (StringUtils.isNotBlank(testConfig.appVersion)) {
+            multipartBodyBuilder.addFormDataPart("appVersion", testConfig.appVersion);
         }
 
         Request req = new Request.Builder()
@@ -211,6 +228,7 @@ public class HydraLabAPIClient {
         jsonElement.addProperty("frameworkType", testConfig.frameworkType);
         jsonElement.addProperty("maxStepCount", testConfig.maxStepCount);
         jsonElement.addProperty("deviceTestCount", testConfig.testRound);
+        jsonElement.addProperty("skipInstall", testConfig.skipInstall);
         jsonElement.addProperty("needUninstall", testConfig.needUninstall);
         jsonElement.addProperty("needClearData", testConfig.needClearData);
         jsonElement.addProperty("testRunnerName", testConfig.testRunnerName);

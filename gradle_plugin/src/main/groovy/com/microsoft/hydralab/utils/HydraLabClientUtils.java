@@ -77,30 +77,14 @@ public class HydraLabClientUtils {
             throw new IllegalArgumentException("Get commit info failed: " + e.getMessage(), e);
         }
 
-        File app = null;
+        File app = new File(testConfig.appPath);
         File testApp = null;
+        if (StringUtils.isNotEmpty(testConfig.testAppPath)) {
+            testApp = new File(testConfig.testAppPath);
+        }
         try {
-            File file = new File(testConfig.appPath);
-            assertTrue(file.exists(), "app not exist", null);
-
-            if (file.isDirectory()) {
-                throw new IllegalArgumentException("appPath should be the path to the app file.");
-            } else {
-                app = file;
-            }
-
-            if (StringUtils.isNotEmpty(testConfig.testAppPath)) {
-                file = new File(testConfig.testAppPath);
-                assertTrue(file.exists(), "testApp not exist", null);
-                if (file.isDirectory()) {
-                    throw new IllegalArgumentException("testAppPath should be the path to the test app/jar or JSON-described test file.");
-                } else {
-                    testApp = file;
-                }
-            }
-
             if (StringUtils.isNotBlank(testConfig.attachmentConfigPath)) {
-                file = new File(testConfig.attachmentConfigPath);
+                File file = new File(testConfig.attachmentConfigPath);
                 JsonParser parser = new JsonParser();
                 JsonArray attachmentInfoJsons = parser.parse(new FileReader(file)).getAsJsonArray();
                 printlnf("Attachment size: %d", attachmentInfoJsons.size());
@@ -113,9 +97,8 @@ public class HydraLabClientUtils {
                     testConfig.attachmentInfos.add(attachmentInfo);
                 }
             }
-
         } catch (Exception e) {
-            throw new IllegalArgumentException("Apps not found, or attachment config not extracted correctly: " + e.getMessage(), e);
+            throw new IllegalArgumentException("Attachment config not extracted correctly: " + e.getMessage(), e);
         }
 
         String testFileSetId = hydraLabAPIClient.uploadApp(apiConfig, testConfig, commitId, commitCount, commitMsg, app, testApp);

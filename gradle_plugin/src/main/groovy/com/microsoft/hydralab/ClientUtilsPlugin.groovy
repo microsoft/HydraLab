@@ -108,6 +108,12 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         testConfig.queueTimeOutSeconds = testConfig.runTimeOutSeconds
                     }
                 }
+                if (project.hasProperty('appVersion')) {
+                    testConfig.appVersion = project.appVersion
+                }
+                if (project.hasProperty('skipInstall')) {
+                    testConfig.skipInstall = Boolean.parseBoolean(project.skipInstall)
+                }
                 if (project.hasProperty('needUninstall')) {
                     testConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
                 }
