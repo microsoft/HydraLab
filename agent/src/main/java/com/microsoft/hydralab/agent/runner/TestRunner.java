@@ -262,16 +262,20 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
 
     protected void reinstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
         checkTestTaskCancel(testTask);
-        if (testTask.getNeedReinstall()) {
+        if (testTask.getNeedUninstall()) {
             testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getPkgName(), reportLogger);
             ThreadUtils.safeSleep(3000);
-            try {
-                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> testRunDeviceOrchestrator.installApp(testRunDevice, testTask.getAppFile().getAbsolutePath(), reportLogger));
-            } catch (Exception e) {
-                throw new Exception(e);
-            }
         } else if (testTask.getNeedClearData()) {
             testRunDeviceOrchestrator.resetPackage(testRunDevice, testTask.getPkgName(), reportLogger);
+        }
+        if (testTask.getSkipInstall()) {
+            return;
+        }
+
+        try {
+            FlowUtil.retryAndSleepWhenFalse(3, 10, () -> testRunDeviceOrchestrator.installApp(testRunDevice, testTask.getAppFile().getAbsolutePath(), reportLogger));
+        } catch (Exception e) {
+            throw new Exception(e);
         }
     }
 
@@ -289,7 +293,7 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         if (!testTask.getTestAppFile().exists()) {
             return;
         }
-        if (testTask.getNeedReinstall()) {
+        if (testTask.getNeedUninstall()) {
             testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getTestPkgName(), reportLogger);
             // test package uninstall should be faster than app package removal.
             ThreadUtils.safeSleep(2000);

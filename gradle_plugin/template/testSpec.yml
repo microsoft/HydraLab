@@ -31,7 +31,8 @@ testSpec:
   runTimeOutSeconds: # <Required>
   queueTimeOutSeconds: # <Optional>
   appVersion: # <Optional>
-  needReinstall: # <Optional>
+  skipInstall: # <Optional>
+  needUninstall: # <Optional>
   needClearData: # <Optional>
   neededPermissions: # <Optional> <Array>
     - xxx

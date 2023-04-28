@@ -37,7 +37,8 @@ public class TestConfig {
     public int queueTimeOutSeconds = 0;
     public String pipelineLink = "";
     public String appVersion = "";
-    public boolean needReinstall = true;
+    public boolean skipInstall = false;
+    public boolean needUninstall = true;
     public boolean needClearData = true;
     public List<String> neededPermissions = new ArrayList<>();
     // priority: config file path in param > direct yml config
@@ -94,7 +95,8 @@ public class TestConfig {
                 "\tqueueTimeOutSeconds=" + queueTimeOutSeconds + "\n" +
                 "\tpipelineLink=" + pipelineLink + "\n" +
                 "\tappVersion=" + appVersion + "\n" +
-                "\tneedReinstall=" + needReinstall + "\n" +
+                "\tskipInstall=" + skipInstall + "\n" +
+                "\tneedUninstall=" + needUninstall + "\n" +
                 "\tneedClearData=" + needClearData + "\n" +
                 "\tneededPermissions=" + (neededPermissions != null ? neededPermissions.toString() : "") + "\n" +
                 "\tattachmentConfigPath=" + attachmentConfigPath + "\n" +

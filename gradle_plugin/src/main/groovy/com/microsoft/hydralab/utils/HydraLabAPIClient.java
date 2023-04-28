@@ -228,7 +228,8 @@ public class HydraLabAPIClient {
         jsonElement.addProperty("frameworkType", testConfig.frameworkType);
         jsonElement.addProperty("maxStepCount", testConfig.maxStepCount);
         jsonElement.addProperty("deviceTestCount", testConfig.testRound);
-        jsonElement.addProperty("needReinstall", testConfig.needReinstall);
+        jsonElement.addProperty("skipInstall", testConfig.skipInstall);
+        jsonElement.addProperty("needUninstall", testConfig.needUninstall);
         jsonElement.addProperty("needClearData", testConfig.needClearData);
         jsonElement.addProperty("testRunnerName", testConfig.testRunnerName);
         jsonElement.addProperty("testScope", testConfig.testScope);

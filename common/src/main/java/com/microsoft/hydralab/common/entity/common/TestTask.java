@@ -59,8 +59,9 @@ public class TestTask implements Serializable {
     private String testCommitMsg;
     private String testErrorMsg;
     private String pipelineLink;
+    private Boolean skipInstall = true;
     @Column(name = "require_reinstall")
-    private Boolean needReinstall = true;
+    private Boolean needUninstall = true;
     @Column(name = "require_clear_data")
     private Boolean needClearData = true;
     private String type = TestType.API;
@@ -144,7 +145,8 @@ public class TestTask implements Serializable {
         TestFileSet testFileSet = new TestFileSet();
         BeanUtil.copyProperties(testTaskSpec.testFileSet, testFileSet);
         testTask.setTestFileSet(testFileSet);
-        testTask.setNeedReinstall(testTaskSpec.needReinstall);
+        testTask.setSkipInstall(testTaskSpec.skipInstall);
+        testTask.setNeedUninstall(testTaskSpec.needUninstall);
         testTask.setNeedClearData(testTaskSpec.needClearData);
         if (StringUtils.isNotBlank(testTaskSpec.type)) {
             testTask.setType(testTaskSpec.type);
@@ -182,7 +184,8 @@ public class TestTask implements Serializable {
         BeanUtil.copyProperties(testTask.getTestFileSet(), testFileSet);
         testTaskSpec.testFileSet = testFileSet;
         testTaskSpec.testTimeOutSec = testTask.getTimeOutSecond();
-        testTaskSpec.needReinstall = testTask.getNeedReinstall();
+        testTaskSpec.skipInstall = testTask.getSkipInstall();
+        testTaskSpec.needUninstall = testTask.getNeedUninstall();
         testTaskSpec.needClearData = testTask.getNeedClearData();
         testTaskSpec.neededPermissions = testTask.getNeededPermissions();
         testTaskSpec.deviceActions = testTask.getDeviceActions();
@@ -206,7 +209,7 @@ public class TestTask implements Serializable {
         testTask.setType(null);
         testTask.setStartDate(null);
         testTask.setStatus(null);
-        testTask.setNeedReinstall(null);
+        testTask.setNeedUninstall(null);
         testTask.setNeedClearData(null);
 
         return testTask;
