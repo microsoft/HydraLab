@@ -69,9 +69,9 @@ public class DeviceControlService {
         // we need to do this in an async way, otherwise the process will be blocked if one device is not responding
         allConnectedDevices.forEach(deviceInfo -> {
             ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(() -> {
-                try{
+                try {
                     deviceDriverManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
-                }catch (Exception e){
+                } catch (Exception e) {
                     log.error("Failed to capture screenshot for device: {}", deviceInfo.getSerialNum(), e);
                 }
             });
