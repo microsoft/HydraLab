@@ -79,6 +79,11 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
     }
 
     @Override
+    public void unlockDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
+
+    }
+
+    @Override
     public void backToHome(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
 
     }
