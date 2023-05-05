@@ -16,6 +16,7 @@ import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerMan
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.listener.impl.PreInstallListener;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -65,8 +66,11 @@ public class DeviceControlService {
 
     public void captureAllScreensSync(AgentUser.BatteryStrategy batteryStrategy) {
         Set<DeviceInfo> allConnectedDevices = agentManagementService.getActiveDeviceList(log);
+        // we need to do this in an async way, otherwise the process will be blocked if one device is not responding
         allConnectedDevices.forEach(deviceInfo -> {
-            deviceDriverManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
+            ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(() -> {
+                deviceDriverManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
+            });
         });
     }
 
