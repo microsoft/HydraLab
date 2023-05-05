@@ -52,7 +52,7 @@ public class DeviceControlService {
     }
 
     public void provideDeviceList(AgentUser.BatteryStrategy batteryStrategy) {
-        captureAllScreensSync(batteryStrategy);
+        captureAllScreen(batteryStrategy);
         Set<DeviceInfo> allConnectedDevices = getAllConnectedDevice();
         ArrayList<DeviceInfo> deviceInfos = new ArrayList<>(allConnectedDevices);
         deviceInfos.sort(Comparator.comparing(d -> d.getName() + d.getSerialNum()));
@@ -64,7 +64,7 @@ public class DeviceControlService {
                 deviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
     }
 
-    public void captureAllScreensSync(AgentUser.BatteryStrategy batteryStrategy) {
+    public void captureAllScreen(AgentUser.BatteryStrategy batteryStrategy) {
         Set<DeviceInfo> allConnectedDevices = agentManagementService.getActiveDeviceList(log);
         // we need to do this in an async way, otherwise the process will be blocked if one device is not responding
         allConnectedDevices.forEach(deviceInfo -> {
