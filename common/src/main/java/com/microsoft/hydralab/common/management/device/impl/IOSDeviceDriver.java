@@ -6,6 +6,8 @@ package com.microsoft.hydralab.common.management.device.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
@@ -29,7 +31,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.hydralab.common.util.AgentConstant.UNKNOWN_IOS_MODEL;
@@ -38,6 +42,10 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     public static final String iOSDeviceManufacturer = "Apple";
     static final Logger classLogger = LoggerFactory.getLogger(IOSDeviceDriver.class);
     private final Map<String, DeviceInfo> iOSDeviceInfoMap = new HashMap<>();
+    private static final int MAJOR_APPIUM_VERSION = 1;
+    private static final int MINOR_APPIUM_VERSION = -1;
+    private static final int MAJOR_TIDEVICE_VERSION = 0;
+    private static final int MINOR_TIDEVICE_VERSION = 10;
 
     public IOSDeviceDriver(AgentManagementService agentManagementService,
                            AppiumServerManager appiumServerManager) {
@@ -58,6 +66,13 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "IOSDeviceDriver init failed", e);
         }
+    }
+
+    @Override
+    public List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        // todo XCCode / iTunes
+        return List.of(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION),
+                new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.tidevice, MAJOR_TIDEVICE_VERSION, MINOR_TIDEVICE_VERSION));
     }
 
     @Override

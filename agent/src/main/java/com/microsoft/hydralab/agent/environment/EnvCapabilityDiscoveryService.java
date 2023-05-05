@@ -1,5 +1,7 @@
 package com.microsoft.hydralab.agent.environment;
 
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvInfo;
 import org.slf4j.Logger;
 
 import java.io.IOException;

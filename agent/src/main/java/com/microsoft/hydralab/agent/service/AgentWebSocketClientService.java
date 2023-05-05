@@ -17,6 +17,7 @@ import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
@@ -72,6 +73,8 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     private boolean isPrometheusEnabled;
     @Autowired(required = false)
     private MetricPushGateway pushGateway;
+    @Resource
+    private AgentManagementService agentManagementService;
     boolean isAgentInit = false;
 
     public void onMessage(Message message) {
@@ -232,6 +235,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         agentUser.setOs(System.getProperties().getProperty("os.name"));
         agentUser.setVersionName(versionName);
         agentUser.setVersionCode(versionCode);
+        agentUser.setFunctionAvailabilities(agentManagementService.getFunctionAvailabilities());
         responseAuth.setBody(agentUser);
         responseAuth.setPath(message.getPath());
         send(responseAuth);

@@ -10,6 +10,8 @@ import com.android.ddmlib.IDevice;
 import com.android.ddmlib.RawImage;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -41,9 +43,11 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -68,6 +72,8 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     public static final String KEYCODE_HOME = "KEYCODE_HOME";
     static final Logger classLogger = LoggerFactory.getLogger(AndroidDeviceDriver.class);
     private final Map<String, DeviceInfo> adbDeviceInfoMap = new HashMap<>();
+    private static final int MAJOR_ADB_VERSION = 1;
+    private static final int MINOR_ADB_VERSION = -1;
     ADBOperateUtil adbOperateUtil;
 
     private final AndroidDebugBridge.IDeviceChangeListener mListener =
@@ -151,6 +157,11 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "adbOperateUtil init failed", e);
         }
+    }
+
+    @Override
+    public List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        return List.of(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, MAJOR_ADB_VERSION, MINOR_ADB_VERSION));
     }
 
     @Override
