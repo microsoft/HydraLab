@@ -47,7 +47,7 @@ TestTaskSpec.java @olivershen-wow @zhou9584
 /taps_to_cases/ @dinghong2233 @taoran6
 
 # XCTest(iOS)
-**/runner/xctest/ @lifesaver0129 @zhou9584
+**/runner/xctest/ @lifesaver0129 @zhou9584 @TedaLIEz
 
 # Performance testing
 **/hydralab/performance/ @taoran6 @AC-Phoenix
