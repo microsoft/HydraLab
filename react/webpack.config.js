@@ -46,6 +46,7 @@ module.exports = env => {
             new CopyPlugin({
                 patterns: [
                     { from: path.join(__dirname, 'images'), to: path.join(__dirname, distPath + '/images') },
+                    { from: path.join(__dirname, 'route_map'), to: path.join(__dirname, distPath + '/route_map') },
                 ],
             }),
             new webpack.IgnorePlugin({
