@@ -3,6 +3,7 @@
 
 package com.microsoft.hydralab.agent.config;
 
+import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
@@ -40,16 +41,26 @@ public class DeviceDriverConfig {
     @Bean
     public DeviceDriverManager deviceDriverManager(AgentManagementService agentManagementService, AppiumServerManager appiumServerManager, ADBOperateUtil adbOperateUtil) {
         DeviceDriverManager deviceDriverManager = new DeviceDriverManager();
+
+        AndroidDeviceDriver androidDeviceDriver = new AndroidDeviceDriver(agentManagementService, appiumServerManager, adbOperateUtil);
+        agentManagementService.registerFunctionAvailability(AndroidDeviceDriver.class.getName(), AgentFunctionAvailability.AgentFunctionType.DEVICE_DRIVER, enableAndroid,
+                androidDeviceDriver.getEnvCapabilityRequirements());
+
+        IOSDeviceDriver iosDeviceDriver = new IOSDeviceDriver(agentManagementService, appiumServerManager);
+        agentManagementService.registerFunctionAvailability(IOSDeviceDriver.class.getName(), AgentFunctionAvailability.AgentFunctionType.DEVICE_DRIVER, enableIos,
+                iosDeviceDriver.getEnvCapabilityRequirements());
+
+        WindowsDeviceDriver windowsDeviceDriver = new WindowsDeviceDriver(agentManagementService, appiumServerManager);
+        agentManagementService.registerFunctionAvailability(WindowsDeviceDriver.class.getName(), AgentFunctionAvailability.AgentFunctionType.DEVICE_DRIVER, enableWindows,
+                windowsDeviceDriver.getEnvCapabilityRequirements());
+
         if (enableAndroid) {
-            AndroidDeviceDriver androidDeviceDriver = new AndroidDeviceDriver(agentManagementService, appiumServerManager, adbOperateUtil);
             deviceDriverManager.addDeviceDriver(DeviceType.ANDROID, androidDeviceDriver);
         }
         if (enableIos) {
-            IOSDeviceDriver iosDeviceDriver = new IOSDeviceDriver(agentManagementService, appiumServerManager);
             deviceDriverManager.addDeviceDriver(DeviceType.IOS, iosDeviceDriver);
         }
         if (enableWindows) {
-            WindowsDeviceDriver windowsDeviceDriver = new WindowsDeviceDriver(agentManagementService, appiumServerManager);
             deviceDriverManager.addDeviceDriver(DeviceType.WINDOWS, windowsDeviceDriver);
         }
         return deviceDriverManager;

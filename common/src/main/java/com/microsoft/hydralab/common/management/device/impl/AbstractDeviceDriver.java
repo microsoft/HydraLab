@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.management.device.impl;
 
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
@@ -27,6 +28,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -43,6 +45,8 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
 
     public void init() {
     }
+
+    public abstract List<EnvCapabilityRequirement> getEnvCapabilityRequirements();
 
     public AppiumServerManager getAppiumServerManager() {
         return appiumServerManager;
@@ -99,6 +103,8 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
     }
 
     public abstract void wakeUpDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
+
+    public abstract void unlockDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
 
     public abstract void backToHome(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
 

@@ -6,6 +6,8 @@ package com.microsoft.hydralab.agent.runner.t2c;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
@@ -35,20 +37,29 @@ import org.springframework.util.Assert;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class T2CRunner extends AppiumRunner {
-    private String pkgName;
+    private static final int MAJOR_APPIUM_VERSION = 1;
+    private static final int MINOR_APPIUM_VERSION = -1;
+    private static final int MAJOR_FFMPEG_VERSION = 4;
+    private static final int MINOR_FFMPEG_VERSION = -1;
     String agentName;
+    private String pkgName;
     private int currentIndex = 0;
-
-    private Map<String, Integer> deviceCountMap = new HashMap<>();
 
     public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                      PerformanceTestManagementService performanceTestManagementService, String agentName) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.agentName = agentName;
+    }
+
+    @Override
+    protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        return List.of(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION),
+                new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.ffmpeg, MAJOR_FFMPEG_VERSION, MINOR_FFMPEG_VERSION));
     }
 
     @Override
@@ -141,6 +152,7 @@ public class T2CRunner extends AppiumRunner {
         Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
 
         Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
+        Map<String, Integer> deviceCountMap = new HashMap<>();
 
         try {
             AppiumServerManager appiumServerManager = testRunDeviceOrchestrator.getAppiumServerManager();
@@ -148,7 +160,7 @@ public class T2CRunner extends AppiumRunner {
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
                 DeviceInfo deviceInfo;
                 if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.ANDROID.name())) {
-                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.ANDROID.name());
+                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.ANDROID.name(), deviceCountMap);
                     AndroidDriverController androidDriverController = new AndroidDriverController(
                             appiumServerManager.getAndroidDriver(deviceInfo, reportLogger),
                             deviceInfo.getSerialNum(), reportLogger);
@@ -183,7 +195,7 @@ public class T2CRunner extends AppiumRunner {
                     reportLogger.info("Successfully init a Edge driver");
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.IOS.name())) {
-                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.IOS.name());
+                    deviceInfo = getDeviceByType(testRunDevice, DeviceType.IOS.name(), deviceCountMap);
                     IOSDriverController iosDriverController = new IOSDriverController(
                             appiumServerManager.getIOSDriver(deviceInfo, reportLogger),
                             deviceInfo.getSerialNum(), reportLogger);
@@ -207,7 +219,7 @@ public class T2CRunner extends AppiumRunner {
         }
     }
 
-    private DeviceInfo getDeviceByType(TestRunDevice testRunDevice, String type) {
+    private DeviceInfo getDeviceByType(TestRunDevice testRunDevice, String type, Map<String, Integer> deviceCountMap) {
         if (!(testRunDevice instanceof TestRunDeviceCombo)) {
             return testRunDevice.getDeviceInfo();
         }

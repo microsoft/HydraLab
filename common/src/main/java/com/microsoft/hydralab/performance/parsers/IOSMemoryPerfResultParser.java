@@ -21,6 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class IOSMemoryPerfResultParser implements PerformanceResultParser {
     protected Logger classLogger = LoggerFactory.getLogger(getClass());
+
     @Override
     public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
         int inspectionSize = performanceTestResult.performanceInspectionResults.size();
@@ -73,6 +74,7 @@ public class IOSMemoryPerfResultParser implements PerformanceResultParser {
                         }
                     }
                     performanceTestResult.performanceInspectionResults = newPerfInspectionResults;
+                    performanceTestResult.setResultSummary(getAverageIOSMemoryPerfInfo(newPerfInspectionResults));
                     oldInspectionResults.clear();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -80,5 +82,22 @@ public class IOSMemoryPerfResultParser implements PerformanceResultParser {
             }
         }
         return performanceTestResult;
+    }
+
+    private IOSMemoryPerfInfo getAverageIOSMemoryPerfInfo(List<PerformanceInspectionResult> inspectionResults) {
+        if (inspectionResults == null || inspectionResults.size() == 0) {
+            return null;
+        }
+
+        IOSMemoryPerfInfo averageIOSMemoryPerfInfo = new IOSMemoryPerfInfo();
+        averageIOSMemoryPerfInfo.setAppPackageName(inspectionResults.get(0).inspection.appId);
+        averageIOSMemoryPerfInfo.setTimeStamp(System.currentTimeMillis());
+        double averageMemoryMB = 0;
+        for (int i = 0; i < inspectionResults.size(); i++) {
+            double memoryMB = ((IOSMemoryPerfInfo) (inspectionResults.get(i).parsedData)).getMemoryMB();
+            averageMemoryMB = memoryMB / (i + 1) + averageMemoryMB * i / (i + 1);
+        }
+        averageIOSMemoryPerfInfo.setMemoryMB((float) averageMemoryMB);
+        return averageIOSMemoryPerfInfo;
     }
 }

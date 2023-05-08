@@ -1,0 +1,52 @@
+@startuml
+listsprite
+@enduml
+
+@startuml
+colors
+@enduml
+
+@startuml
+    !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+    !include <tupadr3/devicons2/chrome>
+    !include <tupadr3/devicons2/java>
+    !include <tupadr3/devicons2/postgresql>
+    LAYOUT_LEFT_RIGHT()
+    Container(browser, "Browser","Edge or Chrome", $sprite="chrome")
+    Container(api_a, "API A","Spring Boot", $sprite="java")
+    ContainerDb(db_a, "Database A","Postgresql", $sprite="postgresql")
+    Rel(browser,api_a,"HTTPS")
+    Rel_R(api_a,db_a,"pg")
+@enduml
+
+@startuml
+autonumber
+box "UnTrustedDomain" #Red
+	database UnTrustedKeyStore as UKS
+	control UnTrustedKeyManager as UKM
+    boundary KeyLoader as KL
+end box
+
+box "TrustedDomain" #Green
+	database PersistentStorage as KS
+    control KeyManager as KM
+
+end box
+
+group In the Beginning...
+
+    group RootKBPK
+        note over KM: A Unique random key is born
+        KS --> KS: Root KBPK exists
+    end
+
+    group Storage in UnTrustedDomain
+        KM --> KM: Create Class N KPBK
+        KS --> KM: RootKBPK
+        note over KM: Shorthand for create a KeyBlock with ClassKBPK N as key payload, and RootKBPK as KBPK
+        UKM --> UKS: KeyBlock[ClassKBPK N]RootKBPK
+        note over UKS: Process is repeated for ClassKBPK 1,2,3...N
+    end
+end
+
+@enduml

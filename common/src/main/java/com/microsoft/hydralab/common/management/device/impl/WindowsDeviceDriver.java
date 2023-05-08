@@ -4,6 +4,8 @@
 package com.microsoft.hydralab.common.management.device.impl;
 
 import cn.hutool.core.img.ImgUtil;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
@@ -27,11 +29,15 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class WindowsDeviceDriver extends AbstractDeviceDriver {
 
     static final Logger classLogger = LoggerFactory.getLogger(WindowsDeviceDriver.class);
+    private static final int MAJOR_APPIUM_VERSION = 1;
+    private static final int MINOR_APPIUM_VERSION = -1;
 
     public WindowsDeviceDriver(AgentManagementService agentManagementService,
                                AppiumServerManager appiumServerManager) {
@@ -63,7 +69,17 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
     }
 
     @Override
+    public List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        return List.of(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION));
+    }
+
+    @Override
     public void wakeUpDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
+
+    }
+
+    @Override
+    public void unlockDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
 
     }
 

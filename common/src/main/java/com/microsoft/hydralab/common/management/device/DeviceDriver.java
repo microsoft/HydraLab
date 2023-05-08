@@ -23,6 +23,8 @@ public interface DeviceDriver {
 
     void wakeUpDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
 
+    void unlockDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
+
     void backToHome(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger);
 
     void grantPermission(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,

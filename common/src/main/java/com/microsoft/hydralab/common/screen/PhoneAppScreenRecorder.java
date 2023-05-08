@@ -65,6 +65,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         }
         try {
             deviceDriver.wakeUpDevice(deviceInfo, logger);
+            deviceDriver.unlockDevice(deviceInfo, logger);
             deviceDriver.grantAllPackageNeededPermissions(deviceInfo, recordApk, recordPackageName, false, logger);
             deviceDriver.grantPermission(deviceInfo, recordPackageName, "android.permission.FOREGROUND_SERVICE", logger);
             deviceDriver.addToBatteryWhiteList(deviceInfo, recordPackageName, logger);

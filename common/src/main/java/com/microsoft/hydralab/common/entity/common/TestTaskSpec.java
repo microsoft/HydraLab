@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import com.microsoft.hydralab.performance.InspectionStrategy;
@@ -26,6 +27,7 @@ public class TestTaskSpec {
     public TestFileSet testFileSet;
     public int testTimeOutSec = -1;
     public boolean isPerfTest;
+    public boolean skipInstall = false;
     public boolean needUninstall = true;
     public boolean needClearData = true;
     // todo: remove this field when update overall center-ADO/Gradle plugins compatibility

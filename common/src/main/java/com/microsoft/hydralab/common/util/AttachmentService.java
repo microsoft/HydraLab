@@ -81,7 +81,7 @@ public class AttachmentService {
 
     public StorageFileInfo updateFileInStorageAndDB(StorageFileInfo oldFileInfo, File file, EntityType entityType, Logger logger) {
         int days = (int) ((new Date().getTime() - oldFileInfo.getUpdateTime().getTime()) / 1000 / 60 / 60 / 24);
-        if (storageServiceClientProxy.fileLimitEnabled() && days >= storageServiceClientProxy.getStorageFileLimitDay()) {
+        if (storageServiceClientProxy.fileExpiryEnabled() && days >= storageServiceClientProxy.getStorageFileExpiryDay()) {
             oldFileInfo.setUpdateTime(new Date());
             oldFileInfo.setBlobContainer(entityType.storageContainer);
             oldFileInfo.setBlobUrl(saveFileInStorage(file, oldFileInfo, logger));

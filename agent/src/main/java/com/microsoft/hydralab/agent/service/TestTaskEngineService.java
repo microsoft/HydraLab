@@ -185,7 +185,12 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
     @Override
     public void onTaskComplete(TestTask testTask) {
-        fileLoadUtil.clearAttachments(testTask);
+        try {
+            fileLoadUtil.clearAttachments(testTask);
+        } catch (Exception e) {
+            log.error("clear attachments error", e);
+        }
+
         if (testTask.isCanceled()) {
             log.warn("test task {} is canceled, no data will be saved", testTask.getId());
             return;

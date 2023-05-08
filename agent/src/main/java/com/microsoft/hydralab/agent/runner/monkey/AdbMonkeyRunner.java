@@ -6,6 +6,8 @@ package com.microsoft.hydralab.agent.runner.monkey;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
@@ -20,18 +22,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 public class AdbMonkeyRunner extends TestRunner {
-    private static final String TEST_RUN_NAME = "ADB monkey test";
     @SuppressWarnings("constantname")
     static final Logger classLogger = LoggerFactory.getLogger(AdbMonkeyRunner.class);
+    private static final String TEST_RUN_NAME = "ADB monkey test";
+    private static final int MAJOR_ADB_VERSION = 1;
+    private static final int MINOR_ADB_VERSION = -1;
     final ADBOperateUtil adbOperateUtil;
     private long recordingStartTimeMillis;
     private int index;
     private String pkgName;
     private AndroidTestUnit ongoingMonkeyTest;
-
     private TestRunDevice testRunDevice;
     private Logger logger;
 
@@ -41,6 +45,11 @@ public class AdbMonkeyRunner extends TestRunner {
                            ADBOperateUtil adbOperateUtil) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
+    }
+
+    @Override
+    protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        return List.of(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, MAJOR_ADB_VERSION, MINOR_ADB_VERSION));
     }
 
     @Override

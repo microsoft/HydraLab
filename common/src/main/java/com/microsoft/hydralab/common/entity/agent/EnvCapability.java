@@ -1,4 +1,7 @@
-package com.microsoft.hydralab.agent.environment;
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+package com.microsoft.hydralab.common.entity.agent;
 
 import lombok.Getter;
 
@@ -6,6 +9,7 @@ import java.io.File;
 
 @Getter
 public class EnvCapability {
+
     @SuppressWarnings("checkstyle:VisibilityModifier")
     public enum CapabilityKeyword {
         adb("--version"),
@@ -68,6 +72,10 @@ public class EnvCapability {
         public String getVersionOutput() {
             return versionOutput;
         }
+
+        public String getFetchVersionParam() {
+            return fetchVersionParam;
+        }
     }
 
     static {
@@ -77,7 +85,7 @@ public class EnvCapability {
     }
 
     private final CapabilityKeyword keyword;
-    private final File file;
+    private transient final File file;
     private String version;
     private int majorVersion;
     private int minorVersion;
@@ -85,6 +93,13 @@ public class EnvCapability {
     public EnvCapability(CapabilityKeyword keyword, File file) {
         this.keyword = keyword;
         this.file = file;
+    }
+
+    public EnvCapability(CapabilityKeyword keyword, int majorVersion, int minorVersion) {
+        this.keyword = keyword;
+        this.file = null;
+        this.majorVersion = majorVersion;
+        this.minorVersion = minorVersion;
     }
 
     public void setVersion(String version) {
@@ -120,5 +135,19 @@ public class EnvCapability {
             }
         }
         return true;
+    }
+
+    public boolean meet(EnvCapability envCapabilityRequirement) {
+        if (envCapabilityRequirement == null || keyword != envCapabilityRequirement.keyword || !isReady()) {
+            return false;
+        }
+
+        if (envCapabilityRequirement.majorVersion < majorVersion) {
+            return true;
+        } else if (envCapabilityRequirement.majorVersion == majorVersion) {
+            return envCapabilityRequirement.minorVersion <= minorVersion;
+        }
+
+        return false;
     }
 }

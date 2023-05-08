@@ -13,6 +13,7 @@ public interface PerformanceResultParser {
         PARSER_WIN_BATTERY,
         PARSER_WIN_MEMORY,
         PARSER_IOS_ENERGY,
-        PARSER_IOS_MEMORY
+        PARSER_IOS_MEMORY,
+        PARSER_EVENT_TIME
     }
 }

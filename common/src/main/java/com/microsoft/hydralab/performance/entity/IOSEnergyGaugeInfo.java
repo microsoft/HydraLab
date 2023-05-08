@@ -67,12 +67,18 @@ public class IOSEnergyGaugeInfo implements Serializable, IBaselineMetrics {
     @Override
     @JSONField(serialize = false)
     public LinkedHashMap<String, Double> getBaselineMetricsKeyValue() {
-        return null;
+        LinkedHashMap<String, Double> baselineMap = new LinkedHashMap<>();
+        baselineMap.put("totalCost", (double) totalCost);
+        baselineMap.put("cpuCost", (double) cpuCost);
+        baselineMap.put("networkingCost", (double) networkingCost);
+        baselineMap.put("appStateCost", (double) appStateCost);
+        baselineMap.put("locationCost", (double) locationCost);
+        return baselineMap;
     }
 
     @Override
     @JSONField(serialize = false)
     public SummaryType getSummaryType() {
-        return null;
+        return SummaryType.AVERAGE;
     }
 }

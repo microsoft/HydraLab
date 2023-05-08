@@ -23,7 +23,7 @@ public class WindowsMemoryParsedData implements IBaselineMetrics {
     @Override
     @JSONField(serialize = false)
     public SummaryType getSummaryType() {
-        return null;
+        return SummaryType.AVERAGE;
     }
 
     @Data

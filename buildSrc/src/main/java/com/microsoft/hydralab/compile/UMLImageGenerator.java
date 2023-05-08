@@ -22,7 +22,7 @@ public class UMLImageGenerator {
 
     public void generateUMLImageFromFile(File source, File outputDir, boolean svg) throws IOException {
         if (!source.exists()) throw new RuntimeException(source.getAbsolutePath() + " file doesn't exist");
-
+        if (source.getName().equals("examples.puml")) return;
         SourceFileReader reader = svg ?
                 new SourceFileReader(source, outputDir, new FileFormatOption(FileFormat.SVG)) :
                 new SourceFileReader(source, outputDir);

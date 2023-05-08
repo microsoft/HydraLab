@@ -31,7 +31,7 @@ public class MockAzureBlobClient extends AzureBlobClientAdapter {
         this.SASExpiryUpdate = azureBlobProperty.getSASExpiryUpdate();
         SASPermission.READ.setExpiryTime(azureBlobProperty.getSASExpiryTimeFront(), azureBlobProperty.getTimeUnit());
         SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSASExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
-        fileLimitDay = azureBlobProperty.getFileLimitDay();
+        fileExpiryDay = azureBlobProperty.getFileExpiryDay();
         cdnUrl = azureBlobProperty.getCDNUrl();
         isAuthedBySAS = false;
         isConnected = true;
@@ -48,7 +48,7 @@ public class MockAzureBlobClient extends AzureBlobClientAdapter {
         sasData.setExpiredTime(expiryTime);
         sasData.setEndpoint("");
         sasData.setSasPermission(sasPermission);
-        sasData.setFileLimitDay(fileLimitDay);
+        sasData.setFileExpiryDay(fileExpiryDay);
         sasData.setCdnUrl(cdnUrl);
         return sasData;
     }

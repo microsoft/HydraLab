@@ -4,7 +4,11 @@
 package com.microsoft.hydralab.agent.runner;
 
 import cn.hutool.core.lang.Assert;
+import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
+import com.microsoft.hydralab.common.entity.common.TestReport;
+import com.microsoft.hydralab.common.entity.common.TestResult;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
@@ -28,7 +32,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public abstract class TestRunner {
+public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
     protected final Logger log = LoggerFactory.getLogger(TestRunner.class);
     protected final AgentManagementService agentManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
@@ -42,6 +46,70 @@ public abstract class TestRunner {
         this.testTaskRunCallback = testTaskRunCallback;
         this.performanceTestManagementService = performanceTestManagementService;
         this.testRunDeviceOrchestrator = testRunDeviceOrchestrator;
+        init();
+    }
+
+    void init() {
+        agentManagementService.registerFunctionAvailability(getClass().getName(), AgentFunctionAvailability.AgentFunctionType.TEST_RUNNER, true, getEnvCapabilityRequirements());
+    }
+
+    protected abstract List<EnvCapabilityRequirement> getEnvCapabilityRequirements();
+
+    @Override
+    public TestReport run(TestTask testTask, TestRunDevice testRunDevice) {
+        checkTestTaskCancel(testTask);
+        TestRun testRun = setup(testTask, testRunDevice);
+        checkTestTaskCancel(testTask);
+
+        TestReport testReport = null;
+        TestResult testResult = null;
+        try {
+            execute(testRun);
+            checkTestTaskCancel(testTask);
+
+            testResult = analyze(testRun);
+            checkTestTaskCancel(testTask);
+
+            testReport = report(testRun, testResult);
+            checkTestTaskCancel(testTask);
+        } catch (Exception e) {
+            testRun.getLogger().error(testRunDevice.getDeviceInfo().getSerialNum() + ": " + e.getMessage(), e);
+            saveErrorSummary(testRun, e);
+        } finally {
+            teardown(testRun);
+            help(testRun, testResult);
+        }
+        return testReport;
+    }
+
+    @Override
+    public TestRun setup(TestTask testTask, TestRunDevice testRunDevice) {
+        return null;
+    }
+
+    @Override
+    public void execute(TestRun testRun) throws Exception {
+
+    }
+
+    @Override
+    public TestResult analyze(TestRun testRun) {
+        return null;
+    }
+
+    @Override
+    public TestReport report(TestRun testRun, TestResult testResult) {
+        return null;
+    }
+
+    @Override
+    public void teardown(TestRun testRun) {
+
+    }
+
+    @Override
+    public void help(TestRun testRun, TestResult testResult) {
+
     }
 
     public void runTestOnDevice(TestTask testTask, TestRunDevice testRunDevice) {
@@ -132,6 +200,7 @@ public abstract class TestRunner {
         testRun.getLogger().info("Start setup device");
         testRunDeviceOrchestrator.testDeviceSetup(testRunDevice, testRun.getLogger());
         testRunDeviceOrchestrator.wakeUpDevice(testRunDevice, testRun.getLogger());
+        testRunDeviceOrchestrator.unlockDevice(testRunDevice, testRun.getLogger());
         ThreadUtils.safeSleep(1000);
         checkTestTaskCancel(testTask);
         reInstallApp(testRunDevice, testTask, testRun.getLogger());
@@ -202,13 +271,17 @@ public abstract class TestRunner {
     }
 
     protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
-        if (testTask.getRequireReinstall()) {
+        checkTestTaskCancel(testTask);
+        if (testTask.getNeedUninstall()) {
             testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getPkgName(), reportLogger);
             ThreadUtils.safeSleep(3000);
-        } else if (testTask.getRequireClearData()) {
+        } else if (testTask.getNeedClearData()) {
             testRunDeviceOrchestrator.resetPackage(testRunDevice, testTask.getPkgName(), reportLogger);
         }
-        checkTestTaskCancel(testTask);
+        if (testTask.getSkipInstall()) {
+            return;
+        }
+
         try {
             FlowUtil.retryAndSleepWhenFalse(3, 10, () -> testRunDeviceOrchestrator.installApp(testRunDevice, testTask.getAppFile().getAbsolutePath(), reportLogger));
         } catch (Exception e) {
@@ -230,7 +303,7 @@ public abstract class TestRunner {
         if (!testTask.getTestAppFile().exists()) {
             return;
         }
-        if (testTask.getRequireReinstall()) {
+        if (testTask.getNeedUninstall()) {
             testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getTestPkgName(), reportLogger);
             // test package uninstall should be faster than app package removal.
             ThreadUtils.safeSleep(2000);

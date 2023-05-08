@@ -1,0 +1,39 @@
+/* Copyright (c) Microsoft Corporation.
+ * Licensed under the MIT License.
+ */
+
+.deviceAgents-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.deviceAgents-agent {
+    flex-direction: column;
+}
+
+.deviceAgents-agentBanner {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    padding-left: 16px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+}
+
+.deviceAgents-agentBanner-tail {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.deviceAgents-devicesList {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}

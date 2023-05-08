@@ -82,6 +82,10 @@ public class IOSLogCollector implements LogCollector {
                 }
             }
             if (crashLines.length() > 0) {
+// TODO (Millard): Try to analysis the crash log to shorten the crash log
+                if (crashLines.length() > 2000) {
+                    crashLines = new StringBuilder(crashLines.substring(0, 2000));
+                }
                 crashFound = true;
                 testRun.setCrashStack(crashLines.toString());
                 testRun.setCrashStackId(UUID.randomUUID().toString());
