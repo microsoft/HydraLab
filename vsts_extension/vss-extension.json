@@ -1,6 +1,6 @@
 {
     "manifestVersion": 1,
-    "id": "hydra-lab",
+    "id": "hydra-lab-alter",
     "name": "Hydra Lab",
     "version": "2.0.13",
     "publisher": "",
@@ -54,7 +54,7 @@
                 "ms.vss-endpoint.endpoint-types"
             ],
             "properties": {
-                "name": "hydra-lab",
+                "name": "hydra-lab-alter",
                 "displayName": "Hydra Lab",
                 "url": "https://example.com",
                 "inputDescriptors": [],
