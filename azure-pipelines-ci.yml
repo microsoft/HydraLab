@@ -115,12 +115,28 @@ stages:
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
         options: '-PclientVersionCode=$(hydraVersionCode) -PclientVersionNumber=$(hydraVersion)'
+    - task: Gradle@2
+      displayName: Package Android client APK
+      inputs:
+        workingDirectory: 'android_client'
+        gradleWrapperFile: 'android_client/gradlew'
+        tasks: 'assembleAndroidTest'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        options: '-PclientVersionCode=$(hydraVersionCode) -PclientVersionNumber=$(hydraVersion)'
     - task: PowerShell@2
       displayName: Copy APK to folder for deployment
       inputs:
         targetType: 'inline'
         script: |
-          cp android_client/app/build/outputs/apk/release/app-release.apk common/src/main/java/record_release.apk -force
+          cp android_client/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk common/src/main/resources/record_androidTest.apk -force
+    - task: PowerShell@2
+      displayName: Copy APK to folder for deployment
+      inputs:
+        targetType: 'inline'
+        script: |
+          cp android_client/app/build/outputs/apk/release/app-release.apk common/src/main/resources/record_release.apk -force
     - task: Gradle@2
       displayName: Build center
       inputs:
