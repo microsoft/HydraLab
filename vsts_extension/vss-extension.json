@@ -10,7 +10,7 @@
             "id": "Microsoft.VisualStudio.Services"
         }
     ],    
-    "description": "Hydra Lab Azure Devops Extension - Allow you to automate deploy tests to Hydra Lab platform from your CI/CD environment.",
+    "description": "Hydra Lab Azure Devops Extension - Allow you to automatically deploy tests to Hydra Lab platform from your CI/CD environment.",
     "categories": [
         "Azure Pipelines"
     ],
