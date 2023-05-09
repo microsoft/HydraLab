@@ -24,6 +24,7 @@ import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
@@ -251,5 +252,15 @@ public class TestDataService {
         List<PerformanceTestResultEntity> perfHistoryList = new ArrayList<>(performanceTestResultRepository.findAll(spec, pageRequest).getContent());
         Collections.reverse(perfHistoryList);
         return perfHistoryList;
+    }
+
+    @CacheEvict(key = "#testRun.testTaskId")
+    public void saveGPTSuggestion(TestRun testRun, String suggestion) {
+        testRun.setSuggestion(suggestion);
+        testRunRepository.save(testRun);
+    }
+
+    public TestRun findTestRunById(String testRunId) {
+        return testRunRepository.findById(testRunId).orElse(null);
     }
 }

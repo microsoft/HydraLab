@@ -288,6 +288,29 @@ public class TestDetailController {
         return Result.ok();
     }
 
+    @PostMapping(value = {"/api/test/suggestion/provide"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result saveGPTSuggestion(@CurrentSecurityContext SysUser requestor,
+                                    @RequestParam(value = "testRunId", defaultValue = "") String testRunId,
+                                    @RequestParam(value = "suggestion", defaultValue = "") String suggestion) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+        if (StringUtils.isEmpty(testRunId) || StringUtils.isEmpty(suggestion)) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "Error param! Should not be empty");
+        }
+        TestRun testRun = testDataService.findTestRunById(testRunId);
+        if (testRun == null) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "Error param! TestRun not exist");
+        }
+        try {
+            testDataService.saveGPTSuggestion(testRun, suggestion);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+        return Result.ok("Save suggestion success!");
+    }
+
     private File loadGraphFile(String fileId) {
         StorageFileInfo graphBlobFile = storageFileInfoRepository.findById(fileId).get();
         File graphZipFile = new File(CENTER_TEMP_FILE_DIR, graphBlobFile.getBlobPath());
