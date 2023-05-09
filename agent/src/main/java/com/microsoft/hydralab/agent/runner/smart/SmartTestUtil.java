@@ -4,7 +4,6 @@
 package com.microsoft.hydralab.agent.runner.smart;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.agent.SmartTestParam;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
@@ -31,7 +30,7 @@ public class SmartTestUtil {
     public SmartTestUtil(String location) {
         File testBaseDir = new File(location);
         String name = Const.SmartTestConfig.ZIP_FILE_NAME;
-        String folderName = Const.SmartTestConfig.ZIP_FOLDER_NAME;
+        String folderName = Const.SmartTestConfig.RESULT_FOLDER_NAME;
 
         folderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.ZIP_FOLDER_NAME + "/";
         stringFolderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.STRING_FOLDER_NAME
@@ -77,8 +76,7 @@ public class SmartTestUtil {
     }
 
     public String runPYFunction(SmartTestParam smartTestParam, Logger logger) throws Exception {
-        File resultFolder = TestRunThreadContext.getTestRun().getResultFolder();
-        File smartTestFolder = new File(resultFolder, Const.SmartTestConfig.ZIP_FOLDER_NAME);
+        File smartTestFolder = new File(smartTestParam.getOutputFolder(), Const.SmartTestConfig.RESULT_FOLDER_NAME);
         smartTestFolder.mkdir();
         String res = null;
         String[] runArgs = new String[8];
