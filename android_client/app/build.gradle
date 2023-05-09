@@ -7,8 +7,8 @@ android {
         applicationId "com.microsoft.hydralab.android.client"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 17
-        versionName '2.6.0'
+        versionCode rootProject.ext.clientVersionCode
+        versionName rootProject.ext.clientVersionNumber
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -23,12 +23,17 @@ android {
 
         release {
             signingConfig signingConfigs.debug
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     namespace 'com.microsoft.hydralab.android.client'
+
+    lint {
+        xmlReport true
+        abortOnError false
+    }
 }
 
 dependencies {

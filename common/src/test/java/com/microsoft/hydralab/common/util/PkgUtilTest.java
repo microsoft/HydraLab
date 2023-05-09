@@ -17,7 +17,7 @@ public class PkgUtilTest extends BaseTest {
 
     @Test
     public void analysisApkFile() throws IOException {
-        File recordFile = new File("src/main/resources/record_release.apk");
+        File recordFile = new File("src/test/resources/record_release.apk");
         JSONObject res = PkgUtil.analysisFile(recordFile, EntityType.APP_FILE_SET);
 
         logger.info(res.toString(SerializerFeature.PrettyFormat));
