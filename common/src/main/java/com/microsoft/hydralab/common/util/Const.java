@@ -117,6 +117,9 @@ public interface Const {
 
         //Package name
         String PACKAGE_NAME = "\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
+
+        //Integer
+        String INTEGER = "^[0-9]*$";
     }
 
     interface PermissionType {

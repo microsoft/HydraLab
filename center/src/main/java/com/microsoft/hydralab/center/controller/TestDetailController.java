@@ -269,7 +269,9 @@ public class TestDetailController {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         File graphZipFile = loadGraphFile(fileId);
-
+        if (!LogUtils.isLegalStr(node, Const.RegexString.INTEGER, false)) {
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error param! Should be Integer");
+        }
         File nodeFile = new File(graphZipFile.getParentFile().getAbsolutePath(), node + "/" + node + "-0.jpg");
         try (FileInputStream inputStream = new FileInputStream(nodeFile);
              ServletOutputStream out = response.getOutputStream()) {
