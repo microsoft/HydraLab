@@ -21,6 +21,7 @@ import com.microsoft.hydralab.common.logger.impl.ADBLogcatCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
+import com.microsoft.hydralab.common.screen.ADBScreenRecorder;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
@@ -43,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -355,6 +355,9 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder, Logger logger) {
+        if (PhoneAppScreenRecorder.recordPackageName.equals(deviceInfo.getRunningTaskPackageName())) {
+            return new ADBScreenRecorder(this.adbOperateUtil, deviceInfo, logger, folder);
+        }
         return new PhoneAppScreenRecorder(this, this.adbOperateUtil, deviceInfo, folder, logger);
     }
 
