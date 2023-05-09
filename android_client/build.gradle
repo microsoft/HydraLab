@@ -18,7 +18,7 @@ ext {
     if (project.hasProperty("clientVersionCode")) {
         clientVersionCode = Integer.parseInt(project.property("clientVersionCode"))
     } else {
-        clientVersionCode = 17
+        clientVersionCode = 10000
     }
     println "version number: " + clientVersionNumber + ", version code: " + clientVersionCode
 }
