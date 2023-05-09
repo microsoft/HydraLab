@@ -10,13 +10,13 @@ import java.util.Arrays;
 
 @ActiveProfiles("local")
 public class AzureOpenAIServiceClientTest extends BaseTest {
-    @Value("${app.openai.chat-completion.api-key}")
+    @Value("${app.openai.chat-completion.api-key:}")
     private String apiKey;
-    @Value("${app.openai.chat-completion.endpoint-url}")
+    @Value("${app.openai.chat-completion.endpoint-url:}")
     private String endpoint;
-    @Value("${app.openai.chat-completion.deployment}")
+    @Value("${app.openai.chat-completion.deployment:}")
     private String deployment;
-    @Value("${app.openai.chat-completion.api-version}")
+    @Value("${app.openai.chat-completion.api-version:}")
     private String apiVersion;
 
     @Test
