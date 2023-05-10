@@ -4,7 +4,7 @@
 package com.microsoft.hydralab.center.util;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.center.config.RestTemplateConfig;
+import com.microsoft.hydralab.common.util.RestTemplateConfig;
 import com.microsoft.hydralab.common.util.FileUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
-
 
 @Component
 public class AuthUtil {
@@ -135,16 +134,17 @@ public class AuthUtil {
         if (originUrl == null) {
             return getLoginUrl();
         }
+        String url = originUrl;
         if (queryString != null) {
-            originUrl = originUrl + "?" + queryString;
+            url = url + "?" + queryString;
         }
         try {
-            originUrl = URLEncoder.encode(originUrl, FileUtil.UTF_8);
+            url = URLEncoder.encode(url, FileUtil.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
         }
         String loginUrl =
-                authorizationUri + "?client_id=" + clientId + "&response_type=code&redirect_uri=" + redirectUri + "&response_mode=query&scope=" + scope + "&state=" + originUrl;
+                authorizationUri + "?client_id=" + clientId + "&response_type=code&redirect_uri=" + redirectUri + "&response_mode=query&scope=" + scope + "&state=" + url;
         return loginUrl;
     }
 

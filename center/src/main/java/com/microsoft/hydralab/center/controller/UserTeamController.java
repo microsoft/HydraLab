@@ -255,20 +255,21 @@ public class UserTeamController {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "TEAM id is wrong.");
         }
         SysUser user;
-        if (StringUtils.isEmpty(mailAddress)) {
+        String localMailAddress = mailAddress;
+        if (StringUtils.isEmpty(localMailAddress)) {
             // [All USERs] request for self default TEAM update
-            mailAddress = requestor.getMailAddress();
+            localMailAddress = requestor.getMailAddress();
             user = requestor;
         } else {
             // [Admin only] request for others' default TEAM update
-            user = sysUserService.queryUserByMailAddress(mailAddress);
+            user = sysUserService.queryUserByMailAddress(localMailAddress);
             if (user == null) {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "USER id is wrong.");
             }
         }
 
-        if (sysUserService.checkUserAdmin(requestor) || mailAddress.equals(requestor.getMailAddress())) {
-            if (!userTeamManagementService.checkUserTeamRelation(mailAddress, teamId)) {
+        if (sysUserService.checkUserAdmin(requestor) || localMailAddress.equals(requestor.getMailAddress())) {
+            if (!userTeamManagementService.checkUserTeamRelation(localMailAddress, teamId)) {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "USER isn't under the TEAM, cannot switch the default TEAM to it.");
             }
         } else {

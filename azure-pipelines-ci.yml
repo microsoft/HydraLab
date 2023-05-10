@@ -10,10 +10,11 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  version: '$(Build.BuildId)'
   # Agent VM image name
-  vmImageName: 'windows-latest'
-  fullBuild: $[ne(variables['Build.Reason'], 'PullRequest')]
+- name: vmImageName
+  value: 'windows-latest'
+- name: fullBuild
+  value: $[ne(variables['Build.Reason'], 'PullRequest')]
 
 stages:
 - stage: Build
@@ -26,7 +27,7 @@ stages:
     steps:
     - task: NodeTool@0
       inputs:
-        versionSpec: '14.x'
+        versionSpec: '18.x'
     - task: Npm@1
       inputs:
         command: 'install'
@@ -52,14 +53,18 @@ stages:
           $PSDefaultParameterValues['*:Encoding'] = 'utf8'
           $hydraVersionCode = $(Build.BuildId)
           $hydraVersion = "$(Build.SourceBranchName).$(Build.BuildId)"
+          $branchName =  "$(Build.SourceBranch)"
           
           (Get-Content agent/src/main/resources/version.properties) -Replace '1000000', "$hydraVersionCode"| Set-Content agent/src/main/resources/version.properties
-          (Get-Content agent/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content agent/src/main/resources/version.properties
-          
           (Get-Content center/src/main/resources/version.properties) -Replace '1000000', "$hydraVersionCode"| Set-Content center/src/main/resources/version.properties
-          (Get-Content center/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content center/src/main/resources/version.properties
+          
+          if($branchName -like '*Release*'){
+            (Get-Content agent/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content agent/src/main/resources/version.properties
+            (Get-Content center/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content center/src/main/resources/version.properties
+          }
+          echo "##vso[task.setvariable variable=hydraVersionCode;]$hydraVersionCode"
+          echo "##vso[task.setvariable variable=hydraVersion;]$hydraVersion"
         workingDirectory: '$(Build.Repository.LocalPath)'
-      condition: and(eq(variables.fullBuild, 'true'), contains(variables['Build.SourceBranch'], 'Release/'))
     - task: Gradle@3
       displayName: Run JUnit Test
       inputs:
@@ -89,6 +94,38 @@ stages:
         summaryFileLocation: 'build/reports/jacoco/jacocoRootReport/*.xml'
         reportDirectory: 'build/reports/jacoco/jacocoRootReport/html'
       condition: eq(variables.fullBuild, 'false')
+    - task: Gradle@2
+      displayName: Package Android client APK
+      inputs:
+        workingDirectory: 'android_client'
+        gradleWrapperFile: 'android_client/gradlew'
+        tasks: 'assembleRelease'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        options: '-PclientVersionCode=$(hydraVersionCode) -PclientVersionNumber=$(hydraVersion)'
+    - task: Gradle@2
+      displayName: Package Android client APK
+      inputs:
+        workingDirectory: 'android_client'
+        gradleWrapperFile: 'android_client/gradlew'
+        tasks: 'assembleAndroidTest'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        options: '-PclientVersionCode=$(hydraVersionCode) -PclientVersionNumber=$(hydraVersion)'
+    - task: PowerShell@2
+      displayName: Copy APK to folder for deployment
+      inputs:
+        targetType: 'inline'
+        script: |
+          cp android_client/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk common/src/main/resources/record_androidTest.apk -force
+    - task: PowerShell@2
+      displayName: Copy APK to folder for deployment
+      inputs:
+        targetType: 'inline'
+        script: |
+          cp android_client/app/build/outputs/apk/release/app-release.apk common/src/main/resources/record_release.apk -force
     - task: Gradle@2
       displayName: Build center
       inputs:
@@ -122,6 +159,22 @@ stages:
         SourceFolder: 'center/deploy_startup/'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
+      condition: eq(variables.fullBuild, 'true')    
+    - task: CopyFiles@2
+      displayName: Copy deploy center files 3
+      inputs:
+        SourceFolder: 'center/uber_image/'
+        Contents: 'hydra_lab_center_docker_db.sqlite'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
+      condition: eq(variables.fullBuild, 'true')
+    - task: CopyFiles@2
+      displayName: Copy deploy center files 4
+      inputs:
+        SourceFolder: 'common/src/main/resources/'
+        Contents: |
+          record_release.apk
+          record_androidTest.apk
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
       condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy center jar
@@ -152,6 +205,22 @@ stages:
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
       condition: eq(variables.fullBuild, 'true')
+    - task: PowerShell@2
+      displayName: Copy APK to artifact
+      inputs:
+        targetType: 'inline'
+        script: |
+          mkdir -p $(Build.ArtifactStagingDirectory)/android_client
+          cp android_client/app/build/outputs/apk/release/app-release.apk $(Build.ArtifactStagingDirectory)/android_client/app-release-$hydraVersion.apk
+      condition: eq(variables.fullBuild, 'true')
+    - task: PowerShell@2
+      displayName: Copy Mapping file to artifact
+      inputs:
+        targetType: 'inline'
+        script: |
+          mkdir -p $(Build.ArtifactStagingDirectory)/android_client
+          cp android_client/app/build/outputs/mapping/release/mapping.txt $(Build.ArtifactStagingDirectory)/android_client/
+      condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy agent jar
       inputs:
@@ -167,7 +236,16 @@ stages:
         TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
       condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
-      displayName: Copy deploy uber files
+      displayName: Copy deploy uber files 1
+      inputs:
+        SourceFolder: 'common/src/main/resources/'
+        Contents: |
+          record_release.apk
+          record_androidTest.apk
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/uber_image'
+      condition: eq(variables.fullBuild, 'true')
+    - task: CopyFiles@2
+      displayName: Copy deploy uber files 2
       inputs:
         SourceFolder: 'center/uber_image/'
         Contents: '**'

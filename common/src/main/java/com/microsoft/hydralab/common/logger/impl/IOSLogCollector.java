@@ -5,8 +5,6 @@ package com.microsoft.hydralab.common.logger.impl;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.IOSDeviceManager;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import org.slf4j.Logger;
 
@@ -22,14 +20,12 @@ public class IOSLogCollector implements LogCollector {
     private final TestRun testRun;
     private final String pkgName;
     private final Logger infoLogger;
-    IOSDeviceManager deviceManager;
     private boolean started;
     private String loggerFilePath;
     private Process logProcess;
     private boolean crashFound;
 
-    public IOSLogCollector(DeviceManager deviceManager, DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
-        this.deviceManager = (IOSDeviceManager) deviceManager;
+    public IOSLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun, Logger logger) {
         this.connectedDevice = deviceInfo;
         this.testRun = testRun;
         this.pkgName = pkgName;
@@ -86,6 +82,10 @@ public class IOSLogCollector implements LogCollector {
                 }
             }
             if (crashLines.length() > 0) {
+// TODO (Millard): Try to analysis the crash log to shorten the crash log
+                if (crashLines.length() > 2000) {
+                    crashLines = new StringBuilder(crashLines.substring(0, 2000));
+                }
                 crashFound = true;
                 testRun.setCrashStack(crashLines.toString());
                 testRun.setCrashStackId(UUID.randomUUID().toString());

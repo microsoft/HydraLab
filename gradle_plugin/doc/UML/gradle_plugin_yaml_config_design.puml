@@ -40,6 +40,8 @@ testSpec:
     frameworkType: JUNIT4
     runTimeOutSeconds: 1000
     queueTimeOutSeconds: 500
+    appVersion: 1.0.0
+    skipInstall: false
     needUninstall: true
     needClearData: true
     neededPermissions:
@@ -64,5 +66,32 @@ testSpec:
     exploration:
         maxStepCount: 100
         testRound: -1
+    inspectionStrategies:
+    - strategyType: TEST_SCHEDULE
+      interval: 5000
+      intervalUnit: MILLISECONDS
+      inspection:
+        inspectorType: INSPECTOR_ANDROID_BATTERY_INFO
+        appId: com.microsoft.hydralab.android.client
+        description: BATTERY
+    - strategyType: TEST_SCHEDULE
+      interval: 5000
+      intervalUnit: MILLISECONDS
+      inspection:
+        inspectorType: INSPECTOR_ANDROID_MEMORY_INFO
+        appId: com.microsoft.hydralab.android.client
+        description: MEMORY
+    - strategyType: TEST_LIFECYCLE
+      when:
+        - TEST_STARTED
+        - TEST_SUCCESS
+        - TEST_FAILURE
+        - TEST_RUN_STARTED
+        - TEST_RUN_FINISHED
+      inspection:
+        inspectorType: INSPECTOR_ANDROID_BATTERY_INFO
+        appId: com.microsoft.hydralab.android.client
+        description: test schedule
+    enableFailingTask: true
 
 @endyaml

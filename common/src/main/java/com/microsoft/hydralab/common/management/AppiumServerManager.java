@@ -38,7 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 
-@Service
 public class AppiumServerManager {
     public static final String EDGE_DRIVER_DOWNLOAD_URL = "https://msedgedriver.azureedge.net/";
     public static final String EDGE_DRIVER_ZIP = "edgedriver_win64.zip";
@@ -113,6 +112,10 @@ public class AppiumServerManager {
         }
 
         int wdaPort = IOSUtils.getWdaPortByUdid(udid, logger);
+        if (!IOSUtils.isWdaRunningByPort(wdaPort, logger)) {
+            IOSUtils.proxyWDA(deviceInfo, logger);
+        }
+
         DesiredCapabilities caps = new DesiredCapabilities();
 
         caps.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, 4000);
@@ -275,6 +278,7 @@ public class AppiumServerManager {
 
     public Boolean isDriverAlive(AppiumDriver driver) {
         try {
+            driver.getStatus();
             driver.getScreenshotAs(OutputType.FILE);
             return true;
         } catch (WebDriverException e) {
@@ -394,6 +398,8 @@ public class AppiumServerManager {
             } catch (Exception e) {
                 logger.info("Error happened when quitting driver for device: " + udid);
                 e.printStackTrace();
+            } finally {
+                IOSUtils.killProxyWDA(deviceInfo, logger);
             }
         }
         iOSDrivers.remove(udid);

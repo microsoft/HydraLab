@@ -19,7 +19,7 @@ public class SASData implements AccessToken {
     private String token;
     private String endpoint;
     private OffsetDateTime expiredTime;
-    private int fileLimitDay;
+    private int fileExpiryDay;
     private String cdnUrl;
     private SASPermission sasPermission;
 

@@ -5,12 +5,16 @@ package com.microsoft.hydralab.agent.runner.espresso;
 
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.testrunner.InstrumentationResultParser;
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
+import com.microsoft.hydralab.common.entity.agent.EnvCapability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -21,28 +25,38 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class EspressoRunner extends TestRunner {
+    private static final int MAJOR_ADB_VERSION = 1;
+    private static final int MINOR_ADB_VERSION = -1;
     final ADBOperateUtil adbOperateUtil;
 
-    public EspressoRunner(DeviceManager deviceManager, TestTaskRunCallback testTaskRunCallback,
-                          PerformanceTestManagementService performanceTestManagementService,
+    public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                          TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService,
                           ADBOperateUtil adbOperateUtil) {
-        super(deviceManager, testTaskRunCallback, performanceTestManagementService);
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 
     @Override
-    protected void run(DeviceInfo deviceInfo, TestTask testTask, TestRun testRun) throws Exception {
+    protected List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
+        return List.of(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.adb, MAJOR_ADB_VERSION, MINOR_ADB_VERSION));
+    }
+
+    @Override
+    protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
         InstrumentationResultParser instrumentationResultParser = null;
         Logger reportLogger = testRun.getLogger();
 
         try {
             /** xml report: parse listener */
             reportLogger.info("Start xml report: parse listener");
-            EspressoTestInfoProcessorListener listener = new EspressoTestInfoProcessorListener(deviceManager,
-                    adbOperateUtil, deviceInfo, testRun, testTask.getPkgName(), performanceTestManagementService);
+            EspressoTestInfoProcessorListener listener =
+                    new EspressoTestInfoProcessorListener(agentManagementService,
+                            adbOperateUtil, testRunDevice, testRun, testTask.getPkgName(),
+                            testRunDeviceOrchestrator, performanceTestManagementService);
             instrumentationResultParser =
                     new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
                         @Override
@@ -57,7 +71,7 @@ public class EspressoRunner extends TestRunner {
             listener.startRecording(testTask.getTimeOutSecond());
             String command = buildCommand(testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(),
                     testTask.getTestScope(), testTask.getInstrumentationArgs());
-            String result = startInstrument(deviceInfo, reportLogger,
+            String result = startInstrument(testRunDevice.getDeviceInfo(), reportLogger,
                     instrumentationResultParser, testTask.getTimeOutSecond(), command);
             if (Const.TaskResult.ERROR_DEVICE_OFFLINE.equals(result)) {
                 testTaskRunCallback.onDeviceOffline(testTask);
@@ -67,10 +81,11 @@ public class EspressoRunner extends TestRunner {
 
             /** set paths */
             String absoluteReportPath = listener.getAbsoluteReportPath();
-            testRun.setTestXmlReportPath(deviceManager.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+            testRun.setTestXmlReportPath(
+                    agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
             File gifFile = listener.getGifFile();
             if (gifFile.exists() && gifFile.length() > 0) {
-                testRun.setTestGifPath(deviceManager.getTestBaseRelPathInUrl(gifFile));
+                testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
             }
 
         } finally {
@@ -101,7 +116,7 @@ public class EspressoRunner extends TestRunner {
                 logger.info(">> adb -s {} shell {}", deviceInfo.getSerialNum(),
                         LogUtils.scrubSensitiveArgs(command));
             }
-            adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, receiver, testTimeOut);
+            adbOperateUtil.executeShellCommandOnDevice(deviceInfo, command, receiver, testTimeOut, -1);
             return Const.TaskResult.SUCCESS;
         } catch (Exception e) {
             if (logger != null) {

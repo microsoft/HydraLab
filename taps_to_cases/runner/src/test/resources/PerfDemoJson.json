@@ -1,0 +1,49 @@
+{
+  "drivers": [
+    {
+      "id": "windows",
+      "platform": "windows",
+      "setup": {
+        "launcherApp": "Microsoft.WindowsCalculator_8wekyb3d8bbwe"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "description": "Battery Test",
+      "driverId": "windows",
+      "action": {
+        "actionType": "inspectBatteryUsage",
+        "arguments": {
+          "targetApp": "Microsoft.WindowsCalculator_8wekyb3d8bbwe",
+          "description": "abc"
+        }
+      },
+      "isOption": true
+    },
+    {
+      "description": "Battery Test 2",
+      "driverId": "windows",
+      "action": {
+        "actionType": "inspectBatteryUsage",
+        "arguments": {
+          "targetApp": "Microsoft.WindowsCalculator_8wekyb3d8bbwe",
+          "description": "1234"
+        }
+      },
+      "isOption": true
+    },
+    {
+      "description": "Memory Test",
+      "driverId": "windows",
+      "action": {
+        "actionType": "inspectMemoryUsage",
+        "arguments": {
+          "targetApp": "Microsoft.WindowsCalculator_8wekyb3d8bbwe",
+          "description": "def"
+        }
+      },
+      "isOption": true
+    }
+  ]
+}

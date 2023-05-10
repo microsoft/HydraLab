@@ -21,7 +21,6 @@ class DeviceGroupServiceTest extends BaseTest {
     String groupName = "GROUP";
     String deviceSerial = "DEVICE";
 
-
     @Test
     void testDeviceGroupManagement() {
         SysTeam defaultTeam = sysTeamService.getOrCreateDefaultTeam(Const.DefaultTeam.DEFAULT_TEAM_NAME);

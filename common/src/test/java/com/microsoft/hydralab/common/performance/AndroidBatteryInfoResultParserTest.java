@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.performance;
 
-import com.microsoft.hydralab.performance.Entity.AndroidBatteryInfo;
 import com.microsoft.hydralab.performance.PerformanceInspection;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import com.microsoft.hydralab.performance.entity.AndroidBatteryInfo;
 import com.microsoft.hydralab.performance.parsers.AndroidBatteryInfoResultParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ public class AndroidBatteryInfoResultParserTest {
     }
 
     @Test
-    public void testParseWithA12_ReturnNull() {
+    public void testParseWithA13_ReturnNull() {
         File batteryFile = new File(BATTERY_A13_FILE_PATH);
         PerformanceTestResult parsedResult = new AndroidBatteryInfoResultParser()
                 .parse(createPerformanceTestResultForTest(batteryFile));
@@ -39,7 +39,7 @@ public class AndroidBatteryInfoResultParserTest {
 
         Assertions.assertNotNull(parsedResult);
         Assertions.assertEquals(0.000235f, summary.getAppUsage());
-        Assertions.assertEquals(5.3397503f, summary.getTotal());
+        Assertions.assertEquals(6.98975f, summary.getTotal());
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.t2c.runner.controller;
 
+import com.microsoft.hydralab.t2c.runner.RobotUtils;
 import io.appium.java_client.windows.WindowsDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -20,8 +21,8 @@ public class EdgeDriverController extends BaseDriverController {
     EdgeDriver edgeDriver;
     WindowsDriver windowsDriver;
 
-    public EdgeDriverController(WindowsDriver windowsDriver, EdgeDriver edgeDriver, Logger logger) {
-        super(windowsDriver, logger);
+    public EdgeDriverController(WindowsDriver windowsDriver, EdgeDriver edgeDriver, String udid, Logger logger) {
+        super(windowsDriver, udid, logger);
         this.edgeDriver = edgeDriver;
         this.windowsDriver = windowsDriver;
     }
@@ -65,4 +66,19 @@ public class EdgeDriverController extends BaseDriverController {
         }
     }
 
+    @Override
+    public void input(WebElement element, String content) {
+        click(element);
+        RobotUtils.keyPressString(content);
+    }
+
+    @Override
+    public void inspectMemoryUsage(String targetApp, String description, boolean isReset) {
+        // Nothing need to do for Edge Driver
+    }
+
+    @Override
+    public void inspectBatteryUsage(String targetApp, String description, boolean isReset) {
+        // Nothing need to do for Edge Driver
+    }
 }

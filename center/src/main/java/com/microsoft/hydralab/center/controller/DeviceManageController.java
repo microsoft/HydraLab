@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,8 +71,7 @@ public class DeviceManageController {
         }
         deviceGroupList = deviceGroupList.stream()
                 .filter(agentDeviceGroup -> agentDeviceGroup.getDevices() != null && agentDeviceGroup.getDevices().size() > 0)
-                .sorted(Comparator.comparing(AgentDeviceGroup::getAgentDeviceType)
-                        .thenComparing((a, b) -> b.getDevices().size() - a.getDevices().size()))
+                .sorted((a, b) -> b.getDevices().size() - a.getDevices().size())
                 .collect(Collectors.toList());
 
         return Result.ok(deviceGroupList);
@@ -85,8 +83,7 @@ public class DeviceManageController {
         deviceAgentManagementService.requestAllAgentDeviceListUpdate();
         List<AgentDeviceGroup> deviceGroupList = deviceAgentManagementService.getAgentDeviceGroups();
         deviceGroupList = deviceGroupList.stream()
-                .sorted(Comparator.comparing(AgentDeviceGroup::getAgentDeviceType)
-                        .thenComparing((a, b) -> b.getDevices().size() - a.getDevices().size()))
+                .sorted((a, b) -> b.getDevices().size() - a.getDevices().size())
                 .collect(Collectors.toList());
         return Result.ok(deviceGroupList);
     }
@@ -146,6 +143,7 @@ public class DeviceManageController {
      * 3) admin of the TEAM that group is in
      */
     @PostMapping(value = "/api/device/updateDeviceScope", produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("IllegalCatch")
     public Result updateDeviceScope(@CurrentSecurityContext SysUser requestor,
                                     @RequestParam(value = "deviceSerial") String deviceSerial,
                                     @RequestParam(value = "isPrivate") Boolean isPrivate) {

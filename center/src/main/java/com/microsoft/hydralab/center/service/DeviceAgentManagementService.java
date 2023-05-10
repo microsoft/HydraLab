@@ -26,6 +26,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -37,6 +38,7 @@ import com.microsoft.hydralab.t2c.runner.DriverInfo;
 import com.microsoft.hydralab.t2c.runner.T2CJsonParser;
 import com.microsoft.hydralab.t2c.runner.TestInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -150,7 +152,6 @@ public class DeviceAgentManagementService {
     private void sendAgentMetadata(Session session, AgentUser agentUser, String signalName) {
         agentUser.setBatteryStrategy(AgentUser.BatteryStrategy.valueOf(batteryStrategy));
         AgentMetadata data = new AgentMetadata();
-
         data.setStorageType(storageType);
         data.setAccessToken(storageTokenManageService.generateWriteToken(agentUser.getId()));
         data.setAgentUser(agentUser);
@@ -167,52 +168,63 @@ public class DeviceAgentManagementService {
         sendMessageToSession(session, Message.auth());
     }
 
-    public void onMessage(Message message, Session session) {
+    public void onMessage(Message message, @NotNull Session session) throws IOException {
         AgentSessionInfo savedSession = agentSessionMap.get(session.getId());
-        if (savedSession == null) {
-            AgentUser agentUser = searchQualifiedAgent(message);
-            if (agentUser == null) {
-                try {
-                    session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Not permitted"));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                if (agentDeviceGroups.get(agentUser.getId()) != null && checkIsSessionAliveByAgentId(agentUser.getId())) {
-                    try {
-                        session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used"));
-                        return;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                agentSessionMap.put(session.getId(), new AgentSessionInfo(session, agentUser));
-                metricUtil.registerAgentAliveStatusMetric(agentUser);
-
-                log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
-
-                //check is not agent update success
-                AgentUpdateTask tempTask = agentUpdateMap.get(agentUser.getId());
-                if (tempTask != null) {
-                    log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
-
-                    AgentUpdateTask.UpdateMsg updateMag = null;
-                    String agentMessage = "Agent Reconnected After Updating.Version is " + agentUser.getVersionName();
-                    if (agentUser.getVersionName() == null || !agentUser.getVersionName().equals(tempTask.getTargetVersionName())) {
-                        tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_FAIL);
-                        updateMag = new AgentUpdateTask.UpdateMsg(false, agentMessage, agentUser.toString());
-                    } else {
-                        tempTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_SUCCESS);
-                        updateMag = new AgentUpdateTask.UpdateMsg(true, agentMessage, "");
-                    }
-
-                    tempTask.getUpdateMsgs().add(updateMag);
-                }
-                sendAgentMetadata(session, agentUser, Const.Path.AGENT_INIT);
-            }
-        } else {
+        if (savedSession != null) {
             handleQualifiedAgentMessage(message, savedSession);
+            return;
         }
+
+        AgentUser agentUser = searchQualifiedAgent(message);
+        if (agentUser == null) {
+            log.warn("Session {} is not registered agent, associated agent {}", session.getId(), message.getBody());
+            session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Not permitted"));
+            return;
+        }
+
+        if (agentDeviceGroups.get(agentUser.getId()) != null && checkIsSessionAliveByAgentId(agentUser.getId())) {
+            log.warn("Session {} is already connected under another agent, associated agent {}", session.getId(), message.getBody());
+            session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used"));
+            return;
+        }
+
+        agentSessionMap.put(session.getId(), new AgentSessionInfo(session, agentUser));
+        metricUtil.registerAgentAliveStatusMetric(agentUser);
+
+        log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
+
+        checkAgentUpdateStatus(message, session, agentUser);
+
+        sendAgentMetadata(session, agentUser, Const.Path.AGENT_INIT);
+    }
+
+    /**
+     * check is not agent update success
+     *
+     * @param message
+     * @param session
+     * @param agentUser
+     */
+    private void checkAgentUpdateStatus(Message message, Session session, AgentUser agentUser) {
+        AgentUpdateTask agentUpdateTask = agentUpdateMap.get(agentUser.getId());
+        if (agentUpdateTask == null) {
+            return;
+        }
+
+        log.info("Session {} is saved to map as registered agent, associated agent {}", session.getId(), message.getBody());
+
+        AgentUpdateTask.UpdateMsg updateMag = null;
+        String agentMessage = "Agent Reconnected After Updating.Version is " + agentUser.getVersionName();
+
+        if (agentUser.getVersionName() == null || !agentUser.getVersionName().equals(agentUpdateTask.getTargetVersionName())) {
+            agentUpdateTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_FAIL);
+            updateMag = new AgentUpdateTask.UpdateMsg(false, agentMessage, agentUser.toString());
+        } else {
+            agentUpdateTask.setUpdateStatus(AgentUpdateTask.TaskConst.STATUS_SUCCESS);
+            updateMag = new AgentUpdateTask.UpdateMsg(true, agentMessage, "");
+        }
+
+        agentUpdateTask.getUpdateMsgs().add(updateMag);
     }
 
     private void handleQualifiedAgentMessage(Message message, AgentSessionInfo savedSession) {
@@ -269,7 +281,10 @@ public class DeviceAgentManagementService {
                     if (isFinished) {
                         List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
                         for (TestRun deviceTestResult : deviceTestResults) {
-                            updateDeviceStatus(deviceTestResult.getDeviceSerialNumber(), DeviceInfo.ONLINE, null);
+                            String[] identifiers = deviceTestResult.getDeviceSerialNumber().split(",");
+                            for (String identifier : identifiers) {
+                                updateDeviceStatus(identifier, DeviceInfo.ONLINE, null);
+                            }
                         }
                         //run the task saved in queue
                         testTaskService.runTask();
@@ -331,7 +346,6 @@ public class DeviceAgentManagementService {
                     DeviceInfo device = deviceListMap.get(deviceInfo.getSerialNum());
                     device.setStatus(DeviceInfo.ONLINE);
                     deviceInfo.setRunningTaskId(null);
-                    break;
                 }
             }
         }
@@ -585,12 +599,12 @@ public class DeviceAgentManagementService {
         if (!user.getSecret().equals(agentUser.getSecret()) || !user.getName().equals(agentUser.getName())) {
             return null;
         }
-        user.setDeviceType(agentUser.getDeviceType());
         user.setHostname(agentUser.getHostname());
         user.setIp(agentUser.getIp());
         user.setVersionName(agentUser.getVersionName());
         user.setVersionCode(agentUser.getVersionCode());
         user.setSecret(null);
+        user.setFunctionAvailabilities(agentUser.getFunctionAvailabilities());
         return user;
     }
 
@@ -673,14 +687,10 @@ public class DeviceAgentManagementService {
         Set<String> keys = agentDeviceGroups.keySet();
         for (String key : keys) {
             AgentDeviceGroup agent = agentDeviceGroups.get(key);
-            if (agent.getAgentDeviceType() != AgentUser.DeviceType.WINDOWS) {
-                continue;
+            List<DeviceInfo> windowsDevices = agent.getDevices().stream().filter(deviceInfo -> DeviceType.WINDOWS.name().equals(deviceInfo.getType())).collect(Collectors.toList());
+            if (windowsDevices.size() == 1 && windowsDevices.get(0).isAlive()) {
+                res.add(agent);
             }
-            List<DeviceInfo> devices = agent.getDevices();
-            if (devices.size() != 1 || !devices.get(0).isAlive()) {
-                continue;
-            }
-            res.add(agent);
         }
         return new ArrayList<>(res);
     }
@@ -705,9 +715,9 @@ public class DeviceAgentManagementService {
     }
 
     private JSONObject runT2CTest(TestTaskSpec testTaskSpec) {
-        // TODO: upgrade to assign task to agent and check the available device count on the agent
         JSONObject result = new JSONObject();
         StorageFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
+        Map<String, Integer> deviceCountMap = new HashMap<>();
         if (testAppFileInfo != null) {
             File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
             TestInfo testInfo;
@@ -720,50 +730,63 @@ public class DeviceAgentManagementService {
                 testApkFile.delete();
             }
             Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
-
-            int androidCount = 0, edgeCount = 0;
-
+            int edgeCount = 0;
             for (DriverInfo driverInfo : testInfo.getDrivers()) {
-                if (driverInfo.getPlatform().equalsIgnoreCase("android")) {
-                    androidCount++;
+                if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.ANDROID.name())) {
+                    deviceCountMap.put(DeviceType.ANDROID.name(), deviceCountMap.getOrDefault(DeviceType.ANDROID.name(), 0) + 1);
                 }
                 if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
                     edgeCount++;
                 }
-                if (driverInfo.getPlatform().equalsIgnoreCase("ios")) {
-                    throw new RuntimeException("No iOS device connected to this agent");
+                if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.IOS.name())) {
+                    deviceCountMap.put(DeviceType.IOS.name(), deviceCountMap.getOrDefault(DeviceType.IOS.name(), 0) + 1);
+                }
+                if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.WINDOWS.name())) {
+                    deviceCountMap.put(DeviceType.WINDOWS.name(), deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) + 1);
                 }
             }
-            Assert.isTrue(androidCount <= 1, "No enough Android device to run this test.");
+            Assert.isTrue(deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) <= 1, "No enough Windows device to run this test.");
             Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
+            if (deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) == 0 && edgeCount == 1) {
+                deviceCountMap.put(DeviceType.WINDOWS.name(), 1);
+            }
         }
 
-        // Todo: leveraged current E2E agent, need to update to agent level test
-        AgentDeviceGroup agentDeviceGroup = agentDeviceGroups.get(testTaskSpec.deviceIdentifier);
-        Assert.notNull(agentDeviceGroup, "Error identifier or agent offline");
-        List<DeviceInfo> devices = agentDeviceGroup.getDevices();
-        Assert.notNull(devices, "Agent has no device");
-        Assert.isTrue(devices.size() == 1, "The number of device is not suitable");
-        DeviceInfo device = devices.get(0);
-        Assert.isTrue(device.isAlive(), "Device offline");
-
-        if (device.isTesting()) {
-            return result;
+        String[] deviceIdentifiers = testTaskSpec.deviceIdentifier.split(",");
+        String agentId = null;
+        List<DeviceInfo> devices = new ArrayList<>();
+        for (String tempIdentifier : deviceIdentifiers) {
+            DeviceInfo device = deviceListMap.get(tempIdentifier);
+            Assert.notNull(device, "error deviceIdentifier!");
+            if (agentId == null) {
+                agentId = device.getAgentId();
+            }
+            Assert.isTrue(agentId.equals(device.getAgentId()), "Device not in the same agent");
+            Assert.isTrue(device.isAlive(), "Device offline");
+            if (device.isTesting()) {
+                return result;
+            }
+            deviceCountMap.put(device.getType(), deviceCountMap.getOrDefault(device.getType(), 0) - 1);
+            devices.add(device);
         }
-
+        for (Map.Entry<String, Integer> entry : deviceCountMap.entrySet()) {
+            Assert.isTrue(entry.getValue() <= 0, "No enough " + entry.getKey() + " device to run this test.");
+        }
         Message message = new Message();
         message.setBody(testTaskSpec);
         message.setPath(Const.Path.TEST_TASK_RUN);
 
-        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(testTaskSpec.deviceIdentifier);
+        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentId);
         Assert.notNull(agentSessionInfoByAgentId, "Device/Agent Offline!");
         if (isAgentUpdating(agentSessionInfoByAgentId.agentUser.getId())) {
             return result;
         }
-        updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
-        testTaskSpec.agentIds.add(testTaskSpec.deviceIdentifier);
+        for (DeviceInfo device : devices) {
+            updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
+        }
+        testTaskSpec.agentIds.add(agentId);
         sendMessageToSession(agentSessionInfoByAgentId.session, message);
-        result.put(Const.Param.TEST_DEVICE_SN, device.getSerialNum());
+        result.put(Const.Param.TEST_DEVICE_SN, testTaskSpec.deviceIdentifier);
 
         return result;
     }
@@ -771,31 +794,37 @@ public class DeviceAgentManagementService {
     private JSONObject runAppiumTestTask(TestTaskSpec testTaskSpec) {
         JSONObject result = new JSONObject();
 
-        AgentDeviceGroup agentDeviceGroup = agentDeviceGroups.get(testTaskSpec.deviceIdentifier);
-        Assert.notNull(agentDeviceGroup, "Error identifier or agent offline");
-        List<DeviceInfo> devices = agentDeviceGroup.getDevices();
-        Assert.notNull(devices, "Agent has no device");
-        Assert.isTrue(devices.size() == 1, "The number of device is not suitable");
-        DeviceInfo device = devices.get(0);
-        Assert.isTrue(device.isAlive(), "Device offline");
-
-        if (device.isTesting()) {
-            return result;
+        String[] deviceIdentifiers = testTaskSpec.deviceIdentifier.split(",");
+        String agentId = null;
+        List<DeviceInfo> devices = new ArrayList<>();
+        for (String tempIdentifier : deviceIdentifiers) {
+            DeviceInfo device = deviceListMap.get(tempIdentifier);
+            Assert.notNull(device, "error deviceIdentifier!");
+            if (agentId == null) {
+                agentId = device.getAgentId();
+            }
+            Assert.isTrue(agentId.equals(device.getAgentId()), "Device not in the same agent");
+            Assert.isTrue(device.isAlive(), "Device offline");
+            if (device.isTesting()) {
+                return result;
+            }
+            devices.add(device);
         }
-
         Message message = new Message();
         message.setBody(testTaskSpec);
         message.setPath(Const.Path.TEST_TASK_RUN);
 
-        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(testTaskSpec.deviceIdentifier);
+        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentId);
         Assert.notNull(agentSessionInfoByAgentId, "Device/Agent Offline!");
         if (isAgentUpdating(agentSessionInfoByAgentId.agentUser.getId())) {
             return result;
         }
-        updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
-        testTaskSpec.agentIds.add(testTaskSpec.deviceIdentifier);
+        for (DeviceInfo device : devices) {
+            updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
+        }
+        testTaskSpec.agentIds.add(agentId);
         sendMessageToSession(agentSessionInfoByAgentId.session, message);
-        result.put(Const.Param.TEST_DEVICE_SN, device.getSerialNum());
+        result.put(Const.Param.TEST_DEVICE_SN, testTaskSpec.deviceIdentifier);
 
         return result;
     }

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -9,10 +10,22 @@ import com.microsoft.hydralab.performance.InspectionStrategy;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.File;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,9 +59,11 @@ public class TestTask implements Serializable {
     private String testCommitMsg;
     private String testErrorMsg;
     private String pipelineLink;
-    @Column(nullable = true)
-    private Boolean requireReinstall = false;
-    private Boolean requireClearData = false;
+    private Boolean skipInstall = false;
+    @Column(name = "require_reinstall")
+    private Boolean needUninstall = true;
+    @Column(name = "require_clear_data")
+    private Boolean needClearData = true;
     private String type = TestType.API;
     private String runningType = TestRunningType.INSTRUMENTATION;
     private String status = TestStatus.RUNNING;
@@ -62,6 +77,8 @@ public class TestTask implements Serializable {
     private String reportImagePath;
     @Transient
     private String deviceIdentifier;
+    @Transient
+    private String groupDevices;
     @Transient
     private String groupTestType;
     @Transient
@@ -106,6 +123,7 @@ public class TestTask implements Serializable {
         testTask.setId(testTaskSpec.testTaskId);
         testTask.setTestSuite(testTaskSpec.testSuiteClass);
         testTask.setDeviceIdentifier(testTaskSpec.deviceIdentifier);
+        testTask.setGroupDevices(testTaskSpec.groupDevices);
         testTask.setGroupTestType(testTaskSpec.groupTestType);
         testTask.setAccessKey(testTaskSpec.accessKey);
         testTask.setTestCommitId(testTaskSpec.testFileSet.getCommitId());
@@ -116,8 +134,7 @@ public class TestTask implements Serializable {
         testTask.setDeviceActions(testTaskSpec.deviceActions);
         if (testTaskSpec.instrumentationArgs != null) {
             testTask.setInstrumentationArgs(testTaskSpec.instrumentationArgs);
-        }
-        else {
+        } else {
             testTask.setInstrumentationArgs(testTaskSpec.testRunArgs);
         }
         testTask.setFileSetId(testTaskSpec.fileSetId);
@@ -128,8 +145,9 @@ public class TestTask implements Serializable {
         TestFileSet testFileSet = new TestFileSet();
         BeanUtil.copyProperties(testTaskSpec.testFileSet, testFileSet);
         testTask.setTestFileSet(testFileSet);
-        testTask.setRequireReinstall(testTaskSpec.needUninstall);
-        testTask.setRequireClearData(testTaskSpec.needClearData);
+        testTask.setSkipInstall(testTaskSpec.skipInstall);
+        testTask.setNeedUninstall(testTaskSpec.needUninstall);
+        testTask.setNeedClearData(testTaskSpec.needClearData);
         if (StringUtils.isNotBlank(testTaskSpec.type)) {
             testTask.setType(testTaskSpec.type);
         }
@@ -166,8 +184,9 @@ public class TestTask implements Serializable {
         BeanUtil.copyProperties(testTask.getTestFileSet(), testFileSet);
         testTaskSpec.testFileSet = testFileSet;
         testTaskSpec.testTimeOutSec = testTask.getTimeOutSecond();
-        testTaskSpec.needUninstall = testTask.getRequireReinstall();
-        testTaskSpec.needClearData = testTask.getRequireClearData();
+        testTaskSpec.skipInstall = testTask.getSkipInstall();
+        testTaskSpec.needUninstall = testTask.getNeedUninstall();
+        testTaskSpec.needClearData = testTask.getNeedClearData();
         testTaskSpec.neededPermissions = testTask.getNeededPermissions();
         testTaskSpec.deviceActions = testTask.getDeviceActions();
         testTaskSpec.instrumentationArgs = testTask.getInstrumentationArgs();
@@ -190,8 +209,8 @@ public class TestTask implements Serializable {
         testTask.setType(null);
         testTask.setStartDate(null);
         testTask.setStatus(null);
-        testTask.setRequireReinstall(null);
-        testTask.setRequireClearData(null);
+        testTask.setNeedUninstall(null);
+        testTask.setNeedClearData(null);
 
         return testTask;
     }
@@ -292,6 +311,7 @@ public class TestTask implements Serializable {
         String MONKEY_TEST = "MONKEY";
         String APPIUM_MONKEY_TEST = "APPIUM_MONKEY";
         String T2C_JSON_TEST = "T2C_JSON";
+        String XCTEST = "XCTEST";
     }
 
     public interface TestFrameworkType {

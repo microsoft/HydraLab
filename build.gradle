@@ -86,22 +86,24 @@ task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
     }
 }
 
-task packageMacInstaller(type: Zip) {
+task packageMacInstaller(type: Zip, dependsOn: ':agent:bootJar') {
     from 'agent/agent_installer/MacOS/iOS'
-    archiveName 'Hydra_Agent_Installer_Mac.zip'
+    from 'agent/build/libs'
+    archiveName 'HydraLab_Agent_Installer_Mac.zip'
     destinationDir file('build/installer')
 }
 
-task packageWindowsInstaller(type: Zip) {
+task packageWindowsInstaller(type: Zip, dependsOn: ':agent:bootJar') {
     from 'agent/agent_installer/Windows'
-    archiveName 'Hydra_Agent_Installer_Windows.zip'
+    from 'agent/build/libs'
+    archiveName 'HydraLab_Agent_Installer_Windows.zip'
     destinationDir file('build/installer')
 }
 import com.microsoft.hydralab.compile.UMLImageGenerator
 
 task generateUMLImage(group: 'documentation') {
     doFirst {
-        def scanningDirList = ['agent/doc/UML', 'common/doc/UML', 'gradle_plugin/doc/UML']
+        def scanningDirList = ['agent/doc/UML', 'common/doc/UML', 'gradle_plugin/doc/UML', 'docs/UML']
         def outputDir = new File(projectDir, 'docs/images/UML')
 
         def generator = new UMLImageGenerator()

@@ -13,17 +13,21 @@ import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
-import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,9 +42,6 @@ import java.net.UnknownHostException;
 @Service("WebSocketClient")
 @Slf4j
 public class AgentWebSocketClientService implements TestTaskRunCallback {
-    @SuppressWarnings("visibilitymodifier")
-    @Value("${app.registry.agent-type}")
-    public int agentTypeValue;
     @Value("${app.registry.name}")
     String agentName;
     @Value("${app.registry.id}")
@@ -72,6 +73,9 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     private boolean isPrometheusEnabled;
     @Autowired(required = false)
     private MetricPushGateway pushGateway;
+    @Resource
+    private AgentManagementService agentManagementService;
+    boolean isAgentInit = false;
 
     public void onMessage(Message message) {
         log.info("onMessage Receive bytes message {}", message);
@@ -88,11 +92,14 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                 heartbeatResponse(message);
 
                 /** Sequence shouldn't be changed.
-                 * [agentUser.setTeamName -> meterRegistry.config().commonTags -> deviceManager.init
+                 * [agentUser.setTeamName -> meterRegistry.config().commonTags -> deviceDriver.init
                  *  -> (deviceControlService.provideDeviceList + deviceStatbilityMonitor.addDeviceMetricRegistration)].
                  */
-                registerAgentMetrics();
-                deviceControlService.deviceManagerInit();
+                if (!isAgentInit) {
+                    registerAgentMetrics();
+                    deviceControlService.deviceDriverInit();
+                    isAgentInit = true;
+                }
                 deviceControlService.provideDeviceList(agentUser.getBatteryStrategy());
                 return;
             case Const.Path.HEARTBEAT:
@@ -143,21 +150,11 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                 testTaskEngineService.cancelTestTaskById(data.getString(Const.AgentConfig.TASK_ID_PARAM));
                 break;
             case Const.Path.TEST_TASK_RUN:
-                try {
-                    if (!(message.getBody() instanceof TestTaskSpec)) {
-                        break;
-                    }
-                    TestTask testTask = testTaskEngineService.runTestTask((TestTaskSpec) message.getBody());
-                    if (testTask == null) {
-                        response = Message.error(message, 404, "No device meet the requirement");
-                    } else {
-                        response = Message.response(message, testTask);
-                        response.setPath(Const.Path.TEST_TASK_UPDATE);
-                    }
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                    response = Message.error(message, 500, e.getMessage() + e.getClass().getName());
+                if (!(message.getBody() instanceof TestTaskSpec)) {
+                    response = Message.error(message, 400, "Invalid request body");
+                    break;
                 }
+                response = handleTestTaskRun(message);
                 break;
             default:
                 break;
@@ -166,6 +163,29 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
             return;
         }
         send(response);
+    }
+
+    @NotNull
+    private Message handleTestTaskRun(Message message) {
+        Message response;
+        try {
+            TestTaskSpec testTaskSpec = (TestTaskSpec) message.getBody();
+            testTaskSpec.updateWithDefaultValues();
+            log.info("TestTaskSpec: {}", testTaskSpec);
+            TestTask testTask = testTaskEngineService.runTestTask(TestTask.convertToTestTask(testTaskSpec));
+            if (testTask.getTestDevicesCount() <= 0) {
+                response = Message.error(message, 404, "No device meet the requirement on this agent: " + testTaskSpec);
+            } else {
+                response = Message.response(message, testTask);
+                response.setPath(Const.Path.TEST_TASK_UPDATE);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            response = Message.error(message, 500,
+                    String.format("%s\n%s\n%s", e.getClass().getName(), e.getMessage(),
+                            ExceptionUtils.getStackTrace(e)));
+        }
+        return response;
     }
 
     private void heartbeatResponse(Message message) {
@@ -215,7 +235,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         agentUser.setOs(System.getProperties().getProperty("os.name"));
         agentUser.setVersionName(versionName);
         agentUser.setVersionCode(versionCode);
-        agentUser.setDeviceType(agentTypeValue);
+        agentUser.setFunctionAvailabilities(agentManagementService.getFunctionAvailabilities());
         responseAuth.setBody(agentUser);
         responseAuth.setPath(message.getPath());
         send(responseAuth);
@@ -242,7 +262,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, DeviceInfo deviceControl, Logger logger, TestRun result) {
+    public void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result) {
 
     }
 

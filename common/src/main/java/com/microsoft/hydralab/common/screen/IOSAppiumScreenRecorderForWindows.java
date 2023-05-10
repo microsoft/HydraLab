@@ -2,16 +2,20 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.screen;
 
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.management.DeviceManager;
+import com.microsoft.hydralab.common.management.device.DeviceDriver;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -22,9 +26,10 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
     private static File scriptFile;
     private final Timer timer = new Timer();
     private Process recordProcess;
+    private String destPath;
 
-    public IOSAppiumScreenRecorderForWindows(DeviceManager deviceManager, DeviceInfo info, String recordDir) {
-        super(deviceManager, info, recordDir);
+    public IOSAppiumScreenRecorderForWindows(DeviceDriver deviceDriver, DeviceInfo info, String recordDir) {
+        super(deviceDriver, info, recordDir);
     }
 
     public static void copyScript(File testBaseDir) {
@@ -44,7 +49,7 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
     @Override
     public void startRecord(int maxTimeInSecond) {
         int timeout = maxTimeInSecond > 0 ? maxTimeInSecond : DEFAULT_TIMEOUT_IN_SECOND;
-        String destPath = new File(recordDir, Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();
+        destPath = new File(recordDir, Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();
         try {
             iosDriver.startRecordingScreen();
             recordProcess = ShellUtils.execLocalCommand("ffmpeg -f mjpeg -i http://127.0.0.1:" + IOSUtils.getMjpegServerPortByUdid(deviceInfo.getSerialNum(), CLASS_LOGGER, deviceInfo) + " -vf scale=720:360 -vcodec h264 -y " + destPath, false, CLASS_LOGGER);
@@ -64,14 +69,14 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
     }
 
     @Override
-    public boolean finishRecording() {
+    public String finishRecording() {
         timer.cancel();
         return stopRecord();
     }
 
-    private boolean stopRecord() {
+    private String stopRecord() {
         if (!isStarted) {
-            return false;
+            return null;
         }
         try {
             // wait 5s to record more info after testing
@@ -82,6 +87,7 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
                 if (recordProcess != null) {
                     long pid = recordProcess.pid();
                     ShellUtils.execLocalCommand(POWER_SHELL_PATH + " -Command " + scriptFile.getPath() + " " + pid, CLASS_LOGGER);
+                    recordProcess.waitFor();
                     recordProcess = null;
                 }
                 isStarted = false;
@@ -90,9 +96,9 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
             System.out.println("-------------------------------Fail to Stop recording, Ignore it to unblocking the following tests-----------------------------");
             e.printStackTrace();
             System.out.println("-------------------------------------------------------Ignore End--------------------------------------------------------------");
-            return false;
+            return null;
         }
-        return true;
+        return destPath;
     }
 
 }

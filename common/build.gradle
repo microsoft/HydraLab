@@ -26,7 +26,6 @@ dependencies {
     testCompile 'io.github.cdimascio:java-dotenv:5.1.3'
 
     compile project(":sdk")
-    compile project(":taps_to_cases:runner")
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootWebVersion)
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springBootWebVersion)
     compileOnly 'org.projectlombok:lombok:1.18.20'

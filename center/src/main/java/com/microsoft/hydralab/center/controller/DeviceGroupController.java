@@ -54,7 +54,7 @@ public class DeviceGroupController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
-        if (!userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+        if (!userTeamManagementService.checkRequestorTeamAdmin(requestor, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "User doesn't belong to this Team");
         }
         SysTeam team = sysTeamService.queryTeamById(teamId);
@@ -83,6 +83,7 @@ public class DeviceGroupController {
      * 3) admin of the TEAM that group is in
      */
     @GetMapping(value = {"/api/deviceGroup/delete"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("IllegalCatch")
     public Result deleteGroup(@CurrentSecurityContext SysUser requestor,
                               @QueryParam(value = "groupName") String groupName) {
         try {
@@ -107,6 +108,7 @@ public class DeviceGroupController {
      * 3) admin of the TEAM that group is in
      */
     @GetMapping(value = {"/api/deviceGroup/enableVerify"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("IllegalCatch")
     public Result<DeviceGroup> enableGroup(@CurrentSecurityContext SysUser requestor,
                                            @QueryParam(value = "groupName") String groupName) {
         try {
@@ -132,6 +134,7 @@ public class DeviceGroupController {
      * 3) admin of the TEAM that group is in
      */
     @GetMapping(value = {"/api/deviceGroup/disableVerify"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("IllegalCatch")
     public Result<DeviceGroup> disableGroup(@CurrentSecurityContext SysUser requestor,
                                             @QueryParam(value = "groupName") String groupName) {
         try {
@@ -185,6 +188,7 @@ public class DeviceGroupController {
      * 3) admin of the TEAM that group is in
      */
     @PostMapping(value = {"/api/deviceGroup/addRelation"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("IllegalCatch")
     public Result<DeviceGroupRelation> addRelation(@CurrentSecurityContext SysUser requestor,
                                                    @RequestParam(value = "groupName") String groupName,
                                                    @RequestParam(value = "deviceSerial") String deviceSerial,
@@ -214,6 +218,7 @@ public class DeviceGroupController {
      * 3) admin of the TEAM that group is in
      */
     @PostMapping(value = {"/api/deviceGroup/deleteRelation"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("IllegalCatch")
     public Result deleteRelation(@CurrentSecurityContext SysUser requestor,
                                  @RequestParam(value = "groupName", required = true) String groupName,
                                  @RequestParam(value = "deviceSerial", required = true) String deviceSerial) {
@@ -247,6 +252,7 @@ public class DeviceGroupController {
      * 3) admin of the TEAM that group is in
      */
     @GetMapping(value = "/api/deviceGroup/generate", produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("IllegalCatch")
     public Result<AccessInfo> generateDeviceToken(@CurrentSecurityContext SysUser requestor,
                                                   @QueryParam(value = "deviceIdentifier") String deviceIdentifier) {
         try {
@@ -279,6 +285,7 @@ public class DeviceGroupController {
      * 2) members of the TEAM that group is in
      */
     @GetMapping(value = "/api/deviceGroup/queryDeviceList", produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("IllegalCatch")
     public Result<List<DeviceInfo>> queryDevicesByGroup(@CurrentSecurityContext SysUser requestor,
                                                         @QueryParam(value = "groupName") String groupName) {
         try {

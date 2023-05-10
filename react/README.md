@@ -2,10 +2,19 @@
 
 ## Quick start for dev environment setup
 
-Config webpack.config.js to use the right server:
+Config webpack.config.json to use the right server:
 
-```javascript
-const testHostPath = 'your server config'
+```json
+{
+    "devServer": {
+        "target": "Center Server Endpoint",
+        "secure": false,
+        "changeOrigin": true,
+        "headers": {
+            "Authorization": "Your Auth Token registerred in Center"
+        }
+    }
+}
 ```
 
 Run command:

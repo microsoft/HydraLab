@@ -6,9 +6,11 @@ package com.microsoft.hydralab.center.service;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.repository.TestFileSetRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,6 +18,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +30,8 @@ public class TestFileSetService {
     TestFileSetRepository testFileSetRepository;
     @Resource
     AttachmentService attachmentService;
+    @Resource
+    StorageServiceClientProxy storageServiceClientProxy;
 
     private Map<String, TestFileSet> testFileSetMap = new HashMap<>();
 
@@ -54,12 +60,31 @@ public class TestFileSetService {
 
     public Page<TestFileSet> queryFileSets(int page, int pageSize, List<CriteriaType> criteriaTypes) {
         Specification<TestFileSet> spec = null;
-        if (criteriaTypes != null && criteriaTypes.size() > 0) {
-            spec = new CriteriaTypeUtil<TestFileSet>().transferToSpecification(criteriaTypes, false);
+
+        if (storageServiceClientProxy.fileExpiryEnabled()) {
+            CriteriaType fileExpiryCriteria = getFileExpiryCriteria();
+            if (criteriaTypes != null) {
+                criteriaTypes.add(fileExpiryCriteria);
+                spec = new CriteriaTypeUtil<TestFileSet>().transferToSpecification(criteriaTypes, false);
+            } else {
+                spec = new CriteriaTypeUtil<TestFileSet>().transferToSpecification(List.of(fileExpiryCriteria), false);
+            }
         }
         Sort sortByDate = Sort.by(Sort.Direction.DESC, "ingestTime");
         Page<TestFileSet> pageObj = testFileSetRepository.findAll(spec, PageRequest.of(page, pageSize, sortByDate));
         return pageObj;
+    }
+
+    private CriteriaType getFileExpiryCriteria() {
+        CriteriaType fileExpiryCriteria = new CriteriaType();
+        fileExpiryCriteria.setKey("ingestTime");
+        fileExpiryCriteria.setOp(CriteriaType.OpType.GreaterThan);
+        String dateFormat = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        fileExpiryCriteria.setValue(sdf.format(DateUtils.addDays(new Date(), -1 * storageServiceClientProxy.getStorageFileExpiryDay())));
+        fileExpiryCriteria.setDateFormatString(dateFormat);
+
+        return fileExpiryCriteria;
     }
 
     public void updateFileSetTeam(String teamId, String teamName) {

@@ -2,9 +2,16 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
+import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -21,8 +28,6 @@ public class AgentUser {
     private String os;
     private String versionName;
     private String versionCode;
-    private int deviceType;
-    private int capabilities;
     private int status;
     private String role;
     @Column(name = "team_id")
@@ -31,10 +36,8 @@ public class AgentUser {
     @Transient
     private BatteryStrategy batteryStrategy;
 
-    public interface DeviceType {
-        int ANDROID = 1;
-        int WINDOWS = 2;
-    }
+    @Transient
+    private List<AgentFunctionAvailability> functionAvailabilities;
 
     public enum BatteryStrategy {
         /**

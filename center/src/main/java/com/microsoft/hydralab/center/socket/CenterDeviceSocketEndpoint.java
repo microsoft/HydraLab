@@ -16,6 +16,7 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
@@ -46,7 +47,11 @@ public class CenterDeviceSocketEndpoint {
 
     @OnMessage
     public void onMessage(ByteBuffer message, Session session) {
-        deviceAgentManagementService.onMessage(SerializeUtil.byteArrToMessage(message.array()), session);
+        try {
+            deviceAgentManagementService.onMessage(SerializeUtil.byteArrToMessage(message.array()), session);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @OnError

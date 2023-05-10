@@ -23,8 +23,6 @@ public class HydraLabClientUtils {
     private static HydraLabAPIClient hydraLabAPIClient = new HydraLabAPIClient();
     private static final int waitStartSec = 30;
     private static final int minWaitFinishSec = 15;
-
-    private static boolean isTestRunningFailed = false;
     private static boolean isTestResultFailed = false;
 
     public static void switchClientInstance(HydraLabAPIClient client) {
@@ -35,14 +33,13 @@ public class HydraLabClientUtils {
         String output = String.format("##[section]All args: reportFolderPath: %s\n%s\n%s",
                 reportFolderPath, apiConfig.toString(), testConfig.toString());
 
+        // re-init static fields to overlap the previous values from run of this task (daemon mode will reuse last context)
+        isTestResultFailed = false;
         printlnf(maskCred(output));
 
-        isTestRunningFailed = false;
         try {
             runTestInner(reportFolderPath, apiConfig, testConfig);
-            markRunningSuccess();
         } catch (RuntimeException e) {
-            markRunningFail();
             throw e;
         }
     }
@@ -80,30 +77,14 @@ public class HydraLabClientUtils {
             throw new IllegalArgumentException("Get commit info failed: " + e.getMessage(), e);
         }
 
-        File app = null;
+        File app = new File(testConfig.appPath);
         File testApp = null;
+        if (StringUtils.isNotEmpty(testConfig.testAppPath)) {
+            testApp = new File(testConfig.testAppPath);
+        }
         try {
-            File file = new File(testConfig.appPath);
-            assertTrue(file.exists(), "app not exist", null);
-
-            if (file.isDirectory()) {
-                throw new IllegalArgumentException("appPath should be the path to the app file.");
-            } else {
-                app = file;
-            }
-
-            if (StringUtils.isNotEmpty(testConfig.testAppPath)) {
-                file = new File(testConfig.testAppPath);
-                assertTrue(file.exists(), "testApp not exist", null);
-                if (file.isDirectory()) {
-                    throw new IllegalArgumentException("testAppPath should be the path to the test app/jar or JSON-described test file.");
-                } else {
-                    testApp = file;
-                }
-            }
-
             if (StringUtils.isNotBlank(testConfig.attachmentConfigPath)) {
-                file = new File(testConfig.attachmentConfigPath);
+                File file = new File(testConfig.attachmentConfigPath);
                 JsonParser parser = new JsonParser();
                 JsonArray attachmentInfoJsons = parser.parse(new FileReader(file)).getAsJsonArray();
                 printlnf("Attachment size: %d", attachmentInfoJsons.size());
@@ -116,9 +97,8 @@ public class HydraLabClientUtils {
                     testConfig.attachmentInfos.add(attachmentInfo);
                 }
             }
-
         } catch (Exception e) {
-            throw new IllegalArgumentException("Apps not found, or attachment config not extracted correctly: " + e.getMessage(), e);
+            throw new IllegalArgumentException("Attachment config not extracted correctly: " + e.getMessage(), e);
         }
 
         String testFileSetId = hydraLabAPIClient.uploadApp(apiConfig, testConfig, commitId, commitCount, commitMsg, app, testApp);
@@ -339,31 +319,19 @@ public class HydraLabClientUtils {
         printlnf(testReportUrl);
         printlnf("##vso[task.setvariable variable=TestTaskReportLink;]%s", testReportUrl);
 
-        displayFinalTestState();
-    }
-
-    private static void markRunningFail() {
-        if (isTestRunningFailed) {
-            return;
-        }
-        printlnf("##vso[build.addbuildtag]FAILURE");
-        isTestRunningFailed = true;
-    }
-
-    private static void markRunningSuccess() {
-        if (isTestRunningFailed) {
-            return;
-        }
-        printlnf("##vso[build.addbuildtag]SUCCESS");
+        displayFinalTestState(testConfig.enableFailingTask);
     }
 
     private static void markTestResultFail() {
         isTestResultFailed = true;
     }
 
-    private static void displayFinalTestState() {
+    private static void displayFinalTestState(boolean enableFailingTask) {
         if (isTestResultFailed) {
             printlnf("##[error]Final test state: fail.");
+            if (enableFailingTask) {
+                throw new RuntimeException("Test result failed, please check the output test result XML file.");
+            }
         } else {
             printlnf("Final test state: success.");
         }

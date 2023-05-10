@@ -7,5 +7,7 @@ public interface ITestRun {
 
     String getId();
 
-    String getDeviceSerialNumber();
+    String getDeviceSerialNumberByType(String type);
+
+    String getOngoingTestUnitName();
 }

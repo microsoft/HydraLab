@@ -51,28 +51,47 @@ Hydra Lab 的特性包括：
 <span id="quick-start"></span>
 ### 开箱即用的 Uber docker 镜像快速指南
 
-Hydra Lab 使用 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储日志文件、视频、应用包等。请访问你的 Azure 门户，打开一个 Azure Blob 存储账户，获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string) 。
-并将其放入环境变量中，名称为 BLOB_CONNECTION_STR。
+Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
 
-Hydra Lab 提供了一个名为 Uber 开箱即用的 docker 镜像。在简单地配置环境变量 BLOB_CONNECTION_STR 后，你可以按照下面的步骤，启动内置了一个 center 实例和一个 agent 实例的 docker 容器：
+**第1步. 从 https://www.docker.com 下载并安装 Docker**
 
-**第1步. 从容器注册中心获取 Docker 镜像**
+**第2步. 在你的机器上运行**
+
+只需选择以下其中一个命令，即可开始您在 Hydra Lab 的体验：
+
+**1. 使用本地存储服务**
+
+Hydra Lab 默认使用本地文件系统作为存储，不需要额外的环境变量：
 
 ```bash
-docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-**第2步. 在你的机器上运行，并使用 BLOB_CONNECTION_STR 作为参数**
+**2. 使用第三方存储服务**
 
-可以通过提供包含 `BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}` 的配置文件env.properties在运行目录，然后通过如下方式传入文件相对路径参数：
+Hydra Lab 目前支持 [Azure Blob 存储](https://azure.microsoft.com/en-us/products/storage/blobs/) 作为云文件存储解决方案，以持久化存储多种文件类型，例如日志文件、视频、应用程序包等。欢迎为集成其他第三方存储服务做出贡献。（附上此模块的 UML 类图作为参考：[存储服务架构](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png)。）
+
+根据存储服务的类型，你需要在命令中额外指定一些环境变量。
+
+如果你想要使用 Azure Blob 存储，请访问你的 Azure 门户，创建一个 Azure Blob 存储账户，并获取 [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string)。简要步骤：[登录 Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> 创建新的存储账户（你可以限制容器的公共读写） -> 在创建的存储账户中, 找到 `Access Keys` 页面 -> 复制 `Connection string`。
+![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
+
+你可以将以下内容写入一个配置文件（例如 env.properties）:
+```
+STORAGE_TYPE=AZURE
+BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}
+```
+
+然后将文件路径传给 docker container：
 
 ```bash
 docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-或者通过直接设置环境变量传参：
+或者设置环境参数 -e 直接运行：
+
 ```bash
-docker run -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
+docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
 **第3步. 访问前端页面并查看你的已连接设备**
@@ -125,66 +144,65 @@ java -jar agent/build/libs/agent.jar
 ![Tech Architecture](docs/images/technical_architecture.png)
 
 <span id="for-user"></span>
-### For Hydra Lab User:
+### 对于Hydra Lab的使用者:
 
-- [Trigger a test task run in the Hydra Lab test service](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
-- [Deploy a test agent service](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
-- [Create an Appium UI Test Automation Project](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
+- [在Hydra Lab测试服务中触发一次测试任务](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
+- [部署测试代理服务](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
+- [创建Appium UI测试自动化项目](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
 
-> Note: If you are a Microsoft FTE and want to onboard to the internal Hydra Lab testing service, please visit [our SharePoint site](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) to learn more about the internal service instance.
+> 注意：如果您是Microsoft FTE并希望加入内部Hydra Lab测试服务，请访问 [我们的SharePoint网站](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) 以了解有关内部服务实例的详细信息。
 
 <span id="for-contributor"></span>
 ### 参与贡献Hydra Lab:
 
-- [Contribute to the Hydra Lab GitHub Project](https://github.com/microsoft/HydraLab/wiki/Contribute-to-the-Hydra-Lab-GitHub-Project)
+- [如何参与并为Hydra Lab GitHub项目做出贡献？](CONTRIBUTING.md)
 
 <span id="who-use-it"></span>
 ## 谁在使用Hydra Lab?
 
-It's already powering the UI test automation of the following Microsoft products:
-- Microsoft Phone Link (Windows UWP app) and Link to Windows (Android app)
+它已经支持以下Microsoft产品的UI测试自动化：
+- Microsoft Phone Link（Windows UWP应用程序）和 Link to Windows（Android应用程序）
 - Microsoft Launcher (Android)
 - Microsoft Outlook/Edge (Android/iOS)
 - Microsoft Fluent UI Android/Yammer Android
 
 <span id="contribute"></span>
-## Contribute
+## 贡献
 
-Your contribution to Hydra Lab will make a difference for the entire test automation ecosystem. Please refer to **[CONTRIBUTING.md](CONTRIBUTING.md)** for contribution instructions.
-
-### Contributor Hero Wall:
+您对Hydra Lab的贡献将为整个测试自动化生态系统带来改变。请参阅贡献指引 **[CONTRIBUTING.md](CONTRIBUTING.md)** 。
+### 贡献者英雄榜：
 
 <a href="https://github.com/Microsoft/hydralab/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Microsoft/hydralab" />
 </a>
 
 <span id="contact"></span>
-## Contact Us
+## 联系我们
 
-Feel free to dive in! If you have questions about Hydra Lab, or you would like to reach out to us about an issue you're having, you can reach us as follows:
-- [Open an issue](https://github.com/microsoft/HydraLab/issues/new) or submit PRs.
-- Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
+如果您对Hydra Lab有任何疑问，您可以通过以下方式联系我们：
+- [创建 issue](https://github.com/microsoft/HydraLab/issues/new) 或提交 PRs.
+- 发送邮件到: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
 
 <span id="links"></span>
-## Links
+## 链接
 
 - [Secure a Java web app using the Spring Boot Starter for Azure Active Directory.](https://docs.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory) 
 - [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
 - [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
 
 <span id="ms-give"></span>
-## Microsoft Give Sponsors
+## 微软Give员工捐赠活动
 
-Thank you for your contribution to [Microsoft employee giving program](https://aka.ms/msgive) in the name of Hydra Lab:
+感谢您以Hydra Lab的名义为 [微软员工捐赠计划](https://aka.ms/msgive) 做出的贡献：
 
 [@Germey(崔庆才)](https://github.com/Germey), [@SpongeOnline(王创)](https://github.com/SpongeOnline), [@ellie-mac(陈佳佩)](https://github.com/ellie-mac), [@Yawn(刘俊钦)](https://github.com/Aqinqin48), [@White(刘子凡)](https://github.com/jkfhklh), [@597(姜志鹏)](https://github.com/JZP1996)
 
 ![Microsoft Give](docs/images/Give_WebBanner.png)
 
 <span id="license-trademarks"></span>
-## License & Trademarks
+## 许可证和商标
 
-The entire codebase is under [MIT license](https://github.com/microsoft/HydraLab/blob/main/LICENSE).
+整个代码库遵循 [MIT许可协议](https://github.com/microsoft/HydraLab/blob/main/LICENSE)。
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft’s Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
+该项目可能包含一些项目、产品或服务的商标或标识。使用 Microsoft 商标或标识需遵循 [Microsoft的商标和品牌准则](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general)并经授权。在此项目的修改版本中使用 Microsoft 商标或标识不得混淆或暗示 Microsoft 的赞助。任何使用第三方商标或标识的行为均需遵守相关第三方政策。
 

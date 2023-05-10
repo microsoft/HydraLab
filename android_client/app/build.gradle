@@ -7,8 +7,9 @@ android {
         applicationId "com.microsoft.hydralab.android.client"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 17
-        versionName '2.6.0'
+        versionCode rootProject.ext.clientVersionCode
+        versionName rootProject.ext.clientVersionNumber
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -22,14 +23,24 @@ android {
 
         release {
             signingConfig signingConfigs.debug
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    namespace 'com.microsoft.hydralab.android.client'
+
+    lint {
+        xmlReport true
+        abortOnError false
     }
 }
 
 dependencies {
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test:rules:1.4.0'
     def appCenterSdkVersion = '4.4.4'
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.util;
+
+import java.util.List;
 
 public interface Const {
     interface Path {
@@ -105,8 +108,10 @@ public interface Const {
         String MAIL_ADDRESS = "\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
 
         //File path
-        String LINUX_PATH = "^(\\/[\\w-]+)+\\/?$";
-        String WINDOWS_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
+        // There are almost no restrictions - apart from '/' and '\0', you're allowed to use anything. Hence the below is only an adoption for the most cases
+        String LINUX_ABSOLUTE_PATH = "^(\\/[^\\t\\f\\n\\r\\v]+)+\\/?$";
+        String WINDOWS_ABSOLUTE_PATH = "^([a-zA-Z]:)(\\\\[^/\\\\:*?\"<>|]+\\\\?)*$";
+        String STORAGE_FILE_REL_PATH = "^([^\\/\\\\:*?\"<>|]+\\/)+[^\\/\\\\:*?\"<>|;]+$";
 
         //Package name
         String PACKAGE_NAME = "\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
@@ -152,7 +157,29 @@ public interface Const {
     }
 
     interface StoragePropertyBean {
-        String LOCAL = "localProperty";
+        String LOCAL = "localStorageProperty";
         String AZURE = "azureBlobProperty";
+    }
+
+    interface XCTestConfig{
+        String XCTEST_ZIP_FOLDER_NAME = "Xctest";
+        String XCTEST_RESULT_FILE_NAME = "result.xcresult";
+    }
+
+    final class LocalStorageURL {
+        public static final String CENTER_LOCAL_STORAGE_UPLOAD = "/api/storage/local/upload";
+        public static final String CENTER_LOCAL_STORAGE_DOWNLOAD = "/api/storage/local/download";
+        public static final String CENTER_LOCAL_STORAGE_ROOT = "storage/local/";
+    }
+
+    final class LocalStorageConst {
+        public static final List<String> PATH_PREFIX_LIST = List.of(LocalStorageURL.CENTER_LOCAL_STORAGE_UPLOAD, LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD);
+    }
+
+    interface TestDeviceTag {
+        String PRIMARY_PHONE = "PRIMARY_PHONE";
+        String SECONDARY_PHONE = "SECONDARY_PHONE";
+        String TERTIARY_PHONE = "TERTIARY_PHONE";
+        String PRIMARY_PC = "PRIMARY_PC";
     }
 }

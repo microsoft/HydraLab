@@ -1,23 +1,36 @@
 @startuml test_runner_class_relation
-abstract class TestRunner {
-    #createTestRun(...)
-    #setUp(TestTask)
-    #run(TestTaskSpec)
-    #tearDown(...)
+abstract class TestRunner
+
+interface TestRunEngine {
+    TestReport run(TestTask, TestRunDevice);
 }
+interface TestRunLifecycle {
+    TestRun setup(TestTask, TestRunDevice);
+    void execute(TestRun) throws Exception;
+    TestResult analyze(TestRun);
+    TestReport report(TestRun, TestResult);
+    void teardown(TestRun);
+    void help(TestRun testRun, TestResult);
+}
+
+TestRunner -u-|> TestRunEngine
+TestRunner -u-|> TestRunLifecycle
+
+AppiumRunner -u-|> TestRunner
+EspressoRunner -u-|> TestRunner
+AdbMonkeyRunner -u-|> TestRunner
+T2CRunner -u-|> AppiumRunner
+SmartRunner -u-|> TestRunner
+
+
 interface TestRunningCallback
+TestRunner -l-> TestRunningCallback
 
-AppiumRunner --|> TestRunner
-EspressoRunner --|> TestRunner
-AdbMonkeyRunner --|> TestRunner
-T2CRunner --|> AppiumRunner
-SmartRunner --|> TestRunner
+TestRunner *-r-> DeviceManager
 
-TestRunner --> TestRunningCallback
+AppiumCrossRunner -u-|> AppiumRunner
 
-TestRunner *--> DeviceManager
 
-AppiumCrossRunner --|> AppiumRunner
 @enduml
 
 @startuml running_sequence
@@ -62,6 +75,25 @@ deactivate TestRunningCallback
 TaskCompletion -> TestThreadPool.Executor
 deactivate TaskCompletion
 
+@enduml
+
+@startuml running_sequence_new
+AgentWebSocketClientService -> TestTask: convertToTestTask(static)
+AgentWebSocketClientService -> TestTaskEngineService :runTestTask(TestTask)
+activate TestTaskEngineService
+TestTaskEngineService -> TestTaskEngineService: chooseDevices
+TestTaskEngineService -> DeviceTaskControlExecutor: runForAllDeviceAsync
+deactivate TestTaskEngineService
+DeviceTaskControlExecutor --> TestRunnerManager: runTest
+TestRunnerManager --> TestRunEngine: run
+activate TestRunEngine
+TestRunEngine --> TestRunLifecycle: setup
+TestRunEngine --> TestRunLifecycle: execute
+TestRunEngine --> TestRunLifecycle: analyze
+TestRunEngine --> TestRunLifecycle: report
+TestRunEngine --> TestRunLifecycle: teardown
+TestRunEngine --> TestRunLifecycle: help
+deactivate TestRunEngine
 @enduml
 
 @startjson test_task_spec_design
@@ -155,39 +187,24 @@ interface TestRunnerListener {
 Runner *--> TestRunnerListener
 @enduml
 
-@startuml test_entities
+@startuml test_entities_relationship
 
 entity (TestTaskSpec)
+note left of TestTaskSpec: TestTaskSpec is the\n test task specification\n from the client
 entity (TestTask)
+note left of TestTask: TestTask is converted\n from TestTaskSpec\n and it's the runtime data\n object for the test task
 entity (TestRun)
+note right of TestRun: TestRun is the run\n on each device of\n a test task
+entity (TestResult)
+note right of TestResult: TestResult is the status\n and raw data collected\n during/after a test run
+entity (TestReport)
+note right of TestReport: TestReport is the\n summary of a test\n task result in a more\n human-readable format
 entity (AndroidTestUnit)
+entity (PerformanceTestResult)
 
-
-TestTaskSpec -- TestTask: is mapped to
-TestTask *--> TestRun: contain a list of
-TestRun *--> AndroidTestUnit: contain a list of
-@enduml
-
-@startuml test_object_relationships
-
-entity (TestTaskSpec)
-entity (TestTask)
-entity (DeviceTestResult)
-entity (TestUnitResult)
-entity (AgentDeviceManager)
-entity (DeviceManager)
-entity (TestDevice)
-entity (DevicePair)
-
-AgentDeviceManager *--> DeviceManager
-DeviceManager *--> TestDevice
-
-DevicePair *-u-> TestDevice
-
-TestTask ... TestDevice: is running on
-
-TestTaskSpec -- TestTask: is mapped to
-TestTaskSpec -- TargetedTestDeviceList: contains a list of
-TestTask *--> DeviceTestResult: contain a list of
-DeviceTestResult *--> TestUnitResult: contain a list of
+TestTaskSpec o--o TestTask: is 1 on 1 mapped to
+TestTask o--> TestRun: contain a list of
+TestTask o--o TestReport: is 1 on 1 mapped to
+TestRun o--> AndroidTestUnit: maybe contain\n a list of if\n it's Android Espresso Test
+TestRun o--o TestResult: is 1 on 1 mapped to
 @enduml

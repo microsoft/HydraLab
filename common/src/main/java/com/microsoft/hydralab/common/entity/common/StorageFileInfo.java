@@ -42,16 +42,16 @@ public class StorageFileInfo implements Serializable {
     public StorageFileInfo() {
 
     }
-    public StorageFileInfo(File file, String relativePath, String fileType, String loadType, String loadDir){
-        this(file, relativePath, fileType);
+    public StorageFileInfo(File file, String relativeParent, String fileType, String loadType, String loadDir){
+        this(file, relativeParent, fileType);
         this.loadType = loadType;
         this.loadDir = loadDir;
     }
-    public StorageFileInfo(File file, String relativePath, String fileType) {
+    public StorageFileInfo(File file, String relativeParent, String fileType) {
         this.fileType = fileType;
         this.fileName = file.getName();
         this.fileLen = file.length();
-        this.blobPath = relativePath + "/" + file.getName();
+        this.blobPath = relativeParent + "/" + file.getName();
 
         try {
             FileInputStream inputStream = new FileInputStream(file);
@@ -64,11 +64,11 @@ public class StorageFileInfo implements Serializable {
         }
     }
 
-    public StorageFileInfo(File file, String relativePath, String fileType, EntityType entityType) {
+    public StorageFileInfo(File file, String fileRelPath, String fileType, EntityType entityType) {
         this.fileType = fileType;
         this.fileName = file.getName();
         this.fileLen = file.length();
-        this.blobPath = relativePath + "/" + file.getName();
+        this.blobPath = fileRelPath;
         this.blobContainer = entityType.storageContainer;
 
         try {

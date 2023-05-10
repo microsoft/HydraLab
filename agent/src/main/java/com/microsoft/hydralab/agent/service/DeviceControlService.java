@@ -5,31 +5,27 @@ package com.microsoft.hydralab.agent.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.repository.MobileDeviceRepository;
-import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
-import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
-import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.management.impl.WindowsDeviceManager;
+import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
 import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMonitor;
 import com.microsoft.hydralab.common.management.listener.impl.PreInstallListener;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,13 +34,13 @@ public class DeviceControlService {
     @SuppressWarnings("constantname")
     static final Logger log = LoggerFactory.getLogger(DeviceControlService.class);
     @Resource
-    DeviceManager deviceManager;
+    AgentManagementService agentManagementService;
+    @Resource
+    DeviceDriverManager deviceDriverManager;
     @Resource
     MobileDeviceRepository mobileDeviceRepository;
     @Resource
     AgentWebSocketClientService agentWebSocketClientService;
-    @Resource
-    DeviceTaskControlExecutor deviceTaskControlExecutor;
     @Resource
     DeviceStabilityMonitor deviceStabilityMonitor;
     @Resource
@@ -52,11 +48,11 @@ public class DeviceControlService {
 
     public Set<DeviceInfo> getAllConnectedDevice() {
         updateAllDeviceScope();
-        return deviceManager.getDeviceList(log);
+        return agentManagementService.getDeviceList(log);
     }
 
     public void provideDeviceList(AgentUser.BatteryStrategy batteryStrategy) {
-        captureAllScreensSync(batteryStrategy);
+        captureAllScreen(batteryStrategy);
         Set<DeviceInfo> allConnectedDevices = getAllConnectedDevice();
         ArrayList<DeviceInfo> deviceInfos = new ArrayList<>(allConnectedDevices);
         deviceInfos.sort(Comparator.comparing(d -> d.getName() + d.getSerialNum()));
@@ -68,43 +64,29 @@ public class DeviceControlService {
                 deviceInfos.stream().map(MobileDevice::getSerialNum).collect(Collectors.joining(",")));
     }
 
-    public void captureAllScreensSync(AgentUser.BatteryStrategy batteryStrategy) {
-        Set<DeviceInfo> allConnectedDevices = deviceManager.getActiveDeviceList(log);
-        if (deviceManager instanceof WindowsDeviceManager) {
-            Assert.isTrue(allConnectedDevices.size() == 1, "expect only 1 device");
-        }
-        captureDevicesScreenSync(allConnectedDevices, false, batteryStrategy);
-    }
-
-    private void captureDevicesScreenSync(Collection<DeviceInfo> allDevices, boolean logging,
-                                          AgentUser.BatteryStrategy batteryStrategy) {
-        DeviceTaskControl deviceTaskControl =
-                deviceTaskControlExecutor.runForAllDeviceAsync(allDevices, (deviceInfo, logger) -> {
-                    deviceManager.getScreenShotWithStrategy(deviceInfo, DeviceControlService.log, batteryStrategy);
-                    return true;
-                }, null, logging, true);
-
-        if (deviceTaskControl == null) {
-            return;
-        }
-
-        CountDownLatch countDownLatch = deviceTaskControl.countDownLatch;
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            log.error(e.getMessage(), e);
-        }
+    public void captureAllScreen(AgentUser.BatteryStrategy batteryStrategy) {
+        Set<DeviceInfo> allConnectedDevices = agentManagementService.getActiveDeviceList(log);
+        // we need to do this in an async way, otherwise the process will be blocked if one device is not responding
+        allConnectedDevices.forEach(deviceInfo -> {
+            ThreadPoolUtil.SCREENSHOT_EXECUTOR.execute(() -> {
+                try {
+                    deviceDriverManager.getScreenShotWithStrategy(deviceInfo, log, batteryStrategy);
+                } catch (Exception e) {
+                    log.error("Failed to capture screenshot for device: {}", deviceInfo.getSerialNum(), e);
+                }
+            });
+        });
     }
 
     private void updateAllDeviceScope() {
         List<MobileDevice> devices = mobileDeviceRepository.findAll();
         for (MobileDevice device : devices) {
-            deviceManager.updateIsPrivateByDeviceSerial(device.getSerialNum(), device.getIsPrivate());
+            agentManagementService.updateIsPrivateByDeviceSerial(device.getSerialNum(), device.getIsPrivate());
         }
     }
 
     public DeviceInfo updateDeviceScope(String deviceSerial, Boolean isPrivate) {
-        Set<DeviceInfo> allActiveConnectedDevice = deviceManager.getActiveDeviceList(log);
+        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getActiveDeviceList(log);
         List<DeviceInfo> devices = allActiveConnectedDevice.stream()
                 .filter(adbDeviceInfo -> deviceSerial.equals(adbDeviceInfo.getSerialNum()))
                 .collect(Collectors.toList());
@@ -130,16 +112,12 @@ public class DeviceControlService {
             deviceCopy.setIsPrivate(isPrivate);
 
             mobileDeviceRepository.save(deviceCopy);
-            deviceManager.updateIsPrivateByDeviceSerial(deviceSerial, isPrivate);
+            agentManagementService.updateIsPrivateByDeviceSerial(deviceSerial, isPrivate);
         }
         return device;
     }
 
-    public DeviceManager getDeviceManager() {
-        return deviceManager;
-    }
-
-    public void deviceManagerInit() {
+    public void deviceDriverInit() {
         deviceStatusListenerManager.registerListener(new DeviceStatusListener() {
 
             @Override
@@ -168,12 +146,9 @@ public class DeviceControlService {
                 agentWebSocketClientService.send(Message.ok(Const.Path.DEVICE_STATUS, data));
             }
         });
-        deviceStatusListenerManager.registerListener(new PreInstallListener(deviceManager));
+        deviceStatusListenerManager.registerListener(new PreInstallListener(agentManagementService, deviceDriverManager));
         deviceStatusListenerManager.registerListener(deviceStabilityMonitor);
-        try {
-            deviceManager.init();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
+        deviceDriverManager.init();
     }
 }

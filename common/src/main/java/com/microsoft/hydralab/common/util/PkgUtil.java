@@ -3,6 +3,7 @@
 package com.microsoft.hydralab.common.util;
 
 import cn.hutool.core.util.ZipUtil;
+
 import com.alibaba.fastjson.JSONObject;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSString;
@@ -10,13 +11,17 @@ import com.dd.plist.PropertyListParser;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask.TaskConst;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
+
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
+
+import org.apache.commons.io.FileUtils;
 import org.springframework.util.Assert;
 
 import java.io.*;
 import java.nio.BufferUnderflowException;
 import java.nio.file.Files;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -31,7 +36,10 @@ public class PkgUtil {
                     res = analysisApkFile(file);
                 } else if (file.getName().endsWith(FILE_SUFFIX.IPA_FILE)) {
                     res = analysisIpaFile(file);
+                } else if (file.getName().endsWith(FILE_SUFFIX.ZIP_FILE)) {
+                    res = analysisZipFile(file);
                 }
+
                 break;
             case AGENT_PACKAGE:
                 res = getAgentVersionFromJarFile(file);
@@ -98,34 +106,58 @@ public class PkgUtil {
             String name, pkgName, version;
             File zipFile = convertToZipFile(ipa, FILE_SUFFIX.IPA_FILE);
             Assert.notNull(zipFile, "Convert .ipa file to .zip file failed.");
-            File file = getIpaPlistFile(zipFile, zipFile.getParent());
+            File file = getPlistFromZip(zipFile, zipFile.getParent());
             //Need third-party jar package dd-plist
             Assert.notNull(file, "Analysis .ipa file failed.");
-            NSDictionary rootDict = (NSDictionary) PropertyListParser.parse(file);
-            //Application package name
-            NSString parameters = (NSString) rootDict.objectForKey("CFBundleIdentifier");
-            pkgName = parameters.toString();
-            //Application version
-            parameters = (NSString) rootDict.objectForKey("CFBundleVersion");
-            version = parameters.toString();
-            //Application display name
-            parameters = (NSString) rootDict.objectForKey("CFBundleDisplayName");
-            name = parameters.toString();
-
-            //If necessary, the decompressed files should be deleted
-            file.delete();
-            file.getParentFile().delete();
-
-            res.put(ParserKey.APP_NAME, name);
-            res.put(ParserKey.PKG_NAME, pkgName);
-            res.put(ParserKey.VERSION, version);
+            analysisPlist(file, res);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return res;
     }
 
-    private static File getIpaPlistFile(File file, String unzipDirectory) throws Exception {
+    private static JSONObject analysisZipFile(File zip) {
+        JSONObject res = new JSONObject();
+        try {
+            String unzippedFolderPath = zip.getParentFile().getAbsolutePath()
+                    + "/" + zip.getName().substring(0, zip.getName().lastIndexOf('.'));
+            FileUtil.unzipFile(zip.getAbsolutePath(), unzippedFolderPath);
+            File unzippedFolder = new File(unzippedFolderPath);
+            File plistFile = getPlistFromFolder(unzippedFolder);
+            Assert.notNull(plistFile, "Analysis .app file failed.");
+            analysisPlist(plistFile, res);
+
+            FileUtil.deleteFile(unzippedFolder);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
+
+    }
+
+    private static void analysisPlist(File plistFile, JSONObject res) throws Exception {
+        String name, pkgName, version;
+        NSDictionary rootDict = (NSDictionary) PropertyListParser.parse(plistFile);
+        //Application package name
+        NSString parameters = (NSString) rootDict.objectForKey("CFBundleIdentifier");
+        pkgName = parameters.toString();
+        //Application version
+        parameters = (NSString) rootDict.objectForKey("CFBundleVersion");
+        version = parameters.toString();
+        //Application display name
+        parameters = (NSString) rootDict.objectForKey("CFBundleDisplayName");
+        name = parameters.toString();
+
+        //If necessary, the decompressed files should be deleted
+        plistFile.delete();
+        plistFile.getParentFile().delete();
+
+        res.put(ParserKey.APP_NAME, name);
+        res.put(ParserKey.PKG_NAME, pkgName);
+        res.put(ParserKey.VERSION, version);
+    }
+
+    private static File getPlistFromZip(File file, String unzipDirectory) throws Exception {
         //Define input and output stream objects
         InputStream input = null;
         OutputStream output = null;
@@ -194,6 +226,17 @@ public class PkgUtil {
         return result;
     }
 
+    private static File getPlistFromFolder(File rootFolder) {
+        Collection<File> files = FileUtils.listFiles(rootFolder, null, true);
+        for (File file : files) {
+            if (file.getAbsolutePath().endsWith(".app/Info.plist")
+                    && !file.getAbsolutePath().contains("-Runner")
+                    && !file.getAbsolutePath().contains("Watch"))
+                return file;
+        }
+        return null;
+    }
+
     private static File convertToZipFile(File file, String suffix) {
         try {
             int bytes = 0;
@@ -225,5 +268,6 @@ public class PkgUtil {
         String ZIP_FILE = ".zip";
         String IPA_FILE = ".ipa";
         String JSON_FILE = ".json";
+        String APP_FILE = ".app";
     }
 }

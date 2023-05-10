@@ -10,10 +10,12 @@ import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
+import com.microsoft.hydralab.common.repository.PerformanceTestResultRepository;
 import com.microsoft.hydralab.common.repository.TestRunRepository;
 import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -38,6 +40,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -58,6 +61,8 @@ public class TestDataService {
     KeyValueRepository keyValueRepository;
     @Resource
     StabilityDataRepository stabilityDataRepository;
+    @Resource
+    PerformanceTestResultRepository performanceTestResultRepository;
     @Resource
     AttachmentService attachmentService;
     @Resource
@@ -191,6 +196,7 @@ public class TestDataService {
         List<AndroidTestUnit> list = new ArrayList<>();
         for (TestRun deviceTestResult : deviceTestResults) {
             attachmentService.saveAttachments(deviceTestResult.getId(), EntityType.TEST_RESULT, deviceTestResult.getAttachments());
+            performanceTestResultRepository.saveAll(deviceTestResult.getPerformanceTestResultEntities());
 
             List<AndroidTestUnit> testUnitList = deviceTestResult.getTestUnitList();
             list.addAll(testUnitList);
@@ -236,5 +242,14 @@ public class TestDataService {
         } else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
         }
+    }
+
+    public List<PerformanceTestResultEntity> getPerformanceTestHistory(List<CriteriaType> queryParams) {
+        Specification<PerformanceTestResultEntity> spec = new CriteriaTypeUtil<PerformanceTestResultEntity>().transferToSpecification(queryParams, false);
+        //TODO set page
+        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "Date"));
+        List<PerformanceTestResultEntity> perfHistoryList = new ArrayList<>(performanceTestResultRepository.findAll(spec, pageRequest).getContent());
+        Collections.reverse(perfHistoryList);
+        return perfHistoryList;
     }
 }

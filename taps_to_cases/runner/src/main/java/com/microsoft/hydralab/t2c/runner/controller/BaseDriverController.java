@@ -22,9 +22,11 @@ import java.time.Duration;
 public abstract class BaseDriverController {
     protected WebDriver webDriver;
     protected Logger logger;
+    protected String udid;
 
-    public BaseDriverController(WebDriver webDriver, Logger logger) {
+    public BaseDriverController(WebDriver webDriver, String udid, Logger logger) {
         this.webDriver = webDriver;
+        this.udid = udid;
         this.logger = logger;
     }
 
@@ -158,7 +160,6 @@ public abstract class BaseDriverController {
                     });
         } catch (Exception e) {
             logger.info("Can not find element by AccessibilityId: " + accessibilityId);
-            e.printStackTrace();
         }
         return elementFound;
     }
@@ -187,6 +188,18 @@ public abstract class BaseDriverController {
         return elementFound;
     }
 
+    @Nullable
+    public WebElement findElementByName(String name) {
+        WebElement elementFound = null;
+        try {
+            elementFound = new WebDriverWait(webDriver, Duration.ofSeconds(10))
+                    .until(driver -> driver.findElement(AppiumBy.xpath("//*[@name='" + name + "']")));
+        } catch (Exception e) {
+            logger.info("Can not find element by name: " + name);
+        }
+        return elementFound;
+    }
+
 
     /**
      * In windows, id refers to {@link WindowsElementInfo#getName()}
@@ -209,4 +222,10 @@ public abstract class BaseDriverController {
 
     public abstract String getPageSource();
 
+    public abstract void inspectMemoryUsage(String targetApp, String description, boolean isReset);
+
+    public abstract void inspectBatteryUsage(String targetApp, String description, boolean isReset);
+
+    public void backToHome() {
+    }
 }

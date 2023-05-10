@@ -1,4 +1,7 @@
-# run this after running command "./gradlew :agent:bootJar" in project root DIR.
+# Before you build this docker image,
+# please make sure you run the command:
+# "./gradlew :agent:bootJar"
+# in project root DIR to generate the JAR_FILE (agent/build/libs/agent.jar).
 FROM mcr.microsoft.com/openjdk/jdk:11-ubuntu
 ARG JAR_FILE=build/libs/agent.jar
 
@@ -20,7 +23,7 @@ RUN \
     wget -qO- "http://dl.google.com/android/android-sdk_r24.3.4-linux.tgz" | tar -zx -C /opt && \
     echo y | android update sdk --no-ui --all --filter platform-tools --force
 
-# TODO: after we enabled the smart test in Github, we will renable the following layers.
+# TODO: after we enable the smart test in Github, we will reactivate the following layers.
 # Install python/pip and smart test dependencies
 # This file should be in position if we have run the bootJar task with Gradle.
 # ARG PYTHON_REQUIREMENTS=build/requirements.txt
@@ -29,5 +32,7 @@ RUN \
 
 COPY ${JAR_FILE} /app.jar
 
-EXPOSE 8886
+# Official doc about connecting package with repo: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
+LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
+
 ENTRYPOINT ["java","-jar","/app.jar","--spring.profiles.active=docker"]

@@ -1,0 +1,10 @@
+{
+    "devServer": {
+        "target": "http://localhost:9886",
+        "secure": false,
+        "changeOrigin": true,
+        "headers": {
+            "Authorization": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+    }
+}

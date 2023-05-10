@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.entity.common;
 
 import com.microsoft.hydralab.performance.InspectionStrategy;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +27,7 @@ public class TestTaskSpec {
     public TestFileSet testFileSet;
     public int testTimeOutSec = -1;
     public boolean isPerfTest;
+    public boolean skipInstall = false;
     public boolean needUninstall = true;
     public boolean needClearData = true;
     // todo: remove this field when update overall center-ADO/Gradle plugins compatibility
@@ -46,4 +49,25 @@ public class TestTaskSpec {
     public String testSuiteClass;
     public Map<String, List<DeviceAction>> deviceActions;
     public List<InspectionStrategy> inspectionStrategies;
+
+    public void updateWithDefaultValues() {
+        determineScopeOfTestCase();
+
+        if (StringUtils.isEmpty(runningType)) {
+            runningType = TestTask.TestRunningType.INSTRUMENTATION;
+        }
+        if (StringUtils.isBlank(testSuiteClass)) {
+            testSuiteClass = pkgName;
+        }
+    }
+
+    private void determineScopeOfTestCase() {
+        if (!StringUtils.isEmpty(testScope)) {
+            return;
+        }
+        testScope = TestTask.TestScope.CLASS;
+        if (StringUtils.isEmpty(testSuiteClass)) {
+            testScope = TestTask.TestScope.TEST_APP;
+        }
+    }
 }

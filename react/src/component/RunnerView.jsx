@@ -38,6 +38,7 @@ import BaseView from "@/component/BaseView";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { FormHelperText } from "@mui/material";
 import { DialogContentText } from '@material-ui/core';
+import "../css/runnerView.css";
 
 /**
  * Palette
@@ -100,6 +101,8 @@ export default class RunnerView extends BaseView {
         testScope: "CLASS",
         testSuiteClass: "",
         currentRunnable: "",
+        currentRunnableSet: [],
+        currentAgentIdForDevices: "",
         groupTestType: "SINGLE",
         maxStepCount: "",
         deviceTestCount: "",
@@ -179,7 +182,7 @@ export default class RunnerView extends BaseView {
                             <IconButton id={t.fileId} onClick={this.showDeleteDialog}>
                                 <span id={t.fileId} className="material-icons-outlined">delete</span>
                             </IconButton>
-                            <IconButton id={t.fileId} href={t.blobUrl + '?' + require('local-storage').get('BlobSignature')}>
+                            <IconButton id={t.fileId} href={t.blobUrl + '?' + require('local-storage').get('FileToken')}>
                                 <span id={t.fileId} className="material-icons-outlined">download</span>
                             </IconButton>
                         </TableCell>
@@ -203,7 +206,7 @@ export default class RunnerView extends BaseView {
 
         return <div>
             <Typography variant="h4" className="m-3">
-                Run Test Suite</Typography>
+                Test Your App</Typography>
             <Stack className='m-3' direction="row" spacing={2}
                 justifyContent="flex-end">
                 <LoadingButton
@@ -260,10 +263,10 @@ export default class RunnerView extends BaseView {
                             variant="outlined"
                             startIcon={<UploadFileIcon />}
                         >
-                            {this.state.uploadAppInstallerFile ? this.state.uploadAppInstallerFile.name : 'APK/IPA file'}
+                            {this.state.uploadAppInstallerFile ? this.state.uploadAppInstallerFile.name : 'APK/IPA/ZIP file'}
                             <input id="uploadAppInstallerFile"
                                 type="file"
-                                accept=".apk,.ipa"
+                                accept=".apk,.ipa,.zip"
                                 hidden
                                 onChange={this.handleFileUpload}
                             />
@@ -518,131 +521,45 @@ export default class RunnerView extends BaseView {
 
     renderSwitch() {
         const groupTestTypes = ["SINGLE", "REST", "ALL"]
-
-        const { deviceList, groupList, agentList } = this.state
         const { runTestType, groupTestType, testScope } = this.state
 
+        let runnablePane = null
+        const multiDevicesRun = this.state.runTestType === 'T2C_JSON' || this.state.runTestType === 'APPIUM_CROSS';
 
-        const runnableRows = []
-        const runnableHeads = []
-        const runnableHeadItems = ['', 'Type', 'Device name', 'Status', 'Description']
-
-        const brandMap = new Map();
-        brandMap.set('apk', 'Android');
-        brandMap.set('ipa', 'Apple');
-
-        if (agentList || groupList || deviceList) {
-            agentList.forEach((agent) => {
-                runnableRows.push(<StyledTableRow key={agent.agentId} id={agent.agentId}
-                    onClick={() => this.handleStatus('currentRunnable', agent.agentId)}
-                    hover>
-                    <TableCell id={agent.agentId} align="center">
-                        <Radio className="p-0 m-1" id={agent.agentId} color="primary"
-                            checked={this.state.currentRunnable === agent.agentId} />
-                    </TableCell>
-                    <TableCell id={agent.agentId} align="center">
-                        Agent
-                    </TableCell>
-                    <TableCell id={agent.agentId} align="center">
-                        {agent.agentName}
-                    </TableCell>
-                    <TableCell id={agent.agentId} align="center">
-                        <span className="material-icons-outlined">lock_open</span>
-                    </TableCell>
-                    <TableCell id={agent.agentId} align="center">
-                        {agent.devices[0].serialNum}
-                    </TableCell>
-                </StyledTableRow>)
-            })
-
-            if (this.state.runTestType !== 'T2C_JSON') {
-                groupList.forEach((group) => {
-                    runnableRows.push(<StyledTableRow key={group.groupName} id={group.groupName}
-                        onClick={() => this.handleStatus('currentRunnable', group.groupName)}
-                        hover>
-                        <TableCell id={group.groupName} align="center">
-                            <Radio className="p-0 m-1" id={group.groupName} color="primary"
-                                checked={this.state.currentRunnable === group.groupName} />
-                        </TableCell>
-                        <TableCell id={group.groupName} align="center">
-                            Group
-                        </TableCell>
-                        <TableCell id={group.groupName} align="center">
-                            {group.groupDisplayName}
-                        </TableCell>
-                        <TableCell id={group.groupName} align="center">
-                            {group.isPrivate ? <span className="material-icons-outlined">lock</span>
-                                : <span className="material-icons-outlined">lock_open</span>}
-                        </TableCell>
-                        <TableCell id={group.groupName} align="center">
-                            Created by {group.owner}
-                        </TableCell>
-                    </StyledTableRow>)
-                })
-
-                let selectedList
-                if (this.state.currentAppInstallerType === 'ipa') {
-                    selectedList = deviceList.filter((device) => device.brand === brandMap.get(this.state.currentAppInstallerType))
-                } else {
-                    selectedList = deviceList.filter((device) => device.brand !== 'Apple')
-                }
-                selectedList.forEach((device) => {
-                    runnableRows.push(<StyledTableRow key={device.serialNum} id={device.serialNum}
-                        onClick={() => this.handleStatus('currentRunnable', device.serialNum)}
-                        hover>
-                        <TableCell id={device.serialNum} align="center">
-                            <Radio className="p-0 m-1" id={device.serialNum} color="primary"
-                                checked={this.state.currentRunnable === device.serialNum} />
-                        </TableCell>
-                        <TableCell id={device.serialNum} align="center">
-                            Device
-                        </TableCell>
-                        <TableCell id={device.serialNum} align="center">
-                            {device.serialNum}
-                        </TableCell>
-                        <TableCell id={device.serialNum} align="center">
-                            {device.isPrivate || device.status !== "ONLINE" ? <span className="material-icons-outlined">lock</span>
-                                : <span className="material-icons-outlined">lock_open</span>
-                            }
-                        </TableCell>
-                        <TableCell id={device.serialNum} align="center">
-                            API{device.osSDKInt} / {device.brand} / {device.model} / {device.screenSize} /
-                            DPI{device.screenDensity}
-                        </TableCell>
-                    </StyledTableRow>)
-                })
-            }
+        if (multiDevicesRun) {
+            runnablePane = this.renderMultiDevices()
         }
+        else {
+            const runnableRows = []
+            const runnableHeads = []
+            this.renderRunnableGroups(runnableRows)
+            this.renderRunnableDevices(runnableRows)
+            const runnableHeadItems = ['', 'Type', 'Device name', 'Status', 'Description']
+            runnableHeadItems.forEach((k) => runnableHeads.push(
+                <StyledTableCell key={k} align="center">
+                    {k}
+                </StyledTableCell>))
 
-        runnableHeadItems.forEach((k) => runnableHeads.push(<StyledTableCell key={k} align="center">
-            {k}
-        </StyledTableCell>))
-
+            runnablePane = (
+                <Box sx={{ display: 'flex', flexDirection: 'column', pt: 2 }}>
+                    <TableContainer style={{ margin: "auto", overflowY: 'initial'}}>
+                        <Table size="medium">
+                            <TableHead>
+                                <TableRow>
+                                    {runnableHeads}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {runnableRows}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+            )
+        }
         switch (this.state.activeStep) {
             case 0:
                 return <Box sx={{ display: 'flex', flexDirection: 'column', pt: 3 }}>
-                    <TextField
-                        disabled
-                        autoFocus
-                        margin="dense"
-                        name="packageName"
-                        label="Package Name"
-                        type="text"
-                        fullWidth
-                        variant="standard"
-                        value={this.state.currentAppPackageName}
-                    />
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        name="currentTestPackageName"
-                        type="text"
-                        label="Test Package Name"
-                        fullWidth
-                        variant="standard"
-                        value={this.state.currentTestPackageName}
-                        onChange={this.handleValueChange}
-                    /><br />
                     <FormControl fullWidth>
                         <InputLabel>Test type</InputLabel>
                         <Select
@@ -652,20 +569,45 @@ export default class RunnerView extends BaseView {
                             size="small"
                             name="runTestType"
                             onChange={this.handleValueChange}>
-                            <MenuItem value={"INSTRUMENTATION"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Espresso</MenuItem>
-                            <MenuItem value={"APPIUM"} disabled={this.state.runTestType === 'T2C_JSON'}>Appium</MenuItem>
-                            <MenuItem value={"SMART"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Smart</MenuItem>
-                            <MenuItem value={"MONKEY"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Monkey</MenuItem>
+                            <MenuItem value={"INSTRUMENTATION"} disabled={this.state.currentAppInstallerType !== 'apk'}>Espresso</MenuItem>
+                            <MenuItem value={"APPIUM"} disabled={this.state.currentAppInstallerType === 'zip'}>Appium</MenuItem>
+                            <MenuItem value={"SMART"} disabled={this.state.currentAppInstallerType !== 'apk'}>Smart</MenuItem>
+                            <MenuItem value={"MONKEY"} disabled={this.state.currentAppInstallerType !== 'apk'}>Monkey</MenuItem>
                             <MenuItem value={"APPIUM_MONKEY"} disabled={this.state.currentAppInstallerType !== 'ipa'}>Appium Monkey</MenuItem>
-                            <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType === 'ipa' || this.state.runTestType === 'T2C_JSON'}>Appium E2E</MenuItem>
-                            <MenuItem value={"T2C_JSON"}>JSON-Described Test</MenuItem>
+                            <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType !== 'apk'}>Appium E2E</MenuItem>
+                            <MenuItem value={"T2C_JSON"} disabled={this.state.currentAppInstallerType === 'zip' }>JSON-Described Test</MenuItem>
+                            <MenuItem value={"XCTEST"} disabled={this.state.currentAppInstallerType !== 'zip'}>XCTest</MenuItem>
                         </Select>
                     </FormControl>
                     <br />
-                    <FormControl fullWidth>
+                    <TextField
+                        disabled
+                        autoFocus
+                        margin="dense"
+                        name="packageName"
+                        label="Package Name"
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                        value={this.state.currentAppPackageName ?? ""}
+                    />
+                    <TextField
+                        autoFocus
+                        hidden={this.state.runTestType === 'XCTEST'}
+                        margin="dense"
+                        name="currentTestPackageName"
+                        type="text"
+                        label="Test Package Name"
+                        fullWidth
+                        variant="standard"
+                        value={this.state.currentTestPackageName ?? ""}
+                        onChange={this.handleValueChange}
+                    /><br />
+                    <FormControl
+                        fullWidth
+                        hidden={this.state.runTestType !== 'INSTRUMENTATION'}>
                         <InputLabel>Espresso test scope</InputLabel>
                         <Select
-                            disabled={this.state.runTestType !== 'INSTRUMENTATION'}
                             margin="dense"
                             value={testScope}
                             fullWidth
@@ -678,7 +620,7 @@ export default class RunnerView extends BaseView {
                         </Select>
                     </FormControl>
                     <TextField
-                        disabled={(runTestType !== "INSTRUMENTATION" && runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS") || (runTestType === "INSTRUMENTATION" && testScope === "TEST_APP")}
+                        hidden={(runTestType !== "INSTRUMENTATION" && runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS") || (runTestType === "INSTRUMENTATION" && testScope === "TEST_APP")}
                         required={runTestType === "INSTRUMENTATION" || runTestType === "APPIUM" || runTestType === "APPIUM_CROSS"}
                         margin="dense"
                         name="testSuiteClass"
@@ -690,7 +632,7 @@ export default class RunnerView extends BaseView {
                         onChange={this.handleValueChange}
                     />
                     <TextField
-                        disabled={runTestType !== "INSTRUMENTATION"}
+                        hidden={runTestType !== "INSTRUMENTATION"}
                         required={runTestType === "INSTRUMENTATION"}
                         margin="dense"
                         name="testRunnerName"
@@ -698,14 +640,15 @@ export default class RunnerView extends BaseView {
                         label="Espresso Runner Name"
                         fullWidth
                         variant="standard"
-                        value={this.state.testRunnerName}
+                        value={this.state.testRunnerName ?? ""}
                         onChange={this.handleValueChange}
                     />
                     <br />
-                    <FormControl fullWidth>
+                    <FormControl
+                        fullWidth
+                        hidden={runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS"}>
                         <InputLabel>Test Framework</InputLabel>
                         <Select
-                            disabled={runTestType !== "APPIUM" && runTestType !== "APPIUM_CROSS"}
                             required={runTestType === "APPIUM" || runTestType === "APPIUM_CROSS"}
                             margin="dense"
                             value={this.state.frameworkType}
@@ -719,29 +662,17 @@ export default class RunnerView extends BaseView {
                     </FormControl>
                 </Box>
             case 1:
-                return <Box sx={{ display: 'flex', flexDirection: 'column', pt: 2 }}>
-                    <TableContainer style={{ margin: "auto", overflowY: 'initial', height: '960px' }}>
-                        <Table size="medium">
-                            <TableHead>
-                                <TableRow>
-                                    {runnableHeads}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {runnableRows}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Box>
+                return runnablePane
             case 2:
                 return <Box sx={{ display: 'flex', flexDirection: 'column', pt: 2 }}>
                     <br />
-                    <FormControl fullWidth>
+                    <FormControl
+                        fullWidth
+                        hidden={!this.state.currentRunnable?.startsWith("G.")}>
                         <InputLabel>Group test type</InputLabel>
                         <Select
                             size="small"
                             margin="dense"
-                            disabled={!this.state.currentRunnable.startsWith("G.")}
                             value={groupTestType}
                             fullWidth
                             name="groupTestType"
@@ -749,10 +680,12 @@ export default class RunnerView extends BaseView {
                             {groupTestTypes.map((c) => <MenuItem value={c} key={c}>{c}</MenuItem>)}
                         </Select>
                     </FormControl>
-                    <Stack direction="row" alignItems="flex-end">
+                    <Stack
+                        direction="row"
+                        alignItems="flex-end"
+                        hidden={runTestType !== "SMART" && runTestType !== "MONKEY" && runTestType !== "APPIUM_MONKEY"}>
                         <TextField
                             required={runTestType === "SMART" || runTestType === "MONKEY" || runTestType === "APPIUM_MONKEY"}
-                            disabled={runTestType !== "SMART" && runTestType !== "MONKEY" && runTestType !== "APPIUM_MONKEY"}
                             margin="dense"
                             name="maxStepCount"
                             type="text"
@@ -768,10 +701,12 @@ export default class RunnerView extends BaseView {
                             </IconButton>
                         </Tooltip>
                     </Stack>
-                    <Stack direction="row" alignItems="flex-end">
+                    <Stack
+                        direction="row"
+                        alignItems="flex-end"
+                        hidden={runTestType !== "SMART"}>
                         <TextField
                             required={runTestType === "SMART"}
-                            disabled={runTestType !== "SMART"}
                             margin="dense"
                             name="deviceTestCount"
                             type="text"
@@ -827,6 +762,7 @@ export default class RunnerView extends BaseView {
                         type="text"
                         label="Needed Permissions"
                         fullWidth
+                        variant="standard"
                         value={this.state.neededPermissions}
                         onChange={this.handleValueChange}
                     />
@@ -836,12 +772,190 @@ export default class RunnerView extends BaseView {
                         type="text"
                         label="Device Actions"
                         fullWidth
+                        variant="standard"
                         multiline={true}
                         value={this.state.deviceActions}
                         onChange={this.handleValueChange}
                     />
                 </Box>
         }
+    }
+
+    renderRunnableGroups(runnableRows) {
+        const groups = this.state.groupList;
+        if (this.state.runTestType === 'XCTEST' || groups == null) {
+            return;
+        }
+
+        groups.forEach((g) => {
+            runnableRows.push(
+                <StyledTableRow key={g.groupName} id={g.groupName}
+                    onClick={() => this.handleStatus('currentRunnable', g.groupName)}
+                    hover>
+                    <TableCell id={g.groupName} align="center">
+                        <Radio className="p-0 m-1" id={g.groupName} color="primary"
+                            checked={this.state.currentRunnable === g.groupName} />
+                    </TableCell>
+                    <TableCell id={g.groupName} align="center">
+                        Group
+                    </TableCell>
+                    <TableCell id={g.groupName} align="center">
+                        {g.groupDisplayName}
+                    </TableCell>
+                    <TableCell id={g.groupName} align="center">
+                        {g.isPrivate ? <span className="material-icons-outlined">lock</span>
+                            : <span className="material-icons-outlined">lock_open</span>}
+                    </TableCell>
+                    <TableCell id={g.groupName} align="center">
+                        Created by {g.owner}
+                    </TableCell>
+                </StyledTableRow>)
+        })
+    }
+
+    renderRunnableDevices(runnableRows) {
+        const brandMap = new Map();
+        brandMap.set('apk', 'Android');
+        brandMap.set('ipa', 'Apple');
+        brandMap.set('zip', 'Apple');
+
+        let deviceList = this.state.deviceList
+        if (this.state.currentAppInstallerType === 'apk') {
+            deviceList = deviceList?.filter((device) => device.brand !== 'Apple')
+        }
+        else {
+            deviceList = deviceList?.filter((device) => device.brand === brandMap.get(this.state.currentAppInstallerType))
+        }
+        deviceList?.forEach((device) => {
+            runnableRows.push(this.renderOneDevice(device))
+        })
+    }
+
+    renderMultiDevices() {
+        let pane = null;
+        let agentList = this.state.agentList;
+        let currentAgent = null;
+
+        const runnableHeads = []
+
+        if (this.state.currentAgentIdForDevices !== "") {
+            let filteredList = agentList.filter((a) =>
+                a.agentId === this.state.currentAgentIdForDevices)
+            if (filteredList && filteredList.length > 0) {
+                currentAgent = filteredList[0];
+            }
+
+            const runnableHeadItems = ['', 'Type', 'Device name', 'Status', 'Description']
+            runnableHeadItems.forEach((k) => runnableHeads.push(
+                <StyledTableCell key={k} align="center">
+                    {k}
+                </StyledTableCell>))
+        }
+
+        pane = (this.state.currentAgentIdForDevices === "" ?
+            // agents
+            <div className='runnable-selection'>
+                <div className='runnable-selection-title'>
+                    <h3>Select Test Agent</h3>
+                </div>
+                <div className='runnable-selection-agents'>{
+                    agentList.map((a) => {
+                        return (
+                            <div
+                                className='runnable-selection-agent'
+                                key={a.agentId}
+                                onClick={() => {
+                                    this.handleStatus("currentRunnableSet", [])
+                                    this.handleStatus("currentAgentIdForDevices", a.agentId)}}>
+                                {a.agentName}
+                            </div>
+                        )
+                    })
+                }
+                </div>
+            </div> :
+
+            // devices
+            <div className='runnable-selection'>
+                <div className='runnable-selection-title'>
+                    <h3>Select Devices under {currentAgent.agentName} Agent</h3>
+                    <Button
+                        style={{ marginLeft: '12px' }}
+                        onClick={() =>
+                            this.handleStatus("currentAgentIdForDevices", "")}>
+                        Back
+                    </Button>
+                </div>
+                <TableContainer style={{ margin: "auto", overflowY: 'initial'}}>
+                    <Table size="medium">
+                        <TableHead>
+                            <TableRow>
+                                {runnableHeads}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>{
+                            currentAgent.devices.map((d) => {
+                                return this.renderOneDevice(d, true)
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </div>
+        );
+
+        return pane
+    }
+
+    renderOneDevice(device, mutiple=false) {
+        return (
+            <StyledTableRow key={device.serialNum} id={device.serialNum}
+                onClick={() => {
+                    if (mutiple) {
+                        let currentSet = this.state.currentRunnableSet;
+                        currentSet = currentSet.filter((d) => d !== device.serialNum);
+                        if (currentSet.length === this.state.currentRunnableSet.length) {
+                            currentSet.push(device.serialNum);
+                        }
+                        this.handleStatus('currentRunnableSet', currentSet);
+                    }
+                    else {
+                        this.handleStatus('currentRunnable', device.serialNum);
+                    }
+                }}
+                hover>
+
+                <TableCell id={device.serialNum} align="center"> {
+                    mutiple ?
+                        this.state.currentRunnableSet.includes(device.serialNum) ?
+                            <span style={{cursor: 'pointer'}} className="material-icons-outlined">check_box</span> :
+                            <span style={{cursor: 'pointer'}} className="material-icons-outlined">check_box_outline_blank</span>
+                        :
+                        <Radio
+                            className="p-0 m-1"
+                            id={device.serialNum}
+                            color="primary"
+                            checked={this.state.currentRunnable === device.serialNum} /> 
+                }
+
+                </TableCell>
+                <TableCell id={device.serialNum} align="center">
+                    Device
+                </TableCell>
+                <TableCell id={device.serialNum} align="center">
+                    {device.serialNum}
+                </TableCell>
+                <TableCell id={device.serialNum} align="center">
+                    {
+                        device.isPrivate || device.status !== "ONLINE" ?
+                            <span className="material-icons-outlined">lock</span> :
+                            <span className="material-icons-outlined">lock_open</span>
+                    }
+                </TableCell>
+                <TableCell id={device.serialNum} align="center">
+                    API{device.osSDKInt} / {device.brand} / {device.model} / {device.screenSize} /
+                    DPI{device.screenDensity}
+                </TableCell>
+            </StyledTableRow>)
     }
 
     handleRunTestSelected = (element) => {
@@ -854,9 +968,9 @@ export default class RunnerView extends BaseView {
 
             const currentAppInfo = res.data.content;
             currentAppInfo.attachments.forEach((attachment) => {
-                if (attachment.fileType == 'APP') {
+                if (attachment.fileType === 'APP') {
                     currentAppInstallerType = attachment.fileName.split(".").pop()
-                } else if (attachment.fileType == 'TEST_APP') {
+                } else if (attachment.fileType === 'TEST_APP') {
                     testPkgName = attachment.fileParser.pkgName
                     currentTestPackageType = attachment.fileName.split(".").pop()
                 }
@@ -866,13 +980,15 @@ export default class RunnerView extends BaseView {
                 currentRunTestType = "T2C_JSON"
             } else if (currentAppInstallerType === "apk") {
                 currentRunTestType = "INSTRUMENTATION"
+            } else if (currentAppInstallerType === "zip") {
+                currentRunTestType = "XCTEST"
             } else {
                 currentRunTestType = "APPIUM"
             }
 
             this.setState({
                 currentAppId: currentId,
-                currentAppInstallerType: currentTestPackageType,
+                currentAppInstallerType: currentAppInstallerType,
                 currentAppInfo: currentAppInfo,
                 currentAppPackageName: currentAppInfo.packageName,
                 currentTestPackageName: testPkgName,
@@ -899,7 +1015,7 @@ export default class RunnerView extends BaseView {
 
     uploadApk = () => {
         if (!this.state.selectedTeamName || !this.state.uploadAppInstallerFile) {
-            this.snackBarMsg("Please upload APK/IPA file and select a team")
+            this.snackBarMsg("Please upload APK/IPA/ZIP file and select a team")
             return
         }
         const formData = new FormData()
@@ -965,7 +1081,8 @@ export default class RunnerView extends BaseView {
             runningType: this.state.runTestType,
             testScope: this.state.testScope,
             testSuiteClass: this.state.testSuiteClass,
-            deviceIdentifier: this.state.currentRunnable,
+            deviceIdentifier: this.state.currentRunnable ?
+                this.state.currentRunnable : this.state.currentRunnableSet.join(','),
             groupTestType: this.state.groupTestType,
             maxStepCount: this.state.maxStepCount,
             deviceTestCount: this.state.deviceTestCount,
@@ -1145,5 +1262,4 @@ export default class RunnerView extends BaseView {
         this.refreshRunnableList()
         this.refreshTeamList()
     }
-
 }

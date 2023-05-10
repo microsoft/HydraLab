@@ -34,19 +34,14 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 }
 
                 if (project.hasProperty('appPath')) {
-                    testConfig.appPath = project.appPath
+                    testConfig.appPath = CommonUtils.validateAndReturnFilePath(project.appPath, "appPath")
                 }
                 if (project.hasProperty('testAppPath')) {
-                    testConfig.testAppPath = project.testAppPath
+                    testConfig.testAppPath = CommonUtils.validateAndReturnFilePath(project.testAppPath, "testAppPath")
                 }
                 if (project.hasProperty('attachmentConfigPath')) {
-                    testConfig.attachmentConfigPath = project.attachmentConfigPath
+                    testConfig.attachmentConfigPath = CommonUtils.validateAndReturnFilePath(project.attachmentConfigPath, "attachmentConfigPath")
                 }
-                // validate file path
-                testConfig.appPath = CommonUtils.validateAndReturnFilePath(testConfig.appPath, "appPath")
-                testConfig.testAppPath = CommonUtils.validateAndReturnFilePath(testConfig.testAppPath, "testAppPath")
-                testConfig.attachmentConfigPath = CommonUtils.validateAndReturnFilePath(testConfig.attachmentConfigPath, "attachmentConfigPath")
-
 
                 if (project.hasProperty('hydraLabAPISchema')) {
                     apiConfig.schema = project.hydraLabAPISchema
@@ -113,6 +108,12 @@ class ClientUtilsPlugin implements Plugin<Project> {
                         testConfig.queueTimeOutSeconds = testConfig.runTimeOutSeconds
                     }
                 }
+                if (project.hasProperty('appVersion')) {
+                    testConfig.appVersion = project.appVersion
+                }
+                if (project.hasProperty('skipInstall')) {
+                    testConfig.skipInstall = Boolean.parseBoolean(project.skipInstall)
+                }
                 if (project.hasProperty('needUninstall')) {
                     testConfig.needUninstall = Boolean.parseBoolean(project.needUninstall)
                 }
@@ -146,6 +147,14 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 else if (project.hasProperty('deviceTestCount')) {
                     testConfig.testRound = Integer.parseInt(project.deviceTestCount)
                 }
+                if (project.hasProperty('inspectionStrategiesStr')) {
+                    // add quotes back as quotes in gradle plugins will be replaced by blanks
+                    testConfig.inspectionStrategiesStr = project.inspectionStrategiesStr.replace("\\", "\"")
+                }
+                if (project.hasProperty('enableFailingTask')) {
+                    // add quotes back as quotes in gradle plugins will be replaced by blanks
+                    testConfig.enableFailingTask = Boolean.parseBoolean(project.enableFailingTask)
+                }
 
                 requiredParamCheck(apiConfig, testConfig)
 
@@ -166,7 +175,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 || testConfig.runTimeOutSeconds == 0
                 || StringUtils.isBlank(testConfig.deviceConfig.deviceIdentifier)
         ) {
-            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIhost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')
+            throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIHost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')
         }
 
         // running type specified params

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.center;
 
+import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import lombok.Data;
@@ -23,15 +24,14 @@ public class AgentDeviceGroup {
     private String userName;
     private String hostname;
     private String ip;
-    private int agentDeviceType;
     private List<DeviceInfo> devices;
+    private List<AgentFunctionAvailability> functionAvailabilities;
 
     public void initWithAgentUser(AgentUser agentUser) {
         agentId = agentUser.getId();
         agentName = agentUser.getName();
         agentOS = agentUser.getOs();
         agentRole = agentUser.getRole();
-        agentDeviceType = agentUser.getDeviceType();
         teamId = agentUser.getTeamId();
         teamName = agentUser.getTeamName();
         userName = agentUser.getMailAddress();
@@ -39,6 +39,7 @@ public class AgentDeviceGroup {
         ip = agentUser.getIp();
         agentVersionName = agentUser.getVersionName();
         agentVersionCode = agentUser.getVersionCode();
+        functionAvailabilities = agentUser.getFunctionAvailabilities();
     }
 
     public interface Status {

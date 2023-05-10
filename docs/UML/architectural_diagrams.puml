@@ -1,0 +1,217 @@
+' What is C4? https://c4model.com/
+
+@startuml c4_modeling_context
+
+!include <tupadr3/devicons2/react_original>
+!include <tupadr3/devicons2/java>
+!include <tupadr3/devicons2/gradle>
+!include <tupadr3/devicons2/spring>
+!include <tupadr3/devicons2/docker>
+!include <azure/AzureCommon>
+!include <azure/DevOps/AzurePipelines>
+skinparam node {
+    backgroundColor #Business
+}
+title Context Diagram - Hydra Lab Architecture
+
+' supported level keywords: database, frame, folder, cloud, node, component, entity
+actor "User: Software Engineer" as dev #SeaShell
+
+package "Hydra Lab Test Automation Platform" as framework #MintCream {
+    frame "Hydra Lab Test Center" <<$docker>> as center #Azure {
+        node "Test agent session pool" as session_pool
+        node "Test Agent Sub-system"
+        node "Test Sub-system"
+        node "User Sub-system"
+        node "Metric Alerting"
+    }
+    node "Hydra Lab Web Portal" <<$react_original>> as UI #Azure
+    interface "HTTP RESTful API" as api #Azure
+    center -u- api: expose
+    UI --> api: call
+
+    node "Hydra Lab Azure DevOps\n Integration Extension" as ADOExtension #Ivory
+    node "Hydra Lab Gradle Plugin" as gradle #Ivory
+
+    frame "Hydra Lab Test Agent" <<$java>> as agent #Linen {
+        node "Test center connection" as center_connection
+        node "Test task engine"
+        node "Test device management"
+        node "Agent management"
+    }
+    frame "Hydra Lab Test Agent Starter" as starter #Motivation
+}
+
+frame "Gradle Build System" <<$gradle>> as gbs #LightSeaGreen
+frame "Azure DevOps Pipeline" <<$AzurePipelines>> as ADO #DeepSkyBlue
+
+dev ..>> gbs: run test
+dev ..>> ADO: trigger build
+ADO ..>> ADOExtension: integrate
+gbs ..>> gradle: run test
+ADOExtension ..> api
+gradle ..> api: call run test task API
+
+dev -->> UI: Login, run test,\n manage team and device,\n view test result, get API token
+dev ..>> starter: run it on the test\n agent machine
+starter -->> agent: install, start
+session_pool ... center_connection: communicate, manage,\n assign test, sync status
+'trv ...> storage: download
+
+@enduml
+
+@startuml c4_modeling_container_component_center
+
+!include <tupadr3/devicons2/spring>
+!include <tupadr3/devicons2/docker>
+!include <tupadr3/devicons2/react_original>
+!include <azure/AzureCommon>
+!include <azure/general/Azure>
+!include <logos/grafana>
+!include <logos/nginx>
+!include <logos/prometheus>
+!include <azure/Storage/AzureBlobStorage>
+!include <azure/Databases/AzureSqlDatabase>
+!include <azure/Identity/AzureManagedIdentity>
+!include <office/Servers/application_server>
+
+skinparam defaultFontName "Segoe UI"
+skinparam node {
+backgroundColor #Business
+}
+skinparam database {
+backgroundColor #Physical
+}
+skinparam component {
+backgroundColor #MintCream
+}
+
+title Container Diagram - Hydra Lab Test Center Architecture
+left to right direction
+
+package "Azure Cloud Services" <<$Azure>> as framework #Ivory {
+    frame "Hydra Lab Test Center Container" <<$docker>> as center #LightSkyBlue {
+        frame "Hydra Lab Web Portal" <<$react_original>> as UI #Motivation
+        frame "Hydra lab Center Spring Boot Application" <<$spring>> as service #MediumSpringGreen {
+            node "Test agent session pool" as session_pool
+            component "Test Agent Sub-system" {
+                node "Test agent management"
+                node "Device group management"
+                node "Agent registration management"
+                database "Agent data management"
+            }
+            component "Test Sub-system" as ts {
+                node "App package management" as apm
+                node "Test task management"
+                database "Test Data Management"
+                node "Test result visualization" as trv
+            }
+            component "User Sub-system" as us {
+                node "Team management"
+                node "User Authentication"
+                node "Permission management"
+                database "User data management"
+            }
+            interface StorageClientAdapter as sca
+            node "Prometheus Metric Client" as pmc
+        }
+        interface "HTTP RESTful API\n Nginx Gateway" <<$nginx>> as api #Azure
+        service -- api: expose\n
+        UI -l-> api
+
+        component "Grafana Data Visualization System" <<$grafana>> as grafana #Orange
+        component "Prometheus Test Metrics Data System" <<$prometheus>> as prometheus #Lavender {
+            database "Prometheus Server" as ps
+            node "Prometheus Push Gateway" as ppg
+            ps ..> ppg: pull data
+        }
+
+        grafana .r.> prometheus: visualize data
+    }
+
+    cloud "Azure Blob Storage" <<$AzureBlobStorage>> as storage #Azure
+    database "Azure SQL Server" <<$AzureSqlDatabase>> as sql_server #Azure
+    cloud "3rd Party User Identity Provider" <<$AzureManagedIdentity>> as uip #Azure
+
+}
+
+package "Test agent machine" <<$application_server>>  {
+    frame "Hydra Lab Test Agent Spring Boot Application" <<$spring>> as agent #MediumSpringGreen
+}
+
+ts -r-> sca
+agent ..> ppg: push metrics data
+@enduml
+
+@startuml c4_modeling_container_component_agent
+!include <azure/AzureCommon>
+!include <azure/general/Azure>
+!include <tupadr3/devicons2/spring>
+!include <logos/sqlite>
+!include <logos/android>
+!include <tupadr3/govicons/script>
+!include <azure/Storage/AzureBlobStorage>
+!include <office/Servers/application_server>
+skinparam node {
+backgroundColor #Business
+}
+skinparam database {
+backgroundColor #Physical
+}
+skinparam component {
+backgroundColor #MintCream
+}
+
+title Container Diagram - Hydra Lab Test Agent Service Architecture
+
+left to right direction
+package "Test agent machine" <<$application_server>> as machine #Ivory {
+
+    frame "Hydra Lab Test Agent Spring Boot Application" <<$spring>> as agent #MediumSpringGreen {
+        node "Test center connection" as center_connection
+        component "Test task engine" as engine {
+            node "Test task execution pool"
+            node "Test runner manager" as trm {
+                node "Test runner" as tr
+            }
+            node "Package installer" as pi
+            folder Driver {
+                node "Device Driver" as dd #Gold
+                node "Test framework driver" as tfd #Gold
+                component "Hydra Lab Android Client App" <<$android>> #LightGreen {
+                    node "Screen recording service"
+                }
+            }
+            pi ..> dd
+            tr --> dd
+            tr --> tfd
+        }
+        interface StorageClientAdapter as sca
+        engine -- sca
+        database "Test agent local database" <<$sqlite>> as db
+        node "Test device management"
+        component "Agent management" {
+            node "Agent registration"
+            node "Agent heartbeat"
+            node "Environment capability discovery"
+        }
+    }
+    frame "Hydra Lab Test Agent Starter" <<$script>> as starter #Motivation {
+        node "Test agent starter"
+        node "Test agent installer"
+    }
+}
+
+cloud #Azure {
+    frame "Hydra Lab Test Center Container" as center #LightSkyBlue
+}
+
+component "Connected Mobile Device" as device
+
+cloud "Azure Blob Storage" <<$AzureBlobStorage>> as storage #Azure
+starter --> agent: install, start
+center .u. center_connection: communicate, communicate, manage,\n update test result, sync status
+sca ..> storage: download, upload
+machine --> device: connect
+
+@enduml

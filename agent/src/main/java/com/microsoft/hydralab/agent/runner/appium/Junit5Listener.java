@@ -3,14 +3,11 @@
 
 package com.microsoft.hydralab.agent.runner.appium;
 
-import cn.hutool.core.img.ImgUtil;
-import cn.hutool.core.img.gif.AnimatedGifEncoder;
+import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
-import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
-import com.microsoft.hydralab.common.logger.LogCollector;
-import com.microsoft.hydralab.common.management.DeviceManager;
-import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -19,48 +16,39 @@ import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.slf4j.Logger;
 
-import javax.imageio.ImageIO;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 public class Junit5Listener extends SummaryGeneratingListener {
-    private final DeviceManager deviceManager;
+    private final AgentManagementService agentManagementService;
     private final PerformanceTestListener performanceTestListener;
-    private final DeviceInfo deviceInfo;
+    private final TestRunDevice testRunDevice;
     private final TestRun testRun;
-    private final LogCollector logcatCollector;
-    private final ScreenRecorder deviceScreenRecorder;
     private final Logger logger;
-    private final AnimatedGifEncoder e = new AnimatedGifEncoder();
     private final String pkgName;
     private long recordingStartTimeMillis;
-    private int index;
-    private File gifFile;
     private boolean alreadyEnd = false;
     private AndroidTestUnit ongoingTestUnit;
-    private int pid;
-    private int addedFrameCount;
     private String currentTestName = "";
     private int currentTestIndex = 0;
+    private TestRunDeviceOrchestrator testRunDeviceOrchestrator;
 
-    public Junit5Listener(DeviceManager deviceManager, DeviceInfo deviceInfo, TestRun testRun, String pkgName,
+    public Junit5Listener(AgentManagementService agentManagementService, TestRunDevice testRunDevice, TestRun testRun,
+                          String pkgName, TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                           PerformanceTestListener performanceTestListener, Logger logger) {
-        this.deviceManager = deviceManager;
-        this.deviceInfo = deviceInfo;
+        this.agentManagementService = agentManagementService;
+        this.testRunDevice = testRunDevice;
         this.testRun = testRun;
         this.logger = logger;
         this.pkgName = pkgName;
         this.performanceTestListener = performanceTestListener;
-        logcatCollector = deviceManager.getLogCollector(deviceInfo, pkgName, testRun, logger);
-        deviceScreenRecorder = deviceManager.getScreenRecorder(deviceInfo, testRun.getResultFolder(), logger);
+        this.testRunDeviceOrchestrator = testRunDeviceOrchestrator;
     }
 
     public File getGifFile() {
-        return gifFile;
+        return testRunDevice.getGifFile();
     }
 
     private void logEnter(Object... args) {
@@ -74,26 +62,17 @@ public class Junit5Listener extends SummaryGeneratingListener {
     }
 
     public void startRecording(int maxTime) {
-        startTools();
         logger.info("Start record screen");
-        deviceScreenRecorder.setupDevice();
-        deviceScreenRecorder.startRecord(maxTime <= 0 ? 30 * 60 : maxTime);
+        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime <= 0 ? 30 * 60 : maxTime, logger);
+        logger.info("Start gif frames collection");
+        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        logger.info("Start logcat collection");
+        testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
+        testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
-        deviceInfo.setRunningTestName(initializing);
+        testRunDeviceOrchestrator.setRunningTestName(testRunDevice, initializing);
         testRun.addNewTimeTag(initializing, 0);
-    }
-
-    private void startTools() {
-        logger.info("Start gif frames collection");
-        gifFile = new File(testRun.getResultFolder(), pkgName + ".gif");
-        e.start(gifFile.getAbsolutePath());
-        e.setDelay(1000);
-        e.setRepeat(0);
-
-        logger.info("Start logcat collection");
-        String logcatFilePath = logcatCollector.start();
-        testRun.setLogcatPath(deviceManager.getTestBaseRelPathInUrl(new File(logcatFilePath)));
     }
 
     @Override
@@ -105,7 +84,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
         testRun.setTotalCount(testCount);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceInfo.setRunningTestName(runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
+        testRunDeviceOrchestrator.setRunningTestName(testRunDevice, runName.substring(runName.lastIndexOf('.') + 1) + ".testRunStarted");
         performanceTestListener.testRunStarted();
         logEnter(runName, testCount);
     }
@@ -129,19 +108,8 @@ public class Junit5Listener extends SummaryGeneratingListener {
                     testRun.setCrashStack(errorMessage);
                 }
             }
-            if (e.isStarted() && addedFrameCount < 2) {
-                try {
-                    File imagePNGFile = deviceManager.getScreenShot(deviceInfo, logger);
-                    e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                } catch (Exception exception) {
-                    logger.error(exception.getMessage(), e);
-                }
-            }
-
         }
-
         performanceTestListener.testRunFinished();
-
         logEnter("testRunEnded", elapsedTime, Thread.currentThread().getName());
         synchronized (this) {
             if (alreadyEnd) {
@@ -149,8 +117,10 @@ public class Junit5Listener extends SummaryGeneratingListener {
             }
             testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.onTestEnded();
-            deviceInfo.setRunningTestName(null);
-            releaseResource();
+            testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
+            testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+            testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
             alreadyEnd = true;
         }
     }
@@ -203,30 +173,16 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
         testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(),
                 System.currentTimeMillis() - recordingStartTimeMillis);
-        deviceInfo.setRunningTestName(ongoingTestUnit.getTitle());
+        testRunDeviceOrchestrator.setRunningTestName(testRunDevice, ongoingTestUnit.getTitle());
 
         ongoingTestUnit.setDeviceTestResultId(testRun.getId());
         ongoingTestUnit.setTestTaskId(testRun.getTestTaskId());
 
         testRun.addNewTestUnit(ongoingTestUnit);
 
-        deviceManager.updateScreenshotImageAsyncDelay(deviceInfo, TimeUnit.SECONDS.toMillis(15), (imagePNGFile -> {
-            if (imagePNGFile == null) {
-                return;
-            }
-            if (!e.isStarted()) {
-                return;
-            }
-            try {
-                e.addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imagePNGFile), 0.3f)));
-                addedFrameCount++;
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }), logger);
+        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
 
         performanceTestListener.testStarted(ongoingTestUnit.getTitle());
-
     }
 
     @Override
@@ -261,12 +217,6 @@ public class Junit5Listener extends SummaryGeneratingListener {
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
         testRun.addNewTimeTag(ongoingTestUnit.getTitle() + ".end",
                 System.currentTimeMillis() - recordingStartTimeMillis);
-    }
-
-    private void releaseResource() {
-        e.finish();
-        deviceScreenRecorder.finishRecording();
-        logcatCollector.stopAndAnalyse();
     }
 
     public String getTrace(Throwable throwable) {

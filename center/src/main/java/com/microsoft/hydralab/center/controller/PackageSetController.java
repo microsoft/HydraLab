@@ -56,8 +56,8 @@ import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_FILE_BASE
 @RestController
 public class PackageSetController {
     private final Logger logger = LoggerFactory.getLogger(PackageSetController.class);
-    public SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-    public int message_length = 200;
+    private final SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    private final int messageLength = 200;
     @Resource
     AttachmentService attachmentService;
     @Resource
@@ -77,6 +77,7 @@ public class PackageSetController {
      * 2) members of the TEAM that fileSet is in
      */
     @PostMapping(value = {"/api/package/add"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("ParameterNumber")
     public Result add(@CurrentSecurityContext SysUser requestor,
                       @RequestParam(value = "teamName", required = false) String teamName,
                       @RequestParam(value = "commitId", required = false) String commitId,
@@ -84,14 +85,16 @@ public class PackageSetController {
                       @RequestParam(value = "commitMessage", defaultValue = "") String commitMessage,
                       @RequestParam(value = "buildType", defaultValue = "debug") String buildType,
                       @RequestParam("appFile") MultipartFile appFile,
+                      @RequestParam(value = "appVersion", required = false) String appVersion, // required only for apps with param skipInstall = true
                       @RequestParam(value = "testAppFile", required = false) MultipartFile testAppFile) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
+        String localTeamName = teamName;
         if (StringUtils.isEmpty(teamName)) {
-            teamName = requestor.getDefaultTeamName();
+            localTeamName = requestor.getDefaultTeamName();
         }
-        SysTeam team = sysTeamService.queryTeamByName(teamName);
+        SysTeam team = sysTeamService.queryTeamByName(localTeamName);
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
@@ -101,49 +104,56 @@ public class PackageSetController {
         if (appFile.isEmpty()) {
             return Result.error(HttpStatus.FORBIDDEN.value(), "apk file empty");
         }
+        String localCommitId = commitId;
         if (!LogUtils.isLegalStr(commitId, Const.RegexString.COMMON_STR, true)) {
-            commitId = "commitId";
+            localCommitId = "commitId";
         }
+        String localBuildType = buildType;
         if (!LogUtils.isLegalStr(buildType, Const.RegexString.COMMON_STR, false)) {
-            buildType = "debug";
+            localBuildType = "debug";
         }
         int commitCountInt = Integer.parseInt(commitCount);
-        commitMessage = commitMessage.replaceAll("[\\t\\n\\r]", " ");
-        if (commitMessage.length() > message_length) {
-            commitMessage = commitMessage.substring(0, message_length);
+        String localCommitMessage = commitMessage.replaceAll("[\\t\\n\\r]", " ");
+        if (localCommitMessage.length() > messageLength) {
+            localCommitMessage = localCommitMessage.substring(0, messageLength);
         }
-        logger.info("commitId: {}, commitMessage: {}, buildType: {}, commitCount: {}", commitId, commitMessage, buildType,
+        logger.info("commitId: {}, commitMessage: {}, buildType: {}, commitCount: {}", localCommitId, localCommitMessage, localBuildType,
                 commitCountInt);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
 
         try {
-            String relativePath = FileUtil.getPathForToday();
+            String relativeParent = FileUtil.getPathForToday();
             //Init test file set info
             TestFileSet testFileSet = new TestFileSet();
-            testFileSet.setBuildType(buildType);
-            testFileSet.setCommitId(commitId);
-            testFileSet.setCommitMessage(commitMessage);
+            testFileSet.setBuildType(localBuildType);
+            testFileSet.setCommitId(localCommitId);
+            testFileSet.setCommitMessage(localCommitMessage);
             testFileSet.setCommitCount(commitCount);
             testFileSet.setTeamId(team.getTeamId());
             testFileSet.setTeamName(team.getTeamName());
 
             //Save app file to server
             File tempAppFile =
-                    attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativePath, false, null, new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE});
-            StorageFileInfo appFileInfo = new StorageFileInfo(tempAppFile, relativePath, StorageFileInfo.FileType.APP_FILE);
+                    attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativeParent, false, null,
+                            new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE, FILE_SUFFIX.ZIP_FILE});
+            StorageFileInfo appFileInfo = new StorageFileInfo(tempAppFile, relativeParent, StorageFileInfo.FileType.APP_FILE);
             //Upload app file
             appFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appFileInfo, tempAppFile, logger);
             JSONObject appFileParser = appFileInfo.getFileParser();
             testFileSet.setAppName(appFileParser.getString(ParserKey.APP_NAME));
             testFileSet.setPackageName(appFileParser.getString(ParserKey.PKG_NAME));
-            testFileSet.setVersion(appFileParser.getString(ParserKey.VERSION));
+            if (StringUtils.isBlank(appVersion)) {
+                testFileSet.setVersion(appFileParser.getString(ParserKey.VERSION));
+            } else {
+                testFileSet.setVersion(appVersion);
+            }
             testFileSet.getAttachments().add(appFileInfo);
 
             //Save test app file to server if exist
             if (testAppFile != null && !testAppFile.isEmpty()) {
-                File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativePath, false, null,
+                File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativeParent, false, null,
                         new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE});
 
-                StorageFileInfo testAppFileInfo = new StorageFileInfo(tempTestAppFile, relativePath, StorageFileInfo.FileType.TEST_APP_FILE);
+                StorageFileInfo testAppFileInfo = new StorageFileInfo(tempTestAppFile, relativeParent, StorageFileInfo.FileType.TEST_APP_FILE);
                 //Upload app file
                 testAppFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, testAppFileInfo, tempTestAppFile, logger);
                 testFileSet.getAttachments().add(testAppFileInfo);
@@ -231,11 +241,11 @@ public class PackageSetController {
             return Result.error(HttpStatus.FORBIDDEN.value(), "package file empty");
         }
 
-        String fileRelativePath = FileUtil.getPathForToday();
-        String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
+        String fileRelativeParent = FileUtil.getPathForToday();
+        String parentDir = CENTER_FILE_BASE_DIR + fileRelativeParent;
         try {
             File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
-            StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativePath, StorageFileInfo.FileType.AGENT_PACKAGE);
+            StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativeParent, StorageFileInfo.FileType.AGENT_PACKAGE);
             return Result.ok(attachmentService.saveFileInStorageAndDB(storageFileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
@@ -263,10 +273,11 @@ public class PackageSetController {
         if (!LogUtils.isLegalStr(packageName, Const.RegexString.PACKAGE_NAME, false)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "The packagename is illegal");
         }
-        if (StringUtils.isEmpty(teamName)) {
-            teamName = requestor.getDefaultTeamName();
+        String localTeamName = teamName;
+        if (StringUtils.isEmpty(localTeamName)) {
+            localTeamName = requestor.getDefaultTeamName();
         }
-        SysTeam team = sysTeamService.queryTeamByName(teamName);
+        SysTeam team = sysTeamService.queryTeamByName(localTeamName);
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
@@ -405,11 +416,11 @@ public class PackageSetController {
         }
         try {
             String newFileName = FileUtil.getLegalFileName(attachment.getOriginalFilename());
-            String fileRelativePath = FileUtil.getPathForToday();
-            String parentDir = CENTER_FILE_BASE_DIR + fileRelativePath;
+            String fileRelativeParent = FileUtil.getPathForToday();
+            String parentDir = CENTER_FILE_BASE_DIR + fileRelativeParent;
 
             File savedAttachment = attachmentService.verifyAndSaveFile(attachment, parentDir, false, newFileName, limitFileTypes);
-            StorageFileInfo storageFileInfo = new StorageFileInfo(savedAttachment, fileRelativePath, fileType, loadType, loadDir);
+            StorageFileInfo storageFileInfo = new StorageFileInfo(savedAttachment, fileRelativeParent, fileType, loadType, loadDir);
             attachmentService.addAttachment(fileSetId, EntityType.APP_FILE_SET, storageFileInfo, savedAttachment, logger);
             testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
             testFileSetService.saveFileSetToMem(testFileSet);
