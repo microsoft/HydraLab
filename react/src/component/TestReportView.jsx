@@ -12,14 +12,12 @@ import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Button from "@mui/material/Button";
 import axios from "@/axios";
 import PerfTestDashboard from './PerfTestDashboard';
-import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
+import Sigma from "sigma";
 import Graph from "graphology";
-import { parse } from "graphology-gexf";
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import { EdgeShapes, Filter, LoadGEXF, NodeShapes, Sigma,ForceAtlas2,RelativeSize } from "react-sigma";
-import Grid from "@material-ui/core/Grid";
-import Stack from "@mui/material/Stack";
+import { parse } from "graphology-gexf/browser";
+import FA2Layout from "graphology-layout-forceatlas2/worker";
+import forceAtlas2 from "graphology-layout-forceatlas2";
+
 
 const COLORS = ['#00C49F', '#FF8042'];
 const badgeList = ['primary', 'info', 'secondary', 'light'];
@@ -54,14 +52,16 @@ export default class TestReportView extends React.Component {
         task: this.props.testTask,
         history: null,
         overNode: null,
-        clickNode: null,
         selectedPath: [],
         graphFileId: null,
         graph: null,
+        renderer: null,
+        hoveredNode: null,
+        hoveredNeighbors: undefined
     };
 
-
     render() {
+        console.log("render")
         const task = this.state.task
         let taskDatetime = moment(task.startDate).format(formatDate);
         const history = this.state.history
@@ -266,7 +266,7 @@ export default class TestReportView extends React.Component {
                 </table>
             </div>
             <div id='test_report_content_1'>
-                {chunkedFailedDeviceResult ? <div>
+                {chunkedFailedDeviceResult && task.runningType !== 'SMART' ? <div>
                     <table className='table table-borderless'>
                         <thead className="thead-info">
                             <tr className="table-info">
@@ -494,40 +494,149 @@ export default class TestReportView extends React.Component {
                             </tr>
                         </thead>
                     </table>
-                    <Container maxWidth={false}>
-                        <Stack direction="row">
-                            <Box style={{ width: '200px', height: '400px' }}>
-                                {this.state.overNode ? <img style={{ width: '180px', height: '400px' }} src={"/api/test/loadNodePhoto/" + this.state.graphFileId + "?node=" + this.state.overNode} alt={this.state.overNode} /> : null}
-                            </Box>
-                            <Sigma renderer="canvas" style={{ width: '1000px', height: '400px' }}
-                                onOverNode={(e) => { this.setState({ overNode: e.data.node.label }) }}
-                                onClickNode={e => {
-                                    this.setState({ selectedPath: this.state.selectedPath.concat([e.data.node.label]), clickNode: e.data.node.label })
-                                    console.log(this.state.selectedPath)
-                                }}
-                            >
-                                <EdgeShapes default="arrow" />
-                                <NodeShapes default="def" />
-                                <LoadGEXF path={"/api/test/loadGraph/" + this.state.graphFileId} />
-                                <Filter nodesBy={(node) => {
-                                    if (this.state.clickNode) {
-                                        return this.state.clickNode === node || this.state.graph.outNeighbors(this.state.clickNode).includes(node.label)
-                                    }
-                                    return true
-                                }} />
-                                <ForceAtlas2 worker barnesHutOptimize barnesHutTheta={0.6} iterationsPerRender={10} linLogMode timeout={3000}/>
-		                        <RelativeSize initialSize={15}/>
-                            </Sigma>
-                        </Stack>
-                        <Stack direction="row">
-                            <h5 className='mt-1' style={{ width: '1000px' }}>Selected Path: [ {this.state.selectedPath.join(' --> ')} ]</h5>
-                            <Button variant="outlined" color="info" onClick={() => { this.setState({ selectedPath: [], clickNode: null }) }}>Clear</Button>
-                            <Button variant="outlined" color="info" onClick={() => { }}>Generate</Button>
-                        </Stack>
-                    </Container>
+                    <table className='table table-borderless'>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <h5 className='mt-1' style={{ width: '800px' }}>Selected Path: [ {this.state.selectedPath.join(' --> ')} ]</h5>
+                                </td>
+                                <td>
+                                    <Button variant="outlined" color="info" onClick={() => {
+                                        this.setState({ selectedPath: [] })
+                                        this.setHoveredNode(undefined);
+                                    }}>Clear</Button>
+                                    <Button variant="outlined" color="info" onClick={() => { this.generateJSON() }}>Generate</Button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div ref={this.loadGEXF} id="sigma-container" style={{ width: '800px', height: '400px' }} />
+                                </td>
+                                <td >
+                                    <div style={{ width: '200px', height: '400px' }}>
+                                        {this.state.overNode ? <img style={{ width: '200px', height: '400px' }} src={"/api/test/loadNodePhoto/" + this.state.graphFileId + "?node=" + this.state.overNode} alt={this.state.overNode} /> : null}
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div> : null}
             </div>
         </div>
+    }
+
+    loadGEXF = c => {
+        axios.get("/api/test/loadGraph/" + this.state.graphFileId).then((res) => {
+            this.setState({
+                graph: parse(Graph, String(res.data)),
+                container: c
+            })
+            this.loadGraph()
+        })
+    }
+
+    loadGraph() {
+        this.state.renderer = new Sigma(this.state.graph, this.state.container, {
+            minCameraRatio: 0.5,
+            maxCameraRatio: 1.5,
+            defaultEdgeType: "arrow",
+            allowInvalidContainer: true,
+        });
+        this.state.graph.dropNode(-1)
+        // update the position of nodes by ForceAtlas2
+        const sensibleSettings = forceAtlas2.inferSettings(this.state.graph);
+        const fa2Layout = new FA2Layout(this.state.graph, {
+            settings: sensibleSettings,
+        });
+        fa2Layout.start();
+
+        this.state.renderer.on("clickNode", ({ node }) => {
+            if (node === this.state.hoveredNode || (this.state.hoveredNeighbors && !this.state.hoveredNeighbors.has(node))) {
+                return
+            }
+            this.setState({ selectedPath: this.state.selectedPath.concat([node]) })
+            this.setHoveredNode(node);
+        });
+
+        this.state.renderer.on("enterNode", ({ node }) => {
+            this.setState({ overNode: node })
+        });
+
+        this.state.renderer.setSetting("nodeReducer", (node, data) => {
+            const res = { ...data };
+
+            if (this.state.hoveredNeighbors && !this.state.hoveredNeighbors.has(node) && this.state.hoveredNode !== node) {
+                res.label = "";
+                res.color = "#f6f6f6";
+            }
+
+            if (this.state.hoveredNode === node) {
+                res.highlighted = true;
+            }
+
+            return res;
+        });
+
+        this.state.renderer.setSetting("edgeReducer", (edge, data) => {
+            const res = { ...data };
+            if (this.state.hoveredNode && !(this.state.graph._edges.get(edge).source.key === this.state.hoveredNode)) {
+                res.hidden = true;
+            }
+            return res;
+        });
+    }
+
+    setHoveredNode(node) {
+        if (node) {
+            this.state.hoveredNode = node;
+            this.state.hoveredNeighbors = new Set(this.state.graph.outNeighbors(node));
+        } else {
+            this.state.hoveredNode = undefined;
+            this.state.hoveredNeighbors = undefined;
+        }
+
+        // Refresh rendering:
+        this.state.renderer.refresh();
+    }
+
+    generateJSON() {
+        axios({
+            url: `/api/test/generateT2C/` + this.state.graphFileId + "?testRunId=" + this.state.testRunId + "&path=" + this.state.selectedPath.join(','),
+            method: 'GET',
+            responseType: 'blob'
+        }).then((res) => {
+            if (res.data.type.includes('application/json')) {
+                let reader = new FileReader()
+                reader.onload = function () {
+                    let result = JSON.parse(reader.result)
+                    if (result.code !== 200) {
+                        this.setState({
+                            snackbarIsShown: true,
+                            snackbarSeverity: "error",
+                            snackbarMessage: "The file could not be downloaded"
+                        })
+                    }
+                }
+                reader.readAsText(res.data)
+            } else {
+                const href = URL.createObjectURL(res.data);
+                const link = document.createElement('a');
+                link.href = href;
+                link.setAttribute('download', this.stare.task.packegeName + '_t2c.json');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(href);
+
+                if (res.data.code === 200) {
+                    this.setState({
+                        snackbarIsShown: true,
+                        snackbarSeverity: "success",
+                        snackbarMessage: "T2C JSON file downloaded"
+                    })
+                }
+            }
+        }).catch(this.snackBarError);
     }
 
     getDeviceLabel = (name) => {
@@ -588,17 +697,6 @@ export default class TestReportView extends React.Component {
         }).catch(this.snackBarError)
     }
 
-    loadGEXF() {
-        axios.get("/api/test/loadGraph/" + this.state.graphFileId)
-            .then((res) => {
-                this.state.graph = new Graph();
-
-                this.setState({
-                    graph: parse(Graph, String(res.data))
-                })
-            })
-    }
-
     componentDidMount() {
         console.log("componentDidMount")
         console.log(this.props.testTask)
@@ -609,8 +707,6 @@ export default class TestReportView extends React.Component {
                 this.state.graphFileId = attachment.fileId
             }
         })
-        this.loadGEXF()
     }
-
 
 }

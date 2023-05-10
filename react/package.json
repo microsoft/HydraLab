@@ -47,6 +47,7 @@
     "file-loader": "^6.2.0",
     "graphology": "^0.25.1",
     "graphology-gexf": "^0.10.3",
+    "graphology-layout-forceatlas2":"^0.8.1",
     "jquery": "^3.5.1",
     "local-storage": "^2.0.0",
     "prop-types": "^15.8.1",
