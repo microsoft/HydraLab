@@ -15,6 +15,7 @@ import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
@@ -25,6 +26,8 @@ import com.microsoft.hydralab.common.util.DownloadUtils;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.t2c.runner.T2CJsonGenerator;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_TEMP_FILE_DIR;
@@ -321,4 +325,30 @@ public class TestDetailController {
         }
         return graphZipFile;
     }
+
+    @GetMapping(value = {"/api/test/generateT2C/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<String> generateT2CJsonFromSmartTest(@CurrentSecurityContext SysUser requestor,
+                                                       @PathVariable(value = "fileId") String fileId,
+                                                       @RequestParam(value = "testRunId") String testRunId,
+                                                       @RequestParam(value = "path") String path) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+
+        File graphZipFile = loadGraphFile(fileId);
+        File graphFile = new File(graphZipFile.getParentFile().getAbsolutePath(), Const.SmartTestConfig.GRAPH_FILE_NAME);
+        String t2cJson = null;
+
+        TestRun testRun = testDataService.findTestRunById(testRunId);
+        TestTask testTask = testDataService.getTestTaskDetail(testRun.getTestTaskId());
+        try (FileInputStream in = new FileInputStream(graphFile)) {
+            String graphXml = IOUtils.toString(in, StandardCharsets.UTF_8);
+            t2cJson = T2CJsonGenerator.generateT2CJsonFromGraphXml(graphXml, path, logger, testTask.getPkgName(), "ANDROID");
+        } catch (Exception e) {
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error when parse graph xml");
+        }
+
+        return Result.ok(t2cJson);
+    }
+
 }
