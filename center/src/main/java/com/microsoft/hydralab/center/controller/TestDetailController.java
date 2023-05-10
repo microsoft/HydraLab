@@ -16,10 +16,13 @@ import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.file.AccessToken;
+import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
+import com.microsoft.hydralab.common.util.AttachmentService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DownloadUtils;
+import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,13 +36,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+
+import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_TEMP_FILE_DIR;
 
 @RestController
 @RequestMapping
@@ -53,6 +64,10 @@ public class TestDetailController {
     StorageTokenManageService storageTokenManageService;
     @Resource
     StorageFileInfoRepository storageFileInfoRepository;
+    @Resource
+    AttachmentService attachmentService;
+    @Resource
+    StorageServiceClientProxy storageServiceClientProxy;
 
     /**
      * Authenticated USER:
@@ -217,5 +232,93 @@ public class TestDetailController {
             logger.error(e.getMessage(), e);
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
         }
+    }
+
+    @GetMapping(value = {"/api/test/loadGraph/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result getSmartTestGraphXML(@CurrentSecurityContext SysUser requestor,
+                                       @PathVariable(value = "fileId") String fileId,
+                                       HttpServletResponse response) throws IOException {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+        File graphZipFile = loadGraphFile(fileId);
+
+        File graphFile = new File(graphZipFile.getParentFile().getAbsolutePath(), Const.SmartTestConfig.GRAPH_FILE_NAME);
+        try (FileInputStream in = new FileInputStream(graphFile);
+            ServletOutputStream out = response.getOutputStream()) {
+
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+            int len;
+            byte[] buffer = new byte[1024 * 10];
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+            out.flush();
+        } finally {
+            response.flushBuffer();
+        }
+        return Result.ok();
+    }
+
+    @GetMapping(value = {"/api/test/loadNodePhoto/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result getSmartTestGraphPhoto(@CurrentSecurityContext SysUser requestor,
+                                         @PathVariable(value = "fileId") String fileId,
+                                         @RequestParam(value = "node") String node,
+                                         HttpServletResponse response) throws IOException {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+        File graphZipFile = loadGraphFile(fileId);
+        if (!LogUtils.isLegalStr(node, Const.RegexString.INTEGER, false)) {
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error param! Should be Integer");
+        }
+        File nodeFile = new File(graphZipFile.getParentFile().getAbsolutePath(), node + "/" + node + "-0.jpg");
+        try (FileInputStream inputStream = new FileInputStream(nodeFile);
+             ServletOutputStream out = response.getOutputStream()) {
+
+            byte[] bytes = new byte[inputStream.available()];
+            inputStream.read(bytes, 0, inputStream.available());
+            response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+            out.write(bytes);
+            out.flush();
+        } finally {
+            response.flushBuffer();
+        }
+
+        return Result.ok();
+    }
+
+    @PostMapping(value = {"/api/test/suggestion/provide"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result saveGPTSuggestion(@CurrentSecurityContext SysUser requestor,
+                                    @RequestParam(value = "testRunId", defaultValue = "") String testRunId,
+                                    @RequestParam(value = "suggestion", defaultValue = "") String suggestion) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+        if (StringUtils.isEmpty(testRunId) || StringUtils.isEmpty(suggestion)) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "Error param! Should not be empty");
+        }
+        TestRun testRun = testDataService.findTestRunById(testRunId);
+        if (testRun == null) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "Error param! TestRun not exist");
+        }
+        try {
+            testDataService.saveGPTSuggestion(testRun, suggestion);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+        return Result.ok("Save suggestion success!");
+    }
+
+    private File loadGraphFile(String fileId) {
+        StorageFileInfo graphBlobFile = storageFileInfoRepository.findById(fileId).get();
+        File graphZipFile = new File(CENTER_TEMP_FILE_DIR, graphBlobFile.getBlobPath());
+
+        if (!graphZipFile.exists()) {
+            storageServiceClientProxy.download(graphZipFile, graphBlobFile);
+            FileUtil.unzipFile(graphZipFile.getAbsolutePath(), graphZipFile.getParentFile().getAbsolutePath());
+        }
+        return graphZipFile;
     }
 }

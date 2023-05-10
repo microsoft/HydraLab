@@ -319,9 +319,10 @@ class TasksView extends BaseView {
                 </Table>
             </TableContainer>
             <Dialog open={this.state.openTestDetail}
-                fullWidth
-                maxWidth="lg"
-                onClose={() => this.handleCloseDetailDialog()}>
+                    fullWidth
+                    maxWidth="lg"
+                    onClose={() => this.handleCloseDetailDialog()}
+            >
                 <DialogContent>
                     <TestReportView testTask={this.state.testDetailInfo} />
                 </DialogContent>
@@ -773,7 +774,7 @@ class TasksView extends BaseView {
                     this.snackBarFail(res)
                 }
             }).catch(this.snackBarError)
-            
+
             let queryParams = [
                 {
                     "key": "status",

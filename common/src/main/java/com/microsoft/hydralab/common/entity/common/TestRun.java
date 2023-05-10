@@ -60,6 +60,7 @@ public class TestRun implements Serializable, ITestRun {
     private boolean success;
     private long testStartTimeMillis;
     private long testEndTimeMillis;
+    private String suggestion;
 
     @Transient
     private String crashStack;

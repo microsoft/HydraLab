@@ -30,7 +30,7 @@ public class SmartTestUtil {
     public SmartTestUtil(String location) {
         File testBaseDir = new File(location);
         String name = Const.SmartTestConfig.ZIP_FILE_NAME;
-        String folderName = Const.SmartTestConfig.ZIP_FOLDER_NAME;
+        String folderName = Const.SmartTestConfig.RESULT_FOLDER_NAME;
 
         folderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.ZIP_FOLDER_NAME + "/";
         stringFolderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.STRING_FOLDER_NAME
@@ -76,8 +76,10 @@ public class SmartTestUtil {
     }
 
     public String runPYFunction(SmartTestParam smartTestParam, Logger logger) throws Exception {
+        File smartTestFolder = new File(smartTestParam.getOutputFolder(), Const.SmartTestConfig.RESULT_FOLDER_NAME);
+        smartTestFolder.mkdir();
         String res = null;
-        String[] runArgs = new String[7];
+        String[] runArgs = new String[8];
         runArgs[0] = "python";
         runArgs[1] = filePath;
         runArgs[2] = smartTestParam.apkPath;
@@ -85,6 +87,7 @@ public class SmartTestUtil {
         runArgs[4] = smartTestParam.modelInfo;
         runArgs[5] = smartTestParam.testSteps;
         runArgs[6] = smartTestParam.stringTextFolder;
+        runArgs[7] = smartTestFolder.getAbsolutePath();
 
         for (String tempArg : runArgs) {
             logger.info(tempArg);
