@@ -17,6 +17,9 @@ import Graph from "graphology";
 import { parse } from "graphology-gexf/browser";
 import FA2Layout from "graphology-layout-forceatlas2/worker";
 import forceAtlas2 from "graphology-layout-forceatlas2";
+import BaseView from "@/component/BaseView";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 
 const COLORS = ['#00C49F', '#FF8042'];
@@ -47,7 +50,7 @@ const PieCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percen
         </text>
     );
 };
-export default class TestReportView extends React.Component {
+export default class TestReportView extends BaseView {
     state = {
         task: this.props.testTask,
         history: null,
@@ -63,6 +66,7 @@ export default class TestReportView extends React.Component {
     render() {
         console.log("render")
         const task = this.state.task
+        const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
         let taskDatetime = moment(task.startDate).format(formatDate);
         const history = this.state.history
         let historyData = null;
@@ -522,6 +526,20 @@ export default class TestReportView extends React.Component {
                     </table>
                 </div> : null}
             </div>
+            <Snackbar
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center'
+                }}
+                open={snackbarIsShown}
+                autoHideDuration={3000}
+                onClose={() => this.handleStatus("snackbarIsShown", false)}>
+                <Alert
+                    onClose={() => this.handleStatus("snackbarIsShown", false)}
+                    severity={snackbarSeverity}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     }
 
@@ -600,41 +618,34 @@ export default class TestReportView extends React.Component {
     }
 
     generateJSON() {
+        if(this.state.selectedPath.length === 0){
+            this.setState({
+                snackbarIsShown: true,
+                snackbarSeverity: "error",
+                snackbarMessage: "Please select a path!"
+            })
+            return
+        }
         axios({
-            url: `/api/test/generateT2C/` + this.state.graphFileId + "?testRunId=" + this.state.testRunId + "&path=" + this.state.selectedPath.join(','),
+            url: `/api/test/generateT2C/` + this.state.graphFileId + "?testRunId=" + this.state.task.deviceTestResults[0].id + "&path=" + this.state.selectedPath.join(','),
             method: 'GET',
-            responseType: 'blob'
         }).then((res) => {
-            if (res.data.type.includes('application/json')) {
-                let reader = new FileReader()
-                reader.onload = function () {
-                    let result = JSON.parse(reader.result)
-                    if (result.code !== 200) {
-                        this.setState({
-                            snackbarIsShown: true,
-                            snackbarSeverity: "error",
-                            snackbarMessage: "The file could not be downloaded"
-                        })
-                    }
-                }
-                reader.readAsText(res.data)
-            } else {
-                const href = URL.createObjectURL(res.data);
-                const link = document.createElement('a');
-                link.href = href;
-                link.setAttribute('download', this.stare.task.packegeName + '_t2c.json');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(href);
+            var blob = new Blob([res.data.content]);
+            const href = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = href;
+            link.setAttribute('download', this.state.task.pkgName + '_t2c.json');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(href);
 
-                if (res.data.code === 200) {
-                    this.setState({
-                        snackbarIsShown: true,
-                        snackbarSeverity: "success",
-                        snackbarMessage: "T2C JSON file downloaded"
-                    })
-                }
+            if (res.data.code === 200) {
+                this.setState({
+                    snackbarIsShown: true,
+                    snackbarSeverity: "success",
+                    snackbarMessage: "T2C JSON file downloaded"
+                })
             }
         }).catch(this.snackBarError);
     }
