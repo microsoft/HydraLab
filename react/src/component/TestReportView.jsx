@@ -481,7 +481,6 @@ export default class TestReportView extends BaseView {
                                     Performance Test Results:
                                 </th>
                             </tr>
-                            {task.suggesttion}
                         </thead>
                     </table>
                     <table className='table table-borderless'>
