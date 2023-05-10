@@ -3,11 +3,10 @@
 
 package com.microsoft.hydralab.performance.parsers;
 
-import com.microsoft.hydralab.performance.Entity.AndroidHprofMemoryInfo;
-import com.microsoft.hydralab.performance.Entity.AndroidMemoryInfo;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import com.microsoft.hydralab.performance.entity.AndroidHprofMemoryInfo;
 import com.microsoft.hydralab.performance.hprof.BitmapInfoExtractor;
 import com.microsoft.hydralab.performance.hprof.HeapProfProcessor;
 import com.microsoft.hydralab.performance.hprof.TopObjectInfoExtractor;
