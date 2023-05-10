@@ -88,7 +88,7 @@ public final class T2CJsonGenerator {
               "actionType": "click",
               "arguments": {}
             },
-            "isOption": true
+            "isOptional": true
           }
         ]
        }
@@ -126,7 +126,7 @@ public final class T2CJsonGenerator {
             JSONObject case1 = new JSONObject();
             case1.put("index", i);
             case1.put("driverId", "android");
-            case1.put("isOption", false);
+            case1.put("isOptional", false);
 
             //Creating elementInfo object for case1
             JSONObject elementInfo = new JSONObject();
