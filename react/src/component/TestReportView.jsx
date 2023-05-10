@@ -118,6 +118,7 @@ export default class TestReportView extends BaseView {
         const dtrSuccFailMap = _.groupBy(task.deviceTestResults, 'success')
 
         var perfResults = [];
+        var suggestions = [];
         for (let testResult of task.deviceTestResults) {
             for (let attachment of testResult.attachments) {
                 if (attachment.fileName == 'PerformanceReport.json') {
@@ -125,8 +126,12 @@ export default class TestReportView extends BaseView {
                     break;
                 }
             }
+            if (testResult.suggestion) {
+                suggestions.push(testResult.suggestion);
+            }
         }
         console.log('PerfResults:', perfResults);
+        console.log('suggestions:', suggestions);
 
         var chunkedFailedDeviceResult = null
         var top3FailedCase = null
@@ -476,10 +481,12 @@ export default class TestReportView extends BaseView {
                                     Performance Test Results:
                                 </th>
                             </tr>
+                            {task.suggesttion}
                         </thead>
                     </table>
                     <table className='table table-borderless'>
                         <tbody>
+                            {suggestions.length > 0 ? <h5 className='mt-1' style={{ width: '800px' }}>Suggestions from GPT: {suggestions.join(';')} </h5> : null}
                             {perfResults.map((perfTestResult) =>
                                 <PerfTestDashboard perfTestResult={perfTestResult} testTask={task} />
                             )}
@@ -618,7 +625,7 @@ export default class TestReportView extends BaseView {
     }
 
     generateJSON() {
-        if(this.state.selectedPath.length === 0){
+        if (this.state.selectedPath.length === 0) {
             this.setState({
                 snackbarIsShown: true,
                 snackbarSeverity: "error",
