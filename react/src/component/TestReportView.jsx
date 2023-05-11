@@ -152,7 +152,7 @@ export default class TestReportView extends BaseView {
             chunkedSuccDeviceResult = _.chunk(dtrSuccFailMap['true'], 6)
         }
 
-        return <div id='test_report'>
+        return <div id='test_report' style={{padding: '20px'}}>
             <div id='test_report_head'>
                 <table className='table table-borderless'>
                     <thead>
@@ -471,28 +471,6 @@ export default class TestReportView extends BaseView {
                     </table>
                 </div> : null}
             </div>
-            <div id='test_report_content_3>'>
-                {perfResults.length > 0 ? <div>
-                    <table className='table table-borderless'>
-                        <thead className="thead-info">
-                            <tr className="table-info">
-                                <th colSpan={perfResults.length + ''}
-                                    style={{ backgroundColor: '#2F5496', color: 'white' }}>
-                                    Performance Test Results:
-                                </th>
-                            </tr>
-                        </thead>
-                    </table>
-                    <table className='table table-borderless'>
-                        <tbody>
-                            {suggestions.length > 0 ? <h5 className='mt-1' style={{ width: '800px' }}>Suggestions from GPT: {suggestions.join(';')} </h5> : null}
-                            {perfResults.map((perfTestResult) =>
-                                <PerfTestDashboard perfTestResult={perfTestResult} testTask={task} />
-                            )}
-                        </tbody>
-                    </table>
-                </div> : null}
-            </div>
             <div id='test_report_content_4>'>
                 {task.runningType === 'SMART' ? <div>
                     <table className='table table-borderless'>
@@ -528,6 +506,28 @@ export default class TestReportView extends BaseView {
                                     </div>
                                 </td>
                             </tr>
+                        </tbody>
+                    </table>
+                </div> : null}
+            </div>
+            <div id='test_report_content_3>'>
+                {perfResults.length > 0 ? <div>
+                    <table className='table table-borderless'>
+                        <thead className="thead-info">
+                            <tr className="table-info">
+                                <th colSpan={perfResults.length + ''}
+                                    style={{ backgroundColor: '#2F5496', color: 'white' }}>
+                                    Performance Test Results:
+                                </th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <table className='table table-borderless'>
+                        <tbody>
+                            {suggestions.length > 0 ? <h5 className='mt-1' style={{ width: '800px' }}>Suggestions from GPT: {suggestions.join(';')} </h5> : null}
+                            {perfResults.map((perfTestResult) =>
+                                <PerfTestDashboard perfTestResult={perfTestResult} testTask={task} />
+                            )}
                         </tbody>
                     </table>
                 </div> : null}

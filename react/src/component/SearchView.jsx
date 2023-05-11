@@ -19,6 +19,7 @@ import Snackbar from "@mui/material/Snackbar";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Skeleton from "@mui/material/Skeleton";
 import BaseView from "@/component/BaseView";
+import Container from '@mui/material/Container';
 
 export default class SearchView extends BaseView {
     state = {
@@ -36,7 +37,7 @@ export default class SearchView extends BaseView {
         const dV = this.props.infoType ? this.props.infoType : "case"
         return <div>
             <div style={{ margin: "16px" }}>
-                <FormControl component="fieldset" style={{ width: '720px' }}>
+                <FormControl component="fieldset" style={{ width: '100%' }}>
                     <Typography variant="h4" className="mt-2 mb-2">Search type</Typography>
                     <RadioGroup row aria-label="position" name="position" defaultValue={dV}
                         onChange={this.searchTypeChange}>
@@ -58,7 +59,7 @@ export default class SearchView extends BaseView {
                             control={<Radio color="primary" />}
                             label="Test task report" />
                     </RadioGroup>
-                    <Stack direction="row" spacing={2} alignItems="center">
+                    <Stack direction="row" spacing={2} alignItems="center" style={{ width: '720px' }}>
                         <TextField fullWidth
                             type="text" label="Enter info id" aria-label="Enter info id"
                             aria-describedby="basic-addon2" value={this.state.infoId}
@@ -76,6 +77,9 @@ export default class SearchView extends BaseView {
                                 Query
                             </LoadingButton>
                         </div>
+                    </Stack>
+                    <Stack direction="row" alignItems="center">
+                        <Container>{this.state.infoDisplay}</Container>
                     </Stack>
                 </FormControl>
             </div>
@@ -103,7 +107,6 @@ export default class SearchView extends BaseView {
                 </Alert>
             </Snackbar>
             <div className="mt-2" />
-            {this.state.infoDisplay}
         </div>
     }
 
