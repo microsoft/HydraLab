@@ -212,7 +212,9 @@ stages:
         script: |
           mkdir -p $(Build.ArtifactStagingDirectory)/android_client
           cp android_client/app/build/outputs/apk/release/app-release.apk $(Build.ArtifactStagingDirectory)/android_client/app-release-$hydraVersion.apk
-          cp android_client/app/build/outputs/mapping/release/mapping.txt $(Build.ArtifactStagingDirectory)/android_client/
+          if(Test-Path android_client/app/build/outputs/mapping/release/mapping.txt){
+            cp android_client/app/build/outputs/mapping/release/mapping.txt $(Build.ArtifactStagingDirectory)/android_client/
+          }
       condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy agent jar
