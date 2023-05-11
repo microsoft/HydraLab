@@ -39,6 +39,8 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from "@mui/material/TextField";
 import {ThemeProvider} from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
+import copy from 'copy-to-clipboard';
 
 const pieCOLORS = ['#00C49F', '#FF8042', '#808080'];
 const taskRowHeight = 35
@@ -524,8 +526,11 @@ class TasksView extends BaseView {
                 <TableCell id={task.id} align="center">
                     {moment(task.startDate).format('yyyy-MM-DD HH:mm:ss') + ' - ' + moment(task.endDate).format('HH:mm:ss')}
                 </TableCell>
-                <TableCell id={task.id} align="center">
-                    {task.testSuite}
+                <TableCell id={task.id} align="center" style={{maxWidth: '400px'}}>
+                    {task.testSuite.length > 100 ? task.testSuite.substring(0, 100) + '...' : task.testSuite}
+                    <IconButton onClick={() => this.copyContent(task.testSuite)}>
+                            <span className="material-icons-outlined">content_copy</span>
+                    </IconButton>
                 </TableCell>
                 <TableCell id={task.id} align="center">
                     {this.getTestType(task)}
@@ -576,7 +581,14 @@ class TasksView extends BaseView {
             </StyledTableRow>
     }
 
-
+    copyContent(testSuite) {
+        copy(testSuite)
+        this.setState({
+            snackbarIsShown: true,
+            snackbarSeverity: "success",
+            snackbarMessage: "suiteName copied!"
+        })
+    }
     taskRowClicked = (element, task) => {
         if (this.state.loading) {
             return
