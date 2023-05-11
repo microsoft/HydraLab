@@ -211,8 +211,7 @@ stages:
         targetType: 'inline'
         script: |
           mkdir -p $(Build.ArtifactStagingDirectory)/android_client
-          $hydraVersion = "$(Build.SourceBranchName).$(Build.BuildId)"
-          cp android_client/app/build/outputs/apk/release/app-release.apk $(Build.ArtifactStagingDirectory)/android_client/app-release-$hydraVersion.apk
+          cp android_client/app/build/outputs/apk/release/app-release.apk $(Build.ArtifactStagingDirectory)/android_client/app-release-$(hydraVersion).apk
           if(Test-Path android_client/app/build/outputs/mapping/release/mapping.txt){
             cp android_client/app/build/outputs/mapping/release/mapping.txt $(Build.ArtifactStagingDirectory)/android_client/
           }
