@@ -206,19 +206,12 @@ stages:
         spotBugsAnalysis: false
       condition: eq(variables.fullBuild, 'true')
     - task: PowerShell@2
-      displayName: Copy APK to artifact
+      displayName: Copy APK & Mapping file to artifact
       inputs:
         targetType: 'inline'
         script: |
           mkdir -p $(Build.ArtifactStagingDirectory)/android_client
           cp android_client/app/build/outputs/apk/release/app-release.apk $(Build.ArtifactStagingDirectory)/android_client/app-release-$hydraVersion.apk
-      condition: eq(variables.fullBuild, 'true')
-    - task: PowerShell@2
-      displayName: Copy Mapping file to artifact
-      inputs:
-        targetType: 'inline'
-        script: |
-          mkdir -p $(Build.ArtifactStagingDirectory)/android_client
           cp android_client/app/build/outputs/mapping/release/mapping.txt $(Build.ArtifactStagingDirectory)/android_client/
       condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
