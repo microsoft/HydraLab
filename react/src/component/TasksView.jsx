@@ -325,9 +325,7 @@ class TasksView extends BaseView {
                     maxWidth="lg"
                     onClose={() => this.handleCloseDetailDialog()}
             >
-                <DialogContent>
-                    <TestReportView testTask={this.state.testDetailInfo} />
-                </DialogContent>
+                <TestReportView testTask={this.state.testDetailInfo} />
                 <DialogActions>
                     <Button
                         onClick={() => this.handleCloseDetailDialog()}>Close</Button>
