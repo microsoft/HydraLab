@@ -551,11 +551,17 @@ export default class TestReportView extends BaseView {
 
     loadGEXF = c => {
         axios.get("/api/test/loadGraph/" + this.state.graphFileId).then((res) => {
-            this.setState({
-                graph: parse(Graph, String(res.data)),
-                container: c
-            })
-            this.loadGraph()
+            if(res.data.code && res.data.code === 500){
+                this.handleStatus("snackbarIsShown", true)
+                this.handleStatus("snackbarSeverity", "error")
+                this.handleStatus("snackbarMessage", res.data.message)
+            }else{
+                this.setState({
+                    graph: parse(Graph, String(res.data)),
+                    container: c
+                })
+                this.loadGraph()
+            }
         })
     }
 
