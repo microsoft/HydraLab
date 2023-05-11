@@ -245,11 +245,17 @@ public class TestDetailController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        File graphZipFile = loadGraphFile(fileId);
 
-        File graphFile = new File(graphZipFile.getParentFile().getAbsolutePath(), Const.SmartTestConfig.GRAPH_FILE_NAME);
-        try (FileInputStream in = new FileInputStream(graphFile);
-            ServletOutputStream out = response.getOutputStream()) {
+        try {
+            File graphZipFile = loadGraphFile(fileId);
+
+            File graphFile = new File(graphZipFile.getParentFile().getAbsolutePath(), Const.SmartTestConfig.GRAPH_FILE_NAME);
+            if (!graphFile.exists()) {
+                throw new HydraLabRuntimeException("Graph xml file not found");
+            }
+
+            FileInputStream in = new FileInputStream(graphFile);
+            ServletOutputStream out = response.getOutputStream();
 
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             int len;
@@ -258,6 +264,12 @@ public class TestDetailController {
                 out.write(buffer, 0, len);
             }
             out.flush();
+        } catch (HydraLabRuntimeException e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
         } finally {
             response.flushBuffer();
         }
@@ -272,19 +284,30 @@ public class TestDetailController {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        File graphZipFile = loadGraphFile(fileId);
         if (!LogUtils.isLegalStr(node, Const.RegexString.INTEGER, false)) {
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error param! Should be Integer");
         }
-        File nodeFile = new File(graphZipFile.getParentFile().getAbsolutePath(), node + "/" + node + "-0.jpg");
-        try (FileInputStream inputStream = new FileInputStream(nodeFile);
-             ServletOutputStream out = response.getOutputStream()) {
+        try {
+            File graphZipFile = loadGraphFile(fileId);
 
+            File nodeFile = new File(graphZipFile.getParentFile().getAbsolutePath(), node + "/" + node + "-0.jpg");
+            if (!nodeFile.exists()) {
+                throw new HydraLabRuntimeException("Graph photo file not found");
+            }
+
+            FileInputStream inputStream = new FileInputStream(nodeFile);
+            ServletOutputStream out = response.getOutputStream();
             byte[] bytes = new byte[inputStream.available()];
             inputStream.read(bytes, 0, inputStream.available());
             response.setContentType(MediaType.IMAGE_JPEG_VALUE);
             out.write(bytes);
             out.flush();
+        } catch (HydraLabRuntimeException e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
         } finally {
             response.flushBuffer();
         }
@@ -316,7 +339,10 @@ public class TestDetailController {
     }
 
     private File loadGraphFile(String fileId) {
-        StorageFileInfo graphBlobFile = storageFileInfoRepository.findById(fileId).get();
+        StorageFileInfo graphBlobFile = storageFileInfoRepository.findById(fileId).orElse(null);
+        if (graphBlobFile == null) {
+            throw new HydraLabRuntimeException("Graph zip file not exist!");
+        }
         File graphZipFile = new File(CENTER_TEMP_FILE_DIR, graphBlobFile.getBlobPath());
 
         if (!graphZipFile.exists()) {
