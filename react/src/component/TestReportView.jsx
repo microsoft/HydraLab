@@ -127,7 +127,7 @@ export default class TestReportView extends BaseView {
                 }
             }
             if (testResult.suggestion) {
-                suggestions.push(testResult.suggestion);
+                suggestions.push(testResult.suggestion.replace(/\r\n/g, "<br/>").replace(/\n/g, "<br/>").replace(/\s/g, '&nbsp;'));
             }
         }
         console.log('PerfResults:', perfResults);
@@ -152,7 +152,7 @@ export default class TestReportView extends BaseView {
             chunkedSuccDeviceResult = _.chunk(dtrSuccFailMap['true'], 6)
         }
 
-        return <div id='test_report' style={{padding: '20px'}}>
+        return <div id='test_report' style={{ padding: '20px' }}>
             <div id='test_report_head'>
                 <table className='table table-borderless'>
                     <thead>
@@ -524,7 +524,17 @@ export default class TestReportView extends BaseView {
                     </table>
                     <table className='table table-borderless'>
                         <tbody>
-                            {suggestions.length > 0 ? <h5 className='mt-1' style={{ width: '800px' }}>Suggestions from GPT: {suggestions.join(';')} </h5> : null}
+                            {suggestions.length > 0
+                                ? <div>
+                                    <div style={{ width: '100%', height: "60px" }}>
+                                        <img style={{ position: "absolute", width: '40px', height: '40px' }} src="images/chat_gpt_logo.svg" />
+                                        <h3 className='mt-1' style={{ position: "absolute", marginLeft: "45px" }} >Suggestions from GPT</h3>
+                                    </div>
+                                    <pre style={{ width: `calc(100% - 20px)`, marginBottom: "20px", paddingLeft: "20px", fontSize: "17" }}                                    >
+                                        <div dangerouslySetInnerHTML={{ __html: suggestions.join(';').toString() }} />
+                                    </pre>
+                                </div>
+                                : null}
                             {perfResults.map((perfTestResult) =>
                                 <PerfTestDashboard perfTestResult={perfTestResult} testTask={task} />
                             )}
@@ -551,11 +561,11 @@ export default class TestReportView extends BaseView {
 
     loadGEXF = c => {
         axios.get("/api/test/loadGraph/" + this.state.graphFileId).then((res) => {
-            if(res.data.code && res.data.code === 500){
+            if (res.data.code && res.data.code === 500) {
                 this.handleStatus("snackbarIsShown", true)
                 this.handleStatus("snackbarSeverity", "error")
                 this.handleStatus("snackbarMessage", res.data.message)
-            }else{
+            } else {
                 this.setState({
                     graph: parse(Graph, String(res.data)),
                     container: c
