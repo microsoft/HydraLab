@@ -127,7 +127,7 @@ export default class TestReportView extends BaseView {
                 }
             }
             if (testResult.suggestion) {
-                suggestions.push(testResult.suggestion.replace(/\r\n/g,"<br/>").replace(/\n/g,"<br/>").replace(/\s/g, '&nbsp;'));
+                suggestions.push(testResult.suggestion.replace(/\r\n/g, "<br/>").replace(/\n/g, "<br/>").replace(/\s/g, '&nbsp;'));
             }
         }
         console.log('PerfResults:', perfResults);
@@ -528,10 +528,10 @@ export default class TestReportView extends BaseView {
                                 ? <div>
                                     <div style={{ width: '100%', height: "60px" }}>
                                         <img style={{ position: "absolute", width: '40px', height: '40px' }} src="images/chat_gpt_logo.svg" />
-                                        <h3 className='mt-1' style={{position:"absolute",marginLeft:"45px"}} >Suggestions from GPT</h3>
+                                        <h3 className='mt-1' style={{ position: "absolute", marginLeft: "45px" }} >Suggestions from GPT</h3>
                                     </div>
-                                    <pre style={{ width: `calc(100% - 20px)`, marginBottom: "20px", paddingLeft: "20px", fontSize: "17"}}                                    >
-                                        <div dangerouslySetInnerHTML={{ __html: suggestions.join(';').toString()}} />
+                                    <pre style={{ width: `calc(100% - 20px)`, marginBottom: "20px", paddingLeft: "20px", fontSize: "17" }}                                    >
+                                        <div dangerouslySetInnerHTML={{ __html: suggestions.join(';').toString() }} />
                                     </pre>
                                 </div>
                                 : null}
