@@ -11,12 +11,28 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import Skeleton from "@mui/material/Skeleton";
 import BaseView from "@/component/BaseView";
 import IconButton from "@material-ui/core/IconButton";
-import Tooltip from "@mui/material/Tooltip";
+import { default as MUITooltip } from "@mui/material/Tooltip";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import '../css/deviceAgentsView.css';
+import _ from 'lodash';
+import { AreaChart, Area, XAxis, YAxis, PieChart, Tooltip, Pie, Cell, Legend, ReferenceLine } from 'recharts';
+const COLORS = ['#00C49F', '#90C12F', '#44C16F', '#00C12F', '#00612F', '#59C12F', '#0061FF', '#0061aa'];
+const RADIAN = Math.PI / 180;
+const PieCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.75;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+        <text x={x} y={y} fill="white" fontSize={12} textAnchor={x > cx ? 'start' : 'end'}
+            dominantBaseline="central">
+            {`${(percent * 100).toFixed(1)}%`}
+        </text>
+    );
+};
 
 export default class DeviceAgentsView extends BaseView {
 
@@ -33,9 +49,65 @@ export default class DeviceAgentsView extends BaseView {
         const { agents, refreshing } = this.state;
         const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
         const agentRows = []
+        var agentChartData = []
+        var deviceChartData = []
+        var deviceStatusChartData = []
+        var deviceModelChartData = []
+        var deviceCount = "-"
+        var agentCount = "-"
+        var overallPieSize = 0
         if (agents) {
             const folderHeadBgColor = '#1565c0'
-            const topRadius = ' 10px '
+            deviceCount = _.sumBy(agents, function (o) { return o.devices.length; })
+            agentCount = agents.length
+
+            var agentCountByOS = _.countBy(agents, function (o) { return o.agentOS; })
+            for (var k in agentCountByOS) {
+                var c = agentCountByOS[k]
+                if (k === "null" || k == 0 || k == "0" || !k) {
+                    k = "Unknown"
+                    if (agentChartData["Unknown"])
+                        c += agentChartData["Unknown"]
+                }
+                agentChartData.push({ name: k, count: c })
+            }
+
+            let mergedDeviceList = _.flatMap(agents, item => item.devices);
+            var deviceCountByType = _.countBy(mergedDeviceList, function (o) { return o.type; })
+            for (var k in deviceCountByType) {
+                var c = deviceCountByType[k]
+                if (k === "null" || k == 0 || k == "0" || !k) {
+                    k = "Unknown"
+                    if (deviceChartData["Unknown"])
+                        c += deviceChartData["Unknown"]
+                }
+                deviceChartData.push({ name: k, count: c })
+            }
+
+            var deviceCountByStatus = _.countBy(mergedDeviceList, function (o) { return o.status; })
+            for (var k in deviceCountByStatus) {
+                var c = deviceCountByStatus[k]
+                if (k === "null" || k == 0 || k == "0" || !k) {
+                    k = "Unknown"
+                    if (deviceStatusChartData["Unknown"])
+                        c += deviceStatusChartData["Unknown"]
+                }
+                deviceStatusChartData.push({ name: k, count: c })
+            }
+
+            // var deviceCountByModel = _.countBy(mergedDeviceList, function (o) { return o.model; })
+            // for (var k in deviceCountByModel) {
+            //     var c = deviceCountByModel[k]
+            //     if (k === "null" || k == 0 || k == "0" || !k) {
+            //         k = "Unknown"
+            //         if (deviceModelChartData["Unknown"])
+            //             c += deviceModelChartData["Unknown"]
+            //     }
+            //     deviceModelChartData.push({ name: k, count: c })
+            // }
+
+            overallPieSize = 420
+
             agents.map(
                 (agent) => {
                     agentRows.push(
@@ -45,7 +117,7 @@ export default class DeviceAgentsView extends BaseView {
                                 style={{ backgroundColor: folderHeadBgColor }}
                                 onClick={() => this.changeCollapseStatus(agent.agentId)}>
 
-                                <div style={{ color: 'white', fontSize: 'large', fontWeight: 'bold'}}>
+                                <div style={{ color: 'white', fontSize: 'large', fontWeight: 'bold' }}>
                                     {agent.agentName}: {agent.devices.length}
                                 </div>
 
@@ -53,7 +125,7 @@ export default class DeviceAgentsView extends BaseView {
                                     <div style={{ color: 'white' }}>
                                         {
                                             Number(agent.agentVersionCode) >= Number(this.state.latestAgentVersion) ?
-                                                <Tooltip
+                                                <MUITooltip
                                                     title={
                                                         <Stack>
                                                             Host:{agent.hostname}<br />
@@ -65,17 +137,17 @@ export default class DeviceAgentsView extends BaseView {
                                                         <span style={{ color: 'white', }}
                                                             className="material-icons-outlined">info</span>
                                                     </IconButton>
-                                                </Tooltip>
+                                                </MUITooltip>
                                                 :
-                                                    agent.agentStatus === "UPDATING" ?
-                                                    <Tooltip
+                                                agent.agentStatus === "UPDATING" ?
+                                                    <MUITooltip
                                                         title={this.state.agentUpdateStatus}
                                                         onOpen={() => this.getUpdateStatus(agent.agentId)}
                                                         style={{ padding: "0" }}>
                                                         <Button color="inherit" size="small" style={{ padding: "0" }}>
                                                             Updating
                                                         </Button>
-                                                    </Tooltip>
+                                                    </MUITooltip>
                                                     :
                                                     <Button variant="contained" color="error" size="small"
                                                         style={{ padding: "0" }}
@@ -109,8 +181,8 @@ export default class DeviceAgentsView extends BaseView {
                 })
         }
         return (
-            <div class='deviceAgents'>
-                <div class='deviceAgents-header'>
+            <div className='deviceAgents'>
+                <div className='deviceAgents-header'>
                     <Typography variant="h4" className="mt-2 mb-2">Connected Devices</Typography>
                     <div style={{ display: 'flex', gap: '16px' }}>
                         <Button
@@ -130,6 +202,83 @@ export default class DeviceAgentsView extends BaseView {
                             Refresh
                         </LoadingButton>
                     </div>
+                </div>
+                <div className='deviceAgents-header'>
+                    <Typography variant="h6" className="mt-2 mb-2" align='left'>
+                        <span className="badge badge-primary">{agentCount}</span> agents, <span className="badge badge-success">{deviceCount}</span> devices
+                    </Typography>
+                </div>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }} className="deviceAgents-header mt-2 mb-2">
+                    <div>
+                        <Typography variant="h6" className="mt-2 mb-2" align='center'>Test Agent OS</Typography>
+                        <PieChart width={overallPieSize} height={overallPieSize}
+                            title="Test Agent OS">
+                            <Pie
+                                data={agentChartData}
+                                labelLine={false}
+                                label={PieCustomizedLabel}
+                                dataKey="count">
+                                {agentChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                            <Tooltip />
+                        </PieChart>
+                    </div>
+                    <div>
+                        <Typography variant="h6" className="mt-2 mb-2" align='center'>Test Device OS</Typography>
+                        <PieChart width={overallPieSize} height={overallPieSize}>
+                            <Pie
+                                data={deviceChartData}
+                                labelLine={false}
+                                label={PieCustomizedLabel}
+                                dataKey="count">
+                                {deviceChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                            <Tooltip />
+                        </PieChart>
+                    </div>
+                    <div>
+                        <Typography variant="h6" className="mt-2 mb-2" align='center'>Test Device State</Typography>
+                        <PieChart width={overallPieSize} height={overallPieSize}>
+                            <Pie
+                                data={deviceStatusChartData}
+                                labelLine={false}
+                                label={PieCustomizedLabel}
+                                dataKey="count">
+                                {deviceStatusChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                            <Tooltip />
+                        </PieChart>
+                    </div>
+
+                    {/* <PieChart width={overallPieSize} height={overallPieSize}>
+                        <Pie
+                            data={deviceModelChartData}
+                            labelLine={false}
+                            label={PieCustomizedLabel}
+                            dataKey="count">
+                            {deviceModelChartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`}
+                                    fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                        <Tooltip />
+                    </PieChart> */}
+                </div>
+                <div>
+                    
                 </div>
                 {agentRows}
                 <Snackbar
