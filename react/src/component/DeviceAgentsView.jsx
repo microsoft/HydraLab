@@ -53,8 +53,8 @@ export default class DeviceAgentsView extends BaseView {
         var deviceChartData = []
         var deviceStatusChartData = []
         var deviceModelChartData = []
-        var deviceCount = 0
-        var agentCount = 0
+        var deviceCount = "-"
+        var agentCount = "-"
         var overallPieSize = 0
         if (agents) {
             const folderHeadBgColor = '#1565c0'
@@ -181,10 +181,9 @@ export default class DeviceAgentsView extends BaseView {
                 })
         }
         return (
-            <div class='deviceAgents'>
-                <div class='deviceAgents-header'>
+            <div className='deviceAgents'>
+                <div className='deviceAgents-header'>
                     <Typography variant="h4" className="mt-2 mb-2">Connected Devices</Typography>
-                    <Typography variant="h6" className="mt-2 mb-2" align='left'>{agentCount} agents, {deviceCount} devices</Typography>
                     <div style={{ display: 'flex', gap: '16px' }}>
                         <Button
                             variant="outlined"
@@ -204,7 +203,12 @@ export default class DeviceAgentsView extends BaseView {
                         </LoadingButton>
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }} className="mt-2 mb-2">
+                <div className='deviceAgents-header'>
+                    <Typography variant="h6" className="mt-2 mb-2" align='left'>
+                        <span className="badge badge-primary">{agentCount}</span> agents, <span className="badge badge-success">{deviceCount}</span> devices
+                    </Typography>
+                </div>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }} className="deviceAgents-header mt-2 mb-2">
                     <div>
                         <Typography variant="h6" className="mt-2 mb-2" align='center'>Test Agent OS</Typography>
                         <PieChart width={overallPieSize} height={overallPieSize}
