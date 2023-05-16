@@ -134,6 +134,7 @@ cd android_client
 # 编译Android端APK
 ./gradlew assembleDebug
 cp app/build/outputs/apk/debug/app-debug.apk ../common/src/main/resources/record_release.apk
+# 如果没有安装 Android SDK 平台工具，可以在 https://github.com/microsoft/HydraLab/releases 下载已经编译好的 APK 文件。
 # Back to project root
 # 在项目根目录下，复制示例配置文件并更新：
 # YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID 和 YOUR_REGISTERED_AGENT_SECRET 。
