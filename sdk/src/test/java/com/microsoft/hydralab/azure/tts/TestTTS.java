@@ -25,7 +25,7 @@ public class TestTTS {
     public TestTTS() {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("scripts/env.properties"));
+            properties.load(new FileInputStream("storage/env.properties"));
             speechSubscriptionKey = properties.getProperty("AzureSpeechSubscriptionKey");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -34,24 +34,24 @@ public class TestTTS {
 
     @Test
     public void testTts() throws IOException {
-        try (FileInputStream fileInputStream = new FileInputStream("scripts/scripts.txt")) {
+        try (FileInputStream fileInputStream = new FileInputStream("storage/scripts.txt")) {
             String text = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
             String who = "en-US-NancyNeural";
-            String filePath = "scripts/general.wav";
+            String filePath = "storage/general.wav";
             speakAndSaveToFile(text, who, filePath);
         }
     }
 
     @Test
     public void testTtsSSML() throws IOException {
-        processScripts(51);
+        processScripts(1);
     }
 
     private void processScripts(int... index) throws IOException {
         for (int i : index) {
-            try (FileInputStream fileInputStream = new FileInputStream(String.format("scripts/v2/script%d.xml", i))) {
+            try (FileInputStream fileInputStream = new FileInputStream(String.format("storage/v3/script%d.xml", i))) {
                 String text = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
-                String filePath = String.format("scripts/v2/output%d.wav", i);
+                String filePath = String.format("storage/v3/output%d.wav", i);
                 speakSSMLAndSaveToFile(text, filePath);
             }
         }
