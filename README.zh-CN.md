@@ -129,6 +129,12 @@ java -jar center/build/libs/center.jar
 **第2步. 构建并运行 Hydra Lab agent 服务。**
 
 ```bash
+# 在项目根目录下
+cd android_client
+# 编译Android端APK
+./gradlew assembleDebug
+cp app/build/outputs/apk/debug/app-debug.apk ../common/src/main/resources/record_release.apk
+# Back to project root
 # 在项目根目录下，复制示例配置文件并更新：
 # YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID 和 YOUR_REGISTERED_AGENT_SECRET 。
 cp agent/application-sample.yml application.yml
