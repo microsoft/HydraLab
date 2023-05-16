@@ -160,6 +160,14 @@ java -jar center/build/libs/center.jar
 **Step 2. build and run Hydra Lab agent service.**
 
 ```bash
+# In project root
+cd android_client
+# Build the Android client apk
+./gradlew assembleDebug
+cp app/build/outputs/apk/debug/app-debug.apk ../common/src/main/resources/record_release.apk
+# If you don't have the SDK for Android ,you can download the prebuilt APK in https://github.com/microsoft/HydraLab/releases
+# Back to project root
+cd .. 
 # In project root, copy the sample config file and update the:
 # YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID and YOUR_REGISTERED_AGENT_SECRET.
 cp agent/application-sample.yml application.yml
