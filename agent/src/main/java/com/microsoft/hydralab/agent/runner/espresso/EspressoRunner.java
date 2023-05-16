@@ -132,8 +132,8 @@ public class EspressoRunner extends TestRunner {
         StringBuilder argString = new StringBuilder();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
             instrumentationArgs.forEach(
-                    (k, v) -> argString.append(" -e ").append(k.replaceAll("\\s|\"", "")).append(" ")
-                            .append(v.replaceAll("\\s|\"", "")));
+                    (k, v) -> argString.append(" -e ").append(k.replaceAll(Const.RegexString.INSTRUMENT_ILLEGAL_STR, "")).append(" ")
+                            .append(v.replaceAll(Const.RegexString.INSTRUMENT_ILLEGAL_STR, "")));
         }
         String commFormat;
         if (StringUtils.isBlank(argString.toString())) {

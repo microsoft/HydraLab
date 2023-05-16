@@ -120,6 +120,9 @@ public interface Const {
 
         //Integer
         String INTEGER = "^[0-9]*$";
+
+        //Space, double quotation mark, vertical bar
+        String INSTRUMENT_ILLEGAL_STR = "\\s|\"|\\|";
     }
 
     interface PermissionType {
