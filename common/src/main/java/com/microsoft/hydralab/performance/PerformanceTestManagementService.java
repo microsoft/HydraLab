@@ -26,6 +26,7 @@ import com.microsoft.hydralab.performance.parsers.WindowsBatteryResultParser;
 import com.microsoft.hydralab.performance.parsers.WindowsMemoryResultParser;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -124,7 +125,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private PerformanceInspectionResult inspect(PerformanceInspection performanceInspection, ITestRun testRun) {
         if (performanceInspection == null || testRun == null) return null;
 
-        performanceInspection = getDevicePerformanceInspection(performanceInspection);
+        performanceInspection = getDevicePerformanceInspection(performanceInspection, testRun);
         PerformanceInspector.PerformanceInspectorType inspectorType = performanceInspection.inspectorType;
         PerformanceInspector performanceInspector = getInspectorByType(inspectorType);
         Assert.notNull(performanceInspector, "Found no matched inspector: " + performanceInspection.inspectorType);
@@ -155,8 +156,11 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         return TestRunThreadContext.getTestRun();
     }
 
+    @Override
     public void inspectWithStrategy(InspectionStrategy inspectionStrategy) {
-        if (inspectionStrategy == null || inspectionStrategy.inspection == null) return;
+        if (inspectionStrategy == null || inspectionStrategy.inspection == null) {
+            return;
+        }
 
         ITestRun testRun = getTestRun();
         if (inspectionStrategy.strategyType == InspectionStrategy.StrategyType.TEST_SCHEDULE) {
@@ -187,7 +191,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     public PerformanceTestResult parse(PerformanceInspection performanceInspection) {
         if (performanceInspection == null) return null;
 
-        performanceInspection = getDevicePerformanceInspection(performanceInspection);
+        performanceInspection = getDevicePerformanceInspection(performanceInspection, getTestRun());
         Map<String, PerformanceTestResult> testResultMap = testRunPerfResultMap.get(getTestRun().getId());
         Assert.notNull(testResultMap, "Found no matched test result for test run");
         PerformanceTestResult performanceTestResult = testResultMap.get(performanceInspection.inspectionKey);
@@ -237,6 +241,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         testRunPerfResultMap.remove(testRun.getId());
 
         //TODO Android battery: adb shell dumpsys battery reset using Device info
+        LoggerFactory.getLogger(getClass()).info("Performance inspection finished");
     }
 
     private void inspectWithLifeCycle(InspectionStrategy.WhenType whenType, String description) {
@@ -260,10 +265,12 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     /**
      * For giving inspection return the inspection with device id that related to test run
      */
-    private PerformanceInspection getDevicePerformanceInspection(PerformanceInspection inspection) {
+    private PerformanceInspection getDevicePerformanceInspection(PerformanceInspection inspection, ITestRun testRun) {
+        LoggerFactory.getLogger(getClass()).info("getDevicePerformanceInspection: DeviceId=" + ((TestRun) testRun).getDeviceSerialNumber() + ";    testRunId="
+                + testRun.getId() + ";    testRunFolder=" + testRun.getResultFolder().getPath());
         return new PerformanceInspection(inspection.description, inspection.inspectorType, inspection.appId,
                 // For windows inspector, the deviceIdentifier is useless
-                getTestRun().getDeviceSerialNumberByType(inspectorDeviceTypeMap.get(inspection.inspectorType).name()), inspection.isReset);
+                testRun.getDeviceSerialNumberByType(inspectorDeviceTypeMap.get(inspection.inspectorType).name()), inspection.isReset);
     }
 
     private List<PerformanceTestResult> parseForTestRun(ITestRun testRun) {
