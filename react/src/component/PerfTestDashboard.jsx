@@ -144,7 +144,7 @@ export default class PerfTestDashboard extends React.Component {
 
         if (isAndroidBatteryInfoEnabled) {
             let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
-            androidBatteryDevice = androidBatteryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
+            androidBatteryDevice = androidBatteryInfo.performanceInspectionResults[0].inspection && androidBatteryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             androidBatteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult && inspectionResult.parsedData) {
                     let result = { ...inspectionResult.parsedData };
@@ -194,7 +194,7 @@ export default class PerfTestDashboard extends React.Component {
 
         if (isAndroidMemoryInfoEnabled) {
             let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
-            androidMemoryDevice = androidMemoryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
+            androidMemoryDevice = androidMemoryInfo.performanceInspectionResults[0].inspection && androidMemoryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             androidMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult && inspectionResult.parsedData) {
                     let result = { ...inspectionResult.parsedData };
@@ -249,7 +249,7 @@ export default class PerfTestDashboard extends React.Component {
 
         if (isWindowsMemoryInfoEnabled) {
             let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
-            windowsMemoryDevice = windowsMemoryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
+            windowsMemoryDevice = windowsMemoryInfo.performanceInspectionResults[0].inspection && windowsMemoryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
                 if (inspectionResult && inspectionResult.parsedData) {
@@ -318,7 +318,7 @@ export default class PerfTestDashboard extends React.Component {
 
         if (iosEnergyInfo && iosEnergyInfo.performanceInspectionResults && iosEnergyInfo.performanceInspectionResults.length > 0) {
             let startTime = iosEnergyInfo.performanceInspectionResults[0].timestamp;
-            iOSEnergyDevice = iosEnergyInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
+            iOSEnergyDevice = iosEnergyInfo.performanceInspectionResults[0].inspection && iosEnergyInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             iosEnergyInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
@@ -326,8 +326,6 @@ export default class PerfTestDashboard extends React.Component {
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     isIosEnergyInfoEmpty = false;
                     result.testCase = inspectionResult.testCaseName;
-                    iOSEnergyDevice = inspectionResult.deviceIdentifier;
-
                     iosEnergyMetrics.push(result);
                 }
             })
@@ -369,7 +367,7 @@ export default class PerfTestDashboard extends React.Component {
 
         if (iosMemoryInfo && iosMemoryInfo.performanceInspectionResults && iosMemoryInfo.performanceInspectionResults.length > 0) {
             let startTime = iosMemoryInfo.performanceInspectionResults[0].timestamp;
-            iOSMemoryDevice = iosMemoryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
+            iOSMemoryDevice = iosMemoryInfo.performanceInspectionResults[0].inspection && iosMemoryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             iosMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
