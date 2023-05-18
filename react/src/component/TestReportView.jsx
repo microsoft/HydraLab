@@ -513,16 +513,6 @@ export default class TestReportView extends BaseView {
             <div id='test_report_content_3>'>
                 {perfResults.length > 0 ? <div>
                     <table className='table table-borderless'>
-                        <thead className="thead-info">
-                            <tr className="table-info">
-                                <th colSpan={perfResults.length + ''}
-                                    style={{ backgroundColor: '#2F5496', color: 'white' }}>
-                                    Performance Test Results:
-                                </th>
-                            </tr>
-                        </thead>
-                    </table>
-                    <table className='table table-borderless'>
                         <tbody>
                             {suggestions.length > 0
                                 ? <div>
