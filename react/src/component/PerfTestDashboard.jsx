@@ -140,9 +140,11 @@ export default class PerfTestDashboard extends React.Component {
          */
         var isAndroidBatteryInfoEnabled = androidBatteryInfo && androidBatteryInfo.performanceInspectionResults && androidBatteryInfo.performanceInspectionResults.length > 0
         var isAndroidBatteryInfoEmpty = true
+        var androidBatteryDevice = undefined;
 
         if (isAndroidBatteryInfoEnabled) {
             let startTime = androidBatteryInfo.performanceInspectionResults[0].timestamp;
+            androidBatteryDevice = androidBatteryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             androidBatteryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult && inspectionResult.parsedData) {
                     let result = { ...inspectionResult.parsedData };
@@ -188,9 +190,11 @@ export default class PerfTestDashboard extends React.Component {
          */
         var isAndroidMemoryInfoEnabled = androidMemoryInfo && androidMemoryInfo.performanceInspectionResults && androidMemoryInfo.performanceInspectionResults.length > 0
         var isAndroidMemoryInfoEmpty = true;
+        var androidMemoryDevice = undefined;
 
         if (isAndroidMemoryInfoEnabled) {
             let startTime = androidMemoryInfo.performanceInspectionResults[0].timestamp;
+            androidMemoryDevice = androidMemoryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             androidMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
                 if (inspectionResult && inspectionResult.parsedData) {
                     let result = { ...inspectionResult.parsedData };
@@ -241,9 +245,11 @@ export default class PerfTestDashboard extends React.Component {
          */
         var isWindowsMemoryInfoEnabled = windowsMemoryInfo && windowsMemoryInfo.performanceInspectionResults && windowsMemoryInfo.performanceInspectionResults.length > 0
         var isWindowsMemoryInfoEmpty = true;
+        var windowsMemoryDevice = undefined;
 
         if (isWindowsMemoryInfoEnabled) {
             let startTime = windowsMemoryInfo.performanceInspectionResults[0].timestamp;
+            windowsMemoryDevice = windowsMemoryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             windowsMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
 
                 if (inspectionResult && inspectionResult.parsedData) {
@@ -308,17 +314,19 @@ export default class PerfTestDashboard extends React.Component {
          */
         var isIosEnergyEnabled = iosEnergyInfo && iosEnergyInfo.performanceInspectionResults && iosEnergyInfo.performanceInspectionResults.length > 0
         var isIosEnergyInfoEmpty = true;
+        var iOSEnergyDevice = undefined;
 
         if (iosEnergyInfo && iosEnergyInfo.performanceInspectionResults && iosEnergyInfo.performanceInspectionResults.length > 0) {
             let startTime = iosEnergyInfo.performanceInspectionResults[0].timestamp;
+            iOSEnergyDevice = iosEnergyInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             iosEnergyInfo.performanceInspectionResults.forEach((inspectionResult) => {
-
                 if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
                     let parsedData = { ...inspectionResult.parsedData };
                     result.time = (inspectionResult.timestamp - startTime) / 1000;
                     isIosEnergyInfoEmpty = false;
                     result.testCase = inspectionResult.testCaseName;
+                    iOSEnergyDevice = inspectionResult.deviceIdentifier;
 
                     iosEnergyMetrics.push(result);
                 }
@@ -357,11 +365,12 @@ export default class PerfTestDashboard extends React.Component {
 
         var isIosMemoryInfoEnabled = iosMemoryInfo && iosMemoryInfo.performanceInspectionResults && iosMemoryInfo.performanceInspectionResults.length > 0
         var isIosMemoryInfoEmpty = true;
+        var iOSMemoryDevice = undefined;
 
         if (iosMemoryInfo && iosMemoryInfo.performanceInspectionResults && iosMemoryInfo.performanceInspectionResults.length > 0) {
             let startTime = iosMemoryInfo.performanceInspectionResults[0].timestamp;
+            iOSMemoryDevice = iosMemoryInfo.performanceInspectionResults[0].inspection.deviceIdentifier;
             iosMemoryInfo.performanceInspectionResults.forEach((inspectionResult) => {
-
                 if (inspectionResult && inspectionResult.parsedData) {
                     var result = { ...inspectionResult.parsedData };
                     let parsedData = { ...inspectionResult.parsedData };
@@ -429,7 +438,8 @@ export default class PerfTestDashboard extends React.Component {
 
             return <div> {!isHistoryEmpty && <div>
                 <h3> {perfTitleMap[historyMetrics[0].parserType].title} history report </h3>
-                <h4> {"App: " + historyMetrics[0].appId} </h4>
+                <h5> {"App: " + historyMetrics[0].appId} </h5>
+                <h5> {"Device: " + historyMetrics[0].deviceId} </h5>
                 <Select
                     defaultValue={options}
                     isMulti
@@ -462,9 +472,13 @@ export default class PerfTestDashboard extends React.Component {
         }
 
         return <div id='perf_dashboard'>
+            <div style={{ backgroundColor: '#2F5496', color: 'white', padding: '10px', fontSize: 'medium', fontWeight: 'bold', marginBottom: '20px' }}>
+                Performance Test Results
+            </div>
             {isAndroidBatteryInfoEnabled &&
                 <div>
                     <h3> Android Battery report</h3>
+                    {androidBatteryDevice && <h5>{"Device: " + androidBatteryDevice}</h5>}
                     {this.state.androidBatteryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
                         <Select
                             defaultValue={this.state.androidBatteryAppsOptions[0]}
@@ -488,6 +502,7 @@ export default class PerfTestDashboard extends React.Component {
             {isAndroidMemoryInfoEnabled &&
                 <div>
                     <h3> Android Memory report</h3>
+                    {androidMemoryDevice && <h5>{"Device: " + androidMemoryDevice}</h5>}
                     {this.state.androidMemoryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
                         <Select
                             defaultValue={this.state.androidMemoryAppsOptions[0]}
@@ -511,6 +526,7 @@ export default class PerfTestDashboard extends React.Component {
             {isWindowsMemoryInfoEnabled &&
                 <div>
                     <h3> Windows Memory report</h3>
+                    {windowsMemoryDevice && <h5>{"Device: " + windowsMemoryDevice}</h5>}
                     {this.state.windowsMemoryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
                         <Select
                             defaultValue={this.state.windowsMemoryAppsOptions[0]}
@@ -533,6 +549,7 @@ export default class PerfTestDashboard extends React.Component {
             {isIosEnergyEnabled &&
                 <div>
                     <h3> iOS Energy report</h3>
+                    {iOSEnergyDevice && <h5>{"Device: " + iOSEnergyDevice}</h5>}
                     {this.state.iosEnergyAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
                         <Select
                             defaultValue={this.state.iosEnergyAppsOptions[0]}
@@ -554,6 +571,7 @@ export default class PerfTestDashboard extends React.Component {
             {isIosMemoryInfoEnabled &&
                 <div>
                     <h3> iOS Memory report</h3>
+                    {iOSMemoryDevice && <h5>{"Device: " + iOSMemoryDevice}</h5>}
                     {this.state.iosMemoryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
                         <Select
                             defaultValue={this.state.iosMemoryAppsOptions[0]}
@@ -641,6 +659,7 @@ export default class PerfTestDashboard extends React.Component {
                 { key: "parserType", value: perfResult.parserType, "op": "equal" },
                 { key: "testSuite", value: this.state.testTask.testSuite, "op": "equal" },
                 { key: "runningType", value: this.state.testTask.runningType, "op": "equal" },
+                { key: "deviceId", value: inspection.deviceIdentifier, "op": "equal" },
             ];
             axios.post("api/test/performance/history", postBody).then(res => {
                 let newPerfHistoryList = [...this.state.perfHistoryList];
