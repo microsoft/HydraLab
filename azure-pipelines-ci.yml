@@ -28,10 +28,28 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - task: CodeInspector@2
-      displayName: Run code inspector
+      displayName: "[Security Review] code inspector"
       inputs:
         ProductId: '606a5e0d-64b0-4237-9dca-eac200438452'
       condition: eq(variables.securityReview, 'true')
+    - task: Semmle@1
+      displayName: "[Security Review] Java Semmle"
+      inputs:
+        sourceCodeDirectory: '$(Build.SourcesDirectory)'
+        language: 'java'
+        querySuite: 'Recommended'
+        timeout: '1800'
+        ram: '16384'
+        addProjectDirToScanningExclusionList: true
+    - task: Semmle@1
+      displayName: "[Security Review] TS/JS Semmle"
+      inputs:
+        sourceCodeDirectory: '$(Build.SourcesDirectory)'
+        language: 'tsandjs'
+        querySuite: 'Recommended'
+        timeout: '1800'
+        ram: '16384'
+        addProjectDirToScanningExclusionList: true
     - task: NodeTool@0
       inputs:
         versionSpec: '18.x'
