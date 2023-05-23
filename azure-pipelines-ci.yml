@@ -28,6 +28,18 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '18.x'
+    - task: Npm@1
+      inputs:
+        command: 'install'
+        workingDir: 'react'
+    - task: Npm@1
+      inputs:
+        command: 'custom'
+        workingDir: 'react'
+        customCommand: 'run pub'
     - task: CodeInspector@2
       displayName: "[Security Review] code inspector"
       inputs:
@@ -66,18 +78,6 @@ stages:
         GdnExportGdnToolCredScan: true
         GdnExportGdnToolSemmle: true
       condition: eq(variables.securityReview, 'true')
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '18.x'
-    - task: Npm@1
-      inputs:
-        command: 'install'
-        workingDir: 'react'
-    - task: Npm@1
-      inputs:
-        command: 'custom'
-        workingDir: 'react'
-        customCommand: 'run pub'
     - task: PowerShell@2
       displayName: Generate Env File
       inputs:
