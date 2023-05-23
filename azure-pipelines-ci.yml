@@ -53,6 +53,19 @@ stages:
         ram: '16384'
         addProjectDirToScanningExclusionList: true
       condition: eq(variables.securityReview, 'true')
+    - task: CredScan@3
+      displayName: "[Security Review] CredScan"
+      condition: eq(variables.securityReview, 'true')
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
+    # https://strikecommunity.azurewebsites.net/articles/8216/how-to-enable-build-break-on-credscan-detections.html
+      displayName: "[Security Review] Create CredScan Security Analysis Report"
+      inputs:
+        GdnExportHtmlFile: true
+        GdnExportAllTools: false
+        GdnExportGdnToolBinSkim: true
+        GdnExportGdnToolCredScan: true
+        GdnExportGdnToolSemmle: true
+      condition: eq(variables.securityReview, 'true')
     - task: NodeTool@0
       inputs:
         versionSpec: '18.x'
