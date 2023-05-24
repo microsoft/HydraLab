@@ -45,38 +45,11 @@ stages:
       inputs:
         ProductId: '606a5e0d-64b0-4237-9dca-eac200438452'
       condition: eq(variables.securityReview, 'true')
-    - task: Semmle@1
-      displayName: "[Security Review] Java Semmle"
-      inputs:
-        sourceCodeDirectory: '$(Build.SourcesDirectory)'
-        language: 'java'
-        querySuite: 'Recommended'
-        timeout: '1800'
-        ram: '16384'
-        addProjectDirToScanningExclusionList: true
-      condition: eq(variables.securityReview, 'true')
-    - task: Semmle@1
-      displayName: "[Security Review] TS/JS Semmle"
-      inputs:
-        sourceCodeDirectory: '$(Build.SourcesDirectory)'
-        language: 'tsandjs'
-        querySuite: 'Recommended'
-        timeout: '1800'
-        ram: '16384'
-        addProjectDirToScanningExclusionList: true
+    - task: CodeQL3000Init@0
+      displayName: "[Security Review] CodeQL Init"
       condition: eq(variables.securityReview, 'true')
     - task: CredScan@3
       displayName: "[Security Review] CredScan"
-      condition: eq(variables.securityReview, 'true')
-    - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
-    # https://strikecommunity.azurewebsites.net/articles/8216/how-to-enable-build-break-on-credscan-detections.html
-      displayName: "[Security Review] Create CredScan Security Analysis Report"
-      inputs:
-        GdnExportHtmlFile: true
-        GdnExportAllTools: false
-        GdnExportGdnToolBinSkim: true
-        GdnExportGdnToolCredScan: true
-        GdnExportGdnToolSemmle: true
       condition: eq(variables.securityReview, 'true')
     - task: PowerShell@2
       displayName: Generate Env File
@@ -301,3 +274,16 @@ stages:
         ArtifactName: 'HydraLabRelease'
         publishLocation: 'Container'
       condition: eq(variables.fullBuild, 'true')
+    - task: CodeQL3000Finalize@0
+      displayName: "[Security Review] CodeQL Finalize"
+      condition: eq(variables.securityReview, 'true')
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
+    # https://strikecommunity.azurewebsites.net/articles/8216/how-to-enable-build-break-on-credscan-detections.html
+      displayName: "[Security Review] Create CredScan Security Analysis Report"
+      inputs:
+        GdnExportHtmlFile: true
+        GdnExportAllTools: false
+        GdnExportGdnToolBinSkim: true
+        GdnExportGdnToolCredScan: true
+        GdnExportGdnToolSemmle: true
+      condition: eq(variables.securityReview, 'true')
