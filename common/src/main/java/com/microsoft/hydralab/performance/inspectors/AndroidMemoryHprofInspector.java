@@ -32,7 +32,7 @@ public class AndroidMemoryHprofInspector implements PerformanceInspector  {
                 hprofFileName);
         String sdHprofFilePath = HPROF_FILE_PREFIX + hprofFileName;
         String dumpCommand = String.format(getMemHprofCommand(), performanceInspection.deviceIdentifier, performanceInspection.appId, sdHprofFilePath);
-        if (isDebuggable(performanceInspection.deviceIdentifier, performanceInspection.appId)) {
+        if (!isDebuggable(performanceInspection.deviceIdentifier, performanceInspection.appId)) {
             return new PerformanceInspectionResult(null, performanceInspection);
         } else {
             Process process = ShellUtils.execLocalCommand(dumpCommand, false, classLogger);
