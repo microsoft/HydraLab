@@ -16,8 +16,7 @@ variables:
 - name: fullBuild
   value: $[ne(variables['Build.Reason'], 'PullRequest')]
 - name: securityReview
-  # value: $[eq(variables['Build.Reason'], 'Schedule')]
-  value: $[ne(variables['Build.Reason'], 'Schedule')]
+  value: $[or(eq(variables['Build.Reason'], 'Manual'), eq(variables['Build.Reason'], 'Schedule'))]
 
 stages:
 - stage: Build
