@@ -15,7 +15,7 @@ variables:
   value: 'windows-latest'
 - name: fullBuild
   value: $[ne(variables['Build.Reason'], 'PullRequest')]
-- name: securityReview
+- name: securityScan
   value: $[or(eq(variables['Build.Reason'], 'Manual'), eq(variables['Build.Reason'], 'Schedule'))]
 
 stages:
@@ -43,13 +43,13 @@ stages:
       displayName: "[Security Review] code inspector"
       inputs:
         ProductId: '606a5e0d-64b0-4237-9dca-eac200438452'
-      condition: eq(variables.securityReview, 'true')
+      condition: eq(variables.securityScan, 'true')
     - task: CodeQL3000Init@0
       displayName: "[Security Review] CodeQL Init"
-      condition: eq(variables.securityReview, 'true')
+      condition: eq(variables.securityScan, 'true')
     - task: CredScan@3
       displayName: "[Security Review] CredScan"
-      condition: eq(variables.securityReview, 'true')
+      condition: eq(variables.securityScan, 'true')
     - task: PowerShell@2
       displayName: Generate Env File
       inputs:
@@ -275,7 +275,7 @@ stages:
       condition: eq(variables.fullBuild, 'true')
     - task: CodeQL3000Finalize@0
       displayName: "[Security Review] CodeQL Finalize"
-      condition: eq(variables.securityReview, 'true')
+      condition: eq(variables.securityScan, 'true')
     - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
     # https://strikecommunity.azurewebsites.net/articles/8216/how-to-enable-build-break-on-credscan-detections.html
       displayName: "[Security Review] Create CredScan Security Analysis Report"
@@ -285,4 +285,4 @@ stages:
         GdnExportGdnToolBinSkim: true
         GdnExportGdnToolCredScan: true
         GdnExportGdnToolSemmle: true
-      condition: eq(variables.securityReview, 'true')
+      condition: eq(variables.securityScan, 'true')
