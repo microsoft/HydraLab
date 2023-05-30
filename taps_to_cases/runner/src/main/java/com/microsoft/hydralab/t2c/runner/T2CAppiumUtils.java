@@ -89,7 +89,7 @@ public final class T2CAppiumUtils {
             transformer.transform(new DOMSource(document), new StreamResult(out));
             return out.toString();
         } catch (Exception e) {
-            throw new RuntimeException("Error occurs when pretty-printing xml:\n" + xmlString, e);
+            return xmlString;
         }
     }
 
