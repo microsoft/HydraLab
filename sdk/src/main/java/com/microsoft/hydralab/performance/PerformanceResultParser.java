@@ -3,8 +3,10 @@
 
 package com.microsoft.hydralab.performance;
 
+import org.slf4j.Logger;
+
 public interface PerformanceResultParser {
-    PerformanceTestResult parse(PerformanceTestResult performanceTestResult);
+    PerformanceTestResult parse(PerformanceTestResult performanceTestResult, Logger logger);
 
     enum PerformanceResultParserType {
         PARSER_ANDROID_MEMORY_DUMP,

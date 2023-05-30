@@ -13,9 +13,13 @@ import com.microsoft.hydralab.performance.PerformanceInspector;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 
 /**
@@ -33,14 +37,12 @@ import java.util.Objects;
  * testing.
  */
 public class WindowsBatteryInspector implements PerformanceInspector {
-    private final static String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s.csv";
+    private final static String RAW_RESULT_FILE_NAME_FORMAT = "%s.csv";
     private final static String SCRIPT_NAME = "WindowsBatteryInspector.ps1";
     private final static File SCRIPT_FILE = new File(SCRIPT_NAME);
     private final static String PARAMETER_FORMAT = " -output %s";
 
-    protected Logger classLogger = LoggerFactory.getLogger(getClass());
-
-    public void initializeIfNeeded(PerformanceInspection performanceInspection) {
+    public void initializeIfNeeded(PerformanceInspection performanceInspection, Logger logger) {
         if (!SCRIPT_FILE.exists()) {
             try {
                 InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(SCRIPT_NAME);
@@ -48,39 +50,37 @@ public class WindowsBatteryInspector implements PerformanceInspector {
                 IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
                 out.close();
             } catch (IOException e) {
-                classLogger.error("Failed to find app handler script", e);
+                logger.error("Failed to find app handler script", e);
             }
         }
     }
 
     @Override
-    public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
+    public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection, Logger logger) {
         if (!MachineInfoUtils.isOnWindowsLaptop()) {
-            classLogger.error("Windows battery test must be run on Windows Laptop!");
+            logger.error("Windows battery test must be run on Windows Laptop!");
             return null;
         }
-        initializeIfNeeded(performanceInspection);
+        initializeIfNeeded(performanceInspection, logger);
 
         ITestRun testRun = TestRunThreadContext.getTestRun();
-        if (testRun == null)
-        {
-            classLogger.error("TestRunThreadContext.getTestRun() return null.");
+        if (testRun == null) {
+            logger.error("TestRunThreadContext.getTestRun() return null.");
             return null;
         }
-
-        File rawResultFile = new File(performanceInspection.resultFolder,
-                String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), TimeUtils.getTimestampForFilename()));
+        File rawResultFolder = new File(performanceInspection.resultFolder, performanceInspection.appId);
+        Assert.isTrue(rawResultFolder.exists() || rawResultFolder.mkdir(), "rawResultFolder.mkdirs() failed in" + rawResultFolder.getAbsolutePath());
+        File rawResultFile = new File(rawResultFolder, String.format(RAW_RESULT_FILE_NAME_FORMAT, TimeUtils.getTimestampForFilename()));
         Process process = ShellUtils.execLocalCommand(SCRIPT_FILE.getAbsolutePath() +
-                String.format(PARAMETER_FORMAT, rawResultFile), false, classLogger);
+                String.format(PARAMETER_FORMAT, rawResultFile), false, logger);
         PerformanceInspectionResult result = new PerformanceInspectionResult(rawResultFile, performanceInspection);
 
         try {
-            if (process != null && process.waitFor() != 0)
-            {
-                classLogger.error("Exit code: " + process.exitValue());
+            if (process != null && process.waitFor() != 0) {
+                logger.error("Exit code: " + process.exitValue());
             }
         } catch (InterruptedException e) {
-            classLogger.error("InterruptedException caught on process.waitFor().");
+            logger.error("InterruptedException caught on process.waitFor().");
             return null;
         }
 

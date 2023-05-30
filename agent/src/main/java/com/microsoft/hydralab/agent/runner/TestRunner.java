@@ -233,7 +233,7 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         // stop performance test
         if (performanceTestManagementService != null) {
             try {
-                performanceTestManagementService.testTearDown(testRunDevice, testTask, testRun, log);
+                performanceTestManagementService.testTearDown(testRunDevice, testTask, testRun);
             } catch (Exception e) {
                 testRun.getLogger().error("Error in performance test tearDown", e);
             }
