@@ -12,7 +12,6 @@ import com.microsoft.hydralab.performance.PerformanceInspector;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
-import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,10 +51,8 @@ public class WindowsMemoryInspector implements PerformanceInspector {
             logger.error("TestRunThreadContext.getTestRun() return null.");
             return null;
         }
-
-        File rawResultFolder = new File(performanceInspection.resultFolder, performanceInspection.appId);
-        Assert.isTrue(rawResultFolder.exists() || rawResultFolder.mkdir(), "rawResultFolder.mkdirs() failed in" + rawResultFolder.getAbsolutePath());
-        File rawResultFile = new File(rawResultFolder, String.format(RAW_RESULT_FILE_NAME_FORMAT, TimeUtils.getTimestampForFilename()));
+        
+        File rawResultFile = new File(performanceInspection.resultFolder, String.format(RAW_RESULT_FILE_NAME_FORMAT, TimeUtils.getTimestampForFilename()));
         Process process = ShellUtils.execLocalCommand(
                 SCRIPT_FILE.getAbsolutePath() + String.format(PARAMETER_FORMAT, PROCESS_NAME_KEYWORD, rawResultFile),
                 false, logger);
