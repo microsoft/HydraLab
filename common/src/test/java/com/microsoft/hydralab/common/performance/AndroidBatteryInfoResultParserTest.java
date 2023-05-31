@@ -27,8 +27,7 @@ public class AndroidBatteryInfoResultParserTest {
     @Test
     public void testParseWithNull_ReturnNull() {
         AndroidBatteryInfoResultParser parser = new AndroidBatteryInfoResultParser();
-        //TODO logger null check
-        PerformanceTestResult testResult = parser.parse(null, LoggerFactory.getLogger(getClass()));
+        PerformanceTestResult testResult = parser.parse(null, null);
         Assertions.assertNull(testResult);
     }
 

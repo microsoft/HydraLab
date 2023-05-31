@@ -26,6 +26,7 @@ import com.microsoft.hydralab.performance.parsers.WindowsBatteryResultParser;
 import com.microsoft.hydralab.performance.parsers.WindowsMemoryResultParser;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -135,7 +136,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         Assert.isTrue(inspectorFolder.exists() || inspectorFolder.mkdirs(), "performanceInspection.resultFolder.mkdirs() failed in " + inspectorFolder.getAbsolutePath());
         performanceInspection.resultFolder = inspectorFolder;
 
-        PerformanceInspectionResult result = performanceInspector.inspect(performanceInspection, testRun.getLogger());
+        PerformanceInspectionResult result = performanceInspector.inspect(performanceInspection, getLogger(testRun));
         result.testCaseName = testRun.getOngoingTestUnitName();
 
         testRunPerfResultMap.putIfAbsent(testRun.getId(), new HashMap<>());
@@ -154,6 +155,15 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
      */
     private ITestRun getTestRun() {
         return TestRunThreadContext.getTestRun();
+    }
+
+    @NotNull
+    private Logger getLogger(ITestRun testRun) {
+        if (testRun == null || testRun.getLogger() == null) {
+            return LoggerFactory.getLogger(getClass());
+        }
+
+        return testRun.getLogger();
     }
 
     @Override
@@ -198,7 +208,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         Assert.notNull(performanceTestResult, "Found no matched performanceTestResult for performanceInspectionKey: " + performanceInspection.inspectionKey);
         PerformanceResultParser parser = getParserByType(performanceTestResult.parserType);
         Assert.notNull(parser, "Found no matched result parser: " + performanceTestResult.parserType);
-        return parser.parse(performanceTestResult, getTestRun().getLogger());
+        return parser.parse(performanceTestResult, getLogger(getTestRun()));
     }
 
     @Override
@@ -234,14 +244,14 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             }
         }
         List<PerformanceTestResult> resultList = parseForTestRun(testRun);
-        savePerformanceTestResults(resultList, testRun, testTask, testRun.getLogger());
+        savePerformanceTestResults(resultList, testRun, testTask, getLogger(testRun));
 
         inspectPerformanceTimerMap.remove(testRun.getId());
         testLifeCycleStrategyMap.remove(testRun.getId());
         testRunPerfResultMap.remove(testRun.getId());
 
         //TODO Android battery: adb shell dumpsys battery reset using Device info
-        testRun.getLogger().info("Performance inspection finished");
+        getLogger(testRun).info("Performance inspection finished");
     }
 
     private void inspectWithLifeCycle(InspectionStrategy.WhenType whenType, String description) {
@@ -266,7 +276,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
      * For giving inspection return the inspection with device id that related to test run
      */
     private PerformanceInspection getDevicePerformanceInspection(PerformanceInspection inspection, ITestRun testRun) {
-        testRun.getLogger().info("getDevicePerformanceInspection: DeviceId=" + ((TestRun) testRun).getDeviceSerialNumber() + ";    testRunId="
+        getLogger(testRun).info("getDevicePerformanceInspection: DeviceId=" + ((TestRun) testRun).getDeviceSerialNumber() + ";    testRunId="
                 + testRun.getId() + ";    testRunFolder=" + testRun.getResultFolder().getPath());
         return new PerformanceInspection(inspection.description, inspection.inspectorType, inspection.appId,
                 // For windows inspector, the deviceIdentifier is useless
@@ -281,12 +291,12 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         for (PerformanceTestResult performanceTestResult : testResultMap.values()) {
             PerformanceResultParser parser = getParserByType(performanceTestResult.parserType);
             Assert.notNull(parser, "Found no matched result parser: " + performanceTestResult.parserType);
-            resultList.add(parser.parse(performanceTestResult, testRun.getLogger()));
+            resultList.add(parser.parse(performanceTestResult, getLogger(testRun)));
         }
         return resultList;
     }
 
-    private void savePerformanceTestResults(List<PerformanceTestResult> resultList, TestRun testRun, TestTask testTask, Logger log) {
+    private void savePerformanceTestResults(List<PerformanceTestResult> resultList, TestRun testRun, TestTask testTask, Logger logger) {
         if (resultList != null && !resultList.isEmpty()) {
             try {
                 FileUtil.writeToFile(JSON.toJSONString(resultList),
@@ -317,7 +327,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                     testRun.getPerformanceTestResultEntities().add(testResultEntity);
                 }
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                log.error("Failed to save performance test results", e);
+                logger.error("Failed to save performance test results", e);
             }
         }
     }
