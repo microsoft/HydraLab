@@ -3,9 +3,11 @@
 
 package com.microsoft.hydralab.performance;
 
+import org.slf4j.Logger;
+
 public interface PerformanceInspector {
 
-    PerformanceInspectionResult inspect(PerformanceInspection performanceInspection);
+    PerformanceInspectionResult inspect(PerformanceInspection performanceInspection, Logger logger);
 
     enum PerformanceInspectorType {
         INSPECTOR_ANDROID_MEMORY_DUMP,

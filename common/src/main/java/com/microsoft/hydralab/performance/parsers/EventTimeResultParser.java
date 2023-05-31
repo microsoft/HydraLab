@@ -5,6 +5,7 @@ package com.microsoft.hydralab.performance.parsers;
 
 import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
+import org.slf4j.Logger;
 
 /**
  * @author taoran
@@ -14,7 +15,7 @@ import com.microsoft.hydralab.performance.PerformanceTestResult;
 public class EventTimeResultParser implements PerformanceResultParser {
 
     @Override
-    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult, Logger logger) {
         return performanceTestResult;
     }
 }

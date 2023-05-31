@@ -10,7 +10,6 @@ import com.microsoft.hydralab.performance.entity.WindowsBatteryParsedData;
 import lombok.NonNull;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,12 +39,10 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
     private final static String APP_ID_KEYWORD = "YourPhone";
     private final static String DELIMITER = ", ";
 
-    private final Logger classLogger = LoggerFactory.getLogger(getClass());
-
     @Override
-    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult, Logger logger) {
         if (!MachineInfoUtils.isOnWindowsLaptop()) {
-            classLogger.error("Windows battery test must be run on Windows Laptop!");
+            logger.error("Windows battery test must be run on Windows Laptop!");
             return null;
         }
 
@@ -75,7 +72,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
                 windowsBatteryParsedData.setSummarizedWindowsBatteryMetrics(summarizedWindowsBatteryMetrics);
                 lastSummarizedWindowsBatteryMetrics = summarizedWindowsBatteryMetrics;
 
-                Map<String, Integer> columnNameToIndexMap = getColumnNameToIndexMap(inspectionResult.rawResultFile);
+                Map<String, Integer> columnNameToIndexMap = getColumnNameToIndexMap(inspectionResult.rawResultFile, logger);
                 String line;
 
                 while ((line = reversedReader.readLine()) != null)
@@ -99,7 +96,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
 
                     String[] fieldValues = line.split(DELIMITER);
                     WindowsBatteryParsedData.WindowsBatteryMetrics windowsBatteryMetrics = getWindowsBatteryMetrics(
-                            fieldValues, columnNameToIndexMap);
+                            fieldValues, columnNameToIndexMap, logger);
                     windowsBatteryParsedData.getWindowsBatteryMetricsList().add(windowsBatteryMetrics);
                     summarizedWindowsBatteryMetrics.accumulate(windowsBatteryMetrics);
 
@@ -108,7 +105,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
                 }
 
             } catch (IOException e) {
-                classLogger.error("Failed to read data from the file.", e);
+                logger.error("Failed to read data from the file.", e);
             }
         }
 
@@ -116,8 +113,7 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
         return performanceTestResult;
     }
 
-    private Map<String, Integer> getColumnNameToIndexMap(File file)
-    {
+    private Map<String, Integer> getColumnNameToIndexMap(File file, Logger logger) {
         Map<String, Integer> columnNameToIndexMap = new ConcurrentHashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
@@ -130,55 +126,54 @@ public class WindowsBatteryResultParser implements PerformanceResultParser {
             }
 
         } catch (IOException e) {
-            classLogger.error("Failed to read data from the file.", e);
+            logger.error("Failed to read data from the file.", e);
         }
 
         return columnNameToIndexMap;
     }
 
     private WindowsBatteryParsedData.WindowsBatteryMetrics getWindowsBatteryMetrics(String[] fieldValues,
-                                                                                    Map<String, Integer>columnNameToIndexMap)
+                                                                                    Map<String, Integer> columnNameToIndexMap, Logger logger)
     {
         WindowsBatteryParsedData.WindowsBatteryMetrics windowsBatteryMetrics =
                 new WindowsBatteryParsedData.WindowsBatteryMetrics();
 
         windowsBatteryMetrics.setEnergyLoss(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[0], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[0], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setCPUEnergyConsumption(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[1], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[1], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setSocEnergyConsumption(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[2], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[2], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setDisplayEnergyConsumption(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[3], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[3], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setDiskEnergyConsumption(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[4], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[4], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setNetworkEnergyConsumption(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[5], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[5], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setMBBEnergyConsumption(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[6], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[6], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setOtherEnergyConsumption(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[7], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[7], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setEmiEnergyConsumption(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[8], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[8], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setCPUEnergyConsumptionWorkOnBehalf(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[9], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[9], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setCPUEnergyConsumptionAttributed(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[10], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[10], columnNameToIndexMap, logger));
         windowsBatteryMetrics.setTotalEnergyConsumption(
-                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[11], columnNameToIndexMap));
+                getOneMetric(fieldValues, WindowsBatteryParsedData.METRICS_NAME[11], columnNameToIndexMap, logger));
 
         windowsBatteryMetrics.setTimeStamp(getOneStringField(fieldValues, "TimeStamp", columnNameToIndexMap));
         return windowsBatteryMetrics;
     }
 
-    private long getOneMetric(String[] fieldValues, String metricName, Map<String, Integer>columnNameToIndexMap)
-    {
+    private long getOneMetric(String[] fieldValues, String metricName, Map<String, Integer> columnNameToIndexMap, Logger logger) {
         int index = columnNameToIndexMap.getOrDefault(metricName, -1);
         if (index != -1) {
             try {
                 return Long.parseLong(fieldValues[index]);
             } catch (NumberFormatException e) {
-                classLogger.error("Failed to parse long data from the field value: " + fieldValues[index], e);
+                logger.error("Failed to parse long data from the field value: " + fieldValues[index], e);
                 return 0;
             }
         }

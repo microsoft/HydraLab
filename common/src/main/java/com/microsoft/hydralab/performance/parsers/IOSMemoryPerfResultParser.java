@@ -9,7 +9,6 @@ import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
 import com.microsoft.hydralab.performance.entity.IOSMemoryPerfInfo;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,10 +19,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class IOSMemoryPerfResultParser implements PerformanceResultParser {
-    protected Logger classLogger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult, Logger logger) {
         int inspectionSize = performanceTestResult.performanceInspectionResults.size();
         if (inspectionSize > 0) {
             List<PerformanceInspectionResult> oldInspectionResults = performanceTestResult.performanceInspectionResults;
@@ -68,8 +66,8 @@ public class IOSMemoryPerfResultParser implements PerformanceResultParser {
                                 result.parsedData = energyInfo;
                                 newPerfInspectionResults.add(result);
                             } catch (JSONException e) {
-                                classLogger.info("Json parse error, " + subJsonLine);
-                                classLogger.warn(Arrays.toString(e.getStackTrace()));
+                                logger.info("Json parse error, " + subJsonLine);
+                                logger.warn(Arrays.toString(e.getStackTrace()));
                             }
                         }
                     }

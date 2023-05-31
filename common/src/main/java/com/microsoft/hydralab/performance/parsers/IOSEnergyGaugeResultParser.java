@@ -23,7 +23,7 @@ public class IOSEnergyGaugeResultParser implements PerformanceResultParser {
     private static final long ONE_SECOND_TIMESTAMP = 1000;
     protected Logger classLogger = LoggerFactory.getLogger(getClass());
     @Override
-    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult, Logger logger) {
         int inspectionSize = performanceTestResult.performanceInspectionResults.size();
         if (inspectionSize > 0) {
             List<PerformanceInspectionResult> oldInspectionResults = performanceTestResult.performanceInspectionResults;
