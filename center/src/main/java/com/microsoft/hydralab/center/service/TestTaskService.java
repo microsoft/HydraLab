@@ -33,6 +33,7 @@ public class TestTaskService {
     private static volatile AtomicBoolean isRunning = new AtomicBoolean(false);
     private final Logger logger = LoggerFactory.getLogger(TestTaskService.class);
     private final Queue<TestTaskSpec> taskQueue = new LinkedList<>();
+    // cannot use multiple queues within a map to change this data structure, as DEVICE and TASK has no explicit mapping relation
     @Resource
     DeviceAgentManagementService deviceAgentManagementService;
     @Resource
@@ -68,6 +69,8 @@ public class TestTaskService {
             while (!taskQueueCopy.isEmpty()) {
                 TestTaskSpec temp = taskQueueCopy.poll();
                 if (relatedIdentifiers.contains(temp.deviceIdentifier)) {
+                    logger.warn("Device " + deviceIdentifier + " is not free, as precedent queued task " + temp.testTaskId + " will occupy this deviceIdentifier as " +
+                            temp.deviceIdentifier);
                     return false;
                 }
             }
@@ -82,17 +85,19 @@ public class TestTaskService {
             return;
         }
         isRunning.set(true);
-        while (!taskQueue.isEmpty()) {
-            TestTaskSpec testTaskSpec = taskQueue.peek();
+        for (TestTaskSpec testTaskSpec : taskQueue) {
             TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
             try {
+                logger.info("Start triggering queued test task: " + testTaskSpec.testTaskId + ", target deviceIdentifier: " + testTaskSpec.deviceIdentifier);
                 JSONObject result = deviceAgentManagementService.runTestTaskBySpec(testTaskSpec);
-                if (result.get(Const.Param.TEST_DEVICE_SN) == null) {
-                    break;
+                String runningDeviceIdentifier = result.getString(Const.Param.TEST_DEVICE_SN);
+                if (runningDeviceIdentifier == null) {
+                    logger.warn("Trigger test task: " + testTaskSpec.testTaskId + " failed.");
                 } else {
-                    testTask.setTestDevicesCount(result.getString(Const.Param.TEST_DEVICE_SN).split(",").length);
+                    logger.info("Trigger test task: " + testTaskSpec.testTaskId + " successfully on device: " + runningDeviceIdentifier);
+                    testTask.setTestDevicesCount(runningDeviceIdentifier.split(",").length);
                     testDataService.saveTestTaskData(testTask);
-                    taskQueue.poll();
+                    taskQueue.remove(testTaskSpec);
                 }
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
@@ -100,7 +105,7 @@ public class TestTaskService {
                 testTask.setStatus(TestTask.TestStatus.EXCEPTION);
                 testTask.setTestErrorMsg(e.getMessage());
                 testDataService.saveTestTaskData(testTask);
-                taskQueue.poll();
+                taskQueue.remove(testTaskSpec);
             }
         }
         isRunning.set(false);

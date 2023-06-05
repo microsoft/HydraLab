@@ -349,7 +349,6 @@ public class DeviceAgentManagementService {
                 }
             }
         }
-        testTaskService.runTask();
     }
 
     public void checkAccessInfo(String name, String key) {
