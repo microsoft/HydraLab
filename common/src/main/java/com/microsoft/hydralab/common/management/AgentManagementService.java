@@ -83,12 +83,12 @@ public class AgentManagementService {
 
             @Override
             public void onDeviceInactive(DeviceInfo deviceInfo) {
-                deviceInfoMap.remove(deviceInfo.getDeviceId());
+                deviceInfoMap.remove(deviceInfo.getSerialNum());
             }
 
             @Override
             public void onDeviceConnected(DeviceInfo deviceInfo) {
-                deviceInfoMap.put(deviceInfo.getDeviceId(), deviceInfo);
+                deviceInfoMap.put(deviceInfo.getSerialNum(), deviceInfo);
             }
         });
         this.deviceStatusListenerManager = deviceStatusListenerManager;

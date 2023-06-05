@@ -391,7 +391,7 @@ public class DeviceAgentManagementService {
             //init agent info
             deviceInfo.setAgentId(agentId);
 
-            //if the status saved in master is testing, the value will not be covered
+            // if the status saved in master is testing, the value will not be covered
             if (deviceListMap.get(deviceInfo.getSerialNum()) != null && deviceListMap.get(deviceInfo.getSerialNum()).isTesting()) {
                 deviceInfo.setStatus(DeviceInfo.TESTING);
             }
