@@ -248,6 +248,11 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
         }
+
+        //TODO: if the other test run resources are not released, release them here
+        if (testRunDevice.getScreenRecorder() != null) {
+            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), testRun.getLogger());
+        }
         testRunDeviceOrchestrator.testDeviceUnset(testRunDevice, testRun.getLogger());
 
         //generate xml report and upload files
