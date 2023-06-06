@@ -88,7 +88,7 @@ public class TestTaskService {
         for (TestTaskSpec testTaskSpec : taskQueue) {
             TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
             try {
-                logger.info("Start triggering queued test task: " + testTaskSpec.testTaskId + ", target deviceIdentifier: " + testTaskSpec.deviceIdentifier);
+                logger.info("Start trying to trigger queued test task: " + testTaskSpec.testTaskId + ", target deviceIdentifier: " + testTaskSpec.deviceIdentifier);
                 JSONObject result = deviceAgentManagementService.runTestTaskBySpec(testTaskSpec);
                 String runningDeviceIdentifier = result.getString(Const.Param.TEST_DEVICE_SN);
                 if (runningDeviceIdentifier == null) {
