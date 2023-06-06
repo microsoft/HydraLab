@@ -129,6 +129,23 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
+    public void releaseScreenRecorder(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
+        if (testRunDevice.getScreenRecorder() == null) {
+            return;
+        }
+
+        if (logger != null) {
+            logger.info("Releasing screen recorder");
+        }
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
+                testRunDevice1.getScreenRecorder().finishRecording();
+            });
+        } else {
+            testRunDevice.getScreenRecorder().finishRecording();
+        }
+    }
+
     public void startLogCollector(@NotNull TestRunDevice testRunDevice, @NotNull String pkgName, @NotNull TestRun testRun, @NotNull Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
