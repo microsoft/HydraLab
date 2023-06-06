@@ -369,7 +369,11 @@ public class DeviceAgentManagementService {
     }
 
     private void updateAgentDeviceGroup(AgentSessionInfo savedSession, List<DeviceInfo> latestDeviceInfos) {
-
+        /**
+         * Device status update logic:
+         *  1. TESTING can only be set in CENTER and sync to AGENT
+         *  2. ONLINE/OFFLINE/UNSTABLE can only be set in AGENT and sync to CENTER
+         */
         updateDeviceGroup(latestDeviceInfos, savedSession.agentUser.getId());
 
         AgentDeviceGroup agentDeviceGroup = agentDeviceGroups.get(savedSession.agentUser.getId());
@@ -386,20 +390,27 @@ public class DeviceAgentManagementService {
         }
     }
 
-    public void updateDeviceGroup(List<DeviceInfo> deviceInfos, String agentId) {
-        for (DeviceInfo deviceInfo : deviceInfos) {
+    public void updateDeviceGroup(List<DeviceInfo> agentDeviceInfos, String agentId) {
+        for (DeviceInfo agentDeviceInfo : agentDeviceInfos) {
             //init agent info
-            deviceInfo.setAgentId(agentId);
+            agentDeviceInfo.setAgentId(agentId);
 
-            // if the status saved in master is testing, the value will not be covered
-            if (deviceListMap.get(deviceInfo.getSerialNum()) != null && deviceListMap.get(deviceInfo.getSerialNum()).isTesting()) {
-                deviceInfo.setStatus(DeviceInfo.TESTING);
+            // if the status saved in Center is testing, the value will not be covered
+            if (deviceListMap.get(agentDeviceInfo.getSerialNum()) != null) {
+                if (deviceListMap.get(agentDeviceInfo.getSerialNum()).isTesting()) {
+                    log.warn("Center status: {}, Agent status: {}, status should be synced to CENTER's value when TESTING.",
+                            deviceListMap.get(agentDeviceInfo.getSerialNum()).getStatus(), agentDeviceInfo.getStatus());
+                    agentDeviceInfo.setStatus(DeviceInfo.TESTING);
+                } else if (agentDeviceInfo.isTesting()) {
+                    log.warn("Test on the device is canceled, status of device in AGENT should be reset to ONLINE, otherwise TESTING would never be covered by agent");
+                    agentDeviceInfo.setStatus(DeviceInfo.ONLINE);
+                }
             }
 
-            deviceListMap.put(deviceInfo.getSerialNum(), deviceInfo);
+            deviceListMap.put(agentDeviceInfo.getSerialNum(), agentDeviceInfo);
 
             //init group info
-            List<DeviceGroupRelation> groups = deviceGroupService.getGroupByDevice(deviceInfo.getSerialNum());
+            List<DeviceGroupRelation> groups = deviceGroupService.getGroupByDevice(agentDeviceInfo.getSerialNum());
             for (DeviceGroupRelation group : groups) {
                 addDeviceToGroup(group.getGroupName(), group.getDeviceSerial());
             }
@@ -551,27 +562,31 @@ public class DeviceAgentManagementService {
         sendMessageToSession(agentSession.session, message);
     }
 
-    private void updateAgentDevices(List<DeviceInfo> latestDeviceInfos, AgentDeviceGroup agentDeviceGroup) {
-        for (DeviceInfo newDeviceInfo : latestDeviceInfos) {
+    private void updateAgentDevices(List<DeviceInfo> agentDeviceInfos, AgentDeviceGroup agentDeviceGroup) {
+        for (DeviceInfo agentDeviceInfo : agentDeviceInfos) {
             boolean hasDevice = false;
-            for (DeviceInfo device : agentDeviceGroup.getDevices()) {
-                //if the status saved in master is testing, the value will not be covered
-                if (deviceListMap.get(device.getSerialNum()) != null && deviceListMap.get(device.getSerialNum()).isTesting()) {
-                    device.setStatus(DeviceInfo.TESTING);
+            for (DeviceInfo centerDeviceInfo : agentDeviceGroup.getDevices()) {
+                //if the status saved in Center is testing, the value will not be covered
+                if (deviceListMap.get(centerDeviceInfo.getSerialNum()) != null && deviceListMap.get(centerDeviceInfo.getSerialNum()).isTesting()) {
+                    centerDeviceInfo.setStatus(DeviceInfo.TESTING);
                     hasDevice = true;
-                    log.info("Updating device status of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), newDeviceInfo.getSerialNum());
+                    log.info("Updating device status of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), agentDeviceInfo.getSerialNum());
                     break;
                 }
-                if (device.getSerialNum().equals(newDeviceInfo.getSerialNum())) {
+                if (centerDeviceInfo.getSerialNum().equals(agentDeviceInfo.getSerialNum())) {
                     hasDevice = true;
-                    BeanUtil.copyProperties(newDeviceInfo, device);
-                    log.info("Updating device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), newDeviceInfo.getSerialNum());
+                    if (DeviceInfo.TESTING.equals(agentDeviceInfo.getStatus())) {
+                        log.warn("Device status is out-of-sync between center/agent, CENTER: {}, AGENT: {}", centerDeviceInfo.getStatus(), agentDeviceInfo.getStatus());
+                        agentDeviceInfo.setStatus(centerDeviceInfo.getStatus());
+                    }
+                    BeanUtil.copyProperties(agentDeviceInfo, centerDeviceInfo);
+                    log.info("Updating device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), agentDeviceInfo.getSerialNum());
                     break;
                 }
             }
             if (!hasDevice) {
-                log.info("Adding device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), newDeviceInfo.getSerialNum());
-                agentDeviceGroup.getDevices().add(newDeviceInfo);
+                log.info("Adding device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), agentDeviceInfo.getSerialNum());
+                agentDeviceGroup.getDevices().add(agentDeviceInfo);
             }
         }
     }
