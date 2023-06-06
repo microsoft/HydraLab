@@ -249,10 +249,13 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
             }
         }
 
-        //TODO: if the other test run resources are not released, release them here
-        if (testRunDevice.getScreenRecorder() != null) {
-            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), testRun.getLogger());
+        try {
+            //TODO: if the other test run resources are not released, release them here
+            testRunDeviceOrchestrator.releaseScreenRecorder(testRunDevice, testRun.getLogger());
+        } catch (Exception e) {
+            testRun.getLogger().error("Error in release Screen Recorder", e);
         }
+
         testRunDeviceOrchestrator.testDeviceUnset(testRunDevice, testRun.getLogger());
 
         //generate xml report and upload files
