@@ -197,7 +197,7 @@ public class MockDriverT2CTest {
         @Override
         public String getPageSource() {
             logger.info("Called " + currentMethodName());
-            return "foo";
+            return "<foo>bar</foo>";
         }
 
         @Override

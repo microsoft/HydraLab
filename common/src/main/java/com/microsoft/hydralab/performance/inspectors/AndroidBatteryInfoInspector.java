@@ -8,34 +8,32 @@ import com.microsoft.hydralab.performance.PerformanceInspection;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
 
 public class AndroidBatteryInfoInspector implements PerformanceInspector {
-    private static final String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s_%s.txt";
-    protected Logger classLogger = LoggerFactory.getLogger(getClass());
+    private static final String RAW_RESULT_FILE_NAME_FORMAT = "%s.txt";
 
     @Override
-    public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
+    public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection, Logger logger) {
         if (performanceInspection.isReset) {
-            initialize(performanceInspection);
+            initialize(performanceInspection, logger);
         }
 
         File rawResultFolder = new File(performanceInspection.resultFolder, performanceInspection.appId);
         Assert.isTrue(rawResultFolder.exists() || rawResultFolder.mkdir(), "rawResultFolder.mkdirs() failed in" + rawResultFolder.getAbsolutePath());
         File rawResultFile = new File(rawResultFolder,
-                String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), performanceInspection.appId, TimeUtils.getTimestampForFilename()));
+                String.format(RAW_RESULT_FILE_NAME_FORMAT, TimeUtils.getTimestampForFilename()));
 
         ShellUtils.execLocalCommandWithRedirect(String.format("adb -s %s shell dumpsys batterystats %s",
-                performanceInspection.deviceIdentifier, performanceInspection.appId), rawResultFile, true, classLogger);
+                performanceInspection.deviceIdentifier, performanceInspection.appId), rawResultFile, true, logger);
         return new PerformanceInspectionResult(rawResultFile, performanceInspection);
     }
 
-    private void initialize(PerformanceInspection performanceInspection) {
+    private void initialize(PerformanceInspection performanceInspection, Logger logger) {
         String device = performanceInspection.deviceIdentifier;
-        ShellUtils.execLocalCommand(String.format("adb -s %s shell dumpsys battery unplug", device), classLogger);
-        ShellUtils.execLocalCommand(String.format("adb -s %s shell dumpsys batterystats --reset", device), classLogger);
+        ShellUtils.execLocalCommand(String.format("adb -s %s shell dumpsys battery unplug", device), logger);
+        ShellUtils.execLocalCommand(String.format("adb -s %s shell dumpsys batterystats --reset", device), logger);
     }
 }

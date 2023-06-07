@@ -22,6 +22,7 @@ public class WindowsScreenRecorder implements ScreenRecorder {
     private final File baseFolder;
     private final Logger logger;
     private WindowsDriver windowsDriver;
+    private boolean started = false;
 
     public WindowsScreenRecorder(DeviceDriver deviceDriver, DeviceInfo deviceInfo, File baseFolder, Logger logger) {
         this.deviceDriver = deviceDriver;
@@ -36,7 +37,7 @@ public class WindowsScreenRecorder implements ScreenRecorder {
         logger.info("Start phone record screen");
         logger.info("Start PC record screen");
         windowsDriver.startRecordingScreen(new WindowsStartScreenRecordingOptions().withTimeLimit(Duration.ofSeconds(maxTime)));
-
+        started = true;
     }
 
     @Override
@@ -46,6 +47,10 @@ public class WindowsScreenRecorder implements ScreenRecorder {
 
     @Override
     public String finishRecording() {
+        if (!started) {
+            return null;
+        }
+
         File PCVideoFile = null;
         try {
             String base64String = windowsDriver.stopRecordingScreen();
@@ -58,6 +63,8 @@ public class WindowsScreenRecorder implements ScreenRecorder {
             e.printStackTrace();
             System.out.println("-------------------------------------------------------Ignore End--------------------------------------------------------------");
         }
+
+        started = false;
 
         if (PCVideoFile == null || !PCVideoFile.exists()) {
             return null;

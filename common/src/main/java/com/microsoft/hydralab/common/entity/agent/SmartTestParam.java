@@ -3,9 +3,11 @@
 package com.microsoft.hydralab.common.entity.agent;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
+
+import java.io.File;
 
 @Data
 public class SmartTestParam {
@@ -14,8 +16,16 @@ public class SmartTestParam {
     public String modelInfo;
     public String testSteps;
     public String stringTextFolder;
+    public File outputFolder;
 
-    public SmartTestParam(String apkPath, DeviceInfo deviceInfo, String sourceModelId, String targetModelId, int testSteps, String folderPath, String stringFolderPath) {
+    public SmartTestParam(String apkPath,
+                          DeviceInfo deviceInfo,
+                          String sourceModelId,
+                          String targetModelId,
+                          int testSteps,
+                          String folderPath,
+                          String stringFolderPath,
+                          File outputFolder) {
         JSONObject modelInfo = new JSONObject();
 
         modelInfo.put(Const.SmartTestConfig.BERT_PATH_TAG, folderPath + Const.SmartTestConfig.BERT_MODEL_NAME);
@@ -28,5 +38,6 @@ public class SmartTestParam {
         this.modelInfo = modelInfo.toJSONString().replaceAll("\"", "'");
         this.testSteps = String.valueOf(testSteps);
         this.stringTextFolder = stringFolderPath;
+        this.outputFolder = outputFolder;
     }
 }

@@ -70,6 +70,8 @@ public interface Const {
 
         String ZIP_FILE_NAME = "SmartTest.zip";
         String ZIP_FOLDER_NAME = "SmartTest";
+        String RESULT_FOLDER_NAME = "smartTestResult";
+        String GRAPH_FILE_NAME = "directed_acyclic_graph.gexf";
         String PY_FILE_NAME = "main.py";
         String BERT_MODEL_NAME = "screenBert.pt";
         String TOPIC_MODEL_NAME = "topic.pt";
@@ -115,6 +117,9 @@ public interface Const {
 
         //Package name
         String PACKAGE_NAME = "\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
+
+        //Integer
+        String INTEGER = "^[0-9]*$";
     }
 
     interface PermissionType {
