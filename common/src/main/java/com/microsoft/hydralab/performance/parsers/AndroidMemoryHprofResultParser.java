@@ -18,11 +18,10 @@ import java.io.IOException;
 import java.util.List;
 
 public class AndroidMemoryHprofResultParser implements PerformanceResultParser {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final int MD_OBJECT_REPORT_COUNT = 50;
 
     @Override
-    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult, Logger logger) {
         if (performanceTestResult == null || performanceTestResult.performanceInspectionResults == null
                 || performanceTestResult.performanceInspectionResults.isEmpty()) {
             return null;
@@ -34,7 +33,7 @@ public class AndroidMemoryHprofResultParser implements PerformanceResultParser {
                 return performanceTestResult;
             }
             inspectionResult.parsedData = buildAndroidHprofMemoryInfo(hprofFile, inspectionResult.inspection.appId, inspectionResult.inspection.description,
-                    inspectionResult.timestamp);
+                    inspectionResult.timestamp, logger);
         }
 
         return performanceTestResult;
@@ -42,7 +41,7 @@ public class AndroidMemoryHprofResultParser implements PerformanceResultParser {
 
 
 
-    private AndroidHprofMemoryInfo buildAndroidHprofMemoryInfo(File dumpFile, String packageName, String description, long timeStamp) {
+    private AndroidHprofMemoryInfo buildAndroidHprofMemoryInfo(File dumpFile, String packageName, String description, long timeStamp, Logger logger) {
 
         HeapProfProcessor profProcessor = new HeapProfProcessor(dumpFile);
 

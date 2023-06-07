@@ -9,7 +9,6 @@ import com.microsoft.hydralab.performance.PerformanceInspection;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
 import com.microsoft.hydralab.performance.PerformanceInspector;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -18,11 +17,10 @@ public class AndroidMemoryHprofInspector implements PerformanceInspector  {
 
     private static final String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s_%s_memory.hprof";
     private static final String HPROF_FILE_PREFIX = "/data/local/tmp/";
-    private final Logger classLogger = LoggerFactory.getLogger(getClass());
 
 
     @Override
-    public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection) {
+    public PerformanceInspectionResult inspect(PerformanceInspection performanceInspection, Logger logger) {
 
         File rawResultFolder = new File(performanceInspection.resultFolder, performanceInspection.appId);
         Assert.isTrue(rawResultFolder.exists() || rawResultFolder.mkdir(), "rawResultFolder.mkdirs() failed in" + rawResultFolder.getAbsolutePath());
@@ -32,15 +30,15 @@ public class AndroidMemoryHprofInspector implements PerformanceInspector  {
                 hprofFileName);
         String sdHprofFilePath = HPROF_FILE_PREFIX + hprofFileName;
         String dumpCommand = String.format(getMemHprofCommand(), performanceInspection.deviceIdentifier, performanceInspection.appId, sdHprofFilePath);
-        if (!isDebuggable(performanceInspection.deviceIdentifier, performanceInspection.appId)) {
+        if (!isDebuggable(performanceInspection.deviceIdentifier, performanceInspection.appId, logger)) {
             return new PerformanceInspectionResult(null, performanceInspection);
         } else {
-            Process process = ShellUtils.execLocalCommand(dumpCommand, false, classLogger);
+            Process process = ShellUtils.execLocalCommand(dumpCommand, false, logger);
             if (process != null) {
                 try {
                     int ret = process.waitFor();
                     if (ret == 0) {
-                        Process pullProcess = ShellUtils.execLocalCommand("adb pull " + sdHprofFilePath + " " + rawResultFile.getAbsolutePath(), false, classLogger);
+                        Process pullProcess = ShellUtils.execLocalCommand("adb pull " + sdHprofFilePath + " " + rawResultFile.getAbsolutePath(), false, logger);
                         if (pullProcess != null) {
                             ret = pullProcess.waitFor();
                             if (ret == 0) {
@@ -49,7 +47,7 @@ public class AndroidMemoryHprofInspector implements PerformanceInspector  {
                         }
                     }
                 } catch (InterruptedException e) {
-                    classLogger.error(e.getMessage(), e);
+                    logger.error(e.getMessage(), e);
                     return new PerformanceInspectionResult(null, performanceInspection);
                 }
         }
@@ -64,9 +62,9 @@ public class AndroidMemoryHprofInspector implements PerformanceInspector  {
     }
 
 
-    private boolean isDebuggable(String deviceId, String packageName) {
+    private boolean isDebuggable(String deviceId, String packageName, Logger logger) {
         String cmd = String.format("adb -s %s shell dumpsys package %s | findstr flags", deviceId, packageName);
-        String ret = ShellUtils.execLocalCommandWithResult(cmd, classLogger);
+        String ret = ShellUtils.execLocalCommandWithResult(cmd, logger);
         return ret != null && ret.contains("DEBUGGABLE");
     }
 }
