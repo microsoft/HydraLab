@@ -15,7 +15,7 @@ import java.io.File;
 
 public class AndroidMemoryHprofInspector implements PerformanceInspector  {
 
-    private static final String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s_%s_memory.hprof";
+    private static final String RAW_RESULT_FILE_NAME_FORMAT = "%s_%s_memory.hprof";
     private static final String HPROF_FILE_PREFIX = "/data/local/tmp/";
 
 
@@ -25,7 +25,7 @@ public class AndroidMemoryHprofInspector implements PerformanceInspector  {
         File rawResultFolder = new File(performanceInspection.resultFolder, performanceInspection.appId);
         Assert.isTrue(rawResultFolder.exists() || rawResultFolder.mkdir(), "rawResultFolder.mkdirs() failed in" + rawResultFolder.getAbsolutePath());
         String tmpTime = TimeUtils.getTimestampForFilename();
-        String hprofFileName = String.format(RAW_RESULT_FILE_NAME_FORMAT, getClass().getSimpleName(), performanceInspection.appId, tmpTime);
+        String hprofFileName = String.format(RAW_RESULT_FILE_NAME_FORMAT, performanceInspection.appId, tmpTime);
         File rawResultFile = new File(rawResultFolder,
                 hprofFileName);
         String sdHprofFilePath = HPROF_FILE_PREFIX + hprofFileName;
