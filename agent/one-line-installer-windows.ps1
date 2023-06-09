@@ -27,7 +27,7 @@ Function Get-File ($Url, $Path, $ExtractCurrent=$false)
         if ($ExtractCurrent)
         {
             $PathExtract = $Path.Substring(0, $Path.LastIndexOf('\') + 1)
-            Expand-Archive $Path -DestinationPath $PathExtract
+            Expand-Archive $Path -DestinationPath $PathExtract -Force
         }
         else
         {
