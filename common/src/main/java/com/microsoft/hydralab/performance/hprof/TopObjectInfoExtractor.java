@@ -8,7 +8,7 @@ import com.squareup.haha.perflib.ClassObj;
 import com.squareup.haha.perflib.Instance;
 
 public class TopObjectInfoExtractor extends Extractor {
-    private int count;
+    private final int count;
 
     public TopObjectInfoExtractor(int count) {
         this.count = count;
