@@ -319,11 +319,32 @@ Add-EnvironmentVar -Key "PATH"                     -Val "%ANDROID_HOME%"
 Add-EnvironmentVar -Key "PATH"                     -Val "%ANDROID_CMDLINE_TOOLS%"
 Add-EnvironmentVar -Key "PATH"                     -Val "%ANDROID_PLATFORM_TOOLS%"
 
-$AgentServiceXml = Get-Content -Path "$RootPath\AgentService.xml"
-$AgentServiceXml = $AgentServiceXml -replace "java","$JDK_Root\bin\java.exe"
-$AgentServiceXml = $AgentServiceXml -replace "{LOG_FILE_LOCATION}","Logs"
-$AgentServiceXml | Set-Content -Path "$RootPath\AgentService.xml"
+# =======================================
+# Windows Startup
+# =======================================
+Write-Host "Installation is done, you could quit and use following prompt to startup Hydra Lab agent:"
+Write-Host "***********************************************"
+Write-Host "*   java -Xms1024m -Xmx2048m -jar agent.jar   *"
+Write-Host "***********************************************"
+Write-Host
+Write-Host "If you want to setup Agent startup process, relaunch or update in Hydra Lab center"
+Write-Host "Please input your Windows username and password to continue setup"
 
-sc.exe delete $AgentServiceName
-New-Service -Name $AgentServiceName -BinaryPathName "$RootPath\AgentService.exe"
-Start-Service -Name $AgentServiceName
+$logonRegistryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+$logonUserName = Read-Host "Windows Logon User-Name: "
+$logonPassword = Read-Host "Windows Logon Password: "
+New-ItemProperty -Path $logonRegistryPath -Name "DefaultUserName" -Value $logonUserName -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $logonRegistryPath -Name "DefaultPassword" -Value $logonPassword -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $logonRegistryPath -Name "AutoAdminLogon" -Value "1" -PropertyType String -Force | Out-Null
+
+$taskTrigger = New-ScheduledTaskTrigger -AtLogon
+$taskAction = New-ScheduledTaskAction -Execute "$RootPath\restartAgent_WindowsTaskScheduler.bat"
+Register-ScheduledTask -TaskName "HydraLabAgentRestart" -Trigger $taskTrigger -Action $taskAction
+
+# $AgentServiceXml = Get-Content -Path "$RootPath\AgentService.xml"
+# $AgentServiceXml = $AgentServiceXml -replace "java","$JDK_Root\bin\java.exe"
+# $AgentServiceXml = $AgentServiceXml -replace "{LOG_FILE_LOCATION}","Logs"
+# $AgentServiceXml | Set-Content -Path "$RootPath\AgentService.xml"
+# sc.exe delete $AgentServiceName
+# New-Service -Name $AgentServiceName -BinaryPathName "$RootPath\AgentService.exe"
+# Start-Service -Name $AgentServiceName
