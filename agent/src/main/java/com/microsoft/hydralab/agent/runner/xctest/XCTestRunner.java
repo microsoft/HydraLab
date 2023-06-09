@@ -13,6 +13,7 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ShellUtils;
+import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,9 +34,12 @@ public class XCTestRunner extends TestRunner {
     private Logger logger;
     private long recordingStartTimeMillis;
 
-    public XCTestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
-                        TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService) {
-        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
+    public XCTestRunner(AgentManagementService agentManagementService,
+                        TestTaskRunCallback testTaskRunCallback,
+                        TestRunDeviceOrchestrator testRunDeviceOrchestrator,
+                        PerformanceTestManagementService performanceTestManagementService,
+                        NetworkTestManagementService networkTestManagementService) {
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
     }
 
     @Override

@@ -18,6 +18,7 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -33,10 +34,10 @@ public class EspressoRunner extends TestRunner {
     private static final int MINOR_ADB_VERSION = -1;
     final ADBOperateUtil adbOperateUtil;
 
-    public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
-                          TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService,
+    public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, TestRunDeviceOrchestrator testRunDeviceOrchestrator,
+                          PerformanceTestManagementService performanceTestManagementService, NetworkTestManagementService networkTestManagementService,
                           ADBOperateUtil adbOperateUtil) {
-        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 

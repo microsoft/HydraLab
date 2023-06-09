@@ -18,6 +18,7 @@ import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 
@@ -40,8 +41,9 @@ public class SmartRunner extends TestRunner {
     public SmartRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                        TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                        PerformanceTestManagementService performanceTestManagementService,
+                       NetworkTestManagementService networkTestManagementService,
                        SmartTestUtil smartTestUtil) {
-        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
         this.smartTestUtil = smartTestUtil;
     }
 
