@@ -193,6 +193,11 @@ if (-Not((New-Object Security.Principal.WindowsPrincipal $([Security.Principal.W
 }
 
 # =======================================
+# Enable Long Paths
+# =======================================
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+
+# =======================================
 # Check No HydraLab Folder exists
 # =======================================
 if (Test-Path -Path $RootPath)
@@ -215,7 +220,8 @@ Copy-Item "$CurrentPath\application.yml" -Destination "$RootPath\application.yml
 # =======================================
 $filesToDownload = "agent.jar", "Hydra_Agent_Installer_Windows.zip"
 $release = Invoke-RestMethod -Uri https://api.github.com/repos/microsoft/HydraLab/releases/latest
-foreach ($ast in $release.assets)
+$releaseAssets = Invoke-RestMethod -Uri "$($release.url)/assets"
+foreach ($ast in $releaseAssets)
 {
     if ($filesToDownload -contains $ast.name)
     {
