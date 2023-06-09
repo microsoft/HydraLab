@@ -35,7 +35,7 @@ public class SwaggerConfig {
                 .description("Hydra Lab")
                 .termsOfServiceUrl("")
                 .contact(new Contact("Microsoft Hydra Lab Support ", "", "hydra_lab_support@microsoft.com"))
-                .version("1.0.0")
+                .version("3.0.0")
                 .build();
 
         return new Docket(DocumentationType.SWAGGER_2)
