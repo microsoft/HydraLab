@@ -218,7 +218,7 @@ Copy-Item "$CurrentPath\application.yml" -Destination "$RootPath\application.yml
 # =======================================
 # Download HydraLab
 # =======================================
-$filesToDownload = "agent.jar", "Hydra_Agent_Installer_Windows.zip"
+$filesToDownload = "agent.jar", "HydraLab_Agent_Installer_Windows.zip"
 $release = Invoke-RestMethod -Uri https://api.github.com/repos/microsoft/HydraLab/releases/latest
 $releaseAssets = Invoke-RestMethod -Uri "$($release.url)/assets"
 foreach ($ast in $releaseAssets)
