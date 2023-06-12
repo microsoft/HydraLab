@@ -128,7 +128,7 @@ class TasksView extends BaseView {
 
             if (runningTasks) {
                 runningTasks.forEach((rt) => {
-                    rows.unshift(thisEleObj.getTaskRow(rt, true))
+                    rows.reverse().unshift(thisEleObj.getTaskRow(rt, true))
                 })
             }
             if (queuedTasks) {
