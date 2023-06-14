@@ -1,4 +1,4 @@
-package studio.hydralab.vpnservice.protocol;
+package com.microsoft.hydralab.android.client.vpn.protocol;
 
 
 import java.net.InetSocketAddress;

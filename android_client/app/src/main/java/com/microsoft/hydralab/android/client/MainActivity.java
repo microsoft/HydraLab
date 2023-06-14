@@ -18,6 +18,7 @@ import android.content.res.Configuration;
 import android.media.MediaCodecInfo;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
+import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,6 +39,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.microsoft.hydralab.android.client.view.NamedSpinner;
+import com.microsoft.hydralab.android.client.vpn.HydraLabVpnService;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -56,10 +58,13 @@ import static com.microsoft.hydralab.android.client.ScreenRecorderService.VIDEO_
 public class MainActivity extends Activity {
     private static final String TAG = "ScreenRecorder";
     private static final String DEFAULT_ACV_PROFILE = "Default";
+    private static final String VPN_ACTION_START = "com.microsoft.hydralab.android.client.vpn.START";
+    private static final String VPN_ACTION_STOP = "com.microsoft.hydralab.android.client.vpn.STOP";
     private static final int REQUEST_MEDIA_PROJECTION = 1;
     private static final int REQUEST_MEDIA_PROJECTION_AND_START = 3;
     private static final int REQUEST_PERMISSIONS = 2;
     private static final int CODE_REQUEST_ALERT = 5;
+    private static final int REQUEST_VPN_PROFILE = 9;
     // members below will be initialized in onCreate()
     private MediaProjectionManager mMediaProjectionManager;
     private Button mButton;
@@ -81,6 +86,8 @@ public class MainActivity extends Activity {
     private MediaCodecInfo[] mAvcCodecInfos; // avc codecs
     private MediaCodecInfo[] mAacCodecInfos; // aac codecs
     private ScreenRecorderService mService;
+    private String mVpnOutputPath;
+    private String mVpnAppsStr;
 
     private final Handler handler = new Handler();
 
@@ -137,6 +144,27 @@ public class MainActivity extends Activity {
         mAudioSwitch.setChecked(
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                         .getBoolean(getResources().getResourceEntryName(mAudioSwitch.getId()), false));
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent != null) {
+            String action = intent.getAction();
+            if (action.equals(VPN_ACTION_START)) {
+                this.mVpnOutputPath = intent.getExtras().getString("output");
+                this.mVpnAppsStr = intent.getExtras().getString("apps");
+                Intent prepareIt = VpnService.prepare(this);
+                if (prepareIt != null) {
+                    startActivityForResult(prepareIt, REQUEST_VPN_PROFILE);
+                }
+                else {
+                    StartVpnService();
+                }
+            } else if (action.equals(VPN_ACTION_STOP)) {
+                StopVpnService();
+            }
+        }
     }
 
     @Override
@@ -247,6 +275,9 @@ public class MainActivity extends Activity {
                 if (requestCode == RESULT_OK) {
                     onGetWindowPermission();
                 }
+                break;
+            case REQUEST_VPN_PROFILE:
+                StartVpnService();
                 break;
         }
     }
@@ -910,5 +941,18 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void StartVpnService() {
+        Intent it = new Intent(this, HydraLabVpnService.class);
+        it.setAction(VPN_ACTION_START);
+        it.putExtra("output", this.mVpnOutputPath);
+        it.putExtra("apps", this.mVpnAppsStr);
+        startService(it);
+    }
+
+    private void StopVpnService() {
+        Intent it = new Intent(this, HydraLabVpnService.class);
+        it.setAction(VPN_ACTION_STOP);
+        startService(it);
+    }
 
 }

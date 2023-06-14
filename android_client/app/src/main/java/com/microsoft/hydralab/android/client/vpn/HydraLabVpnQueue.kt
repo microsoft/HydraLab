@@ -1,20 +1,19 @@
-package studio.hydralab.vpnservice
+package com.microsoft.hydralab.android.client.vpn
 
 import android.annotation.SuppressLint
 import android.net.VpnService
 import android.os.Build
 import android.util.Base64
 import android.util.Log
-import studio.hydralab.vpnservice.protocol.IpUtil
-import studio.hydralab.vpnservice.protocol.Packet
-import studio.hydralab.vpnservice.protocol.Packet.TCPHeader
-import studio.hydralab.vpnservice.protocol.TCBStatus
+import com.microsoft.hydralab.android.client.vpn.protocol.IpUtil
+import com.microsoft.hydralab.android.client.vpn.protocol.Packet
+import com.microsoft.hydralab.android.client.vpn.protocol.Packet.TCPHeader
+import com.microsoft.hydralab.android.client.vpn.protocol.TCBStatus
 import java.io.FileDescriptor
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.ConnectException
-import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.*
@@ -39,11 +38,11 @@ object ToNetworkQueueWorker : Runnable {
 
     private lateinit var vpnInput: FileChannel
 
-    private lateinit var vpnLogger: VpnLogger
+    private lateinit var vpnLogger: HydraLabVpnLogger
 
     var totalInputCount = 0L
 
-    fun start(vpnFileDescriptor: FileDescriptor, logger: VpnLogger) {
+    fun start(vpnFileDescriptor: FileDescriptor, logger: HydraLabVpnLogger) {
         if (this::thread.isInitialized && thread.isAlive) throw IllegalStateException("Running already")
         vpnInput = FileInputStream(vpnFileDescriptor).channel
         vpnLogger = logger
@@ -105,9 +104,9 @@ object ToDeviceQueueWorker : Runnable {
 
     private lateinit var vpnOutput: FileChannel
 
-    private lateinit var vpnLogger: VpnLogger
+    private lateinit var vpnLogger: HydraLabVpnLogger
 
-    fun start(vpnFileDescriptor: FileDescriptor, logger: VpnLogger) {
+    fun start(vpnFileDescriptor: FileDescriptor, logger: HydraLabVpnLogger) {
         if (this::thread.isInitialized && thread.isAlive) throw IllegalStateException("Is already running")
         vpnOutput = FileOutputStream(vpnFileDescriptor).channel
         vpnLogger = logger
@@ -157,7 +156,7 @@ object UdpSendWorker : Runnable {
     private var vpnService: VpnService? = null
 
     fun start(vpnService: VpnService) {
-        this.vpnService = vpnService
+        UdpSendWorker.vpnService = vpnService
         udpTunnelQueue.clear()
         thread = Thread(this).apply {
             name = TAG
@@ -252,7 +251,7 @@ object UdpReceiveWorker : Runnable {
     private const val UDP_HEADER_FULL_SIZE = Packet.IP4_HEADER_SIZE + Packet.UDP_HEADER_SIZE
 
     fun start(vpnService: VpnService) {
-        this.vpnService = vpnService
+        UdpReceiveWorker.vpnService = vpnService
         thread = Thread(this).apply {
             name = TAG
             start()
@@ -413,7 +412,7 @@ object TcpWorker : Runnable {
     private var vpnService: VpnService? = null
 
     fun start(vpnService: VpnService) {
-        this.vpnService = vpnService
+        TcpWorker.vpnService = vpnService
         thread = Thread(this).apply {
             name = TAG
             start()
@@ -439,7 +438,7 @@ object TcpWorker : Runnable {
 
     private fun handleReadFromVpn() {
         while (!thread.isInterrupted) {
-            val vpnService = this.vpnService ?: return
+            val vpnService = vpnService ?: return
             val packet = deviceToNetworkTCPQueue.poll() ?: return
             val destinationAddress = packet.ip4Header.destinationAddress
             val tcpHeader = packet.tcpHeader

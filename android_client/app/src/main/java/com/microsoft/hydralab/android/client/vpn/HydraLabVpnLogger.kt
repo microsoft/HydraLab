@@ -1,23 +1,22 @@
-package studio.hydralab.vpnservice
+package com.microsoft.hydralab.android.client.vpn
 
 import android.os.Environment
-import android.util.Log
+import com.microsoft.hydralab.android.client.vpn.protocol.Packet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import studio.hydralab.vpnservice.protocol.Packet
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 
-class VpnLogger(private var filePath: String?) {
+class HydraLabVpnLogger(private var filePath: String?) {
     private var lines = mutableListOf<String>()
     private var linesStaging = listOf<String>()
 
     init {
         if (filePath != null) {
             filePath = Environment.getExternalStorageDirectory().toString() + filePath
-            val file = File(filePath)
+            val file = File(filePath ?: "")
             if (file.exists()) {
                 file.writeText("")
             } else {
