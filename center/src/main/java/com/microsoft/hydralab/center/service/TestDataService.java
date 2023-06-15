@@ -240,9 +240,11 @@ public class TestDataService {
         TestTask testTask = testDataServiceCache.getTestTaskDetail(testId);
         if (testTask == null) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "The TestTask linked doesn't exist!");
-        } else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
-            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
         }
+        // temporarily disable team auth check before a better solution on access to test result comes out.
+//        else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
+//            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
+//        }
     }
 
     public List<PerformanceTestResultEntity> getPerformanceTestHistory(List<CriteriaType> queryParams) {
