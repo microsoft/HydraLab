@@ -113,6 +113,8 @@ public class TestTask implements Serializable {
     //todo: Add performance test result to test task
     @Transient
     private List<InspectionStrategy> inspectionStrategies;
+    private boolean enableNetworkTest;
+    private String networkTestRule;
 
     public TestTask() {
     }
@@ -164,6 +166,8 @@ public class TestTask implements Serializable {
         }
         testTask.setTestScope(testTaskSpec.testScope);
         testTask.setInspectionStrategies(testTaskSpec.inspectionStrategies);
+        testTask.setEnableNetworkTest(testTaskSpec.enableNetworkTest);
+        testTask.setNetworkTestRule(testTaskSpec.networkTestRule);
 
         return testTask;
     }
@@ -199,6 +203,8 @@ public class TestTask implements Serializable {
         testTaskSpec.testRunnerName = testTask.getTestRunnerName();
         testTaskSpec.testScope = testTask.getTestScope();
         testTaskSpec.inspectionStrategies = testTask.getInspectionStrategies();
+        testTaskSpec.enableNetworkTest = testTask.enableNetworkTest;
+        testTaskSpec.networkTestRule = testTask.getNetworkTestRule();
 
         return testTaskSpec;
     }

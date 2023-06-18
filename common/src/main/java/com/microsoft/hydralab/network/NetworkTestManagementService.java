@@ -35,14 +35,15 @@ public class NetworkTestManagementService {
         return true;
     }
 
-    public NetworkTestRecords stop(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
+    public NetworkTestRecords stop(
+            @NotNull TestRunDevice testRunDevice, String resultFolder,  @Nullable Logger logger) {
         NetworkTestRecords records = new NetworkTestRecords();
         if (testRunDevice instanceof TestRunDeviceCombo) {
             for (TestRunDevice d : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
-                records.deviceToRecords.put(d.getDeviceInfo().getDeviceId(), this.stopForDevice(d, logger));
+                records.deviceToRecords.put(d.getDeviceInfo().getDeviceId(), this.stopForDevice(d, resultFolder, logger));
             }
         } else {
-            records.deviceToRecords.put(testRunDevice.getDeviceInfo().getDeviceId(), this.stopForDevice(testRunDevice, logger));
+            records.deviceToRecords.put(testRunDevice.getDeviceInfo().getDeviceId(), this.stopForDevice(testRunDevice, resultFolder, logger));
         }
         return records;
     }
@@ -70,13 +71,14 @@ public class NetworkTestManagementService {
         return true;
     }
 
-    private String[] stopForDevice(@NotNull TestRunDevice device, @Nullable Logger logger) {
+    private String[] stopForDevice(
+            @NotNull TestRunDevice device, String resultFolder, @Nullable Logger logger) {
         // stop vpn
         String command_stop = "adb shell am start -a studio.hydralab.vpnservice.STOP -n studio.hydralab.vpnservice/.MainActivity";
         ShellUtils.execLocalCommandWithResult(command_stop, logger);
 
         // pull result
-        String command_result = "adb pull /sdcard/Documents/dump.log ./dump.log";
+        String command_result = "adb pull /sdcard/Documents/dump.log " + resultFolder + "/dump.log";
         ShellUtils.execLocalCommandWithResult(command_result, logger);
 
         // read log file
