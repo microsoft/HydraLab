@@ -80,6 +80,7 @@ public class TestTaskService {
 
     @Scheduled(cron = "0 */3 * * * *")
     public void runTask() {
+        logger.info("Start to run queued test task. the value of isRunning is: " + isRunning.get());
         //only run one task at the same time
         if (isRunning.get()) {
             return;
