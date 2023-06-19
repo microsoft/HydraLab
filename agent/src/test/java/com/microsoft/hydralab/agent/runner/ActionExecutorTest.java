@@ -47,7 +47,7 @@ class ActionExecutorTest extends BaseTest {
         actions.add(action1);
         actions.add(action2);
         List<Exception> exceptions = actionExecutor.doActions(deviceDriver, new TestRunDevice(deviceInfo, deviceInfo.getType()), baseLogger,
-                Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP);
+                Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP, false);
         Assertions.assertEquals(0, exceptions.size(), () -> exceptions.get(0).getMessage());
         verify(deviceDriver, times(2)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
         verify(deviceDriver, times(1)).changeGlobalSetting(deviceInfo, args2.get(0), args2.get(1), baseLogger);

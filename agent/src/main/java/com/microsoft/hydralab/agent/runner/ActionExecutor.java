@@ -8,6 +8,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.management.device.DeviceDriver;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author zhoule
@@ -35,7 +37,7 @@ public class ActionExecutor {
     /**
      * the implementation of supported actions should not be overload
      */
-    private Set<String> actionTypes =
+    private final Set<String> actionTypes =
             Set.of("setProperty", "setDefaultLauncher", "backToHome", "changeGlobalSetting",
                     "changeSystemSetting", "execCommandOnDevice", "execCommandOnAgent", "pushFileToDevice",
                     "pullFileFromDevice");
@@ -43,12 +45,18 @@ public class ActionExecutor {
     public List<Exception> doActions(@NotNull DeviceDriver deviceDriverManager,
                                      @NotNull TestRunDevice testRunDevice,
                                      @NotNull Logger logger,
-                                     @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when) {
+                                     @NotNull Map<String, List<DeviceAction>> actions, @NotNull String when, boolean runOnAgentOnly) {
         List<Exception> exceptions = new ArrayList<>();
         //filter todoActions
-        List<DeviceAction> todoActions = actions.getOrDefault(when, new ArrayList<>()).stream()
-                .filter(deviceAction -> actionTypes.contains(deviceAction.getMethod()))
-                .collect(Collectors.toList());
+        Stream<DeviceAction> legalActionStream = actions.getOrDefault(when, new ArrayList<>()).stream()
+                .filter(deviceAction -> actionTypes.contains(deviceAction.getMethod()) && StringUtils.isNotEmpty(deviceAction.getDeviceType()));
+        if (runOnAgentOnly) {
+            legalActionStream = legalActionStream.filter(deviceAction -> Const.OperatedDevice.AGENT.equalsIgnoreCase(deviceAction.getDeviceType()));
+        } else {
+            legalActionStream = legalActionStream.filter(deviceAction -> Const.OperatedDevice.ANY.equalsIgnoreCase(deviceAction.getDeviceType())
+                    || testRunDevice.getDeviceInfo().getType().equalsIgnoreCase(deviceAction.getDeviceType()));
+        }
+        List<DeviceAction> todoActions = legalActionStream.collect(Collectors.toList());
 
         logger.info("Start to execute actions! Current timing is {}, action size is {}", when, todoActions.size());
         for (DeviceAction deviceAction : todoActions) {
@@ -70,9 +78,6 @@ public class ActionExecutor {
                          @NotNull DeviceAction deviceAction)
             throws InvocationTargetException, IllegalAccessException {
         if (!actionTypes.contains(deviceAction.getMethod())) {
-            return;
-        }
-        if (!StringUtils.isEmpty(deviceAction.getDeviceType()) && !testRunDevice.getDeviceInfo().getType().equalsIgnoreCase(deviceAction.getDeviceType())){
             return;
         }
         DeviceInfo deviceInfo = testRunDevice.getDeviceInfo();
@@ -122,5 +127,4 @@ public class ActionExecutor {
         }
         return methodArgs;
     }
-
 }

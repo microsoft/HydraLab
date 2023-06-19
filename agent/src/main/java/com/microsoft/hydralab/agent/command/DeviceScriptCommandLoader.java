@@ -5,6 +5,7 @@ package com.microsoft.hydralab.agent.command;
 
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
 import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.util.Const;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -19,6 +20,7 @@ import java.util.List;
  */
 @Service
 public class DeviceScriptCommandLoader {
+    // preset commands in agent application.yml
     @Resource(name = "DeviceCommandProperty")
     private List<DeviceScriptCommand> commands;
 
@@ -55,7 +57,7 @@ public class DeviceScriptCommandLoader {
         String[] commandLines = deviceCommand.getInline().split("\n");
         for (String commandLine : commandLines) {
             if (!StringUtils.isEmpty(commandLine)) {
-                actionList.add(converter.getAction(commandLine));
+                actionList.add(converter.getAction(commandLine, deviceCommand.getDevice()));
             }
         }
         return actionList;
@@ -65,21 +67,27 @@ public class DeviceScriptCommandLoader {
         //generate action by command type
         ADBShell() {
             @Override
-            public DeviceAction getAction(String commandline) {
-                DeviceAction deviceAction = new DeviceAction("Android", "execCommandOnDevice");
+            public DeviceAction getAction(String commandline, String deviceType) {
+                if (StringUtils.isEmpty(deviceType)) {
+                    deviceType = Const.OperatedDevice.ANDROID;
+                }
+                DeviceAction deviceAction = new DeviceAction(deviceType, "execCommandOnDevice");
                 deviceAction.getArgs().add(commandline);
                 return deviceAction;
             }
         },
         AgentShell() {
             @Override
-            public DeviceAction getAction(String commandline) {
-                DeviceAction deviceAction = new DeviceAction("Windows", "execCommandOnAgent");
+            public DeviceAction getAction(String commandline, String deviceType) {
+                if (StringUtils.isEmpty(deviceType)) {
+                    deviceType = Const.OperatedDevice.ANY;
+                }
+                DeviceAction deviceAction = new DeviceAction(deviceType, "execCommandOnAgent");
                 deviceAction.getArgs().add(commandline);
                 return deviceAction;
             }
         };
 
-        public abstract DeviceAction getAction(String commandline);
+        public abstract DeviceAction getAction(String commandline, String deviceType);
     }
 }
