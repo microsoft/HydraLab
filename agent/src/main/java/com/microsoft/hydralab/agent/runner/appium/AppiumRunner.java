@@ -179,6 +179,9 @@ public class AppiumRunner extends TestRunner {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
