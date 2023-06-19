@@ -189,4 +189,12 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
     public ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder, Logger logger) {
         return new WindowsScreenRecorder(this, deviceInfo, folder, logger);
     }
+
+    @Override
+    public void networkTestStart(DeviceInfo deviceInfo, Logger logger) {
+    }
+
+    @Override
+    public void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger) {
+    }
 }

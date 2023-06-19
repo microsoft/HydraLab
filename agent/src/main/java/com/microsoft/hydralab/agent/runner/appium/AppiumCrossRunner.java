@@ -8,7 +8,6 @@ import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.common.entity.agent.EnvCapability;
 import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.management.AgentManagementService;
-import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 
 import java.util.List;
@@ -24,9 +23,8 @@ public class AppiumCrossRunner extends AppiumRunner {
                              TestTaskRunCallback testTaskRunCallback,
                              TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                              PerformanceTestManagementService performanceTestManagementService,
-                             NetworkTestManagementService networkTestManagementService,
                              String agentName) {
-        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.agentName = agentName;
     }
 

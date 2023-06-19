@@ -16,7 +16,6 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.junit.internal.TextListener;
 import org.junit.platform.launcher.Launcher;
@@ -43,9 +42,8 @@ public class AppiumRunner extends TestRunner {
 
     public AppiumRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                         TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                        PerformanceTestManagementService performanceTestManagementService,
-                        NetworkTestManagementService networkTestManagementService) {
-        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
+                        PerformanceTestManagementService performanceTestManagementService) {
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @Override

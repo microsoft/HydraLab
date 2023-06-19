@@ -25,6 +25,7 @@ import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
+import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
@@ -43,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -596,31 +599,25 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     }
 
     @Override
-    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName,
-                                                       Logger logger) {
+    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName, Logger logger) {
         boolean isProjectionPermissionGranted = false;
         stopPackageProcess(deviceInfo, recordPackageName, logger);
         wakeUpDevice(deviceInfo, logger);
         unlockDevice(deviceInfo, logger);
         startRecordActivity(deviceInfo, logger);
-        ThreadUtils.safeSleep(2000);
-        if (!clickNodeOnDeviceWithText(deviceInfo, logger, "Start now", "Allow", "允许")) {
+
+        while (true) {
+            ThreadUtils.safeSleep(2000);
             if (clickNodeOnDeviceWithText(deviceInfo, logger, "Allow display over other apps")) {
                 sendKeyEvent(deviceInfo, KEYCODE_BACK, logger);
                 sendKeyEvent(deviceInfo, KEYCODE_HOME, logger);
                 stopPackageProcess(deviceInfo, recordPackageName, logger);
                 startRecordActivity(deviceInfo, logger);
-                ThreadUtils.safeSleep(2000);
-                if (clickNodeOnDeviceWithText(deviceInfo, logger, "Start now")) {
-                    isProjectionPermissionGranted = true;
-                }
+            } else if (clickNodeOnDeviceWithText(deviceInfo, logger, "Start now", "Allow", "允许")) {
+                isProjectionPermissionGranted = true;
+            } else {
+                break;
             }
-        } else {
-            isProjectionPermissionGranted = true;
-        }
-
-        if (isProjectionPermissionGranted) {
-            clickNodeOnDeviceWithText(deviceInfo, logger, "Allow");
         }
         return isProjectionPermissionGranted;
     }
@@ -732,5 +729,44 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void networkTestStart(DeviceInfo deviceInfo, Logger logger) {
+        // launch vpn
+        String command_launch = "adb shell am start";
+        command_launch += " -a com.microsoft.hydralab.android.client.vpn.START";
+        command_launch += " -n com.microsoft.hydralab.android.client/.MainActivity";
+        ShellUtils.execLocalCommandWithResult(command_launch, logger);
+
+        // start vpn
+        String command_start = "adb shell am start";
+        command_start += " -a com.microsoft.hydralab.android.client.vpn.START";
+        command_start += " -n com.microsoft.hydralab.android.client/.MainActivity";
+        command_start += String.format(" --es \"apps\" \"%s\"", "com.microsoft.appmanager");
+        command_start += " --es \"output\" \"/Documents/dump.log\"";
+        ShellUtils.execLocalCommandWithResult(command_start, logger);
+    }
+
+    @Override
+    public void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger) {
+        // stop vpn
+        String command_stop = "adb shell am start";
+        command_stop += " -a com.microsoft.hydralab.android.client.vpn.STOP";
+        command_stop += " -n com.microsoft.hydralab.android.client/.MainActivity";
+        ShellUtils.execLocalCommandWithResult(command_stop, logger);
+
+        // pull result
+        String command_result = "adb pull /sdcard/Documents/dump.log " + folder.getAbsolutePath() + "/dump.log";
+        ShellUtils.execLocalCommandWithResult(command_result, logger);
+
+        // read log file
+        // String[] lines;
+        // try {
+        //     lines = Files.readAllLines(Paths.get("./dump.log")).toArray(new String[0]);
+        // } catch (IOException e) {
+        //     lines = new String[0];
+        // }
+        // return lines;
     }
 }

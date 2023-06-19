@@ -210,4 +210,14 @@ public class DeviceDriverManager implements DeviceDriver {
         ArrayList<DeviceType> keys = new ArrayList<>(deviceDriverMap.keySet());
         return deviceDriverMap.get(keys.get(0)).getAppiumServerManager();
     }
+
+    @Override
+    public void networkTestStart(DeviceInfo deviceInfo, Logger logger) {
+        getDeviceDriver(deviceInfo.getType()).networkTestStart(deviceInfo, logger);
+    }
+
+    @Override
+    public void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger) {
+        getDeviceDriver(deviceInfo.getType()).networkTestStop(deviceInfo, folder, logger);
+    }
 }

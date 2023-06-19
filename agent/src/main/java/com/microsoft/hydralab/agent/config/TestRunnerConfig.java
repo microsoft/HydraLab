@@ -18,7 +18,6 @@ import com.microsoft.hydralab.agent.service.TestTaskEngineService;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
-import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -57,10 +56,9 @@ public class TestRunnerConfig {
                                          TestTaskEngineService testTaskEngineService,
                                          TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                          PerformanceTestManagementService performanceTestManagementService,
-                                         NetworkTestManagementService networkTestManagementService,
                                          ADBOperateUtil adbOperateUtil) {
         return new EspressoRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator,
-                performanceTestManagementService, networkTestManagementService, adbOperateUtil);
+                performanceTestManagementService, adbOperateUtil);
     }
 
     @Bean
@@ -68,40 +66,35 @@ public class TestRunnerConfig {
                                            TestTaskEngineService testTaskEngineService,
                                            TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                            PerformanceTestManagementService performanceTestManagementService,
-                                           NetworkTestManagementService networkTestManagementService,
                                            ADBOperateUtil adbOperateUtil) {
         return new AdbMonkeyRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator,
-                performanceTestManagementService, networkTestManagementService, adbOperateUtil);
+                performanceTestManagementService, adbOperateUtil);
     }
 
     @Bean
     public AppiumMonkeyRunner appiumMonkeyRunner(AgentManagementService agentManagementService,
                                                  TestTaskEngineService testTaskEngineService,
                                                  TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                                                 PerformanceTestManagementService performanceTestManagementService,
-                                                 NetworkTestManagementService networkTestManagementService) {
+                                                 PerformanceTestManagementService performanceTestManagementService) {
         return new AppiumMonkeyRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator,
-                performanceTestManagementService, networkTestManagementService);
+                performanceTestManagementService);
     }
 
     @Bean
     public AppiumRunner appiumRunner(AgentManagementService agentManagementService,
                                      TestTaskEngineService testTaskEngineService,
                                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                                     PerformanceTestManagementService performanceTestManagementService,
-                                     NetworkTestManagementService networkTestManagementService) {
-        return new AppiumRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
+                                     PerformanceTestManagementService performanceTestManagementService) {
+        return new AppiumRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @Bean
     public AppiumCrossRunner appiumCrossRunner(AgentManagementService agentManagementService,
                                                TestTaskEngineService testTaskEngineService,
                                                TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                                               PerformanceTestManagementService performanceTestManagementService,
-                                               NetworkTestManagementService networkTestManagementService) {
+                                               PerformanceTestManagementService performanceTestManagementService) {
         return new AppiumCrossRunner(agentManagementService, testTaskEngineService,
-                testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService,
-                agentName);
+                testRunDeviceOrchestrator, performanceTestManagementService, agentName);
     }
 
     @Bean
@@ -109,29 +102,26 @@ public class TestRunnerConfig {
                                    TestTaskEngineService testTaskEngineService,
                                    TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                    PerformanceTestManagementService performanceTestManagementService,
-                                   NetworkTestManagementService networkTestManagementService,
                                    SmartTestUtil smartTestUtil) {
         return new SmartRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator,
-                performanceTestManagementService, networkTestManagementService, smartTestUtil);
+                performanceTestManagementService, smartTestUtil);
     }
 
     @Bean
     public T2CRunner t2cRunner(AgentManagementService agentManagementService,
                                TestTaskEngineService testTaskEngineService,
                                TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                               PerformanceTestManagementService performanceTestManagementService,
-                               NetworkTestManagementService networkTestManagementService) {
+                               PerformanceTestManagementService performanceTestManagementService) {
         return new T2CRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator,
-                performanceTestManagementService, networkTestManagementService, agentName);
+                performanceTestManagementService, agentName);
     }
 
     @Bean
     public XCTestRunner xctestRunner(AgentManagementService agentManagementService,
                                      TestTaskEngineService testTaskEngineService,
                                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                                     PerformanceTestManagementService performanceTestManagementService,
-                                     NetworkTestManagementService networkTestManagementService) {
-        return new XCTestRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
+                                     PerformanceTestManagementService performanceTestManagementService) {
+        return new XCTestRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @ConfigurationProperties(prefix = "app.device-script.commands")

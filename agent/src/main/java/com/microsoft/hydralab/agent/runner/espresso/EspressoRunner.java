@@ -18,7 +18,6 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -35,9 +34,8 @@ public class EspressoRunner extends TestRunner {
     final ADBOperateUtil adbOperateUtil;
 
     public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                          PerformanceTestManagementService performanceTestManagementService, NetworkTestManagementService networkTestManagementService,
-                          ADBOperateUtil adbOperateUtil) {
-        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
+                          PerformanceTestManagementService performanceTestManagementService, ADBOperateUtil adbOperateUtil) {
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }
 
@@ -56,7 +54,7 @@ public class EspressoRunner extends TestRunner {
             reportLogger.info("Start xml report: parse listener");
             EspressoTestInfoProcessorListener listener =
                     new EspressoTestInfoProcessorListener(agentManagementService,
-                            adbOperateUtil, testRunDevice, testRun, testTask.getPkgName(),
+                            adbOperateUtil, testRunDevice, testRun, testTask,
                             testRunDeviceOrchestrator, performanceTestManagementService);
             instrumentationResultParser =
                     new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {
@@ -72,11 +70,8 @@ public class EspressoRunner extends TestRunner {
             listener.startRecording(testTask.getTimeOutSecond());
             String command = buildCommand(testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(),
                     testTask.getTestScope(), testTask.getInstrumentationArgs());
-            networkTestManagementService.start(testRunDevice, reportLogger);
             String result = startInstrument(testRunDevice.getDeviceInfo(), reportLogger,
                     instrumentationResultParser, testTask.getTimeOutSecond(), command);
-            networkTestManagementService.stop(
-                    testRunDevice, testRun.getResultFolder().getAbsolutePath(), reportLogger);
             if (Const.TaskResult.ERROR_DEVICE_OFFLINE.equals(result)) {
                 testTaskRunCallback.onDeviceOffline(testTask);
                 return;

@@ -191,4 +191,12 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
         }
         ShellUtils.execLocalCommand(newCommand, logger);
     }
+
+    @Override
+    public void networkTestStart(DeviceInfo deviceInfo, Logger logger) {
+    }
+
+    @Override
+    public void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger) {
+    }
 }

@@ -203,7 +203,7 @@ public class TestTask implements Serializable {
         testTaskSpec.testRunnerName = testTask.getTestRunnerName();
         testTaskSpec.testScope = testTask.getTestScope();
         testTaskSpec.inspectionStrategies = testTask.getInspectionStrategies();
-        testTaskSpec.enableNetworkTest = testTask.enableNetworkTest;
+        testTaskSpec.enableNetworkTest = testTask.isEnableNetworkTest();
         testTaskSpec.networkTestRule = testTask.getNetworkTestRule();
 
         return testTaskSpec;

@@ -12,7 +12,6 @@ import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.IOSUtils;
-import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import io.appium.java_client.appmanagement.ApplicationState;
 import io.appium.java_client.ios.IOSDriver;
@@ -34,9 +33,8 @@ public class AppiumMonkeyRunner extends AppiumRunner {
     public AppiumMonkeyRunner(AgentManagementService agentManagementService,
                               TestTaskRunCallback testTaskRunCallback,
                               TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                              PerformanceTestManagementService performanceTestManagementService,
-                              NetworkTestManagementService networkTestManagementService) {
-        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
+                              PerformanceTestManagementService performanceTestManagementService) {
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @Override

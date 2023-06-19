@@ -129,6 +129,26 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
+    public void startNetworkTest(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
+                deviceDriverManager.networkTestStart(testRunDevice1.getDeviceInfo(), logger);
+            });
+        } else {
+            deviceDriverManager.networkTestStart(testRunDevice.getDeviceInfo(), logger);
+        }
+    }
+
+    public void stopNetworkTest(@NotNull TestRunDevice testRunDevice, @NotNull File folder, @Nullable Logger logger) {
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
+                deviceDriverManager.networkTestStart(testRunDevice1.getDeviceInfo(), logger);
+            });
+        } else {
+            deviceDriverManager.networkTestStart(testRunDevice.getDeviceInfo(), logger);
+        }
+    }
+
     public void startLogCollector(@NotNull TestRunDevice testRunDevice, @NotNull String pkgName, @NotNull TestRun testRun, @NotNull Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {

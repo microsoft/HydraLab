@@ -302,6 +302,14 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
+    @Override
+    public void networkTestStart(DeviceInfo deviceInfo, Logger logger) {
+    }
+
+    @Override
+    public void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger) {
+    }
+
     private String currentMethodName() {
         return Thread.currentThread().getStackTrace()[2].getMethodName();
     }

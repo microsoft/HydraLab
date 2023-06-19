@@ -18,7 +18,6 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.ThreadUtils;
-import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import com.microsoft.hydralab.t2c.runner.ActionInfo;
 import com.microsoft.hydralab.t2c.runner.DriverInfo;
@@ -54,9 +53,8 @@ public class T2CRunner extends AppiumRunner {
                      TestTaskRunCallback testTaskRunCallback,
                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                      PerformanceTestManagementService performanceTestManagementService,
-                     NetworkTestManagementService networkTestManagementService,
                      String agentName) {
-        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService, networkTestManagementService);
+        super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.agentName = agentName;
     }
 

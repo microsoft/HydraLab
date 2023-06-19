@@ -18,7 +18,6 @@ import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
-import com.microsoft.hydralab.network.NetworkTestManagementService;
 import com.microsoft.hydralab.performance.InspectionStrategy;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.lang3.StringUtils;
@@ -38,16 +37,14 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
     protected final AgentManagementService agentManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
     protected final PerformanceTestManagementService performanceTestManagementService;
-    protected final NetworkTestManagementService networkTestManagementService;
     protected final TestRunDeviceOrchestrator testRunDeviceOrchestrator;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
 
     public TestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                      PerformanceTestManagementService performanceTestManagementService, NetworkTestManagementService networkTestManagementService) {
+                      PerformanceTestManagementService performanceTestManagementService) {
         this.agentManagementService = agentManagementService;
         this.testTaskRunCallback = testTaskRunCallback;
         this.performanceTestManagementService = performanceTestManagementService;
-        this.networkTestManagementService = networkTestManagementService;
         this.testRunDeviceOrchestrator = testRunDeviceOrchestrator;
         init();
     }
