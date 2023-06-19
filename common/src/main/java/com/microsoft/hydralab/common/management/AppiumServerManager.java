@@ -25,10 +25,13 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.net.UrlChecker;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -279,6 +282,14 @@ public class AppiumServerManager {
     public Boolean isDriverAlive(AppiumDriver driver) {
         try {
             driver.getStatus();
+            return true;
+        } catch (WebDriverException e) {
+            return false;
+        }
+    }
+
+    public Boolean isDriverAlive(WindowsDriver driver) {
+        try {
             driver.getScreenshotAs(OutputType.FILE);
             return true;
         } catch (WebDriverException e) {
