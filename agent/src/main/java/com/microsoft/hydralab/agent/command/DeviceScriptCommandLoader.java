@@ -68,10 +68,11 @@ public class DeviceScriptCommandLoader {
         ADBShell() {
             @Override
             public DeviceAction getAction(String commandline, String deviceType) {
-                if (StringUtils.isEmpty(deviceType)) {
-                    deviceType = Const.OperatedDevice.ANDROID;
+                String type = deviceType;
+                if (StringUtils.isEmpty(type)) {
+                    type = Const.OperatedDevice.ANDROID;
                 }
-                DeviceAction deviceAction = new DeviceAction(deviceType, "execCommandOnDevice");
+                DeviceAction deviceAction = new DeviceAction(type, "execCommandOnDevice");
                 deviceAction.getArgs().add(commandline);
                 return deviceAction;
             }
@@ -79,10 +80,11 @@ public class DeviceScriptCommandLoader {
         AgentShell() {
             @Override
             public DeviceAction getAction(String commandline, String deviceType) {
-                if (StringUtils.isEmpty(deviceType)) {
-                    deviceType = Const.OperatedDevice.ANY;
+                String type = deviceType;
+                if (StringUtils.isEmpty(type)) {
+                    type = Const.OperatedDevice.ANY;
                 }
-                DeviceAction deviceAction = new DeviceAction(deviceType, "execCommandOnAgent");
+                DeviceAction deviceAction = new DeviceAction(type, "execCommandOnAgent");
                 deviceAction.getArgs().add(commandline);
                 return deviceAction;
             }

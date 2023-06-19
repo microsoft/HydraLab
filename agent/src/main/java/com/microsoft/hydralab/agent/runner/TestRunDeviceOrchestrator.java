@@ -14,7 +14,6 @@ import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
 import com.microsoft.hydralab.common.screen.FFmpegConcatUtil;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
-import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.ImageUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
