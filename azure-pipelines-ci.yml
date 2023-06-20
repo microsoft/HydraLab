@@ -11,12 +11,12 @@ resources:
 variables:
   # Container registry service connection established during pipeline creation
   # Agent VM image name
-- name: vmImageName
-  value: 'windows-latest'
 - name: fullBuild
   value: $[ne(variables['Build.Reason'], 'PullRequest')]
 - name: securityScan
   value: $[or(eq(variables['Build.Reason'], 'Manual'), eq(variables['Build.Reason'], 'Schedule'))]
+pool:
+  name: Launcher-1ES-Pool
 
 stages:
 - stage: Build
