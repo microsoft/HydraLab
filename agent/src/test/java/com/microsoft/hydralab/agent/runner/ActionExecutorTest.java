@@ -37,19 +37,23 @@ class ActionExecutorTest extends BaseTest {
         DeviceAction action1 = JSONObject.parseObject(actionJson.toJSONString(), DeviceAction.class);
         List<String> args1 = List.of("paramA", "paramB");
         action1.setArgs(args1);
-        actionExecutor.doAction(deviceDriver, new TestRunDevice(deviceInfo, deviceInfo.getType()), baseLogger, action1);
-        verify(deviceDriver).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
+        List<DeviceAction> actions1 = new ArrayList<>();
+        actions1.add(action1);
+        List<Exception> exceptions1 = actionExecutor.doActions(deviceDriver, new TestRunDevice(deviceInfo, deviceInfo.getType()), baseLogger,
+                Map.of(DeviceAction.When.SET_UP, actions1), DeviceAction.When.SET_UP, true);
+        Assertions.assertEquals(0, exceptions1.size(), () -> exceptions1.get(0).getMessage());
+        verify(deviceDriver, times(0)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
 
         DeviceAction action2 = new DeviceAction("Android", "changeGlobalSetting");
         List<String> args2 = List.of("paramC", "paramD");
         action2.setArgs(args2);
-        List<DeviceAction> actions = new ArrayList<>();
-        actions.add(action1);
-        actions.add(action2);
-        List<Exception> exceptions = actionExecutor.doActions(deviceDriver, new TestRunDevice(deviceInfo, deviceInfo.getType()), baseLogger,
-                Map.of(DeviceAction.When.SET_UP, actions), DeviceAction.When.SET_UP, false);
-        Assertions.assertEquals(0, exceptions.size(), () -> exceptions.get(0).getMessage());
-        verify(deviceDriver, times(2)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
+        List<DeviceAction> actions2 = new ArrayList<>();
+        actions2.add(action1);
+        actions2.add(action2);
+        List<Exception> exceptions2 = actionExecutor.doActions(deviceDriver, new TestRunDevice(deviceInfo, deviceInfo.getType()), baseLogger,
+                Map.of(DeviceAction.When.SET_UP, actions2), DeviceAction.When.SET_UP, false);
+        Assertions.assertEquals(0, exceptions2.size(), () -> exceptions2.get(0).getMessage());
+        verify(deviceDriver, times(1)).setProperty(deviceInfo, args1.get(0), args1.get(1), baseLogger);
         verify(deviceDriver, times(1)).changeGlobalSetting(deviceInfo, args2.get(0), args2.get(1), baseLogger);
     }
 

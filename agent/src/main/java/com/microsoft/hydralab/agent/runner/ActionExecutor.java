@@ -71,7 +71,7 @@ public class ActionExecutor {
         return exceptions;
     }
 
-    public void doAction(@NotNull DeviceDriver deviceDriverManager,
+    private void doAction(@NotNull DeviceDriver deviceDriverManager,
                          @NotNull TestRunDevice testRunDevice,
                          @NotNull Logger logger,
                          @NotNull DeviceAction deviceAction)
