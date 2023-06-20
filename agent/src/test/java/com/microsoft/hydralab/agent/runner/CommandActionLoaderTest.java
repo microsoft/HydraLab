@@ -59,13 +59,13 @@ class CommandActionLoaderTest extends BaseTest {
         testRunDeviceOrchestrator.doActions(testRunDeviceCombo, baseLogger, testTask.getDeviceActions(), DeviceAction.When.SET_UP);
         verify(deviceDriverManager, times(3)).execCommandOnDevice(Mockito.any(DeviceInfo.class), Mockito.anyString(),
                 Mockito.any(Logger.class));
-        verify(deviceDriverManager, times(1)).execCommandOnAgent(Mockito.any(DeviceInfo.class), Mockito.anyString(),
+        verify(deviceDriverManager, times(2)).execCommandOnAgent(Mockito.any(DeviceInfo.class), Mockito.anyString(),
                 Mockito.any(Logger.class));
 
         testRunDeviceOrchestrator.doActions(testRunDeviceCombo, baseLogger, testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
         verify(deviceDriverManager, times(4)).execCommandOnDevice(Mockito.any(DeviceInfo.class), Mockito.anyString(),
                 Mockito.any(Logger.class));
-        verify(deviceDriverManager, times(3)).execCommandOnAgent(Mockito.any(DeviceInfo.class), Mockito.anyString(),
+        verify(deviceDriverManager, times(6)).execCommandOnAgent(Mockito.any(DeviceInfo.class), Mockito.anyString(),
                 Mockito.any(Logger.class));
 
     }
