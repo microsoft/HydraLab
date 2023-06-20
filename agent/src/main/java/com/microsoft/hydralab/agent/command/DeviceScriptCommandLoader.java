@@ -82,7 +82,7 @@ public class DeviceScriptCommandLoader {
             public DeviceAction getAction(String commandline, String deviceType) {
                 String type = deviceType;
                 if (StringUtils.isEmpty(type)) {
-                    type = Const.OperatedDevice.ANY;
+                    type = Const.OperatedDevice.ANDROID;
                 }
                 DeviceAction deviceAction = new DeviceAction(type, "execCommandOnAgent");
                 deviceAction.getArgs().add(commandline);

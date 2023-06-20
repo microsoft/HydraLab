@@ -53,8 +53,7 @@ public class ActionExecutor {
         if (runOnAgentOnly) {
             legalActionStream = legalActionStream.filter(deviceAction -> Const.OperatedDevice.AGENT.equalsIgnoreCase(deviceAction.getDeviceType()));
         } else {
-            legalActionStream = legalActionStream.filter(deviceAction -> Const.OperatedDevice.ANY.equalsIgnoreCase(deviceAction.getDeviceType())
-                    || testRunDevice.getDeviceInfo().getType().equalsIgnoreCase(deviceAction.getDeviceType()));
+            legalActionStream = legalActionStream.filter(deviceAction -> testRunDevice.getDeviceInfo().getType().equalsIgnoreCase(deviceAction.getDeviceType()));
         }
         List<DeviceAction> todoActions = legalActionStream.collect(Collectors.toList());
 
