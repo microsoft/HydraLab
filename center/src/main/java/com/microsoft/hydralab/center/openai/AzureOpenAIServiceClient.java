@@ -19,7 +19,7 @@ public class AzureOpenAIServiceClient {
     private final String apiVersion;
     private final OkHttpClient client = new OkHttpClient();
 
-    public AzureOpenAIServiceClient(String apiKey, String endpoint, String deployment, String apiVersion) {
+    public AzureOpenAIServiceClient(String apiKey, String deployment, String endpoint, String apiVersion) {
         this.apiKey = apiKey;
         this.endpoint = endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length() - 1) : endpoint;
         this.deployment = deployment;
@@ -34,12 +34,9 @@ public class AzureOpenAIServiceClient {
         logger.info("Request body: {}", requestBodyString);
 
         RequestBody body = RequestBody.create(requestBodyString, mediaType);
-        Request httpRequest = new Request.Builder()
-                .url(url)
-                .post(body)
+        Request httpRequest = new Request.Builder().url(url).post(body)
 //                .addHeader("Content-Type", "application/json")
-                .addHeader("api-key", apiKey)
-                .build();
+                .addHeader("api-key", apiKey).build();
 
         try (Response response = client.newCall(httpRequest).execute()) {
             if (!response.isSuccessful()) {

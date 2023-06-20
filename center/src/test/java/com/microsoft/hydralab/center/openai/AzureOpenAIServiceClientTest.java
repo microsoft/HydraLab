@@ -24,7 +24,7 @@ public class AzureOpenAIServiceClientTest extends BaseTest {
         if (StringUtils.isBlank(apiKey)) {
             return;
         }
-        AzureOpenAIServiceClient azureOpenAIServiceClient = new AzureOpenAIServiceClient(apiKey, endpoint, deployment, apiVersion);
+        AzureOpenAIServiceClient azureOpenAIServiceClient = new AzureOpenAIServiceClient(apiKey, deployment, endpoint, apiVersion);
         ChatRequest request = new ChatRequest();
         request.setMessages(Arrays.asList(
                 new ChatMessage(ChatMessage.Role.SYSTEM, "You are an AI assistant that helps people find information."),
