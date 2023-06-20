@@ -18,7 +18,18 @@ import io.appium.java_client.android.nativekey.AndroidKey;
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,16 +63,37 @@ public final class T2CAppiumUtils {
             e.printStackTrace();
             int index = actionInfo.getId();
             String description = actionInfo.getDescription();
-            logger.error("doAction at " + index + ", description: " + description + ", page source: " + driver.getPageSource() + "\n, with exception: " + e.getMessage());
+            logger.error("doAction at " + index + ", description: " + description + ", page source: " + prettyPrintByTransformer(driver.getPageSource(), 2, false)
+                    + "\n, with exception: " + e.getMessage());
             if (!isOption) {
                 throw new IllegalStateException("Failed at " + index + ", description: " + description + ", " + e.getMessage()
-                        + ", page source: \n" + driver.getPageSource(), e);
+                        + ", page source: \n" + prettyPrintByTransformer(driver.getPageSource(), 2, false), e);
             }
         }
     }
 
-    @SuppressWarnings("methodlength")
+    private static String prettyPrintByTransformer(String xmlString, int indent, boolean ignoreDeclaration) {
 
+        try {
+            InputSource src = new InputSource(new StringReader(xmlString));
+            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(src);
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", indent);
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, ignoreDeclaration ? "yes" : "no");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+            Writer out = new StringWriter();
+            transformer.transform(new DOMSource(document), new StreamResult(out));
+            return out.toString();
+        } catch (Exception e) {
+            return xmlString;
+        }
+    }
+
+    @SuppressWarnings("methodlength")
     public static void chooseActionType(BaseDriverController driver, ActionInfo actionInfo, Logger logger) {
         String actionType = actionInfo.getActionType();
         BaseElementInfo element = actionInfo.getTestElement();
@@ -72,7 +104,7 @@ public final class T2CAppiumUtils {
             safeSleep(3000);
         }
         logger.info("chooseActionType, action id: " + actionInfo.getId() + ", description: " + actionInfo.getDescription() + " on element: "  + webElement);
-        logger.info("chooseActionType, page source: \n" + driver.getPageSource());
+        logger.info("chooseActionType, page source: \n" + prettyPrintByTransformer(driver.getPageSource(), 2, false));
         switch (actionType) {
             case "click":
                 driver.click(webElement);

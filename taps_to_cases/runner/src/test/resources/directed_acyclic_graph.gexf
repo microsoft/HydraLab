@@ -1,0 +1,80 @@
+<graph defaultedgetype="directed" mode="static" name="">
+    <attributes mode="static" class="edge">
+      <attribute id="1" title="attr" type="string" />
+    </attributes>
+    <attributes mode="static" class="node">
+      <attribute id="0" title="attr" type="string" />
+    </attributes>
+    <nodes>
+      <node id="-1" label="-1">
+        <color r="0" g="174" b="255" a="1" />
+        <size value="10" />
+        <position x="0.1759149856473175" y="-0.2918246429888791" z="0" />
+        <attvalues>
+          <attvalue for="0" value="START" />
+        </attvalues>
+      </node>
+      <node id="0" label="0">
+        <color r="35" g="156" b="212" a="1" />
+        <size value="10" />
+        <position x="-0.10055718618559739" y="-0.1163176540620059" z="0" />
+        <attvalues>
+          <attvalue for="0" value="Login" />
+        </attvalues>
+      </node>
+      <node id="1" label="1">
+        <color r="56" g="134" b="170" a="1" />
+        <size value="10" />
+        <position x="-0.5535912714442961" y="-1.0" z="0" />
+        <attvalues>
+          <attvalue for="0" value="News" />
+        </attvalues>
+      </node>
+      <node id="2" label="2">
+        <color r="56" g="134" b="170" a="1" />
+        <size value="10" />
+        <position x="0.4030198656180902" y="0.7480224559675034" z="0" />
+        <attvalues>
+          <attvalue for="0" value="Tutorial" />
+        </attvalues>
+      </node>
+      <node id="3" label="3">
+        <color r="63" g="107" b="127" a="1" />
+        <size value="10" />
+        <position x="0.07521360636448589" y="0.660119841083382" z="0" />
+        <attvalues>
+          <attvalue for="0" value="Tutorial" />
+        </attvalues>
+      </node>
+    </nodes>
+    <edges>
+      <edge source="-1" target="0" id="0">
+        <color r="0" g="0" b="0" a="1" />
+        <size value="3" />
+        <attvalues>
+          <attvalue for="1" value="&quot;Launch&quot;" />
+        </attvalues>
+      </edge>
+      <edge source="0" target="1" id="1">
+        <color r="0" g="0" b="0" a="1" />
+        <size value="3" />
+        <attvalues>
+          <attvalue for="1" value="&quot;[Clickable] Class: android.widget.ImageView, Text: , Description: , ResourceID: com.microsoft.appmanager:id/ms_logo, ElementType: clickable, Clickable: False, LongClickable: True, scrollable: False, Bounds: [383, 252, 697, 318], &quot;" />
+        </attvalues>
+      </edge>
+      <edge source="0" target="2" id="2">
+        <color r="0" g="0" b="0" a="1" />
+        <size value="3" />
+        <attvalues>
+          <attvalue for="1" value="&quot;[Clickable] Class: android.widget.Button, Text: Get started, Description: , ResourceID: com.microsoft.appmanager:id/pfabo_welcome_start_button, ElementType: clickable, Clickable: True, LongClickable: False, scrollable: False, Bounds: [66, 1969, 1014, 2101], &quot;" />
+        </attvalues>
+      </edge>
+      <edge source="2" target="3" id="3">
+        <color r="0" g="0" b="0" a="1" />
+        <size value="3" />
+        <attvalues>
+          <attvalue for="1" value="&quot;[Clickable] Class: android.widget.Button, Text: Continue, Description: , ResourceID: com.microsoft.appmanager:id/pfabo_sso_continue_button, ElementType: clickable, Clickable: True, LongClickable: False, scrollable: False, Bounds: [66, 1969, 1014, 2101], &quot;" />
+        </attvalues>
+      </edge>
+    </edges>
+  </graph>

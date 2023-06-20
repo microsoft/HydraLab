@@ -7,7 +7,6 @@ import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
 import com.microsoft.hydralab.performance.entity.WindowsMemoryParsedData;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -23,8 +22,6 @@ import java.util.regex.Pattern;
 
 public class WindowsMemoryResultParser implements PerformanceResultParser {
 
-    private final Logger classLogger = LoggerFactory.getLogger(getClass());
-
     private static final Pattern pattern = Pattern.compile("^Id=(.*?) .*?ProcessName=(.*?) " +
             ".*?NonpagedSystemMemorySize64=(.*?) .*?PagedMemorySize64=(.*?) .*?PagedSystemMemorySize64=(.*?) " +
             ".*?PeakPagedMemorySize64=(.*?) .*?PeakVirtualMemorySize64=(.*?) .*?PeakWorkingSet64=(.*?) " +
@@ -32,15 +29,14 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
             ".*?ProductVersion=(.*?)$");
 
     @Override
-    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult, Logger logger) {
         WindowsMemoryParsedData averagedData = new WindowsMemoryParsedData();
         performanceTestResult.setResultSummary(averagedData);
 
         Map<Long, Integer> metricsCountPerProcess = new ConcurrentHashMap<>();
         Map<Long, BigInteger[]> metricsSumPerProcess = new ConcurrentHashMap<>();
 
-        for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults)
-        {
+        for (PerformanceInspectionResult inspectionResult : performanceTestResult.performanceInspectionResults) {
             if (inspectionResult == null) {
                 continue;
             }
@@ -78,9 +74,9 @@ public class WindowsMemoryResultParser implements PerformanceResultParser {
                 }
 
             } catch (FileNotFoundException e) {
-                classLogger.error("Failed to find the file.", e);
+                logger.error("Failed to find the file.", e);
             } catch (IOException e) {
-                classLogger.error("Failed to read data from the file.", e);
+                logger.error("Failed to read data from the file.", e);
             }
         }
 

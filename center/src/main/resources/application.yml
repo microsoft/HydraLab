@@ -46,6 +46,10 @@ logging:
   level:
     org.hibernate.SQL: INFO
 
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+
 app:
   batteryStrategy: ${BATTERY_STRATEGY:Economic}
   access-token-limit: 2

@@ -24,6 +24,7 @@ import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
@@ -239,9 +240,11 @@ public class TestDataService {
         TestTask testTask = testDataServiceCache.getTestTaskDetail(testId);
         if (testTask == null) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "The TestTask linked doesn't exist!");
-        } else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
-            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
         }
+        // temporarily disable team auth check before a better solution on access to test result comes out.
+//        else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
+//            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
+//        }
     }
 
     public List<PerformanceTestResultEntity> getPerformanceTestHistory(List<CriteriaType> queryParams) {
@@ -251,5 +254,15 @@ public class TestDataService {
         List<PerformanceTestResultEntity> perfHistoryList = new ArrayList<>(performanceTestResultRepository.findAll(spec, pageRequest).getContent());
         Collections.reverse(perfHistoryList);
         return perfHistoryList;
+    }
+
+    @CacheEvict(key = "#testRun.testTaskId")
+    public void saveGPTSuggestion(TestRun testRun, String suggestion) {
+        testRun.setSuggestion(suggestion);
+        testRunRepository.save(testRun);
+    }
+
+    public TestRun findTestRunById(String testRunId) {
+        return testRunRepository.findById(testRunId).orElse(null);
     }
 }

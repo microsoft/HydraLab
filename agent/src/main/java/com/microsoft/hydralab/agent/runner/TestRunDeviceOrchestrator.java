@@ -129,6 +129,23 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
+    public void releaseScreenRecorder(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
+        if (testRunDevice.getScreenRecorder() == null) {
+            return;
+        }
+
+        if (logger != null) {
+            logger.info("Releasing screen recorder");
+        }
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
+                testRunDevice1.getScreenRecorder().finishRecording();
+            });
+        } else {
+            testRunDevice.getScreenRecorder().finishRecording();
+        }
+    }
+
     public void startLogCollector(@NotNull TestRunDevice testRunDevice, @NotNull String pkgName, @NotNull TestRun testRun, @NotNull Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
@@ -319,14 +336,15 @@ public class TestRunDeviceOrchestrator {
     }
 
     public List<Exception> doActions(TestRunDevice testRunDevice, Logger logger, Map<String, List<DeviceAction>> deviceActions, String when) {
+        List<Exception> exceptions = actionExecutor.doActions(deviceDriverManager, testRunDevice, logger, deviceActions, when, true);
+
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            List<Exception> exceptions = new ArrayList<>();
-            for (TestRunDevice testRunDevice1 : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
-                exceptions.addAll(actionExecutor.doActions(deviceDriverManager, testRunDevice1, logger, deviceActions, when));
+            for (TestRunDevice subTestRunDevice : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
+                exceptions.addAll(actionExecutor.doActions(deviceDriverManager, subTestRunDevice, logger, deviceActions, when, false));
             }
-            return exceptions;
         } else {
-            return actionExecutor.doActions(deviceDriverManager, testRunDevice, logger, deviceActions, when);
+            exceptions.addAll(actionExecutor.doActions(deviceDriverManager, testRunDevice, logger, deviceActions, when, false));
         }
+        return exceptions;
     }
 }

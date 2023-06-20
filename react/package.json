@@ -40,10 +40,14 @@
     "@mui/icons-material": "^5.5.1",
     "@mui/lab": "^5.0.0-alpha.72",
     "@mui/material": "^5.4.4",
+    "@react-sigma/core": "^3.3.0",
     "axios": "^0.21.4",
     "bootstrap": "^4.5.3",
     "copy-to-clipboard": "^3.3.2",
     "file-loader": "^6.2.0",
+    "graphology": "^0.25.1",
+    "graphology-gexf": "^0.10.3",
+    "graphology-layout-forceatlas2":"^0.8.1",
     "jquery": "^3.5.1",
     "local-storage": "^2.0.0",
     "prop-types": "^15.8.1",
@@ -52,7 +56,8 @@
     "react-loading": "^2.0.3",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "recharts": "^2.0.9",
-    "react-select": "^5.2.2"
+    "react-select": "^5.2.2",
+    "react-sigma": "^1.2.35",
+    "recharts": "^2.0.9"
   }
 }

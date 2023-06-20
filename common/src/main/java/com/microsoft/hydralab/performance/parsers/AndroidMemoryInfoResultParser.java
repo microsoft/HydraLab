@@ -7,7 +7,6 @@ import com.microsoft.hydralab.performance.PerformanceTestResult;
 import com.microsoft.hydralab.performance.entity.AndroidMemoryInfo;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,7 +20,6 @@ import java.util.Map;
 public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
     private static final int MEM_INFO_LENGTH = 19;
     private static final String SUMMARY_DESCRIPTION = "Android memory info summary";
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Map<String, Integer> MEMORY_FILE_TO_DB_INDEX_MAP = new HashMap<>() {
         {
             put("Java Heap", 0);
@@ -36,7 +34,7 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
     };
 
     @Override
-    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult) {
+    public PerformanceTestResult parse(PerformanceTestResult performanceTestResult, Logger logger) {
         if (performanceTestResult == null || performanceTestResult.performanceInspectionResults == null
                 || performanceTestResult.performanceInspectionResults.isEmpty()) {
             return null;
@@ -47,7 +45,7 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
         int validDataSize = 0;
         for (PerformanceInspectionResult inspectionResult : inspectionResults) {
             File logFile = inspectionResult.rawResultFile;
-            long[] memInfos = parseRawResultFile(logFile);
+            long[] memInfos = parseRawResultFile(logFile, logger);
             inspectionResult.parsedData = buildMemoryInfo(inspectionResult.inspection.appId, inspectionResult.inspection.description, inspectionResult.timestamp, memInfos);
             if (isValidMem(memInfos)) {
                 updateAverageMem(averageMemoryInfo, memInfos, validDataSize);
@@ -124,7 +122,7 @@ public class AndroidMemoryInfoResultParser implements PerformanceResultParser {
         return androidMemoryInfo;
     }
 
-    private long[] parseRawResultFile(File rawFile) {
+    private long[] parseRawResultFile(File rawFile, Logger logger) {
         String line;
         long[] memoryValueArr = new long[MEM_INFO_LENGTH];
         Arrays.fill(memoryValueArr, -1);
