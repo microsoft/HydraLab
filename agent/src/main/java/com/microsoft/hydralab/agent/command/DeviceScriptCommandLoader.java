@@ -64,7 +64,15 @@ public class DeviceScriptCommandLoader {
     }
 
     private enum ActionConverter {
-        //generate action by command type
+        /**
+         * Generate action by command type.
+         * ADBShell: execute command on mobile device only
+         * AgentShell: execute command on agent only
+         *  - type = Agent: run for each Agent device, e.g. Windows, Mac, Linux. The commands would be run for only once.
+         *      Used for environment setup and build generation.
+         *  - type = Android: run for each Android device. The commands would be run on each Android device.
+         *      Used for specific device operation through PC.
+         */
         ADBShell() {
             @Override
             public DeviceAction getAction(String commandline, String deviceType) {
