@@ -40,7 +40,7 @@ public class ActionExecutor {
     private final Set<String> actionTypes =
             Set.of("setProperty", "setDefaultLauncher", "backToHome", "changeGlobalSetting",
                     "changeSystemSetting", "execCommandOnDevice", "execCommandOnAgent", "pushFileToDevice",
-                    "pullFileFromDevice");
+                    "pullFileFromDevice", "addToBatteryWhiteList");
 
     public List<Exception> doActions(@NotNull DeviceDriver deviceDriverManager,
                                      @NotNull TestRunDevice testRunDevice,

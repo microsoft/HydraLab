@@ -23,7 +23,7 @@ import java.util.Objects;
 
 
 public class PhoneAppScreenRecorder implements ScreenRecorder {
-    public static final String recordPackageName = "com.microsoft.hydralab.android.client";
+    public static final String RECORD_PACKAGE_NAME = "com.microsoft.hydralab.android.client";
     private static File recordApk;
     protected final File baseFolder;
     protected final Logger logger;
@@ -60,19 +60,19 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
 
     @Override
     public void setupDevice() {
-        if (!deviceDriver.isAppInstalled(deviceInfo, recordPackageName, logger)) {
+        if (!deviceDriver.isAppInstalled(deviceInfo, RECORD_PACKAGE_NAME, logger)) {
             installRecorderServiceApp();
         }
         try {
             deviceDriver.wakeUpDevice(deviceInfo, logger);
             deviceDriver.unlockDevice(deviceInfo, logger);
-            deviceDriver.grantAllPackageNeededPermissions(deviceInfo, recordApk, recordPackageName, false, logger);
-            deviceDriver.grantPermission(deviceInfo, recordPackageName, "android.permission.FOREGROUND_SERVICE", logger);
-            deviceDriver.addToBatteryWhiteList(deviceInfo, recordPackageName, logger);
+            deviceDriver.grantAllPackageNeededPermissions(deviceInfo, recordApk, RECORD_PACKAGE_NAME, false, logger);
+            deviceDriver.grantPermission(deviceInfo, RECORD_PACKAGE_NAME, "android.permission.FOREGROUND_SERVICE", logger);
+            deviceDriver.addToBatteryWhiteList(deviceInfo, RECORD_PACKAGE_NAME, logger);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        FlowUtil.retryWhenFalse(3, () -> deviceDriver.grantProjectionAndBatteryPermission(deviceInfo, recordPackageName, logger));
+        FlowUtil.retryWhenFalse(3, () -> deviceDriver.grantProjectionAndBatteryPermission(deviceInfo, RECORD_PACKAGE_NAME, logger));
     }
 
     @Override
@@ -163,7 +163,8 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
     public boolean startRecordService() {
         try {
             // am startservice --es fileName test.mp4 com.microsoft.hydralab.android.client/.ScreenRecorderService
-            adbOperateUtil.execOnDevice(deviceInfo, String.format("am startservice -a %s.action.START --es fileName %s --es SNCode %s --ei width 720 --ei bitrate 1200000 %s/.ScreenRecorderService", recordPackageName, fileName, deviceInfo.getSerialNum(), recordPackageName), new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, String.format("am startservice -a %s.action.START --es fileName %s --es SNCode %s --ei width 720 --ei bitrate 1200000 %s/.ScreenRecorderService",
+                    RECORD_PACKAGE_NAME, fileName, deviceInfo.getSerialNum(), RECORD_PACKAGE_NAME), new MultiLineNoCancelLoggingReceiver(logger), logger);
             return true;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -173,7 +174,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
 
     public boolean stopRecordService() {
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, "am startservice -a " + recordPackageName + ".action.STOP " + recordPackageName + "/.ScreenRecorderService", new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, "am startservice -a " + RECORD_PACKAGE_NAME + ".action.STOP " + RECORD_PACKAGE_NAME + "/.ScreenRecorderService", new MultiLineNoCancelLoggingReceiver(logger), logger);
             return true;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -184,7 +185,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
     public boolean sendKeepAliveSignal() {
 
         try {
-            adbOperateUtil.execOnDevice(deviceInfo, "am startservice -a " + recordPackageName + ".action.SIGNAL " + recordPackageName + "/.ScreenRecorderService", new MultiLineNoCancelLoggingReceiver(logger), logger);
+            adbOperateUtil.execOnDevice(deviceInfo, "am startservice -a " + RECORD_PACKAGE_NAME + ".action.SIGNAL " + RECORD_PACKAGE_NAME + "/.ScreenRecorderService", new MultiLineNoCancelLoggingReceiver(logger), logger);
             return true;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -198,7 +199,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         } catch (HydraLabRuntimeException e) {
             // if failed to install app, uninstall app and try again.
             logger.error(e.getMessage(), e);
-            deviceDriver.uninstallApp(deviceInfo, recordPackageName, logger);
+            deviceDriver.uninstallApp(deviceInfo, RECORD_PACKAGE_NAME, logger);
             deviceDriver.installApp(deviceInfo, recordApk.getAbsolutePath(), logger);
         }
     }

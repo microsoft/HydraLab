@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.screen;
 
 import cn.hutool.core.thread.ThreadUtil;
@@ -50,7 +51,6 @@ public class ADBScreenRecorder implements ScreenRecorder {
 
     @Override
     public void setupDevice() {
-
     }
 
     @Override
@@ -93,12 +93,14 @@ public class ADBScreenRecorder implements ScreenRecorder {
                         recordingProcess.destroy();
                     }
                     deviceInfo.finishCommand();
+                    // make sure the recording procedure is stopped completely
+                    ThreadUtil.safeSleep(2000);
 
                     String outputFilePrefix = new File(baseFolder, DateUtil.fileNameDateDashFormat.format(new Date())).getAbsolutePath();
-
                     final String outFileFullPath = outputFilePrefix + "_" + totalTime + "_" + (totalTime + timeSpan) + ".mp4";
                     String pullComm = String.format("pull %s %s", fileName, outFileFullPath);
                     Process process = adbOperateUtil.executeDeviceCommandOnPC(deviceInfo, pullComm, logger);
+                    process.waitFor();
 
                     logger.info(IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8));
                     logger.error(IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8));
@@ -118,7 +120,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
                     list.forEach(File::delete);
                 }
 
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 logger.warn("Exception from recordingThread {} {}", e.getClass().getName(), e.getMessage());
             } finally {
                 if (recordingProcess != null) {
