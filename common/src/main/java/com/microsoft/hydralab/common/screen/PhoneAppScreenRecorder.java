@@ -107,7 +107,7 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         if (!started) {
             return null;
         }
-        boolean tag = false;
+        boolean pullSucceeded = false;
         // wait 5s to record more info after testing
         ThreadUtils.safeSleep(5000);
         stopRecordService();
@@ -121,35 +121,15 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         // wait for screen recording to finish
         ThreadUtils.safeSleep(5000);
 
-        int retryTime = 1;
-        while (retryTime < Const.AgentConfig.RETRY_TIME) {
-            logger.info("Pull file round :" + retryTime);
-            File videoFile = new File(pathOnAgent);
-            if (videoFile.exists()) {
-                videoFile.delete();
-            }
-            try {
-                adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
-            } catch (IOException | InterruptedException e) {
-                logger.error(e.getMessage(), e);
-            }
-            ThreadUtils.safeSleep(5000);
-
-            long phoneFileSize = adbOperateUtil.getFileLength(deviceInfo, logger, pathOnDevice);
-            logger.info("PC file path:{} size:{} , Phone file path {} size {}", pathOnAgent, videoFile.length(), pathOnDevice, phoneFileSize);
-            if (videoFile.length() == phoneFileSize) {
-                logger.info("Pull video file success!");
-                tag = true;
-                break;
-            }
-            retryTime++;
-            if (retryTime == Const.AgentConfig.RETRY_TIME) {
-                logger.error("Pull video file fail!");
-            }
+        try {
+            adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
+            pullSucceeded = true;
+        } catch (IOException | InterruptedException e) {
+            logger.error(e.getMessage(), e);
         }
         deviceDriver.removeFileInDevice(deviceInfo, pathOnDevice, logger);
         started = false;
-        if (tag) {
+        if (pullSucceeded) {
             return pathOnAgent;
         }
         return null;

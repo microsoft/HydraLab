@@ -356,7 +356,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     @Override
     public ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder, Logger logger) {
         if (PhoneAppScreenRecorder.RECORD_PACKAGE_NAME.equals(deviceInfo.getRunningTaskPackageName())) {
-            return new ADBScreenRecorder(this.adbOperateUtil, deviceInfo, logger, folder);
+            return new ADBScreenRecorder(this, this.adbOperateUtil, deviceInfo, logger, folder);
         }
         return new PhoneAppScreenRecorder(this, this.adbOperateUtil, deviceInfo, folder, logger);
     }

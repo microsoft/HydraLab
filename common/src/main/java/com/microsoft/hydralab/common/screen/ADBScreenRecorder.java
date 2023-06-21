@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.screen;
 
 import cn.hutool.core.thread.ThreadUtil;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
@@ -26,6 +27,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
     private final File baseFolder;
 
     private File mergedVideo;
+    private final DeviceDriver deviceDriver;
     public int preSleepSeconds = 0;
     ADBOperateUtil adbOperateUtil;
     private Process recordingProcess;
@@ -33,7 +35,8 @@ public class ADBScreenRecorder implements ScreenRecorder {
     private boolean shouldStop = true;
     private boolean shouldInterrupt = false;
 
-    public ADBScreenRecorder(ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, Logger logger, File baseFolder) {
+    public ADBScreenRecorder(DeviceDriver deviceDriver, ADBOperateUtil adbOperateUtil, DeviceInfo deviceInfo, Logger logger, File baseFolder) {
+        this.deviceDriver = deviceDriver;
         this.adbOperateUtil = adbOperateUtil;
         this.deviceInfo = deviceInfo;
         this.logger = logger;
@@ -71,12 +74,12 @@ public class ADBScreenRecorder implements ScreenRecorder {
                 int totalTime = 0;
                 List<File> list = new ArrayList<>();
                 while (totalTime < maxTimeInSecond && !shouldStop) {
-                    String fileName = String.format("/sdcard/scr_rec_%d_%d.mp4", totalTime, totalTime + timeSpan);
-                    String command = String.format("shell screenrecord --bit-rate 3200000 --time-limit %d %s", timeSpan, fileName);
-                    deviceInfo.addCurrentCommand(command);
+                    String pathOnDevice = String.format("/sdcard/scr_rec_%d_%d.mp4", totalTime, totalTime + timeSpan);
+                    String recordCommand = String.format("shell screenrecord --bit-rate 3200000 --time-limit %d %s", timeSpan, pathOnDevice);
+                    deviceInfo.addCurrentCommand(recordCommand);
                     // Blocking command
-                    recordingProcess = adbOperateUtil.executeDeviceCommandOnPC(deviceInfo, command, logger);
-                    logger.info("ADBDeviceScreenRecorder>> command: " + command);
+                    recordingProcess = adbOperateUtil.executeDeviceCommandOnPC(deviceInfo, recordCommand, logger);
+                    logger.info("ADBDeviceScreenRecorder>> command: " + recordCommand);
                     logger.info(IOUtils.toString(recordingProcess.getInputStream(), StandardCharsets.UTF_8));
                     logger.error(IOUtils.toString(recordingProcess.getErrorStream(), StandardCharsets.UTF_8));
                     deviceInfo.addCurrentProcess(recordingProcess);
@@ -96,17 +99,11 @@ public class ADBScreenRecorder implements ScreenRecorder {
                     // make sure the recording procedure is stopped completely
                     ThreadUtil.safeSleep(2000);
 
-                    String outputFilePrefix = new File(baseFolder, DateUtil.fileNameDateDashFormat.format(new Date())).getAbsolutePath();
-                    final String outFileFullPath = outputFilePrefix + "_" + totalTime + "_" + (totalTime + timeSpan) + ".mp4";
-                    String pullComm = String.format("pull %s %s", fileName, outFileFullPath);
-                    Process process = adbOperateUtil.executeDeviceCommandOnPC(deviceInfo, pullComm, logger);
-                    process.waitFor();
-
-                    logger.info(IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8));
-                    logger.error(IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8));
-                    process.destroy();
-
-                    list.add(new File(outFileFullPath));
+                    final String outFileName = DateUtil.fileNameDateDashFormat.format(new Date()) + "_" + totalTime + "_" + (totalTime + timeSpan) + ".mp4";
+                    String pathOnAgent = new File(baseFolder, outFileName).getAbsolutePath();
+                    adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
+                    list.add(new File(pathOnAgent));
+                    deviceDriver.removeFileInDevice(deviceInfo, pathOnDevice, logger);
 
                     totalTime += timeSpan;
                     logger.info("ADBDeviceScreenRecorder>> Time recorded {}", totalTime);
