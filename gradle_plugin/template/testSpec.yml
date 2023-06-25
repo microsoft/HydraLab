@@ -12,7 +12,8 @@ testSpec:
     groupTestType: # <Optional> <String>
     deviceActions: # <Optional>
       <setUp | tearDown>: # <Array>
-        - method: # <setProperty | setDefaultLauncher | backToHome | changeGlobalSetting | changeSystemSetting | execCommandOnDevice | pushFileToDevice | pullFileFromDevice>
+        - deviceType: # <Optional>
+          method: # <setProperty | setDefaultLauncher | backToHome | changeGlobalSetting | changeSystemSetting | execCommandOnDevice | pushFileToDevice | pullFileFromDevice | addToBatteryWhiteList>
           args: # <Array>
             - xxx
             - xxx
