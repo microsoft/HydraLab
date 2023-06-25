@@ -262,9 +262,9 @@ public class ADBOperateUtil {
         final int[] retryTime = {1};
         FlowUtil.retryWhenFalse(Const.AgentConfig.RETRY_TIME, () -> {
             logger.info("Pull file round :" + retryTime[0]);
-            File videoFile = new File(pathOnAgent);
-            if (videoFile.exists()) {
-                videoFile.delete();
+            File fileOnAgent = new File(pathOnAgent);
+            if (fileOnAgent.exists()) {
+                fileOnAgent.delete();
             }
             try {
                 IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
@@ -283,16 +283,16 @@ public class ADBOperateUtil {
             ThreadUtils.safeSleep(5000);
 
             long phoneFileSize = getFileLength(deviceInfo, logger, pathOnDevice);
-            logger.info("PC file path:{} size:{} , Phone file path {} size {}", pathOnAgent, videoFile.length(), pathOnDevice, phoneFileSize);
-            if (videoFile.length() == phoneFileSize) {
-                logger.info("Pull video file success!");
+            logger.info("PC file path:{} size:{} , Phone file path {} size {}", pathOnAgent, fileOnAgent.length(), pathOnDevice, phoneFileSize);
+            if (fileOnAgent.length() == phoneFileSize) {
+                logger.info("Pull file success!");
             }
             else {
                 if (retryTime[0] == Const.AgentConfig.RETRY_TIME) {
-                    logger.error("Pull video file fail!");
+                    logger.error("Pull file fail!");
                 }
                 retryTime[0]++;
-                throw new Exception("Pulled video file sizes not matching between agent and device!");
+                throw new Exception("Pulled file sizes not matching between agent and device!");
             }
             return true;
         });
