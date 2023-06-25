@@ -177,7 +177,7 @@ class PerformanceNotification {
 }
 
 class PerformanceTestNotifier {
-    void sendPerformanceNotification(PerformanceNotification notification)
+    + void sendPerformanceNotification(List<PerformanceTestResult> resultList, TestTask testTask, Logger logger)
 }
 
 PerformanceTestManagementService -u-> TestTask
