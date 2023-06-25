@@ -72,6 +72,8 @@ dependencies {
     compile group: 'net.dongliu', name: 'apk-parser', version: '2.5.3'
     //Ipa Parse
     compile group: 'com.googlecode.plist', name: 'dd-plist', version: '1.3'
+
+    compile 'com.squareup.haha:haha:2.1'
 }
 
 repositories {
