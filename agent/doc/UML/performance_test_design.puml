@@ -195,7 +195,7 @@ package "Hydra Lab agent" {
 }
 
 cloud "Notify Service" as Notify {
-    component "Azure Function Service" as Azure {
+    component "Power Automate" as Azure {
         [Teams Message]
         [Email]
     }
