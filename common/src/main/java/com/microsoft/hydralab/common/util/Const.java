@@ -190,6 +190,7 @@ public interface Const {
 
     interface OperatedDevice {
         String AGENT = "Agent";
+        String WINDOWS = "Windows";
         String ANDROID = "Android";
         String IOS = "iOS";
     }
