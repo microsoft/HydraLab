@@ -164,3 +164,45 @@ note right
 end note
 @enduml
 
+@startuml performance_test_notify_uml
+class TestTask {
+    String perfNotifyUrl
+}
+
+class PerformanceNotification {
+    String pipelineLink;
+    String testTaskId;
+    List<PerformanceTestResult> resultList;
+    long testStartTimeMillis;
+}
+
+class PerformanceTestNotifier {
+    void sendPerformanceNotification(PerformanceNotification notification)
+}
+
+PerformanceTestManagementService -u-> TestTask
+PerformanceTestNotifier o- PerformanceTestManagementService
+PerformanceTestNotifier -u-> PerformanceNotification
+@enduml
+
+@startuml performance_test_notify_component
+skinparam componentStyle rectangle
+package "Hydra Lab agent" {
+    component "Performance Management" {
+        [PerformanceTestNotifier]
+        [PerformanceTestManagementService]
+    }
+}
+
+cloud "Notify Service" as Notify {
+    component "Azure Function Service" as Azure {
+        [Teams Message]
+        [Email]
+    }
+}
+
+[PerformanceTestNotifier] ...>() HTTP : POST
+Notify -l- HTTP
+
+@enduml
+
