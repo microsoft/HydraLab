@@ -13,7 +13,7 @@ testSpec:
     deviceActions: # <Optional>
       <setUp | tearDown>: # <Array>
         - deviceType: # <Optional>
-          method: # <setProperty | setDefaultLauncher | backToHome | changeGlobalSetting | changeSystemSetting | execCommandOnDevice | pushFileToDevice | pullFileFromDevice | addToBatteryWhiteList>
+          method: # <setProperty | setDefaultLauncher | backToHome | changeGlobalSetting | changeSystemSetting | execCommandOnDevice | execCommandOnAgent | pushFileToDevice | pullFileFromDevice | addToBatteryWhiteList>
           args: # <Array>
             - xxx
             - xxx
