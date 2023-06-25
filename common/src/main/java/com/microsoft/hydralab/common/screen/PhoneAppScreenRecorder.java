@@ -107,7 +107,6 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
         if (!started) {
             return null;
         }
-        boolean pullSucceeded = false;
         // wait 5s to record more info after testing
         ThreadUtils.safeSleep(5000);
         stopRecordService();
@@ -123,16 +122,14 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
 
         try {
             adbOperateUtil.pullFileToDir(deviceInfo, pathOnAgent, pathOnDevice, logger);
-            pullSucceeded = true;
         } catch (IOException | InterruptedException e) {
             logger.error(e.getMessage(), e);
+            pathOnAgent = null;
         }
         deviceDriver.removeFileInDevice(deviceInfo, pathOnDevice, logger);
         started = false;
-        if (pullSucceeded) {
-            return pathOnAgent;
-        }
-        return null;
+
+        return pathOnAgent;
     }
 
     @Override
