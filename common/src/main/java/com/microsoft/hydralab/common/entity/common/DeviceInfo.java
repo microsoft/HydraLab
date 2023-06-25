@@ -41,6 +41,7 @@ public class DeviceInfo extends MobileDevice {
     private String deviceId;
     private String runningTaskId;
     private String runningTestName;
+    private String runningTaskPackageName;
     private String agentId;
     private Set<String> deviceGroup = new HashSet<>();
     private boolean supportScreenRecording = true;
@@ -90,17 +91,20 @@ public class DeviceInfo extends MobileDevice {
         this.currentTask.put(Thread.currentThread(), testTask);
         this.status = DeviceInfo.TESTING;
         this.runningTaskId = testTask.getId();
+        this.runningTaskPackageName = testTask.getPkgName();
     }
 
     public void finishTask() {
         this.currentTask.remove(Thread.currentThread());
         this.status = DeviceInfo.ONLINE;
         this.runningTaskId = null;
+        this.runningTaskPackageName = null;
     }
 
     public void reset() {
         this.status = DeviceInfo.ONLINE;
         this.runningTaskId = null;
+        this.runningTaskPackageName = null;
         killAll();
     }
 

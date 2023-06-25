@@ -189,8 +189,9 @@ public interface Const {
     }
 
     interface OperatedDevice {
-        String ANY = "Any";
         String AGENT = "Agent";
+        String WINDOWS = "Windows";
         String ANDROID = "Android";
+        String IOS = "iOS";
     }
 }
