@@ -164,7 +164,7 @@ note right
 end note
 @enduml
 
-@startuml performance_test_notify_uml
+@startuml test_notify_uml
 class TestTask {
     String notifyURL
 }
