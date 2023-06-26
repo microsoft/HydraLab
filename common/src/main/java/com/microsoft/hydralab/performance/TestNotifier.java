@@ -8,7 +8,7 @@ public class TestNotifier {
     }
 
     public static class TestNotification {
-        public String pipelineLink;
+        public String reportLink;
         public String testTaskId;
         // The content of the notification. It can be a list of performance results.
         public Object content;
