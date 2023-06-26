@@ -170,7 +170,7 @@ class TestTask {
 }
 
 class TestNotification {
-    String pipelineLink;
+    String reportLink;
     String testTaskId;
     Object content;
     long testStartTimeMillis;
