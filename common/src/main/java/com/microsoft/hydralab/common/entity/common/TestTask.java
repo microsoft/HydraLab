@@ -113,7 +113,7 @@ public class TestTask implements Serializable {
     @Transient
     private List<InspectionStrategy> inspectionStrategies;
     @Transient
-    private String perfNotifyUrl;
+    private String notifyUrl;
     
     public TestTask() {
     }

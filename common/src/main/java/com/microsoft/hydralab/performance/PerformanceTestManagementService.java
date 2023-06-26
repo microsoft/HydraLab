@@ -99,7 +99,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private final Map<String, List<ScheduledFuture<?>>> inspectPerformanceTimerMap = new ConcurrentHashMap<>();
     private final Map<String, List<InspectionStrategy>> testLifeCycleStrategyMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, PerformanceTestResult>> testRunPerfResultMap = new ConcurrentHashMap<>();
-    private final PerformanceTestNotifier performanceTestNotifier = new PerformanceTestNotifier();
+    private final TestNotifier testNotifier = new TestNotifier();
 
     public void initialize() {
         PerformanceInspectionService.getInstance().swapImplementation(this);
@@ -253,7 +253,6 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         }
         List<PerformanceTestResult> resultList = parseForTestRun(testRun);
         savePerformanceTestResults(resultList, testRun, testTask, getLogger(testRun));
-        performanceTestNotifier.sendPerformanceNotification(resultList, testTask, getLogger(testRun));
 
         inspectPerformanceTimerMap.remove(testRun.getId());
         testLifeCycleStrategyMap.remove(testRun.getId());
