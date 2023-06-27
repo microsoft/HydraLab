@@ -4,13 +4,11 @@ import com.microsoft.hydralab.center.test.BaseTest;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-@ActiveProfiles("local")
 public class AzureOpenAIServiceClientTest extends BaseTest {
     @Value("${app.openai.chat-completion.api-key:}")
     private String apiKey;
@@ -32,6 +30,6 @@ public class AzureOpenAIServiceClientTest extends BaseTest {
                 new ChatMessage(ChatMessage.Role.SYSTEM, "You are an AI assistant that helps people find information."),
                 new ChatMessage(ChatMessage.Role.USER, "Could you tell me a joke?")
         ));
-        System.out.println(azureOpenAIServiceClient.chatCompletion(request));
+        baseLogger.info(azureOpenAIServiceClient.chatCompletion(request));
     }
 }
