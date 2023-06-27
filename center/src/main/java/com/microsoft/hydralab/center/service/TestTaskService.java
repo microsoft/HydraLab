@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -86,7 +87,9 @@ public class TestTaskService {
             return;
         }
         isRunning.set(true);
-        for (TestTaskSpec testTaskSpec : taskQueue) {
+        Iterator<TestTaskSpec> queueIterator = taskQueue.iterator();
+        while (queueIterator.hasNext()) {
+            TestTaskSpec testTaskSpec = queueIterator.next();
             TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
             try {
                 logger.info("Start trying to trigger queued test task: " + testTaskSpec.testTaskId + ", target deviceIdentifier: " + testTaskSpec.deviceIdentifier);
@@ -98,7 +101,7 @@ public class TestTaskService {
                     logger.info("Trigger test task: " + testTaskSpec.testTaskId + " successfully on device: " + runningDeviceIdentifier);
                     testTask.setTestDevicesCount(runningDeviceIdentifier.split(",").length);
                     testDataService.saveTestTaskData(testTask);
-                    taskQueue.remove(testTaskSpec);
+                    queueIterator.remove();
                 }
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
@@ -106,7 +109,7 @@ public class TestTaskService {
                 testTask.setStatus(TestTask.TestStatus.EXCEPTION);
                 testTask.setTestErrorMsg(e.getMessage());
                 testDataService.saveTestTaskData(testTask);
-                taskQueue.remove(testTaskSpec);
+                queueIterator.remove();
             }
         }
         isRunning.set(false);
