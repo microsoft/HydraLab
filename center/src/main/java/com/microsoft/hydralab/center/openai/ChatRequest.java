@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.util.List;
 
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 @Data
 public class ChatRequest {
     private List<ChatMessage> messages;
