@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -44,7 +45,9 @@ public class TestTaskService {
     TestDataService testDataService;
 
     public void addTask(TestTaskSpec task) {
-        taskQueue.offer(task);
+        synchronized (taskQueue) {
+            taskQueue.offer(task);
+        }
     }
 
     public Boolean isQueueEmpty() {
@@ -86,27 +89,31 @@ public class TestTaskService {
             return;
         }
         isRunning.set(true);
-        for (TestTaskSpec testTaskSpec : taskQueue) {
-            TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
-            try {
-                logger.info("Start trying to trigger queued test task: " + testTaskSpec.testTaskId + ", target deviceIdentifier: " + testTaskSpec.deviceIdentifier);
-                JSONObject result = deviceAgentManagementService.runTestTaskBySpec(testTaskSpec);
-                String runningDeviceIdentifier = result.getString(Const.Param.TEST_DEVICE_SN);
-                if (runningDeviceIdentifier == null) {
-                    logger.warn("Trigger test task: " + testTaskSpec.testTaskId + " failed.");
-                } else {
-                    logger.info("Trigger test task: " + testTaskSpec.testTaskId + " successfully on device: " + runningDeviceIdentifier);
-                    testTask.setTestDevicesCount(runningDeviceIdentifier.split(",").length);
+        synchronized (taskQueue) {
+            Iterator<TestTaskSpec> queueIterator = taskQueue.iterator();
+            while (queueIterator.hasNext()) {
+                TestTaskSpec testTaskSpec = queueIterator.next();
+                TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
+                try {
+                    logger.info("Start trying to trigger queued test task: " + testTaskSpec.testTaskId + ", target deviceIdentifier: " + testTaskSpec.deviceIdentifier);
+                    JSONObject result = deviceAgentManagementService.runTestTaskBySpec(testTaskSpec);
+                    String runningDeviceIdentifier = result.getString(Const.Param.TEST_DEVICE_SN);
+                    if (runningDeviceIdentifier == null) {
+                        logger.warn("Trigger test task: " + testTaskSpec.testTaskId + " failed.");
+                    } else {
+                        logger.info("Trigger test task: " + testTaskSpec.testTaskId + " successfully on device: " + runningDeviceIdentifier);
+                        testTask.setTestDevicesCount(runningDeviceIdentifier.split(",").length);
+                        testDataService.saveTestTaskData(testTask);
+                        queueIterator.remove();
+                    }
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                    //the task will be saved in memory if taskSpec is error
+                    testTask.setStatus(TestTask.TestStatus.EXCEPTION);
+                    testTask.setTestErrorMsg(e.getMessage());
                     testDataService.saveTestTaskData(testTask);
-                    taskQueue.remove(testTaskSpec);
+                    queueIterator.remove();
                 }
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-                //the task will be saved in memory if taskSpec is error
-                testTask.setStatus(TestTask.TestStatus.EXCEPTION);
-                testTask.setTestErrorMsg(e.getMessage());
-                testDataService.saveTestTaskData(testTask);
-                taskQueue.remove(testTaskSpec);
             }
         }
         isRunning.set(false);
