@@ -8,6 +8,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 @ActiveProfiles("local")
 public class AzureOpenAIServiceClientTest extends BaseTest {
     @Value("${app.openai.chat-completion.api-key:}")
