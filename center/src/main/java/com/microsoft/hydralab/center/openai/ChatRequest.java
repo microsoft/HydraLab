@@ -10,7 +10,7 @@ public class ChatRequest {
     private List<ChatMessage> messages;
     @JSONField(name = "max_tokens")
     private int maxTokens = 800;
-    private double temperature = 0.7;
+    private double temperature = 0.75;
     @JSONField(name = "frequency_penalty")
     private double frequencyPenalty = 0;
     @JSONField(name = "presence_penalty")
