@@ -2,6 +2,8 @@ package com.microsoft.hydralab.center.openai;
 
 import lombok.Data;
 
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 @Data
 public class ChatMessage {
     private String role;
