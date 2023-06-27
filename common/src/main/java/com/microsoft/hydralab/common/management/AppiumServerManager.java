@@ -140,9 +140,6 @@ public class AppiumServerManager {
         int tryTimes = 3;
         boolean sessionCreated = false;
         while (tryTimes > 0 && !sessionCreated) {
-            if (iosDriver != null) {
-                iosDriver.quit();
-            }
             tryTimes--;
             try {
                 iosDriver = new IOSDriver(new URL(String.format("http://%s:%d/wd/hub", appiumServerHost, appiumServerPort)), caps);
@@ -282,6 +279,15 @@ public class AppiumServerManager {
     public Boolean isDriverAlive(AppiumDriver driver) {
         try {
             driver.getStatus();
+            return true;
+        } catch (WebDriverException e) {
+            return false;
+        }
+    }
+
+    public Boolean isDriverAlive(IOSDriver driver) {
+        try {
+            driver.unlockDevice();
             return true;
         } catch (WebDriverException e) {
             return false;

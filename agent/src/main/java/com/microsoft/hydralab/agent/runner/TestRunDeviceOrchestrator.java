@@ -272,6 +272,20 @@ public class TestRunDeviceOrchestrator {
         });
     }
 
+    private void addGifFrameSyncDelay(@NotNull TestRunDevice testRunDevice, @NotNull File screenshotDir, int delaySeconds, @NotNull Logger logger) {
+        ThreadUtils.safeSleep(TimeUnit.SECONDS.toMillis(delaySeconds));
+        File imageFile = getScreenShot(testRunDevice, screenshotDir, logger);
+        if (imageFile == null || !testRunDevice.getGifEncoder().isStarted()) {
+            return;
+        }
+        try {
+            testRunDevice.getGifEncoder().addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imageFile), 0.3f)));
+            testRunDevice.setGifFrameCount(testRunDevice.getGifFrameCount() + 1);
+        } catch (IOException e) {
+            logger.error("Failed to add frame to gif", e);
+        }
+    }
+
     public void grantAllTaskNeededPermissions(@NotNull TestRunDevice testRunDevice, @NotNull TestTask testTask, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices()
@@ -294,7 +308,7 @@ public class TestRunDeviceOrchestrator {
             return;
         }
         if (testRunDevice.getGifFrameCount() < 2) {
-            addGifFrameAsyncDelay(testRunDevice, screenshotDir, 0, logger);
+            addGifFrameSyncDelay(testRunDevice, screenshotDir, 0, logger);
         }
         testRunDevice.getGifEncoder().finish();
     }
