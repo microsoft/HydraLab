@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 public class AzureOpenAIServiceClient {
     private final Logger logger = LoggerFactory.getLogger(AzureOpenAIServiceClient.class);
     private final String apiKey;
