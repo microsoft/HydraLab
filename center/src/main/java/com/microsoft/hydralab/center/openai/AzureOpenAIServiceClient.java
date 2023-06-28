@@ -37,7 +37,6 @@ public class AzureOpenAIServiceClient {
 
         RequestBody body = RequestBody.create(requestBodyString, mediaType);
         Request httpRequest = new Request.Builder().url(url).post(body)
-//                .addHeader("Content-Type", "application/json")
                 .addHeader("api-key", apiKey).build();
 
         try (Response response = client.newCall(httpRequest).execute()) {
