@@ -53,7 +53,8 @@ public class ActionExecutor {
         if (runOnAgentOnly) {
             legalActionStream = legalActionStream.filter(deviceAction -> Const.OperatedDevice.AGENT.equalsIgnoreCase(deviceAction.getDeviceType()));
         } else {
-            legalActionStream = legalActionStream.filter(deviceAction -> testRunDevice.getDeviceInfo().getType().equalsIgnoreCase(deviceAction.getDeviceType()));
+            legalActionStream = legalActionStream.filter(
+                    deviceAction -> StringUtils.isEmpty(deviceAction.getDeviceType()) || testRunDevice.getDeviceInfo().getType().equalsIgnoreCase(deviceAction.getDeviceType()));
         }
         List<DeviceAction> todoActions = legalActionStream.collect(Collectors.toList());
 
@@ -72,9 +73,9 @@ public class ActionExecutor {
     }
 
     private void doAction(@NotNull DeviceDriver deviceDriverManager,
-                         @NotNull TestRunDevice testRunDevice,
-                         @NotNull Logger logger,
-                         @NotNull DeviceAction deviceAction)
+                          @NotNull TestRunDevice testRunDevice,
+                          @NotNull Logger logger,
+                          @NotNull DeviceAction deviceAction)
             throws InvocationTargetException, IllegalAccessException {
         if (!actionTypes.contains(deviceAction.getMethod())) {
             return;
