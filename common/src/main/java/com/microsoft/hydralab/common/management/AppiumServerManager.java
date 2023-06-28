@@ -287,7 +287,7 @@ public class AppiumServerManager {
 
     public Boolean isDriverAlive(IOSDriver driver) {
         try {
-            driver.unlockDevice();
+            driver.getBatteryInfo();
             return true;
         } catch (WebDriverException e) {
             return false;
