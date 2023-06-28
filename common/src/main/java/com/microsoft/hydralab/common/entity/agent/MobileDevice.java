@@ -18,6 +18,7 @@ public class MobileDevice {
     private String manufacturer;
     private String model;
     private String osVersion;
+    private String buildNumber;
     private String screenSize;
     private int screenDensity;
     private String osSDKInt;

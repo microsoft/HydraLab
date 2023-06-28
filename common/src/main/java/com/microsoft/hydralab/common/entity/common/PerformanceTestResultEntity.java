@@ -48,10 +48,14 @@ public class PerformanceTestResultEntity implements Serializable {
     private double metric4Value = -1;
     private String metric5Key;
     private double metric5Value = -1;
+    private String model;
+    // Build number for android device
+    private String buildNumber;
 
     public PerformanceTestResultEntity(String testRunId, String testTaskId, PerformanceInspector.PerformanceInspectorType inspectorType,
                                        PerformanceResultParser.PerformanceResultParserType parserType, IBaselineMetrics baselineMetrics, String testSuite,
-                                       String runningType, String appId, String deviceId, boolean success) throws NoSuchFieldException, IllegalAccessException {
+                                       String runningType, String appId, String deviceId, boolean success, String model, String buildNumber)
+            throws NoSuchFieldException, IllegalAccessException {
 
         this.testRunId = testRunId;
         this.testTaskId = testTaskId;
@@ -63,6 +67,8 @@ public class PerformanceTestResultEntity implements Serializable {
         this.deviceId = deviceId;
         this.success = success;
         this.summaryType = baselineMetrics.getSummaryType() == null ? null : baselineMetrics.getSummaryType().name();
+        this.model = model;
+        this.buildNumber = buildNumber;
         initBaselineMetrics(baselineMetrics.getBaselineMetricsKeyValue());
     }
 

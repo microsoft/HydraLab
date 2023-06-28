@@ -41,9 +41,22 @@ public class TestRunDeviceCombo extends TestRunDevice {
         return null;
     }
 
+    public DeviceInfo getDeviceBySerialNum(String serialNum) {
+        if (super.getDeviceInfo().getSerialNum().equals(serialNum)) {
+            return super.getDeviceInfo();
+        }
+        for (TestRunDevice device : pairedDevices) {
+            if (device.getDeviceInfo().getSerialNum().equals(serialNum)) {
+                return device.getDeviceInfo();
+            }
+        }
+        return null;
+    }
+
     public List<TestRunDevice> getPairedDevices() {
         return pairedDevices;
     }
+
     public List<TestRunDevice> getDevices() {
         List<TestRunDevice> devices = new ArrayList<>();
         devices.addAll(pairedDevices);

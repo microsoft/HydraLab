@@ -505,6 +505,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
             adbDevice.setOsSDKInt(device.getProperty(PROP_BUILD_API_LEVEL));
             adbDevice.setOsVersion(device.getProperty(PROP_BUILD_VERSION));
             adbDevice.setManufacturer(device.getProperty(PROP_DEVICE_MANUFACTURER));
+            adbDevice.setBuildNumber(device.getProperty("ro.build.version.incremental"));
             adbDevice.setBrand(device.getProperty("ro.product.brand"));
             adbDevice.setAbiList(device.getProperty(PROP_DEVICE_CPU_ABI_LIST));
             String screenSize = getScreenSize(adbDevice, null);
