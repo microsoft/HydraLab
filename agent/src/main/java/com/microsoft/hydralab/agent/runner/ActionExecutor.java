@@ -49,7 +49,7 @@ public class ActionExecutor {
         List<Exception> exceptions = new ArrayList<>();
         //filter todoActions
         Stream<DeviceAction> legalActionStream = actions.getOrDefault(when, new ArrayList<>()).stream()
-                .filter(deviceAction -> actionTypes.contains(deviceAction.getMethod()) && StringUtils.isNotEmpty(deviceAction.getDeviceType()));
+                .filter(deviceAction -> actionTypes.contains(deviceAction.getMethod()));
         if (runOnAgentOnly) {
             legalActionStream = legalActionStream.filter(deviceAction -> Const.OperatedDevice.AGENT.equalsIgnoreCase(deviceAction.getDeviceType()));
         } else {
