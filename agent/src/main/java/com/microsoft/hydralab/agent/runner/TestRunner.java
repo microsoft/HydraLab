@@ -225,10 +225,6 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
                 performanceTestManagementService.inspectWithStrategy(strategy);
             }
         }
-
-        // if (NetworkTestManagementService != null) {
-            // todo
-        // }
     }
 
     protected abstract void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception;
