@@ -14,7 +14,6 @@ import static com.microsoft.hydralab.utils.CommonUtils.GSON;
 
 /**
  * @author Li Shen
- * @date 2/8/2023
  */
 
 public class DeviceConfig {

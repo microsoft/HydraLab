@@ -18,7 +18,6 @@ import java.util.LinkedHashMap;
 
 /**
  * @author Li Shen
- * @date 2/9/2023
  */
 
 public class YamlParser {
