@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.FFmpegConcatUtil;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ImageUtil;
@@ -129,23 +130,33 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
-    public void startNetworkTest(@NotNull TestRunDevice testRunDevice, String rule, @Nullable Logger logger) {
+    public void startNetworkMonitor(@NotNull TestRunDevice testRunDevice, String rule, File resultFolder, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
-                deviceDriverManager.networkTestStart(testRunDevice1.getDeviceInfo(), rule, logger);
+                NetworkMonitor networkMonitor = deviceDriverManager.getNetworkMonitor(testRunDevice1.getDeviceInfo(), rule, resultFolder, logger);
+                networkMonitor.start();
+                testRunDevice1.setNetworkMonitor(networkMonitor);
             });
         } else {
-            deviceDriverManager.networkTestStart(testRunDevice.getDeviceInfo(), rule, logger);
+            NetworkMonitor networkMonitor = deviceDriverManager.getNetworkMonitor(testRunDevice.getDeviceInfo(), rule, resultFolder, logger);
+            networkMonitor.start();
+            testRunDevice.setNetworkMonitor(networkMonitor);
         }
     }
 
-    public void stopNetworkTest(@NotNull TestRunDevice testRunDevice, @NotNull File folder, @Nullable Logger logger) {
+    public void stopNetworkMonitor(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
-                deviceDriverManager.networkTestStop(testRunDevice1.getDeviceInfo(), folder, logger);
+                NetworkMonitor monitor = testRunDevice1.getNetworkMonitor();
+                if (monitor != null) {
+                    monitor.stop();
+                }
             });
         } else {
-            deviceDriverManager.networkTestStop(testRunDevice.getDeviceInfo(), folder, logger);
+            NetworkMonitor monitor = testRunDevice.getNetworkMonitor();
+            if (monitor != null) {
+                monitor.stop();
+            }
         }
     }
 

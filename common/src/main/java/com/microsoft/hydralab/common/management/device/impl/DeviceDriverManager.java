@@ -11,6 +11,7 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.management.device.DeviceType;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.jetbrains.annotations.NotNull;
@@ -125,6 +126,11 @@ public class DeviceDriverManager implements DeviceDriver {
     }
 
     @Override
+    public NetworkMonitor getNetworkMonitor(@NotNull DeviceInfo deviceInfo, String rule, @NotNull File folder, @Nullable Logger logger) {
+        return getDeviceDriver(deviceInfo.getType()).getNetworkMonitor(deviceInfo, rule, folder, logger);
+    }
+
+    @Override
     public boolean grantAllTaskNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull TestTask task, @Nullable Logger logger) {
         return getDeviceDriver(deviceInfo.getType()).grantAllTaskNeededPermissions(deviceInfo, task, logger);
     }
@@ -209,15 +215,5 @@ public class DeviceDriverManager implements DeviceDriver {
     public AppiumServerManager getAppiumServerManager() {
         ArrayList<DeviceType> keys = new ArrayList<>(deviceDriverMap.keySet());
         return deviceDriverMap.get(keys.get(0)).getAppiumServerManager();
-    }
-
-    @Override
-    public void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger) {
-        getDeviceDriver(deviceInfo.getType()).networkTestStart(deviceInfo, rule, logger);
-    }
-
-    @Override
-    public void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger) {
-        getDeviceDriver(deviceInfo.getType()).networkTestStop(deviceInfo, folder, logger);
     }
 }

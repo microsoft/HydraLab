@@ -21,6 +21,8 @@ import com.microsoft.hydralab.common.logger.impl.ADBLogcatCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
+import com.microsoft.hydralab.common.network.AndroidNetworkMonitor;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
@@ -360,6 +362,11 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     @Override
     public ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder, Logger logger) {
         return new PhoneAppScreenRecorder(this, this.adbOperateUtil, deviceInfo, folder, logger);
+    }
+
+    @Override
+    public NetworkMonitor getNetworkMonitor(DeviceInfo deviceInfo, String rule, File folder, Logger logger) {
+        return new AndroidNetworkMonitor(this, this.adbOperateUtil, deviceInfo, rule, folder, logger);
     }
 
     @Override
@@ -729,72 +736,6 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
                     new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger) {
-        // launch vpn
-        String command_launch = "adb shell am start";
-        command_launch += " -a com.microsoft.hydralab.android.client.vpn.START";
-        command_launch += " -n com.microsoft.hydralab.android.client/.MainActivity";
-        ShellUtils.execLocalCommandWithResult(command_launch, logger);
-        while (true) {
-            ThreadUtils.safeSleep(1000);
-            boolean clicked = clickNodeOnDeviceWithText(deviceInfo, logger, "START NOW", "OK", "ALLOW");
-            if (!clicked) {
-                break;
-            }
-        }
-
-        // start vpn
-        String command_start = "adb shell am start";
-        command_start += " -a com.microsoft.hydralab.android.client.vpn.START";
-        command_start += " -n com.microsoft.hydralab.android.client/.MainActivity";
-        command_start += String.format(" --es \"apps\" \"%s\"", rule);
-        command_start += " --es \"output\" \"/Documents/dump.log\"";
-        ShellUtils.execLocalCommandWithResult(command_start, logger);
-        while (true) {
-            ThreadUtils.safeSleep(1000);
-            boolean clicked = clickNodeOnDeviceWithText(deviceInfo, logger, "START NOW", "OK", "ALLOW");
-            if (!clicked) {
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger) {
-        // stop vpn
-        String command_stop = "adb shell am start";
-        command_stop += " -a com.microsoft.hydralab.android.client.vpn.STOP";
-        command_stop += " -n com.microsoft.hydralab.android.client/.MainActivity";
-        ShellUtils.execLocalCommandWithResult(command_stop, logger);
-        ThreadUtils.safeSleep(2000);
-
-        // pull result
-        String local_dump_path = folder.getAbsolutePath() + "/network_dump.log";
-        String command_result = "adb pull /sdcard/Documents/dump.log " + local_dump_path;
-        ShellUtils.execLocalCommandWithResult(command_result, logger);
-        ThreadUtils.safeSleep(2000);
-
-        // parse
-        String local_result_path = folder.getAbsolutePath() + "/network_result.log";
-        String[] lines;
-        try {
-            int count = 0;
-            lines = Files.readAllLines(Paths.get(local_dump_path)).toArray(new String[0]);
-            for (String line : lines) {
-                if (!line.isEmpty()) {
-                    ++count;
-                }
-            }
-            File file = new File(local_result_path);
-            FileWriter writer = new FileWriter(file);
-            writer.write(count > 0 ? "Fail" : "Success");
-            writer.close();
-        } catch (IOException e) {
-            // todo
         }
     }
 }

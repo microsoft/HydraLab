@@ -170,6 +170,8 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         Message response;
         try {
             TestTaskSpec testTaskSpec = (TestTaskSpec) message.getBody();
+            testTaskSpec.enableNetworkMonitor = true;
+            testTaskSpec.networkMonitorRule = "com.microsoft.appmanager";
             testTaskSpec.updateWithDefaultValues();
             log.info("TestTaskSpec: {}", testTaskSpec);
             TestTask testTask = testTaskEngineService.runTestTask(TestTask.convertToTestTask(testTaskSpec));

@@ -1,8 +1,8 @@
-@startuml test_notify_uml
+@startuml agent_network_test_design
 
 class TestTask {
-    Boolean enableNetworkTest
-    String networkTestRule
+    Boolean enableNetworkMonitor
+    String networkMonitorRule
 }
 
 class EspressoTestInfoProcessorListener {
@@ -14,8 +14,8 @@ interface XmlTestRunListener {
 }
 
 class AndroidDeviceDriver {
-    void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger)
-    void networkTestStop(DeviceInfo deviceInfo, File folder, Logger logger)
+    void networkMonitorStart(DeviceInfo deviceInfo, String rule, Logger logger)
+    void networkMonitorStop(DeviceInfo deviceInfo, File folder, Logger logger)
 }
 
 EspressoTestInfoProcessorListener -u-> TestTask

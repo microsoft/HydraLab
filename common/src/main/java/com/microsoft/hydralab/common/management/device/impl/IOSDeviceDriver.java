@@ -15,6 +15,8 @@ import com.microsoft.hydralab.common.logger.impl.IOSLogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
+import com.microsoft.hydralab.common.network.DummyNetworkMonitor;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForMac;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForWindows;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
@@ -147,6 +149,11 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
         } else {
             return new IOSAppiumScreenRecorderForMac(this, deviceInfo, folder.getAbsolutePath());
         }
+    }
+
+    @Override
+    public NetworkMonitor getNetworkMonitor(DeviceInfo deviceInfo, String rule, File folder, Logger logger) {
+        return new DummyNetworkMonitor();
     }
 
     @Override
@@ -300,14 +307,6 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     @Override
     public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger) {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
-    }
-
-    @Override
-    public void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger) {
-    }
-
-    @Override
-    public void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger) {
     }
 
     private String currentMethodName() {

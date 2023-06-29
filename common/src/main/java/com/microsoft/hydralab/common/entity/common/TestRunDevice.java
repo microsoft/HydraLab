@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.entity.common;
 
 import cn.hutool.core.img.gif.AnimatedGifEncoder;
 import com.microsoft.hydralab.common.logger.LogCollector;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ public class TestRunDevice {
     private final DeviceInfo deviceInfo;
     private final String tag;
     private ScreenRecorder screenRecorder;
+    private NetworkMonitor networkMonitor;
     private LogCollector logCollector;
     private String logPath;
     private final AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();

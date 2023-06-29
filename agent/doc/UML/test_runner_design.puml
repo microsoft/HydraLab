@@ -170,8 +170,8 @@ deactivate TestRunEngine
              }
          }
     ],
-    "enableNetworkTest": false,
-    "networkTestRule": "com.microsoft.appmanager"
+    "enableNetworkMonitor": false,
+    "networkMonitorRule": "com.microsoft.appmanager"
 }
 @endjson
 

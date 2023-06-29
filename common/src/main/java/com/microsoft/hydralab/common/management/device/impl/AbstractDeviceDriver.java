@@ -16,6 +16,7 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceDriver;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
@@ -130,6 +131,9 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
     public abstract ScreenRecorder getScreenRecorder(@NotNull DeviceInfo deviceInfo, @NotNull File folder,
                                                      @Nullable Logger logger);
 
+    public abstract NetworkMonitor getNetworkMonitor(@NotNull DeviceInfo deviceInfo, String rule, @NotNull File folder,
+                                                     @Nullable Logger logger);
+
     public boolean grantAllTaskNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull TestTask task,
                                                  @Nullable Logger logger) {
         return false;
@@ -190,13 +194,5 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
             newCommand = ShellUtils.parseHydraLabVariable(command, testRun, deviceInfo);
         }
         ShellUtils.execLocalCommand(newCommand, logger);
-    }
-
-    @Override
-    public void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger) {
-    }
-
-    @Override
-    public void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger) {
     }
 }
