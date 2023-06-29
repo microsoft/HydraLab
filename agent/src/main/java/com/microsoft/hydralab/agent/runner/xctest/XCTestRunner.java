@@ -33,10 +33,8 @@ public class XCTestRunner extends TestRunner {
     private Logger logger;
     private long recordingStartTimeMillis;
 
-    public XCTestRunner(AgentManagementService agentManagementService,
-                        TestTaskRunCallback testTaskRunCallback,
-                        TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                        PerformanceTestManagementService performanceTestManagementService) {
+    public XCTestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                        TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
