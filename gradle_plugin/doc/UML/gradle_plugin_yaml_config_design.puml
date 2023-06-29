@@ -92,6 +92,9 @@ testSpec:
         inspectorType: INSPECTOR_ANDROID_BATTERY_INFO
         appId: com.microsoft.hydralab.android.client
         description: test schedule
+    notifyUrl: NOTIFY_URL
     enableFailingTask: true
+    enableNetworkTest: false
+    networkTestRule: NETWORK_TEST_RULE_NONE
 
 @endyaml

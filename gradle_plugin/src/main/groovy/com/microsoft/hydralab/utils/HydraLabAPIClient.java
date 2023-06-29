@@ -233,6 +233,9 @@ public class HydraLabAPIClient {
         jsonElement.addProperty("needClearData", testConfig.needClearData);
         jsonElement.addProperty("testRunnerName", testConfig.testRunnerName);
         jsonElement.addProperty("testScope", testConfig.testScope);
+        jsonElement.addProperty("enableNetworkTest", testConfig.enableNetworkTest);
+        jsonElement.addProperty("networkTestRule", testConfig.networkTestRule);
+        jsonElement.addProperty("notifyUrl", testConfig.notifyUrl);
 
         try {
             if (testConfig.neededPermissions.size() > 0) {

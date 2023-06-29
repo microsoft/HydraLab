@@ -37,7 +37,7 @@ dependencies {
 }
 
 // plugin publishing related
-version = '1.1.10'
+version = '1.1.11'
 group = 'com.microsoft.hydralab'
 // alter group to this when publish to local, in order to distinguish local version and gradle plugin portal version
 //group = 'com.microsoft.hydralab.local'
@@ -57,4 +57,14 @@ pluginBundle {
     website = 'https://github.com/microsoft/HydraLab/tree/main/gradle_plugin'
     vcsUrl = 'https://github.com/microsoft/HydraLab.git'
     tags = ['Microsoft']
+}
+
+javadoc {
+    options {
+        encoding = 'UTF-8'
+        charSet = 'UTF-8'
+        author = true
+        tags = ['date']
+        links "https://docs.oracle.com/javase/8/docs/api/"
+    }
 }
