@@ -127,7 +127,7 @@ class TasksView extends BaseView {
             })
 
             if (runningTasks) {
-                runningTasks.reverse().forEach((rt) => {
+                runningTasks.forEach((rt) => {
                     rows.unshift(thisEleObj.getTaskRow(rt, true))
                 })
             }
@@ -800,7 +800,7 @@ class TasksView extends BaseView {
 
             this.axiosPost(`/api/test/task/list`, (content) => {
                 this.setState({
-                    runningTasks: content.content,
+                    runningTasks: content.content.reverse(),
                     hideSkeleton: true,
                 })
 
