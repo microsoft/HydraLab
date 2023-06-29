@@ -50,6 +50,7 @@ public class TestConfig {
     public int testRound = -1;
     public List<InspectionStrategy> inspectionStrategies = new ArrayList<>();
     public String inspectionStrategiesStr = "";
+    public String notifyUrl = "";
     public boolean enableFailingTask = true;
     public boolean enableNetworkTest = false;
     public String networkTestRule = "";
@@ -108,6 +109,7 @@ public class TestConfig {
                 "\tmaxStepCount=" + maxStepCount + "\n" +
                 "\ttestRound=" + testRound + "\n" +
                 "\tinspectionStrategiesStr=" + inspectionStrategiesStr + "\n" +
+                "\tnotifyUrl=" + notifyUrl + "\n" +
                 "\tenableFailingTask=" + enableFailingTask + "\n" +
                 "\tenableNetworkTest=" + enableNetworkTest +"\n" +
                 "\tnetworkTestRule=" + networkTestRule;

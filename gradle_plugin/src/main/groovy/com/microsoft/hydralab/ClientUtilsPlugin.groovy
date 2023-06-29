@@ -151,6 +151,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     // add quotes back as quotes in gradle plugins will be replaced by blanks
                     testConfig.inspectionStrategiesStr = project.inspectionStrategiesStr.replace("\\", "\"")
                 }
+                if (project.hasProperty('notifyUrl')) {
+                    testConfig.notifyUrl = project.notifyUrl
+                }
                 if (project.hasProperty('enableFailingTask')) {
                     testConfig.enableFailingTask = Boolean.parseBoolean(project.enableFailingTask)
                 }

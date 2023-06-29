@@ -65,6 +65,7 @@ testSpec:
         inspectorType: # <Required if inspectionStrategies is enabled>
         appId: # <Required if inspectionStrategies is enabled>
         description: # <Required if inspectionStrategies is enabled>
+  notifyUrl: # <Optional>
   enableFailingTask: # <Optional>
   enableNetworkTest: # <Optional>
   networkTestRule: # <Optional>
