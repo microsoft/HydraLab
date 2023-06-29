@@ -1,0 +1,25 @@
+@startuml test_notify_uml
+
+class TestTask {
+    Boolean enableNetworkTest
+    String networkTestRule
+}
+
+class EspressoTestInfoProcessorListener {
+    void startRecording(int maxTime)
+    void releaseResource()
+}
+
+interface XmlTestRunListener {
+}
+
+class AndroidDeviceDriver {
+    void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger)
+    void networkTestStop(DeviceInfo deviceInfo, File folder, Logger logger)
+}
+
+EspressoTestInfoProcessorListener -u-> TestTask
+EspressoTestInfoProcessorListener -d-|> XmlTestRunListener
+EspressoTestInfoProcessorListener -o AndroidDeviceDriver
+
+@enduml
