@@ -5,9 +5,11 @@ package com.microsoft.hydralab.performance;
 import com.alibaba.fastjson.JSON;
 import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
+import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.entity.common.TestRunDeviceCombo;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.FileUtil;
@@ -253,7 +255,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
             }
         }
         List<PerformanceTestResult> resultList = parseForTestRun(testRun);
-        savePerformanceTestResults(resultList, testRun, testTask, getLogger(testRun));
+        savePerformanceTestResults(resultList, testRunDevice, testRun, testTask, getLogger(testRun));
 
         inspectPerformanceTimerMap.remove(testRun.getId());
         testLifeCycleStrategyMap.remove(testRun.getId());
@@ -305,7 +307,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         return resultList;
     }
 
-    private void savePerformanceTestResults(List<PerformanceTestResult> resultList, TestRun testRun, TestTask testTask, Logger logger) {
+    private void savePerformanceTestResults(List<PerformanceTestResult> resultList, TestRunDevice testRunDevice, TestRun testRun, TestTask testTask, Logger logger) {
         if (resultList != null && !resultList.isEmpty()) {
             try {
                 FileUtil.writeToFile(JSON.toJSONString(resultList),
@@ -322,6 +324,11 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                     }
 
                     PerformanceInspection inspection = testResult.performanceInspectionResults.get(0).inspection;
+                    DeviceInfo deviceInfo = testRunDevice instanceof TestRunDeviceCombo ?
+                            ((TestRunDeviceCombo) testRunDevice).getDeviceBySerialNum(inspection.deviceIdentifier)
+                            : testRunDevice.getDeviceInfo();
+                    String model = deviceInfo.getModel();
+                    String buildNumber = deviceInfo.getBuildNumber();
                     PerformanceTestResultEntity testResultEntity = new PerformanceTestResultEntity(
                             testRun.getId(),
                             testTask.getId(),
@@ -332,7 +339,10 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                             testTask.getRunningType(),
                             inspection.appId,
                             inspection.deviceIdentifier,
-                            testRun.isSuccess());
+                            testRun.isSuccess(),
+                            model,
+                            buildNumber
+                    );
                     testRun.getPerformanceTestResultEntities().add(testResultEntity);
                 }
             } catch (NoSuchFieldException | IllegalAccessException e) {

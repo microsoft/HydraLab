@@ -65,7 +65,7 @@ public class PerformanceTestResultEntityTest {
                     "", "",
                     PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO,
                     PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_BATTERY_INFO,
-                    baselineMetrics, "", "", "", "", false);
+                    baselineMetrics, "", "", "", "", false, "", "");
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
