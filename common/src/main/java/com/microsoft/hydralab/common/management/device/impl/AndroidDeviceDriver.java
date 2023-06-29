@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -732,20 +733,34 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     }
 
     @Override
-    public void networkTestStart(DeviceInfo deviceInfo, Logger logger) {
+    public void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger) {
         // launch vpn
         String command_launch = "adb shell am start";
         command_launch += " -a com.microsoft.hydralab.android.client.vpn.START";
         command_launch += " -n com.microsoft.hydralab.android.client/.MainActivity";
         ShellUtils.execLocalCommandWithResult(command_launch, logger);
+        while (true) {
+            ThreadUtils.safeSleep(1000);
+            boolean clicked = clickNodeOnDeviceWithText(deviceInfo, logger, "START NOW", "OK", "ALLOW");
+            if (!clicked) {
+                break;
+            }
+        }
 
         // start vpn
         String command_start = "adb shell am start";
         command_start += " -a com.microsoft.hydralab.android.client.vpn.START";
         command_start += " -n com.microsoft.hydralab.android.client/.MainActivity";
-        command_start += String.format(" --es \"apps\" \"%s\"", "com.microsoft.appmanager");
+        command_start += String.format(" --es \"apps\" \"%s\"", rule);
         command_start += " --es \"output\" \"/Documents/dump.log\"";
         ShellUtils.execLocalCommandWithResult(command_start, logger);
+        while (true) {
+            ThreadUtils.safeSleep(1000);
+            boolean clicked = clickNodeOnDeviceWithText(deviceInfo, logger, "START NOW", "OK", "ALLOW");
+            if (!clicked) {
+                break;
+            }
+        }
     }
 
     @Override
@@ -755,18 +770,31 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
         command_stop += " -a com.microsoft.hydralab.android.client.vpn.STOP";
         command_stop += " -n com.microsoft.hydralab.android.client/.MainActivity";
         ShellUtils.execLocalCommandWithResult(command_stop, logger);
+        ThreadUtils.safeSleep(2000);
 
         // pull result
-        String command_result = "adb pull /sdcard/Documents/dump.log " + folder.getAbsolutePath() + "/dump.log";
+        String local_dump_path = folder.getAbsolutePath() + "/network_dump.log";
+        String command_result = "adb pull /sdcard/Documents/dump.log " + local_dump_path;
         ShellUtils.execLocalCommandWithResult(command_result, logger);
+        ThreadUtils.safeSleep(2000);
 
-        // read log file
-        // String[] lines;
-        // try {
-        //     lines = Files.readAllLines(Paths.get("./dump.log")).toArray(new String[0]);
-        // } catch (IOException e) {
-        //     lines = new String[0];
-        // }
-        // return lines;
+        // parse
+        String local_result_path = folder.getAbsolutePath() + "/network_result.log";
+        String[] lines;
+        try {
+            int count = 0;
+            lines = Files.readAllLines(Paths.get(local_dump_path)).toArray(new String[0]);
+            for (String line : lines) {
+                if (!line.isEmpty()) {
+                    ++count;
+                }
+            }
+            File file = new File(local_result_path);
+            FileWriter writer = new FileWriter(file);
+            writer.write(count > 0 ? "Fail" : "Success");
+            writer.close();
+        } catch (IOException e) {
+            // todo
+        }
     }
 }

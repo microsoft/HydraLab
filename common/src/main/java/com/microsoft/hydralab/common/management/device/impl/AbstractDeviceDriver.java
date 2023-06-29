@@ -193,7 +193,7 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
     }
 
     @Override
-    public void networkTestStart(DeviceInfo deviceInfo, Logger logger) {
+    public void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger) {
     }
 
     @Override

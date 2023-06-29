@@ -303,7 +303,7 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     }
 
     @Override
-    public void networkTestStart(DeviceInfo deviceInfo, Logger logger) {
+    public void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger) {
     }
 
     @Override

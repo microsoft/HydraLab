@@ -74,6 +74,9 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         final String initializing = "Initializing";
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, initializing);
         testRun.addNewTimeTag(initializing, 0);
+        if (testTask.isEnableNetworkTest()) {
+            testRunDeviceOrchestrator.startNetworkTest(testRunDevice, testTask.getNetworkTestRule(), logger);
+        }
     }
 
     @Override
@@ -88,9 +91,6 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         infoLogEnter(runName, numTests);
         startTools(runName);
         performanceTestListener.testRunStarted();
-        if (testTask.isEnableNetworkTest()) {
-            testRunDeviceOrchestrator.startNetworkTest(testRunDevice, logger);
-        }
     }
 
     private void startTools(String runName) {
@@ -226,9 +226,6 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             if (alreadyEnd) {
                 return;
             }
-            if (testTask.isEnableNetworkTest()) {
-                testRunDeviceOrchestrator.stopNetworkTest(testRunDevice, testRun.getResultFolder(), logger);
-            }
             performanceTestListener.testRunFinished();
             testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
             super.testRunEnded(elapsedTime, runMetrics);
@@ -240,6 +237,9 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     }
 
     private void releaseResource() {
+        if (testTask.isEnableNetworkTest()) {
+            testRunDeviceOrchestrator.stopNetworkTest(testRunDevice, testRun.getResultFolder(), logger);
+        }
         testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
         testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);

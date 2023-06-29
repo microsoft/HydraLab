@@ -212,8 +212,8 @@ public class DeviceDriverManager implements DeviceDriver {
     }
 
     @Override
-    public void networkTestStart(DeviceInfo deviceInfo, Logger logger) {
-        getDeviceDriver(deviceInfo.getType()).networkTestStart(deviceInfo, logger);
+    public void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger) {
+        getDeviceDriver(deviceInfo.getType()).networkTestStart(deviceInfo, rule, logger);
     }
 
     @Override

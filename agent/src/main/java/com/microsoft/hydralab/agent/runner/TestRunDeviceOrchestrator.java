@@ -129,23 +129,23 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
-    public void startNetworkTest(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
+    public void startNetworkTest(@NotNull TestRunDevice testRunDevice, String rule, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
-                deviceDriverManager.networkTestStart(testRunDevice1.getDeviceInfo(), logger);
+                deviceDriverManager.networkTestStart(testRunDevice1.getDeviceInfo(), rule, logger);
             });
         } else {
-            deviceDriverManager.networkTestStart(testRunDevice.getDeviceInfo(), logger);
+            deviceDriverManager.networkTestStart(testRunDevice.getDeviceInfo(), rule, logger);
         }
     }
 
     public void stopNetworkTest(@NotNull TestRunDevice testRunDevice, @NotNull File folder, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
-                deviceDriverManager.networkTestStart(testRunDevice1.getDeviceInfo(), logger);
+                deviceDriverManager.networkTestStop(testRunDevice1.getDeviceInfo(), folder, logger);
             });
         } else {
-            deviceDriverManager.networkTestStart(testRunDevice.getDeviceInfo(), logger);
+            deviceDriverManager.networkTestStop(testRunDevice.getDeviceInfo(), folder, logger);
         }
     }
 

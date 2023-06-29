@@ -91,7 +91,7 @@ public interface DeviceDriver {
 
     void execCommandOnAgent(DeviceInfo deviceInfo, String command, Logger logger);
 
-    void networkTestStart(DeviceInfo deviceInfo, Logger logger);
+    void networkTestStart(DeviceInfo deviceInfo, String rule, Logger logger);
 
     void networkTestStop(DeviceInfo deviceInfo, @NotNull File folder, Logger logger);
 
