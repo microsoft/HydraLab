@@ -40,8 +40,8 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
     protected final TestRunDeviceOrchestrator testRunDeviceOrchestrator;
     protected final XmlBuilder xmlBuilder = new XmlBuilder();
 
-    public TestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                      PerformanceTestManagementService performanceTestManagementService) {
+    public TestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                      TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService) {
         this.agentManagementService = agentManagementService;
         this.testTaskRunCallback = testTaskRunCallback;
         this.performanceTestManagementService = performanceTestManagementService;

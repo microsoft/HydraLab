@@ -33,8 +33,9 @@ public class EspressoRunner extends TestRunner {
     private static final int MINOR_ADB_VERSION = -1;
     final ADBOperateUtil adbOperateUtil;
 
-    public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                          PerformanceTestManagementService performanceTestManagementService, ADBOperateUtil adbOperateUtil) {
+    public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
+                          TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService,
+                          ADBOperateUtil adbOperateUtil) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
     }

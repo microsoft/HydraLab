@@ -19,11 +19,9 @@ public class AppiumCrossRunner extends AppiumRunner {
     private static final int MAJOR_FFMPEG_VERSION = 4;
     private static final int MINOR_FFMPEG_VERSION = -1;
 
-    public AppiumCrossRunner(AgentManagementService agentManagementService,
-                             TestTaskRunCallback testTaskRunCallback,
+    public AppiumCrossRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                              TestRunDeviceOrchestrator testRunDeviceOrchestrator,
-                             PerformanceTestManagementService performanceTestManagementService,
-                             String agentName) {
+                             PerformanceTestManagementService performanceTestManagementService, String agentName) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.agentName = agentName;
     }
