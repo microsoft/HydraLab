@@ -287,6 +287,8 @@ public class AppiumServerManager {
 
     public Boolean isDriverAlive(IOSDriver driver) {
         try {
+            // use getBatteryInfo to check if driver is alive
+            // getStatus would return from cache when session was closed and can't check if driver is alive
             driver.getBatteryInfo();
             return true;
         } catch (WebDriverException e) {

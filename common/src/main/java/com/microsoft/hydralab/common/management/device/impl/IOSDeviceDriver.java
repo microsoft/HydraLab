@@ -82,6 +82,7 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public void wakeUpDevice(DeviceInfo deviceInfo, Logger logger) {
+        // unlockDevice can wake up device, but sometimes it would make the phone go back to desktop which is not expected
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
