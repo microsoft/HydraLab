@@ -187,4 +187,11 @@ public interface Const {
         String TERTIARY_PHONE = "TERTIARY_PHONE";
         String PRIMARY_PC = "PRIMARY_PC";
     }
+
+    interface OperatedDevice {
+        String AGENT = "Agent";
+        String WINDOWS = "Windows";
+        String ANDROID = "Android";
+        String IOS = "iOS";
+    }
 }

@@ -5,6 +5,7 @@ import Select from 'react-select'
 import makeAnimated from 'react-select/animated';
 import React from 'react'
 import axios from "@/axios";
+import Button from "@mui/material/Button";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
 const animatedComponents = makeAnimated();
@@ -469,6 +470,27 @@ export default class PerfTestDashboard extends React.Component {
             </div>
         }
 
+        function exportMetricsToCSV(metrics) {
+            const separator = ',';
+            const keys = Object.keys(metrics[0]);
+            const csvHeader = keys.join(separator);
+
+            const csvRows = metrics.map((obj) => {
+                return keys.map((key) => {
+                    return obj[key];
+                }).join(separator);
+            });
+
+            let csvString = `${csvHeader}\n${csvRows.join('\n')}`;
+            let element = document.createElement('a');
+            element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvString));
+            element.setAttribute('download', 'performance.csv');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
         return <div id='perf_dashboard'>
             <div style={{ backgroundColor: '#2F5496', color: 'white', padding: '10px', fontSize: 'medium', fontWeight: 'bold', marginBottom: '20px' }}>
                 Performance Test Results
@@ -478,6 +500,7 @@ export default class PerfTestDashboard extends React.Component {
                     <h3> Android Battery report</h3>
                     {androidBatteryDevice && <h5>{"Device: " + androidBatteryDevice}</h5>}
                     {this.state.androidBatteryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Button variant="outlined" color="info" onClick={() => { exportMetricsToCSV(androidBatteryMetrics) }}>Export CSV</Button>
                         <Select
                             defaultValue={this.state.androidBatteryAppsOptions[0]}
                             components={animatedComponents}
@@ -502,6 +525,7 @@ export default class PerfTestDashboard extends React.Component {
                     <h3> Android Memory report</h3>
                     {androidMemoryDevice && <h5>{"Device: " + androidMemoryDevice}</h5>}
                     {this.state.androidMemoryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Button variant="outlined" color="info" onClick={() => { exportMetricsToCSV(androidMemoryMetrics) }}>Export CSV</Button>
                         <Select
                             defaultValue={this.state.androidMemoryAppsOptions[0]}
                             components={animatedComponents}
@@ -526,6 +550,7 @@ export default class PerfTestDashboard extends React.Component {
                     <h3> Windows Memory report</h3>
                     {windowsMemoryDevice && <h5>{"Device: " + windowsMemoryDevice}</h5>}
                     {this.state.windowsMemoryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Button variant="outlined" color="info" onClick={() => { exportMetricsToCSV(windowsMemoryMetrics) }}>Export CSV</Button>
                         <Select
                             defaultValue={this.state.windowsMemoryAppsOptions[0]}
                             components={animatedComponents}
@@ -549,6 +574,7 @@ export default class PerfTestDashboard extends React.Component {
                     <h3> iOS Energy report</h3>
                     {iOSEnergyDevice && <h5>{"Device: " + iOSEnergyDevice}</h5>}
                     {this.state.iosEnergyAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Button variant="outlined" color="info" onClick={() => { exportMetricsToCSV(iosEnergyMetrics) }}>Export CSV</Button>
                         <Select
                             defaultValue={this.state.iosEnergyAppsOptions[0]}
                             components={animatedComponents}
@@ -571,6 +597,7 @@ export default class PerfTestDashboard extends React.Component {
                     <h3> iOS Memory report</h3>
                     {iOSMemoryDevice && <h5>{"Device: " + iOSMemoryDevice}</h5>}
                     {this.state.iosMemoryAppsOptions.length > 0 && <div style={{ marginBottom: '10px' }}>
+                        <Button variant="outlined" color="info" onClick={() => { exportMetricsToCSV(iosMemoryMetrics) }}>Export CSV</Button>
                         <Select
                             defaultValue={this.state.iosMemoryAppsOptions[0]}
                             components={animatedComponents}

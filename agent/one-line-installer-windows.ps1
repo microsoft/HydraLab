@@ -27,7 +27,7 @@ Function Get-File ($Url, $Path, $ExtractCurrent=$false)
         if ($ExtractCurrent)
         {
             $PathExtract = $Path.Substring(0, $Path.LastIndexOf('\') + 1)
-            Expand-Archive $Path -DestinationPath $PathExtract
+            Expand-Archive $Path -DestinationPath $PathExtract -Force
         }
         else
         {
@@ -193,6 +193,11 @@ if (-Not((New-Object Security.Principal.WindowsPrincipal $([Security.Principal.W
 }
 
 # =======================================
+# Enable Long Paths
+# =======================================
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+
+# =======================================
 # Check No HydraLab Folder exists
 # =======================================
 if (Test-Path -Path $RootPath)
@@ -213,9 +218,10 @@ Copy-Item "$CurrentPath\application.yml" -Destination "$RootPath\application.yml
 # =======================================
 # Download HydraLab
 # =======================================
-$filesToDownload = "agent.jar", "Hydra_Agent_Installer_Windows.zip"
+$filesToDownload = "agent.jar", "HydraLab_Agent_Installer_Windows.zip"
 $release = Invoke-RestMethod -Uri https://api.github.com/repos/microsoft/HydraLab/releases/latest
-foreach ($ast in $release.assets)
+$releaseAssets = Invoke-RestMethod -Uri "$($release.url)/assets"
+foreach ($ast in $releaseAssets)
 {
     if ($filesToDownload -contains $ast.name)
     {
@@ -313,11 +319,19 @@ Add-EnvironmentVar -Key "PATH"                     -Val "%ANDROID_HOME%"
 Add-EnvironmentVar -Key "PATH"                     -Val "%ANDROID_CMDLINE_TOOLS%"
 Add-EnvironmentVar -Key "PATH"                     -Val "%ANDROID_PLATFORM_TOOLS%"
 
+Write-Host "Installation is done, you could quit and use following prompt to startup Hydra Lab agent..."
+Write-Host ">>> java -Xms1024m -Xmx2048m -jar agent.jar"
+
+# =======================================
+# Windows Service
+# =======================================
+Write-Host
+$_ignored = Read-Host "Input Any Key to continue Windows Agent Service Setup (Windows Desktop UI Test is not supported this way)"
+
 $AgentServiceXml = Get-Content -Path "$RootPath\AgentService.xml"
 $AgentServiceXml = $AgentServiceXml -replace "java","$JDK_Root\bin\java.exe"
 $AgentServiceXml = $AgentServiceXml -replace "{LOG_FILE_LOCATION}","Logs"
 $AgentServiceXml | Set-Content -Path "$RootPath\AgentService.xml"
-
 sc.exe delete $AgentServiceName
 New-Service -Name $AgentServiceName -BinaryPathName "$RootPath\AgentService.exe"
 Start-Service -Name $AgentServiceName

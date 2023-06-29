@@ -13,6 +13,8 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -25,8 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -192,6 +196,16 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
     }
 
     protected void setUp(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
+        // grant battery white list when testing android_client
+        if (PhoneAppScreenRecorder.RECORD_PACKAGE_NAME.equals(testTask.getPkgName())) {
+            Map<String, List<DeviceAction>> deviceActionsMap = testTask.getDeviceActions();
+            List<DeviceAction> setUpDeviceActions = deviceActionsMap.getOrDefault(DeviceAction.When.SET_UP, new ArrayList<>());
+            DeviceAction deviceAction1 = new DeviceAction(Const.OperatedDevice.ANDROID, "addToBatteryWhiteList");
+            deviceAction1.setArgs(List.of(PhoneAppScreenRecorder.RECORD_PACKAGE_NAME));
+            setUpDeviceActions.add(deviceAction1);
+            deviceActionsMap.put(DeviceAction.When.SET_UP, setUpDeviceActions);
+        }
+
         testRunDeviceOrchestrator.killAll(testRunDevice);
         // this key will be used to recover device status when lost the connection between agent and master
         testRunDeviceOrchestrator.addCurrentTask(testRunDevice, testTask);
@@ -248,6 +262,14 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
                 testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
             }
         }
+
+        try {
+            //TODO: if the other test run resources are not released, release them here
+            testRunDeviceOrchestrator.releaseScreenRecorder(testRunDevice, testRun.getLogger());
+        } catch (Exception e) {
+            testRun.getLogger().error("Error in release Screen Recorder", e);
+        }
+
         testRunDeviceOrchestrator.testDeviceUnset(testRunDevice, testRun.getLogger());
 
         //generate xml report and upload files

@@ -149,6 +149,23 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
+    public void releaseScreenRecorder(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
+        if (testRunDevice.getScreenRecorder() == null) {
+            return;
+        }
+
+        if (logger != null) {
+            logger.info("Releasing screen recorder");
+        }
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
+                testRunDevice1.getScreenRecorder().finishRecording();
+            });
+        } else {
+            testRunDevice.getScreenRecorder().finishRecording();
+        }
+    }
+
     public void startLogCollector(@NotNull TestRunDevice testRunDevice, @NotNull String pkgName, @NotNull TestRun testRun, @NotNull Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
@@ -275,6 +292,20 @@ public class TestRunDeviceOrchestrator {
         });
     }
 
+    private void addGifFrameSyncDelay(@NotNull TestRunDevice testRunDevice, @NotNull File screenshotDir, int delaySeconds, @NotNull Logger logger) {
+        ThreadUtils.safeSleep(TimeUnit.SECONDS.toMillis(delaySeconds));
+        File imageFile = getScreenShot(testRunDevice, screenshotDir, logger);
+        if (imageFile == null || !testRunDevice.getGifEncoder().isStarted()) {
+            return;
+        }
+        try {
+            testRunDevice.getGifEncoder().addFrame(ImgUtil.toBufferedImage(ImgUtil.scale(ImageIO.read(imageFile), 0.3f)));
+            testRunDevice.setGifFrameCount(testRunDevice.getGifFrameCount() + 1);
+        } catch (IOException e) {
+            logger.error("Failed to add frame to gif", e);
+        }
+    }
+
     public void grantAllTaskNeededPermissions(@NotNull TestRunDevice testRunDevice, @NotNull TestTask testTask, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             ((TestRunDeviceCombo) testRunDevice).getDevices()
@@ -297,7 +328,7 @@ public class TestRunDeviceOrchestrator {
             return;
         }
         if (testRunDevice.getGifFrameCount() < 2) {
-            addGifFrameAsyncDelay(testRunDevice, screenshotDir, 0, logger);
+            addGifFrameSyncDelay(testRunDevice, screenshotDir, 0, logger);
         }
         testRunDevice.getGifEncoder().finish();
     }
@@ -339,14 +370,15 @@ public class TestRunDeviceOrchestrator {
     }
 
     public List<Exception> doActions(TestRunDevice testRunDevice, Logger logger, Map<String, List<DeviceAction>> deviceActions, String when) {
+        List<Exception> exceptions = actionExecutor.doActions(deviceDriverManager, testRunDevice, logger, deviceActions, when, true);
+
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            List<Exception> exceptions = new ArrayList<>();
-            for (TestRunDevice testRunDevice1 : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
-                exceptions.addAll(actionExecutor.doActions(deviceDriverManager, testRunDevice1, logger, deviceActions, when));
+            for (TestRunDevice subTestRunDevice : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
+                exceptions.addAll(actionExecutor.doActions(deviceDriverManager, subTestRunDevice, logger, deviceActions, when, false));
             }
-            return exceptions;
         } else {
-            return actionExecutor.doActions(deviceDriverManager, testRunDevice, logger, deviceActions, when);
+            exceptions.addAll(actionExecutor.doActions(deviceDriverManager, testRunDevice, logger, deviceActions, when, false));
         }
+        return exceptions;
     }
 }

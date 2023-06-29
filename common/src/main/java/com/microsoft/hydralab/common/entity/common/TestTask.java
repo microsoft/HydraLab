@@ -110,9 +110,10 @@ public class TestTask implements Serializable {
     private String testScope;
     // todo: change this to a more general name for all scopes of ESPRESSO tests.
     private String testSuite;
-    //todo: Add performance test result to test task
     @Transient
     private List<InspectionStrategy> inspectionStrategies;
+    @Transient
+    private String notifyUrl;
     private boolean enableNetworkTest;
     private String networkTestRule;
 

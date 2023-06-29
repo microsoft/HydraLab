@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.screen;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.appium.java_client.ios.IOSStartScreenRecordingOptions;
 
@@ -26,14 +27,17 @@ public class IOSAppiumScreenRecorderForMac extends IOSAppiumScreenRecorder {
     public void startRecord(int maxTimeInSecond) {
         int timeout = maxTimeInSecond > 0 ? maxTimeInSecond : DEFAULT_TIMEOUT_IN_SECOND;
         try {
-            iosDriver.startRecordingScreen(new IOSStartScreenRecordingOptions()
-                    .enableForcedRestart()
-                    .withFps(24)
-                    .withVideoType("h264")
-                    .withVideoScale("720:360")
-                    .withTimeLimit(Duration.ofSeconds(timeout)));
+            FlowUtil.retryAndSleepWhenFalse(3, 1000, () -> {
+                iosDriver.startRecordingScreen(new IOSStartScreenRecordingOptions()
+                        .enableForcedRestart()
+                        .withFps(24)
+                        .withVideoType("h264")
+                        .withVideoScale("720:360")
+                        .withTimeLimit(Duration.ofSeconds(timeout)));
+                return true;
+            });
             isStarted = true;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             System.out.println("-------------------------------Fail to Start recording, Ignore it to unblocking the following tests----------------------------");
             e.printStackTrace();
             System.out.println("-------------------------------------------------------Ignore End--------------------------------------------------------------");
