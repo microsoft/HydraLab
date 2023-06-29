@@ -51,6 +51,8 @@ public class TestConfig {
     public List<InspectionStrategy> inspectionStrategies = new ArrayList<>();
     public String inspectionStrategiesStr = "";
     public boolean enableFailingTask = true;
+    public boolean enableNetworkTest = false;
+    public String networkTestRule = "";
 
     public void constructField(HashMap<String, Object> map) {
         Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");
@@ -106,6 +108,8 @@ public class TestConfig {
                 "\tmaxStepCount=" + maxStepCount + "\n" +
                 "\ttestRound=" + testRound + "\n" +
                 "\tinspectionStrategiesStr=" + inspectionStrategiesStr + "\n" +
-                "\tenableFailingTask=" + enableFailingTask;
+                "\tenableFailingTask=" + enableFailingTask + "\n" +
+                "\tenableNetworkTest=" + enableNetworkTest +"\n" +
+                "\tnetworkTestRule=" + networkTestRule;
     }
 }

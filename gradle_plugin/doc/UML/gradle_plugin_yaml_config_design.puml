@@ -93,5 +93,7 @@ testSpec:
         appId: com.microsoft.hydralab.android.client
         description: test schedule
     enableFailingTask: true
+    enableNetworkTest: false
+    networkTestRule: NETWORK_TEST_RULE_NONE
 
 @endyaml

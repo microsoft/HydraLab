@@ -152,8 +152,13 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     testConfig.inspectionStrategiesStr = project.inspectionStrategiesStr.replace("\\", "\"")
                 }
                 if (project.hasProperty('enableFailingTask')) {
-                    // add quotes back as quotes in gradle plugins will be replaced by blanks
                     testConfig.enableFailingTask = Boolean.parseBoolean(project.enableFailingTask)
+                }
+                if (project.hasProperty('enableNetworkTest')) {
+                    testConfig.enableNetworkTest = Boolean.parseBoolean(project.enableNetworkTest)
+                }
+                if (project.hasProperty('networkTestRule')) {
+                    testConfig.networkTestRule = project.networkTestRule
                 }
 
                 requiredParamCheck(apiConfig, testConfig)
