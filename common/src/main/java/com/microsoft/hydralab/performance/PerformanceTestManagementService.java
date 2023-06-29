@@ -83,6 +83,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private final Map<PerformanceInspector.PerformanceInspectorType, DeviceType> inspectorDeviceTypeMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, DeviceType.ANDROID,
             INSPECTOR_ANDROID_MEMORY_INFO, DeviceType.ANDROID,
+            INSPECTOR_ANDROID_MEMORY_DUMP, DeviceType.ANDROID,
             INSPECTOR_WIN_MEMORY, DeviceType.WINDOWS,
             INSPECTOR_WIN_BATTERY, DeviceType.WINDOWS,
             INSPECTOR_IOS_MEMORY, DeviceType.IOS,
