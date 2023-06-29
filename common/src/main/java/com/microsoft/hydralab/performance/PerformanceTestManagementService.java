@@ -14,14 +14,12 @@ import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
 import com.microsoft.hydralab.performance.inspectors.AndroidMemoryHprofInspector;
-import com.microsoft.hydralab.performance.inspectors.AndroidMemoryHprofInspector;
 import com.microsoft.hydralab.performance.inspectors.AndroidMemoryInfoInspector;
 import com.microsoft.hydralab.performance.inspectors.IOSEnergyGaugeInspector;
 import com.microsoft.hydralab.performance.inspectors.IOSMemoryPerfInspector;
 import com.microsoft.hydralab.performance.inspectors.WindowsBatteryInspector;
 import com.microsoft.hydralab.performance.inspectors.WindowsMemoryInspector;
 import com.microsoft.hydralab.performance.parsers.AndroidBatteryInfoResultParser;
-import com.microsoft.hydralab.performance.parsers.AndroidMemoryHprofResultParser;
 import com.microsoft.hydralab.performance.parsers.AndroidMemoryHprofResultParser;
 import com.microsoft.hydralab.performance.parsers.AndroidMemoryInfoResultParser;
 import com.microsoft.hydralab.performance.parsers.IOSEnergyGaugeResultParser;
@@ -102,6 +100,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private final Map<String, List<ScheduledFuture<?>>> inspectPerformanceTimerMap = new ConcurrentHashMap<>();
     private final Map<String, List<InspectionStrategy>> testLifeCycleStrategyMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, PerformanceTestResult>> testRunPerfResultMap = new ConcurrentHashMap<>();
+    private final TestNotifier testNotifier = new TestNotifier();
 
     public void initialize() {
         PerformanceInspectionService.getInstance().swapImplementation(this);
