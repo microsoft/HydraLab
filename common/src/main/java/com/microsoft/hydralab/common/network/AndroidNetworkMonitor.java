@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import static com.microsoft.hydralab.common.util.NetworkMonitorUtil.*;
+import static com.microsoft.hydralab.common.util.Const.NetworkMonitorConfig.*;
 
 public class AndroidNetworkMonitor implements NetworkMonitor {
 
