@@ -45,6 +45,8 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
 
     @Override
     public void start() {
+        logger.info("Start VPN service");
+
         // launch vpn
         String command_launch = "adb shell am start";
         command_launch += " -a com.microsoft.hydralab.android.client.vpn.START";
@@ -76,23 +78,24 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
 
     @Override
     public void stop() {
-        // stop vpn
-        String command_stop = "adb shell am start";
-        command_stop += " -a com.microsoft.hydralab.android.client.vpn.STOP";
-        command_stop += " -n com.microsoft.hydralab.android.client/.MainActivity";
-        ShellUtils.execLocalCommandWithResult(command_stop, logger);
-        ThreadUtils.safeSleep(2000);
+        logger.info("Stop VPN service");
 
-        // pull result
-        String local_dump_path = resultFolder.getAbsolutePath() + DumpPath;
-        String command_result = "adb pull /sdcard/Documents/dump.log " + local_dump_path;
-        ShellUtils.execLocalCommandWithResult(command_result, logger);
-        ThreadUtils.safeSleep(2000);
-
-        // parse
-        String local_result_path = resultFolder.getAbsolutePath() + ResultPath;
-        String[] lines;
         try {
+            // stop vpn
+            String command_stop = "adb shell am start";
+            command_stop += " -a com.microsoft.hydralab.android.client.vpn.STOP";
+            command_stop += " -n com.microsoft.hydralab.android.client/.MainActivity";
+            ShellUtils.execLocalCommandWithResult(command_stop, logger);
+            ThreadUtils.safeSleep(2000);
+
+            // pull result
+            String local_dump_path = resultFolder.getAbsolutePath() + DumpPath;
+            adbOperateUtil.pullFileToDir(deviceInfo, local_dump_path, "/sdcard" + AndroidDumpPath, logger);
+            ThreadUtils.safeSleep(2000);
+
+            // parse
+            String local_result_path = resultFolder.getAbsolutePath() + ResultPath;
+            String[] lines;
             int count = 0;
             lines = Files.readAllLines(Paths.get(local_dump_path)).toArray(new String[0]);
             for (String line : lines) {
@@ -104,8 +107,8 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
             FileWriter writer = new FileWriter(file);
             writer.write(count > 0 ? "Fail" : "Success");
             writer.close();
-        } catch (IOException e) {
-            // todo
+        } catch (IOException | InterruptedException e) {
+            logger.warn("Exception from AndroidNetworkMonitor stop {} {}", e.getClass().getName(), e.getMessage());
         }
     }
 

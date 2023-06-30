@@ -9,13 +9,18 @@ import java.io.File;
 
 public class DummyNetworkMonitor implements NetworkMonitor {
 
-    public DummyNetworkMonitor() {
+    protected Logger logger;
+
+    public DummyNetworkMonitor(Logger logger) {
+        this.logger = logger;
     }
 
     @Override
     public void start() {
+        logger.info("Start VPN service");
     }
     @Override
     public void stop() {
+        logger.info("Stop VPN service");
     }
 }

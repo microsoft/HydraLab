@@ -153,7 +153,7 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public NetworkMonitor getNetworkMonitor(DeviceInfo deviceInfo, String rule, File folder, Logger logger) {
-        return new DummyNetworkMonitor();
+        return new DummyNetworkMonitor(logger);
     }
 
     @Override

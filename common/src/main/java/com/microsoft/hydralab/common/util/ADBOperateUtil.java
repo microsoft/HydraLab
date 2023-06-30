@@ -155,7 +155,6 @@ public class ADBOperateUtil {
         return runtime.exec(commandLine);
     }
 
-
     public Process executeCommandOnPC(String command, Logger logger) throws IOException {
         String commandLine = String.format("%s -H %s %s", mAdbPath.getAbsolutePath(), adbServerHost, command);
         getNotNullLogger(logger).info(commandLine);
