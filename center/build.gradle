@@ -52,9 +52,8 @@ dependencies {
 
     compile group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.2.2.RELEASE'
 
-    compile('io.springfox:springfox-swagger2:3.0.0')
-    compile('io.springfox:springfox-swagger-ui:3.0.0')
-    compile('io.springfox:springfox-boot-starter:3.0.0')
+    compile('org.springdoc:springdoc-openapi-core:1.1.49')
+    compile('org.springdoc:springdoc-openapi-ui:1.4.1')
 
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.1'
     compile group: 'org.yaml', name: 'snakeyaml', version: '1.25'

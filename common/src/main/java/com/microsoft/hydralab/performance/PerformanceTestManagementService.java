@@ -13,12 +13,14 @@ import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
+import com.microsoft.hydralab.performance.inspectors.AndroidMemoryHprofInspector;
 import com.microsoft.hydralab.performance.inspectors.AndroidMemoryInfoInspector;
 import com.microsoft.hydralab.performance.inspectors.IOSEnergyGaugeInspector;
 import com.microsoft.hydralab.performance.inspectors.IOSMemoryPerfInspector;
 import com.microsoft.hydralab.performance.inspectors.WindowsBatteryInspector;
 import com.microsoft.hydralab.performance.inspectors.WindowsMemoryInspector;
 import com.microsoft.hydralab.performance.parsers.AndroidBatteryInfoResultParser;
+import com.microsoft.hydralab.performance.parsers.AndroidMemoryHprofResultParser;
 import com.microsoft.hydralab.performance.parsers.AndroidMemoryInfoResultParser;
 import com.microsoft.hydralab.performance.parsers.IOSEnergyGaugeResultParser;
 import com.microsoft.hydralab.performance.parsers.IOSMemoryPerfResultParser;
@@ -39,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_DUMP;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_ANDROID_MEMORY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_EVENT_TIME;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_IOS_ENERGY;
@@ -46,6 +49,7 @@ import static com.microsoft.hydralab.performance.PerformanceInspector.Performanc
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_BATTERY;
 import static com.microsoft.hydralab.performance.PerformanceInspector.PerformanceInspectorType.INSPECTOR_WIN_MEMORY;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_BATTERY_INFO;
+import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_DUMP;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_INFO;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_EVENT_TIME;
 import static com.microsoft.hydralab.performance.PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_ENERGY;
@@ -57,34 +61,38 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private static final String PERFORMANCE_FOLDER_NAME = "performance";
     private static final Map<PerformanceInspector.PerformanceInspectorType, PerformanceResultParser.PerformanceResultParserType> inspectorParserTypeMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, PARSER_ANDROID_BATTERY_INFO,
-            INSPECTOR_ANDROID_MEMORY_INFO, PARSER_ANDROID_MEMORY_INFO,
             INSPECTOR_WIN_MEMORY, PARSER_WIN_MEMORY,
             INSPECTOR_WIN_BATTERY, PARSER_WIN_BATTERY,
             INSPECTOR_IOS_ENERGY, PARSER_IOS_ENERGY,
             INSPECTOR_IOS_MEMORY, PARSER_IOS_MEMORY,
+            INSPECTOR_ANDROID_MEMORY_INFO, PARSER_ANDROID_MEMORY_INFO,
+            INSPECTOR_ANDROID_MEMORY_DUMP, PARSER_ANDROID_MEMORY_DUMP,
             INSPECTOR_EVENT_TIME, PARSER_EVENT_TIME
     );
     private final Map<PerformanceInspector.PerformanceInspectorType, PerformanceInspector> performanceInspectorMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, new AndroidBatteryInfoInspector(),
-            INSPECTOR_ANDROID_MEMORY_INFO, new AndroidMemoryInfoInspector(),
             INSPECTOR_WIN_MEMORY, new WindowsMemoryInspector(),
             INSPECTOR_WIN_BATTERY, new WindowsBatteryInspector(),
+            INSPECTOR_ANDROID_MEMORY_INFO, new AndroidMemoryInfoInspector(),
+            INSPECTOR_ANDROID_MEMORY_DUMP, new AndroidMemoryHprofInspector(),
             INSPECTOR_IOS_MEMORY, new IOSMemoryPerfInspector(),
             INSPECTOR_IOS_ENERGY, new IOSEnergyGaugeInspector()
     );
     private final Map<PerformanceInspector.PerformanceInspectorType, DeviceType> inspectorDeviceTypeMap = Map.of(
             INSPECTOR_ANDROID_BATTERY_INFO, DeviceType.ANDROID,
             INSPECTOR_ANDROID_MEMORY_INFO, DeviceType.ANDROID,
+            INSPECTOR_ANDROID_MEMORY_DUMP, DeviceType.ANDROID,
             INSPECTOR_WIN_MEMORY, DeviceType.WINDOWS,
             INSPECTOR_WIN_BATTERY, DeviceType.WINDOWS,
             INSPECTOR_IOS_MEMORY, DeviceType.IOS,
             INSPECTOR_IOS_ENERGY, DeviceType.IOS
     );
     private final Map<PerformanceResultParser.PerformanceResultParserType, PerformanceResultParser> performanceResultParserMap = Map.of(
-            PARSER_ANDROID_MEMORY_INFO, new AndroidMemoryInfoResultParser(),
             PARSER_ANDROID_BATTERY_INFO, new AndroidBatteryInfoResultParser(),
             PARSER_WIN_MEMORY, new WindowsMemoryResultParser(),
             PARSER_WIN_BATTERY, new WindowsBatteryResultParser(),
+            PARSER_ANDROID_MEMORY_INFO, new AndroidMemoryInfoResultParser(),
+            PARSER_ANDROID_MEMORY_DUMP, new AndroidMemoryHprofResultParser(),
             PARSER_IOS_ENERGY, new IOSEnergyGaugeResultParser(),
             PARSER_IOS_MEMORY, new IOSMemoryPerfResultParser()
     );
@@ -92,6 +100,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
     private final Map<String, List<ScheduledFuture<?>>> inspectPerformanceTimerMap = new ConcurrentHashMap<>();
     private final Map<String, List<InspectionStrategy>> testLifeCycleStrategyMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, PerformanceTestResult>> testRunPerfResultMap = new ConcurrentHashMap<>();
+    private final TestNotifier testNotifier = new TestNotifier();
 
     public void initialize() {
         PerformanceInspectionService.getInstance().swapImplementation(this);

@@ -164,3 +164,49 @@ note right
 end note
 @enduml
 
+@startuml test_notify_uml
+class TestTask {
+    String notifyURL
+}
+
+class TestNotification {
+    String reportLink;
+    String testTaskId;
+    Object content;
+    long testStartTimeMillis;
+}
+
+class TestNotifier {
+    + void sendTestNotification(String notifyURL, TestNotification notification, Logger logger)
+}
+
+interface PerformanceTestListener {
+}
+
+PerformanceTestManagementService -u-> TestTask
+TestNotifier o- PerformanceTestManagementService
+TestNotifier -u-> TestNotification
+PerformanceTestManagementService -d-|> PerformanceTestListener
+@enduml
+
+@startuml test_notify_component
+skinparam componentStyle rectangle
+package "Hydra Lab Agent" {
+    component "Performance Management" {
+        [TestNotifier]
+        [PerformanceTestManagementService]
+    }
+}
+
+cloud "3rd Party Notify Service" as Notify {
+    component "Power Automate" as Azure {
+        [Teams Message]
+        [Email]
+    }
+}
+
+[TestNotifier] ...>() HTTP : POST
+Notify -l- HTTP
+
+@enduml
+

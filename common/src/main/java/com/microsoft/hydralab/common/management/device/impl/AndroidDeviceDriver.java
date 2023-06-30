@@ -23,6 +23,7 @@ import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.network.AndroidNetworkMonitor;
 import com.microsoft.hydralab.common.network.NetworkMonitor;
+import com.microsoft.hydralab.common.screen.ADBScreenRecorder;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
@@ -67,7 +68,7 @@ import static com.android.ddmlib.IDevice.PROP_BUILD_VERSION;
 import static com.android.ddmlib.IDevice.PROP_DEVICE_CPU_ABI_LIST;
 import static com.android.ddmlib.IDevice.PROP_DEVICE_MANUFACTURER;
 import static com.android.ddmlib.IDevice.PROP_DEVICE_MODEL;
-import static com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder.recordPackageName;
+import static com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder.RECORD_PACKAGE_NAME;
 
 public class AndroidDeviceDriver extends AbstractDeviceDriver {
 
@@ -361,6 +362,9 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder, Logger logger) {
+        if (PhoneAppScreenRecorder.RECORD_PACKAGE_NAME.equals(deviceInfo.getRunningTaskPackageName())) {
+            return new ADBScreenRecorder(this, this.adbOperateUtil, deviceInfo, logger, folder);
+        }
         return new PhoneAppScreenRecorder(this, this.adbOperateUtil, deviceInfo, folder, logger);
     }
 
@@ -657,7 +661,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     private void startRecordActivity(DeviceInfo deviceInfo, Logger logger) {
         try {
             adbOperateUtil.execOnDevice(Objects.requireNonNull(deviceInfo),
-                    "am start -n " + recordPackageName + "/.MainActivity",
+                    "am start -n " + RECORD_PACKAGE_NAME + "/.MainActivity",
                     new MultiLineNoCancelLoggingReceiver(logger), logger);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

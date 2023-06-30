@@ -24,7 +24,7 @@ import javax.transaction.Transactional;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension.class)
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "local"})
 @EnableCaching
 @Transactional
 @Rollback

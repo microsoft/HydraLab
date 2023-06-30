@@ -148,7 +148,7 @@ public class AppiumRunner extends TestRunner {
             myClass = urlClassLoader.loadClass(appiumCommand);
             junit.run(myClass);
             return true;
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -176,7 +176,7 @@ public class AppiumRunner extends TestRunner {
             launcher.registerTestExecutionListeners(listener);
             launcher.execute(request);
             return true;
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }

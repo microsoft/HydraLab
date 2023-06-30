@@ -84,8 +84,8 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public void wakeUpDevice(DeviceInfo deviceInfo, Logger logger) {
-        classLogger.info("Unlocking may not work as expected, please keep your device wake.");
-        getAppiumServerManager().getIOSDriver(deviceInfo, logger).unlockDevice();
+        // unlockDevice can wake up device, but sometimes it would make the phone go back to home which is not expected
+        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override

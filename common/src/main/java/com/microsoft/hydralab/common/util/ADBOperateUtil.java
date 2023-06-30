@@ -259,16 +259,43 @@ public class ADBOperateUtil {
     }
 
     public void pullFileToDir(DeviceInfo deviceInfo, String pathOnAgent, String pathOnDevice, Logger logger) throws IOException, InterruptedException {
-        IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
-        Assert.notNull(deviceByInfo, "No such device: " + deviceInfo);
+        final int[] retryTime = {1};
+        FlowUtil.retryWhenFalse(Const.AgentConfig.RETRY_TIME, () -> {
+            logger.info("Pull file round :" + retryTime[0]);
+            File fileOnAgent = new File(pathOnAgent);
+            if (fileOnAgent.exists()) {
+                fileOnAgent.delete();
+            }
+            try {
+                IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
+                Assert.notNull(deviceByInfo, "No such device: " + deviceInfo);
 
-        String comm = String.format("pull %s %s", pathOnDevice, pathOnAgent);
-        Process process = executeDeviceCommandOnPC(deviceInfo, comm, logger);
-        CommandOutputReceiver err = new CommandOutputReceiver(process.getErrorStream(), logger);
-        CommandOutputReceiver out = new CommandOutputReceiver(process.getInputStream(), logger);
-        err.start();
-        out.start();
-        process.waitFor(60, TimeUnit.SECONDS);
+                String comm = String.format("pull %s %s", pathOnDevice, pathOnAgent);
+                Process process = executeDeviceCommandOnPC(deviceInfo, comm, logger);
+                CommandOutputReceiver err = new CommandOutputReceiver(process.getErrorStream(), logger);
+                CommandOutputReceiver out = new CommandOutputReceiver(process.getInputStream(), logger);
+                err.start();
+                out.start();
+                process.waitFor(60, TimeUnit.SECONDS);
+            } catch (IOException | InterruptedException e) {
+                logger.error(e.getMessage(), e);
+            }
+            ThreadUtils.safeSleep(5000);
+
+            long phoneFileSize = getFileLength(deviceInfo, logger, pathOnDevice);
+            logger.info("PC file path:{} size:{} , Phone file path {} size {}", pathOnAgent, fileOnAgent.length(), pathOnDevice, phoneFileSize);
+            if (fileOnAgent.length() == phoneFileSize) {
+                logger.info("Pull file success!");
+            }
+            else {
+                if (retryTime[0] == Const.AgentConfig.RETRY_TIME) {
+                    logger.error("Pull file fail!");
+                }
+                retryTime[0]++;
+                throw new Exception("Pulled file sizes not matching between agent and device!");
+            }
+            return true;
+        });
     }
 
     public long getFileLength(DeviceInfo deviceInfo, Logger logger, String filePath) {

@@ -296,6 +296,8 @@ public class TestTaskController {
                 }
 
                 deviceAgentManagementService.cancelTestTaskById(testId, reason);
+                //run the task saved in queue
+                testTaskService.runTask();
             }
             if (!LogUtils.isLegalStr(testId, Const.RegexString.UUID, false)) {
                 logger.warn("test {} is canceled", testId);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
