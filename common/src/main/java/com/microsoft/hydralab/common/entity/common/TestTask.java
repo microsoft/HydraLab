@@ -114,8 +114,8 @@ public class TestTask implements Serializable {
     private List<InspectionStrategy> inspectionStrategies;
     @Transient
     private String notifyUrl;
-    private boolean enableNetworkTest;
-    private String networkTestRule;
+    private boolean enableNetworkMonitor;
+    private String networkMonitorRule;
 
     public TestTask() {
     }
