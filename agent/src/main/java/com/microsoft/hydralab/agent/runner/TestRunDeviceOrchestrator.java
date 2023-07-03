@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.FFmpegConcatUtil;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ImageUtil;
@@ -126,6 +127,36 @@ public class TestRunDeviceOrchestrator {
             return FFmpegConcatUtil.mergeVideosSideBySide(videoFilePaths, folder, logger).getAbsolutePath();
         } else {
             return testRunDevice.getScreenRecorder().finishRecording();
+        }
+    }
+
+    public void startNetworkMonitor(@NotNull TestRunDevice testRunDevice, String rule, File resultFolder, @Nullable Logger logger) {
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
+                NetworkMonitor networkMonitor = deviceDriverManager.getNetworkMonitor(testRunDevice1.getDeviceInfo(), rule, resultFolder, logger);
+                networkMonitor.start();
+                testRunDevice1.setNetworkMonitor(networkMonitor);
+            });
+        } else {
+            NetworkMonitor networkMonitor = deviceDriverManager.getNetworkMonitor(testRunDevice.getDeviceInfo(), rule, resultFolder, logger);
+            networkMonitor.start();
+            testRunDevice.setNetworkMonitor(networkMonitor);
+        }
+    }
+
+    public void stopNetworkMonitor(@NotNull TestRunDevice testRunDevice, @Nullable Logger logger) {
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
+                NetworkMonitor monitor = testRunDevice1.getNetworkMonitor();
+                if (monitor != null) {
+                    monitor.stop();
+                }
+            });
+        } else {
+            NetworkMonitor monitor = testRunDevice.getNetworkMonitor();
+            if (monitor != null) {
+                monitor.stop();
+            }
         }
     }
 

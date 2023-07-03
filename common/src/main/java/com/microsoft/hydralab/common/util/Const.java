@@ -86,6 +86,12 @@ public interface Const {
         String PHONE_FILE_NAME = "PHONE_test.mp4";
     }
 
+    interface NetworkMonitorConfig {
+        String AndroidDumpPath = "/Documents/dump.log";
+        String DumpPath = "/network_dump.log";
+        String ResultPath = "/network_result.log";
+    }
+
     interface DeviceStability {
         String BEHAVIOUR_GO_ONLINE = "went ONLINE";
         String BEHAVIOUR_GO_OFFLINE = "went OFFLINE";

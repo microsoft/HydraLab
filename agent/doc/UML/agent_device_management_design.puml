@@ -60,6 +60,7 @@ class TestRunDevice{
     DeviceInfo deviceInfo;
     WebDriver appiumDriver;
     ScreenRecorder screenRecorder;
+    NetworkMonitor networkMonitor;
     LogCollector logCollector;
 }
 
@@ -88,6 +89,7 @@ interface DeviceDriver{
       void pushFileToDevice(DeviceInfo deviceInfo, String pathOnAgent,String pathOnDevice,  Logger logger) throws Exception;
       void pullFileFromDevice(DeviceInfo deviceInfo, String pathOnDevice,Logger logger) throws Exception;
       ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder,Logger logger);
+      NetworkMonitor getNetworkMonitor(DeviceInfo deviceInfo, String rule, File folder,Logger logger);
       boolean grantAllTaskNeededPermissions(DeviceInfo deviceInfo, TestTask task,Logger logger);
       boolean grantAllPackageNeededPermissions(DeviceInfo deviceInfo, File packageFile,String targetPackage,boolean allowCustomizedPermissions,  Logger logger);
       Logger getDeviceLogger(DeviceInfo device);

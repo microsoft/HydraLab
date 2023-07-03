@@ -16,6 +16,7 @@ import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceDriver;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.LogUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
@@ -128,6 +129,9 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
                                             @Nullable Logger logger) throws Exception;
 
     public abstract ScreenRecorder getScreenRecorder(@NotNull DeviceInfo deviceInfo, @NotNull File folder,
+                                                     @Nullable Logger logger);
+
+    public abstract NetworkMonitor getNetworkMonitor(@NotNull DeviceInfo deviceInfo, String rule, @NotNull File folder,
                                                      @Nullable Logger logger);
 
     public boolean grantAllTaskNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull TestTask task,

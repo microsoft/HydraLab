@@ -13,6 +13,8 @@ import com.microsoft.hydralab.common.logger.impl.WindowsLogCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
+import com.microsoft.hydralab.common.network.DummyNetworkMonitor;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.screen.WindowsScreenRecorder;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
@@ -188,5 +190,10 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
     @Override
     public ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder, Logger logger) {
         return new WindowsScreenRecorder(this, deviceInfo, folder, logger);
+    }
+
+    @Override
+    public NetworkMonitor getNetworkMonitor(DeviceInfo deviceInfo, String rule, File folder, Logger logger) {
+        return new DummyNetworkMonitor(logger);
     }
 }

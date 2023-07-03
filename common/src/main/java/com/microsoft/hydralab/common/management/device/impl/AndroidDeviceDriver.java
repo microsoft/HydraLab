@@ -21,11 +21,14 @@ import com.microsoft.hydralab.common.logger.impl.ADBLogcatCollector;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
 import com.microsoft.hydralab.common.management.device.DeviceType;
+import com.microsoft.hydralab.common.network.AndroidNetworkMonitor;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.ADBScreenRecorder;
 import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
+import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
@@ -43,7 +46,11 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -362,6 +369,11 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     }
 
     @Override
+    public NetworkMonitor getNetworkMonitor(DeviceInfo deviceInfo, String rule, File folder, Logger logger) {
+        return new AndroidNetworkMonitor(this, this.adbOperateUtil, deviceInfo, rule, folder, logger);
+    }
+
+    @Override
     public ADBLogcatCollector getLogCollector(DeviceInfo deviceInfo, String pkgName, TestRun testRun,
                                               Logger logger) {
         return new ADBLogcatCollector(this.adbOperateUtil, deviceInfo, pkgName, testRun, logger);
@@ -600,31 +612,25 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     }
 
     @Override
-    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName,
-                                                       Logger logger) {
+    public boolean grantProjectionAndBatteryPermission(DeviceInfo deviceInfo, String recordPackageName, Logger logger) {
         boolean isProjectionPermissionGranted = false;
         stopPackageProcess(deviceInfo, recordPackageName, logger);
         wakeUpDevice(deviceInfo, logger);
         unlockDevice(deviceInfo, logger);
         startRecordActivity(deviceInfo, logger);
-        ThreadUtils.safeSleep(2000);
-        if (!clickNodeOnDeviceWithText(deviceInfo, logger, "Start now", "Allow", "允许")) {
+
+        while (true) {
+            ThreadUtils.safeSleep(2000);
             if (clickNodeOnDeviceWithText(deviceInfo, logger, "Allow display over other apps")) {
                 sendKeyEvent(deviceInfo, KEYCODE_BACK, logger);
                 sendKeyEvent(deviceInfo, KEYCODE_HOME, logger);
                 stopPackageProcess(deviceInfo, recordPackageName, logger);
                 startRecordActivity(deviceInfo, logger);
-                ThreadUtils.safeSleep(2000);
-                if (clickNodeOnDeviceWithText(deviceInfo, logger, "Start now")) {
-                    isProjectionPermissionGranted = true;
-                }
+            } else if (clickNodeOnDeviceWithText(deviceInfo, logger, "Start now", "Allow", "允许")) {
+                isProjectionPermissionGranted = true;
+            } else {
+                break;
             }
-        } else {
-            isProjectionPermissionGranted = true;
-        }
-
-        if (isProjectionPermissionGranted) {
-            clickNodeOnDeviceWithText(deviceInfo, logger, "Allow");
         }
         return isProjectionPermissionGranted;
     }

@@ -55,7 +55,7 @@ public class EspressoRunner extends TestRunner {
             reportLogger.info("Start xml report: parse listener");
             EspressoTestInfoProcessorListener listener =
                     new EspressoTestInfoProcessorListener(agentManagementService,
-                            adbOperateUtil, testRunDevice, testRun, testTask.getPkgName(),
+                            adbOperateUtil, testRunDevice, testRun, testTask,
                             testRunDeviceOrchestrator, performanceTestManagementService);
             instrumentationResultParser =
                     new InstrumentationResultParser(testTask.getTestSuite(), Collections.singletonList(listener)) {

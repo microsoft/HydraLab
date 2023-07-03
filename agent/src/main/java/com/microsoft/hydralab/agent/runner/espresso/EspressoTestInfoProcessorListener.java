@@ -9,6 +9,7 @@ import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.Const;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private final TestRunDevice testRunDevice;
     private final TestRun testRun;
+    private final TestTask testTask;
     private final Logger logger;
     private final String pkgName;
     private final AgentManagementService agentManagementService;
@@ -38,7 +40,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     private int pid;
 
     public EspressoTestInfoProcessorListener(AgentManagementService agentManagementService, ADBOperateUtil adbOperateUtil,
-                                             TestRunDevice testRunDevice, TestRun testRun, String pkgName,
+                                             TestRunDevice testRunDevice, TestRun testRun, TestTask testTask,
                                              TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                              PerformanceTestListener performanceTestListener) {
         this.testRunDevice = testRunDevice;
@@ -46,8 +48,9 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         this.agentManagementService = agentManagementService;
         this.adbOperateUtil = adbOperateUtil;
         this.testRun = testRun;
+        this.testTask = testTask;
         this.logger = testRun.getLogger();
-        this.pkgName = pkgName;
+        this.pkgName = testTask.getPkgName();
         this.performanceTestListener = performanceTestListener;
         setReportDir(testRun.getResultFolder());
         try {
@@ -71,6 +74,9 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         final String initializing = "Initializing";
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, initializing);
         testRun.addNewTimeTag(initializing, 0);
+        if (testTask.isEnableNetworkMonitor()) {
+            testRunDeviceOrchestrator.startNetworkMonitor(testRunDevice, testTask.getNetworkMonitorRule(), testRun.getResultFolder(), logger);
+        }
     }
 
     @Override
@@ -231,9 +237,11 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
     }
 
     private void releaseResource() {
+        if (testTask.isEnableNetworkMonitor()) {
+            testRunDeviceOrchestrator.stopNetworkMonitor(testRunDevice, logger);
+        }
         testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
         testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }
-
 }

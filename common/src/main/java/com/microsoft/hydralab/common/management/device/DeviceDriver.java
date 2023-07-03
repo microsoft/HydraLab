@@ -6,6 +6,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.management.AppiumServerManager;
+import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +48,9 @@ public interface DeviceDriver {
                             @Nullable Logger logger) throws Exception;
 
     ScreenRecorder getScreenRecorder(@NotNull DeviceInfo deviceInfo, @NotNull File folder,
+                                     @Nullable Logger logger);
+
+    NetworkMonitor getNetworkMonitor(@NotNull DeviceInfo deviceInfo, String rule, @NotNull File folder,
                                      @Nullable Logger logger);
 
     boolean grantAllTaskNeededPermissions(@NotNull DeviceInfo deviceInfo, @NotNull TestTask task,
