@@ -19,9 +19,11 @@ public class FFmpegConcatUtil {
     static final String fileName = Const.ScreenRecoderConfig.DEFAULT_FILE_NAME;
     public static File concatVideos(List<File> videos, File outputDir, Logger logger) {
         if (videos.isEmpty()) {
+            logger.error("No video file exists.");
             return null;
         }
         if (videos.size() == 1) {
+            logger.info("Single video file exists, directly return.");
             File file = videos.get(0);
             Assert.isTrue(file.renameTo(new File(file.getParentFile(), fileName)), "rename fail");
             return file;

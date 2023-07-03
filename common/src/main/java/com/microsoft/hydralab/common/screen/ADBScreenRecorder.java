@@ -7,6 +7,7 @@ import cn.hutool.core.thread.ThreadUtil;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.management.device.DeviceDriver;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
+import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.apache.commons.io.IOUtils;
@@ -80,8 +81,10 @@ public class ADBScreenRecorder implements ScreenRecorder {
                     // Blocking command
                     recordingProcess = adbOperateUtil.executeDeviceCommandOnPC(deviceInfo, recordCommand, logger);
                     logger.info("ADBDeviceScreenRecorder>> command: " + recordCommand);
-                    logger.info(IOUtils.toString(recordingProcess.getInputStream(), StandardCharsets.UTF_8));
-                    logger.error(IOUtils.toString(recordingProcess.getErrorStream(), StandardCharsets.UTF_8));
+                    CommandOutputReceiver err = new CommandOutputReceiver(recordingProcess.getErrorStream(), logger);
+                    CommandOutputReceiver out = new CommandOutputReceiver(recordingProcess.getInputStream(), logger);
+                    err.start();
+                    out.start();
                     deviceInfo.addCurrentProcess(recordingProcess);
 
                     try {
@@ -110,6 +113,7 @@ public class ADBScreenRecorder implements ScreenRecorder {
                 }
 
                 shouldInterrupt = false;
+                logger.info("video list size: " + list.size());
                 mergedVideo = FFmpegConcatUtil.concatVideos(list, baseFolder, logger);
                 ThreadUtil.safeSleep(2000);
                 if (mergedVideo != null && mergedVideo.exists()) {
@@ -153,10 +157,10 @@ public class ADBScreenRecorder implements ScreenRecorder {
         long time = System.currentTimeMillis();
         try {
             synchronized (lock) {
-                lock.wait(TimeUnit.MINUTES.toMillis(2));
+                lock.wait(TimeUnit.SECONDS.toMillis(30));
             }
         } catch (Exception e) {
-            logger.warn("Exception from recordingThread {} {}", e.getClass().getName(), e.getMessage());
+            logger.warn("Exception from finishRecording {} {}", e.getClass().getName(), e.getMessage());
             return null;
         }
         logger.info("Complete waiting: {}", (System.currentTimeMillis() - time) / 1000f);
