@@ -100,7 +100,7 @@ public class AppiumRunner extends TestRunner {
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");
             Junit5Listener junit5Listener =
-                    new Junit5Listener(agentManagementService, testRunDevice, testRun, testTask.getPkgName(),
+                    new Junit5Listener(agentManagementService, testRunDevice, testRun, testTask,
                             testRunDeviceOrchestrator, performanceTestManagementService, reportLogger);
 
             /** run the test */
@@ -114,7 +114,7 @@ public class AppiumRunner extends TestRunner {
             /** xml report: parse listener */
             reportLogger.info("Start init listener");
             AppiumListener listener =
-                    new AppiumListener(agentManagementService, testRunDevice, testRun, testTask.getPkgName(),
+                    new AppiumListener(agentManagementService, testRunDevice, testRun, testTask,
                             testRunDeviceOrchestrator, performanceTestManagementService, reportLogger);
 
             /** run the test */

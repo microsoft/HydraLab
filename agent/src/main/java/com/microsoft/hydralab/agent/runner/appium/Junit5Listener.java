@@ -7,6 +7,7 @@ import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
+import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.performance.PerformanceTestListener;
 import org.junit.platform.engine.TestExecutionResult;
@@ -26,6 +27,7 @@ public class Junit5Listener extends SummaryGeneratingListener {
     private final PerformanceTestListener performanceTestListener;
     private final TestRunDevice testRunDevice;
     private final TestRun testRun;
+    private final TestTask testTask;
     private final Logger logger;
     private final String pkgName;
     private long recordingStartTimeMillis;
@@ -36,13 +38,14 @@ public class Junit5Listener extends SummaryGeneratingListener {
     private TestRunDeviceOrchestrator testRunDeviceOrchestrator;
 
     public Junit5Listener(AgentManagementService agentManagementService, TestRunDevice testRunDevice, TestRun testRun,
-                          String pkgName, TestRunDeviceOrchestrator testRunDeviceOrchestrator,
+                          TestTask testTask, TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                           PerformanceTestListener performanceTestListener, Logger logger) {
         this.agentManagementService = agentManagementService;
         this.testRunDevice = testRunDevice;
         this.testRun = testRun;
         this.logger = logger;
-        this.pkgName = pkgName;
+        this.testTask = testTask;
+        this.pkgName = testTask.getPkgName();
         this.performanceTestListener = performanceTestListener;
         this.testRunDeviceOrchestrator = testRunDeviceOrchestrator;
     }
@@ -63,7 +66,9 @@ public class Junit5Listener extends SummaryGeneratingListener {
 
     public void startRecording(int maxTime) {
         logger.info("Start record screen");
-        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime <= 0 ? 30 * 60 : maxTime, logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime <= 0 ? 30 * 60 : maxTime, logger);
+        }
         logger.info("Start gif frames collection");
         testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
         logger.info("Start logcat collection");
@@ -119,7 +124,9 @@ public class Junit5Listener extends SummaryGeneratingListener {
             testRun.onTestEnded();
             testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
             testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
-            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+            if (!testTask.isDisableRecording()) {
+                testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+            }
             testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
             alreadyEnd = true;
         }

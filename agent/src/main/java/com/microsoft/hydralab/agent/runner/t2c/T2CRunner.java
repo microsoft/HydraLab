@@ -67,7 +67,9 @@ public class T2CRunner extends AppiumRunner {
                                 TestRun testRun, File deviceTestResultFolder, Logger logger) {
         pkgName = testTask.getPkgName();
         // Test start
-        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, deviceTestResultFolder, testTask.getTimeOutSecond(), logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, deviceTestResultFolder, testTask.getTimeOutSecond(), logger);
+        }
         long recordingStartTimeMillis = System.currentTimeMillis();
 
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
@@ -96,7 +98,9 @@ public class T2CRunner extends AppiumRunner {
         testRun.onTestEnded();
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
         testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
-        testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        }
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
         return testRunDevice.getGifFile();
     }
