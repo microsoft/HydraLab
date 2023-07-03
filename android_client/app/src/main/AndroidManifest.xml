@@ -25,10 +25,20 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme"
         android:supportsRtl="true"
-        android:largeHeap="true"
-        android:requestLegacyExternalStorage="true">
+        android:largeHeap="true">
         <activity
             android:name=".MainActivity"
+            android:configChanges="screenLayout|orientation|screenSize"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".VpnActivity"
             android:configChanges="screenLayout|orientation|screenSize"
             android:exported="true"
             android:launchMode="singleTop">
@@ -38,6 +48,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <receiver
             android:name=".CommandReceiver"
             android:enabled="true"

@@ -42,9 +42,9 @@ class HydraLabVpnService : VpnService() {
             START_NOT_STICKY
         } else {
             val config = VpnUserConfig(
-                intent?.extras?.getString("apps")?.split("-") ?: emptyList(),
-                intent?.extras?.getString("output")?:"/Documents/dump.log",
-                intent?.extras?.getString("dns")?:"114.114.114.114"
+                intent.extras?.getString("apps")?.split("-") ?: emptyList(),
+                intent.extras?.getString("output")?:"/Documents/dump.log",
+                intent.extras?.getString("dns")?:"114.114.114.114"
             )
             connect(config)
             START_STICKY
@@ -88,7 +88,7 @@ class HydraLabVpnService : VpnService() {
             .addAddress("10.0.0.2", 32)
             .addRoute("0.0.0.0", 0)
             .addDnsServer(config.dnsServer)
-            .setSession("VPN-Demo")
+            .setSession("HydraLabVPN")
             .setBlocking(true)
             .setConfigureIntent(mConfigureIntent)
             .also {

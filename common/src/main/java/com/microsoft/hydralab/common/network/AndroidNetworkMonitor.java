@@ -50,7 +50,7 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
         // launch vpn
         String command_launch = "adb shell am start";
         command_launch += " -a com.microsoft.hydralab.android.client.vpn.START";
-        command_launch += " -n com.microsoft.hydralab.android.client/.MainActivity";
+        command_launch += " -n com.microsoft.hydralab.android.client/.VpnActivity";
         ShellUtils.execLocalCommandWithResult(command_launch, logger);
         while (true) {
             ThreadUtils.safeSleep(1000);
@@ -63,7 +63,7 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
         // start vpn
         String command_start = "adb shell am start";
         command_start += " -a com.microsoft.hydralab.android.client.vpn.START";
-        command_start += " -n com.microsoft.hydralab.android.client/.MainActivity";
+        command_start += " -n com.microsoft.hydralab.android.client/.VpnActivity";
         command_start += String.format(" --es \"apps\" \"%s\"", rule);
         command_start += " --es \"output\" \"" + AndroidDumpPath + "\"";
         ShellUtils.execLocalCommandWithResult(command_start, logger);
@@ -84,7 +84,7 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
             // stop vpn
             String command_stop = "adb shell am start";
             command_stop += " -a com.microsoft.hydralab.android.client.vpn.STOP";
-            command_stop += " -n com.microsoft.hydralab.android.client/.MainActivity";
+            command_stop += " -n com.microsoft.hydralab.android.client/.VpnActivity";
             ShellUtils.execLocalCommandWithResult(command_stop, logger);
             ThreadUtils.safeSleep(2000);
 

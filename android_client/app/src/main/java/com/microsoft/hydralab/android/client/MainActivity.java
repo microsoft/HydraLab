@@ -65,7 +65,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_PERMISSIONS = 2;
     private static final int CODE_REQUEST_ALERT = 5;
     private static final int REQUEST_VPN_PROFILE = 9;
-    // members below will be initialized in onCreate()
+    // members below will be initialized in onCreate()MainActivity
     private MediaProjectionManager mMediaProjectionManager;
     private Button mButton;
     private Switch mAudioSwitch;
@@ -208,6 +208,23 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        Intent intent = getIntent();
+        if (intent != null) {
+            String action = intent.getAction();
+            if (action.equals(VPN_ACTION_START)) {
+                this.mVpnOutputPath = intent.getExtras().getString("output");
+                this.mVpnAppsStr = intent.getExtras().getString("apps");
+                Intent prepareIt = VpnService.prepare(this);
+                if (prepareIt != null) {
+                    startActivityForResult(prepareIt, REQUEST_VPN_PROFILE);
+                }
+                else {
+                    StartVpnService();
+                }
+            } else if (action.equals(VPN_ACTION_STOP)) {
+                StopVpnService();
+            }
+        }
     }
 
     public boolean requestAlertWindowPermission(Activity activity) {
