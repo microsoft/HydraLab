@@ -116,7 +116,9 @@ public class TestTask implements Serializable {
     private String notifyUrl;
     @Transient
     private boolean disableRecording = false;
+    @Transient
     private boolean enableNetworkMonitor;
+    @Transient
     private String networkMonitorRule;
 
     public TestTask() {
