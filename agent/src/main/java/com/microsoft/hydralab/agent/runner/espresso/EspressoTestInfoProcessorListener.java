@@ -69,7 +69,9 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
         logger.info("Start record screen");
-        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime <= 0 ? 30 * 60 : maxTime, logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime <= 0 ? 30 * 60 : maxTime, logger);
+        }
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, initializing);
@@ -241,7 +243,9 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             testRunDeviceOrchestrator.stopNetworkMonitor(testRunDevice, logger);
         }
         testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
-        testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        }
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }
 }

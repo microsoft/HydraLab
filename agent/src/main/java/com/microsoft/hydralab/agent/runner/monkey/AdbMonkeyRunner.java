@@ -59,7 +59,7 @@ public class AdbMonkeyRunner extends TestRunner {
         logger = testRun.getLogger();
 
         pkgName = testTask.getPkgName();
-        startTools(testRun, testTask.getTimeOutSecond(), logger);
+        startTools(testTask, testRun, testTask.getTimeOutSecond(), logger);
 
         /** run the test */
         logger.info("Start " + TEST_RUN_NAME);
@@ -83,7 +83,7 @@ public class AdbMonkeyRunner extends TestRunner {
             }
         }
         performanceTestManagementService.testRunFinished();
-        testRunEnded(testRunDevice, testRun);
+        testRunEnded(testTask, testRunDevice, testRun);
 
         /** set paths */
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
@@ -95,9 +95,11 @@ public class AdbMonkeyRunner extends TestRunner {
 
     }
 
-    public void startTools(TestRun testRun, int maxTime, Logger logger) {
+    public void startTools(TestTask testTask, TestRun testRun, int maxTime, Logger logger) {
         /** start Record **/
-        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime, logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime, logger);
+        }
         logger.info("Start record screen");
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
@@ -178,12 +180,14 @@ public class AdbMonkeyRunner extends TestRunner {
         return checkTime;
     }
 
-    public void testRunEnded(TestRunDevice testRunDevice, TestRun testRun) {
+    public void testRunEnded(TestTask testTask, TestRunDevice testRunDevice, TestRun testRun) {
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
         testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
-        testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        }
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }
 }
