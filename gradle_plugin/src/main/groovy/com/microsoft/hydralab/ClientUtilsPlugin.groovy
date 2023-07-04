@@ -154,14 +154,17 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('notifyUrl')) {
                     testConfig.notifyUrl = project.notifyUrl
                 }
+                if (project.hasProperty('disableRecording')) {
+                    testConfig.disableRecording = Boolean.parseBoolean(project.disableRecording)
+                }
                 if (project.hasProperty('enableFailingTask')) {
                     testConfig.enableFailingTask = Boolean.parseBoolean(project.enableFailingTask)
                 }
-                if (project.hasProperty('enableNetworkTest')) {
-                    testConfig.enableNetworkTest = Boolean.parseBoolean(project.enableNetworkTest)
+                if (project.hasProperty('enableNetworkMonitor')) {
+                    testConfig.enableNetworkMonitor = Boolean.parseBoolean(project.enableNetworkMonitor)
                 }
-                if (project.hasProperty('networkTestRule')) {
-                    testConfig.networkTestRule = project.networkTestRule
+                if (project.hasProperty('networkMonitorRule')) {
+                    testConfig.networkMonitorRule = project.networkMonitorRule
                 }
 
                 requiredParamCheck(apiConfig, testConfig)

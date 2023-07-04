@@ -51,9 +51,10 @@ public class TestConfig {
     public List<InspectionStrategy> inspectionStrategies = new ArrayList<>();
     public String inspectionStrategiesStr = "";
     public String notifyUrl = "";
+    public boolean disableRecording = false;
     public boolean enableFailingTask = true;
-    public boolean enableNetworkTest = false;
-    public String networkTestRule = "";
+    public boolean enableNetworkMonitor = false;
+    public String networkMonitorRule = "";
 
     public void constructField(HashMap<String, Object> map) {
         Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");
@@ -110,8 +111,9 @@ public class TestConfig {
                 "\ttestRound=" + testRound + "\n" +
                 "\tinspectionStrategiesStr=" + inspectionStrategiesStr + "\n" +
                 "\tnotifyUrl=" + notifyUrl + "\n" +
+                "\tdisableRecording=" + disableRecording + "\n" +
                 "\tenableFailingTask=" + enableFailingTask + "\n" +
-                "\tenableNetworkTest=" + enableNetworkTest +"\n" +
-                "\tnetworkTestRule=" + networkTestRule;
+                "\tenableNetworkMonitor=" + enableNetworkMonitor +"\n" +
+                "\tnetworkMonitorRule=" + networkMonitorRule;
     }
 }
