@@ -94,7 +94,7 @@ testSpec:
         description: test schedule
     notifyUrl: NOTIFY_URL
     enableFailingTask: true
-    enableNetworkTest: false
-    networkTestRule: NETWORK_TEST_RULE_NONE
+    enableNetworkMonitor: false
+    networkMonitorRule: NETWORK_TEST_RULE_NONE
 
 @endyaml
