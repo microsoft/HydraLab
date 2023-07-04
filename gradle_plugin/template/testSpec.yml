@@ -66,6 +66,7 @@ testSpec:
         appId: # <Required if inspectionStrategies is enabled>
         description: # <Required if inspectionStrategies is enabled>
   notifyUrl: # <Optional>
+  disableRecording: # <Optional>
   enableFailingTask: # <Optional>
   enableNetworkMonitor: # <Optional>
   networkMonitorRule: # <Optional>

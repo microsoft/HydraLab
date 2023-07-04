@@ -51,6 +51,7 @@ public class TestConfig {
     public List<InspectionStrategy> inspectionStrategies = new ArrayList<>();
     public String inspectionStrategiesStr = "";
     public String notifyUrl = "";
+    public boolean disableRecording = false;
     public boolean enableFailingTask = true;
     public boolean enableNetworkMonitor = false;
     public String networkMonitorRule = "";
@@ -110,6 +111,7 @@ public class TestConfig {
                 "\ttestRound=" + testRound + "\n" +
                 "\tinspectionStrategiesStr=" + inspectionStrategiesStr + "\n" +
                 "\tnotifyUrl=" + notifyUrl + "\n" +
+                "\tdisableRecording=" + disableRecording + "\n" +
                 "\tenableFailingTask=" + enableFailingTask + "\n" +
                 "\tenableNetworkMonitor=" + enableNetworkMonitor +"\n" +
                 "\tnetworkMonitorRule=" + networkMonitorRule;

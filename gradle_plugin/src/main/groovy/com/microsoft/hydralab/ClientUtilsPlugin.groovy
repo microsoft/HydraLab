@@ -154,6 +154,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('notifyUrl')) {
                     testConfig.notifyUrl = project.notifyUrl
                 }
+                if (project.hasProperty('disableRecording')) {
+                    testConfig.disableRecording = Boolean.parseBoolean(project.disableRecording)
+                }
                 if (project.hasProperty('enableFailingTask')) {
                     testConfig.enableFailingTask = Boolean.parseBoolean(project.enableFailingTask)
                 }
