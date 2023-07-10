@@ -317,25 +317,60 @@ public class TestDetailController {
 
     @PostMapping(value = {"/api/test/suggestion/provide"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result saveGPTSuggestion(@CurrentSecurityContext SysUser requestor,
-                                    @RequestParam(value = "testRunId", defaultValue = "") String testRunId,
-                                    @RequestParam(value = "suggestion", defaultValue = "") String suggestion) {
+                                    @RequestParam(value = "id", defaultValue = "") String id,
+                                    @RequestParam(value = "suggestion", defaultValue = "") String suggestion,
+                                    @RequestParam(value = "type", defaultValue = "") String type) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        if (StringUtils.isEmpty(testRunId) || StringUtils.isEmpty(suggestion)) {
+        if (StringUtils.isEmpty(id) || StringUtils.isEmpty(suggestion) || StringUtils.isEmpty(type)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Error param! Should not be empty");
         }
-        TestRun testRun = testDataService.findTestRunById(testRunId);
-        if (testRun == null) {
-            return Result.error(HttpStatus.BAD_REQUEST.value(), "Error param! TestRun not exist");
-        }
+        // try to convert type to enum
+        TestDataService.SuggestionType suggestionType;
         try {
-            testDataService.saveGPTSuggestion(testRun, suggestion);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+            suggestionType = TestDataService.SuggestionType.valueOf(type);
+        } catch (IllegalArgumentException e) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "Error param! Suggestion type not exist");
+        }
+
+        try {
+            saveGPTSuggestion(id, suggestion, suggestionType);
+        } catch (HydraLabRuntimeException e) {
+            return Result.error(e.getCode(), e.getMessage());
         }
         return Result.ok("Save suggestion success!");
+    }
+
+    private void saveGPTSuggestion(String id, String suggestion, TestDataService.SuggestionType suggestionType) {
+        switch (suggestionType) {
+            case TestRun:
+                TestRun testRun = testDataService.findTestRunById(id);
+                if (testRun == null) {
+                    throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Error param! TestRun not exist");
+                }
+                try {
+                    testDataService.saveTestRunGPTSuggestion(testRun, suggestion);
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                    throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Save TestRun suggestion meet exception!", e);
+                }
+                break;
+            case TestCase:
+                AndroidTestUnit testCase = testDataService.findTestCaseById(id);
+                if (testCase == null) {
+                    throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Error param! TestCase not exist");
+                }
+                try {
+                    testDataService.saveTestCaseGPTSuggestion(testCase, suggestion);
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                    throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Save TestCase suggestion meet exception!", e);
+                }
+                break;
+            default:
+                throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Error param! Suggestion type not exist");
+        }
     }
 
     private File loadGraphFile(String fileId) {
