@@ -256,13 +256,28 @@ public class TestDataService {
         return perfHistoryList;
     }
 
+    public enum SuggestionType {
+        TestRun,
+        TestCase
+    }
+
     @CacheEvict(key = "#testRun.testTaskId")
-    public void saveGPTSuggestion(TestRun testRun, String suggestion) {
+    public void saveTestRunGPTSuggestion(TestRun testRun, String suggestion) {
         testRun.setSuggestion(suggestion);
         testRunRepository.save(testRun);
     }
 
+    @CacheEvict(key = "#testCase.testTaskId")
+    public void saveTestCaseGPTSuggestion(AndroidTestUnit testCase, String suggestion) {
+        testCase.setSuggestion(suggestion);
+        androidTestUnitRepository.save(testCase);
+    }
+
     public TestRun findTestRunById(String testRunId) {
         return testRunRepository.findById(testRunId).orElse(null);
+    }
+
+    public AndroidTestUnit findTestCaseById(String testCaseId) {
+        return androidTestUnitRepository.findById(testCaseId).orElse(null);
     }
 }
