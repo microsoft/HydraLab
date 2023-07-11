@@ -19,7 +19,7 @@ public class AzureOpenAIServiceClient {
     private final String endpoint;
     private final String deployment;
     private final String apiVersion;
-    private final OkHttpClient client = new OkHttpClient();
+    OkHttpClient client = new OkHttpClient();
 
     public AzureOpenAIServiceClient(String apiKey, String deployment, String endpoint, String apiVersion) {
         this.apiKey = apiKey;
@@ -29,10 +29,13 @@ public class AzureOpenAIServiceClient {
     }
 
     public String chatCompletion(ChatRequest request) {
-        MediaType mediaType = MediaType.parse("application/json");
-        String url = String.format("%s/openai/deployments/%s/chat/completions?api-version=%s", endpoint, deployment, apiVersion);
+        return callAzureAPI("chat/completions", JSON.toJSONString(request));
+    }
 
-        String requestBodyString = JSON.toJSONString(request);
+    private String callAzureAPI(String operation, String requestBodyString) {
+        MediaType mediaType = MediaType.parse("application/json");
+        String url = String.format("%s/openai/deployments/%s/%s?api-version=%s", endpoint, deployment, operation, apiVersion);
+
         logger.info("Request body: {}", requestBodyString);
 
         RequestBody body = RequestBody.create(requestBodyString, mediaType);
