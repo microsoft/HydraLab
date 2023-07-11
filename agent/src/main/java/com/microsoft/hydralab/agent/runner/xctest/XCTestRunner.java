@@ -51,12 +51,14 @@ public class XCTestRunner extends TestRunner {
         List<String> result = runXctest(testRunDevice, logger, testTask, testRun);
         analysisXctestResult(result, testRun);
         FileUtil.deleteFile(new File(folderPath));
-        finishTest(testRunDevice, testRun);
+        finishTest(testRunDevice, testTask, testRun);
     }
 
     private void initializeTest(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
         logger = testRun.getLogger();
-        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), testTask.getTimeOutSecond(), logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), testTask.getTimeOutSecond(), logger);
+        }
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, testTask.getPkgName(), testRun, logger);
         testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
@@ -168,14 +170,16 @@ public class XCTestRunner extends TestRunner {
         testRun.setTotalCount(totalCases);
     }
 
-    private void finishTest(TestRunDevice testRunDevice, TestRun testRun) {
+    private void finishTest(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
         testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
         testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(testRunDevice.getGifFile()));
         testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
-        testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        }
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }
 }

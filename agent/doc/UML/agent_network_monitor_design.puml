@@ -1,0 +1,40 @@
+@startuml agent_network_monitor_design
+
+class TestTask {
+    Boolean enableNetworkMonitor
+    String networkMonitorRule
+}
+
+class TestRunDeviceOrchestrator {
+}
+
+class EspressoTestInfoProcessorListener {
+    void startRecording(int maxTime)
+    void releaseResource()
+}
+
+interface XmlTestRunListener {
+}
+
+interface NetworkMonitor {
+    void start()
+    void stop()
+}
+
+class AndroidNetworkMonitor {
+    void start()
+    void stop()
+}
+
+class AndroidDeviceDriver {
+    NetworkMonitor getNetworkMonitor(DeviceInfo deviceInfo, String rule, File folder, Logger logger)
+}
+
+EspressoTestInfoProcessorListener -u-> TestRunDeviceOrchestrator
+TestRunDeviceOrchestrator -u-> AndroidDeviceDriver
+AndroidDeviceDriver -u-> AndroidNetworkMonitor
+AndroidNetworkMonitor -d-|> NetworkMonitor
+EspressoTestInfoProcessorListener -u-> TestTask
+EspressoTestInfoProcessorListener -d-|> XmlTestRunListener
+
+@enduml

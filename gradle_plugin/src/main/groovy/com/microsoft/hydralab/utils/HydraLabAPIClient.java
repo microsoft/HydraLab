@@ -233,8 +233,9 @@ public class HydraLabAPIClient {
         jsonElement.addProperty("needClearData", testConfig.needClearData);
         jsonElement.addProperty("testRunnerName", testConfig.testRunnerName);
         jsonElement.addProperty("testScope", testConfig.testScope);
-        jsonElement.addProperty("enableNetworkTest", testConfig.enableNetworkTest);
-        jsonElement.addProperty("networkTestRule", testConfig.networkTestRule);
+        jsonElement.addProperty("disableRecording", testConfig.disableRecording);
+        jsonElement.addProperty("enableNetworkMonitor", testConfig.enableNetworkMonitor);
+        jsonElement.addProperty("networkMonitorRule", testConfig.networkMonitorRule);
         jsonElement.addProperty("notifyUrl", testConfig.notifyUrl);
 
         try {

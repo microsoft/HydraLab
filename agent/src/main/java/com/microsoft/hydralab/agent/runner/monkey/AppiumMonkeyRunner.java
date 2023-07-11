@@ -44,7 +44,9 @@ public class AppiumMonkeyRunner extends AppiumRunner {
 
         long recordingStartTimeMillis = System.currentTimeMillis();
 
-        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, deviceTestResultFolder, testTask.getTimeOutSecond(), logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, deviceTestResultFolder, testTask.getTimeOutSecond(), logger);
+        }
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
         testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
@@ -76,7 +78,9 @@ public class AppiumMonkeyRunner extends AppiumRunner {
         runAppiumMonkey(testRunDevice, pkgName, testTask.getMaxStepCount(), logger);
 
         testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
-        testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        }
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
 
         // Success status

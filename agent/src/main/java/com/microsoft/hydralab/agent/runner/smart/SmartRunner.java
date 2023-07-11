@@ -61,7 +61,7 @@ public class SmartRunner extends TestRunner {
         pkgName = testTask.getPkgName();
 
         /** start Record **/
-        startTools(testRunDevice, testRun, testTask.getTimeOutSecond(), logger);
+        startTools(testRunDevice, testTask, testRun, logger);
 
         /** run the test */
         logger.info("Start Smart test");
@@ -78,7 +78,7 @@ public class SmartRunner extends TestRunner {
             checkTestTaskCancel(testTask);
             runSmartTestOnce(i, testRunDevice, testRun, logger);
         }
-        testRunEnded(testRunDevice, testRun);
+        testRunEnded(testRunDevice, testTask, testRun);
         /** set paths */
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
         testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
@@ -89,13 +89,15 @@ public class SmartRunner extends TestRunner {
 
     }
 
-    public void startTools(TestRunDevice testRunDevice, TestRun testRun, int maxTime, Logger logger) {
+    public void startTools(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun, Logger logger) {
         logger.info("Start adb logcat collection");
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, testRun.getLogger());
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
 
         logger.info("Start record screen");
-        testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime, testRun.getLogger());
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), testTask.getTimeOutSecond(), testRun.getLogger());
+        }
         recordingStartTimeMillis = System.currentTimeMillis();
         final String initializing = "Initializing";
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, initializing);
@@ -180,14 +182,16 @@ public class SmartRunner extends TestRunner {
 
     }
 
-    public void testRunEnded(TestRunDevice testRunDevice, TestRun testRun) {
+    public void testRunEnded(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
         performanceTestManagementService.testRunFinished();
 
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
         testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
-        testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        if (!testTask.isDisableRecording()) {
+            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+        }
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }
 

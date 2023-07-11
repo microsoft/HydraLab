@@ -45,6 +45,7 @@ public class AndroidTestUnit implements Serializable {
     protected String testName;
     @Transient
     protected String stack;
+    private String suggestion;
 
     private String memoryDumpReport;
     private String cpuTraceReport;

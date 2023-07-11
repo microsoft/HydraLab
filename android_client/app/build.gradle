@@ -1,20 +1,26 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 28
+    namespace 'com.microsoft.hydralab.android.client'
+
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.microsoft.hydralab.android.client"
         minSdkVersion 21
-        targetSdkVersion 28
+        //noinspection ExpiredTargetSdkVersion
+        targetSdkVersion 29
         versionCode rootProject.ext.clientVersionCode
         versionName rootProject.ext.clientVersionNumber
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
@@ -28,7 +34,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    namespace 'com.microsoft.hydralab.android.client'
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.4.0'
+    }
 
     lint {
         xmlReport true
@@ -37,6 +50,9 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
+    implementation 'androidx.annotation:annotation-jvm:1.6.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     androidTestImplementation 'androidx.test:runner:1.4.0'

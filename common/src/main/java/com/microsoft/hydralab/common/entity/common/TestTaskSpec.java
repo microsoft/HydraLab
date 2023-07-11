@@ -49,6 +49,9 @@ public class TestTaskSpec {
     public String testSuiteClass;
     public Map<String, List<DeviceAction>> deviceActions;
     public List<InspectionStrategy> inspectionStrategies;
+    public boolean disableRecording = false;
+    public boolean enableNetworkMonitor;
+    public String networkMonitorRule;
 
     public void updateWithDefaultValues() {
         determineScopeOfTestCase();
