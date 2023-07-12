@@ -173,7 +173,7 @@ class TestNotification {
     String reportLink;
     String testTaskId;
     Object content;
-    long testStartTimeMillis;
+    String testStartTime;
 }
 
 class TestNotifier {
@@ -199,7 +199,7 @@ package "Hydra Lab Agent" {
 }
 
 cloud "3rd Party Notify Service" as Notify {
-    component "Power Automate" as Azure {
+    component "Azure Function" as Azure {
         [Teams Message]
         [Email]
     }
