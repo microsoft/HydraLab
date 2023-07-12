@@ -5,13 +5,13 @@ package com.microsoft.hydralab.notification;
 
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.util.RestTemplateConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 public class TestNotifier {
@@ -30,6 +30,9 @@ public class TestNotifier {
             HttpEntity<String> entity = new HttpEntity<>(JSONObject.toJSONString(notification), headers);
             ResponseEntity<JSONObject> response = restTemplateHttps.exchange(notifyURL, HttpMethod.POST, entity, JSONObject.class);
             logger.info("Send notification with response {}", response);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                logger.error("Failed to send notification, status code is: {}", response.getStatusCode());
+            }
         } catch (Exception e) {
             logger.error("Failed to send notification with {} to {}", notification, notifyURL, e);
         }
@@ -41,5 +44,14 @@ public class TestNotifier {
         // The content of the notification. It can be a list of performance results.
         public Object content;
         public String testStartTime;
+
+        @Override
+        public String toString() {
+            return "TestNotification{" +
+                    "reportLink='" + reportLink + '\'' +
+                    ", testTaskId='" + testTaskId + '\'' +
+                    ", testStartTime='" + testStartTime + '\'' +
+                    '}';
+        }
     }
 }
