@@ -120,6 +120,7 @@ public class AppConfiguration {
         agentManagementService.setDeviceStoragePath(appOptions.getDeviceStorageLocation());
 
         agentManagementService.setEnvInfo(envCapabilityDiscoveryService.getEnvInfo());
+        agentManagementService.setRegistryServer(registryServer);
 
         return agentManagementService;
     }

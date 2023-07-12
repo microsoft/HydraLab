@@ -34,6 +34,7 @@ public class AgentManagementService {
     private final Map<String, DeviceInfo> deviceInfoMap = new HashMap<>();
     protected File testBaseDir;
     protected String testBaseDirUrlMapping;
+    protected String registryServer;
     protected File deviceLogBaseDir;
     protected File screenshotDir;
     protected File preAppDir;
@@ -138,6 +139,14 @@ public class AgentManagementService {
         this.testBaseDirUrlMapping = testBaseDirUrlMapping;
     }
 
+
+    public String getRegistryServer() {
+        return registryServer;
+    }
+
+    public void setRegistryServer(String registryServer) {
+        this.registryServer = registryServer;
+    }
 
     public File getDeviceLogBaseDir() {
         return deviceLogBaseDir;

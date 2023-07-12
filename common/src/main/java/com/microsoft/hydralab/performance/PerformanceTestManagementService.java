@@ -14,6 +14,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
+import com.microsoft.hydralab.notification.TestNotifier;
 import com.microsoft.hydralab.performance.inspectors.AndroidBatteryInfoInspector;
 import com.microsoft.hydralab.performance.inspectors.AndroidMemoryHprofInspector;
 import com.microsoft.hydralab.performance.inspectors.AndroidMemoryInfoInspector;
@@ -28,6 +29,7 @@ import com.microsoft.hydralab.performance.parsers.IOSEnergyGaugeResultParser;
 import com.microsoft.hydralab.performance.parsers.IOSMemoryPerfResultParser;
 import com.microsoft.hydralab.performance.parsers.WindowsBatteryResultParser;
 import com.microsoft.hydralab.performance.parsers.WindowsMemoryResultParser;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -247,7 +249,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         inspectWithLifeCycle(InspectionStrategy.WhenType.TEST_FAILURE, description);
     }
 
-    public void testTearDown(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
+    public void testTearDown(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun, String registryServer) {
         List<ScheduledFuture<?>> timerList = inspectPerformanceTimerMap.get(testRun.getId());
         if (timerList != null) {
             for (ScheduledFuture<?> timer : timerList) {
@@ -256,6 +258,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
         }
         List<PerformanceTestResult> resultList = parseForTestRun(testRun);
         savePerformanceTestResults(resultList, testRunDevice, testRun, testTask, getLogger(testRun));
+        sendPerformanceNotification(resultList, testTask, registryServer, getLogger(testRun));
 
         inspectPerformanceTimerMap.remove(testRun.getId());
         testLifeCycleStrategyMap.remove(testRun.getId());
@@ -349,5 +352,20 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                 logger.error("Failed to save performance test results", e);
             }
         }
+    }
+
+    private void sendPerformanceNotification(List<PerformanceTestResult> resultList, TestTask testTask, String registryServer, Logger logger) {
+        String notifyUrl = testTask.getNotifyUrl();
+        if (StringUtils.isBlank(notifyUrl)) {
+            logger.info("No notify url found, skip sending performance notification");
+            return;
+        }
+
+        TestNotifier.TestNotification notification = new TestNotifier.TestNotification();
+        notification.testTaskId = testTask.getId();
+        notification.reportLink = "http://" + registryServer + "/portal/index.html#/info/task/" + testTask.getId();
+        notification.content = resultList;
+        notification.testStartTime = testTask.getDisplayStartTime();
+        testNotifier.sendTestNotification(testTask.getNotifyUrl(), notification, logger);
     }
 }
