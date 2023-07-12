@@ -363,7 +363,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
 
         TestNotifier.TestNotification notification = new TestNotifier.TestNotification();
         notification.testTaskId = testTask.getId();
-        notification.reportLink = registryServer + "/" + testTask.getId();
+        notification.reportLink = "http://" + registryServer + "/portal/index.html#/info/task/" + testTask.getId();
         notification.content = resultList;
         notification.testStartTime = testTask.getDisplayStartTime();
         testNotifier.sendTestNotification(testTask.getNotifyUrl(), notification, logger);

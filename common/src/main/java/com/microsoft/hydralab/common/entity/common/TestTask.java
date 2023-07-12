@@ -171,6 +171,7 @@ public class TestTask implements Serializable {
         }
         testTask.setTestScope(testTaskSpec.testScope);
         testTask.setInspectionStrategies(testTaskSpec.inspectionStrategies);
+        testTask.setNotifyUrl(testTaskSpec.notifyUrl);
         testTask.setDisableRecording(testTaskSpec.disableRecording);
         testTask.setEnableNetworkMonitor(testTaskSpec.enableNetworkMonitor);
         testTask.setNetworkMonitorRule(testTaskSpec.networkMonitorRule);
@@ -209,6 +210,7 @@ public class TestTask implements Serializable {
         testTaskSpec.testRunnerName = testTask.getTestRunnerName();
         testTaskSpec.testScope = testTask.getTestScope();
         testTaskSpec.inspectionStrategies = testTask.getInspectionStrategies();
+        testTaskSpec.notifyUrl = testTask.getNotifyUrl();
         testTaskSpec.disableRecording = testTask.isDisableRecording();
         testTaskSpec.enableNetworkMonitor = testTask.isEnableNetworkMonitor();
         testTaskSpec.networkMonitorRule = testTask.getNetworkMonitorRule();

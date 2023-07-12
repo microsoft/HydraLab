@@ -32,6 +32,6 @@ public class TestNotifierTest {
         notification.reportLink = "http://hydradevicenetwork.azurewebsites.net/portal/index.html#/";
         notification.content = resultList;
         notification.testStartTime = "2023-07-01";
-        testNotifier.sendTestNotification("111", notification, LoggerFactory.getLogger(TestNotifierTest.class));
+        testNotifier.sendTestNotification("http://localhost:7071/api/PerfAlertReporter", notification, LoggerFactory.getLogger(TestNotifierTest.class));
     }
 }
