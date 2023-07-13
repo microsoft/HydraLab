@@ -13,6 +13,7 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.ShellUtils;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -69,6 +70,13 @@ public class XCTestRunner extends TestRunner {
 
     @Override
     protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger logger) {
+        checkTestTaskCancel(testTask);
+        if (testTask.getNeedUninstall()) {
+            testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getPkgName(), logger);
+            ThreadUtils.safeSleep(3000);
+        } else if (testTask.getNeedClearData()) {
+            testRunDeviceOrchestrator.resetPackage(testRunDevice, testTask.getPkgName(), logger);
+        }
     }
 
     private void unzipXctestFolder(File zipFile, TestRun testRun, Logger logger) {
