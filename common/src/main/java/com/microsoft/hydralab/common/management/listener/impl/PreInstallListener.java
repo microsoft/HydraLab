@@ -50,7 +50,6 @@ public class PreInstallListener implements DeviceStatusListener {
             try {
                 FlowUtil.retryAndSleepWhenFalse(3, 10, () -> deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger));
                 classLogger.info("Pre-Install {} successfully", appFile.getAbsolutePath());
-                break;
             } catch (Exception e) {
                 String errorMessage = String.format("Pre-Install %s failed", appFile.getAbsolutePath());
                 classLogger.error(errorMessage, e);
