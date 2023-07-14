@@ -6,6 +6,7 @@ import static android.media.MediaFormat.MIMETYPE_AUDIO_AAC;
 import static android.media.MediaFormat.MIMETYPE_VIDEO_AVC;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -42,6 +43,7 @@ public class ScreenRecorderService extends Service {
     public static final String VIDEO_AVC = MIMETYPE_VIDEO_AVC; // H.264 Advanced Video Coding
     public static final String AUDIO_AAC = MIMETYPE_AUDIO_AAC; // H.264 Advanced Audio Coding
     private static final String TAG = "ScreenRecorder";
+    private static final String CHANNEL_ID = "RECORDER_CHANNEL_ID";
     private static final boolean VERBOSE = true;
     private static final int INVALID_INDEX = -1;
     private static final int MSG_START = 0;
@@ -91,6 +93,7 @@ public class ScreenRecorderService extends Service {
     private int mProjectionResultCode;
     private PowerManager.WakeLock wakeLock;
     private long mVideoPtsOffset, mAudioPtsOffset;
+    private Notification notification;
 
     public static File getSavingDir() {
         File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "test_lab");
@@ -182,6 +185,8 @@ public class ScreenRecorderService extends Service {
                 dstPath = new File(getSavingDir(), fileName).getAbsolutePath();
             }
 
+            startForeground(Notifications.id, mNotifications.createRecordingNotification());
+
             if (mMediaProjection == null) {
                 Intent data = intent.getParcelableExtra("data");
                 int resultCode = intent.getIntExtra("resultCode", 0);
@@ -205,8 +210,6 @@ public class ScreenRecorderService extends Service {
             mAudioEncoder = audio == null ? null : new MicRecorder(audio);
 
             start();
-
-            startForeground(Notifications.id, mNotifications.createRecordingNotification());
         }
         return START_STICKY;
     }
