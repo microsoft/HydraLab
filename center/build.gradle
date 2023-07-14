@@ -27,6 +27,7 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
+    implementation 'org.dom4j:dom4j:2.1.4'
     testCompile 'org.mockito:mockito-core:3.12.4'
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
     testCompile 'me.paulschwarz:spring-dotenv:2.3.0'
