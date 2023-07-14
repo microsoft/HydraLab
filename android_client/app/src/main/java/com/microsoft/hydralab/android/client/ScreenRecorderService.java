@@ -43,7 +43,6 @@ public class ScreenRecorderService extends Service {
     public static final String VIDEO_AVC = MIMETYPE_VIDEO_AVC; // H.264 Advanced Video Coding
     public static final String AUDIO_AAC = MIMETYPE_AUDIO_AAC; // H.264 Advanced Audio Coding
     private static final String TAG = "ScreenRecorder";
-    private static final String CHANNEL_ID = "RECORDER_CHANNEL_ID";
     private static final boolean VERBOSE = true;
     private static final int INVALID_INDEX = -1;
     private static final int MSG_START = 0;
@@ -93,7 +92,6 @@ public class ScreenRecorderService extends Service {
     private int mProjectionResultCode;
     private PowerManager.WakeLock wakeLock;
     private long mVideoPtsOffset, mAudioPtsOffset;
-    private Notification notification;
 
     public static File getSavingDir() {
         File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "test_lab");
