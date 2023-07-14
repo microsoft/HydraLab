@@ -6,6 +6,7 @@ import static android.media.MediaFormat.MIMETYPE_AUDIO_AAC;
 import static android.media.MediaFormat.MIMETYPE_VIDEO_AVC;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -182,6 +183,8 @@ public class ScreenRecorderService extends Service {
                 dstPath = new File(getSavingDir(), fileName).getAbsolutePath();
             }
 
+            startForeground(Notifications.id, mNotifications.createRecordingNotification());
+
             if (mMediaProjection == null) {
                 Intent data = intent.getParcelableExtra("data");
                 int resultCode = intent.getIntExtra("resultCode", 0);
@@ -205,8 +208,6 @@ public class ScreenRecorderService extends Service {
             mAudioEncoder = audio == null ? null : new MicRecorder(audio);
 
             start();
-
-            startForeground(Notifications.id, mNotifications.createRecordingNotification());
         }
         return START_STICKY;
     }

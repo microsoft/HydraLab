@@ -63,6 +63,9 @@ public class TestTaskSpec {
         if (StringUtils.isBlank(testSuiteClass)) {
             testSuiteClass = pkgName;
         }
+        if (enableNetworkMonitor && StringUtils.isBlank(networkMonitorRule)) {
+            networkMonitorRule = pkgName;
+        }
     }
 
     private void determineScopeOfTestCase() {
