@@ -48,10 +48,14 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
         logger.info("Start VPN service");
 
         // launch vpn
-        String command_launch = "adb shell am start";
+        String command_launch = "am start";
         command_launch += " -a com.microsoft.hydralab.android.client.vpn.START";
         command_launch += " -n com.microsoft.hydralab.android.client/.VpnActivity";
-        ShellUtils.execLocalCommandWithResult(command_launch, logger);
+        try {
+            adbOperateUtil.execOnDevice(deviceInfo, command_launch, new MultiLineNoCancelLoggingReceiver(logger), logger);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
         while (true) {
             ThreadUtils.safeSleep(1000);
             boolean clicked = grantPermissionClick();
@@ -61,12 +65,16 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
         }
 
         // start vpn
-        String command_start = "adb shell am start";
+        String command_start = "am start";
         command_start += " -a com.microsoft.hydralab.android.client.vpn.START";
         command_start += " -n com.microsoft.hydralab.android.client/.VpnActivity";
         command_start += String.format(" --es \"apps\" \"%s\"", rule);
         command_start += " --es \"output\" \"" + AndroidDumpPath + "\"";
-        ShellUtils.execLocalCommandWithResult(command_start, logger);
+        try {
+            adbOperateUtil.execOnDevice(deviceInfo, command_start, new MultiLineNoCancelLoggingReceiver(logger), logger);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
         while (true) {
             ThreadUtils.safeSleep(1000);
             boolean clicked = grantPermissionClick();
@@ -82,10 +90,14 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
 
         try {
             // stop vpn
-            String command_stop = "adb shell am start";
+            String command_stop = "am start";
             command_stop += " -a com.microsoft.hydralab.android.client.vpn.STOP";
             command_stop += " -n com.microsoft.hydralab.android.client/.VpnActivity";
-            ShellUtils.execLocalCommandWithResult(command_stop, logger);
+            try {
+                adbOperateUtil.execOnDevice(deviceInfo, command_stop, new MultiLineNoCancelLoggingReceiver(logger), logger);
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
             ThreadUtils.safeSleep(2000);
 
             // pull result
