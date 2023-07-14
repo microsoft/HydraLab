@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,6 +52,7 @@ public class AppiumServerManager {
     private final Map<String, IOSDriver> iOSDrivers = new ConcurrentHashMap<>();
     private final Map<String, AndroidDriver> androidDrivers = new ConcurrentHashMap<>();
     private final Map<String, WindowsDriver> windowsAppDrivers = new ConcurrentHashMap<>();
+    private final Map<String, Date> driverTimestamp = new ConcurrentHashMap<>();
     private AppiumDriverLocalService service;
     private int appiumServerPort = 10086;
     private String appiumServerHost = "127.0.0.1";
@@ -111,7 +113,16 @@ public class AppiumServerManager {
         if (iosDriver != null && isDriverAlive(iosDriver)) {
             logger.info(iosDriver.toString());
             logger.info(iosDriver.getStatus().toString());
-            return iosDriver;
+            if (isDriverExpired(deviceInfo)) {
+                try {
+                    logger.info("driver expired, quit old driver and create a new one");
+                    quitIOSDriver(deviceInfo, logger);
+                } catch (Exception e) {
+                    logger.error("quit old driver failed", e);
+                }
+            } else {
+                return iosDriver;
+            }
         }
 
         int wdaPort = IOSUtils.getWdaPortByUdid(udid, logger);
@@ -150,6 +161,7 @@ public class AppiumServerManager {
 
                 logger.info("Create Driver, SessionID: " + iosDriver.getSessionId());
                 iOSDrivers.put(udid, iosDriver);
+                driverTimestamp.put(udid, new Date());
                 sessionCreated = true;
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
@@ -296,6 +308,14 @@ public class AppiumServerManager {
         }
     }
 
+    public Boolean isDriverExpired(DeviceInfo deviceInfo) {
+        Date date = driverTimestamp.get(deviceInfo.getSerialNum());
+        if (date == null || new Date().getTime() - date.getTime() < 1000 * 60 * 60 * 24) {
+            return false;
+        }
+        return true;
+    }
+
     public Boolean isDriverAlive(WindowsDriver driver) {
         try {
             driver.getScreenshotAs(OutputType.FILE);
@@ -422,7 +442,7 @@ public class AppiumServerManager {
             }
         }
         iOSDrivers.remove(udid);
-
+        driverTimestamp.remove(udid);
     }
 
     public void quitAndroidDriver(DeviceInfo deviceInfo, Logger logger) {
