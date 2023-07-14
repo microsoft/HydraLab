@@ -19,6 +19,7 @@ import java.util.Map;
 public class PageNode {
     int id;
     List<ActionInfo> actionInfoList = new ArrayList<>();
+    // key: action id, value: child page node
     Map<Integer, PageNode> childPageNodeMap = new HashMap<>();
 
     @Data
