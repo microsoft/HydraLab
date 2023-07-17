@@ -742,7 +742,7 @@ public class DeviceAgentManagementService {
             File testJsonFile = new File(CENTER_FILE_BASE_DIR, testJsonInfo.getBlobPath());
             TestInfo testInfo;
             try {
-                storageServiceClientProxy.download(testJsonFile, initialTestJson);
+                storageServiceClientProxy.download(testJsonFile, testJsonInfo);
                 T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
                 String testJsonFilePath = CENTER_FILE_BASE_DIR + testJsonInfo.getBlobPath();
                 testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
