@@ -100,6 +100,10 @@ public class T2CJsonParser {
                             false;
 
             if (elementInfo != null && !elementInfo.isEmpty()) {
+                String driverType = driveIdToTypeMap.get(driverId);
+                if (driverType == null) {
+                    throw new RuntimeException("Driver type is not defined for driverId: " + driverId);
+                }
                 if (driveIdToTypeMap.get(driverId).equalsIgnoreCase("android")) {
                     androidElement = JSON.parseObject(caseJsonObject.getString("elementInfo"), AndroidElementInfo.class);
                     actionInfo = new ActionInfo(i, androidElement, actionType, arguments, driverId, description, isOptional);

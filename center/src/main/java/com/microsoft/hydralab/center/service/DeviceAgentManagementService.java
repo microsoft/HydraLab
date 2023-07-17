@@ -730,18 +730,23 @@ public class DeviceAgentManagementService {
 
     private JSONObject runT2CTest(TestTaskSpec testTaskSpec) {
         JSONObject result = new JSONObject();
-        StorageFileInfo testAppFileInfo = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
+        StorageFileInfo initialTestJson = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
+        List<StorageFileInfo> attachmentTestJsonList = attachmentService.filterAttachments(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.T2C_JSON_FILE);
+        if (initialTestJson != null) {
+            attachmentTestJsonList.add(initialTestJson);
+        }
+
         Map<String, Integer> deviceCountMap = new HashMap<>();
-        if (testAppFileInfo != null) {
-            File testApkFile = new File(CENTER_FILE_BASE_DIR, testAppFileInfo.getBlobPath());
+        for (StorageFileInfo testJsonInfo : attachmentTestJsonList) {
+            File testJsonFile = new File(CENTER_FILE_BASE_DIR, testJsonInfo.getBlobPath());
             TestInfo testInfo;
             try {
-                storageServiceClientProxy.download(testApkFile, testAppFileInfo);
+                storageServiceClientProxy.download(testJsonFile, initialTestJson);
                 T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
-                String testJsonFilePath = CENTER_FILE_BASE_DIR + testAppFileInfo.getBlobPath();
+                String testJsonFilePath = CENTER_FILE_BASE_DIR + testJsonInfo.getBlobPath();
                 testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
             } finally {
-                testApkFile.delete();
+                testJsonFile.delete();
             }
             Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
             int edgeCount = 0;
