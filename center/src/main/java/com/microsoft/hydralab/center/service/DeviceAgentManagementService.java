@@ -736,8 +736,9 @@ public class DeviceAgentManagementService {
             attachmentTestJsonList.add(initialTestJson);
         }
 
-        Map<String, Integer> deviceCountMap = new HashMap<>();
+        Map<String, Integer> aggregateDeviceCountMap = new HashMap<>();
         for (StorageFileInfo testJsonInfo : attachmentTestJsonList) {
+            Map<String, Integer> deviceCountMap = new HashMap<>();
             File testJsonFile = new File(CENTER_FILE_BASE_DIR, testJsonInfo.getBlobPath());
             TestInfo testInfo;
             try {
@@ -769,6 +770,9 @@ public class DeviceAgentManagementService {
             if (deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) == 0 && edgeCount == 1) {
                 deviceCountMap.put(DeviceType.WINDOWS.name(), 1);
             }
+            for (Map.Entry<String, Integer> entry : deviceCountMap.entrySet()) {
+                aggregateDeviceCountMap.put(entry.getKey(), Math.max(aggregateDeviceCountMap.getOrDefault(entry.getKey(), 0), entry.getValue()));
+            }
         }
 
         String[] deviceIdentifiers = testTaskSpec.deviceIdentifier.split(",");
@@ -785,10 +789,10 @@ public class DeviceAgentManagementService {
             if (device.isTesting()) {
                 return result;
             }
-            deviceCountMap.put(device.getType(), deviceCountMap.getOrDefault(device.getType(), 0) - 1);
+            aggregateDeviceCountMap.put(device.getType(), aggregateDeviceCountMap.getOrDefault(device.getType(), 0) - 1);
             devices.add(device);
         }
-        for (Map.Entry<String, Integer> entry : deviceCountMap.entrySet()) {
+        for (Map.Entry<String, Integer> entry : aggregateDeviceCountMap.entrySet()) {
             Assert.isTrue(entry.getValue() <= 0, "No enough " + entry.getKey() + " device to run this test.");
         }
         Message message = new Message();
