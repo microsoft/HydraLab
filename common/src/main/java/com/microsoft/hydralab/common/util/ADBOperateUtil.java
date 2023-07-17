@@ -37,7 +37,6 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class ADBOperateUtil {
-    private static final int ADB_WAIT_TIMEOUT_SECONDS = 120;
     private final Logger instanceLogger = LoggerFactory.getLogger(ADBOperateUtil.class);
     Runtime runtime = Runtime.getRuntime();
     private String mAndroidHome;
@@ -51,8 +50,11 @@ public class ADBOperateUtil {
 
         AndroidDebugBridge.initIfNeeded(false);
         if (!Objects.equals(adbServerHost, DdmPreferences.DEFAULT_ADBHOST_VALUE)) {
-            changeADBSocketHostAddr(adbServerHost);
-            instanceLogger.info("ADB server hostname is changed to {}", adbServerHost);
+            if (changeADBSocketHostAddr(adbServerHost)) {
+                instanceLogger.info("ADB server hostname is changed to {}", adbServerHost);
+            } else {
+                instanceLogger.warn("Failed to change ADB server hostname to {}", adbServerHost);
+            }
         }
         AndroidDebugBridge.addDeviceChangeListener(mListener);
 
@@ -82,15 +84,19 @@ public class ADBOperateUtil {
      *
      * @param adbServerHost adb server hostname, we need to change this to make it work inside a docker container. E.g. host.docker.internal or vm.docker.internal.
      */
-    private void changeADBSocketHostAddr(String adbServerHost) {
+    private boolean changeADBSocketHostAddr(String adbServerHost) {
         int port = AndroidDebugBridge.getSocketAddress().getPort();
         try {
             Field sSocketAddrField = AndroidDebugBridge.class.getDeclaredField("sSocketAddr");
             sSocketAddrField.setAccessible(true);
             sSocketAddrField.set(null, new InetSocketAddress(InetAddress.getByName(adbServerHost), port));
-        } catch (NoSuchFieldException | UnknownHostException | IllegalAccessException e) {
+            return true;
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             instanceLogger.error("Error when changing the value of AndroidDebugBridge sSocketAddr", e);
+        } catch (UnknownHostException e) {
+            instanceLogger.error("Error when getting the InetAddress of " + adbServerHost, e);
         }
+        return false;
     }
 
     public RawImage getScreenshot(DeviceInfo deviceInfo, Logger logger) throws Exception {
@@ -143,7 +149,7 @@ public class ADBOperateUtil {
         }
     }
 
-    public void executeShellCommandOnDevice(DeviceInfo deviceInfo, String command, IShellOutputReceiver receiver, int testTimeOutSec,int responseTimeout) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
+    public void executeShellCommandOnDevice(DeviceInfo deviceInfo, String command, IShellOutputReceiver receiver, int testTimeOutSec, int responseTimeout) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
         IDevice device = getDeviceByInfo(deviceInfo);
         Assert.notNull(device, "Not such device is available " + deviceInfo.getSerialNum());
         device.executeShellCommand(command, receiver, testTimeOutSec, responseTimeout, TimeUnit.SECONDS);
@@ -230,7 +236,7 @@ public class ADBOperateUtil {
     public boolean uninstallApp(DeviceInfo deviceInfo, String packageName, Logger logger) {
         IDevice deviceByInfo = getDeviceByInfo(deviceInfo);
         Assert.notNull(deviceByInfo, "No such device: " + deviceInfo);
-        String msg = null;
+        String msg;
         try {
             msg = deviceByInfo.uninstallPackage(packageName);
         } catch (InstallException e) {
