@@ -43,7 +43,7 @@ public class AzureOpenAIServiceClientTest extends BaseTest {
         }
 
         azureOpenAIServiceClient =
-                new AzureOpenAIServiceClient(apiKey, deployment, endpoint, apiVersion);
+                new AzureOpenAIServiceClient(apiKey, deployment, endpoint);
     }
 
     @Test
@@ -92,10 +92,9 @@ public class AzureOpenAIServiceClientTest extends BaseTest {
         if (StringUtils.isBlank(apiKey)) {
             return;
         }
-        String apiVersion = "2023-06-01-preview";
         String response = azureOpenAIServiceClient.callAzureOpenAIImageAPI(
                 "Draw a picture of a real high-resolution apple iphone with a hand drawing Microsoft icon on it.",
-                1, "1024x1024", apiVersion);
+                1, "1024x1024");
         baseLogger.info(response);
         JSONObject jsonObject = JSON.parseObject(response);
         String id = jsonObject.getString("id");
@@ -104,7 +103,7 @@ public class AzureOpenAIServiceClientTest extends BaseTest {
         int maxRetry = 20;
         int counter = 0;
         while (!status.equals("succeeded") && counter++ < maxRetry) {
-            response = azureOpenAIServiceClient.getGeneratedImageStatus(id, apiVersion);
+            response = azureOpenAIServiceClient.getGeneratedImageStatus(id);
             jsonObject = JSON.parseObject(response);
             status = jsonObject.getString("status");
             baseLogger.info(response);

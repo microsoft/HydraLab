@@ -15,25 +15,25 @@ import java.util.Objects;
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 public class AzureOpenAIServiceClient {
+    public static final String API_VERSION_CHAT = "2023-03-15-preview";
+    public static final String API_VERSION_IMAGE = "2023-06-01-preview";
     private final Logger logger = LoggerFactory.getLogger(AzureOpenAIServiceClient.class);
     private final String apiKey;
     private final String endpoint;
     private final String deployment;
-    private final String apiVersion;
     OkHttpClient client = new OkHttpClient();
 
-    public AzureOpenAIServiceClient(String apiKey, String deployment, String endpoint, String apiVersion) {
+    public AzureOpenAIServiceClient(String apiKey, String deployment, String endpoint) {
         this.apiKey = apiKey;
         this.endpoint = endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length() - 1) : endpoint;
         this.deployment = deployment;
-        this.apiVersion = apiVersion;
     }
 
     public String chatCompletion(ChatRequest request) {
-        return callAzureOpenAIAPI("chat/completions", JSON.toJSONString(request));
+        return callAzureOpenAIAPI("chat/completions", JSON.toJSONString(request), API_VERSION_CHAT);
     }
 
-    private String callAzureOpenAIAPI(String operation, String requestBodyString) {
+    private String callAzureOpenAIAPI(String operation, String requestBodyString, String apiVersion) {
         MediaType mediaType = MediaType.parse("application/json");
         String url = String.format("%s/openai/deployments/%s/%s?api-version=%s", endpoint, deployment, operation, apiVersion);
 
@@ -53,9 +53,9 @@ public class AzureOpenAIServiceClient {
         }
     }
 
-    String callAzureOpenAIImageAPI(String prompt, int number, String size, String apiVersion) {
+    String callAzureOpenAIImageAPI(String prompt, int number, String size) {
         MediaType mediaType = MediaType.parse("application/json");
-        String url = String.format("%s/openai/images/generations:submit?api-version=%s", endpoint, apiVersion);
+        String url = String.format("%s/openai/images/generations:submit?api-version=%s", endpoint, API_VERSION_IMAGE);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("prompt", prompt);
@@ -79,8 +79,8 @@ public class AzureOpenAIServiceClient {
         }
     }
 
-    String getGeneratedImageStatus(String id, String apiVersion) {
-        String url = String.format("%s/openai/operations/images/%s?api-version=%s", endpoint, id, apiVersion);
+    String getGeneratedImageStatus(String id) {
+        String url = String.format("%s/openai/operations/images/%s?api-version=%s", endpoint, id, API_VERSION_IMAGE);
         Request httpRequest = new Request.Builder().url(url)
                 .addHeader("api-key", apiKey).build();
 
