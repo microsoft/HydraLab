@@ -69,7 +69,7 @@ dependencies {
     //blob storage
     compile 'com.azure:azure-storage-blob:12.14.0'
     //Apk analysis
-    compile group: 'net.dongliu', name: 'apk-parser', version: '2.5.3'
+    compile group: 'net.dongliu', name: 'apk-parser', version: '2.6.10'
     //Ipa Parse
     compile group: 'com.googlecode.plist', name: 'dd-plist', version: '1.3'
 
