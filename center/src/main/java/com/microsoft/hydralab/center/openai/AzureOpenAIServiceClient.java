@@ -53,6 +53,10 @@ public class AzureOpenAIServiceClient {
         }
     }
 
+    /**
+     * See API doc in:
+     * <a href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/dall-e-quickstart?pivots=rest-api">API</a>
+     */
     String callAzureOpenAIImageAPI(String prompt, int number, String size) {
         MediaType mediaType = MediaType.parse("application/json");
         String url = String.format("%s/openai/images/generations:submit?api-version=%s", endpoint, API_VERSION_IMAGE);
