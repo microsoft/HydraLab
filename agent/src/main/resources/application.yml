@@ -81,3 +81,12 @@ management:
           base-url: ${app.registry.server}/prometheus/pushgateway
           job: ${spring.application.name}
           push-rate: 10s
+
+runner:
+  smart:
+    llm:
+      enabled: ${SMART_TEST_LLM_ENABLED:false}
+      deployment-name: ${SMART_TEST_LLM_DEPLOYMENT_NAME}
+      openai-api-key: ${SMART_TEST_LLM_OPENAI_API_KEY}
+      openai-api-base: ${SMART_TEST_LLM_OPENAI_API_BASE}
+      openai-api-version: ${SMART_TEST_LLM_OPENAI_API_VERSION}

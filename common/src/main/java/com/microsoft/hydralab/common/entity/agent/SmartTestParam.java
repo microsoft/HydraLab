@@ -17,6 +17,7 @@ public class SmartTestParam {
     public String testSteps;
     public String stringTextFolder;
     public File outputFolder;
+    public String llmInfo;
 
     public SmartTestParam(String apkPath,
                           DeviceInfo deviceInfo,
@@ -25,13 +26,20 @@ public class SmartTestParam {
                           int testSteps,
                           String folderPath,
                           String stringFolderPath,
-                          File outputFolder) {
+                          File outputFolder,
+                          LLMProperties llmProperties) {
         JSONObject modelInfo = new JSONObject();
-
         modelInfo.put(Const.SmartTestConfig.BERT_PATH_TAG, folderPath + Const.SmartTestConfig.BERT_MODEL_NAME);
         modelInfo.put(Const.SmartTestConfig.TOPIC_PATH_TAG, folderPath + Const.SmartTestConfig.TOPIC_MODEL_NAME);
         modelInfo.put(Const.SmartTestConfig.SOURCE_MODEL_TAG, sourceModelId);
         modelInfo.put(Const.SmartTestConfig.TARGET_MODEL_TAG, targetModelId);
+
+        JSONObject llmInfo = new JSONObject();
+        llmInfo.put(Const.SmartTestConfig.LLM_ENABLE, llmProperties.getEnabled());
+        llmInfo.put(Const.SmartTestConfig.LLM_DEPLOYMENT, llmProperties.getDeploymentName());
+        llmInfo.put(Const.SmartTestConfig.LLM_API_KEY, llmProperties.getOpenaiApiKey());
+        llmInfo.put(Const.SmartTestConfig.LLM_API_BASE, llmProperties.getOpenaiApiBase());
+        llmInfo.put(Const.SmartTestConfig.LLM_API_VERSION, llmProperties.getOpenaiApiVersion());
 
         this.apkPath = apkPath;
         this.deviceInfo = JSONObject.toJSONString(deviceInfo).replaceAll("\"", "'");
@@ -39,5 +47,6 @@ public class SmartTestParam {
         this.testSteps = String.valueOf(testSteps);
         this.stringTextFolder = stringFolderPath;
         this.outputFolder = outputFolder;
+        this.llmInfo = llmInfo.toJSONString().replaceAll("\"", "'");
     }
 }
