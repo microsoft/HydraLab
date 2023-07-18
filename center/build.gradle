@@ -27,6 +27,8 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
+    implementation 'dev.langchain4j:langchain4j:0.11.0'
+    implementation 'dev.langchain4j:langchain4j-pinecone:0.11.0'
     implementation 'org.dom4j:dom4j:2.1.4'
     testCompile 'org.mockito:mockito-core:3.12.4'
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
