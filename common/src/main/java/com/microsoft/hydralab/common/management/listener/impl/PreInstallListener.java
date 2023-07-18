@@ -3,23 +3,21 @@
 
 package com.microsoft.hydralab.common.management.listener.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.EntityType;
-import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
-import com.microsoft.hydralab.common.util.PkgUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author zhoule
@@ -50,19 +48,7 @@ public class PreInstallListener implements DeviceStatusListener {
                 continue;
             }
             try {
-                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> {
-                    // try to uninstall app first
-                    try {
-                        JSONObject res = PkgUtil.analysisFile(appFile, EntityType.APP_FILE_SET);
-                        if (!StringUtils.isEmpty(res.getString(StorageFileInfo.ParserKey.PKG_NAME))) {
-                            deviceDriverManager.uninstallApp(deviceInfo, res.getString(StorageFileInfo.ParserKey.PKG_NAME), classLogger);
-                        }
-                    } catch (Exception e) {
-                        classLogger.warn("Uninstall origin app of {} failed", appFile.getName(), e);
-                    }
-                    // install app
-                    return deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
-                });
+                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger));
                 classLogger.info("Pre-Install {} successfully", appFile.getAbsolutePath());
             } catch (Exception e) {
                 String errorMessage = String.format("Pre-Install %s failed", appFile.getAbsolutePath());
