@@ -7,6 +7,7 @@ import java.util.List;
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+// See API doc in https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference
 @Data
 public class ChatRequest {
     private List<ChatMessage> messages;

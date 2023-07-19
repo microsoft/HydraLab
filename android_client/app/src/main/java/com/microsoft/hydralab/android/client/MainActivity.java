@@ -2,6 +2,12 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.android.client;
 
+import static android.Manifest.permission.RECORD_AUDIO;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.os.Build.VERSION_CODES.M;
+import static com.microsoft.hydralab.android.client.ScreenRecorderService.AUDIO_AAC;
+import static com.microsoft.hydralab.android.client.ScreenRecorderService.VIDEO_AVC;
+
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -46,12 +52,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import static android.Manifest.permission.RECORD_AUDIO;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
-import static android.os.Build.VERSION_CODES.M;
-import static com.microsoft.hydralab.android.client.ScreenRecorderService.AUDIO_AAC;
-import static com.microsoft.hydralab.android.client.ScreenRecorderService.VIDEO_AVC;
 
 public class MainActivity extends Activity {
     private static final String TAG = "ScreenRecorder";
@@ -283,7 +283,12 @@ public class MainActivity extends Activity {
         intent.putExtra("dstPath", file.getAbsolutePath());
         intent.putExtra("resultCode", resultCode);
         intent.putExtra("data", data);
-        startService(intent);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
 
         handler.postDelayed(updateButtonState, 1000);
         //moveTaskToBack(true);
