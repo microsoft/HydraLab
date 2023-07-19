@@ -18,6 +18,7 @@ import java.util.Map;
 @Data
 public class PageNode {
     int id;
+    String pageName;
     List<ActionInfo> actionInfoList = new ArrayList<>();
     // key: action id, value: child page node
     Map<Integer, PageNode> childPageNodeMap = new HashMap<>();
@@ -33,7 +34,7 @@ public class PageNode {
 
     @Data
     public static class ActionInfo {
-        Integer id;
+        int id;
         ElementInfo testElement;
         String actionType;
         String driverId;
@@ -41,5 +42,16 @@ public class PageNode {
         String description;
         Map<String, Object> arguments;
         boolean isOptional;
+    }
+
+    @Data
+    public static class ExplorePath {
+        String path;
+        String actions;
+
+        public ExplorePath(String path, String action) {
+            this.path = path;
+            this.actions = action;
+        }
     }
 }
