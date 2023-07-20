@@ -127,10 +127,9 @@ public class TestTaskController {
             }
             TestTask testTask = testDataService.getTestTaskDetail(testId);
             if (testTask != null) {
-                if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
-                    return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
-                }
-
+//                if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
+//                    return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
+//                }
                 return Result.ok(testTask);
             }
             TestTaskQueuedInfo queuedInfo = testTaskService.getTestQueuedInfo(testId);
