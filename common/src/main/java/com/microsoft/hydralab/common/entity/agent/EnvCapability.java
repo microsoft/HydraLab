@@ -29,6 +29,7 @@ public class EnvCapability {
         // maven("--version"),
         gradle("--version"),
         // xcode("--version"),
+        maestro("--version"),
         appium("--version");
 
         CapabilityKeyword(String fetchVersionParam, String... brokenIndicatorMessageParts) {
