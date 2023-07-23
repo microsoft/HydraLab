@@ -271,6 +271,7 @@ public class TestDataService {
     public void saveTestCaseGPTSuggestion(AndroidTestUnit testCase, String suggestion) {
         testCase.setSuggestion(suggestion);
         androidTestUnitRepository.save(testCase);
+        keyValueRepository.saveAndroidTestUnit(testCase);
     }
 
     public TestRun findTestRunById(String testRunId) {
