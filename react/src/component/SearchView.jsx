@@ -206,7 +206,7 @@ export default class SearchView extends BaseView {
                                 continue
                             }
                             if (k === "suggestion") {
-                                const obj = JSON.parse(stringified);
+                                const obj = JSON.parse(details[k]);
                                 for (const [key, value] of Object.entries(obj)) {
                                     suggestions.push({ k: key, v: value })
                                 }
@@ -219,12 +219,15 @@ export default class SearchView extends BaseView {
                         this.setState({
                             infoDisplay: <center>
                                 <VideoNavView videoInfo={info} videos={vList} />
-                                <AdaptivePropertyTable properties={suggestions}
-                                    title='LLM Suggestions'
-                                    lineTextCount='1'
-                                    propertyValueProcessor={(key, value) => {
-                                        return <div>{value}</div>
-                                    }} />
+                                {
+                                    suggestions.length > 0 ?
+                                    <AdaptivePropertyTable properties={suggestions}
+                                        title='LLM Suggestions'
+                                        lineTextCount='1'
+                                        propertyValueProcessor={(key, value) => {
+                                            return <div>{value}</div>
+                                        }} /> : null
+                                }
                                 <AdaptivePropertyTable properties={properties}
                                     title='Test Case Details'
                                     propertyValueProcessor={(key, value) => {
