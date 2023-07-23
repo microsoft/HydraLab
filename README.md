@@ -12,9 +12,7 @@
 
 ---
 
-https://github.com/microsoft/HydraLab/assets/8344245/012f7a20-7b7b-45c1-9bab-1b3051bedc29
-
-
+https://github.com/microsoft/HydraLab/assets/8344245/5962bbdd-8c55-428f-b749-f53c075fef75
 
 [What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
 </div>
