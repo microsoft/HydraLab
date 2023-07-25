@@ -52,7 +52,7 @@ public class AppiumServerManager {
     private final Map<String, IOSDriver> iOSDrivers = new ConcurrentHashMap<>();
     private final Map<String, AndroidDriver> androidDrivers = new ConcurrentHashMap<>();
     private final Map<String, WindowsDriver> windowsAppDrivers = new ConcurrentHashMap<>();
-    private final Map<String, Date> driverTimestamp = new ConcurrentHashMap<>();
+    private final Map<String, Date> driverCreateTime = new ConcurrentHashMap<>();
     private AppiumDriverLocalService service;
     private int appiumServerPort = 10086;
     private String appiumServerHost = "127.0.0.1";
@@ -161,7 +161,7 @@ public class AppiumServerManager {
 
                 logger.info("Create Driver, SessionID: " + iosDriver.getSessionId());
                 iOSDrivers.put(udid, iosDriver);
-                driverTimestamp.put(udid, new Date());
+                driverCreateTime.put(udid, new Date());
                 sessionCreated = true;
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
@@ -309,7 +309,7 @@ public class AppiumServerManager {
     }
 
     public Boolean isDriverExpired(DeviceInfo deviceInfo) {
-        Date date = driverTimestamp.get(deviceInfo.getSerialNum());
+        Date date = driverCreateTime.get(deviceInfo.getSerialNum());
         if (date == null || new Date().getTime() - date.getTime() < 1000 * 60 * 60 * 24) {
             return false;
         }
@@ -442,7 +442,7 @@ public class AppiumServerManager {
             }
         }
         iOSDrivers.remove(udid);
-        driverTimestamp.remove(udid);
+        driverCreateTime.remove(udid);
     }
 
     public void quitAndroidDriver(DeviceInfo deviceInfo, Logger logger) {
