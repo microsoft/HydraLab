@@ -45,12 +45,12 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 
 **Supported platforms and frameworks matrix**:
 
-|  | Appium(Java) | Espresso | 
-| ---- |--------------|---- |
-|Android| &#10004;     | &#10004; |
-|iOS| &#10004;     | x | x |
-|Windows| &#10004;     | x | 
-|Web (Browser)| &#10004;     | x | 
+|  | Appium(Java) | Espresso | XCTest |
+| ---- |--------------|---- | ---- |
+|Android| &#10004;     | &#10004; | x |
+|iOS| &#10004;     | x | x | &#10004; |
+|Windows| &#10004;     | x | x |
+|Web (Browser)| &#10004;     | x | x |
 
 <span id="quick-start"></span>
 ### Quick guide on out-of-box Uber docker image
@@ -190,14 +190,6 @@ java -jar agent/build/libs/agent.jar
 
 > Note: If you are a Microsoft FTE and want to onboard to the internal Hydra Lab testing service, please visit [our SharePoint site](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) to learn more about the internal service instance.
 
-<span id="who-use-it"></span>
-## Who are using Hydra Lab?
-
-It's already powering the UI test automation of the following Microsoft products:
-- Microsoft Phone Link (Windows UWP app) and Link to Windows (Android app)
-- Microsoft Launcher (Android)
-- Microsoft Outlook/Edge (Android/iOS)
-- Microsoft Fluent UI Android/Yammer Android
 
 <span id="contribute"></span>
 ## Contribute
@@ -217,13 +209,6 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 - [Open an issue](https://github.com/microsoft/HydraLab/issues/new) or submit PRs.
 - Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
 
-<span id="links"></span>
-## Links
-
-- [Hydra Lab: the next generation cross-platform software testing infrastructure open-sourced by Microsoft](https://medium.com/@nathanbu/we-open-sourced-a-new-test-framework-on-github-in-microsoft-fd31f8861d1e)
-- [Release Notes](https://github.com/microsoft/HydraLab/releases), [Hydra Lab on Up For Grabs](https://up-for-grabs.net/#/filters?names=438)
-- [Appium: Cross-platform automation framework for all kinds of your apps built on top of W3C WebDriver protocol.](https://github.com/appium/appium)
-- [Google Android Tools Ddmlib: A ddmlib jar that provides APIs for talking with Dalvik VM.](https://android.googlesource.com/platform/tools/base/+/master/ddmlib/)
 
 <span id="ms-give"></span>
 ## Microsoft Give Sponsors
