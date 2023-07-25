@@ -43,7 +43,7 @@ public class ScheduledDeviceControlTasks {
         agentWebSocketClient.reconnect();
     }
 
-    @Scheduled(cron = "0 10 6 ? * MON")
+    @Scheduled(cron = "0 10 6 ? * *")
     public void scheduleCleanBuildSource() {
         logger.info("schedule clean build APK");
         clearFile(appOptions.getTestPackageLocation());
