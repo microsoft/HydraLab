@@ -144,11 +144,11 @@ class TasksView extends BaseView {
                 <StyledTableCell key={'Timestamp'} align="center">
                     <ThemeProvider theme={darkTheme}>
                         <FormControl className="ml-0" fullWidth={true}>
-                            <InputLabel id="end-time-range-select-label">End Time Range</InputLabel>
+                            <InputLabel id="start-time-range-select-label">Start Time Range</InputLabel>
                             <Select
-                                labelId="end-time-range-select-label"
-                                id="end-time-range-select"
-                                label="End Time Range"
+                                labelId="start-time-range-select-label"
+                                id="start-time-range-select"
+                                label="Start Time Range"
                                 size="small"
                                 value={selectedParams.time}
                                 onChange={this.selectTimeChange}
@@ -677,26 +677,7 @@ class TasksView extends BaseView {
         this.handleStatus("openTestDetail", false)
     }
 
-    queryTask() {
-        console.log(this.state.selectedParams)
-        let queryParams = [
-            {
-                "key": "status",
-                "op": "ne",
-                "value": "running"
-            },
-            {
-                "key": "runningType",
-                "op": "in",
-                "value": this.state.selectedParams.TestType.length > 0 ? this.state.selectedParams.TestType : params.TestType
-            },
-            {
-                "key": "type",
-                "op": "in",
-                "value": this.state.selectedParams.TriggerType
-            }
-        ]
-
+    taskParamUpdate(queryParams) {
         if (this.state.selectedParams.suite !== '') {
             queryParams.push({
                 "key": "testSuite",
@@ -745,6 +726,29 @@ class TasksView extends BaseView {
                 "dateFormatString": "yyyy-MM-dd HH:mm:ss.S"
             })
         }
+    }
+
+    queryTask() {
+        console.log(this.state.selectedParams)
+        // completed tasks
+        let queryParams = [
+            {
+                "key": "status",
+                "op": "ne",
+                "value": "running"
+            },
+            {
+                "key": "runningType",
+                "op": "in",
+                "value": this.state.selectedParams.TestType.length > 0 ? this.state.selectedParams.TestType : params.TestType
+            },
+            {
+                "key": "type",
+                "op": "in",
+                "value": this.state.selectedParams.TriggerType
+            }
+        ]
+        this.taskParamUpdate(queryParams)
 
         let postBody = {
             'page': this.state.page - 1,
@@ -760,18 +764,9 @@ class TasksView extends BaseView {
             })
 
         }, postBody, null, null, null)
-    }
-
-    componentDidMount() {
-        console.log(this.props)
-        this.setState({
-            hideSkeleton: false,
-        })
-
-        this.queryTask()
 
         if (this.state.page === 1) {
-
+            // queued tasks
             axios.get('/api/test/task/queue').then(res => {
                 if (res.data && res.data.code === 200) {
                     if (res.data.content) {
@@ -785,13 +780,26 @@ class TasksView extends BaseView {
                 }
             }).catch(this.snackBarError)
 
+            // running tasks
             let queryParams = [
                 {
                     "key": "status",
                     "op": "equal",
                     "value": "running"
+                },
+                {
+                    "key": "runningType",
+                    "op": "in",
+                    "value": this.state.selectedParams.TestType.length > 0 ? this.state.selectedParams.TestType : params.TestType
+                },
+                {
+                    "key": "type",
+                    "op": "in",
+                    "value": this.state.selectedParams.TriggerType
                 }
             ]
+            this.taskParamUpdate(queryParams)
+
             let postBody = {
                 'page': 0,
                 'pageSize': -1,
@@ -806,6 +814,15 @@ class TasksView extends BaseView {
 
             }, postBody, null, null, null)
         }
+    }
+
+    componentDidMount() {
+        console.log(this.props)
+        this.setState({
+            hideSkeleton: false,
+        })
+
+        this.queryTask()
     }
 
     componentWillUnmount() {
