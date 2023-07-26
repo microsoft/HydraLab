@@ -2,6 +2,7 @@ package com.microsoft.hydralab.center.openai;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.center.openai.data.ChatRequest;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

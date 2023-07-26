@@ -7,6 +7,8 @@ import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.android.ddmlib.IDevice;
+import com.microsoft.hydralab.center.openai.SuggestionService;
+import com.microsoft.hydralab.center.openai.data.PerformanceSuggestion;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
@@ -110,6 +112,9 @@ public class DeviceAgentManagementService {
     StorageServiceClientProxy storageServiceClientProxy;
     @Resource
     StorageTokenManageService storageTokenManageService;
+    @Resource
+    SuggestionService suggestionService;
+
     @Value("${app.storage.type}")
     private String storageType;
 
@@ -281,6 +286,8 @@ public class DeviceAgentManagementService {
                     if (isFinished) {
                         List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
                         for (TestRun deviceTestResult : deviceTestResults) {
+                            PerformanceSuggestion suggestion = suggestionService.performanceAnalyze(deviceTestResult);
+                            deviceTestResult.setSuggestion(suggestion.getContent());
                             String[] identifiers = deviceTestResult.getDeviceSerialNumber().split(",");
                             for (String identifier : identifiers) {
                                 updateDeviceStatus(identifier, DeviceInfo.ONLINE, null);
