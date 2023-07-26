@@ -6,6 +6,15 @@ android {
 
     compileSdkVersion 33
 
+    signingConfigs {
+        debugSignConfig {
+            keyAlias 'hydralab'
+            keyPassword 'hydralab'
+            storeFile file('../keystore.jks')
+            storePassword 'hydralab'
+        }
+    }
+
     defaultConfig {
         applicationId "com.microsoft.hydralab.android.client"
         minSdkVersion 21
@@ -23,12 +32,12 @@ android {
 
     buildTypes {
         debug {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.debugSignConfig
             minifyEnabled false
         }
 
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.debugSignConfig
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

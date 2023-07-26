@@ -15,7 +15,7 @@
             <!-- http://logback.qos.ch/codes.html#sat_missing_integer_token The %i conversion token is mandatory for size and time based archiving.
             In case the %i token is missing, SizeAndTimeBasedFNATP attached to RollingFileAppender will detect the omission and will not start. -->
             <fileNamePattern>./hydra/data/log/%d/hydra_lab.%d.%i.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>10</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
@@ -31,7 +31,7 @@
         <File>./hydra/data/access_log/hydra_lab_current.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>./hydra/data/access_log/%d/hydra_lab.%d.%i.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>10</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>

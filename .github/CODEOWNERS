@@ -15,7 +15,7 @@ ehcache.xml @zhou9584 @olivershen-wow
 /android_client/ @lifesaver0129 @TedaLIEz @dexterdreeeam @taoran6
 
 # TestTaskSpec
-TestTaskSpec.java @olivershen-wow @zhou9584 @dexterdreeeam
+/common/src/main/java/com/microsoft/hydralab/common/entity/ @olivershen-wow @zhou9584 @dexterdreeeam
 
 # Gradle Plugin
 /gradle_plugin/ @olivershen-wow @taoran6 @dexterdreeeam
