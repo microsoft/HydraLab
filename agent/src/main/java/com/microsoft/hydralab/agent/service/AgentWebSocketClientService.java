@@ -21,12 +21,12 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.GlobalConstant;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,22 +168,28 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @NotNull
     private Message handleTestTaskRun(Message message) {
         Message response;
+        TestTask testTask = null;
+        TestTaskSpec testTaskSpec = null;
         try {
-            TestTaskSpec testTaskSpec = (TestTaskSpec) message.getBody();
+            testTaskSpec = (TestTaskSpec) message.getBody();
             testTaskSpec.updateWithDefaultValues();
             log.info("TestTaskSpec: {}", testTaskSpec);
-            TestTask testTask = testTaskEngineService.runTestTask(TestTask.convertToTestTask(testTaskSpec));
+            testTask = TestTask.convertToTestTask(testTaskSpec);
+            testTask = testTaskEngineService.runTestTask(testTask);
             if (testTask.getTestDevicesCount() <= 0) {
-                response = Message.error(message, 404, "No device meet the requirement on this agent: " + testTaskSpec);
-            } else {
-                response = Message.response(message, testTask);
-                response.setPath(Const.Path.TEST_TASK_UPDATE);
+                throw new HydraLabRuntimeException("No device meet the requirement on this agent: " + testTaskSpec);
             }
+            response = Message.response(message, testTask);
+            response.setPath(Const.Path.TEST_TASK_UPDATE);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            response = Message.error(message, 500,
-                    String.format("%s\n%s\n%s", e.getClass().getName(), e.getMessage(),
-                            ExceptionUtils.getStackTrace(e)));
+            if (testTask == null) {
+                testTask.setId(testTaskSpec.testTaskId);
+            }
+            testTask.setStatus(TestTask.TestStatus.EXCEPTION);
+            testTask.setTestErrorMsg(e.getMessage());
+            response = Message.response(message, testTask);
+            response.setPath(Const.Path.TEST_TASK_RETRY);
         }
         return response;
     }
@@ -269,6 +275,8 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @Override
     public void onDeviceOffline(TestTask testTask) {
         log.info("test task {} re-queue, send message", testTask.getId());
+        testTask.setStatus(TestTask.TestStatus.EXCEPTION);
+        testTask.setTestErrorMsg("Device offline");
         send(Message.ok(Const.Path.TEST_TASK_RETRY, testTask));
     }
 

@@ -9,6 +9,8 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.FileUtil;
+import com.microsoft.hydralab.common.util.FlowUtil;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,6 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -120,10 +121,10 @@ public class FileLoadUtil {
         }
     }
 
-    private File downloadFile(StorageFileInfo attachment, String location, String targetFilePath) throws IOException {
+    private File downloadFile(StorageFileInfo attachment, String location, String targetFilePath) throws Exception {
         File file = new File(location, targetFilePath);
         log.debug("download file from {} to {}", attachment.getBlobUrl(), file.getAbsolutePath());
-        storageServiceClientProxy.download(file, attachment);
+        FlowUtil.retryAndSleepWhenException(3, 10, () -> storageServiceClientProxy.download(file, attachment));
         return file;
     }
 
@@ -132,8 +133,9 @@ public class FileLoadUtil {
         try {
             file = downloadFile(attachment, appOptions.getTestPackageLocation(), attachment.getBlobPath());
             log.info("Download file success");
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Download file failed", e);
+            throw new HydraLabRuntimeException("Download file failed", e);
         }
         return file;
     }
