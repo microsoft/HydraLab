@@ -214,6 +214,7 @@ public class TestTask implements Serializable {
         testTaskSpec.disableRecording = testTask.isDisableRecording();
         testTaskSpec.enableNetworkMonitor = testTask.isEnableNetworkMonitor();
         testTaskSpec.networkMonitorRule = testTask.getNetworkMonitorRule();
+        testTaskSpec.retryTime = testTask.getRetryTime();
 
         return testTaskSpec;
     }
