@@ -145,7 +145,7 @@ java -jar agent/build/libs/agent.jar
 <span id="contribute"></span>
 ## Contribute
 
-Your contribution to Hydra Lab will make a difference for the entire test automation ecosystem. Please refer to **[CONTRIBUTING.md](CONTRIBUTING.md)** for contribution instructions.
+Your contribution to Hydra Lab will make a difference for the entire test automation ecosystem. Please refer to **[CONTRIBUTING.md](CONTRIBUTING.md)** for instructions.
 
 ### Contributor Hero Wall:
 
@@ -156,9 +156,7 @@ Your contribution to Hydra Lab will make a difference for the entire test automa
 <span id="contact"></span>
 ## Contact Us
 
-Feel free to dive in! If you have questions about Hydra Lab, or you would like to reach out to us about an issue you're having, you can reach us as follows:
-- [Open an issue](https://github.com/microsoft/HydraLab/issues/new) or submit PRs.
-- Email us: [hydra_lab_support@microsoft.com](mailto:hydra_lab_support@microsoft.com).
+You can reach us by [opening an issue](https://github.com/microsoft/HydraLab/issues/new) or [sending us mails](mailto:hydra_lab_support@microsoft.com).
 
 
 <span id="ms-give"></span>
