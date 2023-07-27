@@ -13,7 +13,7 @@
 
 https://github.com/microsoft/HydraLab/assets/8344245/cefefe24-4e11-4cc7-a3af-70cb44974735
 
-[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
+[What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Contribute](#contribute) | [Contact Us](#contact) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
 </div>
 
 <span id="what-is"></span>
