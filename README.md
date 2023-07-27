@@ -37,12 +37,12 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 
 **Supported platforms and frameworks matrix**:
 
-|  | Appium(Java) | Espresso | XCTest |
-| ---- |--------------|---- | ---- |
-|Android| &#10004;     | &#10004; | x |
-|iOS| &#10004;     | x | x | &#10004; |
-|Windows| &#10004;     | x | x |
-|Web (Browser)| &#10004;     | x | x |
+|  | Appium(Java) | Espresso | XCTest | Maestro |
+| ---- |--------------|---- | ---- | ---- |
+|Android| &#10004;     | &#10004; | x | &#10004; |
+|iOS| &#10004;     | x | &#10004; | &#10004; |
+|Windows| &#10004;     | x | x | x |
+|Web (Browser)| &#10004;     | x | x | x |
 
 <span id="quick-start"></span>
 ### Quick guide on out-of-box Uber docker image
