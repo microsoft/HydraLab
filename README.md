@@ -8,7 +8,6 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![visitors](https://visitor-badge.glitch.me/badge?page_id=microsoft.hydralab&left_color=gray&right_color=red)
 
 ---
 
@@ -17,21 +16,14 @@ https://github.com/microsoft/HydraLab/assets/8344245/cefefe24-4e11-4cc7-a3af-70c
 [What is Hydra Lab?](#what-is) | [Get Started](#get-started) | [Who are using Hydra Lab?](#who-use-it) | [Contribute](#contribute) | [Contact Us](#contact) | [Links](#links) | [Wiki](https://github.com/microsoft/HydraLab/wiki)
 </div>
 
-
-
 <span id="what-is"></span>
 ## What is Hydra Lab?
 
-Hydra Lab is a framework that can help you easily build a cloud testing platform utilizing the test devices/machines in hand. 
-It enables dev team to quickly build a self-manageable and intelligent cloud testing infrastructure. With the help of Hydra Lab, you can:
-
-- Either: Create a new cloud testing network.
-- Or: Onboard your test device to an existing network with a minimized effort.
+As mentioned in the above video, Hydra Lab is a framework that can help you easily build a cloud testing platform utilizing the test devices/machines in hand. 
 
 Capabilities of Hydra Lab include:
 - Scalable test device management under the center-agent distributed design; Test task management and test result visualization.
-- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso).
-- Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform.
+- Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso), and Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform.
 - Case-free test automation: Monkey test, Smart exploratory test.
 
 For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
@@ -57,50 +49,17 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 
 Hydra Lab offers an out-of-box experience of docker image called Uber. You can follow the below steps and start your docker container with a center instance and an agent instance built in:
 
-**Step 1. download and install Docker from https://www.docker.com**
+**Step 1. download and install [Docker](https://www.docker.com)**
 
 **Step 2. run on your machine**
 
-Simply choose one of the following commands to start your experience on Hydra Lab:
-
-**1. use local storage service**
-
-Hydra Lab Uber image uses local file system as default storage, no extra environment variable is needed:
+By Default, Hydra Lab will use the local file system as a storage solution, and you may type the following in your terminal to run it:
 
 ```bash
 docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-**2. use third-party storage service**
-
-Hydra Lab currently supports [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) as cloud file storage solution to persist various file types such as log files, video, app package, etc.
-Any contribution to integrating other third-party storage services is welcome. (Here's the UML class diagram for this module as a reference: [storage service structure](https://github.com/microsoft/HydraLab/blob/main/docs/images/UML/storage_system_design.png).)
-
-Some extra environment variables need to be specified in the command according to the storage service type.
-
-If you want to use Azure Blob storage, please go to your Azure portal, open an Azure Blob storage account, and get the [connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string).
-Brief steps: [Login Azure](https://azure.microsoft.com/) -> [Portal](https://portal.azure.com/#home) -> [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts) -> Create new storage account (you may disable the public access for the container) -> In the created storage account, find `Access Keys` tab -> copy `Connection string`.
-![image](https://user-images.githubusercontent.com/8344245/216729523-387dc162-54d8-41dd-b136-f2e3c780b10a.png)
-
-You may write the following content in an env file (e.g. env.properties):
-```
-STORAGE_TYPE=AZURE
-BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR}
-```
-
-Then pass the path of the file to docker container
-
-```bash
-docker run --env-file env.properties -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
-```
-
-Or simply run with the env parameter -e:
-
-```bash
-docker run -e STORAGE_TYPE=AZURE -e BLOB_CONNECTION_STR=${YOUR_BLOB_CONNECTION_STR} -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
-```
-
-**Step 3. visit front-end page and view your connected devices**
+**Step 3. Visit the web page and view your connected devices**
 
 > Url: http://localhost:9886/portal/index.html#/ (or your custom port).
 
@@ -133,13 +92,13 @@ Notice:
 ![Package upload steps](docs/images/package-upload-steps.png)
 
 
-### Quick guide on build and run
+### Build and run Hydra Lab from the source
 
 You can also run the center java Spring Boot service (a runnable Jar) separately with the following commands:
 
 > The build and run process will require JDK11 | NPM | Android SDK platform-tools in position.
 
-**Step 1. build and run Hydra Lab center service.**
+**Step 1. Run Hydra Lab center service**
 
 ```bash
 # In project root, switch to react folder to build the Web front.
@@ -157,7 +116,7 @@ java -jar center/build/libs/center.jar
 
 > If you encounter the error: `Error: error:0308010C:digital envelope routines::unsupported`, set the System Variable `NODE_OPTIONS` as `--openssl-legacy-provider` and then restart the terminal.
 
-**Step 2. build and run Hydra Lab agent service.**
+**Step 2. Run Hydra Lab agent service**
 
 ```bash
 # In project root
@@ -178,18 +137,10 @@ java -jar agent/build/libs/agent.jar
 
 **Step 3. visit http://localhost:9886/portal/index.html#/ and view your connected devices**
 
-**Technical design overview:**
-
-![Tech Architecture](docs/images/technical_architecture.png)
-
 ### More integration guidelines:
 
+- [Test agent setup](https://github.com/microsoft/HydraLab/wiki/Test-agent-setup)
 - [Trigger a test task run in the Hydra Lab test service](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)
-- [Deploy a test agent service](https://github.com/microsoft/HydraLab/wiki/Deploy-a-test-agent-service)
-- [Create an Appium UI Test Automation Project](https://github.com/microsoft/HydraLab/wiki/Create-an-Appium-UI-Test-Automation-Project)
-
-> Note: If you are a Microsoft FTE and want to onboard to the internal Hydra Lab testing service, please visit [our SharePoint site](https://microsoftapc.sharepoint.com/teams/MMXDocument/SitePages/Hydra-Lab-test-automation-service-onboarding-guideline.aspx) to learn more about the internal service instance.
-
 
 <span id="contribute"></span>
 ## Contribute
@@ -216,8 +167,6 @@ Feel free to dive in! If you have questions about Hydra Lab, or you would like t
 Thank you for your contribution to [Microsoft employee giving program](https://aka.ms/msgive) in the name of Hydra Lab:
 
 [@Germey(崔庆才)](https://github.com/Germey), [@SpongeOnline(王创)](https://github.com/SpongeOnline), [@ellie-mac(陈佳佩)](https://github.com/ellie-mac), [@Yawn(刘俊钦)](https://github.com/Aqinqin48), [@White(刘子凡)](https://github.com/jkfhklh), [@597(姜志鹏)](https://github.com/JZP1996), [@HCG(尹照宇)](https://github.com/mahoshojoHCG)
-
-![Microsoft Give](docs/images/Give_WebBanner.png)
 
 <span id="license-trademarks"></span>
 ## License & Trademarks
