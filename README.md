@@ -19,7 +19,7 @@ https://github.com/microsoft/HydraLab/assets/8344245/cefefe24-4e11-4cc7-a3af-70c
 <span id="what-is"></span>
 ## What is Hydra Lab?
 
-As mentioned in the above video, Hydra Lab is a framework that can help you easily build a cloud testing platform utilizing the test devices/machines in hand. 
+As mentioned in the above video, Hydra Lab is a framework that can help you easily build a cloud-testing platform utilizing the test devices/machines in hand. 
 
 Capabilities of Hydra Lab include:
 - Scalable test device management under the center-agent distributed design; Test task management and test result visualization.
@@ -47,17 +47,19 @@ Please visit our **[GitHub Project Wiki](https://github.com/microsoft/HydraLab/w
 <span id="quick-start"></span>
 ### Quick guide on out-of-box Uber docker image
 
-Hydra Lab offers an out-of-box experience of docker image called Uber. You can follow the below steps and start your docker container with a center instance and an agent instance built in:
+Hydra Lab offers an out-of-box experience of the Docker image, and we call it `Uber`. You can follow the below steps and start your docker container with both a center instance and an agent instance:
 
-**Step 1. download and install [Docker](https://www.docker.com)**
+**Step 1. Download and install [Docker](https://www.docker.com)**
 
-**Step 2. run on your machine**
+**Step 2. Run on your machine**
 
 By Default, Hydra Lab will use the local file system as a storage solution, and you may type the following in your terminal to run it:
 
 ```bash
 docker run -p 9886:9886 --name=hydra-lab ghcr.io/microsoft/hydra-lab-uber:latest
 ```
+
+> We strongly recommend using [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) service as the file storage solution, and Hydra Lab has native, consistent, and validated support for it. 
 
 **Step 3. Visit the web page and view your connected devices**
 
@@ -67,10 +69,10 @@ Enjoy starting your journey of exploration!
 
 **Step 4. Perform the test procedure with a minimal setup**
 
-Note: For Android, Uber image only supports **Espresso/Instrumentation** test. See "User manual" section on this page for more features: [Hydra Lab Wikis](https://github.com/microsoft/HydraLab/wiki).
+Note: For Android, Uber image only supports **Espresso/Instrumentation** test. See the "User Manual" section on this page for more features: [Hydra Lab Wikis](https://github.com/microsoft/HydraLab/wiki).
 
 **To run a test with Uber image and local storage:**
-- On the front-end page, go to `Runner` tab and select `HydraLab Client`.
+- On the front-end page, go to the `Runner` tab and select `HydraLab Client`.
 - Click `Run` and change "Espresso test scope" to `Test app`, click `Next`.
 - Pick an available device, click `Next` again, and click `Run` to start the test.
 - When the test is finished, you can view the test result in the `Task` tab on the left navigator of the front-end page.
@@ -87,7 +89,7 @@ You can also run the center java Spring Boot service (a runnable Jar) separately
 **Step 1. Run Hydra Lab center service**
 
 ```bash
-# In project root, switch to react folder to build the Web front.
+# In the project root, switch to react folder to build the Web front.
 cd react
 npm ci
 npm run pub
@@ -105,18 +107,18 @@ java -jar center/build/libs/center.jar
 **Step 2. Run Hydra Lab agent service**
 
 ```bash
-# In project root
+# In the project root
 cd android_client
 # Build the Android client apk
 ./gradlew assembleDebug
 cp app/build/outputs/apk/debug/app-debug.apk ../common/src/main/resources/record_release.apk
 # If you don't have the SDK for Android ,you can download the prebuilt APK in https://github.com/microsoft/HydraLab/releases
-# Back to project root
+# Back to the project root
 cd .. 
-# In project root, copy the sample config file and update the:
+# In the project root, copy the sample config file and update the:
 # YOUR_AGENT_NAME, YOUR_REGISTERED_AGENT_ID and YOUR_REGISTERED_AGENT_SECRET.
 cp agent/application-sample.yml application.yml
-# Then build agent jar and run it
+# Then build an agent jar and run it
 gradlew :agent:bootJar
 java -jar agent/build/libs/agent.jar
 ```
