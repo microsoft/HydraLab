@@ -17,14 +17,17 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 
 
@@ -129,6 +132,8 @@ public class AppCenterErrorLogHandler {
         /* Process information. Parent one is not available on Android. */
         errorLog.setProcessId(getProcessId());
 
+        loadSystemProperties(errorLog);
+
         /*
          * Process name is required field for crash processing but cannot always be available,
          * make sure we send a default value if not found.
@@ -166,6 +171,62 @@ public class AppCenterErrorLogHandler {
             errorLog.setThreads(threads);
         }
         return errorLog;
+    }
+
+    private void loadSystemProperties(HandledErrorLog errorLog) {
+        Map<String, String> systemInfoMap = new HashMap<>();
+        try {
+            Runtime r = Runtime.getRuntime();
+            Properties props = System.getProperties();
+            InetAddress addr = InetAddress.getLocalHost();
+            Map<String, String> map = System.getenv();
+            String userName = map.get("USERNAME");
+            String computerName = map.get("COMPUTERNAME");
+            String userDomain = map.get("USERDOMAIN");
+
+            // Store the system information into the HashMap
+            systemInfoMap.put("userName", userName);
+            systemInfoMap.put("computerName", computerName);
+            systemInfoMap.put("userDomain", userDomain);
+            systemInfoMap.put("hostname", addr.getHostName());
+            systemInfoMap.put("totalMemory", Long.toString(r.totalMemory()));
+            systemInfoMap.put("freeMemory", Long.toString(r.freeMemory()));
+            systemInfoMap.put("availableProcessors", Integer.toString(r.availableProcessors()));
+            systemInfoMap.put("javaVersion", props.getProperty("java.version"));
+            systemInfoMap.put("javaVendor", props.getProperty("java.vendor"));
+            systemInfoMap.put("javaHome", props.getProperty("java.home"));
+            systemInfoMap.put("javaVmSpecVersion", props.getProperty("java.vm.specification.version"));
+            systemInfoMap.put("javaVmSpecVendor", props.getProperty("java.vm.specification.vendor"));
+            systemInfoMap.put("javaVmSpecName", props.getProperty("java.vm.specification.name"));
+            systemInfoMap.put("javaVmVersion", props.getProperty("java.vm.version"));
+            systemInfoMap.put("javaVmVendor", props.getProperty("java.vm.vendor"));
+            systemInfoMap.put("javaVmName", props.getProperty("java.vm.name"));
+            systemInfoMap.put("javaSpecVersion", props.getProperty("java.specification.version"));
+            systemInfoMap.put("javaSpecName", props.getProperty("java.specification.name"));
+            systemInfoMap.put("javaClassVersion", props.getProperty("java.class.version"));
+            systemInfoMap.put("javaIoTmpdir", props.getProperty("java.io.tmpdir"));
+            systemInfoMap.put("osName", props.getProperty("os.name"));
+            systemInfoMap.put("osArch", props.getProperty("os.arch"));
+            systemInfoMap.put("osVersion", props.getProperty("os.version"));
+            systemInfoMap.put("fileSeparator", props.getProperty("file.separator"));
+            systemInfoMap.put("pathSeparator", props.getProperty("path.separator"));
+            systemInfoMap.put("lineSeparator", props.getProperty("line.separator"));
+            systemInfoMap.put("userNameProp", props.getProperty("user.name"));
+            systemInfoMap.put("userHome", props.getProperty("user.home"));
+            systemInfoMap.put("userDir", props.getProperty("user.dir"));
+
+            File file = new File("");
+            long totalSpace = file.getTotalSpace();
+            long freeSpace = file.getFreeSpace();
+            long remainingDiskSpace = freeSpace / (1024 * 1024); // Convert to MB
+
+            systemInfoMap.put("remainingDiskSpace", Long.toString(remainingDiskSpace));
+            systemInfoMap.put("totalDiskSpace", Long.toString(totalSpace));
+
+        } catch (Exception e) {
+            logger.error("Error while loading system properties", e);
+        }
+        errorLog.setProperties(systemInfoMap);
     }
 
     public static ExceptionInfo getModelExceptionFromThrowable(Throwable t) {
