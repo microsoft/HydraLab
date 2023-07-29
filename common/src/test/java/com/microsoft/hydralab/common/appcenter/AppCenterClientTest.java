@@ -10,21 +10,25 @@ import com.microsoft.hydralab.common.util.MockUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class AppCenterClientServiceTest {
+public class AppCenterClientTest {
 
     private String appCenterToken;
 
     {
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileInputStream("env.properties"));
-            appCenterToken = properties.getProperty("APP_CENTER_TOKEN");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        String name = "env.properties";
+        if (new File(name).exists()) {
+            Properties properties = new Properties();
+            try {
+                properties.load(new FileInputStream(name));
+                appCenterToken = properties.getProperty("APP_CENTER_TOKEN");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
