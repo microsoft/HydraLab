@@ -39,26 +39,6 @@ import java.util.UUID;
 public class AppCenterErrorLogHandler {
     private static final Logger logger = LoggerFactory.getLogger(AppCenterErrorLogHandler.class);
     /**
-     * Device info filename.
-     */
-    public static final String DEVICE_INFO_FILE = "deviceInfo";
-
-    /**
-     * Error log file extension for the JSON schema.
-     */
-    public static final String ERROR_LOG_FILE_EXTENSION = ".json";
-
-    /**
-     * Directory under the MINIDUMP_DIRECTORY for new dump files.
-     */
-    private static final String NEW_MINIDUMP_DIRECTORY = "new";
-
-    /**
-     * Directory under the MINIDUMP_DIRECTORY for pending dump files.
-     */
-    private static final String PENDING_MINIDUMP_DIRECTORY = "pending";
-
-    /**
      * For huge stack traces such as giant StackOverflowError, we keep only beginning and end of frames according to this limit.
      */
     public static final int FRAME_LIMIT = 256;
@@ -79,19 +59,9 @@ public class AppCenterErrorLogHandler {
     private static final int CAUSE_LIMIT_HALF = CAUSE_LIMIT / 2;
 
     /**
-     * Error log directory within application files.
-     */
-    static final String ERROR_DIRECTORY = "error";
-
-    /**
-     * Root directory for error log and throwable files.
-     */
-    private static File sErrorLogDirectory;
-
-    /**
      * Max number of properties.
      */
-    private static final int MAX_PROPERTY_COUNT = 20;
+    private static final int MAX_PROPERTY_COUNT = 64;
 
     /**
      * Max length of properties.
