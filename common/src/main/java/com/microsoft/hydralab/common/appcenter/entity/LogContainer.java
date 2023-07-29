@@ -20,6 +20,6 @@ public class LogContainer {
     /**
      * The list of logs.
      */
-    private List<HandledErrorLog> logs = new ArrayList<>();
+    private List<Log> logs = new ArrayList<>();
 
 }

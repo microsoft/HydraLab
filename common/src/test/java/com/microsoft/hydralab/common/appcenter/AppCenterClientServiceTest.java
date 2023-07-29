@@ -4,19 +4,19 @@ package com.microsoft.hydralab.common.appcenter;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.microsoft.hydralab.common.appcenter.entity.Device;
 import com.microsoft.hydralab.common.appcenter.entity.HandledErrorLog;
-import com.microsoft.hydralab.common.appcenter.entity.LogContainer;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
+import com.microsoft.hydralab.common.util.MockUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.UUID;
 
 public class AppCenterClientServiceTest {
 
-    private final String appCenterToken;
+    private String appCenterToken;
 
     {
         Properties properties = new Properties();
@@ -29,39 +29,24 @@ public class AppCenterClientServiceTest {
     }
 
     @Test
-    public void sendCrashLogTest() throws Exception {
-        LogContainer logContainer = new LogContainer();
-        Device device = new Device();
-        device.setSdkName("appcenter.android");                       // Example: "Android SDK"
-        device.setSdkVersion("4.4.4");                 // Example: "1.2.3"
-        device.setModel("Mi9");                          // Example: "iPad2,3"
-        device.setOemName("Xiaomi");                 // Example: "HTC"
-        device.setOsName("Android");                // Example: "iOS"
-        device.setOsVersion("11");          // Example: "9.3.0"
-        device.setOsBuild("LMY47X");         // Example: "LMY47X"
-        device.setOsApiLevel(30);                                 // Example: 15
-        device.setLocale("en_US");                                // Example: "en_US"
-        device.setTimeZoneOffset(480);                            // Example: 300 (5 hours offset from UTC)
-        device.setScreenSize("640x480");                          // Example: "640x480"
-        device.setAppVersion("1.0.0");         // Example: "1.0.0"
-        device.setAppBuild("10000");                   // Example: "42"
-        device.setAppNamespace("com.microsoft.hydralab.android.client");         // Example: "com.example.app"
-        String userId = UUID.randomUUID().toString();
-        AppCenterErrorLogHandler appCenterErrorLogHandler = new AppCenterErrorLogHandler(device, userId);
-        HandledErrorLog handledErrorLog = appCenterErrorLogHandler.createErrorLog(
-                Thread.currentThread(), new Exception("test exception"), System.currentTimeMillis(), true);
+    public void sendErrorLogTest() throws Exception {
+        boolean mockHttpClient = false;
+        if (StringUtils.isBlank(appCenterToken)) {
+            appCenterToken = "test";
+            // and we need to mock the http request
+            mockHttpClient = true;
+        }
+        AppCenterClient appCenterClient = new AppCenterClient(appCenterToken, "agent");
 
-//        handledErrorLog.setType(HandledErrorLog.TYPE);
-        handledErrorLog.setSid(UUID.randomUUID());
+        if (mockHttpClient) {
+            appCenterClient.httpClient = MockUtil.mockOkHttpClient("{}");
+        }
 
-        logContainer.getLogs().add(handledErrorLog);
-        AppCenterClientService appCenterClientService = new AppCenterClientService();
+        HandledErrorLog handledErrorLog = appCenterClient.createErrorLog(Thread.currentThread(), new HydraLabRuntimeException("sendErrorLogTest exception"), true);
 
-        System.out.println(appCenterToken);
-        System.out.println(JSON.toJSONString(logContainer, SerializerFeature.PrettyFormat));
+        System.out.println(JSON.toJSONString(handledErrorLog, SerializerFeature.PrettyFormat));
 
-        appCenterClientService.sendCrashLog(appCenterToken,
-                UUID.randomUUID().toString(), logContainer);
+        appCenterClient.send(handledErrorLog);
 
     }
 

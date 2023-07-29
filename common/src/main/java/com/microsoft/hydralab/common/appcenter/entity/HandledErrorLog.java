@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class HandledErrorLog {
+public class HandledErrorLog implements Log {
 
     /**
      * Log type.
