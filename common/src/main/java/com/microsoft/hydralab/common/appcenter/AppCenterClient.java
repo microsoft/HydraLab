@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+// https://learn.microsoft.com/en-us/appcenter/diagnostics/upload-crashes
 public class AppCenterClient {
     private static final String LOG_URL = "https://in.appcenter.ms";
     private static final String API_PATH = "/logs?api-version=1.0.0";
