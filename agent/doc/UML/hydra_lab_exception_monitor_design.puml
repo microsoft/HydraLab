@@ -1,27 +1,31 @@
 @startuml exception_monitor
 interface ExceptionReporter {
     + void reportException(Exception e)
-    + void reportException(String message, StackTraceElement[] stackTrace)
+    + void reportException(Exception e ,Thread thread)
+    + void reportException(String message, StackTraceElement[] stackTrace, String threadName)
 }
 
-class ExceptionReporterManager implements ExceptionReporter {
+class ExceptionReporterManager {
     List<ExceptionReporter> reporters
-
     + void registerExceptionReporter(ExceptionReporter reporter)
     + void reportException(Exception e)
-    + void reportException(String message, StackTraceElement[] stackTrace)
+    + void reportException(Exception e ,Thread thread)
+    + void reportException(String message, StackTraceElement[] stackTrace, String threadName)
 }
 
-class AppCenterReporter extends ExceptionReporterManager {
+class AppCenterReporter implements ExceptionReporter {
     AppCenterClient appCenterClient;
+
     + void reportException(Exception e)
-    + void reportException(String message, StackTraceElement[] stackTrace)
+    + void reportException(Exception e ,Thread thread)
+    + void reportException(String message, StackTraceElement[] stackTrace, String threadName)
 }
 
 
-class FileErrorLogger extends ExceptionReporterManager {
+class FileErrorLogger implements ExceptionReporter {
     + void reportException(Exception e)
-    + void reportException(String message, StackTraceElement[] stackTrace)
+    + void reportException(Exception e ,Thread thread)
+    + void reportException(String message, StackTraceElement[] stackTrace, String threadName)
     + void writeToFile(String message, StackTraceElement[] stackTrace)
 }
 
@@ -29,13 +33,13 @@ class AppCenterClient{
     public HandledErrorLog createErrorLog(Thread thread, Exception testException, boolean fatal)
 }
 
-AppCenterClient <-- AppCenterReporter: call
+AppCenterClient <-- AppCenterReporter : call
 
-abstract class AppenderBase<E> {
+abstract class ch.qos.logback.core.AppenderBase<E> {
     + abstract void append(E var1);
 }
 
-class LogbackExceptionHandler extends AppenderBase {
+class LogbackExceptionHandler extends ch.qos.logback.core.AppenderBase {
     ExceptionReporterManager exceptionReporterManager;
     + void append(ILoggingEvent event)
 }
@@ -50,7 +54,9 @@ class ServiceExceptionHandler {
     + void handleException(Thread t, Throwable e)
 }
 
-LogbackExceptionHandler --> ExceptionReporterManager
-ThreadExceptionHandler --> ExceptionReporterManager
-ServiceExceptionHandler --> ExceptionReporterManager
+LogbackExceptionHandler --> ExceptionReporterManager : call
+ThreadExceptionHandler --> ExceptionReporterManager : call
+ServiceExceptionHandler --> ExceptionReporterManager : call
+
+ExceptionReporterManager --> ExceptionReporter : notifyEach
 @enduml
