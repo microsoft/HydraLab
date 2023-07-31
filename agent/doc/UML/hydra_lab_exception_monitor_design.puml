@@ -1,0 +1,56 @@
+@startuml exception_monitor
+interface ExceptionReporter {
+    + void reportException(Exception e)
+    + void reportException(String message, StackTraceElement[] stackTrace)
+}
+
+class ExceptionReporterManager implements ExceptionReporter {
+    List<ExceptionReporter> reporters
+
+    + void registerExceptionReporter(ExceptionReporter reporter)
+    + void reportException(Exception e)
+    + void reportException(String message, StackTraceElement[] stackTrace)
+}
+
+class AppCenterReporter extends ExceptionReporterManager {
+    AppCenterClient appCenterClient;
+    + void reportException(Exception e)
+    + void reportException(String message, StackTraceElement[] stackTrace)
+}
+
+
+class FileErrorLogger extends ExceptionReporterManager {
+    + void reportException(Exception e)
+    + void reportException(String message, StackTraceElement[] stackTrace)
+    + void writeToFile(String message, StackTraceElement[] stackTrace)
+}
+
+class AppCenterClient{
+    public HandledErrorLog createErrorLog(Thread thread, Exception testException, boolean fatal)
+}
+
+AppCenterClient <-- AppCenterReporter
+
+abstract class AppenderBase<E> {
+    + abstract void append(E var1);
+}
+
+class LogbackExceptionHandler extends AppenderBase {
+    ExceptionReporterManager exceptionReporterManager;
+    + void append(ILoggingEvent event)
+}
+
+class ThreadExceptionHandler implements Thread.UncaughtExceptionHandler {
+    ExceptionReporterManager exceptionReporterManager;
+    + void uncaughtException(Thread t, Throwable e)
+}
+
+class ServiceExceptionHandler {
+    ExceptionReporterManager exceptionReporterManager;
+    + void handleException(Thread t, Throwable e)
+}
+
+LogbackExceptionHandler --> ExceptionReporterManager
+ThreadExceptionHandler --> ExceptionReporterManager
+ServiceExceptionHandler --> ExceptionReporterManager
+@enduml
