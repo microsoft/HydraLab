@@ -447,9 +447,18 @@ export default class DeviceAgentsView extends BaseView {
     convertFunctionAvailability(availability) {
         var color = "YellowGreen"
         var icon = "check"
+        var requires = null
         if (availability.available === false) {
             color = "DarkGray"
             icon = "close"
+            requires = []
+            availability.envCapabilityRequirements.map(
+                (r) => {
+                    if (r.ready === false) {
+                        requires.push(r.envCapability.keyword)
+                    }
+                }
+            )
         } else if (availability.enabled === false) {
             color = "OrangeRed"
             icon = "block"
@@ -485,6 +494,26 @@ export default class DeviceAgentsView extends BaseView {
                 <span style={{ color: 'white', fontSize: '0.8rem', marginRight: 4 }}
                     className="material-icons-outlined">{icon}</span>
                 { name }
+                {
+                    requires === null ? null :
+                    <MUITooltip
+                        title={
+                            <Stack>
+                                <text>Absent Dependency:</text>
+                                {
+                                    requires.map(
+                                        (r) => {
+                                            return <span style={{color: 'OrangeRed'}}>{r}</span>
+                                        }
+                                    )
+                                }
+                            </Stack>}
+                        style={{ padding: "0" }}>
+                        <IconButton>
+                            <span style={{ color: 'orange', fontSize: '0.85rem', marginLeft: 4 }} className="material-icons-outlined">info</span>
+                        </IconButton>
+                    </MUITooltip>
+                }
             </div>
         )
     }
