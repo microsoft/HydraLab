@@ -29,7 +29,7 @@ class AppCenterClient{
     public HandledErrorLog createErrorLog(Thread thread, Exception testException, boolean fatal)
 }
 
-AppCenterClient <-- AppCenterReporter
+AppCenterClient <-- AppCenterReporter: call
 
 abstract class AppenderBase<E> {
     + abstract void append(E var1);
