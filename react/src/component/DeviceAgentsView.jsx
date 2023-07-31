@@ -150,6 +150,17 @@ export default class DeviceAgentsView extends BaseView {
                                                                         .filter(
                                                                             (fa) => fa.functionType === "DEVICE_DRIVER"
                                                                         )
+                                                                        .sort(
+                                                                            (fa1, fa2) => {
+                                                                                var s1 = 0
+                                                                                var s2 = 0
+                                                                                s1 += fa1.available ? 1 : 0
+                                                                                s1 += fa1.enabled ? 1 : 0
+                                                                                s2 += fa2.available ? 1 : 0
+                                                                                s2 += fa2.enabled ? 1 : 0
+                                                                                return s2 - s1
+                                                                            }
+                                                                        )
                                                                         .map(
                                                                             (fa) => this.convertFunctionAvailability(fa)
                                                                         )
@@ -161,6 +172,17 @@ export default class DeviceAgentsView extends BaseView {
                                                                         agent.functionAvailabilities
                                                                         .filter(
                                                                             (fa) => fa.functionType === "TEST_RUNNER"
+                                                                        )
+                                                                        .sort(
+                                                                            (fa1, fa2) => {
+                                                                                var s1 = 0
+                                                                                var s2 = 0
+                                                                                s1 += fa1.available ? 1 : 0
+                                                                                s1 += fa1.enabled ? 1 : 0
+                                                                                s2 += fa2.available ? 1 : 0
+                                                                                s2 += fa2.enabled ? 1 : 0
+                                                                                return s2 - s1
+                                                                            }
                                                                         )
                                                                         .map(
                                                                             (fa) => this.convertFunctionAvailability(fa)
@@ -423,13 +445,14 @@ export default class DeviceAgentsView extends BaseView {
     }
 
     convertFunctionAvailability(availability) {
-        if (availability.availability == false) {
-            return null
-        }
-
         var color = "YellowGreen"
-        if (availability.enabled === false) {
+        var icon = "check"
+        if (availability.available === false) {
+            color = "DarkGray"
+            icon = "close"
+        } else if (availability.enabled === false) {
             color = "OrangeRed"
+            icon = "block"
         }
 
         var name = "";
@@ -443,7 +466,7 @@ export default class DeviceAgentsView extends BaseView {
             name = "Espresso"
         } else if ((availability.functionName.endsWith("AppiumRunner"))) {
             name = "Appium"
-        } else if ((availability.functionName.endsWith("AppiumCross"))) {
+        } else if ((availability.functionName.endsWith("AppiumCrossRunner"))) {
             name = "Appium Cross"
         } else if ((availability.functionName.endsWith("SmartRunner"))) {
             name = "Smart"
@@ -458,7 +481,9 @@ export default class DeviceAgentsView extends BaseView {
         }
 
         return (
-            <div style={{ display: 'flex', fontSize: '0.6rem', paddingLeft: 8, color: color }}>
+            <div style={{ display: 'flex', fontSize: '0.6rem', paddingLeft: 8, color: color, alignItems: 'center' }}>
+                <span style={{ color: 'white', fontSize: '0.8rem', marginRight: 4 }}
+                    className="material-icons-outlined">{icon}</span>
                 { name }
             </div>
         )
