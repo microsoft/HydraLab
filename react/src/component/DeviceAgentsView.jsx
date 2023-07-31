@@ -19,6 +19,7 @@ import Alert from "@mui/material/Alert";
 import '../css/deviceAgentsView.css';
 import _ from 'lodash';
 import { AreaChart, Area, XAxis, YAxis, PieChart, Tooltip, Pie, Cell, Legend, ReferenceLine } from 'recharts';
+import { string } from 'prop-types';
 const COLORS = ['#00C49F', '#90C12F', '#44C16F', '#00C12F', '#00612F', '#59C12F', '#0061FF', '#0061aa'];
 const RADIAN = Math.PI / 180;
 const PieCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -125,19 +126,55 @@ export default class DeviceAgentsView extends BaseView {
                                     <div style={{ color: 'white' }}>
                                         {
                                             Number(agent.agentVersionCode) >= Number(this.state.latestAgentVersion) ?
-                                                <MUITooltip
-                                                    title={
-                                                        <Stack>
-                                                            Host:{agent.hostname}<br />
-                                                            Version:{agent.agentVersionName}<br />
-                                                            OS:{agent.agentOS}
-                                                        </Stack>}
-                                                    style={{ padding: "0" }}>
-                                                    <IconButton>
-                                                        <span style={{ color: 'white', }}
-                                                            className="material-icons-outlined">info</span>
-                                                    </IconButton>
-                                                </MUITooltip>
+                                                <div>
+                                                    <MUITooltip
+                                                        title={
+                                                            <Stack>
+                                                                Host:{agent.hostname}<br />
+                                                                Version:{agent.agentVersionName}<br />
+                                                                OS:{agent.agentOS}
+                                                            </Stack>}
+                                                        style={{ padding: "0" }}>
+                                                        <IconButton>
+                                                            <span style={{ color: 'white', }}
+                                                                className="material-icons-outlined">info</span>
+                                                        </IconButton>
+                                                    </MUITooltip>
+                                                    <MUITooltip
+                                                        title={
+                                                            <Stack>
+                                                                <div>
+                                                                    Drivers:
+                                                                    {
+                                                                        agent.functionAvailabilities
+                                                                        .filter(
+                                                                            (fa) => fa.functionType === "DEVICE_DRIVER"
+                                                                        )
+                                                                        .map(
+                                                                            (fa) => this.convertFunctionAvailability(fa)
+                                                                        )
+                                                                    }
+                                                                </div>
+                                                                <div>
+                                                                    Runners:
+                                                                    {
+                                                                        agent.functionAvailabilities
+                                                                        .filter(
+                                                                            (fa) => fa.functionType === "TEST_RUNNER"
+                                                                        )
+                                                                        .map(
+                                                                            (fa) => this.convertFunctionAvailability(fa)
+                                                                        )
+                                                                    }
+                                                                </div>
+                                                            </Stack>}
+                                                        style={{ padding: "0" }}>
+                                                        <IconButton>
+                                                            <span style={{ color: 'white', }}
+                                                                className="material-icons-outlined">domain_verification</span>
+                                                        </IconButton>
+                                                    </MUITooltip>
+                                                </div>
                                                 :
                                                 agent.agentStatus === "UPDATING" ?
                                                     <MUITooltip
@@ -383,6 +420,48 @@ export default class DeviceAgentsView extends BaseView {
         }).catch((error) => {
             this.snackBarError(error)
         })
+    }
+
+    convertFunctionAvailability(availability) {
+        if (availability.availability == false) {
+            return null
+        }
+
+        var color = "YellowGreen"
+        if (availability.enabled === false) {
+            color = "OrangeRed"
+        }
+
+        var name = "";
+        if (availability.functionName.endsWith("AndroidDeviceDriver")) {
+            name = "Android"
+        } else if (availability.functionName.endsWith("IOSDeviceDriver")) {
+            name = "iOS"
+        } else if ((availability.functionName.endsWith("WindowsDeviceDriver"))) {
+            name = "Windows"
+        } else if ((availability.functionName.endsWith("EspressoRunner"))) {
+            name = "Espresso"
+        } else if ((availability.functionName.endsWith("AppiumRunner"))) {
+            name = "Appium"
+        } else if ((availability.functionName.endsWith("AppiumCross"))) {
+            name = "Appium Cross"
+        } else if ((availability.functionName.endsWith("SmartRunner"))) {
+            name = "Smart"
+        } else if ((availability.functionName.endsWith("AdbMonkeyRunner"))) {
+            name = "ADB Monkey"
+        } else if ((availability.functionName.endsWith("AppiumMonkeyRunner"))) {
+            name = "Appium Monkey"
+        } else if ((availability.functionName.endsWith("T2CRunner"))) {
+            name = "T2C"
+        } else if ((availability.functionName.endsWith("XCTestRunner"))) {
+            name = "XCTest"
+        }
+
+        return (
+            <div style={{ display: 'flex', fontSize: '0.6rem', paddingLeft: 8, color: color }}>
+                { name }
+            </div>
+        )
     }
 
     updateAgent(agent) {
