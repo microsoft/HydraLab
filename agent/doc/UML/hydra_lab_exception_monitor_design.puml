@@ -22,7 +22,7 @@ class AppCenterReporter implements ExceptionReporter {
 }
 
 
-class FileErrorLogger implements ExceptionReporter {
+class FileReporter implements ExceptionReporter {
     + void reportException(Exception e)
     + void reportException(Exception e ,Thread thread)
     + void reportException(String message, StackTraceElement[] stackTrace, String threadName)
