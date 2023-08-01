@@ -2,7 +2,6 @@
 interface ExceptionReporter {
     + void reportException(Exception e)
     + void reportException(Exception e ,Thread thread)
-    + void reportException(String message, StackTraceElement[] stackTrace, String threadName)
 }
 
 class ExceptionReporterManager {
@@ -10,7 +9,6 @@ class ExceptionReporterManager {
     + void registerExceptionReporter(ExceptionReporter reporter)
     + void reportException(Exception e)
     + void reportException(Exception e ,Thread thread)
-    + void reportException(String message, StackTraceElement[] stackTrace, String threadName)
 }
 
 class AppCenterReporter implements ExceptionReporter {
@@ -18,14 +16,12 @@ class AppCenterReporter implements ExceptionReporter {
 
     + void reportException(Exception e)
     + void reportException(Exception e ,Thread thread)
-    + void reportException(String message, StackTraceElement[] stackTrace, String threadName)
 }
 
 
 class FileReporter implements ExceptionReporter {
     + void reportException(Exception e)
     + void reportException(Exception e ,Thread thread)
-    + void reportException(String message, StackTraceElement[] stackTrace, String threadName)
     + void writeToFile(String message, StackTraceElement[] stackTrace)
 }
 
