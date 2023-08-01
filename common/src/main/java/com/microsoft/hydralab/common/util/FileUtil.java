@@ -11,7 +11,14 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -224,5 +231,9 @@ public class FileUtil {
         }
         fis.close();
         bis.close();
+    }
+
+    public static void copyFile(String sourcePath, String targetPath) {
+        cn.hutool.core.io.FileUtil.copyFile(sourcePath, targetPath);
     }
 }
