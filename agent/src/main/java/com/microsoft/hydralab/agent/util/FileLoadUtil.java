@@ -20,7 +20,6 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -32,8 +31,6 @@ public class FileLoadUtil {
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
 
-    private static final Set<String> BLACKLIST_FOLDER = Set.of("config", "hydra", "logs", "SmartTest", "SmartTestString", "storage");
-
     public void clearAttachments(TestTask testTask) {
         List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
         if (attachments == null) {
@@ -41,7 +38,7 @@ public class FileLoadUtil {
         }
         for (StorageFileInfo attachment : attachments) {
             if (StorageFileInfo.FileType.COMMON_FILE.equals(attachment.getFileType())) {
-                File loadFolder = new File(appOptions.getLocation() + "/" + attachment.getLoadDir());
+                File loadFolder = new File(testTask.getResourceDir() + "/" + attachment.getLoadDir());
                 FileUtil.deleteFile(loadFolder);
             }
         }
@@ -59,7 +56,7 @@ public class FileLoadUtil {
                     installWinApp(attachment);
                     break;
                 case StorageFileInfo.FileType.COMMON_FILE:
-                    loadCommonFile(attachment);
+                    loadCommonFile(attachment, testTask);
                     break;
                 case StorageFileInfo.FileType.APP_FILE:
                     File appFile = downloadFile(attachment);
@@ -104,14 +101,11 @@ public class FileLoadUtil {
 
     }
 
-    public void loadCommonFile(StorageFileInfo attachment) {
+    public void loadCommonFile(StorageFileInfo attachment, TestTask testTask) {
         try {
-            File loadFolder = new File(appOptions.getLocation() + "/" + attachment.getLoadDir());
-            String firstLevelFolder = attachment.getLoadDir().split("/")[0];
-            Assert.isTrue(!BLACKLIST_FOLDER.contains(firstLevelFolder),
-                    "Load file error : " + loadFolder.getAbsolutePath() + " was contained in blacklist:" + BLACKLIST_FOLDER);
+            File loadFolder = new File(testTask.getResourceDir(), attachment.getLoadDir());
             log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
-            File attachmentFile = downloadFile(attachment, appOptions.getLocation(), attachment.getLoadDir() + "/" + attachment.getFileName());
+            File attachmentFile = downloadFile(attachment, testTask.getResourceDir().getAbsolutePath(), attachment.getLoadDir() + "/" + attachment.getFileName());
             if (StorageFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {
                 FileUtil.unzipFile(attachmentFile.getAbsolutePath(), loadFolder.getAbsolutePath());
             }
