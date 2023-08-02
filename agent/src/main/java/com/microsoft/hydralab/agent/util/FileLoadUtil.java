@@ -27,7 +27,7 @@ public class FileLoadUtil {
     @SuppressWarnings("constantname")
     static final Logger log = LoggerFactory.getLogger(FileLoadUtil.class);
     @Resource
-    private AppOptions appOptions;
+    AppOptions appOptions;
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
 
