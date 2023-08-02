@@ -28,7 +28,6 @@ import com.microsoft.hydralab.common.screen.PhoneAppScreenRecorder;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
-import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
@@ -46,11 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -345,6 +340,12 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     public void pushFileToDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnAgent,
                                  @NotNull String pathOnDevice, @Nullable Logger logger)
             throws IOException, InterruptedException {
+        ITestRun testRun = TestRunThreadContext.getTestRun();
+        if (testRun != null && testRun.getResultFolder() != null) {
+            logger.info("testRun.getResultFolder() is not null, will append it's parent folder {} to the prefix of pathOnAgent: {}",
+                    testRun.getResultFolder().getParent(), pathOnAgent);
+            pathOnAgent = new File(testRun.getResultFolder().getParent(), pathOnAgent).getAbsolutePath();
+        }
         adbOperateUtil.pushFileToDevice(deviceInfo, pathOnAgent, pathOnDevice, logger);
     }
 
