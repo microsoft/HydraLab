@@ -161,7 +161,7 @@ public class DeviceAgentManagementService {
         data.setAgentUser(agentUser);
         data.setPushgatewayUsername(pushgatewayUsername);
         data.setPushgatewayPassword(pushgatewayPassword);
-        if (appCenterEnabled) {
+        if (appCenterEnabled && appCenterSecret != null && !appCenterSecret.isEmpty()) {
             data.setAppCenterSecret(appCenterSecret);
         }
 

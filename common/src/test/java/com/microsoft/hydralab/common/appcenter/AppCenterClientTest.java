@@ -5,7 +5,6 @@ package com.microsoft.hydralab.common.appcenter;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.microsoft.hydralab.common.appcenter.entity.HandledErrorLog;
-import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.MockUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -41,8 +40,7 @@ public class AppCenterClientTest {
             // and we need to mock the http request
             mockHttpClient = true;
         }
-        AgentUser agentUser = new AgentUser();
-        AppCenterClient appCenterClient = new AppCenterClient(appCenterToken, agentUser.getName(), agentUser.getVersionName(), agentUser.getVersionCode());
+        AppCenterClient appCenterClient = new AppCenterClient(appCenterToken, "agent", "0.0.0", "000000");
 
         if (mockHttpClient) {
             appCenterClient.httpClient = MockUtil.mockOkHttpClient("{}");

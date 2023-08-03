@@ -48,7 +48,7 @@ public class AppConfig {
     private String storageType;
     @Value("${app.app-center.center.enabled: false}")
     private boolean appCenterEnabled;
-    @Value("${app.app-center.center.secret: ''}")
+    @Value("${app.app-center.center.secret:}")
     private String appCenterSecret;
     @Value("${center.version}")
     private String versionName;
@@ -149,7 +149,7 @@ public class AppConfig {
     @Bean
     public AppCenterReporter appCenterReporter() {
         AppCenterReporter appCenterReporter = new AppCenterReporter();
-        if (appCenterEnabled) {
+        if (appCenterEnabled && appCenterSecret != null && !appCenterSecret.isEmpty()) {
             appCenterReporter.initAppCenterReporter(appCenterSecret, "center", versionName, versionCode);
         }
         ExceptionReporterManager.registerExceptionReporter(appCenterReporter);
