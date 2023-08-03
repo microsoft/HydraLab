@@ -42,6 +42,12 @@
         </encoder>
     </appender>
 
+    <appender name="errorAlarm" class="com.microsoft.hydralab.common.exception.handler.LogbackExceptionHandler">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+    </appender>
+
     <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
@@ -52,10 +58,12 @@
     <logger name="com.microsoft" level="debug" additivity="false">
         <appender-ref ref="syslog"/>
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="errorAlarm"/>
     </logger>
     <logger name="logger.devices" level="debug" additivity="false">
     </logger>
     <logger name="access" level="info" additivity="false">
         <appender-ref ref="accessLog"/>
+        <appender-ref ref="errorAlarm"/>
     </logger>
 </configuration>

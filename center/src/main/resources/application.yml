@@ -70,6 +70,13 @@ app:
       endpoint: ${LOCAL_STORAGE_ENDPOINT:http://localhost:9886/}
       fileExpiryDay: ${fileExpiryDay:-1}
   location: ${user.dir}
+  app-center:
+    center:
+      enabled: ${AC_CENTER_ENABLED:false}
+      secret: ${AC_CENTER_SECRET:}
+    agent:
+      enabled: ${AC_AGENT_ENABLED:false}
+      secret: ${AC_AGENT_SECRET:}
 management:
   endpoints:
     web:

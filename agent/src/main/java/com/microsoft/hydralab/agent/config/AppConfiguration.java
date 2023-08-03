@@ -11,6 +11,9 @@ import com.microsoft.hydralab.agent.environment.EnvCapabilityDiscoveryService;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
+import com.microsoft.hydralab.common.exception.reporter.AppCenterReporter;
+import com.microsoft.hydralab.common.exception.reporter.ExceptionReporterManager;
+import com.microsoft.hydralab.common.exception.reporter.FileReporter;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
@@ -212,5 +215,19 @@ public class AppConfiguration {
     @Bean
     public StorageServiceClientProxy storageServiceClientProxy(ApplicationContext applicationContext) {
         return new StorageServiceClientProxy(applicationContext);
+    }
+
+    @Bean
+    public FileReporter fileReporter() {
+        FileReporter fileReporter = new FileReporter(appOptions.getErrorStorageLocation());
+        ExceptionReporterManager.registerExceptionReporter(fileReporter);
+        return fileReporter;
+    }
+
+    @Bean
+    public AppCenterReporter appCenterReporter() {
+        AppCenterReporter appCenterReporter = new AppCenterReporter();
+        ExceptionReporterManager.registerExceptionReporter(appCenterReporter);
+        return appCenterReporter;
     }
 }
