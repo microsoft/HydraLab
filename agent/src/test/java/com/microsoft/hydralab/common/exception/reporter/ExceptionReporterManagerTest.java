@@ -14,7 +14,6 @@ class ExceptionReporterManagerTest {
     void registerExceptionReporter() {
         AgentUser agentUser = new AgentUser();
         AppCenterReporter appCenterReporter = new AppCenterReporter();
-        appCenterReporter.initAppCenterReporter("appCenterSecret", agentUser.getName(), agentUser.getVersionName(), agentUser.getVersionCode());
         ExceptionReporterManager.registerExceptionReporter(appCenterReporter);
         ExceptionReporterManager.registerExceptionReporter(new FileReporter("errorOutput"));
     }
