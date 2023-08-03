@@ -44,6 +44,7 @@ public class AppCenterReporter implements ExceptionReporter {
         logger.info("Exception collected in Thread {} with message {}", thread.getName(), e.getMessage());
         if (!isAppCenterEnabled) {
             logger.warn("AppCenter is not enabled, skip reporting exception to AppCenter");
+            return;
         }
         HandledErrorLog handledErrorLog = appCenterClient.createErrorLog(thread, e, true);
         try {
