@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Date;
@@ -28,12 +27,12 @@ public class FileReporter implements ExceptionReporter {
     }
 
     @Override
-    public void reportException(Exception e) {
+    public void reportException(Exception e, boolean fatal) {
         writeToFile(e, Thread.currentThread());
     }
 
     @Override
-    public void reportException(Exception e, Thread thread) {
+    public void reportException(Exception e, Thread thread, boolean fatal) {
         writeToFile(e, thread);
     }
 

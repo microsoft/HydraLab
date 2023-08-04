@@ -30,23 +30,23 @@ public class AppCenterReporter implements ExceptionReporter {
     }
 
     @Override
-    public void reportException(Exception e) {
-        reportExceptionToAppCenter(e, Thread.currentThread());
+    public void reportException(Exception e, boolean fatal) {
+        reportExceptionToAppCenter(e, Thread.currentThread(), fatal);
     }
 
     @Override
-    public void reportException(Exception e, Thread thread) {
-        reportExceptionToAppCenter(e, thread);
+    public void reportException(Exception e, Thread thread, boolean fatal) {
+        reportExceptionToAppCenter(e, thread, fatal);
     }
 
 
-    private void reportExceptionToAppCenter(Exception e, Thread thread) {
+    private void reportExceptionToAppCenter(Exception e, Thread thread, boolean fatal) {
         logger.info("Exception collected in Thread {} with message {}", thread.getName(), e.getMessage());
         if (!isAppCenterEnabled) {
             logger.warn("AppCenter is not enabled, skip reporting exception to AppCenter");
             return;
         }
-        HandledErrorLog handledErrorLog = appCenterClient.createErrorLog(thread, e, true);
+        HandledErrorLog handledErrorLog = appCenterClient.createErrorLog(thread, e, fatal);
         try {
             appCenterClient.send(handledErrorLog);
         } catch (IOException ex) {

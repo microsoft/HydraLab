@@ -35,11 +35,11 @@ public class ExceptionReporterManager {
         reporters.add(reporter);
     }
 
-    public static void reportException(Exception e) {
-        notifyEach(reporters, reporter -> reporter.reportException(e));
+    public static void reportException(Exception e, boolean fatal) {
+        notifyEach(reporters, reporter -> reporter.reportException(e, fatal));
     }
 
-    public static void reportException(Exception e, Thread thread) {
-        notifyEach(reporters, reporter -> reporter.reportException(e, thread));
+    public static void reportException(Exception e, Thread thread, boolean fatal) {
+        notifyEach(reporters, reporter -> reporter.reportException(e, thread, fatal));
     }
 }

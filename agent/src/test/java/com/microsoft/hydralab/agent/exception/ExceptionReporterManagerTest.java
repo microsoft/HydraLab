@@ -36,7 +36,7 @@ class ExceptionReporterManagerTest extends BaseTest {
             FileUtil.deleteFile(folder);
         }
         folder.mkdir();
-        ExceptionReporterManager.reportException(new Exception("test exception1"));
+        ExceptionReporterManager.reportException(new Exception("test exception1"), true);
         Assertions.assertEquals(1, folder.listFiles().length, "should have one file");
     }
 
@@ -48,7 +48,7 @@ class ExceptionReporterManagerTest extends BaseTest {
             FileUtil.deleteFile(folder);
         }
         folder.mkdir();
-        ExceptionReporterManager.reportException(new Exception("test exception2"), Thread.currentThread());
+        ExceptionReporterManager.reportException(new Exception("test exception2"), Thread.currentThread(), true);
         Assertions.assertEquals(1, folder.listFiles().length, "should have one file");
     }
 }

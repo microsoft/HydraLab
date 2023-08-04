@@ -29,6 +29,6 @@ public class LogbackExceptionHandler extends AppenderBase<ILoggingEvent> {
                 + " with message " + iLoggingEvent.getFormattedMessage()
                 + " at " + iLoggingEvent.getTimeStamp());
         exception.setStackTrace(iLoggingEvent.getCallerData());
-        ExceptionReporterManager.reportException(exception);
+        ExceptionReporterManager.reportException(exception, false);
     }
 }

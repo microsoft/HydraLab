@@ -22,6 +22,6 @@ public class ServiceExceptionHandler {
     @ExceptionHandler({Exception.class, HydraLabRuntimeException.class})
     public void handleException(Exception e) {
         logger.warn("Exception collected in ControllerAdvice with message {}", e.getMessage());
-        ExceptionReporterManager.reportException(e);
+        ExceptionReporterManager.reportException(e, true);
     }
 }
