@@ -104,6 +104,7 @@ public class MaestroRunner extends TestRunner {
     }
 
     private String buildCommand(TestRunDevice testRunDevice, TestRun testRun, Map<String, String> instrumentationArgs, File xmlFile) {
+        // sample: maestro --device 123456 test -e var=aaa --format junit --output /tmp/result.xml /tmp/caseFolder/
         StringBuilder argString = new StringBuilder();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
             instrumentationArgs.forEach((k, v) -> argString.append(" -e ").append(k.replaceAll("\\s|\"", "")).append("=").append(v.replaceAll("\\s|\"", "")));

@@ -43,16 +43,25 @@ public class MaestroResultReceiver extends Thread {
             while ((line = bufferedReader.readLine()) != null) {
                 logger.info(line);
                 if (line.startsWith("[Passed]")) {
+                    //for example: [Passed] test_flow1 (28s)
                     Map<String, String> caseInfo = analysisCaseInfo(line);
+                    // KEY_CASE_NAME: test_flow1
+                    // KEY_TEST_SECONDS: 28
                     listener.testEnded(caseInfo.get(KEY_CASE_NAME), Integer.parseInt(caseInfo.get(KEY_TEST_SECONDS)));
                 } else if (line.startsWith("[Failed]")) {
+                    //for example: [Failed] test_flow2 (20s) (Element not found: UiSelector[CLASS=android.widget.TextView, INSTANCE=1])
                     Map<String, String> caseInfo = analysisCaseInfo(line);
+                    // KEY_CASE_NAME: test_flow2
+                    // KEY_TEST_SECONDS: 20
+                    // KEY_ERROR: (Element not found: UiSelector[CLASS=android.widget.TextView, INSTANCE=1])
                     listener.testFailed(caseInfo.get(KEY_CASE_NAME), Integer.parseInt(caseInfo.get(KEY_TEST_SECONDS)), caseInfo.get(KEY_ERROR));
                 } else if (line.contains("Debug output")) {
+                    // for example: ==== Debug output (logs & screenshots) ====
                     isTestRunFailed = true;
                     logger.info("Start to analysis debug output");
                 }
                 if (isTestRunFailed) {
+                    // for example: /Users/xxx/.maestro/test/2023-07-11_110500
                     if (LogUtils.isLegalStr(line, Const.RegexString.LINUX_ABSOLUTE_PATH, false)
                             || LogUtils.isLegalStr(line, Const.RegexString.WINDOWS_ABSOLUTE_PATH, false)) {
                         listener.testRunFailed(line);
@@ -72,6 +81,12 @@ public class MaestroResultReceiver extends Thread {
         }
     }
 
+    /**
+     * analysis case info
+     * @param line
+     * @return
+     * @example
+     */
     private Map<String, String> analysisCaseInfo(String line) {
         Map<String, String> infoMap = new HashMap<>();
         String[] msg = line.split(" ");
@@ -80,6 +95,7 @@ public class MaestroResultReceiver extends Thread {
             infoMap.put(KEY_TEST_SECONDS, "0");
         }
         infoMap.put(KEY_CASE_NAME, msg[1]);
+        // for example: (28s), except result 28
         String testSeconds = msg[2].replace("s", "").replace("(", "").replace(")", "");
         try {
             Integer.parseInt(testSeconds);

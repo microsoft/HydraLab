@@ -33,7 +33,6 @@ public class MaestroListener {
     private int index;
     private boolean alreadyEnd = false;
     private AndroidTestUnit ongoingTestUnit;
-    private int numTests;
 
     public MaestroListener(AgentManagementService agentManagementService,
                            TestRunDevice testRunDevice, TestRun testRun, TestTask testTask,
@@ -109,7 +108,6 @@ public class MaestroListener {
         ongoingTestUnit.setSuccess(false);
         ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
-        numTests++;
     }
 
     public void testEnded(String caseName, int testSeconds) {
@@ -123,7 +121,6 @@ public class MaestroListener {
         ongoingTestUnit.setSuccess(true);
         ongoingTestUnit.setEndTimeMillis(System.currentTimeMillis());
         ongoingTestUnit.setRelEndTimeInVideo(ongoingTestUnit.getEndTimeMillis() - recordingStartTimeMillis);
-        numTests++;
     }
 
     public void testRunFailed(String outputPath) {
@@ -139,7 +136,7 @@ public class MaestroListener {
     }
 
     public void testRunEnded() {
-        testRun.setTotalCount(numTests);
+        testRun.setTotalCount(index);
         infoLogEnter("testRunEnded", Thread.currentThread().getName());
         synchronized (this) {
             if (alreadyEnd) {
