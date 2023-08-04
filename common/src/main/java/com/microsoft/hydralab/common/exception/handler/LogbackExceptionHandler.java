@@ -20,7 +20,11 @@ public class LogbackExceptionHandler extends AppenderBase<ILoggingEvent> {
 
     @Override
     protected void append(ILoggingEvent iLoggingEvent) {
-        logger.warn("Exception collected in Logger {} on thread {} with message {} at {}",
+        // Skip the exception from ExceptionReporterManager and ExceptionReporters
+        if (iLoggingEvent.getLoggerName().contains("com.microsoft.hydralab.common.exception.reporter")) {
+            return;
+        }
+        logger.info("Exception collected in Logger {} on thread {} with message {} at {}",
                 iLoggingEvent.getLoggerName(),
                 iLoggingEvent.getThreadName(),
                 iLoggingEvent.getFormattedMessage(),
