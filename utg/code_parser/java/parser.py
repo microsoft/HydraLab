@@ -15,25 +15,17 @@ class parser:
 
     def parse_code(self):
         codes = self.codes
-        parser.remove_comments(codes)
-        self.p_codes = [item.strip() for item in codes]
-        print(self.p_codes)
-        for line in self.code:
-            ns = get_namespace(line)
-            if ns != '':
-                parse_stacks.push('$' + ns)
-                continue
-            cs = get_class(line)
-            if cs != '':
-                parse_stacks.push('#' + cs)
-                continue
-            fn = get_function(line)
-            if fn != '':
-                parse_stacks.push('@' + fn)
-                continue
+        parser.__remove_comments(codes)
+        codes = [l.strip() for l in codes]
+        self.p_codes = [l for l in codes if l]
         self.is_parsed = True
 
-    def remove_comments(codes):
+    def get_codes(self):
+        if not self.is_parsed:
+            self.parse_code()
+        return self.p_codes
+
+    def __remove_comments(codes):
         is_comment_block = False
         ln = 0
         while ln < len(codes):
@@ -90,4 +82,4 @@ class parser:
 if __name__ == '__main__':
     dir_path = os.path.dirname(__file__)
     p = parser(f'{dir_path}/../testdata/ContentWriter.java')
-    p.parse_code()
+    codes = p.get_codes()
