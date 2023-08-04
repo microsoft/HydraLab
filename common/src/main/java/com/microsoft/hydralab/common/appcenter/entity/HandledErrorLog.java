@@ -17,7 +17,7 @@ public class HandledErrorLog implements Log {
     /**
      * Log type.
      */
-    public static final String TYPE = "handledError";
+    public static final String WARNING_TYPE = "handledError";
 
     /**
      * Exception associated to the error.
@@ -47,6 +47,10 @@ public class HandledErrorLog implements Log {
      * The optional user identifier.
      */
     private String userId;
+    /**
+     * "managedError" -> AppCenter Crash
+     * "handledError" -> AppCenter Error
+     */
     private String type = "managedError";
 
     /**
