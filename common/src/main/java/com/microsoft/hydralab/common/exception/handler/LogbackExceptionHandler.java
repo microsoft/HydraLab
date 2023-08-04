@@ -3,6 +3,7 @@
 
 package com.microsoft.hydralab.common.exception.handler;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.microsoft.hydralab.common.exception.reporter.ExceptionReporterManager;
@@ -29,6 +30,6 @@ public class LogbackExceptionHandler extends AppenderBase<ILoggingEvent> {
                 + " with message " + iLoggingEvent.getFormattedMessage()
                 + " at " + iLoggingEvent.getTimeStamp());
         exception.setStackTrace(iLoggingEvent.getCallerData());
-        ExceptionReporterManager.reportException(exception, false);
+        ExceptionReporterManager.reportException(exception, Level.ERROR.equals(iLoggingEvent.getLevel()));
     }
 }
