@@ -84,8 +84,8 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
             }
             //invoke by browser
             if (StringUtils.isEmpty(oauthToken) || !authUtil.verifyToken(oauthToken)) {
+                String queryString = request.getQueryString();
                 if (requestURI.contains(Const.FrontEndPath.PREFIX_PATH)) {
-                    String queryString = request.getQueryString();
                     if (StringUtils.isNotEmpty(queryString)
                             && queryString.startsWith(Const.FrontEndPath.REDIRECT_PARAM)
                             && LogUtils.isLegalStr(queryString.replace(Const.FrontEndPath.REDIRECT_PARAM + "=", ""), Const.RegexString.URL, false)
@@ -96,6 +96,8 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
                     } else {
                         response.sendRedirect(authUtil.getLoginUrl());
                     }
+                } else if (requestURI.equals(Const.FrontEndPath.SWAGGER_DOC_PATH)) {
+                    response.sendRedirect(authUtil.getLoginUrl(requestURI, null));
                 } else {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.setHeader("Location", authUtil.getLoginUrl());
