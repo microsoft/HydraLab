@@ -6,6 +6,7 @@ package com.microsoft.hydralab.agent.runner.smart;
 import cn.hutool.core.lang.Assert;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.common.entity.agent.LLMProperties;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
@@ -30,6 +31,7 @@ public class SmartRunner extends TestRunner {
     private static final int MAJOR_PYTHON_VERSION = 3;
     private static final int MINOR_PYTHON_VERSION = 8;
     private final SmartTestUtil smartTestUtil;
+    private final LLMProperties llmProperties;
     private long recordingStartTimeMillis;
     private int index;
     private String pkgName;
@@ -40,9 +42,10 @@ public class SmartRunner extends TestRunner {
     public SmartRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                        TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                        PerformanceTestManagementService performanceTestManagementService,
-                       SmartTestUtil smartTestUtil) {
+                       SmartTestUtil smartTestUtil, LLMProperties llmProperties) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.smartTestUtil = smartTestUtil;
+        this.llmProperties = llmProperties;
     }
 
     @Override
@@ -72,7 +75,7 @@ public class SmartRunner extends TestRunner {
         /** init smart_test arg */
         //TODO choose model before starting test task
         smartTestParam = new SmartTestParam(testTask.getAppFile().getAbsolutePath(), testRunDevice.getDeviceInfo(), "0", "0",
-                testTask.getMaxStepCount(), smartTestUtil.getFolderPath(), smartTestUtil.getStringFolderPath(), testRun.getResultFolder());
+                testTask.getMaxStepCount(), smartTestUtil.getFolderPath(), smartTestUtil.getStringFolderPath(), testRun.getResultFolder(), llmProperties);
 
         for (int i = 1; i <= testTask.getDeviceTestCount(); i++) {
             checkTestTaskCancel(testTask);

@@ -79,7 +79,7 @@ public class SmartTestUtil {
         File smartTestFolder = new File(smartTestParam.getOutputFolder(), Const.SmartTestConfig.RESULT_FOLDER_NAME);
         smartTestFolder.mkdir();
         String res = null;
-        String[] runArgs = new String[8];
+        String[] runArgs = new String[9];
         runArgs[0] = "python";
         runArgs[1] = filePath;
         runArgs[2] = smartTestParam.apkPath;
@@ -88,6 +88,7 @@ public class SmartTestUtil {
         runArgs[5] = smartTestParam.testSteps;
         runArgs[6] = smartTestParam.stringTextFolder;
         runArgs[7] = smartTestFolder.getAbsolutePath();
+        runArgs[8] = smartTestParam.llmInfo;
 
         for (String tempArg : runArgs) {
             logger.info(tempArg);
