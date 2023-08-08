@@ -1,11 +1,11 @@
-Following String is a Java code file content.
-Write a complete Java Unit Test file for all functions in Java file content.
+Following String is a Java code file content and a target function name.
+Write a complete Java Unit Test file for a target function.
+This Unit Test should use Junit and Mockito frame work.
 
-Functions: An array of class functions name
-UT-File: An Unit Test file contents all functions UT.
+UT-File: An Unit Test file contents target function UT.
 
 Format output as JSON with following keys, each of them is string or array of strings:
-Functions
 UT-File
 
-Java Source Code: {code}
+Java Source Code: {source}
+Target Function: {function}
