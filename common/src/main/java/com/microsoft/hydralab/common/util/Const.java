@@ -109,6 +109,7 @@ public interface Const {
         String INDEX_PATH = "/portal/index.html";
         String ANCHOR = "#";
         String REDIRECT_PARAM = "redirectUrl";
+        String SWAGGER_DOC_PATH = "/v3/api-docs";
     }
 
     interface RegexString {
