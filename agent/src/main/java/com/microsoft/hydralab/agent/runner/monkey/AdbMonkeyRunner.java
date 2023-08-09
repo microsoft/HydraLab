@@ -69,6 +69,8 @@ public class AdbMonkeyRunner extends TestRunner {
         performanceTestManagementService.testStarted(TEST_RUN_NAME);
         long checkTime = runMonkeyTestOnce(testRun, logger, testTask.getInstrumentationArgs(),
                 testTask.getMaxStepCount());
+
+        releaseResource(testTask, testRunDevice, testRun);
         if (checkTime > 0) {
             String crashStack = testRun.getCrashStack();
             if (crashStack != null && !"".equals(crashStack)) {
@@ -83,7 +85,7 @@ public class AdbMonkeyRunner extends TestRunner {
             }
         }
         performanceTestManagementService.testRunFinished();
-        testRunEnded(testTask, testRunDevice, testRun);
+        testRunEnded(testRun);
 
         /** set paths */
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
@@ -180,14 +182,17 @@ public class AdbMonkeyRunner extends TestRunner {
         return checkTime;
     }
 
-    public void testRunEnded(TestTask testTask, TestRunDevice testRunDevice, TestRun testRun) {
-        testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
-        testRun.onTestEnded();
+    public void releaseResource(TestTask testTask, TestRunDevice testRunDevice, TestRun testRun) {
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
         testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
         if (!testTask.isDisableRecording()) {
             testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
         }
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
+    }
+
+    public void testRunEnded(TestRun testRun) {
+        testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.onTestEnded();
     }
 }
