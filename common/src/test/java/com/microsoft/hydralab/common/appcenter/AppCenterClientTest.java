@@ -40,7 +40,7 @@ public class AppCenterClientTest {
             // and we need to mock the http request
             mockHttpClient = true;
         }
-        AppCenterClient appCenterClient = new AppCenterClient(appCenterToken, "agent");
+        AppCenterClient appCenterClient = new AppCenterClient(appCenterToken, "agent", "0.0.0", "000000");
 
         if (mockHttpClient) {
             appCenterClient.httpClient = MockUtil.mockOkHttpClient("{}");
@@ -53,6 +53,4 @@ public class AppCenterClientTest {
         appCenterClient.send(handledErrorLog);
 
     }
-
-
 }

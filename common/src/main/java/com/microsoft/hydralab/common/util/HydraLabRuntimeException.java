@@ -3,16 +3,14 @@
 package com.microsoft.hydralab.common.util;
 
 public class HydraLabRuntimeException extends RuntimeException {
-    int code;
+    private int code;
 
     public HydraLabRuntimeException(String message) {
-        super(message);
-        this.code = 500;
+        this(500, message);
     }
 
     public HydraLabRuntimeException(String message, Exception e) {
-        super(message, e);
-        this.code = 500;
+        this(500, message, e);
     }
 
     public HydraLabRuntimeException(int code, String message) {
