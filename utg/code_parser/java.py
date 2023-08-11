@@ -1,5 +1,6 @@
 import os
-import re
+
+import regex
 
 
 def str_to_lines(code):
@@ -10,9 +11,58 @@ def str_to_lines(code):
 
 
 def lines_to_str(codes):
+    s = ""
     if isinstance(codes, str):
-        return codes
-    return "\n".join(codes)
+        s = codes
+    else:
+        s = " ".join(codes)
+    s = s.replace("\n", " ")
+    s = regex.sub(r"\s+", " ", s)
+    return s.strip()
+
+
+def filter_strs(strs):
+    return [s.strip() for s in strs if s and s.strip() != ""]
+
+
+def remove_comments(inputs):
+    codes = str_to_lines(inputs)
+    is_comment_block = False
+    ln = 0
+    while ln < len(codes):
+        line = codes[ln]
+        if is_comment_block:
+            block_close = line.find("*/")
+            if block_close == -1:
+                codes[ln] = ""
+                ln += 1
+                continue
+            else:
+                codes[ln] = line[block_close + 2 :]
+                is_comment_block = False
+                continue
+        comment_block_start = line.find("/*")
+        if comment_block_start >= 0:
+            codes[ln] = line[:comment_block_start]
+            is_comment_block = True
+            ln += 1
+            continue
+        comment_line_start = line.find("//")
+        if comment_line_start >= 0:
+            codes[ln] = line[:comment_line_start]
+            ln += 1
+            continue
+        ln += 1
+    return codes
+
+
+java_package_regex = r"package\s+([\w\.\*]+);"
+java_import_regex = r"import\s+((static\s+)?([\w\.\*]+));"
+java_class_regex = r"((\@[\w\.\(\)]+\s+)*)(public\s+(final\s+)?class)\s+(\w+)\s*(\{((?>[^{}]+|(?6))*)})"
+java_function_regex = r"((\@[\w\.\(\)]+\s+)*)(public\s+\w+)\s+(\w+)\s*\(\s*((\w+\s+\w+\s*(\,\s*\w+\s+\w+\s*)*)?)\)\s*(throws\s+(\w+)\s*)?(\{((?:[^{}]*|(?10))*)\})"
+java_member_regex = (
+    r"((\@[\w\.\(\)]+\s*)*)(\s*(public|private)\s+\w+)\s+(\w+)\s*(=\s*(\w+))?\s*;"
+)
 
 
 class java_file:
@@ -22,71 +72,111 @@ class java_file:
         self.classes = []
         self.__parse(codes)
 
-    def __parse(self, codes):
-        codes = str_to_lines(codes)
-        # package
-        for c in codes:
-            m = re.match(r"package\s+([\w\.\*]+);\s*", c)
-            if m:
-                self.package = m.group(1)
-        # import
-        for c in codes:
-            m = re.match(r"import\s+((static\s+)?[\w\.\*]+);\s*", c)
-            if m:
-                self.imports.append(m.group(1))
-        # class
-        bracket_depth = -1  # -1: is not in function
-        class_begin = -1
-        class_end = -1
-        for i, c in enumerate(codes):
-            if bracket_depth < 0:
-                m_open = re.match(r"public\s+class\s+(\w+)\s*{\s*", c)
-                if m_open:
-                    bracket_depth = 1
-                    class_begin = i
-                    continue
-                m_no_open = re.match(r"public\s+class\s+(\w*)\s*", c)
-                if m_no_open:
-                    bracket_depth = 0
-                    class_begin = i
-                    continue
-                pass  # not match
+    def id(self):
+        return f"{self.package}"
+
+    def bind(self, rhs):
+        imports = []
+        [imports.append(i) for i in self.imports + rhs.imports if i not in imports]
+        self.imports = imports
+        class_dict = {}
+        for c in self.classes:
+            if class_dict.keys().__contains__(c.id()):
+                class_dict[c.id()].bind(c)
             else:
-                inc = c.count("{")
-                dec = c.count("}")
-                bracket_depth += inc - dec
-                if dec > 0 and bracket_depth == 0:
-                    class_end = i
-                    class_codes = codes[class_begin : class_end + 1]
-                    class_obj = java_class(class_codes)
-                    self.classes.append(class_obj)
+                class_dict[c.id()] = c
+        for c in rhs.classes:
+            if class_dict.keys().__contains__(c.id()):
+                class_dict[c.id()].bind(c)
+            else:
+                class_dict[c.id()] = c
+        self.classes = list(class_dict.values())
+
+    def get_codes_str(self):
+        code_str = ""
+        if self.package:
+            code_str += f"package {self.package};\n\n"
+        for i in self.imports:
+            code_str += f"import {i};\n"
+        if len(self.imports) > 0:
+            code_str += "\n"
+        for c in self.classes:
+            code_str += c.get_codes_str()
+        return code_str
+
+    def __parse(self, codes):
+        code = lines_to_str(remove_comments(codes))
+        # package
+        p = regex.match(java_package_regex, code, regex.DOTALL)
+        if p:
+            self.package = m.group(1).strip()
+        # import
+        for i in regex.finditer(java_import_regex, code, regex.DOTALL):
+            self.imports.append(i.group(1).strip())
+        # class
+        self.classes = java_class.try_parse_all(code)
 
 
 class java_class:
     def __init__(self, codes):
+        self.tags = []
         self.prefix = ""
         self.class_name = ""
         self.members = []
         self.functions = []
         self.__parse(codes)
 
+    def id(self):
+        return f"{self.class_name} {self.class_name}"
+
+    def bind(self, rhs):
+        if self.class_name != rhs.class_name:
+            return
+        member_dict = {}
+        for m in self.members + rhs.members:
+            member_dict[m.id()] = m
+        self.members = list(member_dict.values())
+        self.functions = self.functions + rhs.functions
+
+    def get_codes_str(self):
+        code_str = ""
+        for t in self.tags:
+            code_str += f"@{t}\n"
+        code_str += f"{self.prefix} {self.class_name} {{\n"
+        for m in self.members:
+            code_str += f"{m.get_codes_str()}\n"
+        for f in self.functions:
+            code_str += f"{f.get_codes_str()}\n"
+        code_str += "}\n"
+        return code_str
+
+    def try_parse(codes):
+        try:
+            m = java_class(codes)
+        except Exception as ex:
+            return None
+        return m
+
+    def try_parse_all(codes):
+        code = lines_to_str(codes)
+        classes = []
+        for c in regex.finditer(java_class_regex, code, regex.DOTALL):
+            class_obj = java_class.try_parse(code[c.start() : c.end()])
+            if class_obj:
+                classes.append(class_obj)
+        return classes
+
     def __parse(self, codes):
         code = lines_to_str(codes)
-        m = re.match(r"public\s+class\s+(\w+)[\s\n]*\{(.*)\}", code, re.DOTALL)
+        m = regex.match(java_class_regex, code, regex.DOTALL)
         if not m:
             raise ValueError(f"Class parse error:\n{code}")
-        self.class_name = m.group(1)
-        content = m.group(2)
-        while True:
-            member = java_member.try_parse(content)
-            if member:
-                self.members.append(member)
-                continue
-            function = java_function.try_parse(content)
-            if function:
-                self.functions.append(function)
-                continue
-            break
+        self.tags = filter_strs(m.group(1).split("@"))
+        self.prefix = m.group(3).strip()
+        self.class_name = m.group(5).strip()
+        content = m.group(6)
+        self.members = java_member.try_parse_all(content)
+        self.functions = java_function.try_parse_all(content)
 
 
 class java_member:
@@ -95,8 +185,20 @@ class java_member:
         self.prefix = ""
         self.member_name = ""
         self.member_default = ""
-        self.remain = None
         self.__parse(codes)
+
+    def id(self):
+        return f"{self.prefix} {self.member_name}"
+
+    def get_codes_str(self):
+        code_str = ""
+        for t in self.tags:
+            code_str += f"@{t}\n"
+        code_str += f"{self.prefix} {self.member_name}"
+        if self.member_default:
+            code_str += f" = {self.member_default}"
+        code_str += ";"
+        return code_str
 
     def try_parse(codes):
         try:
@@ -105,34 +207,47 @@ class java_member:
             return None
         return m
 
-    def get_remain(self):
-        ret = self.remain
-        self.remain = None
-        return ret
+    def try_parse_all(codes):
+        code = lines_to_str(codes)
+        members = []
+        for m in regex.finditer(java_member_regex, code, regex.DOTALL):
+            member = java_member.try_parse(code[m.start() : m.end()])
+            if member:
+                members.append(member)
+        return members
 
     def __parse(self, codes):
         code = lines_to_str(codes)
-        m = re.match(
-            r"(([\s\n]*\@\w+[\s\n]*)*)([\s\n]*(public|private)[\s\n]+\w+)[\s\n]+(\w+)[\s\n]*[=[\s\n]*(\w+)]?[\s\n]*;[\s\n]*(.*)",
-            code,
-            re.DOTALL,
-        )
+        m = regex.match(java_member_regex, code, regex.DOTALL)
         if not m:
             raise ValueError(f"Member parse error:\n{code}")
-        self.tags = m.group(1).split("@")
-        self.prefix = m.group(2)
-        self.member_name = m.group(3)
-        self.member_default = m.group(4)
-        self.remain = m.group(5)
+        self.tags = filter_strs(m.group(1).split("@"))
+        self.prefix = m.group(3).strip()
+        self.member_name = m.group(5).strip()
+        self.member_default = m.group(7)
 
 
 class java_function:
     def __init__(self, codes):
+        self.tags = []
         self.prefix = ""
         self.function_name = ""
-        self.parameters = []
+        self.parameters = ""
+        self.throws = ""
         self.content = ""
         self.__parse(codes)
+
+    def id(self):
+        return f"{self.prefix} {self.function_name}"
+
+    def get_codes_str(self):
+        code_str = ""
+        for t in self.tags:
+            code_str += f"@{t}\n"
+        code_str += f"{self.prefix} {self.function_name}({self.parameters}) {{\n"
+        code_str += f"{self.content}\n"
+        code_str += "}\n"
+        return code_str
 
     def try_parse(codes):
         try:
@@ -141,28 +256,26 @@ class java_function:
             return None
         return f
 
+    def try_parse_all(codes):
+        code = lines_to_str(codes)
+        functions = []
+        for f in regex.finditer(java_function_regex, code, regex.DOTALL):
+            function = java_function.try_parse(code[f.start() : f.end()])
+            if function:
+                functions.append(function)
+        return functions
+
     def __parse(self, codes):
         code = lines_to_str(codes)
-        m = re.match(
-            r"(([\s\n]*\@\w+[\s\n]*)*)([\s\n]*(public|private)[\s\n]+\w+)[\s\n]+(\w+)[\s\n]*[=[\s\n]*(\w+)]?[\s\n]*;[\s\n]*",
-            code,
-        )
-        if not m:
+        f = regex.match(java_function_regex, code, regex.DOTALL)
+        if not f:
             raise ValueError(f"Funtion parse error:\n{code}")
-        self.prefix = m.group(2)
-        self.member_name = m.group(3)
-        self.member_default = m.group(4)
-
-
-class java_function_parameter:
-    def __init__(self, code):
-        self.type = ""
-        self.name = ""
-        self.default = ""
-        self.__parse(codes)
-
-    def __parse(self, codes):
-        pass
+        self.tags = filter_strs(f.group(1).split("@"))
+        self.prefix = f.group(3).strip()
+        self.function_name = f.group(4).strip()
+        self.parameters = f.group(5)
+        self.throws = f.group(9)
+        self.content = f.group(11)
 
 
 class parser:
@@ -180,7 +293,7 @@ class parser:
 
     def format_code(self):
         codes = self.codes
-        parser.__remove_comments(codes)
+        codes = remove_comments(codes)
         codes = [l.strip() for l in codes]
         self.f_codes = [l for l in codes if l]
         self.is_formatted = True
@@ -207,63 +320,6 @@ class parser:
         for c in self.f_codes:
             code_str += c + "\n"
         return code_str
-
-    def __remove_comments(codes):
-        is_comment_block = False
-        ln = 0
-        while ln < len(codes):
-            line = codes[ln]
-            if is_comment_block:
-                block_close = line.find("*/")
-                if block_close == -1:
-                    codes[ln] = ""
-                    ln += 1
-                    continue
-                else:
-                    codes[ln] = line[block_close + 2 :]
-                    is_comment_block = False
-                    continue
-            comment_block_start = line.find("/*")
-            if comment_block_start >= 0:
-                codes[ln] = line[:comment_block_start]
-                is_comment_block = True
-                ln += 1
-                continue
-            comment_line_start = line.find("//")
-            if comment_line_start >= 0:
-                codes[ln] = line[:comment_line_start]
-                ln += 1
-                continue
-            ln += 1
-
-    def __parse_code(codes):
-        package = [c for c in codes if re.match(r"package\s+.*;", c)]
-
-    def get_functions():
-        pass
-
-    def consume(code):
-        ns = get_namespace(line)
-        if ns != "":
-            parse_stacks.push("$" + ns)
-            # continue
-        cs = get_class(line)
-        if cs != "":
-            parse_stacks.push("#" + cs)
-            # continue
-        fn = get_function(line)
-        if fn != "":
-            parse_stacks.push("@" + fn)
-            # continue
-
-    def get_namespace(line):
-        return False
-
-    def get_class(line):
-        return False
-
-    def get_function(line):
-        return False
 
 
 if __name__ == "__main__":
