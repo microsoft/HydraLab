@@ -17,6 +17,7 @@ import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.exception.reporter.AppCenterReporter;
+import com.microsoft.hydralab.common.exception.reporter.ExceptionReporterManager;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
@@ -300,6 +301,7 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
             return;
         }
         appCenterReporter.initAppCenterReporter(agentMetadata.getAppCenterSecret(), agentUser.getName(), agentUser.getVersionName(), agentUser.getVersionCode());
+        ExceptionReporterManager.registerExceptionReporter(appCenterReporter);
     }
 
     public void registerAgentDiskUsageRatio() {
