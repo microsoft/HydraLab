@@ -121,6 +121,9 @@ public class AppCenterErrorLogHandler {
 
         /* Uncaught exception or managed exception. */
         errorLog.setFatal(fatal);
+        if(!fatal){
+            errorLog.setType(HandledErrorLog.TYPE);
+        }
 
         /* Application launch time. */
         errorLog.setAppLaunchTimestamp(simpleDateFormat.format(new Date(initializeTimestamp)));
