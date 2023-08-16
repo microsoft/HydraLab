@@ -121,7 +121,7 @@ public class AppCenterErrorLogHandler {
 
         /* Uncaught exception or managed exception. */
         errorLog.setFatal(fatal);
-        if(!fatal){
+        if (!fatal) {
             errorLog.setType(HandledErrorLog.TYPE);
         }
 
