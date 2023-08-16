@@ -46,9 +46,12 @@ public class AppConfig {
     private String pushgatewayPassword;
     @Value("${app.storage.type}")
     private String storageType;
-    @Value("${app.app-center.center.enabled: false}")
+    @Value("${app.error-reporter.app-center.center.enabled: false}")
     private boolean appCenterEnabled;
-    @Value("${app.app-center.center.secret:}")
+
+    @Value("${app.error-reporter.log-file.center.enabled: false}")
+    private boolean logFileEnabled;
+    @Value("${app.error-reporter.app-center.center.secret:}")
     private String appCenterSecret;
     @Value("${center.version}")
     private String versionName;
@@ -142,7 +145,9 @@ public class AppConfig {
     @Bean
     public FileReporter fileReporter() {
         FileReporter fileReporter = new FileReporter(CenterConstant.ERROR_OUTPUT_DIR);
-        ExceptionReporterManager.registerExceptionReporter(fileReporter);
+        if (logFileEnabled) {
+            ExceptionReporterManager.registerExceptionReporter(fileReporter);
+        }
         return fileReporter;
     }
 
@@ -151,8 +156,8 @@ public class AppConfig {
         AppCenterReporter appCenterReporter = new AppCenterReporter();
         if (appCenterEnabled && appCenterSecret != null && !appCenterSecret.isEmpty()) {
             appCenterReporter.initAppCenterReporter(appCenterSecret, "center", versionName, versionCode);
+            ExceptionReporterManager.registerExceptionReporter(appCenterReporter);
         }
-        ExceptionReporterManager.registerExceptionReporter(appCenterReporter);
         return appCenterReporter;
     }
 }
