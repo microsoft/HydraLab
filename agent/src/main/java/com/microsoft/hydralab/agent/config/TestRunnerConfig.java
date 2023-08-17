@@ -8,6 +8,7 @@ import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
+import com.microsoft.hydralab.agent.runner.maestro.MaestroRunner;
 import com.microsoft.hydralab.agent.runner.monkey.AdbMonkeyRunner;
 import com.microsoft.hydralab.agent.runner.monkey.AppiumMonkeyRunner;
 import com.microsoft.hydralab.agent.runner.smart.SmartRunner;
@@ -42,7 +43,8 @@ public class TestRunnerConfig {
             TestTask.TestRunningType.MONKEY_TEST, "adbMonkeyRunner",
             TestTask.TestRunningType.APPIUM_MONKEY_TEST, "appiumMonkeyRunner",
             TestTask.TestRunningType.T2C_JSON_TEST, "t2cRunner",
-            TestTask.TestRunningType.XCTEST, "xctestRunner"
+            TestTask.TestRunningType.XCTEST, "xctestRunner",
+            TestTask.TestRunningType.MAESTRO, "maestroRunner"
     );
 
     @Bean
@@ -124,6 +126,14 @@ public class TestRunnerConfig {
                                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                      PerformanceTestManagementService performanceTestManagementService) {
         return new XCTestRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService);
+    }
+
+    @Bean
+    public MaestroRunner maestroRunner(AgentManagementService agentManagementService,
+                                       TestTaskEngineService testTaskEngineService,
+                                       TestRunDeviceOrchestrator testRunDeviceOrchestrator,
+                                       PerformanceTestManagementService performanceTestManagementService) {
+        return new MaestroRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @ConfigurationProperties(prefix = "app.device-script.commands")

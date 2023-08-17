@@ -14,14 +14,16 @@ public class StringUtilsTest {
         Assertions.assertTrue(LogUtils.isLegalStr("/path/.git/.jdk/to/ab-c/abc 2/12.3?", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
         Assertions.assertFalse(LogUtils.isLegalStr("0", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
         Assertions.assertFalse(LogUtils.isLegalStr("abc", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
-        Assertions.assertFalse(LogUtils.isLegalStr("~", Const.RegexString.LINUX_ABSOLUTE_PATH,false));
+        Assertions.assertFalse(LogUtils.isLegalStr("~", Const.RegexString.LINUX_ABSOLUTE_PATH, false));
+        Assertions.assertTrue(LogUtils.isLegalStr("/Users/username/.maestro/tests/2023-07-19_160946", Const.RegexString.LINUX_ABSOLUTE_PATH, false));
 
-        Assertions.assertTrue(LogUtils.isLegalStr("C:\\123.5\\AndroidSDK\\a", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
-        Assertions.assertTrue(LogUtils.isLegalStr("C:\\Program Files (x86)\\Common Files", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
-        Assertions.assertTrue(LogUtils.isLegalStr("C:\\Program Files (x86)\\安卓SDK", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
-        Assertions.assertTrue(LogUtils.isLegalStr("C:\\Program Files (x86)\\Common Files\\Microsoft Shared\\Phone Tools\\15.0", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
-        Assertions.assertFalse(LogUtils.isLegalStr("~", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
-        Assertions.assertFalse(LogUtils.isLegalStr("Common Files\\Microsoft Shared\\Phone Tools", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
-        Assertions.assertFalse(LogUtils.isLegalStr("\\Program Files (x86)", Const.RegexString.WINDOWS_ABSOLUTE_PATH,false));
+        Assertions.assertTrue(LogUtils.isLegalStr("C:\\123.5\\AndroidSDK\\a", Const.RegexString.WINDOWS_ABSOLUTE_PATH, false));
+        Assertions.assertTrue(LogUtils.isLegalStr("C:\\Program Files (x86)\\Common Files", Const.RegexString.WINDOWS_ABSOLUTE_PATH, false));
+        Assertions.assertTrue(LogUtils.isLegalStr("C:\\Program Files (x86)\\安卓SDK", Const.RegexString.WINDOWS_ABSOLUTE_PATH, false));
+        Assertions.assertTrue(LogUtils.isLegalStr("C:\\Program Files (x86)\\Common Files\\Microsoft Shared\\Phone Tools\\15.0", Const.RegexString.WINDOWS_ABSOLUTE_PATH, false));
+        Assertions.assertFalse(LogUtils.isLegalStr("~", Const.RegexString.WINDOWS_ABSOLUTE_PATH, false));
+        Assertions.assertFalse(LogUtils.isLegalStr("Common Files\\Microsoft Shared\\Phone Tools", Const.RegexString.WINDOWS_ABSOLUTE_PATH, false));
+        Assertions.assertFalse(LogUtils.isLegalStr("\\Program Files (x86)", Const.RegexString.WINDOWS_ABSOLUTE_PATH, false));
     }
+
 }

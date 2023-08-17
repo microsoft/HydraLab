@@ -122,9 +122,9 @@ public class DeviceAgentManagementService {
     private String pushgatewayUsername;
     @Value("${management.metrics.export.prometheus.pushgateway.password}")
     private String pushgatewayPassword;
-    @Value("${app.app-center.agent.enabled: false}")
+    @Value("${app.error-reporter.app-center.agent.enabled: false}")
     private boolean appCenterEnabled;
-    @Value("${app.app-center.agent.secret: ''}")
+    @Value("${app.error-reporter.app-center.agent.secret: ''}")
     private String appCenterSecret;
 
     public void onOpen(Session session) {
