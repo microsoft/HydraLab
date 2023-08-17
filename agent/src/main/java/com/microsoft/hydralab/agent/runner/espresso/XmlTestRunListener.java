@@ -24,6 +24,7 @@ import com.android.ddmlib.testrunner.TestResult;
 import com.android.ddmlib.testrunner.TestResult.TestStatus;
 import com.android.ddmlib.testrunner.TestRunResult;
 import com.google.common.collect.ImmutableMap;
+import com.microsoft.hydralab.agent.runner.XmlBuilder;
 import com.microsoft.hydralab.common.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.kxml2.io.KXmlSerializer;
@@ -47,13 +48,13 @@ import java.util.TimeZone;
  *
  * @see <a href="https://svn.jenkins-ci.org/trunk/hudson/dtkit/dtkit-format/dtkit-junit-model/src/main/resources/com/thalesgroup/dtkit/junit/model/xsd/junit-4.xsd">junit-4.xsd</a>
  * Copy from com.android.ddmlib.testrunner.XmlTestRunListener to use getAbsoluteReportPath() as a public method.
+ * Don't modify this file before sync with Hydra Lab manager.
  */
 public class XmlTestRunListener implements ITestRunListener {
 
     private static final String LOG_TAG = "XmlResultReporter";
 
     private static final String TEST_RESULT_FILE_SUFFIX = ".xml";
-    private static final String TEST_RESULT_FILE_PREFIX = "test_result_";
 
     private static final String TESTSUITE = "testsuite";
     private static final String TESTCASE = "testcase";
@@ -193,9 +194,11 @@ public class XmlTestRunListener implements ITestRunListener {
         }
     }
 
+    // start update by Hydra Lab: private to public method
     public String getAbsoluteReportPath() {
         return mReportPath;
     }
+    // end update
 
     /**
      * Return the current timestamp as a {@link String}.
@@ -233,8 +236,10 @@ public class XmlTestRunListener implements ITestRunListener {
      * @throws IOException
      */
     protected File getResultFile(File reportDir) throws IOException {
-        File reportFile = File.createTempFile(TEST_RESULT_FILE_PREFIX, TEST_RESULT_FILE_SUFFIX,
+        // start update by Hydra Lab: to use a defined file name
+        File reportFile = File.createTempFile(XmlBuilder.TEST_RESULT_FILE_PREFIX, TEST_RESULT_FILE_SUFFIX,
                 reportDir);
+        // end update
         Log.i(LOG_TAG, String.format("Created xml report file at %s",
                 reportFile.getAbsolutePath()));
 

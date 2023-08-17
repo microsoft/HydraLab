@@ -279,10 +279,10 @@ export default class RunnerView extends BaseView {
                             variant="outlined"
                             startIcon={<UploadFileIcon />}
                         >
-                            {this.state.uploadTestPackageFile ? this.state.uploadTestPackageFile.name : 'Test APK/JAR/JSON file'}
+                            {this.state.uploadTestPackageFile ? this.state.uploadTestPackageFile.name : 'Test APK/JAR/JSON/ZIP file'}
                             <input id="uploadTestPackageFile"
                                 type="file"
-                                accept=".apk,.jar,.json"
+                                accept=".apk,.jar,.json,.zip"
                                 hidden
                                 onChange={this.handleFileUpload}
                             />
@@ -577,6 +577,7 @@ export default class RunnerView extends BaseView {
                             <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType !== 'apk'}>Appium E2E</MenuItem>
                             <MenuItem value={"T2C_JSON"} disabled={this.state.currentAppInstallerType === 'zip' }>JSON-Described Test</MenuItem>
                             <MenuItem value={"XCTEST"} disabled={this.state.currentAppInstallerType !== 'zip'}>XCTest</MenuItem>
+                            <MenuItem value={"MAESTRO"} disabled={this.state.currentAppInstallerType !== 'apk'}>Maestro</MenuItem>
                         </Select>
                     </FormControl>
                     <br />
