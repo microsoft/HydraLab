@@ -46,8 +46,6 @@ public class T2CRunner extends AppiumRunner {
     private static final int MAJOR_FFMPEG_VERSION = 4;
     private static final int MINOR_FFMPEG_VERSION = -1;
     String agentName;
-    private String pkgName;
-    private int currentIndex = 0;
 
     public T2CRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
@@ -65,7 +63,7 @@ public class T2CRunner extends AppiumRunner {
     @Override
     protected File runAndGetGif(File initialJsonFile, String unusedSuiteName, TestRunDevice testRunDevice, TestTask testTask,
                                 TestRun testRun, File deviceTestResultFolder, Logger logger) {
-        pkgName = testTask.getPkgName();
+        String pkgName = testTask.getPkgName();
         // Test start
         if (!testTask.isDisableRecording()) {
             testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, deviceTestResultFolder, testTask.getTimeOutSecond(), logger);
@@ -82,13 +80,13 @@ public class T2CRunner extends AppiumRunner {
         performanceTestManagementService.testRunStarted();
 
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
-        currentIndex = 0;
+        int currentIndex = 0;
 
         if (initialJsonFile != null) {
-            runT2CJsonTestCase(initialJsonFile, testRunDevice, testRun, logger, recordingStartTimeMillis);
+            runT2CJsonTestCase(initialJsonFile, testRunDevice, testRun, logger, recordingStartTimeMillis, pkgName, currentIndex);
         }
         for (File jsonFile : testTask.testJsonFileList) {
-            runT2CJsonTestCase(jsonFile, testRunDevice, testRun, logger, recordingStartTimeMillis);
+            runT2CJsonTestCase(jsonFile, testRunDevice, testRun, logger, recordingStartTimeMillis, pkgName, currentIndex);
         }
 
         // Test finish
@@ -106,7 +104,7 @@ public class T2CRunner extends AppiumRunner {
     }
 
     private void runT2CJsonTestCase(File jsonFile, TestRunDevice testRunDevice, TestRun testRun,
-                                    Logger logger, long recordingStartTimeMillis) {
+                                    Logger logger, long recordingStartTimeMillis, String pkgName, int currentIndex) {
         AndroidTestUnit ongoingTest = new AndroidTestUnit();
         ongoingTest.setNumtests(testRun.getTotalCount());
         ongoingTest.setStartTimeMillis(System.currentTimeMillis());
