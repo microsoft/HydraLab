@@ -80,13 +80,14 @@ public class T2CRunner extends AppiumRunner {
         performanceTestManagementService.testRunStarted();
 
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, pkgName.substring(pkgName.lastIndexOf('.') + 1) + ".testRunStarted");
-        int currentIndex = 0;
+        int currentIndex = 1;
 
         if (initialJsonFile != null) {
             runT2CJsonTestCase(initialJsonFile, testRunDevice, testRun, logger, recordingStartTimeMillis, pkgName, currentIndex);
         }
         for (File jsonFile : testTask.testJsonFileList) {
             runT2CJsonTestCase(jsonFile, testRunDevice, testRun, logger, recordingStartTimeMillis, pkgName, currentIndex);
+            currentIndex++;
         }
 
         // Test finish
@@ -109,7 +110,7 @@ public class T2CRunner extends AppiumRunner {
         ongoingTest.setNumtests(testRun.getTotalCount());
         ongoingTest.setStartTimeMillis(System.currentTimeMillis());
         ongoingTest.setRelStartTimeInVideo(ongoingTest.getStartTimeMillis() - recordingStartTimeMillis);
-        ongoingTest.setCurrentIndexNum(currentIndex++);
+        ongoingTest.setCurrentIndexNum(currentIndex);
         ongoingTest.setTestName(jsonFile.getName());
         ongoingTest.setTestedClass(pkgName);
         ongoingTest.setDeviceTestResultId(testRun.getId());
