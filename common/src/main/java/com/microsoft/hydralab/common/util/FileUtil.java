@@ -236,4 +236,8 @@ public class FileUtil {
     public static void copyFile(String sourcePath, String targetPath) {
         cn.hutool.core.io.FileUtil.copyFile(sourcePath, targetPath);
     }
+
+    public static File copyFileToFolder(File sourceFile, File targetFolder) {
+        return cn.hutool.core.io.FileUtil.copy(sourceFile, targetFolder, true);
+    }
 }

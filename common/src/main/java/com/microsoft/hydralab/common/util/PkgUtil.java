@@ -131,10 +131,12 @@ public class PkgUtil {
             File plistFile = getPlistFromFolder(unzippedFolder);
             // for maestro case
             List<File> yamlFiles = getYamlFromFolder(unzippedFolder);
+            // for Python case
+            File pyMainFile = getPyFromFolder(unzippedFolder);
             if (plistFile != null) {
                 analysisPlist(plistFile, res);
-            } else if (yamlFiles.size() == 0) {
-                throw new HydraLabRuntimeException("Analysis .zip file failed. It's not a valid XCTEST package or maestro case.");
+            } else if (yamlFiles.size() == 0 || pyMainFile == null) {
+                throw new HydraLabRuntimeException("Analysis .zip file failed. It's not a valid XCTEST package, Maestro case or Python package.");
             }
             FileUtil.deleteFile(unzippedFolder);
         } catch (Exception e) {
@@ -142,6 +144,16 @@ public class PkgUtil {
         }
         return res;
 
+    }
+
+    private static File getPyFromFolder(File rootFolder) {
+        Collection<File> files = FileUtils.listFiles(rootFolder, null, true);
+        for (File file : files) {
+            if ("main.py".equals(file.getName())) {
+                return file;
+            }
+        }
+        return null;
     }
 
     private static void analysisPlist(File plistFile, JSONObject res) throws Exception {

@@ -578,6 +578,7 @@ export default class RunnerView extends BaseView {
                             <MenuItem value={"T2C_JSON"} disabled={this.state.currentAppInstallerType === 'zip' }>JSON-Described Test</MenuItem>
                             <MenuItem value={"XCTEST"} disabled={this.state.currentAppInstallerType !== 'zip'}>XCTest</MenuItem>
                             <MenuItem value={"MAESTRO"} disabled={this.state.currentAppInstallerType !== 'apk'}>Maestro</MenuItem>
+                            <MenuItem value={"PYTHON"} disabled={this.state.currentAppInstallerType !== 'zip'}>Python</MenuItem>
                         </Select>
                     </FormControl>
                     <br />
