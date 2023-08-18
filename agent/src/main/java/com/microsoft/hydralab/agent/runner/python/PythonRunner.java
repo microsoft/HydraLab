@@ -42,9 +42,6 @@ public class PythonRunner extends TestRunner {
     private static final String PY_REQUIRE_FILE_NAME = "requirements.txt";
     private static final String PY_FILE_NAME = "main.py";
     private static final String PY_FOLDER_NAME = "pythonRunner";
-    private long recordingStartTimeMillis;
-    private AndroidTestUnit ongoingPythonTest;
-    private String pkgName;
 
     public PythonRunner(AgentManagementService agentManagementService,
                         TestTaskRunCallback testTaskRunCallback,
@@ -62,17 +59,15 @@ public class PythonRunner extends TestRunner {
     protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
         testRun.setTotalCount(1);
         Logger logger = testRun.getLogger();
-        pkgName = testTask.getPkgName();
         startTools(testRunDevice, testTask, testRun, testTask.getTimeOutSecond(), logger);
 
         /* run the test */
-        logger.info("Start ");
-        testRun.setTestStartTimeMillis(System.currentTimeMillis());
+        logger.info("Start Python Test");
         performanceTestManagementService.testRunStarted();
         checkTestTaskCancel(testTask);
         performanceTestManagementService.testStarted(TEST_RUN_NAME);
-
-        long checkTime = runPythonTest(testRunDevice, testTask, testRun, logger);
+        AndroidTestUnit ongoingPythonTest = new AndroidTestUnit();
+        long checkTime = runPythonTest(testRunDevice, testTask, testRun, ongoingPythonTest, logger);
 
         /* after running */
         releaseResource(testTask, testRunDevice, testRun);
@@ -107,15 +102,15 @@ public class PythonRunner extends TestRunner {
             testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime, logger);
         }
         logger.info("Start record screen");
-        recordingStartTimeMillis = System.currentTimeMillis();
+        testRun.setTestStartTimeMillis(System.currentTimeMillis());
         final String initializing = "Initializing";
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, initializing);
         testRun.addNewTimeTag(initializing, 0);
-        testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
+        testRunDeviceOrchestrator.startLogCollector(testRunDevice, testTask.getPkgName(), testRun, logger);
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
 
         logger.info("Start gif frames collection");
-        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
     }
 
     public void releaseResource(TestTask testTask, TestRunDevice testRunDevice, TestRun testRun) {
@@ -128,22 +123,20 @@ public class PythonRunner extends TestRunner {
     }
 
     public void testRunEnded(TestRun testRun) {
-        testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - testRun.getTestStartTimeMillis());
         testRun.onTestEnded();
     }
 
-    public long runPythonTest(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun, Logger logger) {
+    public long runPythonTest(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun, AndroidTestUnit ongoingPythonTest, Logger logger) {
         long checkTime = 0;
         final int unitIndex = 1;
-        String title = "Monkey_Test";
-
-        ongoingPythonTest = new AndroidTestUnit();
+        String title = "Python_Test";
         ongoingPythonTest.setNumtests(testRun.getTotalCount());
         ongoingPythonTest.setStartTimeMillis(System.currentTimeMillis());
-        ongoingPythonTest.setRelStartTimeInVideo(ongoingPythonTest.getStartTimeMillis() - recordingStartTimeMillis);
+        ongoingPythonTest.setRelStartTimeInVideo(ongoingPythonTest.getStartTimeMillis() - testRun.getTestStartTimeMillis());
         ongoingPythonTest.setCurrentIndexNum(unitIndex);
         ongoingPythonTest.setTestName(title);
-        ongoingPythonTest.setTestedClass(pkgName);
+        ongoingPythonTest.setTestedClass(testTask.getPkgName());
         ongoingPythonTest.setDeviceTestResultId(testRun.getId());
         ongoingPythonTest.setTestTaskId(testRun.getTestTaskId());
         testRun.addNewTestUnit(ongoingPythonTest);
@@ -152,7 +145,7 @@ public class PythonRunner extends TestRunner {
         testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 2, logger);
         //run Python test
         testRun.addNewTimeTag(unitIndex + ". " + ongoingPythonTest.getTitle(),
-                System.currentTimeMillis() - recordingStartTimeMillis);
+                System.currentTimeMillis() - testRun.getTestStartTimeMillis());
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, ongoingPythonTest.getTitle());
         /* load python package */
         File pythonMainFile = loadPythonPackage(testTask, testRun);
@@ -166,7 +159,7 @@ public class PythonRunner extends TestRunner {
             CommandOutputReceiver receiver = new CommandOutputReceiver(process.getInputStream(), logger);
             receiver.start();
             process.waitFor();
-            checkTime = System.currentTimeMillis() - recordingStartTimeMillis;
+            checkTime = System.currentTimeMillis() - testRun.getTestStartTimeMillis();
             ongoingPythonTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
             ongoingPythonTest.setSuccess(true);
         } catch (Exception e) {
@@ -177,7 +170,7 @@ public class PythonRunner extends TestRunner {
             ongoingPythonTest.setStack(e.toString());
             testRun.setSuccess(false);
             testRun.addNewTimeTagBeforeLast(ongoingPythonTest.getTitle() + ".fail",
-                    System.currentTimeMillis() - recordingStartTimeMillis);
+                    System.currentTimeMillis() - testRun.getTestStartTimeMillis());
             testRun.oneMoreFailure();
         }
 
@@ -185,7 +178,7 @@ public class PythonRunner extends TestRunner {
         ongoingPythonTest.setEndTimeMillis(System.currentTimeMillis());
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
         testRun.addNewTimeTag(ongoingPythonTest.getTitle() + ".end",
-                System.currentTimeMillis() - recordingStartTimeMillis);
+                System.currentTimeMillis() - testRun.getTestStartTimeMillis());
         return checkTime;
     }
 
