@@ -53,26 +53,4 @@ public class AppCenterClientTest {
         appCenterClient.send(handledErrorLog);
 
     }
-
-    @Test
-    public void sendWarnLogTest() throws Exception {
-        boolean mockHttpClient = false;
-        if (StringUtils.isBlank(appCenterToken)) {
-            appCenterToken = "test";
-            // and we need to mock the http request
-            mockHttpClient = true;
-        }
-        AppCenterClient appCenterClient = new AppCenterClient(appCenterToken, "agent", "0.0.0", "000000");
-
-        if (mockHttpClient) {
-            appCenterClient.httpClient = MockUtil.mockOkHttpClient("{}");
-        }
-
-        HandledErrorLog handledErrorLog = appCenterClient.createErrorLog(Thread.currentThread(), new HydraLabRuntimeException("sendWarnLogTest exception"), false);
-
-        System.out.println(JSON.toJSONString(handledErrorLog, SerializerFeature.PrettyFormat));
-
-        appCenterClient.send(handledErrorLog);
-
-    }
 }
