@@ -49,7 +49,7 @@ public class AppCenterReporter implements ExceptionReporter {
         HandledErrorLog handledErrorLog = appCenterClient.createErrorLog(thread, e, fatal);
         try {
             appCenterClient.send(handledErrorLog);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.warn("Failed to send exception to AppCenter", ex);
         }
     }

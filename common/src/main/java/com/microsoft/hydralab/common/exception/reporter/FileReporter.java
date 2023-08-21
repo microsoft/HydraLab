@@ -55,7 +55,7 @@ public class FileReporter implements ExceptionReporter {
             e.printStackTrace(printStream);
             printStream.flush();
             printStream.close();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.warn("Failed to write exception to file", e);
         }
     }
