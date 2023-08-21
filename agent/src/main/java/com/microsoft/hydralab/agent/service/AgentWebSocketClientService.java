@@ -16,7 +16,6 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
-import com.microsoft.hydralab.common.exception.reporter.AppCenterReporter;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.monitor.MetricPushGateway;
@@ -34,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -78,8 +76,6 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @Resource
     private AgentManagementService agentManagementService;
     boolean isAgentInit = false;
-    @Resource
-    private AppCenterReporter appCenterReporter;
 
     public void onMessage(Message message) {
         log.info("onMessage Receive bytes message {}", message);
@@ -208,7 +204,6 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         storageServiceClientProxy.updateAccessToken(agentMetadata.getAccessToken());
         syncAgentStatus(agentMetadata.getAgentUser());
         prometheusPushgatewayInit(agentMetadata);
-        appCenterReporterInit(agentMetadata);
     }
 
     private void syncAgentStatus(AgentUser passedAgent) {
@@ -293,13 +288,6 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         registerAgentDiskUsageRatio();
         registerAgentReconnectRetryTimes();
         registerAgentRunningTestTaskNum();
-    }
-
-    private void appCenterReporterInit(AgentMetadata agentMetadata) {
-        if (appCenterReporter.isAppCenterEnabled() || StringUtils.isEmpty(agentMetadata.getAppCenterSecret())) {
-            return;
-        }
-        appCenterReporter.initAppCenterReporter(agentMetadata.getAppCenterSecret(), agentUser.getName(), agentUser.getVersionName(), agentUser.getVersionCode());
     }
 
     public void registerAgentDiskUsageRatio() {

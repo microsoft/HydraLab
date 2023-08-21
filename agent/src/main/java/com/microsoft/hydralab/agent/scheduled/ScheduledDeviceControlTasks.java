@@ -49,8 +49,6 @@ public class ScheduledDeviceControlTasks {
         clearFile(appOptions.getTestPackageLocation());
         logger.info("schedule clean test result");
         clearFile(appOptions.getTestCaseResultLocation());
-        logger.info("schedule clean error output");
-        clearFile(appOptions.getErrorStorageLocation());
     }
 
     public void clearFile(String folderPath) {

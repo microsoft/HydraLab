@@ -52,8 +52,4 @@ public class AppOptions {
     public void setLocation(String location) {
         this.location = location;
     }
-
-    public String getErrorStorageLocation() {
-        return location + "/storage/errorOutput/";
-    }
 }

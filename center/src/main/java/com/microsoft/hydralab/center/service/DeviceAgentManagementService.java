@@ -122,10 +122,6 @@ public class DeviceAgentManagementService {
     private String pushgatewayUsername;
     @Value("${management.metrics.export.prometheus.pushgateway.password}")
     private String pushgatewayPassword;
-    @Value("${app.app-center.agent.enabled: false}")
-    private boolean appCenterEnabled;
-    @Value("${app.app-center.agent.secret: ''}")
-    private String appCenterSecret;
 
     public void onOpen(Session session) {
         onlineCount.incrementAndGet();
@@ -161,9 +157,6 @@ public class DeviceAgentManagementService {
         data.setAgentUser(agentUser);
         data.setPushgatewayUsername(pushgatewayUsername);
         data.setPushgatewayPassword(pushgatewayPassword);
-        if (appCenterEnabled && appCenterSecret != null && !appCenterSecret.isEmpty()) {
-            data.setAppCenterSecret(appCenterSecret);
-        }
 
         Message message = new Message();
         message.setPath(signalName);

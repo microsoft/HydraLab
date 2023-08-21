@@ -47,16 +47,16 @@ public class AppCenterClient {
     AppCenterErrorLogHandler appCenterErrorLogHandler;
 
 
-    public AppCenterClient(String appSecret, String name, String versionName, String versionCode) {
+    public AppCenterClient(String appSecret, String name) {
         this.appSecret = appSecret;
         installId = UUID.randomUUID().toString();
         sid = UUID.randomUUID();
         appInitializeTimestamp = System.currentTimeMillis();
-        appCenterErrorLogHandler = new AppCenterErrorLogHandler(getDevice(name, versionName, versionCode), installId);
+        appCenterErrorLogHandler = new AppCenterErrorLogHandler(getDevice(name), installId);
     }
 
     @NotNull
-    private static Device getDevice(String name, String versionName, String versionCode) {
+    private static Device getDevice(String name) {
         Device device = new Device();
 
         // System info
@@ -72,11 +72,11 @@ public class AppCenterClient {
         // App Center App info
         device.setSdkName("appcenter.android");
         device.setSdkVersion("4.4.4");
-        device.setAppNamespace("com.microsoft.hydralab");
+        device.setAppNamespace("com.microsoft.hydralab.agent");
 
-        // Hydra Lab Center/Agent info
-        device.setAppVersion(versionName);
-        device.setAppBuild(versionCode);
+        // Hydra Lab Agent info, TODO read from app version config
+        device.setAppVersion("1.0.0");
+        device.setAppBuild("110");
 
         // Mock value
         device.setOsApiLevel(30);

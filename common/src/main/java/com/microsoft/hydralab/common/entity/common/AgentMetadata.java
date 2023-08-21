@@ -16,5 +16,4 @@ public class AgentMetadata {
     AgentUser agentUser;
     String pushgatewayUsername;
     String pushgatewayPassword;
-    String appCenterSecret;
 }

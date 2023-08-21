@@ -1,27 +1,27 @@
 @startuml exception_monitor
 interface ExceptionReporter {
-    + void reportException(Exception e, boolean fatal)
-    + void reportException(Exception e, Thread thread, boolean fatal)
+    + void reportException(Exception e)
+    + void reportException(Exception e ,Thread thread)
 }
 
 class ExceptionReporterManager {
     List<ExceptionReporter> reporters
     + void registerExceptionReporter(ExceptionReporter reporter)
-    + void reportException(Exception e, boolean fatal)
-    + void reportException(Exception e, Thread thread, boolean fatal)
+    + void reportException(Exception e)
+    + void reportException(Exception e ,Thread thread)
 }
 
 class AppCenterReporter implements ExceptionReporter {
     AppCenterClient appCenterClient;
 
-    + void reportException(Exception e, boolean fatal)
-    + void reportException(Exception e, Thread thread, boolean fatal)
+    + void reportException(Exception e)
+    + void reportException(Exception e ,Thread thread)
 }
 
 
 class FileReporter implements ExceptionReporter {
-    + void reportException(Exception e, boolean fatal)
-    + void reportException(Exception e, Thread thread, boolean fatal)
+    + void reportException(Exception e)
+    + void reportException(Exception e ,Thread thread)
     + void writeToFile(String message, StackTraceElement[] stackTrace)
 }
 
