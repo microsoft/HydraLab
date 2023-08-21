@@ -229,6 +229,7 @@ public class AppConfiguration {
     @Bean
     public AppCenterReporter appCenterReporter() {
         AppCenterReporter appCenterReporter = new AppCenterReporter();
+        ExceptionReporterManager.registerExceptionReporter(appCenterReporter);
         return appCenterReporter;
     }
 
