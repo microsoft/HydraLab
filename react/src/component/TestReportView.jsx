@@ -90,7 +90,7 @@ export default class TestReportView extends BaseView {
         renderer: null,
         hoveredNode: null,
         hoveredNeighbors: undefined,
-        attachmentsDiaglogISshow: false,
+        attachmentsDiaglogIsShow: false,
         attachmentsRows: [],
     };
 
@@ -98,7 +98,7 @@ export default class TestReportView extends BaseView {
         console.log("render")
         const task = this.state.task
         const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
-        const { attachmentsDiaglogISshow } = this.state
+        const { attachmentsDiaglogIsShow } = this.state
         const attachmentsHeads = []
         const attachmentsHeadItems = ['File Name', 'File Size', 'Actions']
         let taskDatetime = moment(task.startDate).format(formatDate);
@@ -437,7 +437,7 @@ export default class TestReportView extends BaseView {
                                                             
                                                         })
                                                         this.setState({attachmentsRows: tempAttachmentsRows});
-                                                        this.handleStatus("attachmentsDiaglogISshow", true) 
+                                                        this.handleStatus("attachmentsDiaglogIsShow", true) 
                                                     }}>
                                                     <span id={d.id} className="material-icons-outlined">download</span>
                                                 </IconButton>
@@ -556,7 +556,7 @@ export default class TestReportView extends BaseView {
                                                             
                                                         })
                                                         this.setState({attachmentsRows: tempAttachmentsRows});
-                                                        this.handleStatus("attachmentsDiaglogISshow", true) 
+                                                        this.handleStatus("attachmentsDiaglogIsShow", true) 
                                                     }}>
                                                     <span id={d.id} className="material-icons-outlined">download</span>
                                                 </IconButton>
@@ -631,9 +631,9 @@ export default class TestReportView extends BaseView {
                     </table>
                 </div> : null}
             </div>
-            <Dialog open={attachmentsDiaglogISshow}
+            <Dialog open={attachmentsDiaglogIsShow}
                 fullWidth={true} maxWidth='lg'
-                onClose={() => this.handleStatus("attachmentsDiaglogISshow", false)}>
+                onClose={() => this.handleStatus("attachmentsDiaglogIsShow", false)}>
                 <DialogTitle>Test Results</DialogTitle>
                 <DialogContent>
                     <TableContainer style={{ margin: "auto" }}>
@@ -651,7 +651,7 @@ export default class TestReportView extends BaseView {
                 </DialogContent>
                 <DialogActions>
                     <Button
-                        onClick={() => this.handleStatus("attachmentsDiaglogISshow", false)}>Cancel</Button>
+                        onClick={() => this.handleStatus("attachmentsDiaglogIsShow", false)}>Cancel</Button>
                 </DialogActions>
             </Dialog>
             <Snackbar

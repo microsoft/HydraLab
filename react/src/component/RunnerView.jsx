@@ -87,7 +87,7 @@ export default class RunnerView extends BaseView {
         runTestDialogIsShown: false,
         activeStep: 0,
 
-        attachmentsDiaglogISshow: false,
+        attachmentsDiaglogIsShow: false,
         addAttachmentIsShow: false,
         attachmentDeleteDialogIsShow: false,
         attachmentUploading: false,
@@ -122,7 +122,7 @@ export default class RunnerView extends BaseView {
         const { uploadDialogIsShown, uploading } = this.state
 
         const { runTestDialogIsShown, running } = this.state
-        const { attachmentsDiaglogISshow, addAttachmentIsShow, attachmentUploading } = this.state
+        const { attachmentsDiaglogIsShow, addAttachmentIsShow, attachmentUploading } = this.state
         const { fileType, loadType, loadDir } = this.state
 
         const { teamList } = this.state
@@ -159,7 +159,7 @@ export default class RunnerView extends BaseView {
                         {appSet.commitMessage}
                     </TableCell>
                     <TableCell id={appSet.id} align="center">
-                        <IconButton id={appSet.id} onClick={() => { this.handleStatus("attachmentsDiaglogISshow", true) }}>
+                        <IconButton id={appSet.id} onClick={() => { this.handleStatus("attachmentsDiaglogIsShow", true) }}>
                             <span id={appSet.id} className="material-icons-outlined">info</span>
                         </IconButton>
                     </TableCell>
@@ -373,9 +373,9 @@ export default class RunnerView extends BaseView {
                     </React.Fragment>
                 </DialogContent>
             </Dialog>
-            <Dialog open={attachmentsDiaglogISshow}
+            <Dialog open={attachmentsDiaglogIsShow}
                 fullWidth={true} maxWidth='lg'
-                onClose={() => this.handleStatus("attachmentsDiaglogISshow", false)}>
+                onClose={() => this.handleStatus("attachmentsDiaglogIsShow", false)}>
                 <DialogTitle>Attachments</DialogTitle>
                 <DialogContent>
                     <TableContainer style={{ margin: "auto" }}>
@@ -393,7 +393,7 @@ export default class RunnerView extends BaseView {
                 </DialogContent>
                 <DialogActions>
                     <Button
-                        onClick={() => this.handleStatus("attachmentsDiaglogISshow", false)}>Cancel</Button>
+                        onClick={() => this.handleStatus("attachmentsDiaglogIsShow", false)}>Cancel</Button>
                     <LoadingButton
                         variant="contained"
                         className="pl-4 pr-4"
