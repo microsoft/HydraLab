@@ -30,9 +30,6 @@ public class XCTestRunner extends TestRunner {
     private static final int MINOR_APPIUM_VERSION = -1;
     private static final int MAJOR_TIDEVICE_VERSION = 0;
     private static final int MINOR_TIDEVICE_VERSION = 10;
-    private static String folderPath = "";
-    private Logger logger;
-    private long recordingStartTimeMillis;
 
     public XCTestRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                         TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService) {
@@ -48,22 +45,20 @@ public class XCTestRunner extends TestRunner {
     @Override
     protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
         initializeTest(testRunDevice, testTask, testRun);
-        unzipXctestFolder(testTask.getAppFile(), testRun, logger);
-        List<String> result = runXctest(testRunDevice, logger, testTask, testRun);
+        unzipXctestFolder(testTask.getAppFile(), testRun, testRun.getLogger());
+        List<String> result = runXctest(testRunDevice, testRun.getLogger(), testTask, testRun);
         analysisXctestResult(result, testRun);
-        FileUtil.deleteFile(new File(folderPath));
+        FileUtil.deleteFile(new File(testRun.getResultFolder().getAbsolutePath(), Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME));
         finishTest(testRunDevice, testTask, testRun);
     }
 
     private void initializeTest(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
-        logger = testRun.getLogger();
         if (!testTask.isDisableRecording()) {
-            testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), testTask.getTimeOutSecond(), logger);
+            testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), testTask.getTimeOutSecond(), testRun.getLogger());
         }
-        testRunDeviceOrchestrator.startLogCollector(testRunDevice, testTask.getPkgName(), testRun, logger);
+        testRunDeviceOrchestrator.startLogCollector(testRunDevice, testTask.getPkgName(), testRun, testRun.getLogger());
         testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
-        recordingStartTimeMillis = System.currentTimeMillis();
         testRun.addNewTimeTag("Initializing", 0);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
     }
@@ -81,7 +76,7 @@ public class XCTestRunner extends TestRunner {
 
     private void unzipXctestFolder(File zipFile, TestRun testRun, Logger logger) {
         logger.info("start unzipping file");
-        folderPath = testRun.getResultFolder().getAbsolutePath() + "/"
+        String folderPath = testRun.getResultFolder().getAbsolutePath() + "/"
                 + Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME + "/";
 
         String command = String.format("unzip -d %s %s", folderPath, zipFile.getAbsolutePath());
@@ -105,7 +100,7 @@ public class XCTestRunner extends TestRunner {
         } else {
             commFormat = "xcodebuild test-without-building" + argString;
         }
-        File xctestrun = getXctestrunFile(new File(folderPath));
+        File xctestrun = getXctestrunFile(new File(testRun.getResultFolder().getAbsolutePath(), Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME));
         if (xctestrun == null) {
             throw new RuntimeException("xctestrun file not found");
         }
@@ -118,7 +113,7 @@ public class XCTestRunner extends TestRunner {
 
         commFormat += " -destination %s -resultBundlePath %s";
         String command = String.format(commFormat, deviceId, resultPath);
-        testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - testRun.getTestStartTimeMillis());
         ArrayList<String> result;
         try {
             Process proc = Runtime.getRuntime().exec(command);
@@ -179,14 +174,14 @@ public class XCTestRunner extends TestRunner {
     }
 
     private void finishTest(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
-        testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
+        testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - testRun.getTestStartTimeMillis());
         testRun.onTestEnded();
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
         testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
         testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(testRunDevice.getGifFile()));
-        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
         if (!testTask.isDisableRecording()) {
-            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), testRun.getLogger());
         }
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }
