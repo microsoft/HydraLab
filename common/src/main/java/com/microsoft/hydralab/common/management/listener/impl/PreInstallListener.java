@@ -50,26 +50,32 @@ public class PreInstallListener implements DeviceStatusListener {
                 continue;
             }
             try {
-                FlowUtil.retryAndSleepWhenFalse(3, 10, () -> {
-                    // try to uninstall app first
-                    try {
-                        JSONObject res = PkgUtil.analysisFile(appFile, EntityType.APP_FILE_SET);
-                        if (!StringUtils.isEmpty(res.getString(StorageFileInfo.ParserKey.PKG_NAME))) {
-                            deviceDriverManager.uninstallApp(deviceInfo, res.getString(StorageFileInfo.ParserKey.PKG_NAME), classLogger);
-                        }
-                    } catch (Exception e) {
-                        classLogger.warn("Uninstall origin app of {} failed", appFile.getName(), e);
-                    }
-                    // install app
-                    return deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
-                });
+                // install app
+                deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
                 classLogger.info("Pre-Install {} successfully", appFile.getAbsolutePath());
             } catch (Exception e) {
                 String errorMessage = String.format("Pre-Install %s failed", appFile.getAbsolutePath());
                 classLogger.error(errorMessage, e);
-                if (Const.PreInstallFailurePolicy.SHUTDOWN.equals(
-                        agentManagementService.getPreInstallFailurePolicy())) {
-                    throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e);
+                try {
+                    FlowUtil.retryAndSleepWhenFalse(3, 10, () -> {
+                        // try to uninstall app first
+                        try {
+                            JSONObject res = PkgUtil.analysisFile(appFile, EntityType.APP_FILE_SET);
+                            if (!StringUtils.isEmpty(res.getString(StorageFileInfo.ParserKey.PKG_NAME))) {
+                                deviceDriverManager.uninstallApp(deviceInfo, res.getString(StorageFileInfo.ParserKey.PKG_NAME), classLogger);
+                            }
+                        } catch (Exception e1) {
+                            classLogger.warn("Uninstall origin app of {} failed", appFile.getName(), e);
+                        }
+                        // install app
+                        return deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
+                    });
+                } catch (Exception e2) {
+                    classLogger.warn("Uninstall origin app of {} failed", appFile.getName(), e2);
+                    if (Const.PreInstallFailurePolicy.SHUTDOWN.equals(
+                            agentManagementService.getPreInstallFailurePolicy())) {
+                        throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e2);
+                    }
                 }
             }
         }
