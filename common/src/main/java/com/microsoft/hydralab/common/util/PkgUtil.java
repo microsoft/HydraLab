@@ -13,6 +13,8 @@ import com.microsoft.hydralab.common.entity.common.StorageFileInfo.ParserKey;
 import net.dongliu.apk.parser.ApkFile;
 import net.dongliu.apk.parser.bean.ApkMeta;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -32,6 +34,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class PkgUtil {
+    static Logger classLogger = LoggerFactory.getLogger(PkgUtil.class);
     public static JSONObject analysisFile(File file, EntityType entityType) {
         JSONObject res = new JSONObject();
         switch (entityType) {
@@ -131,10 +134,15 @@ public class PkgUtil {
             File plistFile = getPlistFromFolder(unzippedFolder);
             // for maestro case
             List<File> yamlFiles = getYamlFromFolder(unzippedFolder);
+            // for Python case
+            File pyMainFile = getPyFromFolder(unzippedFolder);
             if (plistFile != null) {
                 analysisPlist(plistFile, res);
+            } else if (pyMainFile != null) {
+                res.put(ParserKey.APP_NAME, "Python Runner");
+                res.put(ParserKey.PKG_NAME, "Python Runner");
             } else if (yamlFiles.size() == 0) {
-                throw new HydraLabRuntimeException("Analysis .zip file failed. It's not a valid XCTEST package or maestro case.");
+                classLogger.warn("Analysis .zip file failed. It's not a valid XCTEST package, Maestro case or Python package.");
             }
             FileUtil.deleteFile(unzippedFolder);
         } catch (Exception e) {
@@ -142,6 +150,16 @@ public class PkgUtil {
         }
         return res;
 
+    }
+
+    private static File getPyFromFolder(File rootFolder) {
+        Collection<File> files = FileUtils.listFiles(rootFolder, null, true);
+        for (File file : files) {
+            if ("main.py".equals(file.getName())) {
+                return file;
+            }
+        }
+        return null;
     }
 
     private static void analysisPlist(File plistFile, JSONObject res) throws Exception {

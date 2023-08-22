@@ -11,10 +11,10 @@ import com.microsoft.hydralab.agent.environment.EnvCapabilityDiscoveryService;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
+import com.microsoft.hydralab.common.entity.agent.LLMProperties;
 import com.microsoft.hydralab.common.exception.reporter.AppCenterReporter;
 import com.microsoft.hydralab.common.exception.reporter.ExceptionReporterManager;
 import com.microsoft.hydralab.common.exception.reporter.FileReporter;
-import com.microsoft.hydralab.common.entity.agent.LLMProperties;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
@@ -132,7 +132,16 @@ public class AppConfiguration {
 
     // TODO: refactor test runner to remove DependsOn
     @Bean
-    @DependsOn({"espressoRunner", "appiumRunner", "appiumCrossRunner", "smartRunner", "adbMonkeyRunner", "appiumMonkeyRunner", "t2cRunner", "xctestRunner"})
+    @DependsOn({"espressoRunner",
+            "appiumRunner",
+            "appiumCrossRunner",
+            "smartRunner",
+            "adbMonkeyRunner",
+            "appiumMonkeyRunner",
+            "t2cRunner",
+            "xctestRunner",
+            "maestroRunner",
+            "pythonRunner"})
     public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService)
             throws Exception {
         String wsUrl = String.format("ws://%s/agent/connect", registryServer);

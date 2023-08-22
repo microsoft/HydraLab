@@ -329,6 +329,7 @@ public class TestTask implements Serializable {
         String T2C_JSON_TEST = "T2C_JSON";
         String XCTEST = "XCTEST";
         String MAESTRO = "MAESTRO";
+        String PYTHON = "PYTHON";
     }
 
     public interface TestFrameworkType {

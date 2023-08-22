@@ -18,6 +18,9 @@ public class ThreadExceptionHandler implements Thread.UncaughtExceptionHandler {
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         logger.info("Exception collected in Thread {} with message {}", t.getName(), e.getMessage());
-        ExceptionReporterManager.reportException((Exception) e, t, true);
+        ExceptionReporterManager.reportException(new Exception(e), t, true);
+        if (Thread.getDefaultUncaughtExceptionHandler() != null) {
+            Thread.getDefaultUncaughtExceptionHandler().uncaughtException(t, e);
+        }
     }
 }

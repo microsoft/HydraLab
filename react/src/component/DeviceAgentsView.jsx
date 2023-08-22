@@ -489,6 +489,10 @@ export default class DeviceAgentsView extends BaseView {
             name = "T2C"
         } else if ((availability.functionName.endsWith("XCTestRunner"))) {
             name = "XCTest"
+        } else if ((availability.functionName.endsWith("MaestroRunner"))) {
+            name = "Maestro"
+        } else if ((availability.functionName.endsWith("PythonRunner"))) {
+            name = "Python"
         }
 
         return (

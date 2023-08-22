@@ -147,7 +147,8 @@ public class AttachmentService {
         } else if (newFileInfo.getFileName().equals(oldFileInfo.getFileName())
                 && newFileInfo.getLoadType().equals(oldFileInfo.getLoadType())
                 && newFileInfo.getLoadDir().equals(oldFileInfo.getLoadDir())
-                && newFileInfo.getBlobContainer().equals(oldFileInfo.getBlobContainer())) {
+                && newFileInfo.getBlobContainer().equals(oldFileInfo.getBlobContainer())
+                && newFileInfo.getFileType().equals(oldFileInfo.getFileType())) {
             return true;
         }
         return false;
