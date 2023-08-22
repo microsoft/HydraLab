@@ -816,17 +816,15 @@ export default class RunnerView extends BaseView {
     }
 
     renderRunnableDevices(runnableRows) {
-        const brandMap = new Map();
-        brandMap.set('apk', 'Android');
-        brandMap.set('ipa', 'Apple');
-        brandMap.set('zip', 'Apple');
-
         let deviceList = this.state.deviceList
         if (this.state.currentAppInstallerType === 'apk') {
             deviceList = deviceList?.filter((device) => device.brand !== 'Apple')
-        }
-        else {
-            deviceList = deviceList?.filter((device) => device.brand === brandMap.get(this.state.currentAppInstallerType))
+        } else if(this.state.currentAppInstallerType === 'ipa'){
+            deviceList = deviceList?.filter((device) => device.brand === 'Apple')
+        } else if (this.state.currentAppInstallerType === 'zip'&&this.state.runTestType === 'XCTEST') {
+            deviceList = deviceList?.filter((device) => device.brand === 'Apple')
+        } else {
+            deviceList = deviceList?.filter((device) => device.brand === 'Windows')
         }
         deviceList?.forEach((device) => {
             runnableRows.push(this.renderOneDevice(device))
@@ -987,6 +985,7 @@ export default class RunnerView extends BaseView {
             } else {
                 currentRunTestType = "APPIUM"
             }
+            
 
             this.setState({
                 currentAppId: currentId,

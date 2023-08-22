@@ -157,7 +157,9 @@ public class PythonRunner extends TestRunner {
         try {
             Process process = Runtime.getRuntime().exec(runArgs);
             CommandOutputReceiver receiver = new CommandOutputReceiver(process.getInputStream(), logger);
+            CommandOutputReceiver errorReceiver = new CommandOutputReceiver(process.getErrorStream(), logger);
             receiver.start();
+            errorReceiver.start();
             process.waitFor();
             checkTime = System.currentTimeMillis() - testRun.getTestStartTimeMillis();
             ongoingPythonTest.setStatusCode(AndroidTestUnit.StatusCodes.OK);
@@ -173,7 +175,7 @@ public class PythonRunner extends TestRunner {
                     System.currentTimeMillis() - testRun.getTestStartTimeMillis());
             testRun.oneMoreFailure();
         }
-
+        FileUtil.deleteFile(pythonMainFile.getParentFile());
         logger.info(ongoingPythonTest.getTitle() + ".end");
         ongoingPythonTest.setEndTimeMillis(System.currentTimeMillis());
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
@@ -226,5 +228,15 @@ public class PythonRunner extends TestRunner {
         }
         testRun.getLogger().info("Python custom commands: {} ", LogUtils.scrubSensitiveArgs(customArgMap.toString()));
         return args;
+    }
+
+    @Override
+    protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) {
+        // do nothing
+    }
+
+    @Override
+    protected void reInstallTestApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) {
+        // do nothing
     }
 }
