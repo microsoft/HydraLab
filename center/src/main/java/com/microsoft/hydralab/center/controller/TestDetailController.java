@@ -342,6 +342,34 @@ public class TestDetailController {
         return Result.ok("Save suggestion success!");
     }
 
+    @GetMapping(value = {"/api/test/reportTable/{fileId}"})
+    public Result getTestReportTable(@CurrentSecurityContext SysUser requestor,
+                                     @PathVariable(value = "fileId") String fileId) {
+        try {
+            if (requestor == null) {
+                return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+            }
+
+            AccessToken token = storageTokenManageService.generateReadToken(requestor.getMailAddress());
+            StorageFileInfo tempFileInfo = storageFileInfoRepository.findById(fileId).get();
+            String blobUrl = tempFileInfo.getBlobUrl();
+
+            URL url = new URL(blobUrl + "?" + token.getToken());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(10000);
+            conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+            InputStream inputStream = conn.getInputStream();
+            byte[] byteData = DownloadUtils.readInputStream(inputStream);
+
+            String jsonStr = new String(byteData);
+            JSONArray array = JSON.parseArray(jsonStr);
+            return Result.ok(array);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+    }
+
     private void saveGPTSuggestion(String id, String suggestion, TestDataService.SuggestionType suggestionType) {
         switch (suggestionType) {
             case TestRun:

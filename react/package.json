@@ -40,6 +40,7 @@
     "@mui/icons-material": "^5.5.1",
     "@mui/lab": "^5.0.0-alpha.72",
     "@mui/material": "^5.4.4",
+    "@mui/x-data-grid": "^6.11.2",
     "@react-sigma/core": "^3.3.0",
     "axios": "^0.21.4",
     "bootstrap": "^4.5.3",

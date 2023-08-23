@@ -82,6 +82,7 @@ class TasksView extends BaseView {
         this.state = {
             tasks: null,
             testDetailInfo: null,
+            reportTable: null,
 
             displayReportTaskId: null,
             runningTasks: null,
@@ -326,7 +327,7 @@ class TasksView extends BaseView {
                     maxWidth="lg"
                     onClose={() => this.handleCloseDetailDialog()}
             >
-                <TestReportView testTask={this.state.testDetailInfo} />
+                <TestReportView testTask={this.state.testDetailInfo} reportTable={this.state.reportTable}/>
                 <DialogActions>
                     <Button
                         onClick={() => this.handleCloseDetailDialog()}>Close</Button>
@@ -603,6 +604,7 @@ class TasksView extends BaseView {
                 loading: true,
             })
         }
+
         axios.get('/api/test/task/' + task.id).then(res => {
             console.log(res.data)
             if (res.data && res.data.code === 200) {
@@ -616,6 +618,8 @@ class TasksView extends BaseView {
                     showBackDrop: false,
                     openTestDetail: true,
                 })
+
+                // this.getReportTable(fileId)
             } else {
                 this.snackBarFail(res)
             }
@@ -831,6 +835,30 @@ class TasksView extends BaseView {
     }
 
     getRerunDialog() {
+        return <Dialog open={this.state.rerunTestDialogIsShown}
+            fullWidth={true} maxWidth='lg'
+            onClose={() => this.handleStatus("rerunTestDialogIsShown", false)}>
+            <DialogTitle>Rerun Test Task</DialogTitle>
+            <DialogContent>
+                {this.getRerunForm()}
+            </DialogContent>
+        </Dialog>
+    }
+
+    getReportTable(fileId) {
+        axios.get('/api/test/reportTable/' + fileId).then(res => {
+            console.log(res.data)
+            if (res.data && res.data.code === 200) {
+                this.setState({
+                    reportTable: res.data.content,
+                })
+            } else {
+                this.setState({
+                    reportTable: 123,
+                })
+            }
+        })
+
         return <Dialog open={this.state.rerunTestDialogIsShown}
             fullWidth={true} maxWidth='lg'
             onClose={() => this.handleStatus("rerunTestDialogIsShown", false)}>

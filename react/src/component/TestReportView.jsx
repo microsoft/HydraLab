@@ -12,6 +12,7 @@ import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Button from "@mui/material/Button";
 import axios from "@/axios";
 import PerfTestDashboard from './PerfTestDashboard';
+import TaskReportTable from './TaskReportTable';
 import Sigma from "sigma";
 import Graph from "graphology";
 import { parse } from "graphology-gexf/browser";
@@ -82,6 +83,7 @@ const StyledTableRow = withStyles((theme) => ({
 export default class TestReportView extends BaseView {
     state = {
         task: this.props.testTask,
+        reportTable: this.props.reportTable,
         history: null,
         overNode: null,
         selectedPath: [],
@@ -96,6 +98,7 @@ export default class TestReportView extends BaseView {
 
     render() {
         console.log("render")
+        console.log(this.state.reportTable)
         const task = this.state.task
         const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
         const { attachmentsDiaglogIsShow } = this.state
@@ -152,12 +155,15 @@ export default class TestReportView extends BaseView {
         const dtrSuccFailMap = _.groupBy(task.deviceTestResults, 'success')
 
         var perfResults = [];
+        var reportTable = [ 123 ];
         var suggestions = [];
         for (let testResult of task.deviceTestResults) {
             for (let attachment of testResult.attachments) {
                 if (attachment.fileName == 'PerformanceReport.json') {
                     perfResults.push(attachment);
-                    break;
+                }
+                if (attachment.fileName == 'ReportTable.json') {
+                    reportTable.push(attachment);
                 }
             }
             if (testResult.suggestion) {
@@ -165,6 +171,7 @@ export default class TestReportView extends BaseView {
             }
         }
         console.log('PerfResults:', perfResults);
+        console.log('PerfResults:', reportTable);
         console.log('suggestions:', suggestions);
 
         var chunkedFailedDeviceResult = null
@@ -188,6 +195,7 @@ export default class TestReportView extends BaseView {
         attachmentsHeadItems.forEach((k) => attachmentsHeads.push(<StyledTableCell key={k} align="center">
             {k}
         </StyledTableCell>))
+
         return <div id='test_report' style={{ padding: '20px' }}>
             <div id='test_report_head'>
                 <table className='table table-borderless'>
@@ -627,6 +635,19 @@ export default class TestReportView extends BaseView {
                             {perfResults.map((perfTestResult) =>
                                 <PerfTestDashboard perfTestResult={perfTestResult} testTask={task} />
                             )}
+                        </tbody>
+                    </table>
+                </div> : null}
+            </div>
+            <div id='test_report_content_5>'>
+                {reportTable.length > 0 ? <div>
+                    <table className='table table-borderless'>
+                        <tbody>
+                            {
+                                reportTable.map((table) =>
+                                    <TaskReportTable reportTableFile={table} testTask={task} />
+                                )
+                            }
                         </tbody>
                     </table>
                 </div> : null}
