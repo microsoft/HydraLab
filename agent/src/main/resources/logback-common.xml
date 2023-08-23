@@ -46,6 +46,9 @@
     </appender>
 
     <appender name ="asyncAlarm" class= "ch.qos.logback.classic.AsyncAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.console.level:-WARN}</level>
+        </filter>
         <discardingThreshold >20</discardingThreshold>
         <queueSize>256</queueSize>
         <neverBlock>true</neverBlock>
@@ -62,16 +65,12 @@
     <logger name="com.microsoft" level="debug" additivity="false">
         <appender-ref ref="syslog"/>
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="asyncAlarm"/>
     </logger>
     <logger name="logger.devices" level="debug" additivity="false">
     </logger>
     <logger name="access" level="info" additivity="false">
         <appender-ref ref="accessLog"/>
-    </logger>
-    <logger name="com.microsoft" level="warn" additivity="false">
-        <appender-ref ref="asyncAlarm"/>
-    </logger>
-    <logger name="access" level="warn" additivity="false">
         <appender-ref ref="asyncAlarm"/>
     </logger>
 </configuration>

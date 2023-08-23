@@ -49,13 +49,13 @@ public class PreInstallListener implements DeviceStatusListener {
             if (!appFile.isFile()) {
                 continue;
             }
-            try {
-                // install app
-                deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
+
+            // install app
+            if (deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger)) {
                 classLogger.info("Pre-Install {} successfully", appFile.getAbsolutePath());
-            } catch (Exception e) {
+            } else {
                 String errorMessage = String.format("Pre-Install %s failed", appFile.getAbsolutePath());
-                classLogger.error(errorMessage, e);
+                classLogger.warn(errorMessage);
                 try {
                     FlowUtil.retryAndSleepWhenFalse(3, 10, () -> {
                         // try to uninstall app first
@@ -64,17 +64,17 @@ public class PreInstallListener implements DeviceStatusListener {
                             if (!StringUtils.isEmpty(res.getString(StorageFileInfo.ParserKey.PKG_NAME))) {
                                 deviceDriverManager.uninstallApp(deviceInfo, res.getString(StorageFileInfo.ParserKey.PKG_NAME), classLogger);
                             }
-                        } catch (Exception e1) {
+                        } catch (Exception e) {
                             classLogger.warn("Uninstall origin app of {} failed", appFile.getName(), e);
                         }
                         // install app
                         return deviceDriverManager.installApp(deviceInfo, appFile.getAbsolutePath(), classLogger);
                     });
-                } catch (Exception e2) {
-                    classLogger.warn("Uninstall origin app of {} failed", appFile.getName(), e2);
+                } catch (Exception e1) {
+                    classLogger.warn("Uninstall origin app of {} failed", appFile.getName(), e1);
                     if (Const.PreInstallFailurePolicy.SHUTDOWN.equals(
                             agentManagementService.getPreInstallFailurePolicy())) {
-                        throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e2);
+                        throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, e1);
                     }
                 }
             }
