@@ -6,9 +6,7 @@
 
 下面的视频可以让您大致了解 Hydra Lab 的功能以及使命。
 
-<video poster="./1692862864547.jpg"  src="./Hydra Lab External with Subtitle.mp4"
-    controls loop>
-</videos>
+https://github.com/microsoft/HydraLab/assets/8344245/cefefe24-4e11-4cc7-a3af-70cb44974735
 
 总而言之，通过 Hydra Lab，您可以构建一个私有的测试云平台，它基于 RESTful 接口快速集成 DevOps 系统。换句话说，就像您可以拥有一个可管理的私有“Firebase Test Lab”。
 
