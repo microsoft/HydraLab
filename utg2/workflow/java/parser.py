@@ -55,13 +55,24 @@ def remove_comments(inputs):
         ln += 1
     return codes
 
-
+java_class_black_content = [
+    "Class<?",
+    "class AppInitializer",
+    "class ClipboardManagerBrokerProvider",
+    "class DragDropExtensionProvider",
+    "class NullRcsConversationProvider",
+    "class NullRcsFileTransferProvider",
+    "class ExpOverrideManagerImpl",
+    "class MainProcAsyncDeviceExperienceApiModule",
+    "class MainProcSyncDeviceExperienceApiModule",
+    "class MultiProcDeviceExperienceApiModule",
+    "class DebugActivity",
+]
 java_package_regex = r"package\s+([\w\.\*]+);"
 java_import_regex = r"import\s+((static\s+)?([\w\.\*]+));"
-java_class_regex = r"((\@[\w\.\(\)]+\s+)*)(public\s+(final\s+)?class)\s+(\w+)\s*(\{((?>[^{}]+|(?6))*)})"
+java_class_regex = r"((\@[\w\.\(\)]+\s+)*)(public\s+(final\s+)?(class|interface))\s+(\w+)(\s*extends\s+\w+)?(\s*implements\s+\w+)?\s*(\{((?>[^{}]+|(?9))*)})"
 java_function_regex = r"((\@[\w\.\(\)]+\s+)*)(public\s+\w+)\s+(\w+)\s*\(\s*((\w+\s+\w+\s*(\,\s*\w+\s+\w+\s*)*)?)\)\s*(throws\s+(\w+)\s*)?(\{((?:[^{}]*|(?10))*)\})"
 java_member_regex = r"((\@[\w\.\(\)]+\s*)*)(\s*(public|private)\s+\w+(\<((?:[^<>]*|(?5))*)\>)?)\s+(\w+)\s*(=\s*(\w+))?\s*;"
-
 
 class java_file:
     def __init__(self, codes):
@@ -102,6 +113,9 @@ class java_file:
             code_str += c.get_codes_str()
         return code_str
 
+    def get_classes(self):
+        return self.classes
+
     def add_import(self, import_str):
         if import_str not in self.imports:
             self.imports.append(import_str)
@@ -116,11 +130,12 @@ class java_file:
         for i in regex.finditer(java_import_regex, code, regex.DOTALL):
             self.imports.append(i.group(1).strip())
         # class
-        self.classes = java_class.try_parse_all(code)
+        self.classes = java_class.try_parse_all(self, code)
 
 
 class java_class:
-    def __init__(self, codes):
+    def __init__(self, jf, codes):
+        self.java_file = jf
         self.tags = []
         self.prefix = ""
         self.class_name = ""
@@ -155,18 +170,18 @@ class java_class:
         code_str += "}\n"
         return code_str
 
-    def try_parse(codes):
+    def try_parse(jf, codes):
         try:
-            m = java_class(codes)
+            m = java_class(jf, codes)
         except Exception as ex:
             return None
         return m
 
-    def try_parse_all(codes):
+    def try_parse_all(jf, codes):
         code = lines_to_str(codes)
         classes = []
         for c in regex.finditer(java_class_regex, code, regex.DOTALL):
-            class_obj = java_class.try_parse(code[c.start() : c.end()])
+            class_obj = java_class.try_parse(jf, code[c.start() : c.end()])
             if class_obj:
                 classes.append(class_obj)
         return classes
@@ -178,8 +193,11 @@ class java_class:
             raise ValueError(f"Class parse error:\n{code}")
         self.tags = filter_strs(m.group(1).split("@"))
         self.prefix = m.group(3).strip()
-        self.class_name = m.group(5).strip()
-        content = m.group(7)
+        self.class_name = m.group(6).strip()
+        for bc in java_class_black_content:
+            if bc in codes:
+                return
+        content = m.group(10)
         self.members = java_member.try_parse_all(content)
         self.functions = java_function.try_parse_all(content)
 
