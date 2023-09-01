@@ -70,7 +70,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
         Set<TestRunDevice> chosenDevices = chooseDevices(testTask);
         if (chosenDevices.size() == 0) {
-            handleNoAvaiableDevice(testTask);
+            handleNoAvailableDevice(testTask);
             return testTask;
         }
 
@@ -93,14 +93,14 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 });
 
         if (deviceTaskControl == null) {
-            handleNoAvaiableDevice(testTask);
+            handleNoAvailableDevice(testTask);
         } else {
             testTask.setTestDevicesCount(deviceTaskControl.devices.size());
         }
         return testTask;
     }
 
-    private static void handleNoAvaiableDevice(TestTask testTask) {
+    private static void handleNoAvailableDevice(TestTask testTask) {
         testTask.setTestDevicesCount(0);
         testTask.setStatus(TestTask.TestStatus.CANCELED);
         log.warn("No available device found for {}, group devices: {}, task {} is canceled on this agent",

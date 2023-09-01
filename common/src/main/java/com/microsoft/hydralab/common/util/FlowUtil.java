@@ -42,4 +42,22 @@ public class FlowUtil {
         }
         return false;
     }
+
+    public static boolean retryAndSleepWhenException(int count, int sleepSeconds, Callable predicate) throws Exception {
+        Exception toThrow = null;
+        while (count > 0) {
+            try {
+                predicate.call();
+                return true;
+            } catch (Exception e) {
+                toThrow = e;
+            }
+            ThreadUtils.safeSleep(sleepSeconds * 1000);
+            count--;
+        }
+        if (toThrow != null) {
+            throw toThrow;
+        }
+        return false;
+    }
 }

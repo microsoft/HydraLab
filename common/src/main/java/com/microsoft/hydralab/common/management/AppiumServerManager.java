@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.common.management;
 
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -35,11 +36,11 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
 
 public class AppiumServerManager {
     public static final String EDGE_DRIVER_DOWNLOAD_URL = "https://msedgedriver.azureedge.net/";
@@ -48,9 +49,11 @@ public class AppiumServerManager {
     public static final String EDGE_DRIVER_VERSION_TXT = "msedgedriverversion.txt";
     public static final String EDGE_PROCESS_NAME = "msedge";
     public static final String WINDOWS_HANDLE_BY_APP_FAMILY_ID_SCRIPT_NAME = "WindowsAppIdToHandle.ps1";
+    private static final int DRIVER_EXPIRED_TIME = 1000 * 60 * 60 * 24;
     private final Map<String, IOSDriver> iOSDrivers = new ConcurrentHashMap<>();
     private final Map<String, AndroidDriver> androidDrivers = new ConcurrentHashMap<>();
     private final Map<String, WindowsDriver> windowsAppDrivers = new ConcurrentHashMap<>();
+    private final Map<String, Date> driverCreateTime = new ConcurrentHashMap<>();
     private AppiumDriverLocalService service;
     private int appiumServerPort = 10086;
     private String appiumServerHost = "127.0.0.1";
@@ -111,7 +114,16 @@ public class AppiumServerManager {
         if (iosDriver != null && isDriverAlive(iosDriver)) {
             logger.info(iosDriver.toString());
             logger.info(iosDriver.getStatus().toString());
-            return iosDriver;
+            if (isDriverExpired(deviceInfo)) {
+                try {
+                    logger.info("driver expired, quit old driver and create a new one");
+                    quitIOSDriver(deviceInfo, logger);
+                } catch (Exception e) {
+                    logger.error("quit old driver failed", e);
+                }
+            } else {
+                return iosDriver;
+            }
         }
 
         int wdaPort = IOSUtils.getWdaPortByUdid(udid, logger);
@@ -150,6 +162,7 @@ public class AppiumServerManager {
 
                 logger.info("Create Driver, SessionID: " + iosDriver.getSessionId());
                 iOSDrivers.put(udid, iosDriver);
+                driverCreateTime.put(udid, new Date());
                 sessionCreated = true;
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
@@ -245,7 +258,9 @@ public class AppiumServerManager {
 
     @Nonnull
     private String getHexAppTopLevelWindowByProcessName(String processName, Logger logger) {
-        String processInfo = ShellUtils.execLocalCommandWithResult(ShellUtils.POWER_SHELL_PATH + " -Command " + "\"(Get-Process | where {$_.mainWindowTitle -and $_.mainWindowHandle -ne 0 -and $_.Name -eq '" + processName + "'} | Select mainWindowHandle).mainWindowHandle\"", logger);
+        String processInfo = ShellUtils.execLocalCommandWithResult(ShellUtils.POWER_SHELL_PATH + " -Command " +
+                "\"(Get-Process | where {$_.mainWindowTitle -and $_.mainWindowHandle -ne 0 -and $_.Name -eq '" +
+                processName + "'} | Select mainWindowHandle).mainWindowHandle\"", logger);
         logger.info(processName + " processInfo: " + processInfo);
         if (processInfo != null && processInfo.length() > 0) {
             String handlerIdStr = processInfo.trim().split(" ")[0];
@@ -296,6 +311,14 @@ public class AppiumServerManager {
         }
     }
 
+    public Boolean isDriverExpired(DeviceInfo deviceInfo) {
+        Date date = driverCreateTime.get(deviceInfo.getSerialNum());
+        if (date == null || new Date().getTime() - date.getTime() < DRIVER_EXPIRED_TIME) {
+            return false;
+        }
+        return true;
+    }
+
     public Boolean isDriverAlive(WindowsDriver driver) {
         try {
             driver.getScreenshotAs(OutputType.FILE);
@@ -311,7 +334,6 @@ public class AppiumServerManager {
         edgeDriverName = new File(workspacePath, EDGE_DRIVER_EXE).getAbsolutePath();
         edgeDriverVersionFile = new File(workspacePath, EDGE_DRIVER_VERSION_TXT).getAbsolutePath();
     }
-
 
     public WindowsDriver getWindowsEdgeDriver(Logger logger) {
         startAppiumServer();
@@ -404,7 +426,6 @@ public class AppiumServerManager {
 
     }
 
-
     public void quitIOSDriver(DeviceInfo deviceInfo, Logger logger) {
         String udid = deviceInfo.getSerialNum();
         logger.info("Quitting the driver for device: " + udid);
@@ -422,7 +443,7 @@ public class AppiumServerManager {
             }
         }
         iOSDrivers.remove(udid);
-
+        driverCreateTime.remove(udid);
     }
 
     public void quitAndroidDriver(DeviceInfo deviceInfo, Logger logger) {

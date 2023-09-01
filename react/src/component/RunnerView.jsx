@@ -87,7 +87,7 @@ export default class RunnerView extends BaseView {
         runTestDialogIsShown: false,
         activeStep: 0,
 
-        attachmentsDiaglogISshow: false,
+        attachmentsDiaglogIsShow: false,
         addAttachmentIsShow: false,
         attachmentDeleteDialogIsShow: false,
         attachmentUploading: false,
@@ -122,7 +122,7 @@ export default class RunnerView extends BaseView {
         const { uploadDialogIsShown, uploading } = this.state
 
         const { runTestDialogIsShown, running } = this.state
-        const { attachmentsDiaglogISshow, addAttachmentIsShow, attachmentUploading } = this.state
+        const { attachmentsDiaglogIsShow, addAttachmentIsShow, attachmentUploading } = this.state
         const { fileType, loadType, loadDir } = this.state
 
         const { teamList } = this.state
@@ -159,7 +159,7 @@ export default class RunnerView extends BaseView {
                         {appSet.commitMessage}
                     </TableCell>
                     <TableCell id={appSet.id} align="center">
-                        <IconButton id={appSet.id} onClick={() => { this.handleStatus("attachmentsDiaglogISshow", true) }}>
+                        <IconButton id={appSet.id} onClick={() => { this.handleStatus("attachmentsDiaglogIsShow", true) }}>
                             <span id={appSet.id} className="material-icons-outlined">info</span>
                         </IconButton>
                     </TableCell>
@@ -279,10 +279,10 @@ export default class RunnerView extends BaseView {
                             variant="outlined"
                             startIcon={<UploadFileIcon />}
                         >
-                            {this.state.uploadTestPackageFile ? this.state.uploadTestPackageFile.name : 'Test APK/JAR/JSON file'}
+                            {this.state.uploadTestPackageFile ? this.state.uploadTestPackageFile.name : 'Test APK/JAR/JSON/ZIP file'}
                             <input id="uploadTestPackageFile"
                                 type="file"
-                                accept=".apk,.jar,.json"
+                                accept=".apk,.jar,.json,.zip"
                                 hidden
                                 onChange={this.handleFileUpload}
                             />
@@ -373,9 +373,9 @@ export default class RunnerView extends BaseView {
                     </React.Fragment>
                 </DialogContent>
             </Dialog>
-            <Dialog open={attachmentsDiaglogISshow}
+            <Dialog open={attachmentsDiaglogIsShow}
                 fullWidth={true} maxWidth='lg'
-                onClose={() => this.handleStatus("attachmentsDiaglogISshow", false)}>
+                onClose={() => this.handleStatus("attachmentsDiaglogIsShow", false)}>
                 <DialogTitle>Attachments</DialogTitle>
                 <DialogContent>
                     <TableContainer style={{ margin: "auto" }}>
@@ -393,7 +393,7 @@ export default class RunnerView extends BaseView {
                 </DialogContent>
                 <DialogActions>
                     <Button
-                        onClick={() => this.handleStatus("attachmentsDiaglogISshow", false)}>Cancel</Button>
+                        onClick={() => this.handleStatus("attachmentsDiaglogIsShow", false)}>Cancel</Button>
                     <LoadingButton
                         variant="contained"
                         className="pl-4 pr-4"
@@ -577,6 +577,8 @@ export default class RunnerView extends BaseView {
                             <MenuItem value={"APPIUM_CROSS"} disabled={this.state.currentAppInstallerType !== 'apk'}>Appium E2E</MenuItem>
                             <MenuItem value={"T2C_JSON"} disabled={this.state.currentAppInstallerType === 'zip' }>JSON-Described Test</MenuItem>
                             <MenuItem value={"XCTEST"} disabled={this.state.currentAppInstallerType !== 'zip'}>XCTest</MenuItem>
+                            <MenuItem value={"MAESTRO"} disabled={this.state.currentAppInstallerType !== 'apk'}>Maestro</MenuItem>
+                            <MenuItem value={"PYTHON"} disabled={this.state.currentAppInstallerType !== 'zip'}>Python</MenuItem>
                         </Select>
                     </FormControl>
                     <br />
@@ -814,17 +816,15 @@ export default class RunnerView extends BaseView {
     }
 
     renderRunnableDevices(runnableRows) {
-        const brandMap = new Map();
-        brandMap.set('apk', 'Android');
-        brandMap.set('ipa', 'Apple');
-        brandMap.set('zip', 'Apple');
-
         let deviceList = this.state.deviceList
         if (this.state.currentAppInstallerType === 'apk') {
             deviceList = deviceList?.filter((device) => device.brand !== 'Apple')
-        }
-        else {
-            deviceList = deviceList?.filter((device) => device.brand === brandMap.get(this.state.currentAppInstallerType))
+        } else if(this.state.currentAppInstallerType === 'ipa'){
+            deviceList = deviceList?.filter((device) => device.brand === 'Apple')
+        } else if (this.state.currentAppInstallerType === 'zip'&&this.state.runTestType === 'XCTEST') {
+            deviceList = deviceList?.filter((device) => device.brand === 'Apple')
+        } else {
+            deviceList = deviceList?.filter((device) => device.brand === 'Windows')
         }
         deviceList?.forEach((device) => {
             runnableRows.push(this.renderOneDevice(device))
@@ -985,6 +985,7 @@ export default class RunnerView extends BaseView {
             } else {
                 currentRunTestType = "APPIUM"
             }
+            
 
             this.setState({
                 currentAppId: currentId,

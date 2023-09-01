@@ -127,6 +127,10 @@ public class DeviceAgentManagementService {
     private String pushgatewayUsername;
     @Value("${management.metrics.export.prometheus.pushgateway.password}")
     private String pushgatewayPassword;
+    @Value("${app.error-reporter.app-center.agent.enabled: false}")
+    private boolean appCenterEnabled;
+    @Value("${app.error-reporter.app-center.agent.secret: ''}")
+    private String appCenterSecret;
 
     public void onOpen(Session session) {
         onlineCount.incrementAndGet();
@@ -162,6 +166,9 @@ public class DeviceAgentManagementService {
         data.setAgentUser(agentUser);
         data.setPushgatewayUsername(pushgatewayUsername);
         data.setPushgatewayPassword(pushgatewayPassword);
+        if (appCenterEnabled && appCenterSecret != null && !appCenterSecret.isEmpty()) {
+            data.setAppCenterSecret(appCenterSecret);
+        }
 
         Message message = new Message();
         message.setPath(signalName);
@@ -305,14 +312,13 @@ public class DeviceAgentManagementService {
                 if (message.getBody() instanceof TestTask) {
                     TestTask testTask = (TestTask) message.getBody();
                     if (testTask.getRetryTime() == Const.AgentConfig.RETRY_TIME) {
-                        testTask.setStatus(TestTask.TestStatus.EXCEPTION);
-                        testTask.setTestErrorMsg("Device offline!");
                         testDataService.saveTestTaskData(testTask);
                     } else {
                         TestTaskSpec taskSpec = TestTask.convertToTestTaskSpec(testTask);
                         taskSpec.retryTime++;
                         testTaskService.addTask(taskSpec);
-                        cancelTestTaskById(testTask.getId(), "Retry time limit!");
+                        log.info("Retry task {} for {} time", testTask.getId(), taskSpec.retryTime);
+                        cancelTestTaskById(testTask.getId(), "Error happened:" + testTask.getTestErrorMsg() + ". Will cancel the task and retry.");
                         //run the task saved in queue
                         testTaskService.runTask();
                     }

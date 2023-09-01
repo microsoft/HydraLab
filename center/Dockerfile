@@ -57,6 +57,16 @@ COPY ${STARTUP_FOLDER_PATH}/${CENTER_INIT_SQLITE} /hydra/data/${CENTER_INIT_SQLI
 COPY ${STARTUP_FOLDER_PATH}/record_release.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_release.apk
 COPY ${STARTUP_FOLDER_PATH}/record_androidTest.apk /storage/local/pkgstore/2023/04/23/hydra_lab_android_client_androidTest.apk
 
+# Config for SSH of Azure App Service
+RUN apt-get install -y openssh-server \
+     && echo "root:Docker!" | chpasswd
+# Copy the sshd_config file to the /etc/ssh/ directory
+COPY ${STARTUP_FOLDER_PATH}/sshd_config /etc/ssh/
+# Copy and configure the ssh_setup file
+COPY ${STARTUP_FOLDER_PATH}/ssh_setup.sh /tmp/
+RUN chmod +x /tmp/ssh_setup.sh && \
+    (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
+
 # Add config of scheduled cleaning pushgateway outdated data, run script every 1 minute
 RUN echo '*/1 * * * *  ( sh /opt/pushgatewayDataClean.sh & ) ' >> /etc/crontab \
 # Add restart logic by triggering shell script every 1 minute
@@ -69,5 +79,5 @@ RUN echo '*/1 * * * *  ( sh /opt/pushgatewayDataClean.sh & ) ' >> /etc/crontab \
 LABEL org.opencontainers.image.source=https://github.com/microsoft/HydraLab
 
 # Open port 2222 for SSH access, 80 for default app service
-EXPOSE 80
+EXPOSE 80 2222
 ENTRYPOINT ["sh", "start.sh"]

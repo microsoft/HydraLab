@@ -15,7 +15,7 @@
             <!-- http://logback.qos.ch/codes.html#sat_missing_integer_token The %i conversion token is mandatory for size and time based archiving.
             In case the %i token is missing, SizeAndTimeBasedFNATP attached to RollingFileAppender will detect the omission and will not start. -->
             <fileNamePattern>./hydra/data/log/%d/hydra_lab.%d.%i.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>10</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
@@ -31,7 +31,7 @@
         <File>./hydra/data/access_log/hydra_lab_current.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>./hydra/data/access_log/%d/hydra_lab.%d.%i.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>10</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
@@ -40,6 +40,19 @@
             <pattern>%d %p (%logger{5} - %file:%line\)[%t] - %m%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
+    </appender>
+
+    <appender name="errorAlarm" class="com.microsoft.hydralab.common.exception.handler.LogbackExceptionHandler">
+    </appender>
+
+    <appender name ="asyncAlarm" class= "ch.qos.logback.classic.AsyncAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.console.level:-WARN}</level>
+        </filter>
+        <discardingThreshold >20</discardingThreshold>
+        <queueSize>256</queueSize>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref ="errorAlarm"/>
     </appender>
 
     <root level="info">
@@ -52,10 +65,12 @@
     <logger name="com.microsoft" level="debug" additivity="false">
         <appender-ref ref="syslog"/>
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="asyncAlarm"/>
     </logger>
     <logger name="logger.devices" level="debug" additivity="false">
     </logger>
     <logger name="access" level="info" additivity="false">
         <appender-ref ref="accessLog"/>
+        <appender-ref ref="asyncAlarm"/>
     </logger>
 </configuration>

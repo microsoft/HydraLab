@@ -31,7 +31,7 @@ import java.util.Date;
  */
 public class XmlBuilder {
     private static final String TEST_RESULT_FILE_SUFFIX = ".xml";
-    private static final String TEST_RESULT_FILE_PREFIX = "hydra_result_";
+    public static final String TEST_RESULT_FILE_PREFIX = "hydra_result_";
     private static final String TEST_RESULT_FILE_ENCODE_PROPERTY = "encoding";
     private static final String TEST_RESULT_FILE_ENCODE_VALUE = "UTF-8";
     private static final String TEST_RESULT_FILE_OUTPUT_VALUE = "xml";
@@ -52,6 +52,14 @@ public class XmlBuilder {
     private static final String HOSTNAME = "hostname";
 
     public String buildTestResultXml(TestTask testTask, TestRun testRun) throws Exception {
+        File resultFolder = testRun.getResultFolder();
+        File[] files = resultFolder.listFiles();
+        for (File tempfile : files) {
+            if (tempfile.getName().startsWith(TEST_RESULT_FILE_PREFIX) && tempfile.getName().endsWith(TEST_RESULT_FILE_SUFFIX)) {
+                testRun.getLogger().info("find test result file: " + tempfile.getAbsolutePath());
+                return tempfile.getAbsolutePath();
+            }
+        }
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = factory.newDocumentBuilder();
         Document document = db.newDocument();

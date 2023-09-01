@@ -9,6 +9,7 @@ if ${PUSHGATEWAY_ENABLED}; then
 fi
 
 /usr/sbin/nginx &
+/usr/sbin/sshd &
 /etc/init.d/cron start &
 
 cd /

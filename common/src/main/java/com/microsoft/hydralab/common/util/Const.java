@@ -78,6 +78,11 @@ public interface Const {
         String REQUIRE_FILE_NAME = "requirements.txt";
         String STRING_FOLDER_NAME = "SmartTestString";
         String STRING_FILE_NAMES = "strings,username,password";
+        String LLM_ENABLE = "enable_llm";
+        String LLM_DEPLOYMENT = "deployment_name";
+        String LLM_API_KEY = "openai_api_key";
+        String LLM_API_BASE = "openai_api_base";
+        String LLM_API_VERSION = "openai_api_version";
     }
 
     interface ScreenRecoderConfig {
@@ -108,6 +113,7 @@ public interface Const {
         String INDEX_PATH = "/portal/index.html";
         String ANCHOR = "#";
         String REDIRECT_PARAM = "redirectUrl";
+        String SWAGGER_DOC_PATH = "/v3/api-docs";
     }
 
     interface RegexString {
