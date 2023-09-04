@@ -1,23 +1,29 @@
 package com.microsoft.hydralab.center.openai;
 
 import com.alibaba.fastjson.JSON;
-import com.microsoft.hydralab.center.openai.data.ChatMessage;
-import com.microsoft.hydralab.center.openai.data.ChatRequest;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.center.openai.data.ExceptionSuggestion;
 import com.microsoft.hydralab.center.openai.data.PerformanceSuggestion;
-import com.microsoft.hydralab.center.openai.data.SimplifiedPerformanceData;
 import com.microsoft.hydralab.center.openai.data.SimplifiedPerformanceDataSet;
 import com.microsoft.hydralab.center.openai.data.SimplifiedPerformanceResult;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
+import com.microsoft.hydralab.common.file.impl.AzureOpenaiConfig;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.performance.PerformanceInspectionResult;
+import com.microsoft.hydralab.performance.PerformanceResultParser;
 import com.microsoft.hydralab.performance.PerformanceTestResult;
 import com.microsoft.hydralab.performance.entity.AndroidBatteryInfo;
+import com.microsoft.hydralab.performance.entity.AndroidHprofMemoryInfo;
 import com.microsoft.hydralab.performance.entity.AndroidMemoryInfo;
+import com.microsoft.hydralab.performance.entity.IOSEnergyGaugeInfo;
+import com.microsoft.hydralab.performance.entity.IOSMemoryPerfInfo;
+import com.microsoft.hydralab.performance.entity.WindowsBatteryParsedData;
+import com.microsoft.hydralab.performance.entity.WindowsMemoryParsedData;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -27,7 +33,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.springframework.context.ApplicationContext;
 
 import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_TEMP_FILE_DIR;
 
@@ -37,10 +47,24 @@ public class SuggestionService {
     StorageFileInfoRepository storageFileInfoRepository;
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
+    private final AzureOpenaiConfig openaiConfig;
     private final AzureOpenAIServiceClient oaiClient;
+    private final Map<PerformanceResultParser.PerformanceResultParserType, Class> performanceTypeMap = Map.ofEntries(
+        Map.entry(PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_BATTERY_INFO, AndroidBatteryInfo.class),
+        Map.entry(PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_MEMORY, WindowsMemoryParsedData.class),
+        Map.entry(PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_BATTERY, WindowsBatteryParsedData.class),
+        Map.entry(PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_INFO, AndroidMemoryInfo.class),
+        Map.entry(PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_MEMORY_DUMP, AndroidHprofMemoryInfo.class),
+        Map.entry(PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_ENERGY, IOSEnergyGaugeInfo.class),
+        Map.entry(PerformanceResultParser.PerformanceResultParserType.PARSER_IOS_MEMORY, IOSMemoryPerfInfo.class)
+    );
 
-    public SuggestionService() {
-        this.oaiClient = new AzureOpenAIServiceClient("", "", "");
+    public SuggestionService(ApplicationContext applicationContext) {
+        this.openaiConfig = applicationContext.getBean(Const.AzureOpenaiConfig.AZURE_OPENAI_CONFIG, AzureOpenaiConfig.class);
+        this.oaiClient = new AzureOpenAIServiceClient(
+                openaiConfig.getApiKey(),
+                openaiConfig.getDeployment(),
+                openaiConfig.getEndpoint());
     }
 
     public PerformanceSuggestion performanceAnalyze(TestRun testRun) {
@@ -60,6 +84,7 @@ public class SuggestionService {
         return suggestion;
     }
 
+    @SuppressWarnings("unchecked")
     private List<PerformanceTestResult> getPerformanceResult(TestRun testRun) {
         List<PerformanceTestResult> performanceTestResult = null;
 
@@ -95,10 +120,36 @@ public class SuggestionService {
             }
             br.close();
             String jsonString = sb.toString();
-            performanceTestResult = JSON.parseArray(jsonString, PerformanceTestResult.class);
+
+            List<PerformanceTestResult> results = JSON.parseArray(jsonString, PerformanceTestResult.class);
+            JSONArray ja = JSON.parseArray(jsonString);
+            for (int i = 0; i < ja.size(); i++) {
+                PerformanceTestResult result = results.get(i);
+                Class classType = this.performanceTypeMap.get(result.parserType);
+                JSONObject jo = (JSONObject)ja.get(i);
+                List<Object> inspects = new ArrayList<Object>();
+                Object performanceInspectionResults = jo.get("performanceInspectionResults");
+                if (performanceInspectionResults instanceof List<?>) {
+                    inspects = (List<Object>)performanceInspectionResults;
+                }
+                for (int j = 0; j < inspects.size(); j++) {
+                    JSONObject inspect = (JSONObject)inspects.get(j);
+                    if (inspect == null) {
+                        continue;
+                    }
+                    JSONObject parsedData = (JSONObject)inspect.get("parsedData");
+                    if (parsedData == null) {
+                        continue;
+                    }
+                    result.performanceInspectionResults.get(j).parsedData = parsedData.toJavaObject(classType);
+                }
+            }
+            performanceTestResult = results;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return performanceTestResult;
@@ -109,35 +160,31 @@ public class SuggestionService {
         for (PerformanceTestResult result : results) {
             SimplifiedPerformanceResult sResult = new SimplifiedPerformanceResult();
             List<SimplifiedPerformanceDataSet> dataSetArr = new ArrayList<>();
-
             for (PerformanceInspectionResult ins : result.performanceInspectionResults) {
                 SimplifiedPerformanceDataSet ds = new SimplifiedPerformanceDataSet();
-
-                List<SimplifiedPerformanceData> dataArr = new ArrayList<>();
-                SimplifiedPerformanceData d = new SimplifiedPerformanceData();
                 if (ins.parsedData instanceof AndroidMemoryInfo) {
                     AndroidMemoryInfo info = (AndroidMemoryInfo)ins.parsedData;
-                    insertPerformanceData(dataArr, "CodePss", info.getCodePss());
-                    insertPerformanceData(dataArr, "CodeRss", info.getCodeRss());
-                    insertPerformanceData(dataArr, "GraphicsPss", info.getGraphicsPss());
-                    insertPerformanceData(dataArr, "GraphicsRss", info.getGraphicsRss());
-                    insertPerformanceData(dataArr, "StackPss", info.getStackPss());
-                    insertPerformanceData(dataArr, "StackRss", info.getStackRss());
-                    insertPerformanceData(dataArr, "HeapPss", info.getJavaHeapPss());
-                    insertPerformanceData(dataArr, "HeapRss", info.getJavaHeapRss());
-                    insertPerformanceData(dataArr, "SystemPss", info.getSystemPss());
-                    insertPerformanceData(dataArr, "SystemRss", info.getSystemRss());
+                    insertPerformanceData(ds, "CodePss", info.getCodePss());
+                    insertPerformanceData(ds, "CodeRss", info.getCodeRss());
+                    insertPerformanceData(ds, "GraphicsPss", info.getGraphicsPss());
+                    insertPerformanceData(ds, "GraphicsRss", info.getGraphicsRss());
+                    insertPerformanceData(ds, "StackPss", info.getStackPss());
+                    insertPerformanceData(ds, "StackRss", info.getStackRss());
+                    insertPerformanceData(ds, "HeapPss", info.getJavaHeapPss());
+                    insertPerformanceData(ds, "HeapRss", info.getJavaHeapRss());
+                    insertPerformanceData(ds, "SystemPss", info.getSystemPss());
+                    insertPerformanceData(ds, "SystemRss", info.getSystemRss());
                 } else if (ins.parsedData instanceof AndroidBatteryInfo) {
                     AndroidBatteryInfo info = (AndroidBatteryInfo)ins.parsedData;
-                    insertPerformanceData(dataArr, "Cpu", info.getCpu());
-                    insertPerformanceData(dataArr, "Ratio", info.getRatio());
-                    insertPerformanceData(dataArr, "AppUsage", info.getAppUsage());
-                    insertPerformanceData(dataArr, "WakeLock", info.getWakeLock());
+                    insertPerformanceData(ds, "Cpu", info.getCpu());
+                    insertPerformanceData(ds, "Ratio", info.getRatio());
+                    insertPerformanceData(ds, "AppUsage", info.getAppUsage());
+                    insertPerformanceData(ds, "WakeLock", info.getWakeLock());
                 } else {
                     continue;
                 }
-                ds.setDataSet(dataArr);
                 ds.setTimestamp(ins.timestamp);
+                dataSetArr.add(ds);
             }
 
             sResult.setType(result.inspectorType.toString());
@@ -147,32 +194,14 @@ public class SuggestionService {
         return JSON.toJSONString(sResults);
     }
 
-    private void insertPerformanceData(List<SimplifiedPerformanceData> dataArr, String name, long data) {
-        if (data > 0) {
-            insertPerformanceData(dataArr, name, Long.toString(data));
+    private void insertPerformanceData(SimplifiedPerformanceDataSet ds, String name, Object data) {
+        if (ds.getInspect() == null) {
+            ds.setInspect(new HashMap<String, Object>());
         }
+        ds.getInspect().put(name, data);
     }
 
-    private void insertPerformanceData(List<SimplifiedPerformanceData> dataArr, String name, float data) {
-        if (data > 0) {
-            insertPerformanceData(dataArr, name, Float.toString(data));
-        }
-    }
-
-    private void insertPerformanceData(List<SimplifiedPerformanceData> dataArr, String name, String data) {
-        SimplifiedPerformanceData d = new SimplifiedPerformanceData();
-        d.setName(name);
-        d.setValue(data);
-        dataArr.add(d);
-    }
-
-    private String getOpenaiPerformanceSuggestion(String perfSuggestiong) {
-        List<ChatMessage> msgs = new ArrayList<>();
-        ChatMessage msg = new ChatMessage("user", "");
-        msgs.add(msg);
-
-        ChatRequest req = new ChatRequest();
-        req.setMessages(msgs);
-        return oaiClient.chatCompletion(req);
+    private String getOpenaiPerformanceSuggestion(String perfSuggestion) {
+        return oaiClient.completion(perfSuggestion);
     }
 }

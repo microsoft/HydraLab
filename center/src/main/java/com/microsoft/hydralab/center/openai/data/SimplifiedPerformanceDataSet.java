@@ -3,12 +3,12 @@ package com.microsoft.hydralab.center.openai.data;
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
-import java.util.List;
+import java.util.Map;
 
 @Data
 public class SimplifiedPerformanceDataSet {
     @JSONField(name = "timestamp")
     private long timestamp;
-    @JSONField(name = "name")
-    private List<SimplifiedPerformanceData> dataSet;
+    @JSONField(name = "inspect")
+    private Map<String, Object> inspect;
 }

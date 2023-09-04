@@ -288,13 +288,14 @@ public class DeviceAgentManagementService {
                     TestTask testTask = (TestTask) message.getBody();
                     boolean isFinished = testTask.getStatus().equals(TestTask.TestStatus.FINISHED);
                     testDataService.saveTestTaskDataFromAgent(testTask, isFinished, savedSession.agentUser.getId());
-
                     //after the task finishing, update the status of device used
                     if (isFinished) {
                         List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
                         for (TestRun deviceTestResult : deviceTestResults) {
-                            PerformanceSuggestion suggestion = suggestionService.performanceAnalyze(deviceTestResult);
-                            deviceTestResult.setSuggestion(suggestion.getContent());
+                            if (testTask.isEnablePerformanceSuggestion()) {
+                                PerformanceSuggestion suggestion = suggestionService.performanceAnalyze(deviceTestResult);
+                                deviceTestResult.setSuggestion(suggestion.getContent());
+                            }
                             String[] identifiers = deviceTestResult.getDeviceSerialNumber().split(",");
                             for (String identifier : identifiers) {
                                 updateDeviceStatus(identifier, DeviceInfo.ONLINE, null);

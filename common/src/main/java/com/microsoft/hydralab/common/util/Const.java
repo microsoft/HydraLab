@@ -182,6 +182,10 @@ public interface Const {
         String AZURE = "azureBlobProperty";
     }
 
+    interface AzureOpenaiConfig {
+        String AZURE_OPENAI_CONFIG = "azureOpenaiConfig";
+    }
+
     interface XCTestConfig{
         String XCTEST_ZIP_FOLDER_NAME = "Xctest";
         String XCTEST_RESULT_FILE_NAME = "result.xcresult";
