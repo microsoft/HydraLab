@@ -27,7 +27,7 @@ import java.util.Objects;
     // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
     public class AzureOpenAIServiceClient {
-    public static final String API_VERSION_CHAT = "2022-12-01";
+    public static final String API_VERSION_CHAT = "2023-03-15-preview";
     public static final String API_VERSION_IMAGE = "2023-06-01-preview";
     private final Logger logger = LoggerFactory.getLogger(AzureOpenAIServiceClient.class);
     private final String apiKey;
