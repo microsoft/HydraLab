@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.center.openai.data.ExceptionSuggestion;
-import com.microsoft.hydralab.center.openai.data.PerformanceSuggestion;
 import com.microsoft.hydralab.center.openai.data.SimplifiedPerformanceDataSet;
 import com.microsoft.hydralab.center.openai.data.SimplifiedPerformanceResult;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
@@ -48,7 +47,7 @@ public class SuggestionService {
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
     private final AzureOpenaiConfig openaiConfig;
-    private final AzureOpenAIServiceClient oaiClient;
+    private AzureOpenAIServiceClient oaiClient = null;
     private final Map<PerformanceResultParser.PerformanceResultParserType, Class> performanceTypeMap = Map.ofEntries(
         Map.entry(PerformanceResultParser.PerformanceResultParserType.PARSER_ANDROID_BATTERY_INFO, AndroidBatteryInfo.class),
         Map.entry(PerformanceResultParser.PerformanceResultParserType.PARSER_WIN_MEMORY, WindowsMemoryParsedData.class),
@@ -61,22 +60,24 @@ public class SuggestionService {
 
     public SuggestionService(ApplicationContext applicationContext) {
         this.openaiConfig = applicationContext.getBean(Const.AzureOpenaiConfig.AZURE_OPENAI_CONFIG, AzureOpenaiConfig.class);
-        this.oaiClient = new AzureOpenAIServiceClient(
-                openaiConfig.getApiKey(),
-                openaiConfig.getDeployment(),
-                openaiConfig.getEndpoint());
+        if (openaiConfig.getApiKey() != null && openaiConfig.getDeployment() != null && openaiConfig.getEndpoint() != null) {
+            this.oaiClient = new AzureOpenAIServiceClient(
+                    openaiConfig.getApiKey(),
+                    openaiConfig.getDeployment(),
+                    openaiConfig.getEndpoint());
+        }
     }
 
-    public PerformanceSuggestion performanceAnalyze(TestRun testRun) {
-        PerformanceSuggestion suggestion = new PerformanceSuggestion();
+    public void performanceAnalyze(TestRun testRun) {
         List<PerformanceTestResult> performanceResults = getPerformanceResult(testRun);
         if (performanceResults == null) {
-            return suggestion;
+            return;
         }
         String perfsString = convertPerformanceTestToJsonString(performanceResults);
         String perfSuggestion = getOpenaiPerformanceSuggestion(perfsString);
-        suggestion.setContent(perfSuggestion);
-        return suggestion;
+        if (perfSuggestion != null) {
+            testRun.setSuggestion(perfSuggestion);
+        }
     }
 
     public ExceptionSuggestion exceptionAnalyze(TestRun testRun) {
@@ -202,6 +203,9 @@ public class SuggestionService {
     }
 
     private String getOpenaiPerformanceSuggestion(String perfSuggestion) {
-        return oaiClient.completion(perfSuggestion);
+        if (this.oaiClient != null) {
+            return oaiClient.completion(perfSuggestion);
+        }
+        return null;
     }
 }

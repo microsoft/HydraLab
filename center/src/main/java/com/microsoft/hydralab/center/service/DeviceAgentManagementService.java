@@ -8,7 +8,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.center.openai.SuggestionService;
-import com.microsoft.hydralab.center.openai.data.PerformanceSuggestion;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
@@ -293,8 +292,7 @@ public class DeviceAgentManagementService {
                         List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
                         for (TestRun deviceTestResult : deviceTestResults) {
                             if (testTask.isEnablePerformanceSuggestion()) {
-                                PerformanceSuggestion suggestion = suggestionService.performanceAnalyze(deviceTestResult);
-                                deviceTestResult.setSuggestion(suggestion.getContent());
+                                suggestionService.performanceAnalyze(deviceTestResult);
                             }
                             String[] identifiers = deviceTestResult.getDeviceSerialNumber().split(",");
                             for (String identifier : identifiers) {
