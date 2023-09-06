@@ -4,11 +4,11 @@
 
 ## 什么是 Hydra Lab?
 
-下面的视频可以让您大致了解 Hydra Lab 的功能以及使命。
+下面的视频介绍了 Hydra Lab 的功能以及定位。
 
 https://github.com/microsoft/HydraLab/assets/8344245/cefefe24-4e11-4cc7-a3af-70cb44974735
 
-总而言之，通过 Hydra Lab，您可以构建一个私有的测试云平台，它基于 RESTful 接口快速集成 DevOps 系统。换句话说，就像您可以拥有一个可管理的私有“Firebase Test Lab”。
+总而言之，通过 Hydra Lab，用户可以构建一个私有的测试云平台，它可以基于 RESTful 接口快速集成 DevOps 系统，换句话说，就像部署了一个可管理的私有“Firebase Test Lab”。
 
 ## 为什么需要 Hydra Lab?
 
@@ -17,9 +17,9 @@ Hydra Lab 是一个开源的项目，它于 2022 年 12 月在 [github.com/micro
 - **可信度**：将调试应用程序包上传到第三方平台是否安全？我们能否完全信任这些平台？使用第三方平台是否有合规性要求？
 - **定制性**：第三方平台是否有与我的测试兼容的真实设备？是否支持跨平台场景？
 - **成本**：这些平台的定价是否合理？
-- **设备共享**：我们能否将我们的设备接入云端，并在不同地区，不同团队之间共享？
+- **设备共享**：能否将我们的设备接入云端，并在不同地区，不同团队之间共享？
 
-Hydra Lab 是一个基于 Appium, Espresso, Maestro, XCTest 等框架打造的一个免费的、可定制的、可信赖的框架。由于它具备集成不同测试框架的胶水代码（适配器）、可复用可扩展的设计以及软件测试生命周期的定义，所以可以支持新的测试框架和智能测试。Hydra Lab 团队始终致力于“让智能云测试更简单”，以及“打造您的智能测试云”，我们也在 Azure DevOps 中建立了标准化的 CI/CD 流程，并使用单元测试，接口测试以及跨平台用户验收测试为质量把关，迄今为止已经发布了 27 个稳定版本。
+Hydra Lab 是一个基于 Appium, Espresso, Maestro, XCTest 等框架打造的一个免费的、可定制的、可信赖的框架。由于它具备集成不同测试框架的胶水代码（适配器）、可复用可扩展的设计以及软件测试生命周期的定义，所以可以支持新的测试框架和智能测试。Hydra Lab 团队始终致力于“让智能云测试更简单”，以及“打造您的智能测试云”的目标，我们在 Azure DevOps 中建立了标准化的 CI/CD 流程，并借助单元测试，接口测试以及跨平台用户验收测试为质量把关，迄今为止已经发布了 27 个稳定版本。
 
 ## HydraLab如何在微软为测试赋能？
 
@@ -45,13 +45,13 @@ Hydra Lab 通过 [Hydra Lab Azure DevOps 插件](https://marketplace.visualstudi
 
 ## 开始使用 Hydra Lab
 
-如果您想快速尝试并了解 Hydra Lab ，我们提供了一个一键部署的 docker 镜像，只要您的机器上安装了 docker 和 ADB，输入以下命令：
+如果用户想快速尝试并了解 Hydra Lab ，我们提供了一个一键部署的 docker 镜像，只要机器上安装了 docker 和 ADB，输入以下命令：
 
 ```
 docker run -p 9886:9886 ghcr.io/microsoft/hydra-lab-uber:latest
 ```
 
-然后，您就可以打开 **http://localhost:9886/portal** ，并开始使用 Hydra Lab 的基本功能，如测试设备管理，测试任务管理，使用各种测试驱动，查看测试报告，测试视频等。
+然后就可以打开 **http://localhost:9886/portal** ，并开始使用 Hydra Lab 的基本功能，如测试设备管理，测试任务管理，使用各种测试驱动，查看测试报告，测试视频等。
 
 关于更多的使用细节，请参考 GitHub 文档：[如何部署 Hydra Lab 中心服务](https://github.com/microsoft/HydraLab/wiki/Deploy-Center-Docker-Container)。
 
@@ -71,7 +71,7 @@ docker run -p 9886:9886 ghcr.io/microsoft/hydra-lab-uber:latest
 
 ![Alt text](1692865645266.jpg)
 
-探索之后，我们可以基于这些结果数据生成测试用例。生成黑盒测试用例的难点在于黑盒的庞大上下文，很难分析这么庞大的数据量。因此，我们的目标是将其转换为机器学习模型或大型语言模型（LLM）可以处理的结构化数据。这些创新正在 Hydra Lab 进行中。
+探索之后，我们可以基于这些结果数据生成测试用例。生成黑盒测试用例的难点在于黑盒中庞大上下文，一般的模型很难分析这么庞大的数据量。因此，我们一直在将其转换为机器学习模型，或大型语言模型（LLM）可以处理的结构化数据方向上持续探索。
 
 ## 开发实践
 
