@@ -37,13 +37,13 @@ import java.util.Objects;
     private OpenAIClient azureClient;
 
     public AzureOpenAIServiceClient(String apiKey, String deployment, String endpoint) {
-        this.apiKey = apiKey;
-        this.endpoint = endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length() - 1) : endpoint;
-        this.deployment = deployment;
+        this.apiKey = apiKey == null ? "" : apiKey;
+        this.endpoint = endpoint == null ? "" : endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length() - 1) : endpoint;
+        this.deployment = deployment == null ? "" : deployment;
         this.azureClient = new OpenAIClientBuilder()
-                .endpoint(endpoint)
-                .credential(new AzureKeyCredential(apiKey))
-                .buildClient();
+            .endpoint(endpoint)
+            .credential(new AzureKeyCredential(apiKey))
+            .buildClient();
     }
 
     public String completion(String question) {
