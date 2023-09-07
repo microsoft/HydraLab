@@ -2,9 +2,9 @@
 
 [Hydra Lab: 让智能云测试更简单](https://github.com/microsoft/HydraLab)
 
-## 什么是 Hydra Lab?
+## Hydra Lab 是什么?
 
-下面的视频介绍了 Hydra Lab 的功能以及定位。
+下面的视频将介绍 Hydra Lab 的功能以及定位。
 
 https://github.com/microsoft/HydraLab/assets/8344245/cefefe24-4e11-4cc7-a3af-70cb44974735
 
@@ -21,7 +21,7 @@ Hydra Lab 是一个开源的项目，它于 2022 年 12 月在 [github.com/micro
 
 Hydra Lab 是一个基于 Appium, Espresso, Maestro, XCTest 等框架打造的一个免费的、可定制的、可信赖的框架。由于它具备集成不同测试框架的胶水代码（适配器）、可复用可扩展的设计以及软件测试生命周期的定义，所以可以支持新的测试框架和智能测试。我们始终致力于“让智能云测试更简单”，“打造个人的智能测试云”的目标，并在 Azure DevOps 中建立了标准化的 CI/CD 流程，借助单元测试、接口测试、跨平台用户验收测试等环节为产品质量把关，迄今为止已经发布了 27 个稳定版本。
 
-## 在微软 Hydra Lab 如何为测试赋能？
+## Hydra Lab 如何在微软为测试赋能？
 
 在过去的两年中，我们已经将 Hydra Lab 集成到软件开发流程中，并通过搭建的内部平台为各个移动产品提供无感的自动化测试服务，例如 Phone Link, Link to Windows for Android and iOS, Office Union for Android, Teams Android 等产品。
 
