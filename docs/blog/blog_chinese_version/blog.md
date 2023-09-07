@@ -29,25 +29,30 @@ Hydra Lab 是一个基于 Appium, Espresso, Maestro, XCTest 等框架打造的�
 
 ![架构图](1692864197387.jpg)
 
-我们将 Hydra Lab 中心端的 docker 镜像部署在 Azure 上作为中心服务，它向内部用户提供了基于 AAD OAuth 的 RESTful API，这些用户可以使用 Azure DevOps Pipeline 来创建一个 Espresso 或 Appium 类型的测试任务，并推送至中心服务。在收到测试请求后，中心服务会选择合适的测试代理服务器和设备来运行测试任务。测试代理服务器会选择对应的测试框架运行任务，并在测试完成后将结果返回给中心服务。最终，用户可以在中心服务的网页上查看这些测试报告。
+我们将 Hydra Lab 中心服务的 docker 镜像部署在 Azure 上作为测试中心，它向内部用户提供了基于 AAD OAuth 的 RESTful API，这些用户可以使用 Azure DevOps Pipeline 来创建一个 Espresso 或 Appium 类型的测试任务，并推送至测试中心。在收到测试请求后，测试中心会选择合适的测试代理和设备来运行测试任务。测试代理则会选择对应的测试框架运行任务，并在测试完成后将结果返回给测试中心。最终，用户可以在测试中心的网页上查看这些测试报告。
 
-用户可以参考 [测试代理服务器部署手册](https://github.com/microsoft/HydraLab/wiki/Test-agent-setup) 配置测试服务器，并注册到 Hydra Lab 中心服务。
+用户可以参考 [测试代理部署手册](https://github.com/microsoft/HydraLab/wiki/Test-agent-setup) 配置测试服务器，并注册到 Hydra Lab 中心服务。
 
 **名词定义：**
 
-![名词解释](1692864513033.jpg)
+| 术语 | 缩写 | 定义 |
+|----|----|----|
+|Hydra Lab 中心服务| 测试中心 | Hydra Lab 中心服务是一个通过docker容器部署于**云端**的 Spring Boot 应用，提供RESTful 接口，用于分配测试任务、提供UI界面，收集并展示测试报告。 |
+|Hydra Lab 测试代理服务器 | 测试代理 | Hydra Lab 测试代理服务器是指运行 Hydra Lab 代理服务的机器，物理连接各种测试设备，通过 WebSocket 与 Hydra Lab 中心服务保持通信。 |
 
 **测试流程图：**
 
 ![Alt text](1692864702416.jpg)
 
-Hydra Lab 通过 [Hydra Lab Azure DevOps 插件](https://marketplace.visualstudio.com/items?itemName=MaXESteam.hydra-lab-alter) 为无缝集成提供支持。这是 DevOps 流程中的关键组成部分，使整个测试流程完全自动化。同时我们也提供了 [Gradle 插件](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)的集成模式，为更多的安卓开发者提供支持。
+Hydra Lab 通过 [Hydra Lab Azure DevOps 插件](https://marketplace.visualstudio.com/items?itemName=MaXESteam.hydra-lab-alter) 为无缝集成提供支持，这也是 DevOps 流程中，使整个测试流程完全自动化的关键组成部分。同时我们也提供了 [Gradle 插件](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)的集成模式，为更多的安卓开发者提供支持。
 
-为了确保代理服务器，测试设备出异常能被及时发现，我们还基于 Prometheus + Grafana 搭建了一套监控告警系统。数据流向如下图：
+![Alt text](1692864736101.jpg)
+
+为了确保中心服务、代理服务器、测试设备发生异常时能被及时发现，我们还基于 Prometheus + Grafana 搭建了一套监控系统。监控告警流程如下图所示：
 
 ![Alt text](1692864918378.jpg)
 
-## 开始使用 Hydra Lab
+## 快速入门
 
 如果用户想快速尝试并了解 Hydra Lab ，我们提供了一键部署的 docker 镜像，只要机器上安装了 docker 和 ADB，输入以下命令：
 
