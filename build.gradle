@@ -80,6 +80,8 @@ task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
     classDirectories.from = files(jacocoProjects.sourceSets.main.output)
     executionData.from = files(jacocoProjects.jacocoTestReport.executionData)
 
+    classDirectories.from = classDirectories.files.findAll { !it.path.contains(File.separator + "resources" + File.separator + "main") }
+
     reports {
         html.enabled true
         xml.enabled true
