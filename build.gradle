@@ -80,8 +80,16 @@ task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
     classDirectories.from = files(jacocoProjects.sourceSets.main.output)
     executionData.from = files(jacocoProjects.jacocoTestReport.executionData)
 
-    // exclude jar under resources folder to avoid coverage report error
+    // exclude files under resources folder to avoid coverage report error
+    additionalSourceDirs.from = additionalSourceDirs.files.findAll { !it.path.contains(File.separator + "resources" + File.separator + "main") }
+    sourceDirectories.from = sourceDirectories.files.findAll { !it.path.contains(File.separator + "resources" + File.separator + "main") }
     classDirectories.from = classDirectories.files.findAll { !it.path.contains(File.separator + "resources" + File.separator + "main") }
+    executionData.from = executionData.files.findAll { !it.path.contains(File.separator + "resources" + File.separator + "main") }
+
+//    classDirectories.findAll().forEach { println "classDirectories: " + it.path }
+//    executionData.findAll().forEach { println "executionData: " + it.path }
+//    sourceDirectories.findAll().forEach { println "sourceDirectories: " + it.path }
+//    additionalSourceDirs.findAll().forEach { println "additionalSourceDirs: " + it.path }
 
     reports {
         html.enabled true
