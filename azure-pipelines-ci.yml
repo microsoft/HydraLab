@@ -83,7 +83,7 @@ stages:
       displayName: Run JUnit Test
       inputs:
         gradleWrapperFile: 'gradlew'
-        tasks: 'test jacocoRootReport'
+        tasks: 'test jacocoRootReport --stacktrace'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
         #codeCoverageToolOption: 'JaCoCo'
