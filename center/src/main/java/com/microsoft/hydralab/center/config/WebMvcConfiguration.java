@@ -41,7 +41,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(baseInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/dist/**", "/store/**", "/static/**");
+                .excludePathPatterns("/dist/**", "/store/**", "/static/**", Const.FrontEndPath.SWAGGER_DOC_PATH);
         registry.addInterceptor(corsInterceptor)
                 .addPathPatterns("/**");
     }
