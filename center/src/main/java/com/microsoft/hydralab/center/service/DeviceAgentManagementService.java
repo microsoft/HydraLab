@@ -189,13 +189,13 @@ public class DeviceAgentManagementService {
         AgentUser agentUser = searchQualifiedAgent(message);
         if (agentUser == null) {
             log.warn("Session {} is not registered agent, associated agent {}", session.getId(), message.getBody());
-            session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Not permitted"));
+            session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Agent Info is not correct!"));
             return;
         }
 
         if (agentDeviceGroups.get(agentUser.getId()) != null && checkIsSessionAliveByAgentId(agentUser.getId())) {
             log.warn("Session {} is already connected under another agent, associated agent {}", session.getId(), message.getBody());
-            session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used"));
+            session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used!"));
             return;
         }
 
