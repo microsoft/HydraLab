@@ -34,19 +34,24 @@ import java.util.Objects;
     private final String endpoint;
     private final String deployment;
     OkHttpClient client = new OkHttpClient();
-    private OpenAIClient azureClient;
+    private OpenAIClient azureClient = null;
 
     public AzureOpenAIServiceClient(String apiKey, String deployment, String endpoint) {
         this.apiKey = apiKey == null ? "" : apiKey;
         this.endpoint = endpoint == null ? "" : endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length() - 1) : endpoint;
         this.deployment = deployment == null ? "" : deployment;
-        this.azureClient = new OpenAIClientBuilder()
-            .endpoint(endpoint)
-            .credential(new AzureKeyCredential(apiKey))
-            .buildClient();
+        if (!apiKey.isEmpty()) {
+            this.azureClient = new OpenAIClientBuilder()
+                .endpoint(endpoint)
+                .credential(new AzureKeyCredential(apiKey))
+                .buildClient();
+        }
     }
 
     public String completion(String question) {
+        if (azureClient == null) {
+            return "";
+        }
         List<ChatMessage> chatMessages = new ArrayList<>();
         chatMessages.add(new ChatMessage(ChatRole.SYSTEM, "You are a helpful assistant."));
         chatMessages.add(new ChatMessage(ChatRole.USER, question));
