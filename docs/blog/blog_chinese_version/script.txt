@@ -16,18 +16,18 @@ This year, we joined forces with the DKI team to integrate the Large Language Mo
 We are optimistic that this integration will transform the testing experience, empowering development teams worldwide to achieve even greater results.
 
 中文：
-Hydra Lab，是一个开源的测试自动化框架，可以利用现有的测试设备，帮助开发团队建立一个高效的、私有的云测试平台。 
-它的功能与一些知名的云测试平台类似，比如 BrowserStack 或 Google Firebase，它可以通过云端的持续测试工作流优化开发者团队的 DevOps 流程，为产品质量提供保证。
+Hydra Lab，是一个开源的自动化测试框架，可以利用现有的测试设备，帮助开发团队建立一个高效的、私有的云测试平台。 
+它的功能与一些知名的云测试平台类似，比如 BrowserStack 或 Google Firebase，它可以通过云端的持续测试工作流，优化开发者团队的 DevOps 流程，为产品质量提供保证。
 另外，Hydra Lab 的开源属性确保了安全可控，消除了将带有大量调试信息的应用上传到第三方平台的隐藏风险，同时可以更好地满足定制化需求。 
-Hydra Lab 云测试框架由两个部分组成：中心和代理。Hydra Lab 中心端可以通过 Docker 镜像快速地部署在 Azure 上，而代理端可以在任何支持 JVM 的系统上运行。
+Hydra Lab 云测试框架由两个部分组成：中心端和代理端。Hydra Lab 中心端可以通过 Docker 镜像快速地部署在 Azure 上，而代理端可以在任何支持 JVM 的系统上运行。
 代理端在与中心端验证身份成功后，可以将设备注册到 Hydra Lab 中心端，随后建立一个双向的 RPC 连接，用于后续的测试任务和设备通信。 
-这种设计可以确保测试带来的压力，由中心端均匀地分散到各个的代理端上。
-得益于这种部署模式，即使使用 Azure 最低性能的虚拟机实例（3.5GB RAM，1 CPU），Hydra Lab 中心服务也可以轻松地管理超过 100 个代理端和 500 多个测试设备。 
-为了方便用户快速尝试并了解 Hydra Lab ，我们提供了一个一键部署的 docker 镜像，可以基于本地的 Docker环境，通过简单的一行命令完成部署。 
+这种设计可以确保大量测试任务带来的压力，由中心端均匀地分散到各个的代理端上。
+得益于这种部署模式，即使使用 Azure 最低性能的虚拟机实例（3.5GB RAM，1 CPU），Hydra Lab 中心端也可以轻松地管理超过 100 个代理端和 500 多个测试设备。 
+为了方便用户快速尝试并了解 Hydra Lab ，我们提供了一个一键部署的 docker 镜像，可以通过简单的一行命令，在本地完成部署。 
 这个镜像提供了 Hydra Lab 的基本功能，如测试设备管理，测试任务管理，使用各种测试驱动，查看测试报告，测试视频等。
-在过去的两年中，我们已经将 Hydra Lab 集成到软件开发流程中，我们的内部平台现在为各个移动产品提供无感的自动化测试服务，例如 Phone Link, Link to Windows for Android and iOS, Office Union for Android, Teams Android 等产品。
+在过去的两年中，我们已经将 Hydra Lab 集成到内部软件开发流程中，我们在内部搭建的平台现在为各个移动产品提供便捷的自动化测试服务，例如 Phone Link, Link to Windows for Android and iOS, Office Union for Android, Teams Android 等。
 现在分布在全球范围内的代理端，每天都会管理和执行数千个测试用例，这也帮助我们从多个的用户群中赢得了好评。 
 在 2023 年开源后，Hydra Lab 在开源社区中快速发展，目前在“cloud testing” 主题下的排名第一，并且还是 “platform-engineering” 主题下的前五名。
-致力于“让智能云测试更简单”的目标，我们的重点是利用 AI 来提升测试自动化，推动它向测试智能化发展。 
-今年，我们与 DKI 团队合作，将大型语言模型（LLM）与应用功能图结合起来，以提高测试结果分析、探索性测试和测试用例生成的效果。 
-目前，我们在这个方向持续探索，相信它将改变测试体验，帮助全球的开发团队取得更好的成果。
+致力于“让智能云测试更简单”的目标，我们现在的重点是利用 AI 来提升测试自动化，推动它向测试智能化发展。 
+目前，我们与内部的团队合作，将大型语言模型（LLM）与应用功能星状图相结合，以提高测试结果分析、探索性测试和测试用例生成的效果。 
+我们将会在这个方向持续探索，并坚信它将改变测试体验，帮助全球的开发团队取得更好的成果。
