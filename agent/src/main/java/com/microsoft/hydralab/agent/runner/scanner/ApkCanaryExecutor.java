@@ -66,10 +66,10 @@ public class ApkCanaryExecutor {
         int code = -1;
 
         String name = apk.getName();
-        String itemName = getAPKAnalysisItemName(name);
+        String itemName = name.replace(".apk", "");
+        String reportPrefix = itemName + "-report";
         String buildDirName = name.substring(0, name.indexOf('.')) + "_unzip";
 
-        String reportPrefix = getReportPrefix(itemName);
         File reportFile = new File(workingDirFile, reportPrefix + ".json");
         if (reportFile.exists()) {
             reportFile.delete();
@@ -122,18 +122,13 @@ public class ApkCanaryExecutor {
             }
 
             return getApkReportFromJsonReport(reportFile);
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
+            LOGGER.error("Interrupted in analyzeApk", e);
+        } catch (IOException e) {
             LOGGER.error("error in analyzeApk", e);
+            throw new RuntimeException(e);
         }
         return null;
-    }
-
-    public static String getAPKAnalysisItemName(String apkName) {
-        return apkName.replace("-signed-aligned", "").replace(".apk", "");
-    }
-
-    public static String getReportPrefix(String itemName) {
-        return itemName + "-report";
     }
 
     public static ApkReport getApkReportFromJsonReport(File file) {
@@ -145,15 +140,23 @@ public class ApkCanaryExecutor {
         for (int i = 0; i < objects.size(); i++) {
             JSONObject jsonObject = objects.getJSONObject(i);
             int taskType = jsonObject.getIntValue("taskType");
+            // Task type definition is in:
+            // https://github.com/Tencent/matrix/blob/master/matrix/matrix-android/matrix-apk-canary/src/main/java/com/tencent/matrix/apk/model/task/TaskFactory.java
+            // Sample json search MicrosoftLauncherAPKReport.json
             if (taskType == TASK_TYPE_UNZIP) {
+                // Size distribution among each format
                 parseSizeInfo(apkReport.getApkSizeReport(), jsonObject);
             } else if (taskType == TASK_TYPE_MANIFEST) {
+                // APK manifest information
                 parseManifest(apkReport.getApkManifest(), jsonObject);
             } else if (taskType == TASK_TYPE_DUPLICATE_FILE) {
+                // Find out the duplicated files
                 parseDupFile(apkReport.getApkSizeReport(), jsonObject);
             } else if (taskType == TASK_TYPE_UNUSED_ASSETS) {
+                // Find out the unused assets
                 parseUnusedAssets(apkReport.getApkSizeReport(), jsonObject);
             } else if (taskType == TASK_TYPE_SHOW_FILE_SIZE) {
+                // Show files whose size exceed limit size in order
                 parseBigFiles(apkReport.getApkSizeReport(), jsonObject);
             }
         }

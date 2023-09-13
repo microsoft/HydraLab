@@ -24,4 +24,12 @@ public class ApkCanaryExecutorTest {
         System.out.println(JSON.toJSONString(apkReport, SerializerFeature.PrettyFormat));
     }
 
+    @Test
+    public void testApkReportParsing() {
+        File apkJsonReportFile = new File("src/test/resources/MicrosoftLauncherAPKReport.json");
+        Assertions.assertTrue(apkJsonReportFile.exists(), "apkJsonReportFile does not exist: " + apkJsonReportFile.getAbsolutePath());
+        ApkReport apkReport = ApkCanaryExecutor.getApkReportFromJsonReport(apkJsonReportFile);
+        System.out.println(JSON.toJSONString(apkReport, SerializerFeature.PrettyFormat));
+    }
+
 }
