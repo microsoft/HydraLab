@@ -107,4 +107,12 @@ public class CommonUtils {
             throw new IllegalStateException(msg + (data == null ? "" : ": " + data));
         }
     }
+
+    public static void safeSleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

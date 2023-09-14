@@ -113,6 +113,8 @@ public class TestTask implements Serializable {
     @Transient
     private List<InspectionStrategy> inspectionStrategies;
     @Transient
+    private boolean enablePerformanceSuggestion;
+    @Transient
     private String notifyUrl;
     @Transient
     private boolean disableRecording = false;
@@ -171,6 +173,7 @@ public class TestTask implements Serializable {
         }
         testTask.setTestScope(testTaskSpec.testScope);
         testTask.setInspectionStrategies(testTaskSpec.inspectionStrategies);
+        testTask.setEnablePerformanceSuggestion(testTaskSpec.enablePerformanceSuggestion);
         testTask.setNotifyUrl(testTaskSpec.notifyUrl);
         testTask.setDisableRecording(testTaskSpec.disableRecording);
         testTask.setEnableNetworkMonitor(testTaskSpec.enableNetworkMonitor);
@@ -210,6 +213,7 @@ public class TestTask implements Serializable {
         testTaskSpec.testRunnerName = testTask.getTestRunnerName();
         testTaskSpec.testScope = testTask.getTestScope();
         testTaskSpec.inspectionStrategies = testTask.getInspectionStrategies();
+        testTaskSpec.enablePerformanceSuggestion = testTask.isEnablePerformanceSuggestion();
         testTaskSpec.notifyUrl = testTask.getNotifyUrl();
         testTaskSpec.disableRecording = testTask.isDisableRecording();
         testTaskSpec.enableNetworkMonitor = testTask.isEnableNetworkMonitor();
