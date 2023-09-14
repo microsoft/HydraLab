@@ -57,7 +57,7 @@ public class HydraLabAPIClient {
                     Response res = clientToUse.newCall(req).execute();
                     if (!res.isSuccessful()) {
                         waitingRetry.getAndDecrement();
-                        printlnf("##[warning]Check center alive failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, res.code(),
+                        printlnf("##[warning]Check center alive failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
                                 res.message());
                         throw new IllegalStateException("Check center alive: " + res);
                     }
@@ -102,7 +102,7 @@ public class HydraLabAPIClient {
                     Response res = clientToUse.newCall(req).execute();
                     if (!res.isSuccessful()) {
                         waitingRetry.getAndDecrement();
-                        printlnf("##[warning]Upload App failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, res.code(),
+                        printlnf("##[warning]Upload App failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
                                 res.message());
                         throw new IllegalStateException("Upload app: " + res);
                     }
@@ -154,7 +154,7 @@ public class HydraLabAPIClient {
                     Response res = clientToUse.newCall(req).execute();
                     if (!res.isSuccessful()) {
                         waitingRetry.getAndDecrement();
-                        printlnf("##[warning]Add attachments failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, res.code(),
+                        printlnf("##[warning]Add attachments failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
                                 res.message());
                         throw new IllegalStateException("Add attachments: " + res);
                     }
@@ -186,7 +186,7 @@ public class HydraLabAPIClient {
                     Response res = clientToUse.newCall(req).execute();
                     if (!res.isSuccessful()) {
                         waitingRetry.getAndDecrement();
-                        printlnf("##[warning]Generate accessKey failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, res.code(),
+                        printlnf("##[warning]Generate accessKey failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
                                 res.message());
                         throw new IllegalStateException("Generate accessKey: " + res);
                     }
@@ -281,7 +281,7 @@ public class HydraLabAPIClient {
                     Response res = clientToUse.newCall(req).execute();
                     if (!res.isSuccessful()) {
                         waitingRetry.getAndDecrement();
-                        printlnf("##[warning]Trigger test running failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, res.code(),
+                        printlnf("##[warning]Trigger test running failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
                                 res.message());
                         throw new IllegalStateException("Trigger test running: " + res);
                     }
@@ -313,7 +313,7 @@ public class HydraLabAPIClient {
                     Response res = clientToUse.newCall(req).execute();
                     if (!res.isSuccessful()) {
                         waitingRetry.getAndDecrement();
-                        printlnf("##[warning]Get test status failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, res.code(),
+                        printlnf("##[warning]Get test status failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
                                 res.message());
                         throw new IllegalStateException("Get test status: " + res);
                     }
@@ -349,7 +349,7 @@ public class HydraLabAPIClient {
                     Response res = clientToUse.newCall(req).execute();
                     if (!res.isSuccessful()) {
                         waitingRetry.getAndDecrement();
-                        printlnf("##[warning]Get Blob SAS failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, res.code(),
+                        printlnf("##[warning]Get Blob SAS failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
                                 res.message());
                         throw new IllegalStateException("Get Blob SAS: " + res);
                     }
@@ -403,7 +403,7 @@ public class HydraLabAPIClient {
                     Response res = clientToUse.newCall(req).execute();
                     if (!res.isSuccessful()) {
                         waitingRetry.getAndDecrement();
-                        printlnf("##[warning]Cancel test task failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, res.code(),
+                        printlnf("##[warning]Cancel test task failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
                                 res.message());
                         throw new IllegalStateException("Cancel test task: " + res);
                     }
