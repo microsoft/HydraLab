@@ -51,7 +51,6 @@ dependencies {
 //    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
 
     compile group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.2.2.RELEASE'
-    compile group: 'com.azure', name: 'azure-ai-openai', version: '1.0.0-beta.3'
 
     compile('org.springdoc:springdoc-openapi-core:1.1.49')
     compile('org.springdoc:springdoc-openapi-ui:1.4.1')

@@ -1,4 +1,4 @@
-package com.microsoft.hydralab.center.openai.data;
+package com.microsoft.hydralab.center.openai;
 
 import lombok.Data;
 

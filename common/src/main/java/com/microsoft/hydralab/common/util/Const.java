@@ -91,10 +91,6 @@ public interface Const {
         String PHONE_FILE_NAME = "PHONE_test.mp4";
     }
 
-    interface PerformanceConfig {
-        String DEFAULT_FILE_NAME = "PerformanceReport.json";
-    }
-
     interface NetworkMonitorConfig {
         String AndroidDumpPath = "/Documents/dump.log";
         String DumpPath = "/network_dump.log";
@@ -180,10 +176,6 @@ public interface Const {
     interface StoragePropertyBean {
         String LOCAL = "localStorageProperty";
         String AZURE = "azureBlobProperty";
-    }
-
-    interface AzureOpenaiConfig {
-        String AZURE_OPENAI_CONFIG = "azureOpenaiConfig";
     }
 
     interface XCTestConfig{

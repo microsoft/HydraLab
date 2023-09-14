@@ -49,7 +49,6 @@ public class TestTaskSpec {
     public String testSuiteClass;
     public Map<String, List<DeviceAction>> deviceActions;
     public List<InspectionStrategy> inspectionStrategies;
-    public boolean enablePerformanceSuggestion;
     public String notifyUrl;
     public boolean disableRecording = false;
     public boolean enableNetworkMonitor;

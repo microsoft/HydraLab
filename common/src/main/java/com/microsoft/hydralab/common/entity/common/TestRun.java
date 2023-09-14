@@ -73,8 +73,6 @@ public class TestRun implements Serializable, ITestRun {
     @Transient
     private String videoBlobUrl;
     @Transient
-    private String performanceBlobUrl;
-    @Transient
     private List<StorageFileInfo> attachments;
     @Transient
     private List<PerformanceTestResultEntity> performanceTestResultEntities = new CopyOnWriteArrayList<>();
@@ -177,10 +175,6 @@ public class TestRun implements Serializable, ITestRun {
 
     public void setVideoBlobUrl() {
         videoBlobUrl = deviceTestResultFolderUrl + "/" + Const.ScreenRecoderConfig.DEFAULT_FILE_NAME;
-    }
-
-    public void setPerformanceJsonBlobUrl() {
-        performanceBlobUrl = deviceTestResultFolderUrl + "/" + Const.PerformanceConfig.DEFAULT_FILE_NAME;
     }
 
     private String getBlobUrlStr(String path) {
