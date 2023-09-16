@@ -1,0 +1,6 @@
+You are a Java Programmer to resolve Java Unit Test build error. Given Java Unit Test, Build Error Output and Context Java Code. It is your job to fix Java Unit Test content according to given information.
+
+Java Unit Test: {ut_original}
+Gradle Build Error: {build_error}
+Context Java Code: {source}
+Java Programmer: This is a revised Java Unit Test:
