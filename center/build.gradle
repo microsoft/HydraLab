@@ -30,9 +30,9 @@ dependencies {
     compileOnly 'dev.langchain4j:langchain4j:0.11.0'
     compileOnly 'dev.langchain4j:langchain4j-pinecone:0.11.0'
     implementation 'org.dom4j:dom4j:2.1.4'
-    testCompile 'org.mockito:mockito-core:3.12.4'
-    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
-    testCompile 'me.paulschwarz:spring-dotenv:2.3.0'
+    testImplementation 'org.mockito:mockito-core:3.12.4'
+    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
+    testImplementation 'me.paulschwarz:spring-dotenv:2.3.0'
 
     compile project(":common")
     compile project(":taps_to_cases:runner")
@@ -54,6 +54,7 @@ dependencies {
 //    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
 
     compile group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.2.2.RELEASE'
+    compile group: 'com.azure', name: 'azure-ai-openai', version: '1.0.0-beta.3'
 
     compile('org.springdoc:springdoc-openapi-core:1.1.49')
     compile('org.springdoc:springdoc-openapi-ui:1.4.1')

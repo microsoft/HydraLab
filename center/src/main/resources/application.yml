@@ -70,6 +70,23 @@ app:
       endpoint: ${LOCAL_STORAGE_ENDPOINT:http://localhost:9886/}
       fileExpiryDay: ${fileExpiryDay:-1}
   location: ${user.dir}
+  error-reporter:
+    app-center:
+      center:
+        enabled: ${AC_CENTER_ENABLED:false}
+        secret: ${AC_CENTER_SECRET:}
+      agent:
+        enabled: ${AC_AGENT_ENABLED:false}
+        secret: ${AC_AGENT_SECRET:}
+    log-file:
+      center:
+        enabled: ${LF_CENTER_ENABLED:false}
+      agent:
+        enabled: ${LF_AGENT_ENABLED:true}
+  openai:
+    apiKey: ${OPENAI_API_KEY:}
+    deployment: ${OPENAI_DEPLOYMENT:}
+    endpoint: ${OPENAI_ENDPOINT:}
 management:
   endpoints:
     web:

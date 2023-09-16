@@ -7,6 +7,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.android.ddmlib.IDevice;
+import com.microsoft.hydralab.center.openai.SuggestionService;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
@@ -110,6 +111,9 @@ public class DeviceAgentManagementService {
     StorageServiceClientProxy storageServiceClientProxy;
     @Resource
     StorageTokenManageService storageTokenManageService;
+    @Resource
+    SuggestionService suggestionService;
+
     @Value("${app.storage.type}")
     private String storageType;
 
@@ -122,6 +126,10 @@ public class DeviceAgentManagementService {
     private String pushgatewayUsername;
     @Value("${management.metrics.export.prometheus.pushgateway.password}")
     private String pushgatewayPassword;
+    @Value("${app.error-reporter.app-center.agent.enabled: false}")
+    private boolean appCenterEnabled;
+    @Value("${app.error-reporter.app-center.agent.secret: ''}")
+    private String appCenterSecret;
 
     public void onOpen(Session session) {
         onlineCount.incrementAndGet();
@@ -157,6 +165,9 @@ public class DeviceAgentManagementService {
         data.setAgentUser(agentUser);
         data.setPushgatewayUsername(pushgatewayUsername);
         data.setPushgatewayPassword(pushgatewayPassword);
+        if (appCenterEnabled && appCenterSecret != null && !appCenterSecret.isEmpty()) {
+            data.setAppCenterSecret(appCenterSecret);
+        }
 
         Message message = new Message();
         message.setPath(signalName);
@@ -178,13 +189,13 @@ public class DeviceAgentManagementService {
         AgentUser agentUser = searchQualifiedAgent(message);
         if (agentUser == null) {
             log.warn("Session {} is not registered agent, associated agent {}", session.getId(), message.getBody());
-            session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Not permitted"));
+            session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Agent Info is not correct!"));
             return;
         }
 
         if (agentDeviceGroups.get(agentUser.getId()) != null && checkIsSessionAliveByAgentId(agentUser.getId())) {
             log.warn("Session {} is already connected under another agent, associated agent {}", session.getId(), message.getBody());
-            session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used"));
+            session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "AgentID has been used!"));
             return;
         }
 
@@ -276,11 +287,13 @@ public class DeviceAgentManagementService {
                     TestTask testTask = (TestTask) message.getBody();
                     boolean isFinished = testTask.getStatus().equals(TestTask.TestStatus.FINISHED);
                     testDataService.saveTestTaskDataFromAgent(testTask, isFinished, savedSession.agentUser.getId());
-
                     //after the task finishing, update the status of device used
                     if (isFinished) {
                         List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
                         for (TestRun deviceTestResult : deviceTestResults) {
+                            if (testTask.isEnablePerformanceSuggestion()) {
+                                suggestionService.performanceAnalyze(deviceTestResult);
+                            }
                             String[] identifiers = deviceTestResult.getDeviceSerialNumber().split(",");
                             for (String identifier : identifiers) {
                                 updateDeviceStatus(identifier, DeviceInfo.ONLINE, null);
@@ -298,14 +311,13 @@ public class DeviceAgentManagementService {
                 if (message.getBody() instanceof TestTask) {
                     TestTask testTask = (TestTask) message.getBody();
                     if (testTask.getRetryTime() == Const.AgentConfig.RETRY_TIME) {
-                        testTask.setStatus(TestTask.TestStatus.EXCEPTION);
-                        testTask.setTestErrorMsg("Device offline!");
                         testDataService.saveTestTaskData(testTask);
                     } else {
                         TestTaskSpec taskSpec = TestTask.convertToTestTaskSpec(testTask);
                         taskSpec.retryTime++;
                         testTaskService.addTask(taskSpec);
-                        cancelTestTaskById(testTask.getId(), "Retry time limit!");
+                        log.info("Retry task {} for {} time", testTask.getId(), taskSpec.retryTime);
+                        cancelTestTaskById(testTask.getId(), "Error happened:" + testTask.getTestErrorMsg() + ". Will cancel the task and retry.");
                         //run the task saved in queue
                         testTaskService.runTask();
                     }

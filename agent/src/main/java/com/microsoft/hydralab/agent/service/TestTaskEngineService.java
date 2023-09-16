@@ -70,7 +70,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
 
         Set<TestRunDevice> chosenDevices = chooseDevices(testTask);
         if (chosenDevices.size() == 0) {
-            handleNoAvaiableDevice(testTask);
+            handleNoAvailableDevice(testTask);
             return testTask;
         }
 
@@ -93,14 +93,14 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 });
 
         if (deviceTaskControl == null) {
-            handleNoAvaiableDevice(testTask);
+            handleNoAvailableDevice(testTask);
         } else {
             testTask.setTestDevicesCount(deviceTaskControl.devices.size());
         }
         return testTask;
     }
 
-    private static void handleNoAvaiableDevice(TestTask testTask) {
+    private static void handleNoAvailableDevice(TestTask testTask) {
         testTask.setTestDevicesCount(0);
         testTask.setStatus(TestTask.TestStatus.CANCELED);
         log.warn("No available device found for {}, group devices: {}, task {} is canceled on this agent",
@@ -135,7 +135,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         }
 
         String runningType = testTask.getRunningType();
-        if (((runningType.equals(TestTask.TestRunningType.APPIUM_CROSS)) || (runningType.equals(TestTask.TestRunningType.T2C_JSON_TEST))) && devices.size() > 1) {
+        if (((TestTask.TestRunningType.APPIUM_CROSS.equals(runningType)) || (TestTask.TestRunningType.T2C_JSON_TEST.equals(runningType))) && devices.size() > 1) {
             Optional<DeviceInfo> mainDeviceInfo = devices.stream().filter(deviceInfo -> !DeviceType.WINDOWS.name().equals(deviceInfo.getType())).findFirst();
             Assert.isTrue(mainDeviceInfo.isPresent(), "There are more than 1 device, but all of them is windows device!");
             devices.remove(mainDeviceInfo.get());

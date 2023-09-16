@@ -20,6 +20,18 @@ import forceAtlas2 from "graphology-layout-forceatlas2";
 import BaseView from "@/component/BaseView";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import IconButton from "@mui/material/IconButton";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import { withStyles } from '@material-ui/core/styles';
 
 
 const COLORS = ['#00C49F', '#FF8042'];
@@ -50,6 +62,23 @@ const PieCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percen
         </text>
     );
 };
+const StyledTableCell = withStyles((theme) => ({
+    head: {
+        backgroundColor: theme.palette.primary.dark,
+        color: theme.palette.common.white,
+    },
+    body: {
+        fontSize: 14,
+    },
+}))(TableCell);
+
+const StyledTableRow = withStyles((theme) => ({
+    root: {
+        '&:nth-of-type(odd)': {
+            backgroundColor: theme.palette.action.selected,
+        },
+    },
+}))(TableRow);
 export default class TestReportView extends BaseView {
     state = {
         task: this.props.testTask,
@@ -60,13 +89,18 @@ export default class TestReportView extends BaseView {
         graph: null,
         renderer: null,
         hoveredNode: null,
-        hoveredNeighbors: undefined
+        hoveredNeighbors: undefined,
+        attachmentsDiaglogIsShow: false,
+        attachmentsRows: [],
     };
 
     render() {
         console.log("render")
         const task = this.state.task
         const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
+        const { attachmentsDiaglogIsShow } = this.state
+        const attachmentsHeads = []
+        const attachmentsHeadItems = ['File Name', 'File Size', 'Actions']
         let taskDatetime = moment(task.startDate).format(formatDate);
         const history = this.state.history
         let historyData = null;
@@ -151,7 +185,9 @@ export default class TestReportView extends BaseView {
         if (dtrSuccFailMap['true']) {
             chunkedSuccDeviceResult = _.chunk(dtrSuccFailMap['true'], 6)
         }
-
+        attachmentsHeadItems.forEach((k) => attachmentsHeads.push(<StyledTableCell key={k} align="center">
+            {k}
+        </StyledTableCell>))
         return <div id='test_report' style={{ padding: '20px' }}>
             <div id='test_report_head'>
                 <table className='table table-borderless'>
@@ -275,7 +311,7 @@ export default class TestReportView extends BaseView {
                 </table>
             </div>
             <div id='test_report_content_1'>
-                {chunkedFailedDeviceResult && task.runningType !== 'SMART' ? <div>
+                {chunkedFailedDeviceResult ? <div>
                     <table className='table table-borderless'>
                         <thead className="thead-info">
                             <tr className="table-info">
@@ -382,6 +418,29 @@ export default class TestReportView extends BaseView {
                                                     href={d.testXmlReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">XML</a>
                                                 <a className='badge badge-light m-1' target='_blank'
                                                     href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Agent Log</a>
+                                                <IconButton id={d.id} onClick={() => { 
+                                                        const tempAttachmentsRows = [];
+                                                        d.attachments.forEach((t) => {
+                                                            tempAttachmentsRows.push(<StyledTableRow key={t.fileId} id={t.fileId} hover>
+                                                                <TableCell id={t.fileId} align="center">
+                                                                    {t.fileName}
+                                                                </TableCell>
+                                                                <TableCell id={t.fileId} align="center">
+                                                                    {this.getfilesize(t.fileLen)}
+                                                                </TableCell>
+                                                                <TableCell id={t.fileId} align="center">
+                                                                    <IconButton id={t.fileId} href={t.blobUrl + '?' + require('local-storage').get('FileToken')}>
+                                                                        <span id={t.fileId} className="material-icons-outlined">download</span>
+                                                                    </IconButton>
+                                                                </TableCell>
+                                                            </StyledTableRow>)
+                                                            
+                                                        })
+                                                        this.setState({attachmentsRows: tempAttachmentsRows});
+                                                        this.handleStatus("attachmentsDiaglogIsShow", true) 
+                                                    }}>
+                                                    <span id={d.id} className="material-icons-outlined">download</span>
+                                                </IconButton>
                                             </p>
                                             <div style={{
                                                 maxHeight: '210px',
@@ -417,7 +476,7 @@ export default class TestReportView extends BaseView {
                 </div> : null}
             </div>
             <div id='test_report_content_2'>
-                {chunkedSuccDeviceResult && task.runningType !== 'SMART' ? <div>
+                {chunkedSuccDeviceResult ? <div>
                     <table className='table table-borderless'>
                         <thead className="thead-info">
                             <tr className="table-info">
@@ -438,37 +497,77 @@ export default class TestReportView extends BaseView {
                                             { type: 'fail', count: d.failCount }
                                         ]
                                         const size = 55
-                                        return <tr>
-                                            <td>
-                                                <p><Link to={"/info/videos/" + d.id} target='_blank'>
-                                                    <img style={{ height: '105px' }}
-                                                        src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('FileToken') : 'images/logo/m.png'}
-                                                        alt={d.deviceName} />
-                                                </Link></p>
-                                                <p className='badge badge-light'>{d.displayTotalTime}</p>
-                                            </td>
-                                            <td key={d.id}>
-                                                <p className='badge badge-success'>{d.successRate}</p>
-                                                <PieChart width={size} height={size}>
-                                                    <Pie
-                                                        data={dChartData}
-                                                        labelLine={false}
-                                                        dataKey="count">
-                                                        {dChartData.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`}
-                                                                fill={COLORS[index % COLORS.length]} />
-                                                        ))}
-                                                    </Pie>
-                                                </PieChart>
-                                                <span
-                                                    style={{ fontSize: '88%' }}>{this.getDeviceLabel(d.deviceName)}</span>
-                                            </td>
-                                        </tr>
+                                        return <td key={d.id}>
+                                            <table>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <p><Link to={"/info/videos/" + d.id} target='_blank'>
+                                                                <img style={{ height: '105px' }}
+                                                                    src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('FileToken') : 'images/logo/m.png'}
+                                                                    alt={d.deviceName} />
+                                                            </Link></p>
+                                                            <p className='badge badge-light'>{d.displayTotalTime}</p>
+                                                        </td>
+                                                        <td key={d.id}>
+                                                            <p className='badge badge-success'>{d.successRate}</p>
+                                                            <PieChart width={size} height={size}>
+                                                                <Pie
+                                                                    data={dChartData}
+                                                                    labelLine={false}
+                                                                    dataKey="count">
+                                                                    {dChartData.map((entry, index) => (
+                                                                        <Cell key={`cell-${index}`}
+                                                                            fill={COLORS[index % COLORS.length]} />
+                                                                    ))}
+                                                                </Pie>
+                                                            </PieChart>
+                                                            <span
+                                                                style={{ fontSize: '88%' }}>{this.getDeviceLabel(d.deviceName)}</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <p className='mt-1'>
+                                                <CloudDownloadIcon className='ml-1 mr-1'
+                                                    style={{ height: '21px' }} />
+                                                <a className='badge badge-light m-1' target='_blank'
+                                                    href={d.logcatBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Device Log</a>
+                                                <a className='badge badge-light m-1' target='_blank'
+                                                    href={d.testXmlReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">XML</a>
+                                                <a className='badge badge-light m-1' target='_blank'
+                                                    href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Agent Log</a>
+                                                <IconButton id={d.id} onClick={() => { 
+                                                        const tempAttachmentsRows = [];
+                                                        d.attachments.forEach((t) => {
+                                                            tempAttachmentsRows.push(<StyledTableRow key={t.fileId} id={t.fileId} hover>
+                                                                <TableCell id={t.fileId} align="center">
+                                                                    {t.fileName}
+                                                                </TableCell>
+                                                                <TableCell id={t.fileId} align="center">
+                                                                    {this.getfilesize(t.fileLen)}
+                                                                </TableCell>
+                                                                <TableCell id={t.fileId} align="center">
+                                                                    <IconButton id={t.fileId} href={t.blobUrl + '?' + require('local-storage').get('FileToken')}>
+                                                                        <span id={t.fileId} className="material-icons-outlined">download</span>
+                                                                    </IconButton>
+                                                                </TableCell>
+                                                            </StyledTableRow>)
+                                                            
+                                                        })
+                                                        this.setState({attachmentsRows: tempAttachmentsRows});
+                                                        this.handleStatus("attachmentsDiaglogIsShow", true) 
+                                                    }}>
+                                                    <span id={d.id} className="material-icons-outlined">download</span>
+                                                </IconButton>
+                                            </p>
+                                        </td>
                                     })}
                                 </tr>
                             )}
                         </tbody>
                     </table>
+
                 </div> : null}
             </div>
             <div id='test_report_content_4>'>
@@ -532,6 +631,29 @@ export default class TestReportView extends BaseView {
                     </table>
                 </div> : null}
             </div>
+            <Dialog open={attachmentsDiaglogIsShow}
+                fullWidth={true} maxWidth='lg'
+                onClose={() => this.handleStatus("attachmentsDiaglogIsShow", false)}>
+                <DialogTitle>Test Results</DialogTitle>
+                <DialogContent>
+                    <TableContainer style={{ margin: "auto" }}>
+                        <Table size="medium">
+                            <TableHead>
+                                <TableRow>
+                                    {attachmentsHeads}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {this.state.attachmentsRows}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => this.handleStatus("attachmentsDiaglogIsShow", false)}>Cancel</Button>
+                </DialogActions>
+            </Dialog>
             <Snackbar
                 anchorOrigin={{
                     vertical: 'top',
@@ -764,6 +886,21 @@ export default class TestReportView extends BaseView {
                 this.state.graphFileId = attachment.fileId
             }
         })
+    }
+
+    getfilesize(size) {
+        if (size <= 0)
+            return '--';
+        var num = 1024.00; //byte
+        if (size < num)
+            return size + "B";
+        if (size < Math.pow(num, 2))
+            return (size / num).toFixed(1) + "K";
+        if (size < Math.pow(num, 3))
+            return (size / Math.pow(num, 2)).toFixed(1) + "M";
+        if (size < Math.pow(num, 4))
+            return (size / Math.pow(num, 3)).toFixed(1) + "G";
+        return (size / Math.pow(num, 4)).toFixed(1) + "T";
     }
 
 }
