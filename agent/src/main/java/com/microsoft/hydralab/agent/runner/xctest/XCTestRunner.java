@@ -115,8 +115,9 @@ public class XCTestRunner extends TestRunner {
         String command = String.format(commFormat, deviceId, resultPath);
         testRun.addNewTimeTag("testRunStarted", System.currentTimeMillis() - testRun.getTestStartTimeMillis());
         ArrayList<String> result;
+        Process proc = null;
         try {
-            Process proc = Runtime.getRuntime().exec(command);
+            proc = Runtime.getRuntime().exec(command);
             XCTestCommandReceiver err = new XCTestCommandReceiver(proc.getErrorStream(), logger);
             XCTestCommandReceiver out = new XCTestCommandReceiver(proc.getInputStream(), logger);
             err.start();
@@ -126,6 +127,10 @@ public class XCTestRunner extends TestRunner {
             testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
         } catch (Exception e) {
             throw new RuntimeException("Execute XCTest failed");
+        } finally {
+            if (proc != null) {
+                proc.destroy();
+            }
         }
 
         if (result == null) {

@@ -36,22 +36,21 @@ public class SmartTestUtil {
         stringFolderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.STRING_FOLDER_NAME
                 + "/";
 
-        try {
-            InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(name);
+        File smartTestZip = new File(testBaseDir, name);
+        File smartTestFolder = new File(testBaseDir, folderName);
+        if (smartTestZip.exists()) {
+            FileUtil.deleteFileRecursively(smartTestZip);
+        }
+        if (smartTestFolder.exists()) {
+            FileUtil.deleteFileRecursively(smartTestFolder);
+        }
+
+        try (InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(name);
+             OutputStream out = new FileOutputStream(smartTestZip)) {
             if (resourceAsStream == null) {
                 return;
             }
-            File smartTestZip = new File(testBaseDir, name);
-            File smartTestFolder = new File(testBaseDir, folderName);
-            if (smartTestZip.exists()) {
-                FileUtil.deleteFileRecursively(smartTestZip);
-            }
-            if (smartTestFolder.exists()) {
-                FileUtil.deleteFileRecursively(smartTestFolder);
-            }
-            OutputStream out = new FileOutputStream(smartTestZip);
             IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
-            out.close();
             FileUtil.unzipFile(smartTestZip.getAbsolutePath(), testBaseDir.getAbsolutePath());
             if (smartTestZip.exists()) {
                 FileUtil.deleteFileRecursively(smartTestZip);
@@ -83,13 +82,21 @@ public class SmartTestUtil {
         for (String tempArg : runArgs) {
             logger.info(tempArg);
         }
+
         Process proc = Runtime.getRuntime().exec(runArgs);
-        SmartTestLog err = new SmartTestLog(proc.getErrorStream(), logger);
-        SmartTestLog out = new SmartTestLog(proc.getInputStream(), logger);
-        err.start();
-        out.start();
-        res = out.getContent();
-        proc.waitFor();
+
+        try (InputStream errorInput = proc.getErrorStream();
+             InputStream inputStream = proc.getInputStream()) {
+            SmartTestLog err = new SmartTestLog(errorInput, logger);
+            SmartTestLog out = new SmartTestLog(inputStream, logger);
+            err.start();
+            out.start();
+            proc.waitFor();
+            res = out.getContent();
+        } finally {
+            proc.destroy();
+        }
+
 
         return res;
     }
