@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -56,7 +57,7 @@ public class SmartTestUtil {
                 FileUtil.deleteFileRecursively(smartTestZip);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.warn("SmartTestUtil init error", e);
         }
         initStringPool();
         filePath = folderPath + Const.SmartTestConfig.PY_FILE_NAME;
@@ -66,8 +67,8 @@ public class SmartTestUtil {
 
     public String runPYFunction(SmartTestParam smartTestParam, Logger logger) throws Exception {
         File smartTestFolder = new File(smartTestParam.getOutputFolder(), Const.SmartTestConfig.RESULT_FOLDER_NAME);
-        smartTestFolder.mkdir();
-        String res = null;
+        Assert.isTrue(smartTestFolder.mkdir(), "create smartTestFolder failed");
+        String res;
         String[] runArgs = new String[9];
         runArgs[0] = "python";
         runArgs[1] = filePath;
@@ -96,7 +97,6 @@ public class SmartTestUtil {
         } finally {
             proc.destroy();
         }
-
 
         return res;
     }
@@ -139,19 +139,19 @@ public class SmartTestUtil {
         }
         String[] fileNames = Const.SmartTestConfig.STRING_FILE_NAMES.split(",");
         for (String fileName : fileNames) {
-            creatTxtFile(stringFolderPath, fileName);
+            createTxtFile(stringFolderPath, fileName);
         }
     }
 
-    public void creatTxtFile(String path, String name) {
+    public void createTxtFile(String path, String name) {
         String filenameTemp = path + name + ".txt";
         File filename = new File(filenameTemp);
         //generate string txt file if not exist
         if (!filename.exists()) {
             try {
-                filename.createNewFile();
+                Assert.isTrue(filename.createNewFile(), "createTxtFile error " + filename.getAbsolutePath());
             } catch (IOException e) {
-                e.printStackTrace();
+                log.warn("createTxtFile error " + filename.getAbsolutePath(), e);
             }
         }
     }
