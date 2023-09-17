@@ -3,56 +3,39 @@
 
 package com.microsoft.hydralab.agent.runner.smart;
 
+import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import org.slf4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
-public class SmartTestLog extends Thread {
-    private final InputStream inputStream;
-    private final Logger logger;
-    private volatile boolean inFinish = false;
+public class SmartTestLog extends CommandOutputReceiver {
+
     private String res;
 
     public SmartTestLog(InputStream inputStream, Logger logger) {
-        this.inputStream = inputStream;
-        this.inFinish = false;
-        this.logger = logger;
+        super(inputStream, logger);
     }
 
-    public void run() {
-        try {
-            InputStreamReader isr = new InputStreamReader(inputStream, "UTF-8");
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                logger.info(line);
-                if (line.startsWith("smartTestResult:")) {
-                    res = line.replaceFirst("smartTestResult:", "");
-                }
-            }
-            isr.close();
-            bufferedReader.close();
-        } catch (IOException e) {
-            logger.info("Exception:" + e);
-            e.printStackTrace();
-        } finally {
-            this.inFinish = true;
-            synchronized (this) {
-                notify();
-            }
+    @Override
+    protected boolean handleEachLine(String line) {
+        String prefix = "smartTestResult:";
+        if (line.startsWith(prefix)) {
+            res = line.replaceFirst(prefix, "");
         }
+        return super.handleEachLine(line);
     }
 
     public String getContent() {
-        if (!this.inFinish) {
+        if (!isFinished()) {
             synchronized (this) {
                 try {
                     wait();
-                } catch (InterruptedException ignore) {
-                    ignore.printStackTrace();
+                } catch (InterruptedException e) {
+                    if (logger == null) {
+                        e.printStackTrace();
+                    } else {
+                        logger.warn("Error in getContent", e);
+                    }
                 }
             }
         }

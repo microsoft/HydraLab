@@ -3,14 +3,12 @@
 
 package com.microsoft.hydralab.agent.runner.maestro;
 
+import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
 import org.slf4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,9 +17,7 @@ import java.util.Map;
  * @date 07/11/2023
  */
 
-public class MaestroResultReceiver extends Thread {
-    private final InputStream inputStream;
-    private final Logger logger;
+public class MaestroResultReceiver extends CommandOutputReceiver {
     private final MaestroListener listener;
     private static final String KEY_CASE_NAME = "caseName";
     private static final String KEY_TEST_SECONDS = "testSeconds";
@@ -29,60 +25,45 @@ public class MaestroResultReceiver extends Thread {
     private boolean isTestRunFailed = false;
 
     public MaestroResultReceiver(InputStream inputStream, MaestroListener listener, Logger logger) {
-        this.inputStream = inputStream;
-        this.logger = logger;
+        super(inputStream, logger);
         this.listener = listener;
     }
 
-    public void run() {
-        listener.testRunStarted();
-        try {
-            InputStreamReader isr = new InputStreamReader(inputStream, "UTF-8");
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                logger.info(line);
-                if (line.startsWith("[Passed]")) {
-                    //for example: [Passed] test_flow1 (28s)
-                    Map<String, String> caseInfo = analysisCaseInfo(line);
-                    // KEY_CASE_NAME: test_flow1
-                    // KEY_TEST_SECONDS: 28
-                    listener.testEnded(caseInfo.get(KEY_CASE_NAME), Integer.parseInt(caseInfo.get(KEY_TEST_SECONDS)));
-                } else if (line.startsWith("[Failed]")) {
-                    //for example: [Failed] test_flow2 (20s) (Element not found: UiSelector[CLASS=android.widget.TextView, INSTANCE=1])
-                    Map<String, String> caseInfo = analysisCaseInfo(line);
-                    // KEY_CASE_NAME: test_flow2
-                    // KEY_TEST_SECONDS: 20
-                    // KEY_ERROR: (Element not found: UiSelector[CLASS=android.widget.TextView, INSTANCE=1])
-                    listener.testFailed(caseInfo.get(KEY_CASE_NAME), Integer.parseInt(caseInfo.get(KEY_TEST_SECONDS)), caseInfo.get(KEY_ERROR));
-                } else if (line.contains("Debug output")) {
-                    // for example: ==== Debug output (logs & screenshots) ====
-                    isTestRunFailed = true;
-                    logger.info("Start to analysis debug output");
-                }
-                if (isTestRunFailed) {
-                    // for example: /Users/xxx/.maestro/test/2023-07-11_110500
-                    if (LogUtils.isLegalStr(line, Const.RegexString.LINUX_ABSOLUTE_PATH, false)
-                            || LogUtils.isLegalStr(line, Const.RegexString.WINDOWS_ABSOLUTE_PATH, false)) {
-                        listener.testRunFailed(line);
-                    }
-                }
-            }
-            listener.testRunEnded();
-            isr.close();
-            bufferedReader.close();
-        } catch (IOException e) {
-            logger.info("Exception:" + e);
-            e.printStackTrace();
-        } finally {
-            synchronized (this) {
-                notify();
+    @Override
+    protected boolean handleEachLine(String line) {
+        if (line.startsWith("[Passed]")) {
+            //for example: [Passed] test_flow1 (28s)
+            Map<String, String> caseInfo = analysisCaseInfo(line);
+            // KEY_CASE_NAME: test_flow1
+            // KEY_TEST_SECONDS: 28
+            listener.testEnded(caseInfo.get(KEY_CASE_NAME), Integer.parseInt(caseInfo.get(KEY_TEST_SECONDS)));
+        } else if (line.startsWith("[Failed]")) {
+            //for example: [Failed] test_flow2 (20s) (Element not found: UiSelector[CLASS=android.widget.TextView, INSTANCE=1])
+            Map<String, String> caseInfo = analysisCaseInfo(line);
+            // KEY_CASE_NAME: test_flow2
+            // KEY_TEST_SECONDS: 20
+            // KEY_ERROR: (Element not found: UiSelector[CLASS=android.widget.TextView, INSTANCE=1])
+            listener.testFailed(caseInfo.get(KEY_CASE_NAME), Integer.parseInt(caseInfo.get(KEY_TEST_SECONDS)), caseInfo.get(KEY_ERROR));
+        } else if (line.contains("Debug output")) {
+            // for example: ==== Debug output (logs & screenshots) ====
+            isTestRunFailed = true;
+            if (logger != null) {
+                logger.info("Start to analysis debug output");
             }
         }
+        if (isTestRunFailed) {
+            // for example: /Users/xxx/.maestro/test/2023-07-11_110500
+            if (LogUtils.isLegalStr(line, Const.RegexString.LINUX_ABSOLUTE_PATH, false)
+                    || LogUtils.isLegalStr(line, Const.RegexString.WINDOWS_ABSOLUTE_PATH, false)) {
+                listener.testRunFailed(line);
+            }
+        }
+        return super.handleEachLine(line);
     }
 
     /**
      * analysis case info
+     *
      * @param line
      * @return
      * @example
@@ -100,7 +81,9 @@ public class MaestroResultReceiver extends Thread {
         try {
             Integer.parseInt(testSeconds);
         } catch (NumberFormatException e) {
-            logger.info("Exception:" + e);
+            if (logger != null) {
+                logger.info("Exception:" + e);
+            }
             testSeconds = "0";
         }
         infoMap.put(KEY_TEST_SECONDS, testSeconds);
