@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.openai;
 
 import com.alibaba.fastjson.JSON;
@@ -15,9 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 
 public class AzureOpenAIServiceClientTest extends BaseTest {
     @Value("${app.openai.chat-completion.api-key:}")
@@ -84,7 +85,7 @@ public class AzureOpenAIServiceClientTest extends BaseTest {
         String status = "";
         int maxRetry = 20;
         int counter = 0;
-        while (!status.equals("succeeded") && counter++ < maxRetry) {
+        while (!Objects.equals(status, "succeeded") && counter++ < maxRetry) {
             response = azureOpenAIServiceClient.getGeneratedImageStatus(id);
             jsonObject = JSON.parseObject(response);
             status = jsonObject.getString("status");
