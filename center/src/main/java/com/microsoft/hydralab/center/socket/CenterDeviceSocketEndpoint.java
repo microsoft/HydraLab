@@ -54,7 +54,7 @@ public class CenterDeviceSocketEndpoint {
             formattedMessage = SerializeUtil.byteArrToMessage(message.array());
         } catch (Exception e) {
             try {
-                session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Message format error"));
+                session.close(new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Message format error, please update your agent."));
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }

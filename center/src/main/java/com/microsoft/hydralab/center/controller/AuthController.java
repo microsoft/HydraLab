@@ -63,13 +63,9 @@ public class AuthController {
         String state = request.getParameter("state");
         String prefix = Const.FrontEndPath.INDEX_PATH + "?" + Const.FrontEndPath.REDIRECT_PARAM + "=";
 
-        if (StringUtils.isNotEmpty(state)) {
-            if (state.startsWith(prefix)) {
-                String newUrl = state.replace(prefix, "");
-                if (LogUtils.isLegalStr(newUrl, Const.RegexString.URL, false)) {
-                    redirectUrl = state;
-                }
-            } else if (state.equals(Const.FrontEndPath.SWAGGER_DOC_PATH)) {
+        if (StringUtils.isNotEmpty(state) && state.startsWith(prefix)) {
+            String newUrl = state.replace(prefix, "");
+            if (LogUtils.isLegalStr(newUrl, Const.RegexString.URL, false)) {
                 redirectUrl = state;
             }
         }
