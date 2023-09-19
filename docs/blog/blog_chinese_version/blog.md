@@ -6,7 +6,7 @@
 
 Hydra Lab 是一个支持多种测试设备，免费开源的智能云测试框架。下面的视频将详细介绍 Hydra Lab 的功能以及定位。
 
-https://github.com/microsoft/HydraLab/assets/8344245/cefefe24-4e11-4cc7-a3af-70cb44974735
+https://github.com/microsoft/HydraLab/assets/26757995/b225b58e-4836-490c-a6fd-673b2a7fff40
 
 ## Hydra Lab 的优势有哪些?
 
