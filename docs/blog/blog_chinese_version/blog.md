@@ -63,7 +63,7 @@ Hydra Lab 中心服务的 docker 镜像部署在 Azure 上作为测试中心，�
 
 ## 体验尝鲜
 
-如果用户想快速尝试并了解 Hydra Lab ，我们提供了一键部署的 docker 镜像，只要机器上安装了 docker 和 ADB，输入以下命令：
+Talk is cheap, show me the code. 大家如果想快速尝试并了解 Hydra Lab 基本用法，我们提供了一键部署的 docker 镜像，只要你的机器上安装了 docker 和 ADB，输入以下命令即可端到端运行Hydra lab center + agent：
 
 ```
 docker run -p 9886:9886 ghcr.io/microsoft/hydra-lab-uber:latest
