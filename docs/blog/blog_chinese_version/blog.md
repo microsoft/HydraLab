@@ -14,7 +14,7 @@ Hydra Lab 于 2022 年 12 月在 [github.com/microsoft](https://github.com/micro
 
 - **可控**：得益于 Hydra Lab 的开源属性，用户可以构建一个可管理的、私有的 “Test Lab”测试实验室，类似于"Google Firebase Test Lab"或者云测、云真机平台，这避免了将带有调试信息的应用包，上传至第三方测试平台引发的信息泄露风险，可以更好地满足内部合规要求。
 - **通用**: Hydra Lab 设计之初不仅考虑到了单个设备测试的场景，还考虑到了需要同时用到多个设备的测试场景，例如跨设备办公类应用。因此 Hydra Lab 支持在Windows、Android、iOS 等类型设备上的单独测试，也支持这些设备之间的组合测试。
-- **可扩展性**：目前 Hydra Lab 已经集成了 Appium、 Espresso、 Maestro、 XCTest 等测试框架。由于它具备集成不同测试框架的胶水代码（适配器）、可复用可扩展的设计、软件测试生命周期的定义，所以可以快速支持新的测试框架，例如智能测试。
+- **可扩展**：目前 Hydra Lab 已经集成了 Appium、 Espresso、 Maestro、 XCTest 等测试框架。由于它具备集成不同测试框架的胶水代码（适配器）、可复用可扩展的设计、软件测试生命周期的定义，所以可以快速支持新的测试框架，例如智能测试。
 - **测试成本**：通过 Hydra Lab 搭建测试平台，不仅可以将团队内部现有的设备接入平台，还可以与其他的团队合作，基于这个平台共享测试设备，大大减少了向第三方平台支付的测试成本。
 - **可集成性**：Hydra Lab 提供 [Gradle 插件](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)、[Azure Devops 插件](https://marketplace.visualstudio.com/items?itemName=MaXESteam.hydra-lab-alter)、RESTful 接口等多种方式与 DevOps 系统集成，让持续集成在测试阶段也完全自动化。
 - **稳定性**：Hydra Lab 分别集成了监控告警系统(Promethus + Grafana)、日志采集系统(AppCenter)来及时发现、定位问题，确保系统处于健康状态。同时为 Hydra Lab 自身的开发建立了标准化的 CI/CD 流程，借助单元测试、接口测试、跨平台用户验收测试等环节为产品质量把关，迄今为止已经发布了 32 个稳定版本。
