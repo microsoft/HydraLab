@@ -115,23 +115,13 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
                     ++count;
                 }
             }
-            generateNetworkJunitResult(count == 0, local_result_path);
+            File file = new File(local_result_path);
+            FileWriter writer = new FileWriter(file);
+            writer.write(count > 0 ? "Fail" : "Success");
+            writer.close();
         } catch (IOException | InterruptedException e) {
             logger.warn("Exception from AndroidNetworkMonitor stop {} {}", e.getClass().getName(), e.getMessage());
         }
-    }
-
-    private boolean generateNetworkJunitResult(boolean isSuccess, String path) throws IOException {
-        File file = new File(path);
-        FileWriter writer = new FileWriter(file);
-        writer.write("<?xml version='1.0' encoding='UTF-8' ?>");
-        String resultStr = "<testsuite name=\"{}\" tests=\"1\" failures=\"{}\" errors=\"{}\">";
-        String.format(resultStr, "NetworkTest", isSuccess ? 0 : 1, isSuccess ? 0 : 1);
-        writer.write(resultStr);
-        writer.write("  <properties />");
-        writer.write("</testsuite>");
-        writer.close();
-        return true;
     }
 
     private boolean grantPermissionClick() {

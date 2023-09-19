@@ -98,7 +98,7 @@ public interface Const {
     interface NetworkMonitorConfig {
         String AndroidDumpPath = "/Documents/dump.log";
         String DumpPath = "/network_dump.log";
-        String ResultPath = "/network_test_result.xml";
+        String ResultPath = "/network_result.log";
     }
 
     interface DeviceStability {
