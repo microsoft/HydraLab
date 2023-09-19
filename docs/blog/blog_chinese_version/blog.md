@@ -61,7 +61,7 @@ Hydra Lab 中心服务的 docker 镜像部署在 Azure 上作为测试中心，�
 
 注：用户可以参考 [测试代理部署手册](https://github.com/microsoft/HydraLab/wiki/Test-agent-setup) 配置测试服务器，并注册到 Hydra Lab 中心服务。
 
-## 快速使用
+## 体验尝鲜
 
 如果用户想快速尝试并了解 Hydra Lab ，我们提供了一键部署的 docker 镜像，只要机器上安装了 docker 和 ADB，输入以下命令：
 
