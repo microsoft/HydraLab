@@ -12,7 +12,7 @@ ehcache.xml @zhou9584 @olivershen-wow
 *.md @zhou9584 @hydraxman @dexterdreeeam
 
 # Hydra Lab Android client
-/android_client/ @lifesaver0129 @TedaLIEz @dexterdreeeam @taoran6
+/android_client/app/ @lifesaver0129 @TedaLIEz @dexterdreeeam @taoran6
 
 # TestTaskSpec
 /common/src/main/java/com/microsoft/hydralab/common/entity/ @olivershen-wow @zhou9584 @dexterdreeeam
