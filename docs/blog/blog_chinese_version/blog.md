@@ -19,7 +19,7 @@ Hydra Lab 于 2022 年 12 月在 [github.com/microsoft](https://github.com/micro
 - **可集成性**：Hydra Lab 提供 [Gradle 插件](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)、[Azure Devops 插件](https://marketplace.visualstudio.com/items?itemName=MaXESteam.hydra-lab-alter)、RESTful 接口等多种方式与 DevOps 系统集成，让持续集成在测试阶段也完全自动化。
 - **稳定性**：Hydra Lab 分别集成了监控告警系统(Promethus + Grafana)、日志采集系统(AppCenter)来及时发现、定位问题，确保系统处于健康状态。同时为 Hydra Lab 自身的开发建立了标准化的 CI/CD 流程，借助单元测试、接口测试、跨平台用户验收测试等环节为产品质量把关，迄今为止已经发布了 32 个稳定版本。
 
-## 基于 GPT/LLM 的智能测试
+## Hydra Lab 基于 GPT/LLM 的智能测试探索
 
 ![猴子敲键盘](猴子敲键盘.jpg)
 
