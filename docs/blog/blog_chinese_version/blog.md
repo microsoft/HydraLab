@@ -19,26 +19,6 @@ Hydra Lab 于 2022 年 12 月在 [github.com/microsoft](https://github.com/micro
 - **可集成性**：Hydra Lab 提供 [Gradle 插件](https://github.com/microsoft/HydraLab/wiki/Trigger-a-test-task-run-in-the-Hydra-Lab-test-service)、[Azure Devops 插件](https://marketplace.visualstudio.com/items?itemName=MaXESteam.hydra-lab-alter)、RESTful 接口等多种方式与 DevOps 系统集成，让持续集成在测试阶段也完全自动化。
 - **稳定性**：Hydra Lab 分别集成了监控告警系统(Promethus + Grafana)、日志采集系统(AppCenter)来及时发现、定位问题，确保系统处于健康状态。同时为 Hydra Lab 自身的开发建立了标准化的 CI/CD 流程，借助单元测试、接口测试、跨平台用户验收测试等环节为产品质量把关，迄今为止已经发布了 32 个稳定版本。
 
-## Hydra Lab 在微软内部的实践
-
-在过去的两年中，我们基于这个框架搭建了一个 Hydra Lab 中心服务，并集成到内部的软件开发流程中。通过 Hydra Lab 中心服务，我们为各个移动产品提供自动化测试服务，例如 Phone Link、Link to Windows for Android and iOS、Office Union for Android、Teams Android 等产品。架构图如下：
-
-![中心端架构图](中心端架构图.jpg)
-![代理端架构图](代理端架构图.jpg)
-
-Hydra Lab 中心服务的 docker 镜像部署在 Azure 上作为测试中心，内部用户可以使用 Azure DevOps Pipeline 来创建一个 Espresso 或 Appium 类型的测试任务，并推送至测试中心。在收到测试请求后，测试中心会选择合适的测试代理和设备来运行测试任务。测试代理则会选择对应的测试框架运行任务，并在测试完成后将结果返回给测试中心。最终，用户可以在测试中心的网页上查看这些测试报告。整个流程如下图所示：
-
-![测试流程图](测试流程图.jpg)
-
-**名词定义：**
-
-| 术语 | 缩写 | 定义 |
-|----|----|----|
-|Hydra Lab 中心服务| 测试中心 | Hydra Lab 中心服务是一个通过docker容器部署于**云端**的 Spring Boot 应用，提供RESTful 接口，用于分配测试任务、提供UI界面，收集并展示测试报告。 |
-|Hydra Lab 测试代理服务 | 测试代理 | Hydra Lab 测试代理服务是指运行 Hydra Lab 代理服务的机器，物理连接各种测试设备，通过 WebSocket 与 Hydra Lab 中心服务保持通信。 |
-
-注：用户可以参考 [测试代理部署手册](https://github.com/microsoft/HydraLab/wiki/Test-agent-setup) 配置测试服务器，并注册到 Hydra Lab 中心服务。
-
 ## 基于 GPT/LLM 的智能测试
 
 ![猴子敲键盘](猴子敲键盘.jpg)
@@ -60,6 +40,26 @@ Hydra Lab 中心服务的 docker 镜像部署在 Azure 上作为测试中心，�
 这个思路也很像一个测试人员第一次用一个软件，一定会先探索理解，同时在旁边整理一个信息图，这在测试领域被称为“功能图”或“状态图”，然后再设计用例；这非常自然和接近人的操作。如果我们能用计算机做这件事情，就能自动化地完成探索，绘制状态图，并生成测试用例。
 
 ![黑盒用例生成](黑盒用例生成.jpg)
+
+## Hydra Lab 在微软内部的实践
+
+在过去的两年中，我们基于这个框架搭建了一个 Hydra Lab 中心服务，并集成到内部的软件开发流程中。通过 Hydra Lab 中心服务，我们为各个移动产品提供自动化测试服务，例如 Phone Link、Link to Windows for Android and iOS、Office Union for Android、Teams Android 等产品。架构图如下：
+
+![中心端架构图](中心端架构图.jpg)
+![代理端架构图](代理端架构图.jpg)
+
+Hydra Lab 中心服务的 docker 镜像部署在 Azure 上作为测试中心，内部用户可以使用 Azure DevOps Pipeline 来创建一个 Espresso 或 Appium 类型的测试任务，并推送至测试中心。在收到测试请求后，测试中心会选择合适的测试代理和设备来运行测试任务。测试代理则会选择对应的测试框架运行任务，并在测试完成后将结果返回给测试中心。最终，用户可以在测试中心的网页上查看这些测试报告。整个流程如下图所示：
+
+![测试流程图](测试流程图.jpg)
+
+**名词定义：**
+
+| 术语 | 缩写 | 定义 |
+|----|----|----|
+|Hydra Lab 中心服务| 测试中心 | Hydra Lab 中心服务是一个通过docker容器部署于**云端**的 Spring Boot 应用，提供RESTful 接口，用于分配测试任务、提供UI界面，收集并展示测试报告。 |
+|Hydra Lab 测试代理服务 | 测试代理 | Hydra Lab 测试代理服务是指运行 Hydra Lab 代理服务的机器，物理连接各种测试设备，通过 WebSocket 与 Hydra Lab 中心服务保持通信。 |
+
+注：用户可以参考 [测试代理部署手册](https://github.com/microsoft/HydraLab/wiki/Test-agent-setup) 配置测试服务器，并注册到 Hydra Lab 中心服务。
 
 ## 快速使用
 
