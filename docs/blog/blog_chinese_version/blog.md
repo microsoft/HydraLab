@@ -39,7 +39,7 @@ Hydra Lab 于 2022 年 12 月在 https://github.com/microsoft 下开源，半年
 
 ![黑盒用例生成](黑盒用例生成.jpg)
 
-## Hydra Lab 在微软内部的实践
+## Hydra Lab 技术架构简介
 
 在过去的两年中，我们基于这个框架搭建了一个 Hydra Lab 中心服务，并集成到内部的软件开发流程中。通过 Hydra Lab 中心服务，我们为各个移动产品提供自动化测试服务，例如 Phone Link、Link to Windows for Android and iOS、Office Union for Android、Teams Android 等产品。架构图如下：
 
