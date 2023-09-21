@@ -2,11 +2,14 @@ package com.microsoft.hydralab.center.openai;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.azure.ai.openai.OpenAIClient;
+import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatMessage;
 import com.azure.ai.openai.models.ChatRole;
+import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.hydralab.center.openai.data.ChatRequest;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -16,19 +19,16 @@ import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.azure.ai.openai.OpenAIClient;
-import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.core.credential.AzureKeyCredential;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-    // Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-    public class AzureOpenAIServiceClient {
+public class AzureOpenAIServiceClient {
     public static final String API_VERSION_CHAT = "2023-03-15-preview";
     public static final String API_VERSION_IMAGE = "2023-06-01-preview";
+    public static final String API_VERSION_PROD = "2023-05-15";
     private final Logger logger = LoggerFactory.getLogger(AzureOpenAIServiceClient.class);
     private final String apiKey;
     private final String endpoint;
@@ -42,9 +42,9 @@ import java.util.Objects;
         this.deployment = deployment == null ? "" : deployment;
         if (!apiKey.isEmpty()) {
             this.azureClient = new OpenAIClientBuilder()
-                .endpoint(endpoint)
-                .credential(new AzureKeyCredential(apiKey))
-                .buildClient();
+                    .endpoint(endpoint)
+                    .credential(new AzureKeyCredential(apiKey))
+                    .buildClient();
         }
     }
 
@@ -68,12 +68,24 @@ import java.util.Objects;
     }
 
     public String chatCompletion(ChatRequest request) {
-        return callAzureOpenAIAPI("chat/completions", JSON.toJSONString(request), API_VERSION_CHAT);
+        return callAzureOpenAIAPIModelApi("chat/completions", JSON.toJSONString(request), API_VERSION_CHAT);
     }
 
-    private String callAzureOpenAIAPI(String operation, String requestBodyString, String apiVersion) {
+    public String fineTunes(ChatRequest request) {
+        return callAzureOpenAIApi(String.format("openai/fine-tunes?api-version=%s", API_VERSION_PROD), JSON.toJSONString(request));
+    }
+
+    public String uploads(ChatRequest request) {
+        return callAzureOpenAIApi(String.format("openai/files?api-version=%s", API_VERSION_PROD), JSON.toJSONString(request));
+    }
+
+    private String callAzureOpenAIAPIModelApi(String operation, String requestBodyString, String apiVersion) {
+        return callAzureOpenAIApi(String.format("openai/deployments/%s/%s?api-version=%s", deployment, operation, apiVersion), requestBodyString);
+    }
+
+    private String callAzureOpenAIApi(String path, String requestBodyString) {
         MediaType mediaType = MediaType.parse("application/json");
-        String url = String.format("%s/openai/deployments/%s/%s?api-version=%s", endpoint, deployment, operation, apiVersion);
+        String url = String.format("%s/%s", endpoint, path);
         logger.info("Request body: {}", requestBodyString);
         RequestBody body = RequestBody.create(requestBodyString, mediaType);
         Request httpRequest = new Request.Builder().url(url).post(body)
