@@ -66,6 +66,7 @@ public class TestTask implements Serializable {
     private Boolean needClearData = true;
     private String type = TestType.API;
     private String runningType = TestRunningType.INSTRUMENTATION;
+    private String testPlan;
     private String status = TestStatus.RUNNING;
     @Column(name = "start_date", nullable = false)
     private Date startDate = new Date();
@@ -161,6 +162,9 @@ public class TestTask implements Serializable {
         testTask.agentIds = testTaskSpec.agentIds;
         if (StringUtils.isNotBlank(testTaskSpec.runningType)) {
             testTask.setRunningType(testTaskSpec.runningType);
+        }
+        if (StringUtils.isNotBlank(testTaskSpec.testPlan)) {
+            testTask.setTestPlan(testTaskSpec.testPlan);
         }
         testTask.setRetryTime(testTaskSpec.retryTime);
         testTask.setFrameworkType(testTaskSpec.frameworkType);

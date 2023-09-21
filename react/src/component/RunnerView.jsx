@@ -112,6 +112,7 @@ export default class RunnerView extends BaseView {
         testRunnerName: "androidx.test.runner.AndroidJUnitRunner",
         neededPermissions: null,
         deviceActions: null,
+        testPlan: null,
 
         teamList: null,
         selectedTeamName: null
@@ -779,6 +780,26 @@ export default class RunnerView extends BaseView {
                         value={this.state.deviceActions}
                         onChange={this.handleValueChange}
                     />
+                    <Stack
+                        direction="row"
+                        alignItems="flex-end"
+                        hidden={runTestType !== "XCTEST"}>
+                        <TextField
+                            margin="dense"
+                            name="testPlan"
+                            type="text"
+                            label="Test Plan"
+                            fullWidth
+                            variant="standard"
+                            value={this.state.testPlan}
+                            onChange={this.handleValueChange}
+                        />
+                        <Tooltip title="Test Plan Name (Relevant for .xctestproducts type packages only)">
+                            <IconButton style={{ height: "100%" }}>
+                                <span className="material-icons-outlined">info</span>
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
                 </Box>
         }
     }
@@ -1092,7 +1113,8 @@ export default class RunnerView extends BaseView {
             frameworkType: this.state.frameworkType,
             testRunnerName: this.state.testRunnerName,
             neededPermissions: neededPermissionsObj,
-            deviceActions: deviceActionsObj
+            deviceActions: deviceActionsObj,
+            testPlan: this.state.testPlan
         }
 
         axios.post('/api/test/task/run/', formParams, {
