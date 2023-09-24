@@ -4,7 +4,7 @@ import os
 
 import pip
 
-required_packages = ["regex"]
+required_packages = ["langchain", "regex", "openai", "chromadb", "tiktoken"]
 
 for p in required_packages:
     try:
@@ -12,72 +12,71 @@ for p in required_packages:
     except ImportError:
         pip.main(["install", p])
 
+user_config = {}
+with open("config.json", "r") as f:
+    user_config = json.load(f)
 
-from code_parser import java
-from llm import openai
+src_paths = user_config["src_paths"]
+repo_paths = user_config["repo_paths"]
+ut_build = user_config["ut_build"]
+client = None
+
 from util import *
+from workflow.java.client import client as java_client
 
+repo_paths_s = [
+    "C:/r/mmx/android/apps/YPC/app/src/main/java/com/microsoft/appmanager",
+]
+src_paths = []
+ut_build_s = {
+    "cmd": [r"C:\r\mmx\android\apps\YPC\gradlew.bat", ":app:compileTeamDebugUnitTestSources"],
+    "cwd": r"C:\r\mmx\android\apps\YPC",
+}
 
-class utg:
-    def __init__(self):
-        self.client = openai.client()
+repo_paths = [
+    "C:/r/mmx/android/apps/YPC/app/src/main/java/com/microsoft/appmanager",
+    "C:/r/mmx/android/apps/YPC/agents/src/main",
+    "C:/r/mmx/android/apps/YPC/authbroker/src/main",
+    "C:/r/mmx/android/apps/YPC/common/src/main",
+    "C:/r/mmx/android/apps/YPC/core/src/main",
+    "C:/r/mmx/android/apps/YPC/stub_core/src/main",
+    "C:/r/mmx/android/apps/YPC/stub_breadth/src/main",
+]
+search_path = "C:/r/mmx/android/apps/YPC/app/src/main/java/com/microsoft/appmanager"
+# search_path = "C:/r/mmx/android/apps/YPC/app/src/main/java/com/microsoft/appmanager/ViewHelper.java"
 
-    def generate_java_ut(self, src_path, ut_path, output_folder=None):
-        if os.path.isfile(src_path) == False:
-            print(f"!!!!!!!!! File not found: {src_path}")
-            return
-        if os.path.exists(ut_path):
-            print(f"!!!!!!!!! Test File already existed: {ut_path}")
-            return
+ut_build = {
+    "cmd": [r"C:\r\mmx\android\apps\YPC\gradlew.bat", ":app:compileTeamDebugUnitTestSources"],
+    "cwd": r"C:\r\mmx\android\apps\YPC",
+}
+# ut_build = {
+#     "cmd": [r'C:\x\gradle-6.9.4-bin\gradle-6.9.4\bin\gradle.bat', 'build', '-p', r'C:\Gh\HydraLab2\common'],
+#     "cwd": "",
+# }
 
-        p = java.parser(src_path)
-
-        # get all functions
-        print(">>>>>>>>> Parsing functions in Java file")
-        ans = self.client.SourceToFunctions(p.get_codes_str())
-        ans = json.loads(ans)
-        package = ans["Package"]
-        class_name = ans["Class"]
-        functions = ans["Functions"]
-        functions = filter_functions(class_name, functions)
-
-        # program ut for one function
-        print(">>>>>>>>> Programming UT for functions")
-        files = []
-        for i, f in enumerate(functions):
-            print(f"... Generating UT for function: {f}")
-            file_content = self.client.SourceFunctionToUt(p.get_codes_str(), f)
-            jf = java.java_file(file_content)
-            files.append(jf)
-            if output_folder != None:
-                create_file(f"{output_folder}/{i}.java", jf.get_codes_str())
-                create_file(f"{output_folder}/{i}_origin.java", file_content)
-        if len(files) == 0:
-            print("!!!!!!!!! No function found in Java file")
-            return
-
-        f_merged = None
-        for i, f in enumerate(files):
-            if i == 0:
-                f_merged = f
-            else:
-                f_merged.bind(f)
-
-        # prettify ut file
-        print(">>>>>>>>> Revising UT file")
-        src = f.get_codes_str()
-        ans = self.client.JavaCodeRevise(src)
-        ans = json.loads(ans)
-        print(">>>>>>>>> Revised UT file")
-        create_file(ut_path, ans["Revised-File"])
-        print(f"*** UT file: {ut_path}")
-
+def entry(src_p, cmd):
+    if not src_p.endswith(".java"):
+        return
+    ut_p = src_p.replace("main", "test").replace(".java", "Test.java")
+    if os.path.exists(ut_p):
+        return
+    try:
+        client.SourceToUt(src_p, ut_p)
+        fixed = client.FixUt(src_p, ut_p, cmd)
+        if fixed == False and os.path.exists(ut_p):
+            os.remove(ut_p)
+    except Exception as e:
+        print(f"Error: {e}")
+        if os.path.exists(ut_p):
+            os.remove(ut_p)
 
 if __name__ == "__main__":
-    prj_path = "C:/Gh/HydraLab"
-    sub_path = "/java/com/microsoft/hydralab/center/util"
-    src_path = f"{prj_path}/center/src/main{sub_path}/AuthUtil.java"
-    dst_path = f"{prj_path}/center/src/test{sub_path}/AuthUtilTest.java"
-    rst_folder = f"{prj_path}/center/src/utg{sub_path}/AuthUtil"
-    utg = utg()
-    utg.generate_java_ut(src_path, dst_path, output_folder=rst_folder)
+    global client
+    client = java_client(repo_paths)
+    for src_path in src_paths:
+        if os.path.exists(src_path):
+            entry(src_path, ut_build_s)
+        else:
+            for root, dirs, files in os.walk(src_path):
+                for f in files:
+                    entry(os.path.join(root, f), ut_build)

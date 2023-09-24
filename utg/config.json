@@ -1,0 +1,17 @@
+{
+    "repo_paths": [
+        "C:/repo_path_1",
+        "C:/repo_path_2"
+    ],
+    "src_paths": [
+        "C:/src_path_1",
+        "C:/src_path_2"
+    ],
+    "ut_build": {
+        "cmd": [
+            "C:/build_script.bat",
+            "build_arguements"
+        ],
+        "cwd": "C:/build_script_working_directory"
+    }
+}
