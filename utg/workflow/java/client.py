@@ -16,7 +16,7 @@ with open("../../config.json", "r") as f:
     user_config = json.load(f)
 
 api_type = user_config["llm"]["api_type"]
-api_base = user_config["llm"]["api_base"] # "https://max-es-gpt.openai.azure.com"
+api_base = user_config["llm"]["api_base"]
 api_engine = user_config["llm"]["api_engine"]
 api_version = user_config["llm"]["api_version"]
 api_key = user_config["llm"]["api_key"]
