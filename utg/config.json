@@ -13,5 +13,14 @@
             "build_arguements"
         ],
         "cwd": "C:/build_script_working_directory"
+    },
+    "llm": {
+        "type": "openai",
+        "api_type": "azure",
+        "api_base": "https://xxx.openai.azure.com",
+        "api_engine": "gpt35turbo16k",
+        "api_version": "2023-03-15-preview",
+        "api_key": "secret token",
+        "max_tokens": 4096
     }
 }

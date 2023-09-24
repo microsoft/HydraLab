@@ -24,35 +24,6 @@ client = None
 from util import *
 from workflow.java.client import client as java_client
 
-repo_paths_s = [
-    "C:/r/mmx/android/apps/YPC/app/src/main/java/com/microsoft/appmanager",
-]
-src_paths = []
-ut_build_s = {
-    "cmd": [r"C:\r\mmx\android\apps\YPC\gradlew.bat", ":app:compileTeamDebugUnitTestSources"],
-    "cwd": r"C:\r\mmx\android\apps\YPC",
-}
-
-repo_paths = [
-    "C:/r/mmx/android/apps/YPC/app/src/main/java/com/microsoft/appmanager",
-    "C:/r/mmx/android/apps/YPC/agents/src/main",
-    "C:/r/mmx/android/apps/YPC/authbroker/src/main",
-    "C:/r/mmx/android/apps/YPC/common/src/main",
-    "C:/r/mmx/android/apps/YPC/core/src/main",
-    "C:/r/mmx/android/apps/YPC/stub_core/src/main",
-    "C:/r/mmx/android/apps/YPC/stub_breadth/src/main",
-]
-search_path = "C:/r/mmx/android/apps/YPC/app/src/main/java/com/microsoft/appmanager"
-# search_path = "C:/r/mmx/android/apps/YPC/app/src/main/java/com/microsoft/appmanager/ViewHelper.java"
-
-ut_build = {
-    "cmd": [r"C:\r\mmx\android\apps\YPC\gradlew.bat", ":app:compileTeamDebugUnitTestSources"],
-    "cwd": r"C:\r\mmx\android\apps\YPC",
-}
-# ut_build = {
-#     "cmd": [r'C:\x\gradle-6.9.4-bin\gradle-6.9.4\bin\gradle.bat', 'build', '-p', r'C:\Gh\HydraLab2\common'],
-#     "cwd": "",
-# }
 
 def entry(src_p, cmd):
     if not src_p.endswith(".java"):

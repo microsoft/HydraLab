@@ -6,18 +6,21 @@ from langchain.chains import LLMChain, SequentialChain
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import AzureOpenAI, OpenAI
 from langchain.prompts import PromptTemplate
-
 from workflow.java.parser import *
 from workflow.java.parser_system import *
 
 langchain_verbose = False
 
-api_type = "azure"
-api_base = "https://max-es-gpt.openai.azure.com"
-api_engine = "gpt35turbo16k"
-api_version = "2023-03-15-preview"
-api_key = "xxxx"
-max_tokens = 4096
+user_config = {}
+with open("../../config.json", "r") as f:
+    user_config = json.load(f)
+
+api_type = user_config["llm"]["api_type"]
+api_base = user_config["llm"]["api_base"] # "https://max-es-gpt.openai.azure.com"
+api_engine = user_config["llm"]["api_engine"]
+api_version = user_config["llm"]["api_version"]
+api_key = user_config["llm"]["api_key"]
+max_tokens = user_config["llm"]["max_tokens"]
 
 
 prompt_s2u = "prompts/source_to_ut_v1.txt"
