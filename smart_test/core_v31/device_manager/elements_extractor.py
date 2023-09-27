@@ -27,7 +27,7 @@ def extractor(node, parent, xpath, element_dict, keep_content=False):
     if class_name in android_widget.WEB_VIEW:
         text = node.attrib.get("text", "")
         if text != "":
-            if text == "Sign in to your Microsoft account" or "Sign in":
+            if text == "Sign in to your Microsoft account" or text == "Sign in":
                 # mark this page as LOGIN start page
                 element_dict["is_microsoft_login"] = True
                 pass
