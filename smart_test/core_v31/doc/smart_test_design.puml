@@ -1,0 +1,76 @@
+@startuml smart_test_v31
+'https://plantuml.com/sequence-diagram
+
+abstract class DecisionMaker {
+'    action_selector()
+'    before_action()
+'    after_action()
+}
+
+abstract class DeviceManager {
+
+}
+
+abstract class ScreenComprehension {
+}
+
+class DeviceManagerAndroid {
+}
+
+class SingleDeviceDFSDecisionMaker {
+}
+
+class ScreenBertComprehension {
+}
+
+class RouteMapVisualization {
+    add_node()
+    add_node_and_edge()
+}
+
+class SmartTest{
+    start()
+    quit()
+    save_test_result()
+}
+
+
+ScreenBertComprehension -u-|> ScreenComprehension
+DeviceManagerAndroid -u-|> DeviceManager
+SingleDeviceDFSDecisionMaker -u-|> DecisionMaker
+DeviceManagerFactory -u-o  SmartTest
+PageEncoderFactory -u-o  SmartTest
+DecisionMakerFactory -u-o  SmartTest
+DeviceManagerFactory -d-> DeviceManager
+DecisionMakerFactory -d-> DecisionMaker
+PageEncoderFactory -d-> ScreenComprehension
+SingleDeviceDFSDecisionMaker -> RouteMapVisualization
+@enduml
+
+@startuml smart_test_v31_sequence
+autonumber
+
+activate main
+main -> SmartTest: start()
+activate SmartTest
+SmartTest -> DeviceManager: reset()
+activate DeviceManager
+loop max_step times
+SmartTest -> DeviceManager: extract_page_info()
+SmartTest -> ScreenComprehension: encode()
+activate ScreenComprehension
+ScreenComprehension -> SmartTest: FrameFeature
+deactivate ScreenComprehension
+SmartTest -> DecisionMaker: action_selector()
+activate DecisionMaker
+SmartTest -> DecisionMaker: before_action()
+SmartTest -> DeviceManager: execute_action()
+SmartTest -> DecisionMaker: after_action()
+end
+deactivate DecisionMaker
+main -> SmartTest: save_test_result()
+main -> SmartTest: quit()
+SmartTest -> DeviceManager: quit()
+
+@enduml
+
