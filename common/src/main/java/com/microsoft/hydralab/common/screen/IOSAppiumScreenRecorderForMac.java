@@ -27,7 +27,7 @@ public class IOSAppiumScreenRecorderForMac extends IOSAppiumScreenRecorder {
     public void startRecord(int maxTimeInSecond) {
         int timeout = maxTimeInSecond > 0 ? maxTimeInSecond : DEFAULT_TIMEOUT_IN_SECOND;
         try {
-            FlowUtil.retryAndSleepWhenFalse(3, 10, () -> {
+            FlowUtil.retryAndSleepWhenFalse(3, 1000, () -> {
                 iosDriver.startRecordingScreen(new IOSStartScreenRecordingOptions()
                         .enableForcedRestart()
                         .withFps(24)
