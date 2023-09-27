@@ -26,7 +26,9 @@ Capabilities of Hydra Lab include:
 - Powering [Android Espresso Test](https://developer.android.com/training/testing/espresso), and Appium(Java) test on different platforms: Windows/iOS/Android/Browser/Cross-platform.
 - Case-free test automation: Monkey test, Smart exploratory test.
 
-For more details, see [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
+For more details, you may refer to:
+- [Introduction: What is Hydra Lab?](https://github.com/microsoft/HydraLab/wiki)
+- [How Hydra Lab Empowers Microsoft Mobile Testing and Test Intelligence](https://medium.com/microsoft-mobile-engineering/how-hydra-lab-empowers-microsoft-mobile-testing-e4bd831ecf41)
 
 <span id="get-started"></span>
 ## Get Started
@@ -89,7 +91,7 @@ You can also run the center java Spring Boot service (a runnable Jar) separately
 **Step 1. Run Hydra Lab center service**
 
 ```bash
-# In the project root, switch to react folder to build the Web front.
+# In the project root, switch to the react folder to build the Web front.
 cd react
 npm ci
 npm run pub
@@ -109,7 +111,7 @@ java -jar center/build/libs/center.jar
 ```bash
 # In the project root
 cd android_client
-# Build the Android client apk
+# Build the Android client APK
 ./gradlew assembleDebug
 cp app/build/outputs/apk/debug/app-debug.apk ../common/src/main/resources/record_release.apk
 # If you don't have the SDK for Android ,you can download the prebuilt APK in https://github.com/microsoft/HydraLab/releases
