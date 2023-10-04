@@ -125,7 +125,7 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
     }
 
     private boolean grantPermissionClick() {
-        String[] possibleTexts = { "Start now", "Allow", "OK", "允许" };
+        String[] possibleTexts = { "Start now", "Allow", "OK", "允许", "确定" };
         String dump = dumpView(deviceInfo, logger);
         // classLogger.info("Dump on {}: {}", adbDeviceInfo.getSerialNum(), dump);
         if (StringUtils.isBlank(dump)) {

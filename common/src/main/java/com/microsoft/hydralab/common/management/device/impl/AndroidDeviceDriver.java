@@ -90,7 +90,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
                     if (deviceInfo == null) {
                         return;
                     }
-                    if (device.getState().equals(DeviceState.ONLINE)) {
+                    if (DeviceState.ONLINE.equals(device.getState())) {
                         agentManagementService.getDeviceStatusListenerManager().onDeviceConnected(deviceInfo);
                     } else {
                         agentManagementService.getDeviceStatusListenerManager().onDeviceInactive(deviceInfo);
@@ -133,7 +133,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
                         return;
                     }
 
-                    if (device.getState().equals(DeviceState.ONLINE)) {
+                    if (DeviceState.ONLINE.equals(device.getState())) {
                         agentManagementService.getDeviceStatusListenerManager().onDeviceConnected(deviceInfo);
                     } else {
                         agentManagementService.getDeviceStatusListenerManager().onDeviceInactive(deviceInfo);
