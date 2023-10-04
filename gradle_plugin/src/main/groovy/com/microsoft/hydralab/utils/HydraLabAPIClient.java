@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.microsoft.hydralab.utils.CommonUtils.GSON;
 import static com.microsoft.hydralab.utils.CommonUtils.assertNotNull;
@@ -50,22 +51,22 @@ public class HydraLabAPIClient {
                 .url(apiConfig.checkCenterAliveUrl())
                 .build();
         OkHttpClient clientToUse = client;
-        Response response = null;
-        try {
-            response = clientToUse.newCall(req).execute();
-            int waitingRetry = httpFailureRetryTimes;
-            while (!response.isSuccessful() && waitingRetry > 0) {
-                printlnf("##[warning]Check center alive failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
-                response = clientToUse.newCall(req).execute();
-                waitingRetry--;
-            }
-
-            assertTrue(response.isSuccessful(), "check center alive", response);
+        AtomicInteger waitingRetry = new AtomicInteger(httpFailureRetryTimes);
+        try (Response response = FlowUtil.httpRetryAndSleepWhenException(httpFailureRetryTimes, 1,
+                () -> {
+                    Response res = clientToUse.newCall(req).execute();
+                    if (!res.isSuccessful()) {
+                        waitingRetry.getAndDecrement();
+                        printlnf("##[warning]Check center alive failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
+                                res.message());
+                        throw new IllegalStateException("Check center alive: " + res);
+                    }
+                    return res;
+                }
+        )) {
             printlnf("Center is alive, continue on requesting API...");
         } catch (Exception e) {
             throw new RuntimeException("check center alive fail: " + e.getMessage(), e);
-        } finally {
-            response.close();
         }
     }
 
@@ -95,17 +96,19 @@ public class HydraLabAPIClient {
                 .post(multipartBodyBuilder.build())
                 .build();
         OkHttpClient clientToUse = client;
-        Response response = null;
-        try {
-            response = clientToUse.newCall(req).execute();
-            int waitingRetry = httpFailureRetryTimes;
-            while (!response.isSuccessful() && waitingRetry > 0) {
-                printlnf("##[warning]Upload App failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
-                response = clientToUse.newCall(req).execute();
-                waitingRetry--;
-            }
-
-            assertTrue(response.isSuccessful(), "upload App", response);
+        AtomicInteger waitingRetry = new AtomicInteger(httpFailureRetryTimes);
+        try (Response response = FlowUtil.httpRetryAndSleepWhenException(httpFailureRetryTimes, 1,
+                () -> {
+                    Response res = clientToUse.newCall(req).execute();
+                    if (!res.isSuccessful()) {
+                        waitingRetry.getAndDecrement();
+                        printlnf("##[warning]Upload App failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
+                                res.message());
+                        throw new IllegalStateException("Upload app: " + res);
+                    }
+                    return res;
+                }
+        )) {
             ResponseBody body = response.body();
 
             assertNotNull(body, response + ": upload App ResponseBody");
@@ -117,8 +120,6 @@ public class HydraLabAPIClient {
             return jsonObject.getAsJsonObject("content").get("id").getAsString();
         } catch (Exception e) {
             throw new RuntimeException("upload App fail: " + e.getMessage(), e);
-        } finally {
-            response.close();
         }
     }
 
@@ -147,25 +148,25 @@ public class HydraLabAPIClient {
                 .post(multipartBodyBuilder.build())
                 .build();
         OkHttpClient clientToUse = client;
-        Response response = null;
-        try {
-            response = clientToUse.newCall(req).execute();
-            int waitingRetry = httpFailureRetryTimes;
-            while (!response.isSuccessful() && waitingRetry > 0) {
-                printlnf("##[warning]Add attachments failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
-                response = clientToUse.newCall(req).execute();
-                waitingRetry--;
-            }
-
-            assertTrue(response.isSuccessful(), "Add attachments", response);
+        AtomicInteger waitingRetry = new AtomicInteger(httpFailureRetryTimes);
+        try (Response response = FlowUtil.httpRetryAndSleepWhenException(httpFailureRetryTimes, 1,
+                () -> {
+                    Response res = clientToUse.newCall(req).execute();
+                    if (!res.isSuccessful()) {
+                        waitingRetry.getAndDecrement();
+                        printlnf("##[warning]Add attachments failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
+                                res.message());
+                        throw new IllegalStateException("Add attachments: " + res);
+                    }
+                    return res;
+                }
+        )) {
             ResponseBody body = response.body();
             assertNotNull(body, response + ": Add attachments ResponseBody");
 
             return GSON.fromJson(body.string(), JsonObject.class);
         } catch (Exception e) {
             throw new RuntimeException("Add attachments fail: " + e.getMessage(), e);
-        } finally {
-            response.close();
         }
     }
 
@@ -179,17 +180,20 @@ public class HydraLabAPIClient {
                 .build();
         OkHttpClient clientToUse = client;
         JsonObject jsonObject = null;
-        Response response = null;
-        try {
-            response = clientToUse.newCall(req).execute();
-            int waitingRetry = httpFailureRetryTimes;
-            while (!response.isSuccessful() && waitingRetry > 0) {
-                printlnf("##[warning]Generate accessKey failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
-                response = clientToUse.newCall(req).execute();
-                waitingRetry--;
-            }
+        AtomicInteger waitingRetry = new AtomicInteger(httpFailureRetryTimes);
+        try (Response response = FlowUtil.httpRetryAndSleepWhenException(httpFailureRetryTimes, 1,
+                () -> {
+                    Response res = clientToUse.newCall(req).execute();
+                    if (!res.isSuccessful()) {
+                        waitingRetry.getAndDecrement();
+                        printlnf("##[warning]Generate accessKey failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
+                                res.message());
+                        throw new IllegalStateException("Generate accessKey: " + res);
+                    }
+                    return res;
+                }
+        )) {
 
-            assertTrue(response.isSuccessful(), "generate accessKey", response);
             ResponseBody body = response.body();
 
             assertNotNull(body, response + ": generateAccessKey ResponseBody");
@@ -204,8 +208,6 @@ public class HydraLabAPIClient {
             printlnf("##[warning]Request generateAccess failed: " + jsonObject.toString());
             return "";
 //            throw new RuntimeException("generate accessKey fail: " + e.getMessage(), e);
-        } finally {
-            response.close();
         }
     }
 
@@ -273,28 +275,27 @@ public class HydraLabAPIClient {
                 .url(apiConfig.getRunTestUrl())
                 .post(jsonBody).build();
         OkHttpClient clientToUse = client;
-        Response response = null;
-        try {
-            response = clientToUse.newCall(req).execute();
-            int waitingRetry = httpFailureRetryTimes;
-            while (!response.isSuccessful() && waitingRetry > 0) {
-                printlnf("##[warning]Trigger test running failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
-                response = clientToUse.newCall(req).execute();
-                waitingRetry--;
-            }
-
-            assertTrue(response.isSuccessful(), "trigger test running", response);
+        AtomicInteger waitingRetry = new AtomicInteger(httpFailureRetryTimes);
+        try (Response response = FlowUtil.httpRetryAndSleepWhenException(httpFailureRetryTimes, 1,
+                () -> {
+                    Response res = clientToUse.newCall(req).execute();
+                    if (!res.isSuccessful()) {
+                        waitingRetry.getAndDecrement();
+                        printlnf("##[warning]Trigger test running failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
+                                res.message());
+                        throw new IllegalStateException("Trigger test running: " + res);
+                    }
+                    return res;
+                }
+        )) {
             ResponseBody body = response.body();
             assertNotNull(body, response + ": triggerTestRun ResponseBody");
             String string = body.string();
             printlnf("RunningTestJson: %s", maskCred(string));
-            JsonObject jsonObject = GSON.fromJson(string, JsonObject.class);
 
-            return jsonObject;
+            return GSON.fromJson(string, JsonObject.class);
         } catch (Exception e) {
             throw new RuntimeException("trigger test running fail: " + e.getMessage(), e);
-        } finally {
-            response.close();
         }
     }
 
@@ -306,17 +307,19 @@ public class HydraLabAPIClient {
                 .url(apiConfig.getTestStatusUrl(testTaskId))
                 .build();
         OkHttpClient clientToUse = client;
-        Response response = null;
-        try {
-            response = clientToUse.newCall(req).execute();
-            int waitingRetry = httpFailureRetryTimes;
-            while (!response.isSuccessful() && waitingRetry > 0) {
-                printlnf("##[warning]Get test status failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
-                response = clientToUse.newCall(req).execute();
-                waitingRetry--;
-            }
-
-            assertTrue(response.isSuccessful(), "get test status", response);
+        AtomicInteger waitingRetry = new AtomicInteger(httpFailureRetryTimes);
+        try (Response response = FlowUtil.httpRetryAndSleepWhenException(httpFailureRetryTimes, 1,
+                () -> {
+                    Response res = clientToUse.newCall(req).execute();
+                    if (!res.isSuccessful()) {
+                        waitingRetry.getAndDecrement();
+                        printlnf("##[warning]Get test status failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
+                                res.message());
+                        throw new IllegalStateException("Get test status: " + res);
+                    }
+                    return res;
+                }
+        )) {
             ResponseBody body = response.body();
             assertNotNull(body, response + ": getTestStatus ResponseBody");
             JsonObject jsonObject = GSON.fromJson(body.string(), JsonObject.class);
@@ -331,8 +334,6 @@ public class HydraLabAPIClient {
             return result;
         } catch (Exception e) {
             throw new RuntimeException("get test status fail: " + e.getMessage(), e);
-        } finally {
-            response.close();
         }
     }
 
@@ -342,17 +343,19 @@ public class HydraLabAPIClient {
                 .url(apiConfig.getBlobSASUrl())
                 .build();
         OkHttpClient clientToUse = client;
-        Response response = null;
-        try {
-            response = clientToUse.newCall(req).execute();
-            int waitingRetry = httpFailureRetryTimes;
-            while (!response.isSuccessful() && waitingRetry > 0) {
-                printlnf("##[warning]Get Blob SAS failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
-                response = clientToUse.newCall(req).execute();
-                waitingRetry--;
-            }
-
-            assertTrue(response.isSuccessful(), "Get Blob SAS", response);
+        AtomicInteger waitingRetry = new AtomicInteger(httpFailureRetryTimes);
+        try (Response response = FlowUtil.httpRetryAndSleepWhenException(httpFailureRetryTimes, 1,
+                () -> {
+                    Response res = clientToUse.newCall(req).execute();
+                    if (!res.isSuccessful()) {
+                        waitingRetry.getAndDecrement();
+                        printlnf("##[warning]Get Blob SAS failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
+                                res.message());
+                        throw new IllegalStateException("Get Blob SAS: " + res);
+                    }
+                    return res;
+                }
+        )) {
             ResponseBody body = response.body();
 
             assertNotNull(body, response + ": Blob SAS");
@@ -364,14 +367,14 @@ public class HydraLabAPIClient {
             return jsonObject.getAsJsonObject("content").get("signature").getAsString();
         } catch (Exception e) {
             throw new RuntimeException("Get Blob SAS fail: " + e.getMessage(), e);
-        } finally {
-            response.close();
         }
     }
 
     public void downloadToFile(String fileUrl, File file) {
         Request req = new Request.Builder().get().url(fileUrl).build();
-        try (Response response = client.newCall(req).execute()) {
+        try (Response response = FlowUtil.httpRetryAndSleepWhenException(httpFailureRetryTimes, 1,
+                () -> client.newCall(req).execute()
+        )) {
             if (!response.isSuccessful()) {
                 return;
             }
@@ -381,7 +384,7 @@ public class HydraLabAPIClient {
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 IOUtils.copy(response.body().byteStream(), fos);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -394,21 +397,22 @@ public class HydraLabAPIClient {
                 .url(String.format(apiConfig.getCancelTestTaskUrl(), testTaskId, reason))
                 .build();
         OkHttpClient clientToUse = client;
-        Response response = null;
-        try {
-            response = clientToUse.newCall(req).execute();
-            int waitingRetry = httpFailureRetryTimes;
-            while (!response.isSuccessful() && waitingRetry > 0) {
-                printlnf("##[warning]Cancel test task failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry, response.code(), response.message());
-                response = clientToUse.newCall(req).execute();
-                waitingRetry--;
-            }
-
-            assertTrue(response.isSuccessful(), "cancel test task", response);
+        AtomicInteger waitingRetry = new AtomicInteger(httpFailureRetryTimes);
+        try (Response response = FlowUtil.httpRetryAndSleepWhenException(httpFailureRetryTimes, 1,
+                () -> {
+                    Response res = clientToUse.newCall(req).execute();
+                    if (!res.isSuccessful()) {
+                        waitingRetry.getAndDecrement();
+                        printlnf("##[warning]Cancel test task failed, remaining retry times: %d\nHttp code: %d\nHttp message: %s", waitingRetry.get(), res.code(),
+                                res.message());
+                        throw new IllegalStateException("Cancel test task: " + res);
+                    }
+                    return res;
+                }
+        )) {
+            printlnf("Test task canceled");
         } catch (Exception e) {
             throw new RuntimeException("cancel test task fail: " + e.getMessage(), e);
-        } finally {
-            response.close();
         }
     }
 }

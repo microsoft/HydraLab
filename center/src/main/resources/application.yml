@@ -83,6 +83,10 @@ app:
         enabled: ${LF_CENTER_ENABLED:false}
       agent:
         enabled: ${LF_AGENT_ENABLED:true}
+  openai:
+    apiKey: ${OPENAI_API_KEY:}
+    deployment: ${OPENAI_DEPLOYMENT:}
+    endpoint: ${OPENAI_ENDPOINT:}
 management:
   endpoints:
     web:
