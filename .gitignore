@@ -72,3 +72,5 @@ env.properties
 
 !/common/src/test/resources/**
 /common/src/test/resources/.DS_Store
+
+.venv
