@@ -11,6 +11,10 @@ import com.microsoft.hydralab.agent.environment.EnvCapabilityDiscoveryService;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
+import com.microsoft.hydralab.common.entity.agent.LLMProperties;
+import com.microsoft.hydralab.common.exception.reporter.AppCenterReporter;
+import com.microsoft.hydralab.common.exception.reporter.ExceptionReporterManager;
+import com.microsoft.hydralab.common.exception.reporter.FileReporter;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
@@ -29,6 +33,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus.
 import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -127,7 +132,16 @@ public class AppConfiguration {
 
     // TODO: refactor test runner to remove DependsOn
     @Bean
-    @DependsOn({"espressoRunner", "appiumRunner", "appiumCrossRunner", "smartRunner", "adbMonkeyRunner", "appiumMonkeyRunner", "t2cRunner", "xctestRunner"})
+    @DependsOn({"espressoRunner",
+            "appiumRunner",
+            "appiumCrossRunner",
+            "smartRunner",
+            "adbMonkeyRunner",
+            "appiumMonkeyRunner",
+            "t2cRunner",
+            "xctestRunner",
+            "maestroRunner",
+            "pythonRunner"})
     public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService)
             throws Exception {
         String wsUrl = String.format("ws://%s/agent/connect", registryServer);
@@ -212,5 +226,24 @@ public class AppConfiguration {
     @Bean
     public StorageServiceClientProxy storageServiceClientProxy(ApplicationContext applicationContext) {
         return new StorageServiceClientProxy(applicationContext);
+    }
+
+    @Bean
+    public FileReporter fileReporter() {
+        FileReporter fileReporter = new FileReporter(appOptions.getErrorStorageLocation());
+        ExceptionReporterManager.registerExceptionReporter(fileReporter);
+        return fileReporter;
+    }
+
+    @Bean
+    public AppCenterReporter appCenterReporter() {
+        AppCenterReporter appCenterReporter = new AppCenterReporter();
+        return appCenterReporter;
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = "runner.smart.llm")
+    public LLMProperties llmProperties(){
+        return new LLMProperties();
     }
 }

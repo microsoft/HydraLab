@@ -1,7 +1,8 @@
 # Docker
 # Build and push an image to Azure Container Registry
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
+pr:
+  drafts: false
 trigger:
 - none
 
@@ -82,7 +83,7 @@ stages:
       displayName: Run JUnit Test
       inputs:
         gradleWrapperFile: 'gradlew'
-        tasks: 'test jacocoRootReport'
+        tasks: 'test jacocoRootReport --stacktrace'
         publishJUnitResults: true
         testResultsFiles: '**/TEST-*.xml'
         #codeCoverageToolOption: 'JaCoCo'
@@ -112,7 +113,7 @@ stages:
       inputs:
         workingDirectory: 'android_client'
         gradleWrapperFile: 'android_client/gradlew'
-        tasks: 'assembleRelease'
+        tasks: 'assembleRelease --stacktrace'
         publishJUnitResults: false
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
@@ -122,7 +123,7 @@ stages:
       inputs:
         workingDirectory: 'android_client'
         gradleWrapperFile: 'android_client/gradlew'
-        tasks: 'assembleAndroidTest'
+        tasks: 'assembleAndroidTest --stacktrace'
         publishJUnitResults: false
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
@@ -143,7 +144,7 @@ stages:
       displayName: Build center
       inputs:
         gradleWrapperFile: 'gradlew'
-        tasks: 'center:bootJar'
+        tasks: 'center:bootJar --stacktrace'
         publishJUnitResults: false
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
@@ -153,7 +154,7 @@ stages:
       displayName: Build agent
       inputs:
         gradleWrapperFile: 'gradlew'
-        tasks: 'agent:bootJar'
+        tasks: 'agent:bootJar --stacktrace'
         publishJUnitResults: false
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
@@ -200,7 +201,7 @@ stages:
       displayName: Package Mac installer
       inputs:
         gradleWrapperFile: 'gradlew'
-        tasks: 'packageMacInstaller'
+        tasks: 'packageMacInstaller --stacktrace'
         publishJUnitResults: false
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
@@ -211,7 +212,7 @@ stages:
       displayName: Package Windows installer
       inputs:
         gradleWrapperFile: 'gradlew'
-        tasks: 'packageWindowsInstaller'
+        tasks: 'packageWindowsInstaller --stacktrace'
         publishJUnitResults: false
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'

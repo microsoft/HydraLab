@@ -1,0 +1,43 @@
+{
+  "--apk": "@NAME_HOLDER",
+  "--format": "mm.html,mm.json",
+  "--output": "@REPORT_NAME_HOLDER",
+  "options": [
+    {
+      "name": "-manifest"
+    },
+    {
+      "name": "-fileSize",
+      "--min": "10",
+      "--order": "desc",
+      "--suffix": "png, jpg, webp, jpeg, gif, arsc"
+    },
+    {
+      "name": "-countMethod",
+      "--group": "package"
+    },
+    {
+      "name": "-checkResProguard"
+    },
+    {
+      "name": "-findNonAlphaPng",
+      "--min": "10"
+    },
+    {
+      "name": "-checkMultiLibrary"
+    },
+    {
+      "name": "-uncompressedFile",
+      "--suffix": "png, jpg, jpeg, gif, arsc"
+    },
+    {
+      "name": "-countR"
+    },
+    {
+      "name": "-duplicatedFile"
+    },
+    {
+      "name": "-unusedAssets"
+    }
+  ]
+}

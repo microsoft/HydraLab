@@ -78,12 +78,21 @@ public interface Const {
         String REQUIRE_FILE_NAME = "requirements.txt";
         String STRING_FOLDER_NAME = "SmartTestString";
         String STRING_FILE_NAMES = "strings,username,password";
+        String LLM_ENABLE = "enable_llm";
+        String LLM_DEPLOYMENT = "deployment_name";
+        String LLM_API_KEY = "openai_api_key";
+        String LLM_API_BASE = "openai_api_base";
+        String LLM_API_VERSION = "openai_api_version";
     }
 
     interface ScreenRecoderConfig {
         String DEFAULT_FILE_NAME = "merged_test.mp4";
         String PC_FILE_NAME = "PC_test.mp4";
         String PHONE_FILE_NAME = "PHONE_test.mp4";
+    }
+
+    interface PerformanceConfig {
+        String DEFAULT_FILE_NAME = "PerformanceReport.json";
     }
 
     interface NetworkMonitorConfig {
@@ -104,6 +113,7 @@ public interface Const {
         String INDEX_PATH = "/portal/index.html";
         String ANCHOR = "#";
         String REDIRECT_PARAM = "redirectUrl";
+        String SWAGGER_DOC_PATH = "/v3/api-docs";
     }
 
     interface RegexString {
@@ -170,6 +180,10 @@ public interface Const {
     interface StoragePropertyBean {
         String LOCAL = "localStorageProperty";
         String AZURE = "azureBlobProperty";
+    }
+
+    interface AzureOpenaiConfig {
+        String AZURE_OPENAI_CONFIG = "azureOpenaiConfig";
     }
 
     interface XCTestConfig{

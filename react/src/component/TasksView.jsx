@@ -55,12 +55,14 @@ const TestType = {
     "APPIUM_CROSS": "Appium E2E",
     "T2C_JSON": "JSON-Described Test",
     "XCTEST": "XCTest",
+    "MAESTRO":"Maestro",
+    "PYTHON": "Python",
     "All": "All"
 }
 
 let params = {
     Timestamp: ["Last 24 Hours", "Last 7 Days", "Last 30 Days", "All"],
-    TestType: ["INSTRUMENTATION", "APPIUM", "SMART", "MONKEY", "APPIUM_MONKEY", "APPIUM_CROSS", "T2C_JSON", "XCTEST"],
+    TestType: ["INSTRUMENTATION", "APPIUM", "SMART", "MONKEY", "APPIUM_MONKEY", "APPIUM_CROSS", "T2C_JSON", "XCTEST", "MAESTRO", "PYTHON"],
     Result: ["Passed", "Failed"],
     TriggerType: ["PullRequest", "IndividualCI", "API"]
 };
@@ -68,7 +70,7 @@ let params = {
 let defaultSelectedParams = {
     time: "Last 24 Hours",
     suite: '',
-    TestType: ["INSTRUMENTATION", "APPIUM", "SMART", "MONKEY", "APPIUM_MONKEY", "APPIUM_CROSS", "T2C_JSON", "XCTEST"],
+    TestType: ["INSTRUMENTATION", "APPIUM", "SMART", "MONKEY", "APPIUM_MONKEY", "APPIUM_CROSS", "T2C_JSON", "XCTEST", "MAESTRO", "PYTHON"],
     Result: ["Passed", "Failed"],
     TriggerType: ["PullRequest", "IndividualCI", "API"]
 }

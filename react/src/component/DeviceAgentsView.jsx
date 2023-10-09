@@ -19,6 +19,7 @@ import Alert from "@mui/material/Alert";
 import '../css/deviceAgentsView.css';
 import _ from 'lodash';
 import { AreaChart, Area, XAxis, YAxis, PieChart, Tooltip, Pie, Cell, Legend, ReferenceLine } from 'recharts';
+import { string } from 'prop-types';
 const COLORS = ['#00C49F', '#90C12F', '#44C16F', '#00C12F', '#00612F', '#59C12F', '#0061FF', '#0061aa'];
 const RADIAN = Math.PI / 180;
 const PieCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -124,39 +125,99 @@ export default class DeviceAgentsView extends BaseView {
                                 <div class='deviceAgents-agentBanner-tail'>
                                     <div style={{ color: 'white' }}>
                                         {
-                                            Number(agent.agentVersionCode) >= Number(this.state.latestAgentVersion) ?
+                                            <div>
+                                                {
+                                                    Number(agent.agentVersionCode) >= Number(this.state.latestAgentVersion) ?
+                                                    <MUITooltip
+                                                        title={
+                                                            <Stack>
+                                                                Host:{agent.hostname}<br />
+                                                                Version:{agent.agentVersionName}<br />
+                                                                OS:{agent.agentOS}
+                                                            </Stack>}
+                                                        style={{ padding: "0" }}>
+                                                        <IconButton>
+                                                            <span style={{ color: 'white', }}
+                                                                className="material-icons-outlined">info</span>
+                                                        </IconButton>
+                                                    </MUITooltip>
+                                                    :
+                                                    agent.agentStatus === "UPDATING" ?
+                                                        <MUITooltip
+                                                            title={this.state.agentUpdateStatus}
+                                                            onOpen={() => this.getUpdateStatus(agent.agentId)}
+                                                            style={{ padding: "0" }}>
+                                                            <Button color="inherit" size="small" style={{ padding: "0" }}>
+                                                                Updating
+                                                            </Button>
+                                                        </MUITooltip>
+                                                        :
+                                                        <Button variant="contained" color="error" size="small"
+                                                            style={{ padding: "0" }}
+                                                            onClick={() => this.updateAgent(agent)}>
+                                                            Update
+                                                        </Button>
+                                                }
                                                 <MUITooltip
                                                     title={
                                                         <Stack>
-                                                            Host:{agent.hostname}<br />
-                                                            Version:{agent.agentVersionName}<br />
-                                                            OS:{agent.agentOS}
+                                                            <div style={{ userSelect: 'none', padding: 2, fontSize: '0.8rem' }}>
+                                                                Drivers:
+                                                                {
+                                                                    agent.functionAvailabilities
+                                                                    .filter(
+                                                                        (fa) => fa.functionType === "DEVICE_DRIVER"
+                                                                    )
+                                                                    .sort(
+                                                                        (fa1, fa2) => {
+                                                                            var s1 = 0
+                                                                            var s2 = 0
+                                                                            s1 += fa1.available ? 1 : 0
+                                                                            s1 += fa1.enabled ? 1 : 0
+                                                                            s2 += fa2.available ? 1 : 0
+                                                                            s2 += fa2.enabled ? 1 : 0
+                                                                            return s2 - s1
+                                                                        }
+                                                                    )
+                                                                    .map(
+                                                                        (fa) => this.convertFunctionAvailability(fa)
+                                                                    )
+                                                                }
+                                                            </div>
+                                                            <div style={{ userSelect: 'none', padding: 2, fontSize: '0.8rem' }}>
+                                                                Runners:
+                                                                {
+                                                                    agent.functionAvailabilities
+                                                                    .filter(
+                                                                        (fa) => fa.functionType === "TEST_RUNNER"
+                                                                    )
+                                                                    .sort(
+                                                                        (fa1, fa2) => {
+                                                                            var s1 = 0
+                                                                            var s2 = 0
+                                                                            s1 += fa1.available ? 1 : 0
+                                                                            s1 += fa1.enabled ? 1 : 0
+                                                                            s2 += fa2.available ? 1 : 0
+                                                                            s2 += fa2.enabled ? 1 : 0
+                                                                            return s2 - s1
+                                                                        }
+                                                                    )
+                                                                    .map(
+                                                                        (fa) => this.convertFunctionAvailability(fa)
+                                                                    )
+                                                                }
+                                                            </div>
                                                         </Stack>}
-                                                    style={{ padding: "0" }}>
+                                                    style={{ padding: 0, paddingLeft: 4 }}>
                                                     <IconButton>
                                                         <span style={{ color: 'white', }}
-                                                            className="material-icons-outlined">info</span>
+                                                            className="material-icons-outlined">domain_verification</span>
                                                     </IconButton>
                                                 </MUITooltip>
-                                                :
-                                                agent.agentStatus === "UPDATING" ?
-                                                    <MUITooltip
-                                                        title={this.state.agentUpdateStatus}
-                                                        onOpen={() => this.getUpdateStatus(agent.agentId)}
-                                                        style={{ padding: "0" }}>
-                                                        <Button color="inherit" size="small" style={{ padding: "0" }}>
-                                                            Updating
-                                                        </Button>
-                                                    </MUITooltip>
-                                                    :
-                                                    <Button variant="contained" color="error" size="small"
-                                                        style={{ padding: "0" }}
-                                                        onClick={() => this.updateAgent(agent)}>
-                                                        Update
-                                                    </Button>
+                                            </div>
                                         }
                                     </div>
-                                    <div style={{ color: 'white' }}>
+                                    <div style={{ color: 'white', minWidth: 200 }}>
                                         {agent.userName}
                                     </div>
                                     <div style={{ color: 'white' }}>
@@ -383,6 +444,85 @@ export default class DeviceAgentsView extends BaseView {
         }).catch((error) => {
             this.snackBarError(error)
         })
+    }
+
+    convertFunctionAvailability(availability) {
+        var color = "YellowGreen"
+        var icon = "check"
+        var requires = null
+        if (availability.available === false) {
+            color = "DarkGray"
+            icon = "close"
+            requires = []
+            availability.envCapabilityRequirements.map(
+                (r) => {
+                    if (r.ready === false) {
+                        requires.push(r.envCapability.keyword)
+                    }
+                }
+            )
+        } else if (availability.enabled === false) {
+            color = "OrangeRed"
+            icon = "block"
+        }
+
+        var name = "";
+        if (availability.functionName.endsWith("AndroidDeviceDriver")) {
+            name = "Android"
+        } else if (availability.functionName.endsWith("IOSDeviceDriver")) {
+            name = "iOS"
+        } else if ((availability.functionName.endsWith("WindowsDeviceDriver"))) {
+            name = "Windows"
+        } else if ((availability.functionName.endsWith("EspressoRunner"))) {
+            name = "Espresso"
+        } else if ((availability.functionName.endsWith("AppiumRunner"))) {
+            name = "Appium"
+        } else if ((availability.functionName.endsWith("AppiumCrossRunner"))) {
+            name = "Appium Cross"
+        } else if ((availability.functionName.endsWith("SmartRunner"))) {
+            name = "Smart"
+        } else if ((availability.functionName.endsWith("AdbMonkeyRunner"))) {
+            name = "ADB Monkey"
+        } else if ((availability.functionName.endsWith("AppiumMonkeyRunner"))) {
+            name = "Appium Monkey"
+        } else if ((availability.functionName.endsWith("T2CRunner"))) {
+            name = "T2C"
+        } else if ((availability.functionName.endsWith("XCTestRunner"))) {
+            name = "XCTest"
+        } else if ((availability.functionName.endsWith("MaestroRunner"))) {
+            name = "Maestro"
+        } else if ((availability.functionName.endsWith("PythonRunner"))) {
+            name = "Python"
+        }
+
+        return (
+            <div style={{ display: 'flex', fontSize: '0.75rem', paddingLeft: 8, color: color, alignItems: 'center' } }>
+                <span style={{ color: 'white', fontSize: '0.8rem', userSelect: 'none', marginRight: 4 }}
+                    className="material-icons-outlined" >{icon}</span>
+                <span style={{userSelect: 'none'}}>{name}</span>
+                {
+                    requires === null ? null :
+                    <MUITooltip
+                        title={
+                            <Stack>
+                                <text style={{ fontSize: '0.8rem' }}>Absent Dependency:</text>
+                                {
+                                    requires.map(
+                                        (r) => {
+                                            return <span style={{ fontSize: '0.8rem', color: 'OrangeRed' }}>{r}</span>
+                                        }
+                                    )
+                                }
+                            </Stack>}
+                        placement='right'
+                        style={{ padding: "0" }}>
+                        <IconButton>
+                            <span style={{ color: 'orange', fontSize: '1.05rem', marginLeft: 4 }} className="material-icons-outlined">info</span>
+                        </IconButton>
+                    </MUITooltip>
+                }
+            </div>
+        )
     }
 
     updateAgent(agent) {

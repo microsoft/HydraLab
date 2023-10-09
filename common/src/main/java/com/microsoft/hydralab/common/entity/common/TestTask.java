@@ -113,6 +113,8 @@ public class TestTask implements Serializable {
     @Transient
     private List<InspectionStrategy> inspectionStrategies;
     @Transient
+    private boolean enablePerformanceSuggestion;
+    @Transient
     private String notifyUrl;
     @Transient
     private boolean disableRecording = false;
@@ -171,6 +173,7 @@ public class TestTask implements Serializable {
         }
         testTask.setTestScope(testTaskSpec.testScope);
         testTask.setInspectionStrategies(testTaskSpec.inspectionStrategies);
+        testTask.setEnablePerformanceSuggestion(testTaskSpec.enablePerformanceSuggestion);
         testTask.setNotifyUrl(testTaskSpec.notifyUrl);
         testTask.setDisableRecording(testTaskSpec.disableRecording);
         testTask.setEnableNetworkMonitor(testTaskSpec.enableNetworkMonitor);
@@ -210,10 +213,12 @@ public class TestTask implements Serializable {
         testTaskSpec.testRunnerName = testTask.getTestRunnerName();
         testTaskSpec.testScope = testTask.getTestScope();
         testTaskSpec.inspectionStrategies = testTask.getInspectionStrategies();
+        testTaskSpec.enablePerformanceSuggestion = testTask.isEnablePerformanceSuggestion();
         testTaskSpec.notifyUrl = testTask.getNotifyUrl();
         testTaskSpec.disableRecording = testTask.isDisableRecording();
         testTaskSpec.enableNetworkMonitor = testTask.isEnableNetworkMonitor();
         testTaskSpec.networkMonitorRule = testTask.getNetworkMonitorRule();
+        testTaskSpec.retryTime = testTask.getRetryTime();
 
         return testTaskSpec;
     }
@@ -327,6 +332,8 @@ public class TestTask implements Serializable {
         String APPIUM_MONKEY_TEST = "APPIUM_MONKEY";
         String T2C_JSON_TEST = "T2C_JSON";
         String XCTEST = "XCTEST";
+        String MAESTRO = "MAESTRO";
+        String PYTHON = "PYTHON";
     }
 
     public interface TestFrameworkType {
