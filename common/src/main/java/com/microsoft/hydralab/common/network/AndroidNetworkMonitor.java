@@ -125,11 +125,11 @@ public class AndroidNetworkMonitor implements NetworkMonitor {
         File file = new File(path);
         FileWriter writer = new FileWriter(file);
         writer.write("<?xml version='1.0' encoding='UTF-8' ?>");
-        String resultStr = "<testsuite name=\"{}\" tests=\"1\" failures=\"{}\" errors=\"{}\">";
-        String.format(resultStr, "NetworkTest", isSuccess ? 0 : 1, isSuccess ? 0 : 1);
-        writer.write(resultStr);
-        writer.write("  <properties />");
-        writer.write("</testsuite>");
+        String resultJunit = "<testsuite name=\"NetworkTest\" tests=\"1\" ";
+        resultJunit += "failures=\"" + (isSuccess ? "0" : "1") + "\" ";
+        resultJunit += "errors=\"" + (isSuccess ? "0" : "1") + "\" ";
+        resultJunit += "><properties /></testsuite>";
+        writer.write(resultJunit);
         writer.close();
         return true;
     }
