@@ -75,5 +75,5 @@ docker run -p 9886:9886 ghcr.io/microsoft/hydra-lab-uber:latest
 
 致力于“让智能云测试更简单”的目标，我们将会持续探索完善Hydra Lab，并坚信它将改变测试并助力全球开发团队。如果您有兴趣参与开发，请联系 hydra_lab_support@microsoft.com ，我们随时欢迎您加入Hydra Lab开源团队。
 
-![二维码](QR_code.png)
+![二维码](二维码.png)
 ![目标宣言](目标宣言.jpg)
