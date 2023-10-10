@@ -1,6 +1,6 @@
 # 微软开源AI云测试平台 Hydra Lab 帮你搭建私有智能云测系统
 
-Hydra Lab: 让智能云测试更简单！https://github.com/microsoft/HydraLab
+![目标宣言](目标宣言.jpg)
 
 Hydra Lab 是一个由微软开源的、支持多种测试框架和操作系统平台的智能云测试系统，利用它你可以搭建一套属于自己的测试API平台，管理你的测试设备，并在这些测试设备上运行你预定义好的测试任务。下面的这段视频详细介绍了 Hydra Lab 的功能以及定位：
 
@@ -74,6 +74,3 @@ docker run -p 9886:9886 ghcr.io/microsoft/hydra-lab-uber:latest
 ## 加入我们
 
 致力于“让智能云测试更简单”的目标，我们将会持续探索完善Hydra Lab，并坚信它将改变测试并助力全球开发团队。如果您有兴趣参与开发，请联系 hydra_lab_support@microsoft.com ，我们随时欢迎您加入Hydra Lab开源团队。
-
-![二维码](二维码.png)
-![目标宣言](目标宣言.jpg)
