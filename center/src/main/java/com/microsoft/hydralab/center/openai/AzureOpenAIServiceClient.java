@@ -53,7 +53,7 @@ import java.util.Objects;
             return "";
         }
         List<ChatMessage> chatMessages = new ArrayList<>();
-        chatMessages.add(new ChatMessage(ChatRole.SYSTEM, "You are a helpful assistant to analyze a json-based performance data. This data is from an Mobile App automation test."));
+        chatMessages.add(new ChatMessage(ChatRole.SYSTEM, "You are a helpful assistant."));
         chatMessages.add(new ChatMessage(ChatRole.USER, question));
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatMessages);
