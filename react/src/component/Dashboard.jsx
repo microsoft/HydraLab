@@ -29,9 +29,8 @@ import Container from '@mui/material/Container';
 import axios from "@/axios";
 import TestJsonView from './TestJsonView';
 import TeamManagement from "@/component/TeamManagement";
-import BotChatView from "@/component/BotChatView";
-import BotChatView1 from "@/component/BotChatView1";
-import BotChatView2 from "@/component/BotChatView2";
+import BotChatViewBackup from "@/component/BotChatViewBackup";
+import ChatQAView from "@/component/ChatQAView";
 
 const drawerWidth = 240;
 
@@ -250,23 +249,17 @@ export default function Dashboard() {
                                 </ListItemIcon>
                                 <ListItemText primary="Team Management" />
                             </ListItem>
-                            <ListItem component={Link} to={'/qa'} button>
+                            {/* <ListItem component={Link} to={'/qa1'} button>
                                 <ListItemIcon>
                                     <span className="material-icons-outlined">manage_accounts</span>
                                 </ListItemIcon>
                                 <ListItemText primary="AI Chat"/>
-                            </ListItem>
-                            <ListItem component={Link} to={'/qa1'} button>
+                            </ListItem> */}
+                            <ListItem component={Link} to={'/qa'} button>
                                 <ListItemIcon>
                                     <span className="material-icons-outlined">manage_accounts</span>
                                 </ListItemIcon>
-                                <ListItemText primary="AI Chat 1"/>
-                            </ListItem>
-                            <ListItem component={Link} to={'/qa2'} button>
-                                <ListItemIcon>
-                                    <span className="material-icons-outlined">manage_accounts</span>
-                                </ListItemIcon>
-                                <ListItemText primary="AI Chat 2"/>
+                                <ListItemText primary="Chat QA"/>
                             </ListItem>
                             <ListItem component="a" href='https://github.com/microsoft/HydraLab/blob/main/README.md' target="_blank"
                                       rel="noopener noreferrer" button>
@@ -334,14 +327,11 @@ export default function Dashboard() {
                                             <Route exact path="/team">
                                                 <TeamManagement />
                                             </Route>
+                                            {/* <Route exact path="/qa1">
+                                                <BotChatViewBackup />
+                                            </Route> */}
                                             <Route exact path="/qa">
-                                                <BotChatView />
-                                            </Route>
-                                            <Route exact path="/qa1">
-                                                <BotChatView1 />
-                                            </Route>
-                                            <Route exact path="/qa2">
-                                                <BotChatView2 />
+                                                <ChatQAView />
                                             </Route>
                                             <Route path="/info/:type/:id" children={<Child/>}/>
                                         </Switch>

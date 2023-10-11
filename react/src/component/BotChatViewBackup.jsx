@@ -6,7 +6,6 @@ import Chat, { useMessages, Bubble, Button, Card, CardActions, CardMedia, CardTi
 import '@chatui/core/dist/index.css';
 import '../css/chatbot.css';
 import BaseView from "@/component/BaseView";
-import { components } from 'react-select';
 
 // import 'bootstrap/dist/css/bootstrap.css'
 
@@ -131,7 +130,7 @@ function FC() {
 
 
 
-export default class BotChatView extends BaseView {
+export default class BotChatViewBackup extends BaseView {
     state = {
         // messages: [
         //     {

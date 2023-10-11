@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react'
 import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
-import { Avatar, ConversationHeader, ChatContainer, InfoButton, Message, MessageList, TypingIndicator, MessageInput, MessageSeparator, InputToolbox, AttachmentButton, SendButton } from '@chatscope/chat-ui-kit-react'
+import { ConversationHeader, ChatContainer, InfoButton, Message, MessageList, TypingIndicator, MessageInput, MessageSeparator, InputToolbox, AttachmentButton, SendButton } from '@chatscope/chat-ui-kit-react'
 
 
 import axios from '@/axios'
@@ -18,11 +18,16 @@ import BaseView from "@/component/BaseView";
 
 // window.sessionStorage
 let ls = require('local-storage');
+const taskStartMsgPrefix = "The task has queued or started and the taskID is ";
 
-export default class BotChatView2 extends BaseView {
+export default class ChatQAView extends BaseView {
     // todo: 
     //  1. 第二次上传时如果cancel会报错（clear state）
     //  2. uploading 状态无法单独控制，会同步动画
+    //  3. 输入问题：
+    //      disable 输入框改为 disable button & 回车发送
+    //      自定义button设法拿到input的内容
+    //      发送后清空input内容
 
     constructor(props) {
         super(props)
@@ -37,111 +42,76 @@ export default class BotChatView2 extends BaseView {
                     sentTime: new Date().toDateString(),
                     sender: "Bot",
                     direction: "incoming",
-                    position: "first",
                     type: "text",
                 }
             ],
             waitingForRes: false,
         }
+        this.interval = null;
         this.inputReference = React.createRef();
-    }
-    
-    createOrReuseSession() {
-        let chatSessionId = ls.get("chatSessionId")
-        if (chatSessionId) {
-            this.setState({
-                sessionId: chatSessionId
-            })
-        }
-        else {
-            axios.get('/api/qa/gpt/session').then(res => {
-                if (res.data && res.data.code === 200) {
-                    this.setState({
-                        sessionId: res.data.content.sessionId
-                    })
-                    ls.set("chatSessionId", res.data.content.sessionId)
-                } else {
-                    this.snackBarFail(res)
-                }
-            }).catch((error) => {
-                this.snackBarError(error)
-            })
-        }
     }
 
     downloadFile = () => {
         console.log("FILE DOWNLOADING")
     }
 
+    // sendInputMessage = () => {
+    //     console.log(this.inputReference.current);
+    //     let content = "0";
+    //     if (content) {
+    //         this.sendMessage(content)
+    //     }
+    // }
+
     sendMessage = (content) => {
-        console.log("ONSEND MESSAGE & FILE:", content)
+        console.log("OnSend message:", content)
         let msg = {
             message: content,
             sentTime: new Date().toDateString(),
             sender: "User",
             direction: "outgoing",
-            position: "normal",
             type: "text",
             completingUpload: null,
             uploadedFileName: null,
         }
         if (this.state.uploadedFile) {
-            // console.log("Current state of uploading:", this.state.uploading)
-            // msg.message = (<Message.CustomContent>
-            //         {msg.message}<br/><br/>
-            //         <LoadingButton
-            //             variant="contained"
-            //             className="pl-4 pr-4"
-            //             loading={this.state.uploading}
-            //             loadingPosition="end"
-            //             onClick={() => {
-            //                 this.downloadFile()
-            //             }}
-            //             endIcon={<span
-            //                 className="material-icons-outlined">file_download</span>}>
-            //             Uploading
-            //         </LoadingButton>
-            //     </Message.CustomContent>);
             msg.type = "custom";
             msg.completingUpload = false;
             msg.uploadedFileName = this.state.uploadedFile?.name;
         }
 
-        this.handleNewMessage(msg, false)
-
-        const formData = new FormData()
-        formData.append("sessionId", this.state.sessionId)
-        formData.append("question", msg.message)
-        formData.append("appFile", this.state.uploadedFile)
-
-        axios.post('/api/qa/gpt/ask', formData, {
-            headers: {
-                Accept: 'application/json',
-                'content-type': 'multipart/form-data; ',
-            }
-        })
-        .then(res => {
+        this.handleNewMessage(msg)
+        this.askGPT(msg).then(res => {
             if (msg.type == "custom") {
                 // todo: setState to rerender
                 msg.completingUpload = true;
                 console.log("[IN RESPONSE]msg.completingUpload: ", msg.completingUpload);
             }
             if (res.data && res.data.code === 200) {
+                content = res.data.content.message
                 let responseMsg = {
-                    message: res.data.content,
+                    message: content,
                     sentTime: new Date().toDateString(),
                     sender: "Bot",
                     direction: "incoming",
-                    position: "normal",
                     type: "text",
                 }
-                this.handleNewMessage(responseMsg)
+                this.handleNewMessage(responseMsg);
+
+                if (content.includes(taskStartMsgPrefix)) {
+                    console.log("Http polling starts. Interval is 30 seconds");
+                    let taskId = content.replace(taskStartMsgPrefix, "");
+                    let intervalId = setInterval(() => {
+                        this.queryTestStatus(taskId)
+                    }, 3000);
+                    // }, 30000);
+                    this.interval = intervalId;
+                }
+
                 this.setState({
                     waitingForRes: false,
-                    uploading: false
+                    uploading: false,
                 })
-                
-                console.log(this.state)
             } else {
                 this.snackBarFail(res)
                 this.setState({
@@ -166,11 +136,11 @@ export default class BotChatView2 extends BaseView {
     handleNewMessage = (msg) => {
         let msgs = this.state.messages;
         msgs.push({
+            id: msgs.length,
             message: msg.message,
             sentTime: msg.sentTime,
             sender: msg.sender,
             direction: msg.direction,
-            position: msg.position,
             type: msg.type,
             completingUpload: msg.completingUpload,
             uploadedFileName: msg.uploadedFileName,
@@ -180,6 +150,109 @@ export default class BotChatView2 extends BaseView {
             messages: msgs,
         });
     }
+
+    queryTestStatus = (testTaskId) => {
+        let question = "How about the test task " + testTaskId
+        this.askGPT(question).then(res => {
+            if (res.data && res.data.code === 200
+                && res.data.content.success) {
+                let content = res.data.content.message
+                let responseMsg = {
+                    message: content,
+                    sentTime: new Date().toDateString(),
+                    sender: "Bot",
+                    direction: "incoming",
+                    type: "text",
+                }
+                this.handleNewMessage(responseMsg)
+                if (this.interval) {
+                    clearInterval(this.interval)
+                    this.interval = null;
+                }
+                console.log("Interval for task query is cleared.")
+            }
+
+        }).catch((error) => {
+            this.snackBarError(error)
+            this.setState({
+                waitingForRes: false,
+                uploading: false
+            })
+        });
+    }
+
+    createOrReuseSession() {
+        // let chatSessionId = ls.get("chatSessionId")
+        // if (chatSessionId) {
+        //     this.setState({
+        //         sessionId: chatSessionId
+        //     })
+        // }
+        // else {
+        axios.get('/api/qa/gpt/session').then(res => {
+            if (res.data && res.data.code === 200) {
+                let chatQASessionId = res.data.content.sessionId;
+                this.setState({
+                    sessionId: chatQASessionId
+                })
+                ls.set("chatSessionId", chatQASessionId)
+                console.log("current session id for chat QA: " + chatQASessionId)
+            } else {
+                this.snackBarFail(res)
+            }
+        }).catch((error) => {
+            this.snackBarError(error)
+        })
+        // }
+    }
+
+    askGPT = (msg) => {
+        const formData = new FormData()
+        formData.append("sessionId", this.state.sessionId)
+        formData.append("question", msg.message)
+        formData.append("appFile", this.state.uploadedFile)
+
+        return axios.post('/api/qa/gpt/ask', formData, {
+            headers: {
+                Accept: 'application/json',
+                'content-type': 'multipart/form-data; ',
+            }
+        })
+    }
+
+    getPlainText = (e) => {
+        e.preventDefault();
+        const selection = window.getSelection();
+        if (selection) {
+            const range = selection.getRangeAt(0);
+            const text = e.clipboardData.getData("text/plain");
+            range.deleteContents();
+            // paste clean text at the cursor position
+            range.insertNode(document.createTextNode(text));
+            selection.collapseToEnd();
+            
+            const editor = document.querySelector(".cs-message-input__content-editor");
+            if (editor) {
+                // The value was inserted into the editor without changing the context state.
+                // We don't want to change the state, because it causes problems with placing the cursor in the right place,
+                // and if the input was empty the send button will remain disabled.
+                // So we need to dispatch the "input" event manually.
+                // This will trigger the onChange event, and the state will be updated
+                editor.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        }
+    }
+
+    // handleInputKeyPress = (event) => {
+    //     if (event.key == 'Enter') {        
+    //         let content = event.target.textContent;
+    //         console.log(event.target);
+    //         if (content) {
+    //             this.sendMessage(content);
+    //             // this.inputReference.current.reset();
+    //         }
+    //     }
+    // }
 
     componentDidMount() {
         this.createOrReuseSession();
@@ -203,7 +276,6 @@ export default class BotChatView2 extends BaseView {
         const waitingForRes = this.state.waitingForRes
         const displayedMessages = []
 
-        let botIco = 'images/default_user.png'
         messages.forEach((msg) => {
             let currentLoading = this.state.uploading && !msg.completingUpload
             switch (msg.type) {
@@ -213,20 +285,17 @@ export default class BotChatView2 extends BaseView {
                             sentTime: msg.sentTime,
                             sender: msg.sender,
                             direction: msg.direction,
-                            position: msg.position ? msg.position : "normal",
+                            position: "single",
                             type: msg.type
                         }}>
                             <Message.CustomContent>
-                                {msg.message}<br/><br/>
+                                {msg.message}<br /><br />
                                 <LoadingButton
                                     variant="contained"
                                     // className="pl-4 pr-4"
                                     loading={currentLoading}
                                     disabled
-                                    loadingPosition="end"
-                                    onClick={() => {
-                                        this.downloadFile()
-                                    }}>
+                                    loadingPosition="end">
                                     {currentLoading ? 'Uploading    ' : msg.uploadedFileName}
                                 </LoadingButton>
                             </Message.CustomContent>
@@ -240,7 +309,7 @@ export default class BotChatView2 extends BaseView {
                             sentTime: msg.sentTime,
                             sender: msg.sender,
                             direction: msg.direction,
-                            position: msg.position ? msg.position : "normal",
+                            position: "single",
                             type: msg.type
                         }}
                         />
@@ -252,22 +321,18 @@ export default class BotChatView2 extends BaseView {
         })
 
         return <div >
-            <Typography variant="h4" className="m-3">
-                Chat Bot</Typography>
-            <ChatContainer style={{ height: '850px' }}>
-                {/* <ConversationHeader>
-                    <Avatar src={botIco} name="Chat Bot" />
-                    <ConversationHeader.Content userName="Chat Bot" info="" />
-                    <ConversationHeader.Actions />
-                </ConversationHeader> */}
-                <MessageList >
+            <Typography style={{ textAlign: 'center' }} variant="h4" className="m-3">
+                Chat QA
+            </Typography>
+            <ChatContainer style={{ margin: 'auto', width: '70%', height: '850px', backgroundColor: '#fafafa' }}>
+                <MessageList style={{ backgroundColor: '#fafafa', paddingTop: '10px' }}>
                     {displayedMessages}
                 </MessageList>
 
                 <div as="InputToolbox">
-                    <hr style={{margin: 'auto auto 5px'}} />
+                    <hr style={{ margin: 'auto auto 5px' }} />
                     <FormControl required>
-                        <Button 
+                        <Button style={{ margin: '10px' }}
                             component="label"
                             variant="outlined"
                             endIcon={<span
@@ -282,15 +347,26 @@ export default class BotChatView2 extends BaseView {
                             />
                         </Button>
                     </FormControl>
-                    <MessageInput style={{margin: '5px auto auto'}} ref={this.inputReference}
+                    {/* <LoadingButton style={{ margin: '10px 10px 10px auto', float: 'right' }}
+                        variant="contained"
+                        className="pl-4 pr-4"
+                        disabled={false}
+                        loading={false}
+                        loadingPosition="end"
+                        onClick={this.sendInputMessage}
+                        endIcon={<span className="material-icons-outlined">send</span>}>
+                        Run
+                    </LoadingButton> */}
+                    <MessageInput style={{ margin: '5px auto auto', backgroundColor: '#fafafa' }} ref={this.inputReference}
                         disabled={waitingForRes}
+                        onPaste={this.getPlainText}
+                        // onKeyDown={this.handleInputKeyPress}
                         placeholder="Type message here"
                         autoFocus={true}
                         sendButton={true}
                         onSend={this.sendMessage}
                         attachButton={false} />
                 </div>
-                
             </ChatContainer>
         </div>
     }
