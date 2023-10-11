@@ -152,7 +152,6 @@ export default class ChatQAView extends BaseView {
 
     queryTestStatus = (testTaskId) => {
         let question = "How about the test task " + testTaskId
-        console.log("query status: ", question)
         this.askGPT(question).then(res => {
             if (res.data && res.data.code === 200
                 && res.data.content.success) {
