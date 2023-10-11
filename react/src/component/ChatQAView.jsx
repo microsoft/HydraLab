@@ -81,7 +81,7 @@ export default class ChatQAView extends BaseView {
         }
 
         this.handleNewMessage(msg)
-        this.askGPT(msg).then(res => {
+        this.askGPT(msg.message).then(res => {
             if (msg.type == "custom") {
                 // todo: setState to rerender
                 msg.completingUpload = true;
@@ -103,8 +103,7 @@ export default class ChatQAView extends BaseView {
                     let taskId = content.replace(taskStartMsgPrefix, "");
                     let intervalId = setInterval(() => {
                         this.queryTestStatus(taskId)
-                    }, 3000);
-                    // }, 30000);
+                    }, 30000);
                     this.interval = intervalId;
                 }
 
@@ -153,6 +152,7 @@ export default class ChatQAView extends BaseView {
 
     queryTestStatus = (testTaskId) => {
         let question = "How about the test task " + testTaskId
+        console.log("query status: ", question)
         this.askGPT(question).then(res => {
             if (res.data && res.data.code === 200
                 && res.data.content.success) {
@@ -209,7 +209,7 @@ export default class ChatQAView extends BaseView {
     askGPT = (msg) => {
         const formData = new FormData()
         formData.append("sessionId", this.state.sessionId)
-        formData.append("question", msg.message)
+        formData.append("question", msg)
         formData.append("appFile", this.state.uploadedFile)
 
         return axios.post('/api/qa/gpt/ask', formData, {
