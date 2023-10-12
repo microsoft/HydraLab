@@ -6,8 +6,17 @@ import lombok.Data;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import javax.persistence.*;
-import java.util.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -41,6 +50,8 @@ public class SysUser implements Authentication {
     // flag used for frontend only, to set identity of team member (ADMIN/USER)
     @Transient
     private boolean teamAdmin = false;
+    @Transient
+    private String host;
 
     public void setAuthorities(List<GrantedAuthority> permissions) {
         this.authorities = permissions;
