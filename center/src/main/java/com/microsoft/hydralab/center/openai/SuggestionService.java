@@ -202,9 +202,13 @@ public class SuggestionService {
         ds.getInspect().put(name, data);
     }
 
-    private String getOpenaiPerformanceSuggestion(String perfSuggestion) {
+    private String getOpenaiPerformanceSuggestion(String perfs) {
         if (this.oaiClient != null) {
-            return oaiClient.completion(perfSuggestion);
+            String prompt = "Here is a a json-based performance data. It is Automation Test for a mobile app. Analyze these data information and provide a general conclusion.";
+            prompt += "\n\n```";
+            prompt += perfs;
+            prompt += "\n```";
+            return oaiClient.completion(prompt);
         }
         return null;
     }

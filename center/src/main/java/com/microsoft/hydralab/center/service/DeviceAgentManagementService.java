@@ -286,7 +286,6 @@ public class DeviceAgentManagementService {
                 if (message.getBody() instanceof TestTask) {
                     TestTask testTask = (TestTask) message.getBody();
                     boolean isFinished = testTask.getStatus().equals(TestTask.TestStatus.FINISHED);
-                    testDataService.saveTestTaskDataFromAgent(testTask, isFinished, savedSession.agentUser.getId());
                     //after the task finishing, update the status of device used
                     if (isFinished) {
                         List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
@@ -302,6 +301,7 @@ public class DeviceAgentManagementService {
                         //run the task saved in queue
                         testTaskService.runTask();
                     }
+                    testDataService.saveTestTaskDataFromAgent(testTask, isFinished, savedSession.agentUser.getId());
                 }
                 break;
             case Const.Path.TEST_TASK_RUN:
