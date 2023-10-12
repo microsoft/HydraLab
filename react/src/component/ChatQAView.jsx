@@ -33,10 +33,12 @@ export default class ChatQAView extends BaseView {
         super(props)
         this.state = {
             uploading: false,
+            fileUploading: new Map(), // {msgId: 1, state: true}
             uploadedFile: null,
             sessionId: null,
             messages: ls.get('chatSessionHistory') ? ls.get('chatSessionHistory') : [
                 {
+                    id: 0,
                     message: "Hi, this is Hyda Lab Chat Bot, what can I do for you?",
                     sentTime: new Date().toDateString(),
                     sender: "Bot",
@@ -65,12 +67,12 @@ export default class ChatQAView extends BaseView {
     sendMessage = (content) => {
         console.log("OnSend message:", content)
         let msg = {
+            id: this.state.messages.length,
             message: content,
             sentTime: new Date().toDateString(),
             sender: "User",
             direction: "outgoing",
             type: "text",
-            completingUpload: null,
             uploadedFileName: null,
         }
         if (this.state.uploadedFile) {
@@ -81,39 +83,28 @@ export default class ChatQAView extends BaseView {
 
         this.handleNewMessage(msg)
         this.askGPT(msg.message).then(res => {
-            if (msg.type == "custom") {
-                // todo: setState to rerender
-                msg.completingUpload = true;
-                console.log("[IN RESPONSE]msg.completingUpload: ", msg.completingUpload);
-            }
             if (res.data && res.data.code === 200) {
-                content = res.data.content.message
-                let responseMsg = {
-                    message: content,
-                    sentTime: new Date().toDateString(),
-                    sender: "Bot",
-                    direction: "incoming",
-                    type: "text",
-                }
-                this.handleNewMessage(responseMsg);
+                content = res.data.content.message;
+                this.handleIncomingMessage(content);
 
                 if (content.includes(taskStartMsgPrefix)) {
                     console.log("Http polling starts. Interval is 30 seconds");
                     let taskId = content.replace(taskStartMsgPrefix, "");
                     let intervalId = setInterval(() => {
-                        this.queryTestStatus(taskId)
+                        this.queryTestStatus(taskId);
                     }, 30000);
                     this.interval = intervalId;
                 }
-
                 this.setState({
                     waitingForRes: false,
+                    fileUploading: this.completeUploading(msg.id),
                     uploading: false,
                 })
             } else {
                 this.snackBarFail(res)
                 this.setState({
                     waitingForRes: false,
+                    fileUploading: this.completeUploading(msg.id),
                     uploading: false
                 })
             }
@@ -121,26 +112,39 @@ export default class ChatQAView extends BaseView {
             this.snackBarError(error)
             this.setState({
                 waitingForRes: false,
+                fileUploading: this.completeUploading(msg.id),
                 uploading: false
             })
         });
         this.setState({
             waitingForRes: true,
+            fileUploading: this.startUploading(msg),
             uploading: true,
             uploadedFile: null,
         })
     }
 
+    handleIncomingMessage = (content) => {
+        let responseMsg = {
+            id: this.state.messages.length,
+            message: content,
+            sentTime: new Date().toDateString(),
+            sender: "Bot",
+            direction: "incoming",
+            type: "text",
+        }
+        this.handleNewMessage(responseMsg);
+    }
+
     handleNewMessage = (msg) => {
         let msgs = this.state.messages;
         msgs.push({
-            id: msgs.length,
+            id: msg.id,
             message: msg.message,
             sentTime: msg.sentTime,
             sender: msg.sender,
             direction: msg.direction,
             type: msg.type,
-            completingUpload: msg.completingUpload,
             uploadedFileName: msg.uploadedFileName,
         });
         ls.set("chatSessionHistory", msgs)
@@ -156,6 +160,7 @@ export default class ChatQAView extends BaseView {
                 && res.data.content.success) {
                 let content = res.data.content.message
                 let responseMsg = {
+                    id: this.state.messages.length,
                     message: content,
                     sentTime: new Date().toDateString(),
                     sender: "Bot",
@@ -179,29 +184,54 @@ export default class ChatQAView extends BaseView {
         });
     }
 
-    createOrReuseSession() {
-        // let chatSessionId = ls.get("chatSessionId")
-        // if (chatSessionId) {
-        //     this.setState({
-        //         sessionId: chatSessionId
-        //     })
-        // }
-        // else {
-        axios.get('/api/qa/gpt/session').then(res => {
-            if (res.data && res.data.code === 200) {
-                let chatQASessionId = res.data.content.sessionId;
-                this.setState({
-                    sessionId: chatQASessionId
-                })
-                ls.set("chatSessionId", chatQASessionId)
-                console.log("current session id for chat QA: " + chatQASessionId)
-            } else {
-                this.snackBarFail(res)
-            }
-        }).catch((error) => {
-            this.snackBarError(error)
-        })
-        // }
+    createOrReuseSession = () => {
+        let chatSessionId = ls.get("chatSessionId")
+        if (chatSessionId) {
+            this.setState({
+                sessionId: chatSessionId
+            })
+        }
+        else {
+            axios.get('/api/qa/gpt/session').then(res => {
+                if (res.data && res.data.code === 200) {
+                    let chatQASessionId = res.data.content.sessionId;
+                    this.setState({
+                        sessionId: chatQASessionId
+                    })
+                    ls.set("chatSessionId", chatQASessionId)
+                    console.log("current session id for chat QA: " + chatQASessionId)
+                } else {
+                    this.snackBarFail(res)
+                }
+            }).catch((error) => {
+                this.snackBarError(error)
+            })
+        }
+    }
+
+    getMsgUploadingState = (id) => {
+        return this.state.fileUploading.get(id);
+    }
+    
+    resetFileInput = (e) => {
+        e.target.value = null;
+        this.setState({
+            uploadedFile: null,
+        })        
+    }
+    
+    startUploading = (msg) => {
+        let uploadingStateList = this.state.fileUploading;
+        if (msg.type == "custom") {
+            uploadingStateList.set(msg.id, true);
+        }
+        return uploadingStateList;
+    }
+    
+    completeUploading = (id) => {
+        let uploadingStateList = this.state.fileUploading;
+        uploadingStateList.set(id, false);
+        return uploadingStateList;
     }
 
     askGPT = (msg) => {
@@ -218,6 +248,7 @@ export default class ChatQAView extends BaseView {
         })
     }
 
+    // remove HTML in display content
     getPlainText = (e) => {
         e.preventDefault();
         const selection = window.getSelection();
@@ -260,24 +291,15 @@ export default class ChatQAView extends BaseView {
         this.inputReference.current.focus();
     }
 
-    // shouldComponentUpdate(nextProps, nextState) {
-    //     console.log(this.state)
-    //     console.log(nextState)
-    //     if (this.state !== nextState) {
-    //         return true;
-    //     }
-    //     return false;
-    // }
-
     render() {
         const messages = this.state.messages
         const waitingForRes = this.state.waitingForRes
         const displayedMessages = []
 
         messages.forEach((msg) => {
-            let currentLoading = this.state.uploading && !msg.completingUpload
             switch (msg.type) {
                 case 'custom':
+                    let currentLoading = this.state.uploading && this.getMsgUploadingState(msg.id)
                     displayedMessages.push(
                         <Message model={{
                             sentTime: msg.sentTime,
@@ -309,8 +331,7 @@ export default class ChatQAView extends BaseView {
                             direction: msg.direction,
                             position: "single",
                             type: msg.type
-                        }}
-                        />
+                        }} />
                     );
                     break;
                 default:
@@ -341,6 +362,7 @@ export default class ChatQAView extends BaseView {
                                 type="file"
                                 accept=".apk,.ipa"
                                 hidden
+                                onClick={this.resetFileInput}
                                 onChange={this.handleFileUpload}
                             />
                         </Button>

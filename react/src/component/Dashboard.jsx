@@ -269,11 +269,11 @@ export default function Dashboard() {
                                 <ListItemText primary="About"/>
                                 <iframe style={{margin: '6px 0px 0px 0px'}}
                                         src="https://ghbtns.com/github-btn.html?user=microsoft&repo=HydraLab&type=star&count=true"
-                                        frameBorder="0" scrolling="0" align="right" width="90" height="25" title="GitHub"></iframe>
+                                        frameBorder="0" scrolling="0" align="right" width="100" height="25" title="GitHub"></iframe>
                             </ListItem>
                             <ListItem
                                 style={{
-                                    height: "calc(100vh - 561px)",
+                                    height: "calc(100vh - 610px)",
                                     pointerEvents: "none"
                                 }}>
                             </ListItem>
