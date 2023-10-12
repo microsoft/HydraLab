@@ -16,8 +16,8 @@ echo newfile = %1
 set newfile=%1
 ::stop hydra lab agent service
 ::net stop "Hydra Lab Agent Service"
-kill hydra lab agent java process
-::Powershell -Command "& {Get-WmiObject Win32_Process -Filter \"name like '%%java%%' and CommandLine like '%%agent%%'\" | Select-Object ProcessId -OutVariable pids;if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}}"
+::kill hydra lab agent java process
+Powershell -Command "& {Get-WmiObject Win32_Process -Filter \"name like '%%java%%' and CommandLine like '%%agent%%'\" | Select-Object ProcessId -OutVariable pids;if(-not $pids -eq '' ) {stop-process -id $pids.ProcessId}}"
 if "%newfile%"=="" ( echo "No need to update" ) else (
     if not exist "%newfile%" ( echo "%newfile% not exist" ) else (
         echo "Updating"

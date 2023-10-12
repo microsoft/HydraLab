@@ -31,7 +31,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +39,7 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
     static final Logger classLogger = LoggerFactory.getLogger(WindowsDeviceDriver.class);
     private static final int MAJOR_APPIUM_VERSION = 1;
     private static final int MINOR_APPIUM_VERSION = -1;
-
+    public static final String WINDOWS_BRAND = "Windows";
     public WindowsDeviceDriver(AgentManagementService agentManagementService,
                                AppiumServerManager appiumServerManager) {
         super(agentManagementService, appiumServerManager);
@@ -62,6 +61,7 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
             deviceInfo.setOsSDKInt(System.getProperties().getProperty("os.arch"));
             deviceInfo.setScreenDensity(0);
             deviceInfo.setScreenSize("");
+            deviceInfo.setBrand(WINDOWS_BRAND);
             deviceInfo.setType(DeviceType.WINDOWS.name());
             deviceInfo.setStatus(DeviceInfo.ONLINE);
             agentManagementService.getDeviceStatusListenerManager().onDeviceConnected(deviceInfo);

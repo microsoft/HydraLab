@@ -42,6 +42,19 @@
         </encoder>
     </appender>
 
+    <appender name="errorAlarm" class="com.microsoft.hydralab.common.exception.handler.LogbackExceptionHandler">
+    </appender>
+
+    <appender name ="asyncAlarm" class= "ch.qos.logback.classic.AsyncAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.console.level:-WARN}</level>
+        </filter>
+        <discardingThreshold >20</discardingThreshold>
+        <queueSize>256</queueSize>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref ="errorAlarm"/>
+    </appender>
+
     <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
@@ -52,10 +65,12 @@
     <logger name="com.microsoft" level="debug" additivity="false">
         <appender-ref ref="syslog"/>
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="asyncAlarm"/>
     </logger>
     <logger name="logger.devices" level="debug" additivity="false">
     </logger>
     <logger name="access" level="info" additivity="false">
         <appender-ref ref="accessLog"/>
+        <appender-ref ref="asyncAlarm"/>
     </logger>
 </configuration>

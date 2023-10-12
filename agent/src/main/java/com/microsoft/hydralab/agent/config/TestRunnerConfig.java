@@ -8,13 +8,16 @@ import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.appium.AppiumCrossRunner;
 import com.microsoft.hydralab.agent.runner.appium.AppiumRunner;
 import com.microsoft.hydralab.agent.runner.espresso.EspressoRunner;
+import com.microsoft.hydralab.agent.runner.maestro.MaestroRunner;
 import com.microsoft.hydralab.agent.runner.monkey.AdbMonkeyRunner;
 import com.microsoft.hydralab.agent.runner.monkey.AppiumMonkeyRunner;
+import com.microsoft.hydralab.agent.runner.python.PythonRunner;
 import com.microsoft.hydralab.agent.runner.smart.SmartRunner;
 import com.microsoft.hydralab.agent.runner.smart.SmartTestUtil;
 import com.microsoft.hydralab.agent.runner.t2c.T2CRunner;
 import com.microsoft.hydralab.agent.runner.xctest.XCTestRunner;
 import com.microsoft.hydralab.agent.service.TestTaskEngineService;
+import com.microsoft.hydralab.common.entity.agent.LLMProperties;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.ADBOperateUtil;
@@ -41,7 +44,9 @@ public class TestRunnerConfig {
             TestTask.TestRunningType.MONKEY_TEST, "adbMonkeyRunner",
             TestTask.TestRunningType.APPIUM_MONKEY_TEST, "appiumMonkeyRunner",
             TestTask.TestRunningType.T2C_JSON_TEST, "t2cRunner",
-            TestTask.TestRunningType.XCTEST, "xctestRunner"
+            TestTask.TestRunningType.XCTEST, "xctestRunner",
+            TestTask.TestRunningType.MAESTRO, "maestroRunner",
+            TestTask.TestRunningType.PYTHON, "pythonRunner"
     );
 
     @Bean
@@ -103,9 +108,9 @@ public class TestRunnerConfig {
                                    TestTaskEngineService testTaskEngineService,
                                    TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                    PerformanceTestManagementService performanceTestManagementService,
-                                   SmartTestUtil smartTestUtil) {
+                                   SmartTestUtil smartTestUtil, LLMProperties llmProperties) {
         return new SmartRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService,
-                smartTestUtil);
+                smartTestUtil, llmProperties);
     }
 
     @Bean
@@ -123,6 +128,22 @@ public class TestRunnerConfig {
                                      TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                      PerformanceTestManagementService performanceTestManagementService) {
         return new XCTestRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService);
+    }
+
+    @Bean
+    public MaestroRunner maestroRunner(AgentManagementService agentManagementService,
+                                       TestTaskEngineService testTaskEngineService,
+                                       TestRunDeviceOrchestrator testRunDeviceOrchestrator,
+                                       PerformanceTestManagementService performanceTestManagementService) {
+        return new MaestroRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService);
+    }
+
+    @Bean
+    public PythonRunner pythonRunner(AgentManagementService agentManagementService,
+                                     TestTaskEngineService testTaskEngineService,
+                                     TestRunDeviceOrchestrator testRunDeviceOrchestrator,
+                                     PerformanceTestManagementService performanceTestManagementService) {
+        return new PythonRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService);
     }
 
     @ConfigurationProperties(prefix = "app.device-script.commands")
