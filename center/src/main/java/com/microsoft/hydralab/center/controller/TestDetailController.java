@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.center.service.StorageTokenManageService;
 import com.microsoft.hydralab.center.service.TestDataService;
+import com.microsoft.hydralab.center.service.generation.MaestroCaseGenerationService;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
@@ -26,9 +27,11 @@ import com.microsoft.hydralab.common.util.DownloadUtils;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.hydralab.common.util.PageNode;
 import com.microsoft.hydralab.t2c.runner.T2CJsonGenerator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -47,11 +50,13 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_TEMP_FILE_DIR;
@@ -72,6 +77,8 @@ public class TestDetailController {
     AttachmentService attachmentService;
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
+    @Resource
+    MaestroCaseGenerationService maestroCaseGenerationService;
 
     /**
      * Authenticated USER:
@@ -410,6 +417,54 @@ public class TestDetailController {
         }
 
         return Result.ok(t2cJson);
+    }
+
+    @GetMapping(value = {"/api/test/generateMaestro/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result generateMaestroFromSmartTest(@CurrentSecurityContext SysUser requestor,
+                                               @PathVariable(value = "fileId") String fileId,
+                                               @RequestParam(value = "testRunId") String testRunId,
+                                               HttpServletResponse response) throws IOException {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+
+        File graphZipFile = loadGraphFile(fileId);
+        File graphFile = new File(graphZipFile.getParentFile().getAbsolutePath(), Const.SmartTestConfig.GRAPH_FILE_NAME);
+        TestRun testRun = testDataService.findTestRunById(testRunId);
+        TestTask testTask = testDataService.getTestTaskDetail(testRun.getTestTaskId());
+
+        PageNode rootNode = maestroCaseGenerationService.parserXMLToPageNode(graphFile.getAbsolutePath());
+        Assertions.assertNotNull(rootNode, "parser xml to page node failed");
+        rootNode.setPageName(testTask.getPkgName());
+        System.out.println(rootNode);
+        List<PageNode.ExplorePath> explorePaths = new ArrayList<>();
+        maestroCaseGenerationService.explorePageNodePath(rootNode, "", "", explorePaths);
+        File caseZipFile = maestroCaseGenerationService.generateCaseFile(rootNode, explorePaths);
+
+        if (caseZipFile == null) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "The file was not downloaded");
+        }
+        try {
+            FileInputStream in = new FileInputStream(caseZipFile);
+            ServletOutputStream out = response.getOutputStream();
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment;filename=" + caseZipFile.getName());
+            int len;
+            byte[] buffer = new byte[1024 * 10];
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+            out.flush();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            response.flushBuffer();
+            caseZipFile.delete();
+        }
+
+        return Result.ok();
     }
 
 }

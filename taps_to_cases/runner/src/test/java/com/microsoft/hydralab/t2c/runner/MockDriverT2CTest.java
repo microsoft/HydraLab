@@ -28,18 +28,16 @@ import java.util.List;
 import java.util.Map;
 
 public class MockDriverT2CTest {
-    public T2CJsonParser t2CJsonParser;
     private TestInfo testInfo;
     private Logger logger;
     String filePath = "src/test/resources/DemoJson.json";
-
 
     private final Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
 
     @BeforeEach
     public void setUp() {
         logger = LoggerFactory.getLogger(MockDriverT2CTest.class);
-        t2CJsonParser = new T2CJsonParser(logger);
+        T2CJsonParser t2CJsonParser = new T2CJsonParser(logger);
         testInfo = t2CJsonParser.parseJsonFile(filePath);
         T2CAppiumUtils.setSelfTesting(true);
         getDriversMap(testInfo.getDrivers());
@@ -210,7 +208,6 @@ public class MockDriverT2CTest {
             logger.info("Called " + currentMethodName());
         }
 
-
         public void copy(WebElement webElement) {
             logger.info("Called " + currentMethodName());
         }
@@ -309,5 +306,6 @@ public class MockDriverT2CTest {
         public <X> X getScreenshotAs(OutputType<X> target) throws WebDriverException {
             return null;
         }
-    };
+    }
+
 }

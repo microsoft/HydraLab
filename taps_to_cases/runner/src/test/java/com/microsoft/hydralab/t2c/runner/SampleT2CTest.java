@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.t2c.runner;
 
 import com.microsoft.hydralab.t2c.runner.controller.AndroidDriverController;
@@ -21,19 +22,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SampleT2CTest {
-    public T2CJsonParser t2CJsonParser;
     private TestInfo testInfo;
     private Logger logger;
     String filePath = "src/test/resources/DemoJson.json";
     AppiumDriverLocalService service;
-
 
     private final Map<String, BaseDriverController> driverControllerMap = new HashMap<>();
 
     @BeforeEach
     public void setUp() {
         logger = LoggerFactory.getLogger(SampleT2CTest.class);
-        t2CJsonParser = new T2CJsonParser(logger);
+        T2CJsonParser t2CJsonParser = new T2CJsonParser(logger);
         testInfo = t2CJsonParser.parseJsonFile(filePath);
 
         try {
