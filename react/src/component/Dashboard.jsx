@@ -29,7 +29,6 @@ import Container from '@mui/material/Container';
 import axios from "@/axios";
 import TestJsonView from './TestJsonView';
 import TeamManagement from "@/component/TeamManagement";
-import BotChatViewBackup from "@/component/BotChatViewBackup";
 import ChatQAView from "@/component/ChatQAView";
 
 const drawerWidth = 240;
@@ -249,12 +248,6 @@ export default function Dashboard() {
                                 </ListItemIcon>
                                 <ListItemText primary="Team Management" />
                             </ListItem>
-                            {/* <ListItem component={Link} to={'/qa1'} button>
-                                <ListItemIcon>
-                                    <span className="material-icons-outlined">manage_accounts</span>
-                                </ListItemIcon>
-                                <ListItemText primary="AI Chat"/>
-                            </ListItem> */}
                             <ListItem component={Link} to={'/qa'} button>
                                 <ListItemIcon>
                                     <span className="material-icons-outlined">manage_accounts</span>
@@ -327,9 +320,6 @@ export default function Dashboard() {
                                             <Route exact path="/team">
                                                 <TeamManagement />
                                             </Route>
-                                            {/* <Route exact path="/qa1">
-                                                <BotChatViewBackup />
-                                            </Route> */}
                                             <Route exact path="/qa">
                                                 <ChatQAView />
                                             </Route>
