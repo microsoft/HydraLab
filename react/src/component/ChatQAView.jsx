@@ -32,7 +32,6 @@ export default class ChatQAView extends BaseView {
     constructor(props) {
         super(props)
         this.state = {
-            uploadDialogIsShown: false,
             uploading: false,
             uploadedFile: null,
             sessionId: null,
