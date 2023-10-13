@@ -382,7 +382,7 @@ export default class ChatQAView extends BaseView {
                 Chat QA
             </Typography>
             <ChatContainer style={{ margin: 'auto', width: '70%', height: '850px', backgroundColor: '#fafafa' }}>
-                <MessageList style={{ backgroundColor: '#fafafa', paddingTop: '10px' }}>
+                <MessageList style={{ backgroundColor: '#fafafa', paddingTop: '10px', fontSize: '1rem' }}>
                     {displayedMessages}
                 </MessageList>
 
