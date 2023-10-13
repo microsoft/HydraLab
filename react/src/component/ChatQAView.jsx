@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react'
 import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
-import { ConversationHeader, ChatContainer, InfoButton, Message, MessageList, TypingIndicator, MessageInput, MessageSeparator, InputToolbox, AttachmentButton, SendButton } from '@chatscope/chat-ui-kit-react'
+import { Avatar, ConversationHeader, ChatContainer, InfoButton, Message, MessageList, TypingIndicator, MessageInput, MessageSeparator, InputToolbox, AttachmentButton, SendButton } from '@chatscope/chat-ui-kit-react'
 
 
 import axios from '@/axios'
@@ -32,9 +32,9 @@ export default class ChatQAView extends BaseView {
     constructor(props) {
         super(props)
         this.state = {
+            uploadedFile: null,
             uploading: false,
             fileUploading: new Map(), // {msgId: 1, state: true}
-            uploadedFile: null,
             sessionId: null,
             messages: ls.get('chatSessionHistory') ? ls.get('chatSessionHistory') : [
                 {
@@ -46,7 +46,7 @@ export default class ChatQAView extends BaseView {
                     type: "text",
                 }
             ],
-            waitingForRes: false,
+            waitingForResponse: false,
         }
         this.interval = null;
         this.inputReference = React.createRef();
@@ -96,14 +96,14 @@ export default class ChatQAView extends BaseView {
                     this.interval = intervalId;
                 }
                 this.setState({
-                    waitingForRes: false,
+                    waitingForResponse: false,
                     fileUploading: this.completeUploading(msg.id),
                     uploading: false,
                 })
             } else {
                 this.snackBarFail(res)
                 this.setState({
-                    waitingForRes: false,
+                    waitingForResponse: false,
                     fileUploading: this.completeUploading(msg.id),
                     uploading: false
                 })
@@ -111,13 +111,13 @@ export default class ChatQAView extends BaseView {
         }).catch((error) => {
             this.snackBarError(error)
             this.setState({
-                waitingForRes: false,
+                waitingForResponse: false,
                 fileUploading: this.completeUploading(msg.id),
                 uploading: false
             })
         });
         this.setState({
-            waitingForRes: true,
+            waitingForResponse: true,
             fileUploading: this.startUploading(msg),
             uploading: true,
             uploadedFile: null,
@@ -178,7 +178,7 @@ export default class ChatQAView extends BaseView {
         }).catch((error) => {
             this.snackBarError(error)
             this.setState({
-                waitingForRes: false,
+                waitingForResponse: false,
                 uploading: false
             })
         });
@@ -212,14 +212,14 @@ export default class ChatQAView extends BaseView {
     getMsgUploadingState = (id) => {
         return this.state.fileUploading.get(id);
     }
-    
+
     resetFileInput = (e) => {
         e.target.value = null;
         this.setState({
             uploadedFile: null,
-        })        
+        })
     }
-    
+
     startUploading = (msg) => {
         let uploadingStateList = this.state.fileUploading;
         if (msg.type == "custom") {
@@ -227,11 +227,37 @@ export default class ChatQAView extends BaseView {
         }
         return uploadingStateList;
     }
-    
+
     completeUploading = (id) => {
         let uploadingStateList = this.state.fileUploading;
         uploadingStateList.set(id, false);
         return uploadingStateList;
+    }
+
+    clearSessionHistory = () => {
+        ls.remove("chatSessionId");
+        ls.remove("chatSessionHistory");
+        this.setState({
+            uploading: false,
+            fileUploading: new Map(),
+            sessionId: null,
+            messages: [
+                {
+                    id: 0,
+                    message: "Hi, this is Hyda Lab Chat Bot, what can I do for you?",
+                    sentTime: new Date().toDateString(),
+                    sender: "Bot",
+                    direction: "incoming",
+                    type: "text",
+                }
+            ],
+            waitingForResponse: false,
+        });
+        if (this.interval) {
+            clearInterval(this.interval)
+            this.interval = null;
+        }
+        this.createOrReuseSession();
     }
 
     askGPT = (msg) => {
@@ -259,7 +285,7 @@ export default class ChatQAView extends BaseView {
             // paste clean text at the cursor position
             range.insertNode(document.createTextNode(text));
             selection.collapseToEnd();
-            
+
             const editor = document.querySelector(".cs-message-input__content-editor");
             if (editor) {
                 // The value was inserted into the editor without changing the context state.
@@ -293,7 +319,7 @@ export default class ChatQAView extends BaseView {
 
     render() {
         const messages = this.state.messages
-        const waitingForRes = this.state.waitingForRes
+        const waitingForResponse = this.state.waitingForResponse
         const displayedMessages = []
 
         messages.forEach((msg) => {
@@ -308,8 +334,11 @@ export default class ChatQAView extends BaseView {
                             position: "single",
                             type: msg.type
                         }}>
-                            <Message.CustomContent>
-                                {msg.message}<br /><br />
+                            {msg.sender == 'Bot' ?
+                                (<Avatar src={"images/hydra_lab_logo.png"} name={"Bot"} />) :
+                                (<Avatar src={"/api/auth/getUserPhoto"} name={"User"} />)}
+                            < Message.CustomContent >
+                                {msg.message} < br /><br />
                                 <LoadingButton
                                     variant="contained"
                                     // className="pl-4 pr-4"
@@ -319,7 +348,7 @@ export default class ChatQAView extends BaseView {
                                     {currentLoading ? 'Uploading    ' : msg.uploadedFileName}
                                 </LoadingButton>
                             </Message.CustomContent>
-                        </Message>
+                        </Message >
                     );
                     break;
                 case 'text':
@@ -331,7 +360,11 @@ export default class ChatQAView extends BaseView {
                             direction: msg.direction,
                             position: "single",
                             type: msg.type
-                        }} />
+                        }}>
+                            {msg.sender == 'Bot' ?
+                                (<Avatar src={"images/hydra_lab_logo.png"} name={"Bot"} />) :
+                                (<Avatar src={"/api/auth/getUserPhoto"} name={"User"} />)}
+                        </Message>
                     );
                     break;
                 default:
@@ -367,18 +400,16 @@ export default class ChatQAView extends BaseView {
                             />
                         </Button>
                     </FormControl>
-                    {/* <LoadingButton style={{ margin: '10px 10px 10px auto', float: 'right' }}
+                    <Button style={{ margin: '10px 10px 10px auto', float: 'right' }}
                         variant="contained"
                         className="pl-4 pr-4"
                         disabled={false}
-                        loading={false}
                         loadingPosition="end"
-                        onClick={this.sendInputMessage}
-                        endIcon={<span className="material-icons-outlined">send</span>}>
-                        Run
-                    </LoadingButton> */}
+                        onClick={this.clearSessionHistory}>
+                        Clear Chat
+                    </Button>
                     <MessageInput style={{ margin: '5px auto auto', backgroundColor: '#fafafa' }} ref={this.inputReference}
-                        disabled={waitingForRes}
+                        disabled={waitingForResponse}
                         onPaste={this.getPlainText}
                         // onKeyDown={this.handleInputKeyPress}
                         placeholder="Type message here"
