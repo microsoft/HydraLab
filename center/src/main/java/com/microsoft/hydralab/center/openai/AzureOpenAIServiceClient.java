@@ -22,18 +22,19 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 public class AzureOpenAIServiceClient {
-    public static final String API_VERSION_CHAT = "2023-03-15-preview";
+    public static final String API_VERSION_CHAT = "2023-07-01-preview";
     public static final String API_VERSION_IMAGE = "2023-06-01-preview";
     public static final String API_VERSION_PROD = "2023-05-15";
     private final Logger logger = LoggerFactory.getLogger(AzureOpenAIServiceClient.class);
     private final String apiKey;
     private final String endpoint;
     private final String deployment;
-    OkHttpClient client = new OkHttpClient();
+    OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(100, TimeUnit.SECONDS).readTimeout(50, TimeUnit.SECONDS).build();
     private OpenAIClient azureClient = null;
 
     public AzureOpenAIServiceClient(String apiKey, String deployment, String endpoint) {
