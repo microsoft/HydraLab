@@ -36,7 +36,7 @@ export default class ChatQAView extends BaseView {
             uploading: false,
             fileUploading: new Map(), // {msgId: 1, state: true}
             sessionId: null,
-            messages: ls.get('chatSessionHistory') ? ls.get('chatSessionHistory') : [
+            messages: sessionStorage.getItem('chatSessionHistory') ? JSON.parse(sessionStorage.getItem('chatSessionHistory')) : [
                 {
                     id: 0,
                     message: "Hi, this is Hyda Lab Chat Bot, what can I do for you?",
@@ -84,6 +84,11 @@ export default class ChatQAView extends BaseView {
         this.handleNewMessage(msg)
         this.askGPT(msg.message).then(res => {
             if (res.data && res.data.code === 200) {
+                // any incoming message after clearing history shouldn't have any effect on state
+                if (this.state.sessionId !== res.data.content.sessionId) {
+                    return;
+                }
+
                 content = res.data.content.message;
                 this.handleIncomingMessage(content);
 
@@ -147,7 +152,7 @@ export default class ChatQAView extends BaseView {
             type: msg.type,
             uploadedFileName: msg.uploadedFileName,
         });
-        ls.set("chatSessionHistory", msgs)
+        sessionStorage.setItem("chatSessionHistory", JSON.stringify(msgs))
         this.setState({
             messages: msgs,
         });
@@ -185,7 +190,7 @@ export default class ChatQAView extends BaseView {
     }
 
     createOrReuseSession = () => {
-        let chatSessionId = ls.get("chatSessionId")
+        let chatSessionId = sessionStorage.getItem("chatSessionId")
         if (chatSessionId) {
             this.setState({
                 sessionId: chatSessionId
@@ -198,7 +203,7 @@ export default class ChatQAView extends BaseView {
                     this.setState({
                         sessionId: chatQASessionId
                     })
-                    ls.set("chatSessionId", chatQASessionId)
+                    sessionStorage.setItem("chatSessionId", chatQASessionId)
                     console.log("current session id for chat QA: " + chatQASessionId)
                 } else {
                     this.snackBarFail(res)
@@ -235,8 +240,8 @@ export default class ChatQAView extends BaseView {
     }
 
     clearSessionHistory = () => {
-        ls.remove("chatSessionId");
-        ls.remove("chatSessionHistory");
+        sessionStorage.removeItem("chatSessionId");
+        sessionStorage.removeItem("chatSessionHistory");
         this.setState({
             uploading: false,
             fileUploading: new Map(),
@@ -403,8 +408,7 @@ export default class ChatQAView extends BaseView {
                     <Button style={{ margin: '10px 10px 10px auto', float: 'right' }}
                         variant="contained"
                         className="pl-4 pr-4"
-                        disabled={false}
-                        loadingPosition="end"
+                        disabled={this.state.messages.length <= 1}
                         onClick={this.clearSessionHistory}>
                         Clear Chat
                     </Button>
