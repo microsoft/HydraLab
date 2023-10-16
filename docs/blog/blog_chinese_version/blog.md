@@ -8,7 +8,7 @@ https://github.com/microsoft/HydraLab/assets/26757995/b225b58e-4836-490c-a6fd-67
 
 ## Hydra Lab 的特性
 
-Hydra Lab 于 2022 年 12 月在 https://github.com/microsoft 下开源，半年多的时间就已经斩获近1000个Star，并在云测试（cloud-testing）标签下排名第一。除了设备管理，测试任务管理等基础功能外，Hydra Lab 还具备以下优势：
+Hydra Lab 于 2022 年 12 月在 https://github.com/microsoft 下开源，半年多的时间就已经斩获1000＋个Star，并在云测试（cloud-testing）标签下排名第一。除了设备管理，测试任务管理等基础功能外，Hydra Lab 还具备以下优势：
 
 - **可控**：得益于 Hydra Lab 的开源属性，用户可以构建一个可管理的、私有的 “Test Lab”测试实验室，类似于"Google Firebase Test Lab"或者云测、云真机平台，这避免了将带有调试信息的应用包，上传至第三方测试平台引发的信息泄露风险，可以更好地满足内部合规要求。
 - **通用**: Hydra Lab 设计之初不仅考虑到了单个设备测试的场景，还考虑到了需要同时用到多个设备的测试场景，例如跨设备办公类应用。因此 Hydra Lab 支持在Windows、Android、iOS 等类型设备上的单独测试，也支持这些设备之间的组合测试。
