@@ -83,6 +83,7 @@ public interface Const {
         String LLM_API_KEY = "openai_api_key";
         String LLM_API_BASE = "openai_api_base";
         String LLM_API_VERSION = "openai_api_version";
+        String CONFIG_FILE_NAME = "config.json";
     }
 
     interface ScreenRecoderConfig {
