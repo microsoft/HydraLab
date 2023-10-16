@@ -4,7 +4,7 @@
 package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.center.openai.QAGPTService;
+import com.microsoft.hydralab.center.openai.ChatQAService;
 import com.microsoft.hydralab.center.openai.data.ChatMessage;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
@@ -37,16 +37,16 @@ import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_FILE_BASE
 
 @RestController
 @RequestMapping
-public class QAGPTController {
+public class ChatQAController {
     @Resource
-    private QAGPTService qagptService;
+    private ChatQAService chatQAService;
     @Resource
     private AttachmentService attachmentService;
 
     //session create
-    @GetMapping("/api/qa/gpt/session")
+    @GetMapping("/api/chat/qa/session")
     public Result createSession() {
-        String sessionId = qagptService.createSession();
+        String sessionId = chatQAService.createSession();
         JSONObject result = new JSONObject();
         result.put("sessionId", sessionId);
         result.put("message", "Session created successfully!");
@@ -54,32 +54,32 @@ public class QAGPTController {
     }
 
     //session destroy
-    @GetMapping("/api/qa/gpt/session/destroy/{sessionId}")
+    @GetMapping("/api/chat/qa/session/destroy/{sessionId}")
     public Result destroySession(@PathVariable(value = "sessionId") String sessionId) {
-        qagptService.deleteSession(sessionId);
+        chatQAService.deleteSession(sessionId);
         return Result.ok("Session destroyed successfully!");
     }
 
     //ask question
-    @PostMapping(value = {"/api/qa/gpt/ask"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = {"/api/chat/qa/ask"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result askQuestion(@CurrentSecurityContext SysUser requestor,
                               @RequestHeader(HttpHeaders.HOST) String host,
                               @RequestParam(value = "sessionId") String sessionId,
                               @RequestParam(value = "question") String question,
                               @RequestParam(value = "appFile", required = false) MultipartFile appFile) {
-        if (!qagptService.isSessionExist(sessionId)) {
+        if (!chatQAService.isSessionExist(sessionId)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Session not exist!");
         }
         requestor.setHost(host);
 
-        QAGPTService.ChatQAResult result = qagptService.askQuestion(requestor, ChatMessage.Role.USER, sessionId, question);
+        ChatQAService.ChatQAResult result = chatQAService.askQuestion(requestor, ChatMessage.Role.USER, sessionId, question);
         //Save test app file to server if exist
         if (appFile != null && !appFile.isEmpty()) {
             String relativeParent = FileUtil.getPathForToday();
             try {
                 File tempAppFile = attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativeParent, false, null,
                         PkgUtil.FILE_SUFFIX.APK_FILE, PkgUtil.FILE_SUFFIX.IPA_FILE);
-                result = qagptService.saveAppFile(requestor, sessionId, tempAppFile);
+                result = chatQAService.saveAppFile(requestor, sessionId, tempAppFile);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
