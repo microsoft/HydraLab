@@ -55,8 +55,8 @@ import java.util.stream.Collectors;
  * @date 09/26/2023
  */
 @Service
-public class QAGPTService {
-    private final Logger logger = LoggerFactory.getLogger(QAGPTService.class);
+public class ChatQAService {
+    private final Logger logger = LoggerFactory.getLogger(ChatQAService.class);
     // session pool  id:queue
     private static Map<String, List<ChatMessage>> sessionPool = new HashMap<>();
 
@@ -99,8 +99,8 @@ public class QAGPTService {
             "how many round tested(the length of testUnitList), the test cost time of each round(displaySpentTime), " +
             "how about the test result(success) for each round, and the fileName and download url(cdnUrl) of the attachments. The TestTask is ";
 
-    public QAGPTService(ApplicationContext applicationContext) {
-        // GPTClient
+    public ChatQAService(ApplicationContext applicationContext) {
+        // Azure openai client
         AzureOpenaiConfig openaiConfig = applicationContext.getBean(Const.AzureOpenaiConfig.AZURE_OPENAI_CONFIG, AzureOpenaiConfig.class);
         if (openaiConfig.getApiKey() != null && openaiConfig.getDeployment() != null && openaiConfig.getEndpoint() != null) {
             this.oaiClient = new AzureOpenAIServiceClient(
