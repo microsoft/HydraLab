@@ -146,6 +146,7 @@ public class QAGPTService {
         logger.info("The answer is " + answerText);
         JSONObject answerJson = null;
         ChatQAResult result = new ChatQAResult();
+        result.setSessionId(sessionId);
         try {
             answerJson = JSONObject.parseObject(answerText);
             result.setSuccess(true);
@@ -181,6 +182,7 @@ public class QAGPTService {
             if (result.isSuccess()) {
                 sessionPool.get(sessionId).add(new ChatMessage(ChatMessage.Role.SYSTEM, result.getMessage()));
             }
+            result.setSessionId(sessionId);
         }
         return result;
     }
@@ -513,5 +515,6 @@ public class QAGPTService {
     public static class ChatQAResult {
         private boolean success;
         private String message;
+        private String sessionId;
     }
 }

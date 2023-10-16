@@ -69,16 +69,10 @@ public class SmartTestUtil {
         File smartTestFolder = new File(smartTestParam.getOutputFolder(), Const.SmartTestConfig.RESULT_FOLDER_NAME);
         Assert.isTrue(smartTestFolder.mkdir(), "create smartTestFolder failed");
         String res;
-        String[] runArgs = new String[9];
+        String[] runArgs = new String[3];
         runArgs[0] = "python";
         runArgs[1] = filePath;
-        runArgs[2] = smartTestParam.apkPath;
-        runArgs[3] = smartTestParam.deviceInfo;
-        runArgs[4] = smartTestParam.modelInfo;
-        runArgs[5] = smartTestParam.testSteps;
-        runArgs[6] = smartTestParam.stringTextFolder;
-        runArgs[7] = smartTestFolder.getAbsolutePath();
-        runArgs[8] = smartTestParam.llmInfo;
+        runArgs[2] = writeConfigFile(smartTestParam).getAbsolutePath();
 
         for (String tempArg : runArgs) {
             logger.info(tempArg);
@@ -99,6 +93,17 @@ public class SmartTestUtil {
         }
 
         return res;
+    }
+
+    // write config file
+    public File writeConfigFile(SmartTestParam smartTestParam) {
+        File configFile = new File(smartTestParam.getOutputFolder(), Const.SmartTestConfig.CONFIG_FILE_NAME);
+        try {
+            FileUtils.writeStringToFile(configFile, smartTestParam.toJSONString(), "UTF-8");
+        } catch (IOException e) {
+            log.warn("writeConfigFile error", e);
+        }
+        return configFile;
     }
 
     public JSONObject analysisRes(JSONObject data) {

@@ -14,11 +14,13 @@ import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.agent.LLMProperties;
 import com.microsoft.hydralab.common.entity.agent.SmartTestParam;
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.TestAppContext;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.PkgUtil;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
 import org.springframework.util.StringUtils;
@@ -54,6 +56,8 @@ public class SmartRunner extends TestRunner {
         testRun.setTotalCount(testTask.getDeviceTestCount());
         Logger logger = testRun.getLogger();
 
+        TestAppContext testAppContext = PkgUtil.getTestAppContext(testTask.getAppFile());
+
         /* start Record */
         startTools(testRunDevice, testTask, testRun, logger);
 
@@ -64,8 +68,10 @@ public class SmartRunner extends TestRunner {
 
         /* init smart_test arg */
         //TODO choose model before starting test task
-        SmartTestParam smartTestParam = new SmartTestParam(testTask.getAppFile().getAbsolutePath(), testRunDevice.getDeviceInfo(), "0", "0",
-                testTask.getMaxStepCount(), smartTestUtil.getFolderPath(), smartTestUtil.getStringFolderPath(), testRun.getResultFolder(), llmProperties);
+        SmartTestParam smartTestParam = new  SmartTestParam(testTask.getAppFile().getAbsolutePath(), testRunDevice.getDeviceInfo(), "0", "0",
+                testTask.getMaxStepCount(), smartTestUtil.getFolderPath(),
+                smartTestUtil.getStringFolderPath(), testRun.getResultFolder(),
+                llmProperties, testAppContext);
 
         for (int i = 1; i <= testTask.getDeviceTestCount(); i++) {
             checkTestTaskCancel(testTask);
