@@ -85,6 +85,7 @@ public class AppConfiguration {
         EnvCapabilityDiscoveryService envCapabilityDiscoveryService = new EnvCapabilityDiscoveryService();
         envCapabilityDiscoveryService.setEnableScan(true);
         envCapabilityDiscoveryService.discover();
+        logger.info("envCapabilityDiscoveryService discover is completed");
         return envCapabilityDiscoveryService;
     }
 
@@ -92,6 +93,7 @@ public class AppConfiguration {
     public AgentManagementService agentManagementService(StorageServiceClientProxy storageServiceClientProxy,
                                                          DeviceStatusListenerManager deviceStatusListenerManager,
                                                          EnvCapabilityDiscoveryService envCapabilityDiscoveryService) {
+        logger.info("start agentManagementService instantiation");
         AgentManagementService agentManagementService = new AgentManagementService();
         File testBaseDir = new File(appOptions.getTestCaseResultLocation());
         if (!testBaseDir.exists()) {
@@ -99,6 +101,8 @@ public class AppConfiguration {
                 throw new RuntimeException("agentManager dir.mkdirs() failed: " + testBaseDir);
             }
         }
+        logger.info("testBaseDir is created in {}", testBaseDir.getAbsolutePath());
+
         agentManagementService.setTestBaseDir(testBaseDir);
         File preAppDir = new File(appOptions.getPreAppStorageLocation());
         if (!preAppDir.exists()) {
@@ -106,6 +110,8 @@ public class AppConfiguration {
                 throw new RuntimeException("agentManager dir.mkdirs() failed: " + preAppDir);
             }
         }
+        logger.info("preAppDir is created in {}", preAppDir.getAbsolutePath());
+
         agentManagementService.setPreAppDir(preAppDir);
         agentManagementService.setPreInstallFailurePolicy(
                 shutdownIfFail ? Const.PreInstallFailurePolicy.SHUTDOWN : Const.PreInstallFailurePolicy.IGNORE);
@@ -127,6 +133,7 @@ public class AppConfiguration {
         agentManagementService.setEnvInfo(envCapabilityDiscoveryService.getEnvInfo());
         agentManagementService.setRegistryServer(registryServer);
 
+        logger.info("done with agentManagementService instantiation");
         return agentManagementService;
     }
 
