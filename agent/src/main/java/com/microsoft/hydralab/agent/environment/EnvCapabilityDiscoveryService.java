@@ -2,6 +2,7 @@ package com.microsoft.hydralab.agent.environment;
 
 import com.microsoft.hydralab.common.entity.agent.EnvCapability;
 import com.microsoft.hydralab.common.entity.agent.EnvInfo;
+import lombok.Getter;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -11,7 +12,9 @@ import java.util.Properties;
 
 public class EnvCapabilityDiscoveryService {
     Logger logger = org.slf4j.LoggerFactory.getLogger(EnvCapabilityDiscoveryService.class);
+    @Getter
     private final EnvInfo envInfo = new EnvInfo();
+    @Getter
     private EnvCapabilityScanner scanner;
 
     private boolean enableScan = false;
@@ -61,7 +64,4 @@ public class EnvCapabilityDiscoveryService {
         }
     }
 
-    public EnvInfo getEnvInfo() {
-        return envInfo;
-    }
 }

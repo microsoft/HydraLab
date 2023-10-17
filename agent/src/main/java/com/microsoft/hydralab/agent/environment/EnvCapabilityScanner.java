@@ -1,5 +1,6 @@
 package com.microsoft.hydralab.agent.environment;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.hydralab.common.entity.agent.EnvCapability;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,7 @@ public abstract class EnvCapabilityScanner {
     protected Map<String, String> systemEnv = System.getenv();
     static Pattern versionPattern = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+)");
     static final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
+    private static final long MAX_WAIT_TIME_SECONDS_GET_VERSION = 15;
 
     @SuppressWarnings("checkstyle:InterfaceIsType")
     public interface VariableNames {
@@ -78,22 +80,22 @@ public abstract class EnvCapabilityScanner {
         }
     }
 
-    private void extractAndParseVersionOutput(EnvCapability capability) throws IOException {
+    @VisibleForTesting
+    void extractAndParseVersionOutput(EnvCapability capability) throws IOException {
         logger.info("Will extractAndParseVersionOutput for {}, {}, {}", capability, capability.getFile().getAbsolutePath(), capability.getKeyword().getFetchVersionParam());
         Process process = Runtime.getRuntime().exec(new String[]{capability.getFile().getAbsolutePath(), capability.getKeyword().getFetchVersionParam()});
-        long maxWaitTime = 15;
         try (InputStream stdStream = process.getInputStream();
              InputStream errorStream = process.getErrorStream()) {
             // combine this in case that some output is provided through stdout and some through stderr
             String stdIO = null;
             try {
-                stdIO = readInputStreamWithTimeout(stdStream, maxWaitTime, TimeUnit.SECONDS);
+                stdIO = readInputStreamWithTimeout(stdStream, MAX_WAIT_TIME_SECONDS_GET_VERSION, TimeUnit.SECONDS);
             } catch (ExecutionException | TimeoutException e) {
                 logger.warn("extractAndParseVersionOutput Exception when getting stdIO of " + capability.getKeyword().name(), e);
             }
             String stdError = null;
             try {
-                stdError = readInputStreamWithTimeout(errorStream, maxWaitTime, TimeUnit.SECONDS);
+                stdError = readInputStreamWithTimeout(errorStream, MAX_WAIT_TIME_SECONDS_GET_VERSION, TimeUnit.SECONDS);
             } catch (ExecutionException | TimeoutException e) {
                 logger.warn("extractAndParseVersionOutput Exception when getting stdError of " + capability.getKeyword().name());
             }
@@ -123,7 +125,7 @@ public abstract class EnvCapabilityScanner {
         }
     }
 
-    public static String readInputStreamWithTimeout(InputStream is, long timeout, TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException {
+    static String readInputStreamWithTimeout(InputStream is, long timeout, TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException {
         Callable<String> readTask = () -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
                 StringBuilder result = new StringBuilder();
