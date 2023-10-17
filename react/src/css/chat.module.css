@@ -1,3 +1,9 @@
-:global(.cs-message-input__tools > button) {
+:global(.cs-message-input).chat-message-input {
+    margin: 5px auto auto;
+    background-color: #fafafa;
+    font-size: 1rem;
+}
+
+.chat-message-input :global(.cs-message-input__tools) > button {
     height: 100%
 }

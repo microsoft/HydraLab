@@ -22,14 +22,6 @@ let ls = require('local-storage');
 const taskStartMsgPrefix = "The task has queued or started and the taskID is ";
 
 export default class ChatQAView extends BaseView {
-    // todo: 
-    //  1. 第二次上传时如果cancel会报错（clear state）
-    //  2. uploading 状态无法单独控制，会同步动画
-    //  3. 输入问题：
-    //      disable 输入框改为 disable button & 回车发送
-    //      自定义button设法拿到input的内容
-    //      发送后清空input内容
-
     constructor(props) {
         super(props)
         this.state = {
@@ -415,7 +407,7 @@ export default class ChatQAView extends BaseView {
                         onClick={this.clearSessionHistory}>
                         Clear Chat
                     </Button>
-                    <MessageInput style={{ margin: '5px auto auto', backgroundColor: '#fafafa', fontSize: '1rem' }} ref={this.inputReference}
+                    <MessageInput className={chatStyle['chat-message-input']} ref={this.inputReference}
                         disabled={waitingForResponse}
                         onPaste={this.getPlainText}
                         // onKeyDown={this.handleInputKeyPress}
