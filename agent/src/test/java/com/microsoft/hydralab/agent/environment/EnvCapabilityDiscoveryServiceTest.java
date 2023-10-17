@@ -66,4 +66,5 @@ public class EnvCapabilityDiscoveryServiceTest {
                 envCapabilityRequirements);
         Assertions.assertFalse(agentManagementService.getFunctionAvailabilities().get(1).isAvailable());
     }
+
 }
