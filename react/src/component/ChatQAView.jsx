@@ -2,7 +2,8 @@
 // Licensed under the MIT License.
 
 import React, { useState } from 'react'
-import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
+import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
+import chatStyle from '../css/chat.module.css';
 import { Avatar, ConversationHeader, ChatContainer, InfoButton, Message, MessageList, TypingIndicator, MessageInput, MessageSeparator, InputToolbox, AttachmentButton, SendButton } from '@chatscope/chat-ui-kit-react'
 
 
@@ -318,8 +319,6 @@ export default class ChatQAView extends BaseView {
 
     componentDidMount() {
         this.createOrReuseSession();
-        const sendButton = document.querySelector(".cs-message-input__tools > button");
-        sendButton.setAttribute('style', 'height: 100%');
     }
 
     componentDidUpdate() {
