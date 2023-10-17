@@ -106,6 +106,7 @@ export default class ChatQAView extends BaseView {
                     uploading: false,
                 })
             } else {
+                console.log("Response code is not 200, res: ", res);
                 this.snackBarFail(res)
                 this.setState({
                     waitingForResponse: false,
@@ -114,6 +115,7 @@ export default class ChatQAView extends BaseView {
                 })
             }
         }).catch((error) => {
+            console.log("Exception occurred, error: ", error);
             this.snackBarError(error)
             this.setState({
                 waitingForResponse: false,
@@ -316,6 +318,8 @@ export default class ChatQAView extends BaseView {
 
     componentDidMount() {
         this.createOrReuseSession();
+        const sendButton = document.querySelector(".cs-message-input__tools > button");
+        sendButton.setAttribute('style', 'height: 100%');
     }
 
     componentDidUpdate() {
@@ -412,7 +416,7 @@ export default class ChatQAView extends BaseView {
                         onClick={this.clearSessionHistory}>
                         Clear Chat
                     </Button>
-                    <MessageInput style={{ margin: '5px auto auto', backgroundColor: '#fafafa' }} ref={this.inputReference}
+                    <MessageInput style={{ margin: '5px auto auto', backgroundColor: '#fafafa', fontSize: '1rem' }} ref={this.inputReference}
                         disabled={waitingForResponse}
                         onPaste={this.getPlainText}
                         // onKeyDown={this.handleInputKeyPress}
