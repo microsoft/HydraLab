@@ -192,7 +192,7 @@ export default class ChatQAView extends BaseView {
             })
         }
         else {
-            axios.get('/api/qa/gpt/session').then(res => {
+            axios.get('/api/chat/qa/session').then(res => {
                 if (res.data && res.data.code === 200) {
                     let chatQASessionId = res.data.content.sessionId;
                     this.setState({
@@ -266,7 +266,7 @@ export default class ChatQAView extends BaseView {
         formData.append("question", msg)
         formData.append("appFile", this.state.uploadedFile)
 
-        return axios.post('/api/qa/gpt/ask', formData, {
+        return axios.post('/api/chat/qa/ask', formData, {
             headers: {
                 Accept: 'application/json',
                 'content-type': 'multipart/form-data; ',
