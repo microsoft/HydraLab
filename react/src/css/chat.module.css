@@ -1,3 +1,8 @@
+.message__content-wrapper :global(.cs-message__content) {
+    white-space: normal;
+    background-color: #c6e3fa
+}
+
 :global(.cs-message-input).chat-message-input {
     margin: 5px auto auto;
     background-color: #fafafa;

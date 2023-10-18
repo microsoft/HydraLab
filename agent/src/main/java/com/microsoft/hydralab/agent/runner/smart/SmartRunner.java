@@ -21,7 +21,6 @@ import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.slf4j.Logger;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.util.List;
@@ -131,6 +130,7 @@ public class SmartRunner extends TestRunner {
         try {
             String resString = smartTestUtil.runPYFunction(smartTestParam, logger);
             Assert.notEmpty(resString, "Run Smart Test Failed!");
+            logger.info("Python script result string: " + resString);
             res = JSONObject.parseObject(resString);
             isSuccess = res.getBoolean(Const.SmartTestConfig.SUCCESS_TAG);
             crashStack = res.getJSONArray(Const.SmartTestConfig.APP_EXP_TAG);
@@ -140,14 +140,16 @@ public class SmartRunner extends TestRunner {
         }
         if (!isSuccess) {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
+            logger.info("Run smart test failed, isSuccess: " + isSuccess);
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(res.getString(Const.SmartTestConfig.TASK_EXP_TAG));
             performanceTestManagementService.testFailure(ongoingSmartTest.getTitle());
             testRun.addNewTimeTag(ongoingSmartTest.getTitle() + ".fail",
                     System.currentTimeMillis() - testRun.getTestStartTimeMillis());
             testRun.oneMoreFailure();
-        } else if (!StringUtils.isEmpty(crashStack)) {
+        } else if (crashStack != null && crashStack.size() > 0) {
             ongoingSmartTest.setStatusCode(AndroidTestUnit.StatusCodes.FAILURE);
+            logger.info("Crash stack is found:" + crashStack.toJSONString());
             ongoingSmartTest.setSuccess(false);
             ongoingSmartTest.setStack(crashStack.toJSONString());
             performanceTestManagementService.testFailure(ongoingSmartTest.getTitle());

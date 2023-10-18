@@ -1,24 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState } from 'react'
-import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
+import React, { useState } from 'react';
+import styles from '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import chatStyle from '../css/chat.module.css';
 import { Avatar, ConversationHeader, ChatContainer, InfoButton, Message, MessageList, TypingIndicator, MessageInput, MessageSeparator, InputToolbox, AttachmentButton, SendButton } from '@chatscope/chat-ui-kit-react'
 
 
-import axios from '@/axios'
+import axios from '@/axios';
 import FormControl from '@mui/material/FormControl';
 import Typography from '@material-ui/core/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 
-import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap/dist/css/bootstrap.css';
 import Button from '@mui/material/Button';
 import BaseView from "@/component/BaseView";
+import ReactMarkdown from 'react-markdown';
 
-// window.sessionStorage
-let ls = require('local-storage');
 const taskStartMsgPrefix = "The task has queued or started and the taskID is ";
 
 export default class ChatQAView extends BaseView {
@@ -37,7 +36,7 @@ export default class ChatQAView extends BaseView {
                     sender: "Bot",
                     direction: "incoming",
                     type: "text",
-                }
+                },
             ],
             waitingForResponse: false,
         }
@@ -249,7 +248,7 @@ export default class ChatQAView extends BaseView {
                     sender: "Bot",
                     direction: "incoming",
                     type: "text",
-                }
+                },
             ],
             waitingForResponse: false,
         });
@@ -327,7 +326,7 @@ export default class ChatQAView extends BaseView {
                 case 'custom':
                     let currentLoading = this.state.uploading && this.getMsgUploadingState(msg.id)
                     displayedMessages.push(
-                        <Message model={{
+                        <Message className={chatStyle['message__content-wrapper']} model={{
                             sentTime: msg.sentTime,
                             sender: msg.sender,
                             direction: msg.direction,
@@ -344,8 +343,8 @@ export default class ChatQAView extends BaseView {
                                     // className="pl-4 pr-4"
                                     loading={currentLoading}
                                     disabled
-                                    loadingPosition="end">
-                                    {currentLoading ? 'Uploading    ' : msg.uploadedFileName}
+                                    loadingPosition="center">
+                                    {currentLoading ? 'Uploading' : msg.uploadedFileName}
                                 </LoadingButton>
                             </Message.CustomContent>
                         </Message >
@@ -353,13 +352,13 @@ export default class ChatQAView extends BaseView {
                     break;
                 case 'text':
                     displayedMessages.push(
-                        <Message model={{
-                            message: msg.message,
+                        <Message className={chatStyle['message__content-wrapper']} model={{
+                            message: (<ReactMarkdown>{msg.message}</ReactMarkdown>),
                             sentTime: msg.sentTime,
                             sender: msg.sender,
                             direction: msg.direction,
                             position: "single",
-                            type: msg.type
+                            type: "custom"
                         }}>
                             {msg.sender == 'Bot' ?
                                 (<Avatar src={"images/hydra_lab_logo.png"} name={"Bot"} />) :
@@ -374,9 +373,9 @@ export default class ChatQAView extends BaseView {
 
         return <div >
             <Typography style={{ textAlign: 'center' }} variant="h4" className="m-3">
-                Chat QA
+                ChatQA
             </Typography>
-            <ChatContainer style={{ margin: 'auto', width: '70%', height: '850px', backgroundColor: '#fafafa' }}>
+            <ChatContainer style={{ margin: 'auto', width: '50%', height: '850px', backgroundColor: '#fafafa' }}>
                 <MessageList style={{ backgroundColor: '#fafafa', paddingTop: '10px', fontSize: '1rem' }}>
                     {displayedMessages}
                 </MessageList>
