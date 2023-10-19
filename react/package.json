@@ -32,6 +32,7 @@
     "webpack-dev-server": "^4.13.2"
   },
   "dependencies": {
+    "@chatscope/chat-ui-kit-react": "^1.10.1",
     "@emotion/react": "^11.8.1",
     "@emotion/styled": "^11.8.1",
     "@material-ui/core": "^4.11.2",
@@ -47,13 +48,14 @@
     "file-loader": "^6.2.0",
     "graphology": "^0.25.1",
     "graphology-gexf": "^0.10.3",
-    "graphology-layout-forceatlas2":"^0.8.1",
+    "graphology-layout-forceatlas2": "^0.8.1",
     "jquery": "^3.5.1",
     "local-storage": "^2.0.0",
     "prop-types": "^15.8.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-loading": "^2.0.3",
+    "react-markdown": "^8.0.7",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-select": "^5.2.2",

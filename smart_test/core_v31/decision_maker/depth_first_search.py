@@ -181,7 +181,7 @@ class SingleDeviceDFSDecisionMaker(DecisionMaker):
         pass
 
     def after_action(self):
-        time.sleep(5)
+        time.sleep(2)
 
     def save(self, output_dir):
         torch.save(self.page_group, os.path.join(output_dir, 'page_group.pt'))

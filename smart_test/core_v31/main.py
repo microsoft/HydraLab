@@ -130,7 +130,7 @@ class SmartTest:
                     and len(file_list) == 5 \
                     and os.path.getsize(os.path.join(output_dir, target_file_name)) > 0:
                 break
-            time.sleep(10)
+            time.sleep(8)
             wait_time -= 1
 
             if wait_time == 0:

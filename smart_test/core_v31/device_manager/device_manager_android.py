@@ -60,16 +60,11 @@ class DeviceManagerAndroid(DeviceManager):
             self.driver.install_app(self.application_info[index].path, replace=reinstall, grantPermissions=True)
 
         self.terminate_app()
-
-        # Wait for the app to be terminated
-        time.sleep(3)
-
         self.activate_app(index, wait_time)
+        time.sleep(8)
 
         if clear_log:
             os.system(f'adb -s {self.device_info.identifier} {adb_command.CLEAR_LOG}')
-
-        time.sleep(10)
 
     def get_page_source(self):
         return self.driver.page_source
@@ -213,16 +208,19 @@ class DeviceManagerAndroid(DeviceManager):
         else:
             logger.info(f'FAIL TO ACTIVATE {self.application_info[index].package_name}, TRY TO CLICK BACK.')
             self.driver.back()
+            time.sleep(1)
 
         return self.is_running_foreground()
 
     def terminate_app(self, timeout=5000):
         try:
             self.driver.terminate_app(self.application_info[0].package_name, timeout=timeout)
+            time.sleep(1)
         except Exception as exception:
             logger.info(exception)
             logger.info('TERMINATE APP FAILED, TRY INIT DRIVER WITH FORCE STOP.')
             self.driver = self.appium_driver_init()
+            time.sleep(2)
 
     def is_running_foreground(self):
         return self.driver.query_app_state(self.application_info[0].package_name) == app_state.RUNNING_IN_FOREGROUND
@@ -233,9 +231,9 @@ class DeviceManagerAndroid(DeviceManager):
             element.clear()
             element.click()
             element.send_keys(string)
-            time.sleep(1)
+            time.sleep(0.5)
             self.driver.press_keycode(66)
-            time.sleep(1)
+            time.sleep(0.5)
         except Exception as exception:
             logger.info(exception)
 
@@ -243,11 +241,11 @@ class DeviceManagerAndroid(DeviceManager):
         try:
             actions = TouchAction(self.driver)
             actions.tap(x=coordinate[0], y=coordinate[1]).perform()
-            time.sleep(1)
+            time.sleep(0.5)
             os.system(f'adb -s {self.device_info.identifier} shell input text "{string}"')
-            time.sleep(1)
+            time.sleep(0.5)
             self.driver.press_keycode(66)
-            time.sleep(1)
+            time.sleep(0.5)
         except Exception as exception:
             logger.info(exception)
 
