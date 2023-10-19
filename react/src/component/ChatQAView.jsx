@@ -48,14 +48,6 @@ export default class ChatQAView extends BaseView {
         console.log("FILE DOWNLOADING")
     }
 
-    // sendInputMessage = () => {
-    //     console.log(this.inputReference.current);
-    //     let content = "0";
-    //     if (content) {
-    //         this.sendMessage(content)
-    //     }
-    // }
-
     sendMessage = (content) => {
         console.log("OnSend message:", content)
         let msg = {
@@ -297,17 +289,6 @@ export default class ChatQAView extends BaseView {
         }
     }
 
-    // handleInputKeyPress = (event) => {
-    //     if (event.key == 'Enter') {        
-    //         let content = event.target.textContent;
-    //         console.log(event.target);
-    //         if (content) {
-    //             this.sendMessage(content);
-    //             // this.inputReference.current.reset();
-    //         }
-    //     }
-    // }
-
     componentDidMount() {
         this.createOrReuseSession();
     }
@@ -409,7 +390,6 @@ export default class ChatQAView extends BaseView {
                     <MessageInput className={chatStyle['chat-message-input']} ref={this.inputReference}
                         disabled={waitingForResponse}
                         onPaste={this.getPlainText}
-                        // onKeyDown={this.handleInputKeyPress}
                         placeholder="Type message here"
                         autoFocus={true}
                         sendButton={true}
