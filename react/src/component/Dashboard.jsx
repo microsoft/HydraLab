@@ -29,6 +29,7 @@ import Container from '@mui/material/Container';
 import axios from "@/axios";
 import TestJsonView from './TestJsonView';
 import TeamManagement from "@/component/TeamManagement";
+import ChatQAView from "@/component/ChatQAView";
 
 const drawerWidth = 240;
 
@@ -247,6 +248,12 @@ export default function Dashboard() {
                                 </ListItemIcon>
                                 <ListItemText primary="Team Management" />
                             </ListItem>
+                            <ListItem component={Link} to={'/qa'} button>
+                                <ListItemIcon>
+                                    <span className="material-icons-outlined">manage_accounts</span>
+                                </ListItemIcon>
+                                <ListItemText primary="Chat QA"/>
+                            </ListItem>
                             <ListItem component="a" href='https://github.com/microsoft/HydraLab/blob/main/README.md' target="_blank"
                                       rel="noopener noreferrer" button>
                                 <ListItemIcon>
@@ -255,11 +262,11 @@ export default function Dashboard() {
                                 <ListItemText primary="About"/>
                                 <iframe style={{margin: '6px 0px 0px 0px'}}
                                         src="https://ghbtns.com/github-btn.html?user=microsoft&repo=HydraLab&type=star&count=true"
-                                        frameBorder="0" scrolling="0" align="right" width="90" height="25" title="GitHub"></iframe>
+                                        frameBorder="0" scrolling="0" align="right" width="100" height="25" title="GitHub"></iframe>
                             </ListItem>
                             <ListItem
                                 style={{
-                                    height: "calc(100vh - 561px)",
+                                    height: "calc(100vh - 610px)",
                                     pointerEvents: "none"
                                 }}>
                             </ListItem>
@@ -312,6 +319,9 @@ export default function Dashboard() {
                                             </Route> */}
                                             <Route exact path="/team">
                                                 <TeamManagement />
+                                            </Route>
+                                            <Route exact path="/qa">
+                                                <ChatQAView />
                                             </Route>
                                             <Route path="/info/:type/:id" children={<Child/>}/>
                                         </Switch>

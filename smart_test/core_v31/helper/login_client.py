@@ -50,8 +50,8 @@ class MicrosoftLoginClient:
             element.clear()
             element.click()
             element.send_keys(string)
-            time.sleep(1)
+            time.sleep(0.5)
             self.driver.press_keycode(66)
-            time.sleep(1)
+            time.sleep(0.5)
         except Exception as e:
             logger.error(e)
