@@ -92,7 +92,6 @@ public class ChatQAService {
             "3.checkRes:whether all of the required parameters are provided values, fill it with true or false. If the size of required parameters is 0, fill it with true\n" +
             "4.message: the content you want to talk to user in markdown format. You need to summarize the parameters:" +
             " which is provided, which is default and which has not provided. The top level of markdown title should be 4. " +
-            "if (line.startWith(\"- appFile: \")) {remove the line}\n" +
             "There tasks are listed as below:\n" + getAllUserIntentionType() +
             "By the way, the appFile should be provided by system role and other value should be provided by user role.\n" +
             "Don’t extrapolate values from thin air, if you don't know the value fill it with null.\n" +
