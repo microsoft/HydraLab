@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -86,15 +87,19 @@ public class ChatQAService {
             "whether all of the required parameters of a task are provided. You need to return the result in JSONObject format and do not add any other information." +
             "There are 4 keys in the JSONObject.\n" +
             "1.taskType: the task of the user wants to perform, if you can't determine please set as none.\n" +
-            "2.checkRes:whether all of the required parameters are provided, fill it with true or false. If the size of required parameter is 0, fill it with true\n" +
-            "3.requiredParams: the key value pair of requiredParams like deviceTestCount:10\n" +
-            "4.message: the content you want to talk to user. This value could not be empty.\n" +
+            "2.requiredParams: the name and value of required parameters like deviceTestCount:10. " +
+            "The value can be filled with the default value that is provided. The value could not be null or empty. \n" +
+            "3.checkRes:whether all of the required parameters are provided values, fill it with true or false. If the size of required parameters is 0, fill it with true\n" +
+            "4.message: the content you want to talk to user in markdown format. You need to summarize the parameters:" +
+            " which is provided, which is default and which has not provided. The top level of markdown title should be 4. " +
+            "if (line.startWith(\"- appFile: \")) {remove the line}\n" +
             "There tasks are listed as below:\n" + getAllUserIntentionType() +
             "By the way, the appFile should be provided by system role and other value should be provided by user role.\n" +
             "Don’t extrapolate values from thin air, if you don't know the value fill it with null.\n" +
             "You can ask the user questions to determine the user's intention and ask the user to provide the information you need to complete the task.";
     static final String ANALYSIS_RESULT_PROMPT = "You are an AI assistant that can analysis the report of TestTask. " +
-            "I will provide you the JSON format data and you need to transfer it to a human readable format. " +
+            "I will provide you the JSON format data and you need to transfer it to a human readable markdown format. " +
+            "The top level of markdown title should be 4." +
             "You need to tell me the front page of the report(reportPage), the test was run in which device(deviceName), " +
             "how many round tested(the length of testUnitList), the test cost time of each round(displaySpentTime), " +
             "how about the test result(success) for each round, and the fileName and download url(cdnUrl) of the attachments. The TestTask is ";
@@ -119,7 +124,7 @@ public class ChatQAService {
         sessionPool.get(sessionID).add(
                 new ChatMessage(ChatMessage.Role.ASSISTANT,
                         "{\n  \"taskType\": \"none\",\n  \"checkRes\": false,\n  \"requiredParams\": {},\n  " +
-                                "\"message\": \"What task would you like to perform? Please specify if it is a run task or a query task.\"\n}"
+                                "\"message\": \"What task would you like to perform? You can choose from RUN, QUERY, ANALYSIS_PERFORMANCE, or DEVICE.\"\n}"
                 ));
         return sessionID;
     }
@@ -221,7 +226,7 @@ public class ChatQAService {
         testTaskSpec.deviceIdentifier = params.getString("deviceIdentifier");
         testTaskSpec.maxStepCount = params.getInteger("maxStepCount");
         testTaskSpec.deviceTestCount = params.getInteger("deviceTestCount");
-        testTaskSpec.runningType = TestTask.TestRunningType.MONKEY_TEST;
+        testTaskSpec.runningType = TestTask.TestRunningType.SMART_TEST;
         testTaskSpec.pkgName = testFileSet.getPackageName();
         testTaskSpec.testSuiteClass = testFileSet.getPackageName();
         testTaskSpec.enablePerformanceSuggestion = true;
@@ -439,18 +444,18 @@ public class ChatQAService {
     @Getter
     public enum UserIntentionType {
         RUN("start a test task", new Parameter[]{
-                new Parameter("maxStepCount", "The number of steps during testing", true),
-                new Parameter("deviceTestCount", "The total rounds of testing", true),
-                new Parameter("appFile", "The install package of the app to be tested, format as D:/Git/Hydra-Lab/storage.", true),
-                new Parameter("deviceIdentifier", "The identifier/name/id of device which is used to run task.", true),
+                new Parameter("maxStepCount", "500", "The number of steps during testing", true),
+                new Parameter("deviceTestCount", "1", "The total rounds of testing", true),
+                new Parameter("appFile", "", "The install package of the app to be tested, format as D:/Git/Hydra-Lab/storage.", true),
+                new Parameter("deviceIdentifier", "", "The identifier/name/id of device which is used to run task.", true)
         }),
         QUERY("query the result of test task", new Parameter[]{
-                new Parameter("taskID",
-                        "The test task ID that can be provided by user or system. As long as one party provides it, the verification is passed.", true),
+                new Parameter("taskID", "",
+                        "The id of test task and can be provided by user or system.", true),
         }),
         ANALYSIS_PERFORMANCE("analysis the performance of test task", new Parameter[]{
-                new Parameter("taskID",
-                        "The test task ID that can be provided by user or system. As long as one party provides it, the verification is passed.", true),
+                new Parameter("taskID", "",
+                        "The id of test task and can be provided by user or system.", true),
         }),
         /*ANALYSIS_ERROR("analysis the error of test task", new Parameter[]{
                 new Parameter("taskID",
@@ -497,17 +502,21 @@ public class ChatQAService {
     @Data
     public static class Parameter {
         private String name;
+        private String defaultValue;
         private String description;
         private Boolean isRequired;
 
-        public Parameter(String name, String description, Boolean isRequired) {
+        public Parameter(String name, String defaultValue, String description, Boolean isRequired) {
             this.name = name;
+            this.defaultValue = defaultValue;
             this.description = description;
             this.isRequired = isRequired;
         }
 
         public String toString() {
-            return "The parameter " + name + " is used to simplify " + description + ". And it is " + (isRequired ? "required" : "not required") + ".";
+            return "The parameter " + name + " is used to simplify " + description + ". It is " + (isRequired ? "required" : "not required")
+                    + (!StringUtils.isEmpty(defaultValue)?". The default is "+ defaultValue:"")
+                    +".\n";
         }
     }
 

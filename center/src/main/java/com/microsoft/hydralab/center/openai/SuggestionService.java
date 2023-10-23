@@ -23,6 +23,7 @@ import com.microsoft.hydralab.performance.entity.IOSEnergyGaugeInfo;
 import com.microsoft.hydralab.performance.entity.IOSMemoryPerfInfo;
 import com.microsoft.hydralab.performance.entity.WindowsBatteryParsedData;
 import com.microsoft.hydralab.performance.entity.WindowsMemoryParsedData;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,8 +36,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.context.ApplicationContext;
 
 import static com.microsoft.hydralab.center.util.CenterConstant.CENTER_TEMP_FILE_DIR;
 
@@ -90,9 +89,11 @@ public class SuggestionService {
         List<PerformanceTestResult> performanceTestResult = null;
 
         String fileId = "";
+        StorageFileInfo perfBlobFile = null;
         for (StorageFileInfo f : testRun.getAttachments()) {
             if (f.getFileName().contains(Const.PerformanceConfig.DEFAULT_FILE_NAME)) {
                 fileId = f.getFileId();
+                perfBlobFile = f;
                 break;
             }
         }
@@ -100,7 +101,6 @@ public class SuggestionService {
             return null;
         }
 
-        StorageFileInfo perfBlobFile = storageFileInfoRepository.findById(fileId).orElse(null);
         if (perfBlobFile == null) {
             throw new HydraLabRuntimeException("Graph zip file not exist!");
         }
