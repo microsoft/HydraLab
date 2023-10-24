@@ -90,9 +90,11 @@ public class SuggestionService {
         List<PerformanceTestResult> performanceTestResult = null;
 
         String fileId = "";
+        StorageFileInfo perfBlobFile = null;
         for (StorageFileInfo f : testRun.getAttachments()) {
             if (f.getFileName().contains(Const.PerformanceConfig.DEFAULT_FILE_NAME)) {
                 fileId = f.getFileId();
+                perfBlobFile = f;
                 break;
             }
         }
@@ -100,7 +102,6 @@ public class SuggestionService {
             return null;
         }
 
-        StorageFileInfo perfBlobFile = storageFileInfoRepository.findById(fileId).orElse(null);
         if (perfBlobFile == null) {
             throw new HydraLabRuntimeException("Graph zip file not exist!");
         }
