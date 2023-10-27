@@ -209,6 +209,7 @@ public class TestTask implements Serializable {
         testTaskSpec.deviceActions = testTask.getDeviceActions();
         testTaskSpec.instrumentationArgs = testTask.getInstrumentationArgs();
         testTaskSpec.runningType = testTask.getRunningType();
+        testTaskSpec.testPlan = testTask.getTestPlan();
         testTaskSpec.maxStepCount = testTask.getMaxStepCount();
         testTaskSpec.deviceTestCount = testTask.getDeviceTestCount();
         testTaskSpec.pipelineLink = testTask.getPipelineLink();
