@@ -190,7 +190,7 @@ public class TestTaskService {
         }
     }
 
-    private void checkDeviceTeamConsistency(String deviceIdentifier, String teamId, String accessKey) {
+    public void checkDeviceTeamConsistency(String deviceIdentifier, String teamId, String accessKey) {
         DeviceInfo device = deviceAgentManagementService.getDevice(deviceIdentifier);
         if (device == null) {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Didn't find device with given deviceIdentifier!");

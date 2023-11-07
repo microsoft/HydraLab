@@ -8,6 +8,7 @@ import com.microsoft.hydralab.center.service.DeviceAgentManagementService;
 import com.microsoft.hydralab.center.service.DeviceGroupService;
 import com.microsoft.hydralab.center.service.SysTeamService;
 import com.microsoft.hydralab.center.service.SysUserService;
+import com.microsoft.hydralab.center.service.TestTaskService;
 import com.microsoft.hydralab.center.service.UserTeamManagementService;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.DeviceGroup;
@@ -38,6 +39,8 @@ public class DeviceGroupController {
     DeviceGroupService deviceGroupService;
     @Resource
     DeviceAgentManagementService deviceAgentManagementService;
+    @Resource
+    TestTaskService testTaskService;
     @Resource
     private SysTeamService sysTeamService;
     @Resource
@@ -201,8 +204,8 @@ public class DeviceGroupController {
             if (!deviceAgentManagementService.checkDeviceInfo(deviceSerial)) {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "DeviceSerial is incorrect");
             }
-
-            deviceAgentManagementService.addDeviceToGroup(groupName, deviceSerial, accessKey);
+            testTaskService.checkDeviceTeamConsistency(deviceSerial, requestor.getDefaultTeamId(), accessKey);
+            deviceAgentManagementService.addDeviceToGroup(groupName, deviceSerial);
             DeviceGroupRelation deviceGroupRelation = deviceGroupService.saveRelation(groupName, deviceSerial);
             return Result.ok(deviceGroupRelation);
         } catch (IllegalArgumentException e) {
