@@ -496,15 +496,6 @@ public class DeviceAgentManagementService {
         return new HashSet<>(deviceInfo.getDeviceGroup());
     }
 
-    //add group&device relation and check device access
-    public void addDeviceToGroup(String group, String serialNum, String accessKey) {
-        DeviceInfo device = deviceListMap.get(serialNum);
-        if (device.getIsPrivate()) {
-            checkAccessInfo(serialNum, accessKey);
-        }
-        addDeviceToGroup(group, serialNum);
-    }
-
     //delete group&device relation
     public void deleteDeviceFromGroup(String group, String serialNum) {
         Set<String> serials = deviceGroupListMap.get(group);
