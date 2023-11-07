@@ -79,6 +79,9 @@ object ToNetworkQueueWorker : Runnable {
 
                 val packet = Packet(byteBuffer)
                 packet.rDns()
+                if (packet.ip4Header.protocolNum == 128.toShort()) {
+                    continue
+                }
                 vpnLogger.log(packet)
                 if (packet.isUDP) {
                     deviceToNetworkUDPQueue.offer(packet)

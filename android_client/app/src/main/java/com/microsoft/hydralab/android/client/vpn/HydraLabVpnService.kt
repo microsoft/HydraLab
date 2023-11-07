@@ -87,7 +87,7 @@ class HydraLabVpnService : VpnService() {
         return builder
             .addAddress("10.0.0.2", 32)
             .addRoute("0.0.0.0", 0)
-            .addDnsServer(config.dnsServer)
+            //.addDnsServer(config.dnsServer)
             .setSession("HydraLabVPN")
             .setBlocking(true)
             .setConfigureIntent(mConfigureIntent)
