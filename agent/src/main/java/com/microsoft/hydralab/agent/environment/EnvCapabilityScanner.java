@@ -1,7 +1,7 @@
 package com.microsoft.hydralab.agent.environment;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.microsoft.hydralab.common.entity.agent.EnvCapability;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -16,14 +17,22 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class EnvCapabilityScanner {
-    Logger logger = org.slf4j.LoggerFactory.getLogger(EnvCapabilityScanner.class);
+    static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(EnvCapabilityScanner.class);
     protected Map<String, String> systemEnv = System.getenv();
     static Pattern versionPattern = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+)");
+    static final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
+    private static final long MAX_WAIT_TIME_SECONDS_GET_VERSION = 15;
 
     @SuppressWarnings("checkstyle:InterfaceIsType")
     public interface VariableNames {
@@ -41,10 +50,12 @@ public abstract class EnvCapabilityScanner {
             if (!systemEnv.containsKey(scanVariable)) {
                 continue;
             }
-            logger.info("Scan system variable {} with value {}", scanVariable, systemEnv.get(scanVariable));
+            LOGGER.info("Scan system variable {} with value {}", scanVariable, systemEnv.get(scanVariable));
         }
 
+        LOGGER.info("start scanning capabilities");
         ArrayList<File> files = scanPathExecutables(getPathVariableName());
+        LOGGER.info("Completed scanning capabilities, {}", files);
         List<EnvCapability> capabilities = createCapabilities(files);
         scanCapabilityVersion(capabilities);
         return capabilities;
@@ -69,17 +80,35 @@ public abstract class EnvCapabilityScanner {
         }
     }
 
-    private void extractAndParseVersionOutput(EnvCapability capability) throws IOException {
+    @VisibleForTesting
+    void extractAndParseVersionOutput(EnvCapability capability) throws IOException {
+        LOGGER.info("Will extractAndParseVersionOutput for {}, {}, {}", capability, capability.getFile().getAbsolutePath(), capability.getKeyword().getFetchVersionParam());
         Process process = Runtime.getRuntime().exec(new String[]{capability.getFile().getAbsolutePath(), capability.getKeyword().getFetchVersionParam()});
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
-             BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
+        try (InputStream stdStream = process.getInputStream();
+             InputStream errorStream = process.getErrorStream()) {
             // combine this in case that some output is provided through stdout and some through stderr
+            String stdIO = null;
+            try {
+                stdIO = readInputStreamWithTimeout(stdStream, MAX_WAIT_TIME_SECONDS_GET_VERSION, TimeUnit.SECONDS);
+            } catch (ExecutionException e) {
+                LOGGER.warn("extractAndParseVersionOutput Exception when getting stdIO of " + capability.getKeyword().name(), e);
+            }
+            String stdError = null;
+            try {
+                stdError = readInputStreamWithTimeout(errorStream, MAX_WAIT_TIME_SECONDS_GET_VERSION, TimeUnit.SECONDS);
+            } catch (ExecutionException e) {
+                LOGGER.warn("extractAndParseVersionOutput Exception when getting stdError of " + capability.getKeyword().name());
+            }
+
             String versionOutput = String.format("Standard Output: %s\nError Output: %s",
-                    StringUtils.trim(IOUtils.toString(reader)),
-                    StringUtils.trim(IOUtils.toString(error)));
+                    StringUtils.trim(stdIO),
+                    StringUtils.trim(stdError));
+
+            LOGGER.info("extractAndParseVersionOutput versionOutput: {}", versionOutput);
+
             boolean exited = process.waitFor(5, TimeUnit.SECONDS);
             if (!exited) {
-                logger.warn("Failed to get version of " + capability.getKeyword().name());
+                LOGGER.warn("Failed to get version of " + capability.getKeyword().name());
             }
             capability.getKeyword().setVersionOutput(versionOutput);
 
@@ -87,12 +116,38 @@ public abstract class EnvCapabilityScanner {
             if (matcher.find()) {
                 capability.setVersion(matcher.group());
             } else {
-                logger.warn("Failed to get version of " + capability.getKeyword().name() + " in " + versionOutput);
+                LOGGER.warn("Failed to get version of " + capability.getKeyword().name() + " in " + versionOutput);
             }
         } catch (InterruptedException e) {
-            logger.error("Failed to get version of " + capability.getKeyword().name() + " at " + capability.getFile().getAbsolutePath(), e);
+            LOGGER.error("Failed to get version of " + capability.getKeyword().name() + " at " + capability.getFile().getAbsolutePath(), e);
         } finally {
             process.destroy();
+        }
+    }
+
+    static String readInputStreamWithTimeout(InputStream is, long timeout, TimeUnit unit) throws ExecutionException, InterruptedException {
+        StringBuilder result = new StringBuilder();
+        Callable<String> readTask = () -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    result.append(line).append("\n");
+                }
+                return result.toString();
+            }
+        };
+
+        FutureTask<String> futureTask = new FutureTask<>(readTask);
+        EXECUTOR_SERVICE.execute(futureTask);
+
+        try {
+            return futureTask.get(timeout, unit);
+        } catch (TimeoutException e) {
+            String resultString = result.toString();
+            LOGGER.warn("TimeoutException when getting resultString: " + resultString, e);
+            return resultString;
+        } finally {
+            futureTask.cancel(true);
         }
     }
 
@@ -104,6 +159,7 @@ public abstract class EnvCapabilityScanner {
         if (listOfFiles == null) {
             return null;
         }
+        LOGGER.info("Scanning path {} with a count of {}", path, listOfFiles.length);
         ArrayList<File> files = new ArrayList<>();
         for (File file : listOfFiles) {
             if (isExecutable(file)) {
@@ -134,6 +190,7 @@ public abstract class EnvCapabilityScanner {
         }
         String[] paths = path.split(getPathVariableSeparator());
         // System.out.println(JSON.toJSONString(Arrays.asList(paths)));
+        LOGGER.info("Scanning paths with a count of {}: {}", paths.length, Arrays.asList(paths));
         ArrayList<File> files = new ArrayList<>();
         for (String p : paths) {
             List<File> executableFiles = listExecutableFiles(p);
