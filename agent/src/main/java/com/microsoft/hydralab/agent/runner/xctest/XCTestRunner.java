@@ -16,6 +16,9 @@ import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.NotFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -100,12 +103,22 @@ public class XCTestRunner extends TestRunner {
         } else {
             commFormat = "xcodebuild test-without-building" + argString;
         }
-        File xctestrun = getXctestrunFile(new File(testRun.getResultFolder().getAbsolutePath(), Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME));
-        if (xctestrun == null) {
-            throw new RuntimeException("xctestrun file not found");
-        }
 
-        commFormat += " -xctestrun " + xctestrun.getAbsolutePath();
+        File xctestproducts = getXctestproductsFile(new File(testRun.getResultFolder().getAbsolutePath(), Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME));
+        if (xctestproducts != null) {
+            commFormat += " -testProductsPath " + xctestproducts.getAbsolutePath();
+
+            if (StringUtils.isNotBlank(testTask.getTestPlan())) {
+                commFormat += " -testPlan " + testTask.getTestPlan();
+            }
+        } else {
+            File xctestrun = getXctestrunFile(new File(testRun.getResultFolder().getAbsolutePath(), Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME));
+            if (xctestrun == null) {
+                throw new RuntimeException("xctestrun file not found");
+            }
+
+            commFormat += " -xctestrun " + xctestrun.getAbsolutePath();
+        }
 
         String deviceId = "id=" + testRunDevice.getDeviceInfo().getDeviceId();
         String resultPath = testRun.getResultFolder().getAbsolutePath()
@@ -138,6 +151,20 @@ public class XCTestRunner extends TestRunner {
         Collection<File> files = FileUtils.listFiles(unzippedFolder, null, true);
         for (File file : files) {
             if (file.getAbsolutePath().endsWith(".xctestrun")
+                    && !file.getAbsolutePath().contains("__MACOSX")) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    private File getXctestproductsFile(File unzippedFolder) {
+        Collection<File> files = FileUtils.listFilesAndDirs(unzippedFolder,
+                new NotFileFilter(TrueFileFilter.INSTANCE),
+                DirectoryFileFilter.DIRECTORY);
+        for (File file : files) {
+            if (file.getAbsolutePath().endsWith(".xctestproducts")
+                    && file.isDirectory()
                     && !file.getAbsolutePath().contains("__MACOSX")) {
                 return file;
             }

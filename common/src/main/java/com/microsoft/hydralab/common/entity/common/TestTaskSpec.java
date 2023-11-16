@@ -36,6 +36,7 @@ public class TestTaskSpec {
     public Map<String, String> testRunArgs;
     public Set<String> agentIds = new HashSet<>();
     public String runningType;
+    public String testPlan;
     public int maxStepCount = 100;
     public int deviceTestCount = 1;
     public String pipelineLink;
