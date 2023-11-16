@@ -103,7 +103,7 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
             exception.printStackTrace();
         }
         logger.info("Start gif frames collection");
-        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), runName + ".gif");
+        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
     }
 
     private void infoLogEnter(Object... args) {

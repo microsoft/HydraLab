@@ -189,7 +189,7 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         }
 
         testRun.setResultFolder(testRunResultFolder);
-        Logger loggerForTestRun = createLoggerForTestRun(testRun, testTask.getTestSuite(), parentLogger);
+        Logger loggerForTestRun = createLoggerForTestRun(testRun, testTask.getPkgName(), parentLogger);
         testRun.setLogger(loggerForTestRun);
         testTask.addTestedDeviceResult(testRun);
         return testRun;
