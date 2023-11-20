@@ -467,8 +467,11 @@ class TasksView extends BaseView {
                 <span className='badge badge-success'
                       style={{fontSize: 16}}>Queue Position : {task.queuedInfo[0]}</span>
             </TableCell>
-            <TableCell id={task.testTaskSpec.testTaskId} align="center">
-                {task.testTaskSpec.testSuiteClass}
+            <TableCell id={task.testTaskSpec.testTaskId} align="center" style={{maxWidth: '400px'}}>
+                {task.testTaskSpec.testSuiteClass.length > 100 ? task.testTaskSpec.testSuiteClass.substring(0, 100) + '...' : task.testTaskSpec.testSuiteClass}
+                <IconButton onClick={() => this.copyContent(task.testTaskSpec.testSuiteClass)}>
+                        <span className="material-icons-outlined">content_copy</span>
+                </IconButton>
             </TableCell>
             <TableCell id={task.testTaskSpec.testTaskId} align="center">
                 {this.getTestType(task.testTaskSpec)}
@@ -495,8 +498,11 @@ class TasksView extends BaseView {
                     {moment(task.startDate).format('yyyy-MM-DD HH:mm:ss')} <span
                     className='badge badge-success'>Running</span>
                 </TableCell>
-                <TableCell id={task.id} align="center">
-                    {task.testSuite}
+                <TableCell id={task.id} align="center" style={{maxWidth: '400px'}}>
+                    {task.testSuite.length > 100 ? task.testSuite.substring(0, 100) + '...' : task.testSuite}
+                    <IconButton onClick={() => this.copyContent(task.testSuite)}>
+                            <span className="material-icons-outlined">content_copy</span>
+                    </IconButton>
                 </TableCell>
                 <TableCell id={task.id} align="center">
                     {this.getTestType(task)}
