@@ -392,4 +392,13 @@ public class TestRunDeviceOrchestrator {
         }
         return exceptions;
     }
+
+    public void rebootDeviceIfNeeded(TestRunDevice testRunDevice, Logger logger) {
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            ((TestRunDeviceCombo) testRunDevice).getDevices()
+                    .forEach(testRunDevice1 -> deviceDriverManager.rebootDeviceIfNeeded(testRunDevice1.getDeviceInfo(), logger));
+        } else {
+            deviceDriverManager.rebootDeviceIfNeeded(testRunDevice.getDeviceInfo(), logger);
+        }
+    }
 }

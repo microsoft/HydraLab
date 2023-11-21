@@ -48,6 +48,9 @@ app:
     name: ${AGENT_NAME:default}
   # Device Stability Monitor Configuration
   device:
+    auto-reboot:
+      android:
+        cron: '-'
     monitor:
       windows:
         enabled: false

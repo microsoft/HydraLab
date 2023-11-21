@@ -6,6 +6,7 @@ package com.microsoft.hydralab.agent.scheduled;
 import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.agent.service.DeviceControlService;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.util.DateUtil;
 import com.microsoft.hydralab.common.util.FileUtil;
 import org.slf4j.Logger;
@@ -48,6 +49,12 @@ public class ScheduledDeviceControlTasks {
         clearFile(appOptions.getTestCaseResultLocation());
         logger.info("schedule clean error output");
         clearFile(appOptions.getErrorStorageLocation());
+    }
+
+    @Scheduled(cron = "${app.device.auto-reboot.android.cron}")
+    public void scheduleRestartDevice() {
+        logger.info("schedule reboot android device");
+        deviceControlService.rebootDevices(DeviceType.ANDROID);
     }
 
     public void clearFile(String folderPath) {

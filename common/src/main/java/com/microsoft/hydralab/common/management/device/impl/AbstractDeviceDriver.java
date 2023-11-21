@@ -30,6 +30,8 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -37,6 +39,7 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
     static final Logger classLogger = LoggerFactory.getLogger(AbstractDeviceDriver.class);
     protected AgentManagementService agentManagementService;
     protected AppiumServerManager appiumServerManager;
+    protected ConcurrentMap<String, Boolean> rebootDeviceMap = new ConcurrentHashMap<>();
 
     public AbstractDeviceDriver(AgentManagementService agentManagementService,
                                 AppiumServerManager appiumServerManager) {
@@ -195,4 +198,23 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
         }
         ShellUtils.execLocalCommand(newCommand, logger);
     }
+
+    public void rebootDeviceAsync(DeviceInfo deviceInfo, Logger logger) {
+        if (DeviceInfo.TESTING.equals(deviceInfo.getStatus())) {
+            logger.info("Device {} is testing, will reboot after test finished", deviceInfo.getSerialNum());
+            rebootDeviceMap.put(deviceInfo.getSerialNum(), true);
+        } else {
+            rebootDevice(deviceInfo, logger);
+        }
+    }
+
+    public void rebootDeviceIfNeeded(DeviceInfo deviceInfo, Logger logger) {
+        if (rebootDeviceMap.containsKey(deviceInfo.getSerialNum())) {
+            logger.info("Device {} need to reboot, will reboot it", deviceInfo.getSerialNum());
+            rebootDevice(deviceInfo, logger);
+            rebootDeviceMap.remove(deviceInfo.getSerialNum());
+        }
+    }
+
+    abstract public void rebootDevice(DeviceInfo deviceInfo, Logger logger);
 }

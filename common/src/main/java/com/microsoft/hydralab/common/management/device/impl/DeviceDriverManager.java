@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -215,5 +217,15 @@ public class DeviceDriverManager implements DeviceDriver {
     public AppiumServerManager getAppiumServerManager() {
         ArrayList<DeviceType> keys = new ArrayList<>(deviceDriverMap.keySet());
         return deviceDriverMap.get(keys.get(0)).getAppiumServerManager();
+    }
+
+    @Override
+    public void rebootDeviceAsync(DeviceInfo deviceInfo, Logger logger) {
+        getDeviceDriver(deviceInfo.getType()).rebootDeviceAsync(deviceInfo, logger);
+    }
+
+    @Override
+    public void rebootDeviceIfNeeded(DeviceInfo deviceInfo, Logger logger) {
+        getDeviceDriver(deviceInfo.getType()).rebootDeviceIfNeeded(deviceInfo, logger);
     }
 }
