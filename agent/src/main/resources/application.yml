@@ -50,6 +50,8 @@ app:
   device:
     auto-reboot:
       android:
+        # '0 0 0 * * ?' means every day at 00:00:00
+        # '-' means disabled
         cron: '-'
     monitor:
       windows:
