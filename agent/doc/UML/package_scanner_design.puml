@@ -1,0 +1,67 @@
+@startuml packageScanner
+
+interface TestRunEngine {
+    TestReport run(Task, TaskRunDevice);
+}
+interface TestRunLifecycle {
+    TaskRun setup(Task, TaskRunDevice);
+    void execute(TaskRun) throws Exception;
+    TestResult analyze(TaskRun);
+    TestReport report(TaskRun, Result);
+    void teardown(TaskRun);
+    void help(TaskRun taskInstance, Result result);
+}
+
+class AnalysisRunner implements TestRunEngine,TestRunLifecycle{
+    +Report run(AnalysisTask task)
+
+}
+
+class Scanner extends AnalysisRunner{
+    +protected ScanPackageResult run(AnalysisTask task)
+    +ScanPackageResult initReport(AnalysisTask task)
+    +analysisPackage(ScanPackageResult packageReport,File file, File outputFolder)
+    +scanSensitiveWords(ScanPackageResult packageReport,File file, String[] sensitiveWords, File outputFolder)
+}
+class ApkCanaryExecutor {}
+class ApkLeaksExecutor{}
+class APKScanner extends Scanner {
+    +APKReport initReport(AnalysisTask task)
+    +analysisPackage(APKReport apkReport,File file, File outputFolder)
+    +scanSensitiveWords(APKReport apkReport,File file, String[] sensitiveWords, File outputFolder)
+}
+APKScanner --> ApkCanaryExecutor
+APKScanner --> ApkLeaksExecutor
+class WINAppScanner extends Scanner {}
+class IPAScanner extends Scanner {}
+
+class TaskResult{
+    TaskState state;
+
+}
+
+enum TaskState{
+    PASS,
+    FAIL,
+    SKIP,
+    CANCEL,
+    BLOCK,
+    WARNING
+}
+
+class AnalysisResult extends TestResult{}
+class ScanPackageResult extends AnalysisResult{}
+class APKReport extends ScanPackageResult{}
+
+class Task{
+    List<TaskRun> taskRuns;
+}
+class AnalysisTask extends Task{
+}
+class TestTask extends Task{}
+
+class TestRun{
+    Result result;
+}
+
+@enduml
