@@ -1,5 +1,4 @@
 @startuml packageScanner
-
 interface TestRunEngine {
     TestReport run(Task, TaskRunDevice);
 }
@@ -11,12 +10,10 @@ interface TestRunLifecycle {
     void teardown(TaskRun);
     void help(TaskRun taskInstance, Result result);
 }
-
 class AnalysisRunner implements TestRunEngine,TestRunLifecycle{
     +Report run(AnalysisTask task)
 
 }
-
 class Scanner extends AnalysisRunner{
     +protected ScanPackageResult run(AnalysisTask task)
     +ScanPackageResult initReport(AnalysisTask task)
@@ -35,9 +32,11 @@ APKScanner --> ApkLeaksExecutor
 class WINAppScanner extends Scanner {}
 class IPAScanner extends Scanner {}
 
+@enduml
+
+@startuml TaskDataType
 class TaskResult{
     TaskState state;
-
 }
 
 enum TaskState{
@@ -49,10 +48,23 @@ enum TaskState{
     WARNING
 }
 
-class AnalysisResult extends TestResult{}
+class AnalysisResult extends TaskResult{}
+class TestResult extends TaskResult{}
 class ScanPackageResult extends AnalysisResult{}
-class APKReport extends ScanPackageResult{}
-
+class APKReport extends ScanPackageResult{
+    String id;
+    Date ingestTime;
+    String name;
+    ApkSizeReport apkSizeReport;
+    ApkManifest apkManifest;
+    BuildInfo buildInfo;
+    List<LeakInfo> leakInfoList;
+}
+class LeakInfo {
+    String keyword;
+    List<String> LeakWordList;
+}
+APKReport -> LeakInfo
 class Task{
     List<TaskRun> taskRuns;
 }
@@ -60,8 +72,19 @@ class AnalysisTask extends Task{
 }
 class TestTask extends Task{}
 
-class TestRun{
+class TaskRun{
     Result result;
 }
+TaskRun -> TaskResult
 
+TaskResult -> TaskState
+
+Task -> TaskRun
+
+class TestTaskSpec{
+    String taskType
+}
+
+TestTaskSpec --> AnalysisTask
+TestTaskSpec --> TestTask
 @enduml
