@@ -49,6 +49,11 @@ app:
     name: ${AGENT_NAME:default}
   # Device Stability Monitor Configuration
   device:
+    auto-reboot:
+      android:
+        # '0 0 0 * * ?' means every day at 00:00:00
+        # '-' means disabled
+        cron: '-'
     monitor:
       windows:
         enabled: false
