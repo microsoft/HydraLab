@@ -56,7 +56,11 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          New-Item -Path common/src/test/resources -Name ".env" -ItemType "file" -Value "BLOB_CONNECTION_STRING = $(BLOB_CONNECTION_STRING)"
+          if(Test-Path variable:BLOB_CONNECTION_STRING){
+            New-Item -Path common/src/test/resources -Name ".env" -ItemType "file" -Value "BLOB_CONNECTION_STRING = $(BLOB_CONNECTION_STRING)"
+          }else{
+            Write-Host "No BLOB_CONNECTION_STRING found"
+          }
         workingDirectory: '$(Build.Repository.LocalPath)'
       condition: eq(variables.fullBuild, 'false')
     - task: PowerShell@2
@@ -98,7 +102,11 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          Remove-Item -Path common/src/test/resources/.env -Force
+          if(Test-Path common/src/test/resources/.env){
+            Remove-Item -Path common/src/test/resources/.env -Force
+          }else{
+            Write-Host "No .env file found"
+          }
         workingDirectory: '$(Build.Repository.LocalPath)'
       condition: eq(variables.fullBuild, 'false')
     - task: PublishCodeCoverageResults@1
@@ -173,7 +181,7 @@ stages:
         SourceFolder: 'center/deploy_startup/'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
-      condition: eq(variables.fullBuild, 'true')    
+      condition: eq(variables.fullBuild, 'true')
     - task: CopyFiles@2
       displayName: Copy deploy center files 3
       inputs:
