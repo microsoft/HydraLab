@@ -170,6 +170,7 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
             errorStr = errorStr.substring(0, 254);
         }
         testRun.setErrorInProcess(errorStr);
+        testRun.onTestEnded();
     }
 
     protected void checkTestTaskCancel(TestTask testTask) {
