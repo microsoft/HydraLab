@@ -704,9 +704,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
         changeGlobalSetting(deviceInfo, "window_animation_scale", "0", logger);
         changeGlobalSetting(deviceInfo, "transition_animation_scale", "0", logger);
         changeGlobalSetting(deviceInfo, "animator_duration_scale", "0", logger);
-
         changeSystemSetting(deviceInfo, "screen_off_timeout", String.valueOf(TimeUnit.MINUTES.toMillis(3)), logger);
-
         enableTouchPositionDisplay(deviceInfo, logger);
     }
 
@@ -715,7 +713,6 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
         changeGlobalSetting(deviceInfo, "window_animation_scale", "1", logger);
         changeGlobalSetting(deviceInfo, "transition_animation_scale", "1", logger);
         changeGlobalSetting(deviceInfo, "animator_duration_scale", "1", logger);
-
         changeSystemSetting(deviceInfo, "screen_off_timeout", String.valueOf(TimeUnit.SECONDS.toMillis(45)),
                 logger);
     }
@@ -733,6 +730,12 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     @Override
     public void execCommandOnDevice(DeviceInfo deviceInfo, String command, Logger logger) {
         adbOperateUtil.execOnDevice(deviceInfo, command, new MultiLineNoCancelLoggingReceiver(logger), logger);
+    }
+
+    @Override
+    public void rebootDevice(DeviceInfo deviceInfo, Logger logger) {
+        logger.info("Rebooting device {}", deviceInfo.getSerialNum());
+        adbOperateUtil.execOnDevice(deviceInfo, "reboot", new MultiLineNoCancelLoggingReceiver(logger), logger);
     }
 
     @Override

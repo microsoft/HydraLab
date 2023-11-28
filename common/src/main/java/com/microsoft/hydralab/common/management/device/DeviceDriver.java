@@ -98,4 +98,8 @@ public interface DeviceDriver {
     AppiumServerManager getAppiumServerManager();
 
     void init();
+
+    void rebootDeviceAsync(DeviceInfo deviceInfo, Logger logger);
+
+    void rebootDeviceIfNeeded(DeviceInfo deviceInfo, Logger logger);
 }

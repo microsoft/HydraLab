@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.AgentManagementService;
+import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.management.device.impl.DeviceDriverManager;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
@@ -20,6 +21,7 @@ import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -150,5 +152,17 @@ public class DeviceControlService {
         deviceStatusListenerManager.registerListener(deviceStabilityMonitor);
 
         deviceDriverManager.init();
+    }
+
+    public void rebootDevices(DeviceType deviceType) {
+        Assert.notNull(deviceType, "deviceType cannot be null");
+        agentManagementService.getActiveDeviceList(log).stream().filter(deviceInfo -> deviceType.name().equals(deviceInfo.getType()))
+                .forEach(deviceInfo -> {
+                    try {
+                        deviceDriverManager.rebootDeviceAsync(deviceInfo, log);
+                    } catch (Exception e) {
+                        log.error("Failed to reboot device: {}", deviceInfo.getSerialNum(), e);
+                    }
+                });
     }
 }

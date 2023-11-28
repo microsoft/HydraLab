@@ -181,6 +181,11 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
     }
 
     @Override
+    public void rebootDevice(DeviceInfo deviceInfo, Logger logger) {
+        logger.info("Windows device reboot is not supported");
+    }
+
+    @Override
     public void screenCapture(DeviceInfo deviceInfo, String outputFile, Logger logger) throws IOException {
         File scrFile = appiumServerManager.getWindowsRootDriver(logger).getScreenshotAs(OutputType.FILE);
         BufferedImage screenshot = ImageIO.read(scrFile);

@@ -210,6 +210,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     public void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result) {
         log.info("onOneDeviceComplete: {}", testRunDevice.getDeviceInfo().getSerialNum());
         testRunDeviceOrchestrator.finishTask(testRunDevice);
+        //check if the device is needed to reboot
+        testRunDeviceOrchestrator.rebootDeviceIfNeeded(testRunDevice, logger);
         File deviceTestResultFolder = result.getResultFolder();
 
         File[] files = deviceTestResultFolder.listFiles();
