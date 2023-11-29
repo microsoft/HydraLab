@@ -111,8 +111,12 @@ public class TestTaskService {
                     //the task will be saved in memory if taskSpec is error
                     testTask.setStatus(TestTask.TestStatus.EXCEPTION);
                     testTask.setTestErrorMsg(e.getMessage());
-                    testDataService.saveTestTaskData(testTask);
-                    queueIterator.remove();
+                    try{
+                        testDataService.saveTestTaskData(testTask);
+                        queueIterator.remove();
+                    }catch (Exception ex) {
+                        logger.error(ex.getMessage(), ex);
+                    }
                 }
             }
         }
