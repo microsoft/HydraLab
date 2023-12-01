@@ -155,6 +155,7 @@ public class AgentManageService {
                         "    server: '" + host + "'\n" +
                         "    # The Agent info registered in Hydra Lab Center, for instance if it's running on localhost," +
                         "    the URL would be: http://localhost:9886/portal/index.html#/auth\n" +
+                        "    schema: \"wss\" # Value: {wss (Default, Only Domain), ws}.\n" +
                         "    name: " + agentUser.getName() + "\n" +
                         "    id: " + agentUser.getId() + "\n" +
                         "    secret: " + agentUser.getSecret() + "\n" +

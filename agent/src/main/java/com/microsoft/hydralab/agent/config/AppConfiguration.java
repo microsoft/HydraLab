@@ -59,6 +59,8 @@ public class AppConfiguration {
     private AppOptions appOptions;
     @Value("${app.registry.server}")
     private String registryServer;
+    @Value("${app.registry.schema:wss}")
+    private String registrySchema;
     @Value("${app.device.state-change.count-threshold}")
     private int deviceStateChangeThreshold;
     @Value("${app.device.state-change.window-time}")
@@ -151,7 +153,7 @@ public class AppConfiguration {
             "pythonRunner"})
     public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService)
             throws Exception {
-        String wsUrl = String.format("ws://%s/agent/connect", registryServer);
+        String wsUrl = String.format("%s://%s/agent/connect", registrySchema, registryServer);
         logger.info("connect to {}", wsUrl);
         AgentWebSocketClient agentWebSocketClient =
                 new AgentWebSocketClient(new URI(wsUrl), agentWebSocketClientService);
