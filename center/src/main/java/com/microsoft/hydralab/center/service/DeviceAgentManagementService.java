@@ -3,7 +3,6 @@
 
 package com.microsoft.hydralab.center.service;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.android.ddmlib.IDevice;
