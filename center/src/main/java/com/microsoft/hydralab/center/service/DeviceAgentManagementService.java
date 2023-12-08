@@ -409,7 +409,7 @@ public class DeviceAgentManagementService {
                     agentDeviceInfo.setStatus(DeviceInfo.TESTING);
                 } else if (agentDeviceInfo.isTesting()) {
                     log.warn("Test on the device is canceled, status of device in AGENT should be reset to ONLINE, otherwise TESTING would never be covered by agent");
-                    agentDeviceInfo.setStatus(centerDevice.getStatus());
+                    agentDeviceInfo.setStatus(DeviceInfo.ONLINE);
                 }
             }
 
