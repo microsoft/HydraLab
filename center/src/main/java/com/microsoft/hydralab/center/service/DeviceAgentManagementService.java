@@ -567,31 +567,23 @@ public class DeviceAgentManagementService {
 
     private void updateAgentDevices(List<DeviceInfo> agentDeviceInfos, AgentDeviceGroup agentDeviceGroup) {
         for (DeviceInfo agentDeviceInfo : agentDeviceInfos) {
-            boolean hasDevice = false;
             for (DeviceInfo centerDeviceInfo : agentDeviceGroup.getDevices()) {
                 //if the status saved in Center is testing, the value will not be covered
-                if (deviceListMap.get(centerDeviceInfo.getSerialNum()) != null && deviceListMap.get(centerDeviceInfo.getSerialNum()).isTesting()) {
-                    centerDeviceInfo.setStatus(DeviceInfo.TESTING);
-                    hasDevice = true;
+                if (deviceListMap.get(agentDeviceInfo.getSerialNum()) != null && deviceListMap.get(agentDeviceInfo.getSerialNum()).isTesting()) {
+                    agentDeviceInfo.setStatus(DeviceInfo.TESTING);
                     log.info("Updating device status of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), agentDeviceInfo.getSerialNum());
                     break;
                 }
                 if (centerDeviceInfo.getSerialNum().equals(agentDeviceInfo.getSerialNum())) {
-                    hasDevice = true;
                     if (DeviceInfo.TESTING.equals(agentDeviceInfo.getStatus())) {
                         log.warn("Device status is out-of-sync between center/agent, CENTER: {}, AGENT: {}", centerDeviceInfo.getStatus(), agentDeviceInfo.getStatus());
                         agentDeviceInfo.setStatus(centerDeviceInfo.getStatus());
                     }
-                    BeanUtil.copyProperties(agentDeviceInfo, centerDeviceInfo);
-                    log.info("Updating device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), agentDeviceInfo.getSerialNum());
                     break;
                 }
             }
-            if (!hasDevice) {
-                log.info("Adding device info of agent: {}, device SN: {}", agentDeviceGroup.getAgentName(), agentDeviceInfo.getSerialNum());
-                agentDeviceGroup.getDevices().add(agentDeviceInfo);
-            }
         }
+        agentDeviceGroup.setDevices(agentDeviceInfos);
     }
 
     private void requestList(Session session) {
