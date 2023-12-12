@@ -15,10 +15,10 @@ class AnalysisRunner implements TestRunEngine,TestRunLifecycle{
 
 }
 class Scanner extends AnalysisRunner{
-    +protected ScanPackageResult run(AnalysisTask task)
-    +ScanPackageResult initReport(AnalysisTask task)
-    +analysisPackage(ScanPackageResult packageReport,File file, File outputFolder)
-    +scanSensitiveWords(ScanPackageResult packageReport,File file, String[] sensitiveWords, File outputFolder)
+    +protected AnalysisResult run(AnalysisTask task)
+    +AnalysisResult initReport(AnalysisTask task)
+    +analysisPackage(AnalysisResult packageReport,File file, File outputFolder)
+    +scanSensitiveWords(AnalysisResult packageReport,File file, String[] sensitiveWords, File outputFolder)
 }
 class ApkCanaryExecutor {}
 class ApkLeaksExecutor{}
@@ -36,6 +36,8 @@ class IPAScanner extends Scanner {}
 
 @startuml TaskDataType
 class TaskResult{
+    TestRunId testRunId;
+    TaskId taskId;
     TaskState state;
 }
 
@@ -48,17 +50,18 @@ enum TaskState{
     WARNING
 }
 
-class AnalysisResult extends TaskResult{}
-class TestResult extends TaskResult{}
-class ScanPackageResult extends AnalysisResult{}
-class APKReport extends ScanPackageResult{
+class AnalysisResult extends TaskResult{
     String id;
     Date ingestTime;
-    String name;
+    List<String> reportFilePaths;
+}
+class TestResult extends TaskResult{}
+class APKReport extends AnalysisResult{
+    String packageName;
+    List<LeakInfo> leakInfoList = new ArrayList<>();
     ApkSizeReport apkSizeReport;
     ApkManifest apkManifest;
     BuildInfo buildInfo;
-    List<LeakInfo> leakInfoList;
 }
 class LeakInfo {
     String keyword;
@@ -67,8 +70,14 @@ class LeakInfo {
 APKReport -> LeakInfo
 class Task{
     List<TaskRun> taskRuns;
+    Task transformToTask(TestTaskSpec taskSpec);
 }
 class AnalysisTask extends Task{
+    List<AnalysisConfig> analysisConfigs;
+}
+class AnalysisConfig{
+    String analysisType;
+    Map<String,String> analysisConfig;
 }
 class TestTask extends Task{}
 
@@ -85,6 +94,40 @@ class TestTaskSpec{
     String taskType
 }
 
-TestTaskSpec --> AnalysisTask
-TestTaskSpec --> TestTask
+TestTaskSpec --> Task : transformToTask(TestTaskSpec)
+
+AnalysisTask --> AnalysisConfig
+@enduml
+
+@startuml package_scanner_design_sequence
+participant User
+participant CenterService
+participant AgentService
+participant AnalysisRunner
+participant Scanner
+
+activate User
+activate CenterService
+User -> CenterService : request scan package(with scan configuration)
+
+CenterService -> CenterService : convert TaskSpec to AnalysisTask
+CenterService -> AgentService : distribute AnalysisTask
+activate AgentService
+
+AgentService -> AnalysisRunner : choose an AnalysisRunner by Task type
+activate AnalysisRunner
+
+AnalysisRunner -> Scanner : choose a Scanner implementation
+activate Scanner
+Scanner -> Scanner : scan package with configuration
+Scanner -> AnalysisRunner : return APKReport
+deactivate Scanner
+AnalysisRunner -> AgentService : return AnalysisResult
+deactivate AnalysisRunner
+AgentService -> CenterService : return TaskResult & save to database
+deactivate AgentService
+CenterService -> User : provide front-end to view result
+deactivate CenterService
+deactivate User
+
 @enduml
