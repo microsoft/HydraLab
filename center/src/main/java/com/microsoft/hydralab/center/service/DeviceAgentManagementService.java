@@ -403,14 +403,12 @@ public class DeviceAgentManagementService {
             agentDeviceInfo.setAgentId(agentId);
             DeviceInfo centerDevice = deviceListMap.get(agentDeviceInfo.getSerialNum());
             // if the status saved in Center is testing, the value will not be covered
-            if (centerDevice != null) {
-                if (centerDevice.isTesting()) {
-                    log.warn("Center status: {}, Agent status: {}, status should be synced to CENTER's value when TESTING.", centerDevice.getStatus(), agentDeviceInfo.getStatus());
-                    agentDeviceInfo.setStatus(DeviceInfo.TESTING);
-                } else if (agentDeviceInfo.isTesting()) {
-                    log.warn("Test on the device is canceled, status of device in AGENT should be reset to ONLINE, otherwise TESTING would never be covered by agent");
-                    agentDeviceInfo.setStatus(DeviceInfo.ONLINE);
-                }
+            if (centerDevice != null && centerDevice.isTesting()) {
+                log.warn("Center status: {}, Agent status: {}, status should be synced to CENTER's value when TESTING.", centerDevice.getStatus(), agentDeviceInfo.getStatus());
+                agentDeviceInfo.setStatus(DeviceInfo.TESTING);
+            } else if (agentDeviceInfo.isTesting()) {
+                log.warn("Test on the device is canceled, status of device in AGENT should be reset to ONLINE, otherwise TESTING would never be covered by agent");
+                agentDeviceInfo.setStatus(DeviceInfo.ONLINE);
             }
 
             deviceListMap.put(agentDeviceInfo.getSerialNum(), agentDeviceInfo);
