@@ -106,6 +106,12 @@ participant AgentService
 participant AnalysisRunner
 participant Scanner
 
+activate AgentService
+AgentService -> AgentService : scan Agent Function Availability
+AgentService -> CenterService : register Agent Function Availability
+
+deactivate AgentService
+
 activate User
 activate CenterService
 User -> CenterService : request scan package(with scan configuration)
