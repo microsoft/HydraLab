@@ -174,4 +174,7 @@ public class AgentConstant {
         put("Watch6,8", "Apple Watch Series 7 41mm case (GPS+Cellular)");
         put("Watch6,9", "Apple Watch Series 7 45mm case (GPS+Cellular)");
     }};
+
+    public static final String ESPRESSO_TEST_ORCHESTRATOR_APK = "orchestrator.apk";
+    public static final String ESPRESSO_TEST_SERVICES_APK = "test-services.apk";
 }

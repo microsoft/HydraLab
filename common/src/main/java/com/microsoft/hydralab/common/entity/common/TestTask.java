@@ -123,6 +123,8 @@ public class TestTask implements Serializable {
     private boolean enableNetworkMonitor;
     @Transient
     private String networkMonitorRule;
+    @Column(nullable = true)
+    private boolean enableTestOrchestrator = false;
 
     public TestTask() {
     }
@@ -182,6 +184,7 @@ public class TestTask implements Serializable {
         testTask.setDisableRecording(testTaskSpec.disableRecording);
         testTask.setEnableNetworkMonitor(testTaskSpec.enableNetworkMonitor);
         testTask.setNetworkMonitorRule(testTaskSpec.networkMonitorRule);
+        testTask.setEnableTestOrchestrator(testTaskSpec.enableTestOrchestrator);
 
         return testTask;
     }
@@ -224,6 +227,7 @@ public class TestTask implements Serializable {
         testTaskSpec.enableNetworkMonitor = testTask.isEnableNetworkMonitor();
         testTaskSpec.networkMonitorRule = testTask.getNetworkMonitorRule();
         testTaskSpec.retryTime = testTask.getRetryTime();
+        testTaskSpec.enableTestOrchestrator = testTask.isEnableTestOrchestrator();
 
         return testTaskSpec;
     }
