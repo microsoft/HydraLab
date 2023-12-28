@@ -1,10 +1,11 @@
 package com.microsoft.hydralab.agent.runner;
 
+import com.microsoft.hydralab.common.entity.common.Task;
+import com.microsoft.hydralab.common.entity.common.TaskResult;
 import com.microsoft.hydralab.common.entity.common.TestReport;
 import com.microsoft.hydralab.common.entity.common.TestResult;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
-import com.microsoft.hydralab.common.entity.common.TestTask;
 
 /**
  * We use this interface to define the test runner behaviors and test run lifecycle.
@@ -12,7 +13,9 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
  * to define each stage of testing. We take this approach as the basis of our test runner.
  * Yet we have our own implementation and name for each stage.
  */
-public interface TestRunLifecycle {
+public interface TaskRunLifecycle<T extends Task> {
+    TestRun initTestRun(T task, TestRunDevice testRunDevice);
+
     /**
      * The scope of preparing a system for test execution, including operating system installation (if
      * necessary) and configuring the application under test, can grow quickly when you consider operating
@@ -21,7 +24,7 @@ public interface TestRunLifecycle {
      * @param testTask the test task to be run
      * @return the test run, which contains the test task and the device info
      */
-    TestRun setup(TestTask testTask, TestRunDevice testRunDevice);
+    void setup(T testTask, TestRun testRun) throws Exception;
 
     /**
      * Running the steps of the test case is the heart of automated testing, and a variety of execution methods
@@ -33,7 +36,7 @@ public interface TestRunLifecycle {
      * @param testRun contains the test task and the device info
      * @throws Exception
      */
-    void execute(TestRun testRun) throws Exception;
+    void execute(T task, TestRun testRun) throws Exception;
 
     /**
      * The scope of analyzing a test result is the test result itself. The test result can be written
@@ -49,9 +52,9 @@ public interface TestRunLifecycle {
      * skip,
      * abort,
      * warn.
-     * {@link TestResult.TestState}
+     * {@link TestResult.TaskState}
      */
-    TestResult analyze(TestRun testRun);
+    TaskResult analyze(TestRun testRun);
 
     /**
      * The scope of reporting a test result is the test result itself. The test result can be written
@@ -60,19 +63,20 @@ public interface TestRunLifecycle {
      * A common and effective solution is to automate the parsing of log files.
      *
      * @param testRun
-     * @param testResult
+     * @param taskResult
      * @return the test report, which contains the processed test result and the test run in a more readable format.
      */
-    TestReport report(TestRun testRun, TestResult testResult);
+    TestReport report(TestRun testRun, TaskResult taskResult);
 
     /**
      * The scope of teardown is similar to the scope of setup. This can also be referred to as "cleanup".
      * We may need to clean up the system after the test execution and bring the system back to its original state
      * to allow for a smooth next time execution.
      *
+     * @param task
      * @param testRun
      */
-    void teardown(TestRun testRun);
+    void teardown(T task, TestRun testRun);
 
 
     /**
@@ -83,5 +87,6 @@ public interface TestRunLifecycle {
      * @param testRun
      * @param testResult
      */
-    void help(TestRun testRun, TestResult testResult);
+    void help(TestRun testRun, TaskResult testResult);
+
 }

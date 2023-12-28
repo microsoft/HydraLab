@@ -69,9 +69,10 @@ public class AppiumRunner extends TestRunner {
     }
 
     @Override
-    protected void tearDown(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
+    public void teardown(TestTask testTask, TestRun testRun) {
+        TestRunDevice testRunDevice = testRun.getDevice();
         quitAppiumDrivers(testRunDevice, testTask, testRun.getLogger());
-        super.tearDown(testRunDevice, testTask, testRun);
+        super.teardown(testTask, testRun);
     }
 
     protected void quitAppiumDrivers(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) {
@@ -82,7 +83,7 @@ public class AppiumRunner extends TestRunner {
                                 TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         //set appium test property
         reportLogger.info("Start set appium test property");
-        Map<String, String> instrumentationArgs = testTask.getInstrumentationArgs();
+        Map<String, String> instrumentationArgs = testTask.getTaskRunArgs();
         if (instrumentationArgs == null) {
             instrumentationArgs = new HashMap<>();
         }

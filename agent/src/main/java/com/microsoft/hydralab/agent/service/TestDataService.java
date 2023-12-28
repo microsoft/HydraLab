@@ -5,12 +5,13 @@ package com.microsoft.hydralab.agent.service;
 
 import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.EntityType;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestRun;
-import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.repository.AndroidTestUnitRepository;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
+import com.microsoft.hydralab.common.repository.TaskRepository;
+import com.microsoft.hydralab.common.repository.TaskResultRepository;
 import com.microsoft.hydralab.common.repository.TestRunRepository;
-import com.microsoft.hydralab.common.repository.TestTaskRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ import java.util.List;
 public class TestDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDataService.class);
     @Resource
-    TestTaskRepository testTaskRepository;
+    TaskRepository testTaskRepository;
     @Resource
     AndroidTestUnitRepository androidTestUnitRepository;
     @Resource
@@ -32,21 +33,25 @@ public class TestDataService {
     @Resource
     KeyValueRepository keyValueRepository;
     @Resource
+    TaskResultRepository taskResultRepository;
+    @Resource
     AttachmentService attachmentService;
 
-    public void saveTestTaskData(TestTask testTask) {
-        List<TestRun> testRuns = testTask.getDeviceTestResults();
+    public void saveTestTaskData(Task task) {
+        List<TestRun> testRuns = task.getTaskRunList();
         if (testRuns.isEmpty()) {
             return;
         }
 
         testRunRepository.saveAll(testRuns);
-        testTaskRepository.save(testTask);
+        testTaskRepository.save(task);
 
         List<AndroidTestUnit> list = new ArrayList<>();
         for (TestRun testRun : testRuns) {
             attachmentService.saveRelations(testRun.getId(), EntityType.TEST_RESULT,
                     testRun.getAttachments());
+
+            taskResultRepository.save(testRun.getTaskResult());
 
             List<AndroidTestUnit> testUnitList = testRun.getTestUnitList();
             list.addAll(testUnitList);
@@ -67,6 +72,6 @@ public class TestDataService {
             keyValueRepository.saveCrashStack(testRun.getCrashStackId(), testRun.getCrashStack());
         }
         androidTestUnitRepository.saveAll(list);
-        LOGGER.info("All saved {}", testTask.getId());
+        LOGGER.info("All saved {}", task.getId());
     }
 }

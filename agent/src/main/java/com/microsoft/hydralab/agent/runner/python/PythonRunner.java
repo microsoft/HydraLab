@@ -205,7 +205,7 @@ public class PythonRunner extends TestRunner {
      */
     private String[] buildCommandArgs(TestRunDevice testRunDevice, TestRun testRun, TestTask testTask) {
         // sample: python  d://folder/code/main.py "d://folder/package/dataset.zip" "{'deviceType':'Windows','deviceName':'***'}" "d://folder/resultRoot" "modelA" "modelB"
-        Map<String, String> customArgMap = testTask.getInstrumentationArgs();
+        Map<String, String> customArgMap = testTask.getTaskRunArgs();
         if (customArgMap == null) {
             customArgMap = new HashMap<>();
         }

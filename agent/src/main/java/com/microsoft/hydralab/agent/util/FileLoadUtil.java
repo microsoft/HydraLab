@@ -5,6 +5,7 @@ package com.microsoft.hydralab.agent.util;
 
 import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.CommandOutputReceiver;
@@ -31,22 +32,22 @@ public class FileLoadUtil {
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
 
-    public void clearAttachments(TestTask testTask) {
-        List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
+    public void clearAttachments(Task task) {
+        List<StorageFileInfo> attachments = task.getTestFileSet().getAttachments();
         if (attachments == null) {
             return;
         }
         for (StorageFileInfo attachment : attachments) {
             if (StorageFileInfo.FileType.COMMON_FILE.equals(attachment.getFileType())) {
-                File loadFolder = new File(testTask.getResourceDir() + "/" + attachment.getLoadDir());
+                File loadFolder = new File(task.getResourceDir() + "/" + attachment.getLoadDir());
                 FileUtil.deleteFile(loadFolder);
             }
         }
         log.info("Clear common file success");
     }
 
-    public void loadAttachments(TestTask testTask) {
-        List<StorageFileInfo> attachments = testTask.getTestFileSet().getAttachments();
+    public void loadAttachments(Task task) {
+        List<StorageFileInfo> attachments = task.getTestFileSet().getAttachments();
         if (attachments == null) {
             return;
         }
@@ -56,22 +57,22 @@ public class FileLoadUtil {
                     installWinApp(attachment);
                     break;
                 case StorageFileInfo.FileType.COMMON_FILE:
-                    loadCommonFile(attachment, testTask);
+                    loadCommonFile(attachment, task);
                     break;
                 case StorageFileInfo.FileType.APP_FILE:
                     File appFile = downloadFile(attachment);
                     Assert.isTrue(appFile != null && appFile.exists(), "Download app file failed!");
-                    testTask.setAppFile(appFile);
+                    task.setAppFile(appFile);
                     break;
                 case StorageFileInfo.FileType.TEST_APP_FILE:
                     File testAppFile = downloadFile(attachment);
-                    Assert.isTrue(testAppFile != null && testAppFile.exists(), "Download test app file failed!");
-                    testTask.setTestAppFile(testAppFile);
+                    Assert.isTrue(testAppFile != null && testAppFile.exists() && task instanceof TestTask, "Download test app file failed!");
+                    ((TestTask) task).setTestAppFile(testAppFile);
                     break;
                 case StorageFileInfo.FileType.T2C_JSON_FILE:
                     File testJsonFile = downloadFile(attachment);
-                    Assert.isTrue(testJsonFile != null && testJsonFile.exists(), "Download test json file failed!");
-                    testTask.addTestJsonFile(testJsonFile);
+                    Assert.isTrue(testJsonFile != null && testJsonFile.exists() && task instanceof TestTask, "Download test json file failed!");
+                    ((TestTask) task).addTestJsonFile(testJsonFile);
                     break;
                 default:
                     break;
@@ -101,11 +102,11 @@ public class FileLoadUtil {
 
     }
 
-    public void loadCommonFile(StorageFileInfo attachment, TestTask testTask) {
+    public void loadCommonFile(StorageFileInfo attachment, Task task) {
         try {
-            File loadFolder = new File(testTask.getResourceDir(), attachment.getLoadDir());
+            File loadFolder = new File(task.getResourceDir(), attachment.getLoadDir());
             log.info("Load common file start filename:{} path:{}", attachment.getFileName(), loadFolder.getAbsolutePath());
-            File attachmentFile = downloadFile(attachment, testTask.getResourceDir().getAbsolutePath(), attachment.getLoadDir() + "/" + attachment.getFileName());
+            File attachmentFile = downloadFile(attachment, task.getResourceDir().getAbsolutePath(), attachment.getLoadDir() + "/" + attachment.getFileName());
             if (StorageFileInfo.LoadType.UNZIP.equalsIgnoreCase(attachment.getLoadType())) {
                 FileUtil.unzipFile(attachmentFile.getAbsolutePath(), loadFolder.getAbsolutePath());
             }

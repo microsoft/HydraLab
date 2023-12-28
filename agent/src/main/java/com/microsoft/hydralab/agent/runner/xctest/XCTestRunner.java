@@ -93,7 +93,7 @@ public class XCTestRunner extends TestRunner {
         }
         testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
         StringBuilder argString = new StringBuilder();
-        Map<String, String> instrumentationArgs = testTask.getInstrumentationArgs();
+        Map<String, String> instrumentationArgs = testTask.getTaskRunArgs();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
             instrumentationArgs.forEach((k, v) -> argString.append(" ").append(k).append(" ").append(v));
         }

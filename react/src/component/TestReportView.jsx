@@ -109,7 +109,7 @@ export default class TestReportView extends BaseView {
         const overallPieSize = 180
         let overallAreaWidth = overallPieSize * 1.5;
         if (history) {
-            let currentTestSuiteRec = _.groupBy(_.groupBy(history, 'testSuite')[task.testSuite], 'type')[task.type];
+            let currentTestSuiteRec = _.groupBy(_.groupBy(history, 'taskAlias')[task.taskAlias], 'triggerType')[task.triggerType];
             if (!currentTestSuiteRec) {
                 return
             }
@@ -149,11 +149,11 @@ export default class TestReportView extends BaseView {
             { type: 'fail', count: task.totalFailCount },
         ]
 
-        const dtrSuccFailMap = _.groupBy(task.deviceTestResults, 'success')
+        const dtrSuccFailMap = _.groupBy(task.taskRunList, 'success')
 
         var perfResults = [];
         var suggestions = [];
-        for (let testResult of task.deviceTestResults) {
+        for (let testResult of task.taskRunList) {
             for (let attachment of testResult.attachments) {
                 if (attachment.fileName == 'PerformanceReport.json') {
                     perfResults.push(attachment);
@@ -215,8 +215,8 @@ export default class TestReportView extends BaseView {
                         <tr>
                             <td style={{ width: '500px' }}>
                                 <h5 className='mt-1'>Ran <b>{task.testSuite}</b></h5>
-                                <h5>On {task.testDevicesCount} devices <span
-                                    className='badge badge-info'>{task.type}</span> <span
+                                <h5>On {task.deviceCount} devices <span
+                                    className='badge badge-info'>{task.triggerType}</span> <span
                                         className='badge badge-info'>{task.status.toUpperCase()}</span></h5>
                                 <h6 className='badge badge-primary p-2' style={{ fontSize: '1rem' }}>
                                     <span
@@ -252,7 +252,7 @@ export default class TestReportView extends BaseView {
                                 {task.pipelineLink ?
                                     <p className='mt-3'><a href={task.pipelineLink} rel="noopener noreferrer">Link to PipeLine</a></p> : null}
                             </td>
-                            {task.runningType !== 'SMART' ? <td>
+                            {task.runnerType !== 'SMART' ? <td>
                                 <h4>Overall success rate {task.overallSuccessRate} <span
                                     className='badge badge-primary ml-2'
                                     style={{ fontSize: '1rem' }}>{task.totalTestCount - task.totalFailCount}/{task.totalTestCount}</span>
@@ -369,8 +369,8 @@ export default class TestReportView extends BaseView {
                                                 </tbody>
                                             )
                                         }
-                                        if (d.testErrorMessage) {
-                                            console.log(_.truncate(d.testErrorMessage, 50))
+                                        if (d.errorMessage) {
+                                            console.log(_.truncate(d.errorMessage, 50))
                                         }
                                         return <td key={d.id}>
                                             <table>
@@ -459,12 +459,12 @@ export default class TestReportView extends BaseView {
                                                     </thead>
                                                     {rows}
                                                 </table>
-                                                {d.testErrorMessage ? <div className='mb-3 mt-2'>
+                                                {d.errorMessage ? <div className='mb-3 mt-2'>
                                                     <a className="badge badge-warning"
                                                         href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')}
                                                         rel="noopener noreferrer"
                                                         style={{ whiteSpace: 'normal' }}
-                                                        target='_blank'>{_.truncate(d.testErrorMessage, 50)}</a>
+                                                        target='_blank'>{_.truncate(d.errorMessage, 50)}</a>
                                                 </div> : null}
                                             </div>
                                         </td>
@@ -571,7 +571,7 @@ export default class TestReportView extends BaseView {
                 </div> : null}
             </div>
             <div id='test_report_content_4>'>
-                {task.runningType === 'SMART' ? <div>
+                {task.runnerType === 'SMART' ? <div>
                     <table className='table table-borderless'>
                         <thead className="thead-info">
                             <tr className="table-info">
@@ -761,7 +761,7 @@ export default class TestReportView extends BaseView {
             return
         }
         axios({
-            url: `/api/test/generateT2C/` + this.state.graphFileId + "?testRunId=" + this.state.task.deviceTestResults[0].id + "&path=" + this.state.selectedPath.join(','),
+            url: `/api/test/generateT2C/` + this.state.graphFileId + "?testRunId=" + this.state.task.taskRunList[0].id + "&path=" + this.state.selectedPath.join(','),
             method: 'GET',
         }).then((res) => {
             var blob = new Blob([res.data.content]);
@@ -795,9 +795,9 @@ export default class TestReportView extends BaseView {
     queryTaskHistory() {
         let queryParams = [
             {
-                "key": "runningType",
+                "key": "runnerType",
                 "op": "equal",
-                "value": this.state.task.runningType
+                "value": this.state.task.runnerType
             },
             // {
             //     "key":"type",
@@ -805,9 +805,9 @@ export default class TestReportView extends BaseView {
             //     "value": this.state.task.type
             // },
             {
-                "key": "testSuite",
+                "key": "taskAlias",
                 "op": "equal",
-                "value": this.state.task.testSuite
+                "value": this.state.task.taskAlias
             },
             {
                 "key": "startDate",
@@ -847,7 +847,7 @@ export default class TestReportView extends BaseView {
         console.log(this.props.testTask)
         this.queryTaskHistory()
         console.log(this.state.history)
-        this.props.testTask.deviceTestResults[0].attachments.forEach((attachment) => {
+        this.props.testTask.taskRunList[0].attachments.forEach((attachment) => {
             if (attachment.fileName === 'smartTestResult.zip') {
                 this.state.graphFileId = attachment.fileId
             }

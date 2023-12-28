@@ -128,7 +128,7 @@ public class AdbMonkeyRunner extends TestRunner {
                 System.currentTimeMillis() - testRun.getTestStartTimeMillis());
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, ongoingMonkeyTest.getTitle());
         StringBuilder argString = new StringBuilder();
-        Map<String, String> instrumentationArgs = testTask.getInstrumentationArgs();
+        Map<String, String> instrumentationArgs = testTask.getTaskRunArgs();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
             instrumentationArgs.forEach((k, v) -> argString.append(" ").append(v));
         }

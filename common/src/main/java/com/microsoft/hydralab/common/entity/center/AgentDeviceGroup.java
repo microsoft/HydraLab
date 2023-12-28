@@ -7,7 +7,9 @@ import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class AgentDeviceGroup {
@@ -26,6 +28,7 @@ public class AgentDeviceGroup {
     private String ip;
     private List<DeviceInfo> devices;
     private List<AgentFunctionAvailability> functionAvailabilities;
+    private Map<String, Integer> availableAnalysisTaskCount = new HashMap<>();
 
     public void initWithAgentUser(AgentUser agentUser) {
         agentId = agentUser.getId();
@@ -40,11 +43,25 @@ public class AgentDeviceGroup {
         agentVersionName = agentUser.getVersionName();
         agentVersionCode = agentUser.getVersionCode();
         functionAvailabilities = agentUser.getFunctionAvailabilities();
+        for (AgentFunctionAvailability functionAvailability : functionAvailabilities) {
+            if (AgentFunctionAvailability.AgentFunctionType.ANALYSIS_RUNNER.equals(functionAvailability.getFunctionType()) && functionAvailability.isEnabled() &&
+                    functionAvailability.isAvailable()) {
+                availableAnalysisTaskCount.put(functionAvailability.getFunctionName(), 3);
+            }
+        }
     }
 
     public interface Status {
         String HEALTHY = "HEALTHY";
         String ERROR = "ERROR";
         String UPDATING = "UPDATING";
+    }
+
+    public void runAnalysisTask(String runnerType) {
+        availableAnalysisTaskCount.put(runnerType, availableAnalysisTaskCount.getOrDefault(runnerType, 3) - 1);
+    }
+
+    public void finishAnalysisTask(String runnerType) {
+        availableAnalysisTaskCount.put(runnerType, availableAnalysisTaskCount.getOrDefault(runnerType, 0) + 1);
     }
 }

@@ -50,6 +50,7 @@ public class TestTaskSpec {
     public String testSuiteClass;
     public Map<String, List<DeviceAction>> deviceActions;
     public List<InspectionStrategy> inspectionStrategies;
+    public List<AnalysisTask.AnalysisConfig> analysisConfigs;
     public boolean enablePerformanceSuggestion;
     public String notifyUrl;
     public boolean disableRecording = false;
@@ -59,8 +60,8 @@ public class TestTaskSpec {
     public void updateWithDefaultValues() {
         determineScopeOfTestCase();
 
-        if (StringUtils.isEmpty(runningType)) {
-            runningType = TestTask.TestRunningType.INSTRUMENTATION;
+        if (StringUtils.isBlank(runningType)) {
+            runningType = Task.RunnerType.INSTRUMENTATION.name();
         }
         if (StringUtils.isBlank(testSuiteClass)) {
             testSuiteClass = pkgName;

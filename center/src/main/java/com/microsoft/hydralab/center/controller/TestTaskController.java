@@ -15,8 +15,8 @@ import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.center.TestTaskQueuedInfo;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestFileSet;
-import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
@@ -93,9 +93,9 @@ public class TestTaskController {
                     //if there is no alive device, the task will be added to the queue directly
                     testTaskService.addTask(testTaskSpec);
                 } else {
-                    TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
-                    testTask.setTestDevicesCount(result.getString(Const.Param.TEST_DEVICE_SN).split(",").length);
-                    testDataService.saveTestTaskData(testTask);
+                    Task task = Task.RunnerType.valueOf(testTaskSpec.runningType).transferToTask(testTaskSpec);
+                    task.setDeviceCount(result.getString(Const.Param.TEST_DEVICE_SN).split(",").length);
+                    testDataService.saveTaskData(task);
                 }
             } else {
                 testTaskService.addTask(testTaskSpec);
@@ -125,12 +125,12 @@ public class TestTaskController {
             if (requestor == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
-            TestTask testTask = testDataService.getTestTaskDetail(testId);
-            if (testTask != null) {
+            Task task = testDataService.getTaskDetail(testId);
+            if (task != null) {
 //                if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
 //                    return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
 //                }
-                return Result.ok(testTask);
+                return Result.ok(task);
             }
             TestTaskQueuedInfo queuedInfo = testTaskService.getTestQueuedInfo(testId);
             TestTaskSpec queuedTaskSpec = queuedInfo.getTestTaskSpec();
@@ -143,7 +143,7 @@ public class TestTaskController {
 
             JSONObject result = new JSONObject();
             result.put("message", "Current position in queue: " + queuedInfo.getQueuedInfo()[0]);
-            result.put("status", TestTask.TestStatus.WAITING);
+            result.put("status", Task.TaskStatus.WAITING);
             result.put("retryTime", queuedInfo.getQueuedInfo()[1]);
             return Result.ok(result);
         } catch (Exception e) {
@@ -196,7 +196,7 @@ public class TestTaskController {
      * 2) For the rest users, return data that is in the user's TEAMs
      */
     @PostMapping(value = {"/api/test/task/list"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Page<TestTask>> getTaskList(@CurrentSecurityContext SysUser requestor,
+    public Result<Page<Task>> getTaskList(@CurrentSecurityContext SysUser requestor,
                                               @RequestBody JSONObject data) {
         try {
             if (requestor == null) {
@@ -225,7 +225,7 @@ public class TestTaskController {
                 }
             }
 
-            return Result.ok(testDataService.getTestTasks(page, pageSize, criteriaTypes));
+            return Result.ok(testDataService.getTasks(page, pageSize, criteriaTypes));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
@@ -287,10 +287,10 @@ public class TestTaskController {
 
                 testTaskService.cancelTask(testId);
             } else {
-                TestTask testTask = testDataService.getTestTaskDetail(testId);
-                if (testTask == null) {
+                Task task = testDataService.getTaskDetail(testId);
+                if (task == null) {
                     return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "The testId is wrong!");
-                } else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
+                } else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, task.getTeamId())) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
                 }
 

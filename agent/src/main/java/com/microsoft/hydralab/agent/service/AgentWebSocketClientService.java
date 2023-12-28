@@ -5,6 +5,7 @@ package com.microsoft.hydralab.agent.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.agent.config.AppOptions;
+import com.microsoft.hydralab.agent.runner.TestRunnerManager;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.socket.AgentWebSocketClient;
 import com.microsoft.hydralab.common.entity.common.AgentMetadata;
@@ -12,9 +13,9 @@ import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
-import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.exception.reporter.AppCenterReporter;
 import com.microsoft.hydralab.common.exception.reporter.ExceptionReporterManager;
@@ -81,6 +82,8 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     boolean isAgentInit = false;
     @Resource
     private AppCenterReporter appCenterReporter;
+    @Resource
+    private TestRunnerManager testRunnerManager;
 
     public void onMessage(Message message) {
         log.info("onMessage Receive bytes message {}", message);
@@ -173,27 +176,28 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     @NotNull
     private Message handleTestTaskRun(Message message) {
         Message response;
-        TestTask testTask = null;
+        Task task = null;
         TestTaskSpec testTaskSpec = null;
         try {
             testTaskSpec = (TestTaskSpec) message.getBody();
             testTaskSpec.updateWithDefaultValues();
             log.info("TestTaskSpec: {}", testTaskSpec);
-            testTask = TestTask.convertToTestTask(testTaskSpec);
-            testTask = testTaskEngineService.runTestTask(testTask);
-            if (testTask.getTestDevicesCount() <= 0) {
+            task = Task.RunnerType.valueOf(testTaskSpec.runningType).transferToTask(testTaskSpec);
+            task = testTaskEngineService.runTestTask(task);
+
+            if (task.getDeviceCount() <= 0) {
                 throw new HydraLabRuntimeException("No device meet the requirement on this agent: " + testTaskSpec);
             }
-            response = Message.response(message, testTask);
+            response = Message.response(message, task);
             response.setPath(Const.Path.TEST_TASK_UPDATE);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            if (testTask == null) {
-                testTask.setId(testTaskSpec.testTaskId);
+            if (task == null) {
+                task.setId(testTaskSpec.testTaskId);
             }
-            testTask.setStatus(TestTask.TestStatus.EXCEPTION);
-            testTask.setTestErrorMsg(e.getMessage());
-            response = Message.response(message, testTask);
+            task.setStatus(Task.TaskStatus.EXCEPTION);
+            task.setErrorMsg(e.getMessage());
+            response = Message.response(message, task);
             response.setPath(Const.Path.TEST_TASK_RETRY);
         }
         return response;
@@ -263,27 +267,27 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     }
 
     @Override
-    public void onTaskStart(TestTask testTask) {
+    public void onTaskStart(Task task) {
 
     }
 
     @Override
-    public void onTaskComplete(TestTask testTask) {
-        log.info("test task {} onAllComplete in webclient, send message", testTask.getId());
-        send(Message.ok(Const.Path.TEST_TASK_UPDATE, testTask));
+    public void onTaskComplete(Task task) {
+        log.info("test task {} onAllComplete in webclient, send message", task.getId());
+        send(Message.ok(Const.Path.TEST_TASK_UPDATE, task));
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result) {
+    public void onOneDeviceComplete(Task task, TestRunDevice testRunDevice, Logger logger, TestRun result) {
 
     }
 
     @Override
-    public void onDeviceOffline(TestTask testTask) {
-        log.info("test task {} re-queue, send message", testTask.getId());
-        testTask.setStatus(TestTask.TestStatus.EXCEPTION);
-        testTask.setTestErrorMsg("Device offline");
-        send(Message.ok(Const.Path.TEST_TASK_RETRY, testTask));
+    public void onDeviceOffline(Task task) {
+        log.info("test task {} re-queue, send message", task.getId());
+        task.setStatus(Task.TaskStatus.EXCEPTION);
+        task.setErrorMsg("Device offline");
+        send(Message.ok(Const.Path.TEST_TASK_RETRY, task));
     }
 
     public void registerAgentMetrics() {

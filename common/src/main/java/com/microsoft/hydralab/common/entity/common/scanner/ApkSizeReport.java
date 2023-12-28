@@ -2,11 +2,12 @@ package com.microsoft.hydralab.common.entity.common.scanner;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class ApkSizeReport {
+public class ApkSizeReport implements Serializable {
     private long totalSize;
     private float totalSizeInMB;
     private long dexSize;
@@ -21,15 +22,14 @@ public class ApkSizeReport {
     public List<FileItem> unusedAssetsList = new ArrayList<>();
     public List<DuplicatedFile> duplicatedFileList = new ArrayList<>();
     public List<FileItem> bigSizeFileList = new ArrayList<>();
-    ;
 
-    public static class DuplicatedFile {
+    public static class DuplicatedFile implements Serializable {
         public String md5;
         public long size;
         public List<String> fileList;
     }
 
-    public static class FileItem {
+    public static class FileItem implements Serializable {
         public long size;
         public String fileName;
     }

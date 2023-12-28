@@ -14,8 +14,8 @@ import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestRun;
-import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
@@ -401,7 +401,7 @@ public class TestDetailController {
         String t2cJson = null;
 
         TestRun testRun = testDataService.findTestRunById(testRunId);
-        TestTask testTask = testDataService.getTestTaskDetail(testRun.getTestTaskId());
+        Task task = testDataService.getTaskDetail(testRun.getTestTaskId());
         try (FileInputStream in = new FileInputStream(graphFile)) {
             String graphXml = IOUtils.toString(in, StandardCharsets.UTF_8);
             t2cJson = T2CJsonGenerator.generateT2CJsonFromGraphXml(graphXml, path, logger, testTask.getPkgName(), "ANDROID");

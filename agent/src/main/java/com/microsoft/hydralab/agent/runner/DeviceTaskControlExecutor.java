@@ -26,14 +26,36 @@ public class DeviceTaskControlExecutor {
 
     @Nullable
     public DeviceTaskControl runForAllDeviceAsync(Collection<TestRunDevice> allDevices, DeviceTask task,
-                                                  TaskCompletion taskCompletion) {
+                                                  TaskCompletion taskCompletion, boolean isAgentTask) {
         //the status of device will be controlled by master, so the task will run no matter what the status saved in agent is
-        return runForAllDeviceAsync(allDevices, task, taskCompletion, true, true);
+        return runForAllDeviceAsync(allDevices, task, taskCompletion, true, true, isAgentTask);
     }
 
     public DeviceTaskControl runForAllDeviceAsync(Collection<TestRunDevice> allDevices, DeviceTask task,
                                                   TaskCompletion taskCompletion, boolean logging,
-                                                  boolean forceForTesting) {
+                                                  boolean forceForTesting, boolean isAgentTask) {
+        if (isAgentTask) {
+            CountDownLatch count = new CountDownLatch(1);
+            TestRunDevice fakeDevice = allDevices.iterator().next();
+            Runnable run = () -> {
+                try {
+                    if (logging) {
+                        DeviceTaskControlExecutor.log.info("start do task on a fake device");
+                    }
+                    task.doTask(fakeDevice);
+                } catch (Exception e) {
+                    DeviceTaskControlExecutor.log.error(e.getMessage(), e);
+                } finally {
+                    count.countDown();
+                    if (count.getCount() <= 0 && taskCompletion != null) {
+                        taskCompletion.onComplete();
+                    }
+                }
+            };
+            ThreadPoolUtil.TEST_EXECUTOR.execute(run);
+
+            return new DeviceTaskControl(count, Set.of(fakeDevice));
+        }
         int activeDevice = 0;
         log.warn("All device count {}", allDevices.size());
         for (TestRunDevice device : allDevices) {

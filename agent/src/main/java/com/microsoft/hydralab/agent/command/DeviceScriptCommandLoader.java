@@ -4,7 +4,7 @@
 package com.microsoft.hydralab.agent.command;
 
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
-import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.util.Const;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -24,17 +24,17 @@ public class DeviceScriptCommandLoader {
     @Resource(name = "DeviceCommandProperty")
     private List<DeviceScriptCommand> commands;
 
-    public void loadCommandAction(TestTask testTask) {
-        if (testTask.getDeviceActions() == null) {
-            testTask.setDeviceActions(new HashMap<>());
+    public void loadCommandAction(Task task) {
+        if (task.getDeviceActions() == null) {
+            task.setDeviceActions(new HashMap<>());
         }
-        List<DeviceScriptCommand> filteredCommands = filterCommands(testTask.getTestSuite());
+        List<DeviceScriptCommand> filteredCommands = filterCommands(testTask.getTaskAlias());
         for (DeviceScriptCommand deviceCommand : filteredCommands) {
             List<DeviceAction> actions = command2Action(deviceCommand);
             List<DeviceAction> originActions =
-                    testTask.getDeviceActions().getOrDefault(deviceCommand.getWhen(), new ArrayList<>());
+                    task.getDeviceActions().getOrDefault(deviceCommand.getWhen(), new ArrayList<>());
             originActions.addAll(actions);
-            testTask.getDeviceActions().put(deviceCommand.getWhen(), originActions);
+            task.getDeviceActions().put(deviceCommand.getWhen(), originActions);
         }
     }
 

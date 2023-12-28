@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.entity.common;
 
+import cn.hutool.core.lang.Assert;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
@@ -87,6 +88,8 @@ public class TestRun implements Serializable, ITestRun {
     private transient Logger logger;
     @Transient
     private transient TestRunDevice device;
+    @Transient
+    private TaskResult taskResult;
 
     public TestRun() {
     }
@@ -222,5 +225,21 @@ public class TestRun implements Serializable, ITestRun {
                     ", timestamp=" + timestamp +
                     '}';
         }
+    }
+
+    public void processAndSaveDeviceTestResultBlobUrl() {
+        Assert.isTrue(this.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
+        String deviceTestResultBlobUrl = this.getAttachments().get(0).getCDNUrl();
+        String fileName = this.getAttachments().get(0).getFileName();
+
+        int start = deviceTestResultBlobUrl.lastIndexOf(fileName);
+        deviceTestResultBlobUrl = deviceTestResultBlobUrl.substring(0, start);
+
+        if (deviceTestResultBlobUrl.endsWith("%2F")) {
+            deviceTestResultBlobUrl = deviceTestResultBlobUrl.substring(0, deviceTestResultBlobUrl.length() - 3);
+        } else if (deviceTestResultBlobUrl.endsWith("/")) {
+            deviceTestResultBlobUrl = deviceTestResultBlobUrl.substring(0, deviceTestResultBlobUrl.length() - 1);
+        }
+        this.setDeviceTestResultFolderUrl(deviceTestResultBlobUrl);
     }
 }

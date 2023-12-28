@@ -1,4 +1,4 @@
-package com.microsoft.hydralab.agent.runner.scanner;
+package com.microsoft.hydralab.agent.runner.analysis.scanner.apk;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -10,7 +10,6 @@ import com.microsoft.hydralab.common.util.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,10 +18,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -48,19 +49,49 @@ public class ApkCanaryExecutor {
     public static final int TASK_TYPE_COUNT_CLASS = 15;
     public static final int DUP_FILE_MAX_COUNT = 5;
     public static final int ASSETS_LIST_MAX_COUNT = 20;
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApkCanaryExecutor.class);
     static final Charset CHARSET = StandardCharsets.UTF_8;
+    private static final String CONFIG_FILE_PATH = "apk_canary/apk_canary_config_template.json";
+    private static final String CONFIG_FILE_NAME = "apk_canary_config_template.json";
+    private static final String JAR_FILE_PATH = "apk_canary/matrix-apk-canary-2.1.0.jar";
+    private static final String JAR_FILE_NAME = "matrix-apk-canary-2.1.0.jar";
+    private final File configTemplate;
+    private final File canaryJar;
+    private final File workingDir;
+    public static final String EXECUTOR_TYPE = "apk_canary";
 
-    public ApkReport analyzeApk(File canaryJar, File configTemplate, String apkPath, String workingDirPath) {
+    public ApkCanaryExecutor(File folder) {
+        workingDir = folder;
+        if (!workingDir.exists()) {
+            if (!workingDir.mkdirs()) {
+                throw new RuntimeException("mkdir fail!");
+            }
+        }
+        configTemplate = new File(folder, CONFIG_FILE_NAME);
+        if (configTemplate.exists()) {
+            configTemplate.delete();
+        }
+        canaryJar = new File(folder, JAR_FILE_NAME);
+        if (canaryJar.exists()) {
+            canaryJar.delete();
+        }
+
+        try (InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(CONFIG_FILE_PATH); OutputStream out = new FileOutputStream(configTemplate)) {
+            IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try (InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(JAR_FILE_PATH); OutputStream out = new FileOutputStream(canaryJar)) {
+            IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ApkReport analyzeApk(ApkReport report, String apkPath, Logger logger) {
         File apk = new File(apkPath);
         if (!apk.exists()) {
             throw new RuntimeException("apk not exist");
-        }
-        File workingDirFile = new File(workingDirPath);
-        if (!workingDirFile.exists()) {
-            if (!workingDirFile.mkdirs()) {
-                throw new RuntimeException("mkdir fail!");
-            }
         }
 
         int code = -1;
@@ -70,7 +101,7 @@ public class ApkCanaryExecutor {
         String reportPrefix = itemName + "-report";
         String buildDirName = name.substring(0, name.indexOf('.')) + "_unzip";
 
-        File reportFile = new File(workingDirFile, reportPrefix + ".json");
+        File reportFile = new File(workingDir, reportPrefix + ".json");
         if (reportFile.exists()) {
             reportFile.delete();
         }
@@ -83,7 +114,7 @@ public class ApkCanaryExecutor {
             input.close();
 
             String newConfigFileName = itemName + "-config.json";
-            File newConfigFile = new File(workingDirFile, newConfigFileName);
+            File newConfigFile = new File(workingDir, newConfigFileName);
             if (newConfigFile.exists()) {
                 newConfigFile.delete();
             }
@@ -91,21 +122,21 @@ public class ApkCanaryExecutor {
             FileOutputStream fileOutputStream = new FileOutputStream(newConfigFile);
             IOUtils.write(
                     content.replace("@NAME_HOLDER", apk.getAbsolutePath().replace("\\", "\\\\"))
-                            .replace("@REPORT_NAME_HOLDER", new File(workingDirFile, reportPrefix).getAbsolutePath().replace("\\", "\\\\")),
+                            .replace("@REPORT_NAME_HOLDER", new File(workingDir, reportPrefix).getAbsolutePath().replace("\\", "\\\\")),
                     fileOutputStream, CHARSET);
 
             fileOutputStream.close();
 
             String command = String.format("java -jar %s --config %s", canaryJar.getAbsoluteFile(), newConfigFile.getAbsolutePath());
-            LOGGER.info(command);
-            process = runtime.exec(command, null, workingDirFile);
+            logger.info(command);
+            process = runtime.exec(command, null, workingDir);
 
             try (InputStream inputStream = process.getInputStream();
                  InputStream errorStream = process.getErrorStream();
                  BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
-                    LOGGER.info(line);
+                    logger.info(line);
                 }
                 code = process.waitFor();
                 error = IOUtils.toString(errorStream, CHARSET);
@@ -114,28 +145,24 @@ public class ApkCanaryExecutor {
                     process.destroy();
                 }
             }
-            FileUtils.deleteDirectory(new File(workingDirFile, buildDirName));
+            FileUtils.deleteDirectory(new File(workingDir, buildDirName));
 
-            if (code != 0) {
-                LOGGER.info(error);
-                throw new RuntimeException("failed for " + name);
+            if (code == 0) {
+                report.addReportFile(reportFile.getName());
+                return getApkReportFromJsonReport(report, reportFile);
             }
-
-            return getApkReportFromJsonReport(reportFile);
+            logger.info(error);
         } catch (InterruptedException e) {
-            LOGGER.error("Interrupted in analyzeApk", e);
+            logger.error("Interrupted in analyzeApk", e);
         } catch (IOException e) {
-            LOGGER.error("error in analyzeApk", e);
-            throw new RuntimeException(e);
+            logger.error("error in analyzeApk", e);
         }
-        return null;
+        return report;
     }
 
-    public static ApkReport getApkReportFromJsonReport(File file) {
+    public static ApkReport getApkReportFromJsonReport(ApkReport apkReport, File file) {
         String json = FileUtil.getStringFromFilePath(file.getAbsolutePath());
         JSONArray objects = JSON.parseArray(json);
-
-        ApkReport apkReport = new ApkReport("apkReport");
 
         for (int i = 0; i < objects.size(); i++) {
             JSONObject jsonObject = objects.getJSONObject(i);
