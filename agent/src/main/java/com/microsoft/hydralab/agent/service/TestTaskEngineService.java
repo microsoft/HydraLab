@@ -209,10 +209,10 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             webSocketCallback.onTaskComplete(task);
         }
 
-        log.info("test task {} is completed, start to save info", testTask.getId());
+        log.info("test task {} is completed, start to save info", task.getId());
 
-        testDataService.saveTestTaskData(testTask);
-        runningTestTask.remove(testTask.getId());
+        testDataService.saveTestTaskData(task);
+        runningTestTask.remove(task.getId());
     }
 
     @Override

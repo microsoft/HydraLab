@@ -404,7 +404,7 @@ public class TestDetailController {
         Task task = testDataService.getTaskDetail(testRun.getTestTaskId());
         try (FileInputStream in = new FileInputStream(graphFile)) {
             String graphXml = IOUtils.toString(in, StandardCharsets.UTF_8);
-            t2cJson = T2CJsonGenerator.generateT2CJsonFromGraphXml(graphXml, path, logger, testTask.getPkgName(), "ANDROID");
+            t2cJson = T2CJsonGenerator.generateT2CJsonFromGraphXml(graphXml, path, logger, task.getPkgName(), "ANDROID");
         } catch (Exception e) {
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error when parse graph xml");
         }

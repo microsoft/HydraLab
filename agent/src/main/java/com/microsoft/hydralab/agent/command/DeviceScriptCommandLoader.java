@@ -28,7 +28,7 @@ public class DeviceScriptCommandLoader {
         if (task.getDeviceActions() == null) {
             task.setDeviceActions(new HashMap<>());
         }
-        List<DeviceScriptCommand> filteredCommands = filterCommands(testTask.getTaskAlias());
+        List<DeviceScriptCommand> filteredCommands = filterCommands(task.getTaskAlias());
         for (DeviceScriptCommand deviceCommand : filteredCommands) {
             List<DeviceAction> actions = command2Action(deviceCommand);
             List<DeviceAction> originActions =
