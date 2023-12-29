@@ -143,7 +143,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             return chosenDevices;
         }
 
-        Task.RunnerType runningType = Task.RunnerType.valueOf(testTask.getRunnerType());
+        String runningType = testTask.getRunnerType();
         if (((Task.RunnerType.APPIUM_CROSS.name().equals(runningType)) || (Task.RunnerType.T2C_JSON.name().equals(runningType))) && devices.size() > 1) {
             Optional<DeviceInfo> mainDeviceInfo = devices.stream().filter(deviceInfo -> !DeviceType.WINDOWS.name().equals(deviceInfo.getType())).findFirst();
             Assert.isTrue(mainDeviceInfo.isPresent(), "There are more than 1 device, but all of them is windows device!");

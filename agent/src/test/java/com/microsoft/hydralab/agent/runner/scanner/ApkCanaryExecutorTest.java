@@ -5,6 +5,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.microsoft.hydralab.agent.runner.analysis.scanner.apk.ApkCanaryExecutor;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.scanner.ApkReport;
+import com.microsoft.hydralab.common.util.FileUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,16 +15,17 @@ public class ApkCanaryExecutorTest extends BaseTest {
 
     @Test
     public void testApkCanaryExecutor() {
-        File apkFilePath = new File("C:\\Users\\zhoule\\Downloads\\Link_to_Windows_1.23102.199.0_Apkpure.apk");
+        File apkFilePath = new File("../common/src/test/resources/record_release.apk");
         Assertions.assertTrue(apkFilePath.exists(), "apk file not exist: " + apkFilePath.getAbsolutePath());
-        ApkCanaryExecutor apkCanaryExecutor = new ApkCanaryExecutor(new File(""));
+        File workingDir = new File("../common/src/test/resources/apk_canary");
+        ApkCanaryExecutor apkCanaryExecutor = new ApkCanaryExecutor(workingDir);
         ApkReport apkReport = new ApkReport("apkReport");
         apkReport = apkCanaryExecutor.analyzeApk(
                 apkReport,
                 apkFilePath.getAbsolutePath(),
                 baseLogger
-
         );
+        FileUtil.deleteFileRecursively(workingDir);
         System.out.println(JSON.toJSONString(apkReport, SerializerFeature.PrettyFormat));
     }
 
