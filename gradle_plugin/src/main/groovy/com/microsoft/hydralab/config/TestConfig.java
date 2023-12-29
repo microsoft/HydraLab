@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,7 +63,7 @@ public class TestConfig {
         if (queueTimeOutSeconds == null) {
             this.queueTimeOutSeconds = this.runTimeOutSeconds;
         }
-        HashMap<String, Object> explorationArgs = (HashMap<String, Object>)map.get("exploration");
+        HashMap<String, Object> explorationArgs = (HashMap<String, Object>) map.get("exploration");
         if (explorationArgs != null) {
             Object maxStepCount = explorationArgs.get("maxStepCount");
             if (maxStepCount != null) {
@@ -75,7 +76,7 @@ public class TestConfig {
         }
     }
 
-    public void extractFromExistingField(){
+    public void extractFromExistingField() {
         if (StringUtils.isBlank(this.inspectionStrategiesStr) && this.inspectionStrategies.size() != 0) {
             this.inspectionStrategiesStr = GSON.toJson(this.inspectionStrategies);
         }
