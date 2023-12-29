@@ -55,6 +55,7 @@ public class TestConfig {
     public boolean enableFailingTask = true;
     public boolean enableNetworkMonitor = false;
     public String networkMonitorRule = "";
+    public boolean enableTestOrchestrator = false;
 
     public void constructField(HashMap<String, Object> map) {
         Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");
@@ -113,7 +114,8 @@ public class TestConfig {
                 "\tnotifyUrl=" + notifyUrl + "\n" +
                 "\tdisableRecording=" + disableRecording + "\n" +
                 "\tenableFailingTask=" + enableFailingTask + "\n" +
-                "\tenableNetworkMonitor=" + enableNetworkMonitor +"\n" +
-                "\tnetworkMonitorRule=" + networkMonitorRule;
+                "\tenableNetworkMonitor=" + enableNetworkMonitor + "\n" +
+                "\tnetworkMonitorRule=" + networkMonitorRule + "\n" +
+                "\tenableTestOrchestrator=" + enableTestOrchestrator;
     }
 }

@@ -238,6 +238,7 @@ public class HydraLabAPIClient {
         jsonElement.addProperty("disableRecording", testConfig.disableRecording);
         jsonElement.addProperty("enableNetworkMonitor", testConfig.enableNetworkMonitor);
         jsonElement.addProperty("networkMonitorRule", testConfig.networkMonitorRule);
+        jsonElement.addProperty("enableTestOrchestrator", testConfig.enableTestOrchestrator);
         jsonElement.addProperty("notifyUrl", testConfig.notifyUrl);
 
         try {

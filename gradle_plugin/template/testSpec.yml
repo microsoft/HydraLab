@@ -70,3 +70,4 @@ testSpec:
   enableFailingTask: # <Optional>
   enableNetworkMonitor: # <Optional>
   networkMonitorRule: # <Optional>
+  enableTestOrchestrator: # <Optional>
