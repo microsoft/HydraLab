@@ -220,9 +220,6 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         checkTestTaskCancel(testTask);
         reInstallApp(testRunDevice, testTask, testRun.getLogger());
         reInstallTestApp(testRunDevice, testTask, testRun.getLogger());
-        if (testTask.isEnableTestOrchestrator()) {
-            reinstallOrchestratorDependency(testRunDevice, testTask, testRun.getLogger());
-        }
 
         //execute actions
         if (testTask.getDeviceActions() != null) {
@@ -340,9 +337,6 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         } catch (Exception e) {
             throw new Exception(e);
         }
-    }
-
-    protected void reinstallOrchestratorDependency(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
     }
 
     protected boolean shouldInstallTestPackageAsApp() {

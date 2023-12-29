@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 
@@ -134,6 +135,7 @@ public class AppConfiguration {
 
         agentManagementService.setEnvInfo(envCapabilityDiscoveryService.getEnvInfo());
         agentManagementService.setRegistryServer(registryServer);
+        agentManagementService.setTestTempFilePath(Path.of(appOptions.getTestPackageLocation(), "temp").toString());
 
         logger.info("done with agentManagementService instantiation");
         return agentManagementService;

@@ -55,6 +55,14 @@ public class EspressoRunner extends TestRunner {
     }
 
     @Override
+    protected void setUp(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
+        super.setUp(testRunDevice, testTask, testRun);
+        if (testTask.isEnableTestOrchestrator()) {
+            reinstallOrchestratorDependency(testRunDevice, testTask, testRun.getLogger());
+        }
+    }
+
+    @Override
     protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
         InstrumentationResultParser instrumentationResultParser = null;
         Logger reportLogger = testRun.getLogger();
@@ -187,12 +195,11 @@ public class EspressoRunner extends TestRunner {
         return command;
     }
 
-    @Override
     protected void reinstallOrchestratorDependency(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
         checkTestTaskCancel(testTask);
 
-        String pathToTestOrchestratorApk = this.fileLoadUtil.copyPreinstallAPK(ESPRESSO_TEST_ORCHESTRATOR_APK);
-        String pathToTestServicesApk = this.fileLoadUtil.copyPreinstallAPK(ESPRESSO_TEST_SERVICES_APK);
+        String pathToTestOrchestratorApk = this.agentManagementService.copyPreinstallAPK(ESPRESSO_TEST_ORCHESTRATOR_APK);
+        String pathToTestServicesApk = this.agentManagementService.copyPreinstallAPK(ESPRESSO_TEST_SERVICES_APK);
 
         testRunDeviceOrchestrator.uninstallApp(testRunDevice, "androidx.test.services", reportLogger);
         ThreadUtils.safeSleep(2000);

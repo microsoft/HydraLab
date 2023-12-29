@@ -11,8 +11,6 @@ import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,13 +18,8 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -139,26 +132,5 @@ public class FileLoadUtil {
             throw new HydraLabRuntimeException("Download file failed", e);
         }
         return file;
-    }
-
-    public String copyPreinstallAPK(String fileName) {
-        File dir = new File(appOptions.getTestPackageLocation(), "temp");
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw new RuntimeException("create dir fail: " + dir.getAbsolutePath());
-            }
-        }
-
-        File preinstallApk = new File(dir.getAbsolutePath(), fileName);
-        if (preinstallApk.exists()) {
-            preinstallApk.delete();
-        }
-        try (InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(fileName); OutputStream out = new FileOutputStream(preinstallApk)) {
-            IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return preinstallApk.getAbsolutePath();
     }
 }
