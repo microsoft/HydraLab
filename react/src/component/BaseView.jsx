@@ -96,6 +96,13 @@ export default class BaseView extends React.Component {
         });
         console.log([event.target.name] + " => " + event.target.value)
     }
+    
+    handleValueSwitched = (event) => {
+        this.setState({
+            [event.target.name]: event.target.checked
+        });
+        console.log([event.target.name] + " => " + event.target.checked)
+    }
 
     handleFileUpload = (event) => {
         this.setState({
