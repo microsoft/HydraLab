@@ -39,14 +39,12 @@ public class EspressoRunner extends TestRunner {
     private static final int MAJOR_ADB_VERSION = 1;
     private static final int MINOR_ADB_VERSION = -1;
     final ADBOperateUtil adbOperateUtil;
-    final FileLoadUtil fileLoadUtil;
 
     public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                           TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService,
-                          ADBOperateUtil adbOperateUtil, FileLoadUtil fileLoadUtil) {
+                          ADBOperateUtil adbOperateUtil) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
-        this.fileLoadUtil = fileLoadUtil;
     }
 
     @Override

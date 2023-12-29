@@ -62,9 +62,9 @@ public class TestRunnerConfig {
                                          TestTaskEngineService testTaskEngineService,
                                          TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                                          PerformanceTestManagementService performanceTestManagementService,
-                                         ADBOperateUtil adbOperateUtil, FileLoadUtil fileLoadUtil) {
+                                         ADBOperateUtil adbOperateUtil) {
         return new EspressoRunner(agentManagementService, testTaskEngineService, testRunDeviceOrchestrator, performanceTestManagementService,
-                adbOperateUtil, fileLoadUtil);
+                adbOperateUtil);
     }
 
     @Bean
