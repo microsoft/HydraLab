@@ -8,6 +8,7 @@ import com.android.ddmlib.testrunner.InstrumentationResultParser;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
 import com.microsoft.hydralab.agent.runner.TestRunner;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
+import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.EnvCapability;
 import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
@@ -38,12 +39,14 @@ public class EspressoRunner extends TestRunner {
     private static final int MAJOR_ADB_VERSION = 1;
     private static final int MINOR_ADB_VERSION = -1;
     final ADBOperateUtil adbOperateUtil;
+    final FileLoadUtil fileLoadUtil;
 
     public EspressoRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback,
                           TestRunDeviceOrchestrator testRunDeviceOrchestrator, PerformanceTestManagementService performanceTestManagementService,
-                          ADBOperateUtil adbOperateUtil) {
+                          ADBOperateUtil adbOperateUtil, FileLoadUtil fileLoadUtil) {
         super(agentManagementService, testTaskRunCallback, testRunDeviceOrchestrator, performanceTestManagementService);
         this.adbOperateUtil = adbOperateUtil;
+        this.fileLoadUtil = fileLoadUtil;
     }
 
     @Override
@@ -188,16 +191,19 @@ public class EspressoRunner extends TestRunner {
     protected void reinstallOrchestratorDependency(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
         checkTestTaskCancel(testTask);
 
+        String pathToTestOrchestratorApk = this.fileLoadUtil.copyPreinstallAPK(ESPRESSO_TEST_ORCHESTRATOR_APK);
+        String pathToTestServicesApk = this.fileLoadUtil.copyPreinstallAPK(ESPRESSO_TEST_SERVICES_APK);
+
         testRunDeviceOrchestrator.uninstallApp(testRunDevice, "androidx.test.services", reportLogger);
         ThreadUtils.safeSleep(2000);
         testRunDeviceOrchestrator.uninstallApp(testRunDevice, "androidx.test.orchestrator", reportLogger);
         ThreadUtils.safeSleep(2000);
 
         FlowUtil.retryAndSleepWhenFalse(3, 5,
-                () -> testRunDeviceOrchestrator.installApp(testRunDevice, new File(agentManagementService.getPreAppDir(), ESPRESSO_TEST_ORCHESTRATOR_APK).getAbsolutePath(),
+                () -> testRunDeviceOrchestrator.installApp(testRunDevice, new File(pathToTestOrchestratorApk).getAbsolutePath(),
                         reportLogger));
         FlowUtil.retryAndSleepWhenFalse(3, 5,
-                () -> testRunDeviceOrchestrator.installApp(testRunDevice, new File(agentManagementService.getPreAppDir(), ESPRESSO_TEST_SERVICES_APK).getAbsolutePath(),
+                () -> testRunDeviceOrchestrator.installApp(testRunDevice, new File(pathToTestServicesApk).getAbsolutePath(),
                         reportLogger));
     }
 }

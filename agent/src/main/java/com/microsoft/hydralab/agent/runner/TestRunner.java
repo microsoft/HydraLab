@@ -22,29 +22,19 @@ import com.microsoft.hydralab.common.util.ThreadPoolUtil;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.performance.InspectionStrategy;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import static com.microsoft.hydralab.common.util.AgentConstant.ESPRESSO_TEST_ORCHESTRATOR_APK;
-import static com.microsoft.hydralab.common.util.AgentConstant.ESPRESSO_TEST_SERVICES_APK;
 
 public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
     protected final Logger log = LoggerFactory.getLogger(TestRunner.class);
@@ -65,8 +55,6 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
 
     void init() {
         agentManagementService.registerFunctionAvailability(getClass().getName(), AgentFunctionAvailability.AgentFunctionType.TEST_RUNNER, true, getEnvCapabilityRequirements());
-        copyPreinstallAPK(agentManagementService.getPreAppDir(), ESPRESSO_TEST_ORCHESTRATOR_APK);
-        copyPreinstallAPK(agentManagementService.getPreAppDir(), ESPRESSO_TEST_SERVICES_APK);
     }
 
     protected abstract List<EnvCapabilityRequirement> getEnvCapabilityRequirements();
@@ -377,17 +365,5 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
 
     public void stopTest(TestRunDevice testRunDevice) {
         testRunDeviceOrchestrator.killAll(testRunDevice);
-    }
-
-    public void copyPreinstallAPK(File preAppDir, String fileName) {
-        File preinstallApk = new File(preAppDir, fileName);
-        if (preinstallApk.exists()) {
-            preinstallApk.delete();
-        }
-        try (InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(fileName); OutputStream out = new FileOutputStream(preinstallApk)) {
-            IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
