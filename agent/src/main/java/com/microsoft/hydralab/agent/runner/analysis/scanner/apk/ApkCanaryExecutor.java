@@ -57,7 +57,7 @@ public class ApkCanaryExecutor {
     private final File configTemplate;
     private final File canaryJar;
     private final File workingDir;
-    public static final String EXECUTOR_TYPE = "apk_canary";
+    public static final String EXECUTOR_TYPE = "apkcanary";
 
     public ApkCanaryExecutor(File folder) {
         workingDir = folder;

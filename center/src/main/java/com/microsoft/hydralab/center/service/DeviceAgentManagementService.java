@@ -10,6 +10,8 @@ import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.center.openai.SuggestionService;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
+import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.AgentDeviceGroup;
 import com.microsoft.hydralab.common.entity.center.DeviceGroup;
@@ -744,16 +746,35 @@ public class DeviceAgentManagementService {
         List<AnalysisTask.AnalysisConfig> analysisConfigs = testTaskSpec.analysisConfigs;
         Assert.notEmpty(analysisConfigs, "No analysis config found!");
         JSONObject result = new JSONObject();
+        List<AnalysisTask.AnalysisConfig> configs = testTaskSpec.analysisConfigs;
 
-        List<AgentDeviceGroup> availableAgents =
-                agentDeviceGroups.values().stream().filter(agentDeviceGroup -> agentDeviceGroup.getAvailableAnalysisTaskCount().get(testTaskSpec.runningType) > 0).collect(
-                        Collectors.toList());
+        List<AgentDeviceGroup> availableAgents = new ArrayList<>();
+
+        for (AgentDeviceGroup tempAgentDeviceGroup : agentDeviceGroups.values()) {
+            AgentFunctionAvailability function = tempAgentDeviceGroup.getFunctionAvailabilities().stream()
+                    .filter(functionAvailability -> functionAvailability.getFunctionName().equals(testTaskSpec.runningType)).findFirst().get();
+            if (function.isAvailable() && function.isEnabled()) {
+                List<EnvCapabilityRequirement> requirements = function.getEnvCapabilityRequirements();
+                boolean isMatch = true;
+                for (AnalysisTask.AnalysisConfig config : configs) {
+                    if ("apkcanary".equals(config.getExecutor())) {
+                        continue;
+                    }
+                    isMatch = requirements.stream().anyMatch(requirement -> requirement.getName().equals(config.getExecutor()) && requirement.isReady()) && isMatch;
+                }
+                if (isMatch) {
+                    availableAgents.add(tempAgentDeviceGroup);
+                }
+            }
+        }
+
+        Assert.notEmpty(availableAgents, "No available agent found!");
         Collections.shuffle(availableAgents);
 
         AgentDeviceGroup agentDeviceGroup = null;
 
         for (AgentDeviceGroup availableAgent : availableAgents) {
-            if (!isAgentUpdating(availableAgent.getAgentId())) {
+            if (!isAgentUpdating(availableAgent.getAgentId()) && availableAgent.getAvailableAnalysisTaskCount().get(testTaskSpec.runningType) > 0) {
                 agentDeviceGroup = availableAgent;
                 break;
             }

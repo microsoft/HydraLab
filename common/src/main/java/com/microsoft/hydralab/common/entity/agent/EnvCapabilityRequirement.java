@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 public class EnvCapabilityRequirement {
     boolean isReady = false;
+    String name;
     EnvCapability envCapability;
 
     public EnvCapabilityRequirement() {
@@ -20,5 +21,11 @@ public class EnvCapabilityRequirement {
      */
     public EnvCapabilityRequirement(EnvCapability.CapabilityKeyword keyword, int majorVersion, int minorVersion) {
         envCapability = new EnvCapability(keyword, majorVersion, minorVersion);
+        this.name = keyword.toString();
+    }
+
+    public EnvCapabilityRequirement(EnvCapability.CapabilityKeyword keyword, int majorVersion, int minorVersion, String name) {
+        envCapability = new EnvCapability(keyword, majorVersion, minorVersion);
+        this.name = name;
     }
 }

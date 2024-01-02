@@ -60,9 +60,10 @@ public class APKScanner extends Scanner<ApkReport> {
 
     @Override
     public ApkReport scanSensitiveWords(ApkReport report, File file, File outputFolder, AnalysisTask.AnalysisConfig config, Logger logger) {
-
-        ApkLeaksExecutor apkLeaksExecutor = new ApkLeaksExecutor(outputFolder);
-        apkLeaksExecutor.analyzeLeaks(report, file.getAbsolutePath(), config.getAnalysisConfig(), logger);
+        if (ApkLeaksExecutor.EXECUTOR_TYPE.equals(config.getExecutor())) {
+            ApkLeaksExecutor apkLeaksExecutor = new ApkLeaksExecutor(outputFolder);
+            apkLeaksExecutor.analyzeLeaks(report, file.getAbsolutePath(), config.getAnalysisConfig(), logger);
+        }
         return report;
     }
 

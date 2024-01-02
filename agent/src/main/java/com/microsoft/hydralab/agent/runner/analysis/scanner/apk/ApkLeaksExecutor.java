@@ -36,6 +36,7 @@ public class ApkLeaksExecutor {
     private static final String CONFIG_FILE_NAME = "apk_leaks_config.json";
     private final File configTemplate;
     private final File workingDir;
+    public static final String EXECUTOR_TYPE = "apkleaks";
 
     public ApkLeaksExecutor(File folder) {
         workingDir = folder;

@@ -23,7 +23,7 @@ import java.util.Formatter;
 
 public class ApkAnalyzeExecutor {
     static final Charset CHARSET = StandardCharsets.UTF_8;
-    public static final String EXECUTOR_TYPE = "apk_analyzer";
+    public static final String EXECUTOR_TYPE = "apkanalyzer";
     private final File workingDir;
 
     public ApkAnalyzeExecutor(File outputFolder) {
