@@ -195,8 +195,7 @@ export default class TestReportView extends BaseView {
                         <tr className="table-info">
                             <th colSpan='2' style={{ backgroundColor: '4472C4', lineHeight: '100%' }}>
                                 <center><p className='mt-4'
-                                    style={{ color: 'white', fontSize: '2.5rem' }}>Device
-                                    Laboratory Test Report</p></center>
+                                    style={{ color: 'white', fontSize: '2.5rem' }}>Hydra Lab Test Report</p></center>
                                 <p style={{
                                     color: 'white',
                                     textAlign: 'right',
