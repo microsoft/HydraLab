@@ -98,7 +98,7 @@ public class ApkCanaryExecutor {
 
         String name = apk.getName();
         String itemName = name.replace(".apk", "");
-        String reportPrefix = itemName + "-report";
+        String reportPrefix = itemName + "canary_report";
         String buildDirName = name.substring(0, name.indexOf('.')) + "_unzip";
 
         File reportFile = new File(workingDir, reportPrefix + ".json");
@@ -113,7 +113,7 @@ public class ApkCanaryExecutor {
             String content = IOUtils.toString(input, CHARSET);
             input.close();
 
-            String newConfigFileName = itemName + "-config.json";
+            String newConfigFileName = itemName + "canary_config.json";
             File newConfigFile = new File(workingDir, newConfigFileName);
             if (newConfigFile.exists()) {
                 newConfigFile.delete();
@@ -146,6 +146,13 @@ public class ApkCanaryExecutor {
                 }
             }
             FileUtils.deleteDirectory(new File(workingDir, buildDirName));
+
+            try {
+                configTemplate.delete();
+                canaryJar.delete();
+            }catch (Exception e){
+                logger.error("canaryJar delete error",e);
+            }
 
             if (code == 0) {
                 report.addReportFile(reportFile.getName());

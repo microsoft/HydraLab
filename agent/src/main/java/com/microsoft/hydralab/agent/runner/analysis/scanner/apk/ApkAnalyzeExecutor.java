@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Formatter;
 
 /**
  * @author zhoule
@@ -26,13 +25,17 @@ public class ApkAnalyzeExecutor {
     public static final String EXECUTOR_TYPE = "apkanalyzer";
     private final File workingDir;
 
-    public ApkAnalyzeExecutor(File outputFolder) {
+    private final String analysisToolPath;
+
+    public ApkAnalyzeExecutor(File outputFolder, String analysisToolPath) {
         workingDir = outputFolder;
         if (!workingDir.exists()) {
             if (!workingDir.mkdirs()) {
                 throw new RuntimeException("mkdir fail!");
             }
         }
+
+        this.analysisToolPath = analysisToolPath;
     }
 
     public ApkReport analyzeApk(ApkReport report, String apkPath, Logger logger) {
@@ -47,7 +50,7 @@ public class ApkAnalyzeExecutor {
         String error = "";
         String result = "";
         try {
-            String command = String.format("apkanalyzer apk download-size %s", apk.getAbsolutePath());
+            String command = String.format("%s apk download-size %s", analysisToolPath, apk.getAbsolutePath());
             process = runtime.exec(command, null, workingDir);
             try (InputStream inputStream = process.getInputStream();
                  InputStream errorStream = process.getErrorStream();
@@ -68,8 +71,10 @@ public class ApkAnalyzeExecutor {
                 try {
                     int downloadSize = Integer.parseInt(result);
                     report.getApkSizeReport().setDownloadSize(downloadSize);
-                    Formatter size = new Formatter().format("%.2f", downloadSize / 1024 / 1024);
-                    report.getApkSizeReport().setDownloadSizeInMB(Long.valueOf(size.toString()));
+                    float sizeInMB = (float) downloadSize / 1024 / 1024;
+
+                    sizeInMB = (float) Math.round(sizeInMB * 100) / 100;
+                    report.getApkSizeReport().setDownloadSizeInMB(sizeInMB);
                 } catch (Exception e) {
                     logger.info("failed to get download size");
                 }

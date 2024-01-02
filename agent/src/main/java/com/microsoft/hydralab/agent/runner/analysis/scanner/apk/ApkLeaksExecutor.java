@@ -66,7 +66,7 @@ public class ApkLeaksExecutor {
         }
         String name = apk.getName();
         String itemName = name.replace(".apk", "");
-        String reportPrefix = itemName + "-leak-report";
+        String reportPrefix = itemName + "leak_report";
 
         File reportFile = new File(workingDir, reportPrefix + ".json");
         if (reportFile.exists()) {
@@ -85,7 +85,7 @@ public class ApkLeaksExecutor {
             }
             input.close();
 
-            String newConfigFileName = itemName + "-leak-config.json";
+            String newConfigFileName = itemName + "leak_config.json";
             File newConfigFile = new File(workingDir, newConfigFileName);
             if (newConfigFile.exists()) {
                 newConfigFile.delete();
@@ -110,6 +110,12 @@ public class ApkLeaksExecutor {
                 if (process != null) {
                     process.destroy();
                 }
+            }
+
+            try {
+                configTemplate.delete();
+            }catch (Exception e){
+                logger.error("delete config file failed",e);
             }
 
             if (code == 0 && reportFile.exists()) {

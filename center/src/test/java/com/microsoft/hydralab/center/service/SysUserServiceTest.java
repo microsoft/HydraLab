@@ -63,10 +63,11 @@ public class SysUserServiceTest extends BaseTest {
         taskResultRepository.save(apkReport);
 
     }
-    
+
     @Test
     public void query(){
         List<TaskResult> results = taskResultRepository.findAll();
         System.out.println(results.size());
     }
+
 }

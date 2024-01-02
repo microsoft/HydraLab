@@ -238,4 +238,13 @@ public class AgentManagementService {
         }
         functionAvailabilities.add(new AgentFunctionAvailability(functionName, functionType, enabled, available, requirements));
     }
+
+    public String getEnvFilePath(EnvCapability.CapabilityKeyword keyword){
+        Optional<EnvCapability> envCapability =
+                envInfo.getCapabilities().stream().filter(capability -> capability.getKeyword().equals(keyword)).findFirst();
+        if (!envCapability.isPresent()) {
+            return null;
+        }
+        return envCapability.get().getFile().getAbsolutePath();
+    }
 }

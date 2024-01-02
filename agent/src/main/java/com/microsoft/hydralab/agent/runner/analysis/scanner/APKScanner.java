@@ -52,7 +52,7 @@ public class APKScanner extends Scanner<ApkReport> {
             apkCanaryExecutor.analyzeApk(report, file.getAbsolutePath(), logger);
             logger.info(JSON.toJSONString(report, SerializerFeature.PrettyFormat));
         } else if (ApkAnalyzeExecutor.EXECUTOR_TYPE.equals(config.getExecutor())) {
-            ApkAnalyzeExecutor apkAnalyzeExecutor = new ApkAnalyzeExecutor(outputFolder);
+            ApkAnalyzeExecutor apkAnalyzeExecutor = new ApkAnalyzeExecutor(outputFolder, agentManagementService.getEnvFilePath(EnvCapability.CapabilityKeyword.apkanalyzer));
             apkAnalyzeExecutor.analyzeApk(report, file.getAbsolutePath(), logger);
         }
         return report;
