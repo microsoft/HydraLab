@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 package com.microsoft.hydralab.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,13 +56,14 @@ public class TestConfig {
     public boolean enableFailingTask = true;
     public boolean enableNetworkMonitor = false;
     public String networkMonitorRule = "";
+    public boolean enableTestOrchestrator = false;
 
     public void constructField(HashMap<String, Object> map) {
         Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");
         if (queueTimeOutSeconds == null) {
             this.queueTimeOutSeconds = this.runTimeOutSeconds;
         }
-        HashMap<String, Object> explorationArgs = (HashMap<String, Object>)map.get("exploration");
+        HashMap<String, Object> explorationArgs = (HashMap<String, Object>) map.get("exploration");
         if (explorationArgs != null) {
             Object maxStepCount = explorationArgs.get("maxStepCount");
             if (maxStepCount != null) {
@@ -74,7 +76,7 @@ public class TestConfig {
         }
     }
 
-    public void extractFromExistingField(){
+    public void extractFromExistingField() {
         if (StringUtils.isBlank(this.inspectionStrategiesStr) && this.inspectionStrategies.size() != 0) {
             this.inspectionStrategiesStr = GSON.toJson(this.inspectionStrategies);
         }
@@ -113,7 +115,8 @@ public class TestConfig {
                 "\tnotifyUrl=" + notifyUrl + "\n" +
                 "\tdisableRecording=" + disableRecording + "\n" +
                 "\tenableFailingTask=" + enableFailingTask + "\n" +
-                "\tenableNetworkMonitor=" + enableNetworkMonitor +"\n" +
-                "\tnetworkMonitorRule=" + networkMonitorRule;
+                "\tenableNetworkMonitor=" + enableNetworkMonitor + "\n" +
+                "\tnetworkMonitorRule=" + networkMonitorRule + "\n" +
+                "\tenableTestOrchestrator=" + enableTestOrchestrator;
     }
 }

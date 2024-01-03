@@ -97,5 +97,6 @@ testSpec:
     enableFailingTask: true
     enableNetworkMonitor: false
     networkMonitorRule: NETWORK_TEST_RULE_NONE
+    enableTestOrchestrator: false
 
 @endyaml

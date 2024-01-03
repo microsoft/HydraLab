@@ -16,6 +16,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Radio from '@material-ui/core/Radio';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import InputLabel from '@mui/material/InputLabel';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -23,6 +24,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import TextField from "@mui/material/TextField";
+import Switch from "@mui/material/Switch";
 import DialogActions from "@mui/material/DialogActions";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
@@ -110,6 +112,7 @@ export default class RunnerView extends BaseView {
         instrumentationArgs: "",
         frameworkType: "JUnit4",
         testRunnerName: "androidx.test.runner.AndroidJUnitRunner",
+        enableTestOrchestrator: false,
         neededPermissions: null,
         deviceActions: null,
         testPlan: null,
@@ -646,6 +649,18 @@ export default class RunnerView extends BaseView {
                         value={this.state.testRunnerName ?? ""}
                         onChange={this.handleValueChange}
                     />
+                    <FormControlLabel                               
+                        hidden={runTestType !== "INSTRUMENTATION"}
+                        control={
+                            <Switch
+                                name="enableTestOrchestrator"
+                                label="Espresso Test Orchestrator"
+                                value={this.state.enableTestOrchestrator ?? false}
+                                onChange={this.handleValueSwitched}
+                            />
+                        }
+                        label="Enable Test Orchestrator"
+                    />
                     <br />
                     <FormControl
                         fullWidth
@@ -1114,7 +1129,8 @@ export default class RunnerView extends BaseView {
             testRunnerName: this.state.testRunnerName,
             neededPermissions: neededPermissionsObj,
             deviceActions: deviceActionsObj,
-            testPlan: this.state.testPlan
+            testPlan: this.state.testPlan,
+            enableTestOrchestrator: this.state.enableTestOrchestrator
         }
 
         axios.post('/api/test/task/run/', formParams, {

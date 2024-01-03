@@ -166,6 +166,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('networkMonitorRule')) {
                     testConfig.networkMonitorRule = project.networkMonitorRule
                 }
+                if (project.hasProperty('enableTestOrchestrator')) {
+                    testConfig.enableTestOrchestrator = project.enableTestOrchestrator
+                }
 
                 requiredParamCheck(apiConfig, testConfig)
 
