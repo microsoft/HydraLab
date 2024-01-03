@@ -3,25 +3,25 @@
 *.puml  @hydraxman @zhou9584
 
 # Front-end architect
-/react/ @DexterDreeeam @lifesaver0129 @olivershen-wow
+/react/ @dexterdreeeam  @lifesaver0129 @olivershen-wow
 
 # Encache
 ehcache.xml @zhou9584 @olivershen-wow
 
 # Onboarding
-*.md @zhou9584 @hydraxman @DexterDreeeam
+*.md @zhou9584 @hydraxman @dexterdreeeam 
 
 # Hydra Lab Android client
-/android_client/app/ @lifesaver0129 @TedaLIEz @DexterDreeeam @taoran6
+/android_client/app/ @lifesaver0129 @TedaLIEz @dexterdreeeam  @taoran6
 
 # TestTaskSpec
-/common/src/main/java/com/microsoft/hydralab/common/entity/ @olivershen-wow @zhou9584 @DexterDreeeam
+/common/src/main/java/com/microsoft/hydralab/common/entity/ @olivershen-wow @zhou9584 @dexterdreeeam 
 
 # Gradle Plugin
-/gradle_plugin/ @olivershen-wow @taoran6 @DexterDreeeam
+/gradle_plugin/ @olivershen-wow @taoran6 @dexterdreeeam 
 
 # ADO extension
-/vsts_extension/ @olivershen-wow @DexterDreeeam @taoran6
+/vsts_extension/ @olivershen-wow @dexterdreeeam  @taoran6
 
 # Grafana/Prometheus
 /center/deploy_startup/ @olivershen-wow @zhou9584
@@ -43,8 +43,8 @@ ehcache.xml @zhou9584 @olivershen-wow
 **/runner/appium/ @zhou9584 @taoran6 @olivershen-wow
 
 # Taps to cases
-**/runner/t2c/  @TedaLIEz @taoran6 @DexterDreeeam
-/taps_to_cases/ @TedaLIEz @taoran6 @DexterDreeeam
+**/runner/t2c/  @TedaLIEz @taoran6 @dexterdreeeam 
+/taps_to_cases/ @TedaLIEz @taoran6 @dexterdreeeam 
 
 # XCTest(iOS)
 **/runner/xctest/ @lifesaver0129 @zhou9584 @TedaLIEz
