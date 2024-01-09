@@ -180,11 +180,11 @@ class TasksView extends BaseView {
                 <StyledTableCell key={'TestType'} align="center">
                     <ThemeProvider theme={darkTheme}>
                         <FormControl className="ml-0" fullWidth={true}>
-                            <InputLabel id="test-type-select-label" >Test Type</InputLabel>
+                            <InputLabel id="test-type-select-label" >Task Type</InputLabel>
                             <Select
                                 labelId="test-type-select-label"
                                 id="test-type-select"
-                                label="Test Type"
+                                label="Task Type"
                                 size="small"
                                 multiple
                                 value={selectedParams.TestType}
@@ -299,7 +299,7 @@ class TasksView extends BaseView {
 
         return <div>
             <Typography variant="h4" className="m-2">
-                Test Task History</Typography>
+                Task History</Typography>
             <TableContainer style={{ margin: "auto", overflowY: 'initial', height: `${tableBodyHeight + 100}px` }}>
                 <Table stickyHeader size="medium">
                     <TableHead>
@@ -885,7 +885,7 @@ class TasksView extends BaseView {
             />
             <br/>
             <FormControl fullWidth>
-                <InputLabel>Test type</InputLabel>
+                <InputLabel>Task type</InputLabel>
                 <Select
                     disabled
                     margin="dense"
