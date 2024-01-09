@@ -58,7 +58,7 @@ export default class SearchView extends BaseView {
                         <FormControlLabel
                             value="task"
                             control={<Radio color="primary" />}
-                            label="Test task report" />
+                            label="Task report" />
                     </RadioGroup>
                     <Stack direction="row" spacing={2} alignItems="center" style={{ width: '720px' }}>
                         <TextField fullWidth
