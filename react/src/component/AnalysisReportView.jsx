@@ -236,9 +236,9 @@ export default class AnalysisReportView extends BaseView {
                             </td>
                             <td>
                                 <h4>Scan result summary</h4>
-                                {taskResult ? <li> Package info: {taskResult.buildInfo.buildFlavor ? 
-                                <span> flavor is <span style={{ fontSize: '20', color: 'red' }}> {taskResult.buildInfo.buildFlavor} </span>, </span>
-                                : null}
+                                {taskResult ? <li> Package info: {taskResult.buildInfo.buildFlavor ?
+                                    <span> flavor is <span style={{ fontSize: '20', color: 'red' }}> {taskResult.buildInfo.buildFlavor} </span>, </span>
+                                    : null}
                                     version name is <span style={{ fontSize: '20', color: 'red' }}>{taskResult.apkManifest.versionName}</span>, version code is <span style={{ fontSize: '20', color: 'red' }}>{taskResult.apkManifest.versionCode}</span>.</li> : null}
                                 {apkSizeReport ? <li> The total size of the package is <span style={{ fontSize: '20', color: 'red' }}>{this.fileSizeInMB(apkSizeReport.totalSize)}MB</span>.
                                     There are <span style={{ fontSize: '20', color: 'red' }}>{duplicatedFiles.length}</span>  duplicated files and <span style={{ fontSize: '20', color: 'red' }}>{largeFiles.length}</span> large files in the package.</li> : null}
@@ -284,12 +284,20 @@ export default class AnalysisReportView extends BaseView {
                                     <td>
                                         <div><span style={{ fontSize: '80' }}>{this.fileSizeInMB(apkSizeReport.totalSize)}</span><span style={{ fontSize: '20' }}>MB</span></div>
                                         <div style={{ paddingTop: '10px' }}><span style={{ fontSize: '30' }}>Total Package Size</span></div>
-                                        <div style={{ color: totalSizeDiff <= 0 ? 'green' : 'red' }}><span >Compared to previous: {this.getArrow(totalSizeDiff)}</span>  {this.getfilesize(Math.abs(totalSizeDiff))}</div>
+                                        <div style={{
+                                            color: totalSizeDiff <= 0 ?
+                                                totalSizeDiff == 0 ? '#a9a9a9' : 'green'
+                                                : 'red'
+                                        }}><span >Compared to previous: {this.getArrow(totalSizeDiff)}</span>  {this.getfilesize(Math.abs(totalSizeDiff))}</div>
                                     </td>
                                     <td>
                                         <div><span style={{ fontSize: '80' }}>{this.fileSizeInMB(apkSizeReport.downloadSize)}</span><span style={{ fontSize: '20' }}>MB</span></div>
                                         <div style={{ paddingTop: '10px' }}><span style={{ fontSize: '30' }}>Package Download Size</span></div>
-                                        <div style={{ color: downloadSizeDiff <= 0 ? 'green' : 'red' }}><span>Compared to previous: {this.getArrow(downloadSizeDiff)}</span>  {this.getfilesize(Math.abs(downloadSizeDiff))}</div>
+                                        <div style={{
+                                            color: downloadSizeDiff <= 0 ?
+                                                downloadSizeDiff == 0 ? '#a9a9a9' : 'green'
+                                                : 'red'
+                                        }}><span>Compared to previous: {this.getArrow(downloadSizeDiff)}</span>  {this.getfilesize(Math.abs(downloadSizeDiff))}</div>
                                     </td>
                                 </tr>
 
@@ -405,11 +413,11 @@ export default class AnalysisReportView extends BaseView {
                                                                     </Stack>}
                                                                 style={{ padding: "0" }}>
                                                                 <IconButton>
-                                                                    <span style={{ color: 'black', }} className="material-icons-outlined">more_horiz</span>
+                                                                    <span style={{ color: 'gary', }} className="material-icons-outlined">more_horiz</span>
                                                                 </IconButton>
                                                             </MUITooltip>
                                                             <IconButton onClick={() => this.copyContent(d.leakWordList[0])}>
-                                                                <span style={{ color: 'black', }} className="material-icons-outlined">content_copy</span>
+                                                                <span style={{ color: 'gary', }} className="material-icons-outlined">content_copy</span>
                                                             </IconButton>
                                                         </div>
                                                         :
@@ -428,12 +436,12 @@ export default class AnalysisReportView extends BaseView {
                                                                         </Stack>}
                                                                     style={{ padding: "0" }}>
                                                                     <IconButton>
-                                                                        <span style={{ color: 'black', }}
+                                                                        <span style={{ color: 'gary', }}
                                                                             className="material-icons-outlined">more_horiz</span>
                                                                     </IconButton>
                                                                 </MUITooltip>
                                                                 <IconButton onClick={() => this.copyContent(d.leakWordList[1])}>
-                                                                    <span style={{ color: 'black', }} className="material-icons-outlined">content_copy</span>
+                                                                    <span style={{ color: 'gary', }} className="material-icons-outlined">content_copy</span>
                                                                 </IconButton>
                                                             </div>
                                                             :
@@ -454,12 +462,12 @@ export default class AnalysisReportView extends BaseView {
                                                                         </Stack>}
                                                                     style={{ padding: "0" }}>
                                                                     <IconButton>
-                                                                        <span style={{ color: 'black', }}
+                                                                        <span style={{ color: 'gary', }}
                                                                             className="material-icons-outlined">more_horiz</span>
                                                                     </IconButton>
                                                                 </MUITooltip>
                                                                 <IconButton onClick={() => this.copyContent(d.leakWordList[2])}>
-                                                                    <span style={{ color: 'black', }} className="material-icons-outlined">content_copy</span>
+                                                                    <span style={{ color: 'gary', }} className="material-icons-outlined">content_copy</span>
                                                                 </IconButton>
                                                             </div>
                                                             :
