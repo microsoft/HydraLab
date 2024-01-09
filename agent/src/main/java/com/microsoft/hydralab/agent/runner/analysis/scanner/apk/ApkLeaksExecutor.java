@@ -58,7 +58,7 @@ public class ApkLeaksExecutor {
     }
 
     public ApkReport analyzeLeaks(ApkReport report, String apkPath, Map<String, String> sensitiveWords, Logger logger) {
-
+        logger.info("start to analyze apk by apkleaks: {}", apkPath);
         int code = -1;
         File apk = new File(apkPath);
         if (!apk.exists()) {
@@ -105,6 +105,7 @@ public class ApkLeaksExecutor {
                     logger.info(line);
                 }
                 code = process.waitFor();
+                logger.info("apkleaks exec finished code: {}", code);
                 error = IOUtils.toString(errorStream, CHARSET);
             } finally {
                 if (process != null) {

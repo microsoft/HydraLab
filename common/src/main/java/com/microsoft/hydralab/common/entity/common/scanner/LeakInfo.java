@@ -18,6 +18,8 @@ public class LeakInfo implements Serializable {
     private String keyword;
     private List<String> LeakWordList;
 
+    public LeakInfo() {
+    }
     public LeakInfo(String keyword, List<String> LeakWordList) {
         this.keyword = keyword;
         this.LeakWordList = LeakWordList;

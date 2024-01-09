@@ -50,7 +50,6 @@ public class TestDataService {
         for (TestRun testRun : testRuns) {
             attachmentService.saveRelations(testRun.getId(), EntityType.TEST_RESULT,
                     testRun.getAttachments());
-
             taskResultRepository.save(testRun.getTaskResult());
 
             List<AndroidTestUnit> testUnitList = testRun.getTestUnitList();

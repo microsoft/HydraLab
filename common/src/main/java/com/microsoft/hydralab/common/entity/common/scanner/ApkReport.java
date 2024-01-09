@@ -19,6 +19,7 @@ import java.util.List;
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class ApkReport extends TaskResult implements Serializable {
     private String packageName;
+    private String buildFlavor;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private ApkSizeReport apkSizeReport = new ApkSizeReport();

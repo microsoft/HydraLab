@@ -27,6 +27,8 @@ public abstract class Scanner<T extends TaskResult> extends AnalysisRunner {
     @Override
     public void execute(AnalysisTask analysisTask, TestRun testRun) throws Exception {
         T report = initReport(analysisTask);
+        report.setTaskId(analysisTask.getId());
+        report.setTaskRunId(testRun.getId());
         for (AnalysisTask.AnalysisConfig config : analysisTask.getAnalysisConfigs()) {
             String analysisType = config.getAnalysisType();
             if (AnalysisTask.AnalysisType.LEAK_INFO.name().equals(analysisType)) {

@@ -116,6 +116,7 @@ public class TestDataService {
             List<AndroidTestUnit> byDeviceTestResultId = androidTestUnitRepository.findByDeviceTestResultId(deviceTestResult.getId());
             deviceTestResult.getTestUnitList().addAll(byDeviceTestResultId);
             deviceTestResult.setAttachments(attachmentService.getAttachments(deviceTestResult.getId(), EntityType.TEST_RESULT));
+            deviceTestResult.setTaskResult(taskResultRepository.findByTaskRunId(deviceTestResult.getId()).orElse(null));
         }
         return task;
     }
@@ -213,6 +214,8 @@ public class TestDataService {
 
             TaskResult taskResult = deviceTestResult.getTaskResult();
             if (taskResult != null) {
+                taskResult.setTaskId(task.getId());
+                taskResult.setTaskRunId(deviceTestResult.getId());
                 taskResultRepository.save(taskResult);
             }
 

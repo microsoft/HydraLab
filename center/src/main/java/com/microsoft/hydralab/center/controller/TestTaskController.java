@@ -87,7 +87,9 @@ public class TestTaskController {
                 testTaskService.checkTestTaskTeamConsistency(testTaskSpec);
             }
             //if the queue is not empty, the task will be added to the queue directly
-            if (testTaskService.isQueueEmpty() || testTaskService.isDeviceFree(testTaskSpec.deviceIdentifier)) {
+            if (testTaskService.isQueueEmpty()
+                    || Task.RunnerType.APK_SCANNER.name().equals(testTaskSpec.runningType)
+                    || testTaskService.isDeviceFree(testTaskSpec.deviceIdentifier)) {
                 result = deviceAgentManagementService.runTestTaskBySpec(testTaskSpec);
                 if (result.get(Const.Param.TEST_DEVICE_SN) == null) {
                     //if there is no alive device, the task will be added to the queue directly
@@ -107,6 +109,9 @@ public class TestTaskController {
             return Result.ok(result);
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.BAD_REQUEST.value(), e);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
@@ -226,6 +231,48 @@ public class TestTaskController {
             }
 
             return Result.ok(testDataService.getTasks(page, pageSize, criteriaTypes));
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+    }
+
+    @PostMapping(value = {"/api/test/task/listFirst"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<Task> getTaskListFirst(@CurrentSecurityContext SysUser requestor,
+                                         @RequestBody JSONObject data) {
+        try {
+            if (requestor == null) {
+                return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+            }
+
+            List<CriteriaType> criteriaTypes = new ArrayList<>();
+            // filter all TestTask in TEAMs that user is in
+            if (!sysUserService.checkUserAdmin(requestor)) {
+                criteriaTypes = userTeamManagementService.formTeamIdCriteria(requestor.getTeamAdminMap());
+                if (criteriaTypes.size() == 0) {
+                    return Result.error(HttpStatus.UNAUTHORIZED.value(), "User belongs to no TEAM, please contact administrator for binding TEAM");
+                }
+            }
+
+            int page = data.getIntValue("page");
+            int pageSize = data.getIntValue("pageSize");
+            if (pageSize <= 0) {
+                pageSize = 30;
+            }
+            JSONArray queryParams = data.getJSONArray("queryParams");
+            if (queryParams != null) {
+                for (int i = 0; i < queryParams.size(); i++) {
+                    CriteriaType temp = queryParams.getJSONObject(i).toJavaObject(CriteriaType.class);
+                    criteriaTypes.add(temp);
+                }
+            }
+            Page<Task> tasks = testDataService.getTasks(page, pageSize, criteriaTypes);
+            if (tasks.getTotalElements() > 0) {
+                Task task = testDataService.getTaskDetail(tasks.getContent().get(0).getId());
+                return Result.ok(task);
+            } else {
+                return Result.ok(null);
+            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);

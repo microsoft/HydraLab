@@ -55,6 +55,9 @@ public class TestTaskService {
     }
 
     public Boolean isDeviceFree(String deviceIdentifier) {
+        if (deviceIdentifier == null) {
+            return false;
+        }
         Set<String> relatedIdentifiers = new HashSet<>();
         relatedIdentifiers.add(deviceIdentifier);
         if (deviceIdentifier.contains(",")) {
@@ -174,6 +177,9 @@ public class TestTaskService {
             for (String identifier : identifiers) {
                 checkDeviceTeamConsistency(identifier, testTaskSpec.teamId, testTaskSpec.accessKey);
             }
+        } else if (Task.RunnerType.APK_SCANNER.name().equals(testTaskSpec.runningType)) {
+            // no need to check team consistency for apk scanner
+            logger.info("No need to check team consistency for apk scanner");
         } else {
             String deviceIdentifier = testTaskSpec.deviceIdentifier;
             if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {

@@ -89,6 +89,7 @@ public class ApkCanaryExecutor {
     }
 
     public ApkReport analyzeApk(ApkReport report, String apkPath, Logger logger) {
+        logger.info("Start analyze Apk by apkcanary: {}", apkPath);
         File apk = new File(apkPath);
         if (!apk.exists()) {
             throw new RuntimeException("apk not exist");

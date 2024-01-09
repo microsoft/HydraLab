@@ -11,6 +11,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import TestReportView from '@/component/TestReportView';
+import AnalysisReportView from '@/component/AnalysisReportView';
 import 'bootstrap/dist/css/bootstrap.css'
 import {Cell, Pie, PieChart} from 'recharts';
 import moment from 'moment';
@@ -328,7 +329,8 @@ class TasksView extends BaseView {
                     maxWidth="lg"
                     onClose={() => this.handleCloseDetailDialog()}
             >
-                <TestReportView testTask={this.state.testDetailInfo} />
+                {this.state.testDetailInfo && this.state.testDetailInfo.analysisConfigs ? <AnalysisReportView testTask={this.state.testDetailInfo} /> : <TestReportView testTask={this.state.testDetailInfo} />}
+                
                 <DialogActions>
                     <Button
                         onClick={() => this.handleCloseDetailDialog()}>Close</Button>

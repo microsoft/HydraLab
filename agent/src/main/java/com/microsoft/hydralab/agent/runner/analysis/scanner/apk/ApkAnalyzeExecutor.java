@@ -39,6 +39,7 @@ public class ApkAnalyzeExecutor {
     }
 
     public ApkReport analyzeApk(ApkReport report, String apkPath, Logger logger) {
+        logger.info("start to analyze apk by apkanalyzer: {}", apkPath);
         File apk = new File(apkPath);
         if (!apk.exists()) {
             throw new RuntimeException("apk not exist");

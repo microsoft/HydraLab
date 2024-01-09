@@ -238,6 +238,35 @@ public class TestDetailController {
         }
     }
 
+    @GetMapping(value = {"/api/test/loadCanaryReport/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result getAPKScannerCanaryReport(@CurrentSecurityContext SysUser requestor,
+                                            @PathVariable(value = "fileId") String fileId) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+
+        try {
+            StorageFileInfo canaryReportBlobFile = storageFileInfoRepository.findById(fileId).orElse(null);
+            if (canaryReportBlobFile == null) {
+                throw new HydraLabRuntimeException("apk canary report file not exist!");
+            }
+            File canaryReportFile = new File(CENTER_TEMP_FILE_DIR, canaryReportBlobFile.getBlobPath());
+
+            if (!canaryReportFile.exists()) {
+                storageServiceClientProxy.download(canaryReportFile, canaryReportBlobFile);
+            }
+            String json = FileUtil.getStringFromFilePath(canaryReportFile.getAbsolutePath());
+            JSONArray objects = JSON.parseArray(json);
+            return Result.ok(objects);
+        } catch (HydraLabRuntimeException e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+    }
+
     @GetMapping(value = {"/api/test/loadGraph/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result getSmartTestGraphXML(@CurrentSecurityContext SysUser requestor,
                                        @PathVariable(value = "fileId") String fileId,
