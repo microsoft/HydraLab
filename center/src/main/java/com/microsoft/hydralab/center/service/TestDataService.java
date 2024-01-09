@@ -125,8 +125,8 @@ public class TestDataService {
         return taskRepository.findAllByTeamId(teamId);
     }
 
-    public void saveAllTestTasks(List<Task> testTasks) {
-        taskRepository.saveAll(testTasks);
+    public void saveAllTestTasks(List<Task> tasks) {
+        taskRepository.saveAll(tasks);
     }
 
     public Page<Task> getTasks(int page, int pageSize, List<CriteriaType> queryParams) {

@@ -219,9 +219,9 @@ public class TestTaskService {
     }
 
     public void updateTaskTeam(String teamId, String teamName) {
-        List<Task> testTasks = testDataService.getTasksByTeamId(teamId);
+        List<Task> tasks = testDataService.getTasksByTeamId(teamId);
 
-        testTasks.forEach(testTask -> testTask.setTeamName(teamName));
-        testDataService.saveAllTestTasks(testTasks);
+        tasks.forEach(task -> task.setTeamName(teamName));
+        testDataService.saveAllTestTasks(tasks);
     }
 }
