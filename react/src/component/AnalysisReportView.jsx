@@ -141,7 +141,7 @@ export default class AnalysisReportView extends BaseView {
             { name: 'other', value: apkSizeReport.otherSize },
         ] : []
         const dexReport = canaryReport && canaryReport.length > 0 ? canaryReport.filter(report => 4 == report.taskType) : null
-        const dexData = dexReport && dexReport.length > 0 ? dexReport[0].groups.slice(0, 15) : null
+        const dexData = dexReport && dexReport.length > 0 ? dexReport[0].groups.slice(0, 15) : []
         const duplicatedFiles = apkSizeReport ? apkSizeReport.duplicatedFileList : []
         const largeFiles = apkSizeReport ? apkSizeReport.bigSizeFileList : []
 
@@ -236,7 +236,9 @@ export default class AnalysisReportView extends BaseView {
                             </td>
                             <td>
                                 <h4>Scan result summary</h4>
-                                {taskResult ? <li> The flavor of this package is <span style={{ fontSize: '20', color: 'red' }}>{taskResult.buildInfo.buildFlavor ? taskResult.buildInfo.buildFlavor : 'unknown'}</span>,
+                                {taskResult ? <li> Package info: {taskResult.buildInfo.buildFlavor ? 
+                                <span> flavor is <span style={{ fontSize: '20', color: 'red' }}> {taskResult.buildInfo.buildFlavor} </span>, </span>
+                                : null}
                                     version name is <span style={{ fontSize: '20', color: 'red' }}>{taskResult.apkManifest.versionName}</span>, version code is <span style={{ fontSize: '20', color: 'red' }}>{taskResult.apkManifest.versionCode}</span>.</li> : null}
                                 {apkSizeReport ? <li> The total size of the package is <span style={{ fontSize: '20', color: 'red' }}>{this.fileSizeInMB(apkSizeReport.totalSize)}MB</span>.
                                     There are <span style={{ fontSize: '20', color: 'red' }}>{duplicatedFiles.length}</span>  duplicated files and <span style={{ fontSize: '20', color: 'red' }}>{largeFiles.length}</span> large files in the package.</li> : null}
