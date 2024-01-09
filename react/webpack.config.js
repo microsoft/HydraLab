@@ -106,7 +106,8 @@ module.exports = env => {
         resolve: {
             extensions: ['.js', '.jsx', '.json'],
             alias: {
-                '@': path.join(__dirname, '/src')
+                '@': path.join(__dirname, '/src'),
+                'react-native': 'react-native-web',
             }
         },
         externals: {
