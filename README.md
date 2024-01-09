@@ -53,7 +53,13 @@ Hydra Lab offers an out-of-box experience of the Docker image, and we call it `U
 
 **Step 1. Download and install [Docker](https://www.docker.com)**
 
-**Step 2. Run on your machine**
+**Step 2. Download latest Uber Docker image**
+```bash
+docker pull ghcr.io/microsoft/hydra-lab-uber:latest
+```
+**This step is necessary.** Without this step and jump to step 3, you may target at the local cached Docker image with `latest` tag if it exists.
+
+**Step 3. Run on your machine**
 
 By Default, Hydra Lab will use the local file system as a storage solution, and you may type the following in your terminal to run it:
 
