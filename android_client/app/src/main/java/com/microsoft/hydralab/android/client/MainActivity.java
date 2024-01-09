@@ -43,12 +43,17 @@ import android.widget.SpinnerAdapter;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.microsoft.clarity.Clarity;
+import com.microsoft.clarity.ClarityConfig;
+import com.microsoft.clarity.models.ApplicationFramework;
+import com.microsoft.clarity.models.LogLevel;
 import com.microsoft.hydralab.android.client.view.NamedSpinner;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -137,6 +142,20 @@ public class MainActivity extends Activity {
         mAudioSwitch.setChecked(
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                         .getBoolean(getResources().getResourceEntryName(mAudioSwitch.getId()), false));
+        initClarity();
+    }
+
+    private void initClarity() {
+        ClarityConfig config = new ClarityConfig(
+                "kj0ror1pki",
+                null, // Default user id
+                LogLevel.Info,
+                false, // Disallow metered network usage
+                true, // Enable web view capturing
+                Collections.singletonList("*"), // Allowed domains
+                ApplicationFramework.Native);
+
+        Clarity.initialize(getApplicationContext(), config);
     }
 
     @Override
