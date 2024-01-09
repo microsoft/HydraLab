@@ -7,3 +7,5 @@ app:
     # Official doc about this hostname: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
     host: host.docker.internal
     port: 5037
+  registry:
+    schema: "ws"
