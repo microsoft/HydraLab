@@ -9,15 +9,11 @@ import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -65,6 +61,8 @@ public class TestTask extends Task implements Serializable {
     private boolean enableNetworkMonitor;
     @Transient
     private String networkMonitorRule;
+    @Column(nullable = true)
+    private boolean enableTestOrchestrator = false;
 
     public TestTask() {
         super();
@@ -90,7 +88,7 @@ public class TestTask extends Task implements Serializable {
         if (StringUtils.isNotBlank(testTaskSpec.testPlan)) {
             setTestPlan(testTaskSpec.testPlan);
         }
-
+        setEnableTestOrchestrator(testTaskSpec.enableTestOrchestrator);
         setFrameworkType(testTaskSpec.frameworkType);
 
         if (StringUtils.isNotBlank(testTaskSpec.testRunnerName)) {
@@ -121,6 +119,7 @@ public class TestTask extends Task implements Serializable {
         testTaskSpec.enablePerformanceSuggestion = isEnablePerformanceSuggestion();
         testTaskSpec.enableNetworkMonitor = isEnableNetworkMonitor();
         testTaskSpec.networkMonitorRule = getNetworkMonitorRule();
+        testTaskSpec.enableTestOrchestrator = isEnableTestOrchestrator();
 
         return testTaskSpec;
     }

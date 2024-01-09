@@ -11,15 +11,22 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListener;
 import com.microsoft.hydralab.common.management.listener.DeviceStatusListenerManager;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,6 +52,7 @@ public class AgentManagementService {
     protected String preInstallFailurePolicy;
     protected EnvInfo envInfo;
     private List<AgentFunctionAvailability> functionAvailabilities = new ArrayList<>();
+    private String testTempFilePath;
 
     public List<AgentFunctionAvailability> getFunctionAvailabilities() {
         return functionAvailabilities;
@@ -239,12 +247,36 @@ public class AgentManagementService {
         functionAvailabilities.add(new AgentFunctionAvailability(functionName, functionType, enabled, available, requirements));
     }
 
-    public String getEnvFilePath(EnvCapability.CapabilityKeyword keyword){
+    public String getEnvFilePath(EnvCapability.CapabilityKeyword keyword) {
         Optional<EnvCapability> envCapability =
                 envInfo.getCapabilities().stream().filter(capability -> capability.getKeyword().equals(keyword)).findFirst();
         if (!envCapability.isPresent()) {
             return null;
         }
         return envCapability.get().getFile().getAbsolutePath();
+    }
+
+    public void setTestTempFilePath(String tempFilePath) {
+        File dir = new File(tempFilePath);
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+                throw new RuntimeException("create dir fail: " + dir.getAbsolutePath());
+            }
+        }
+        this.testTempFilePath = tempFilePath;
+    }
+
+    public String copyPreinstallAPK(String fileName) {
+        File preinstallApk = new File(this.testTempFilePath, fileName);
+        if (preinstallApk.exists()) {
+            preinstallApk.delete();
+        }
+        try (InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(fileName); OutputStream out = new FileOutputStream(preinstallApk)) {
+            IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return preinstallApk.getAbsolutePath();
     }
 }

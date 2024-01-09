@@ -1,2 +1,4 @@
 storage
 log
+!/src/main/resources/test-services.apk
+!/src/main/resources/orchestrator.apk

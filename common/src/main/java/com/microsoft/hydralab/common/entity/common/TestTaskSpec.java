@@ -56,6 +56,7 @@ public class TestTaskSpec {
     public boolean disableRecording = false;
     public boolean enableNetworkMonitor;
     public String networkMonitorRule;
+    public boolean enableTestOrchestrator = false;
 
     public void updateWithDefaultValues() {
         determineScopeOfTestCase();
