@@ -185,10 +185,6 @@ export default class SearchView extends BaseView {
             } else if (requestPath === "task") {
                 if (res.data && res.data.code === 200) {
                     const details = res.data.content;
-                    if (details.runningType) {
-
-                    }
-
                     this.setState({
                         infoDisplay: details.analysisConfigs ? <center><AnalysisReportView testTask={details} /></center> : <center><TestReportView testTask={details} /></center>,
                         querying: false
