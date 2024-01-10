@@ -753,35 +753,69 @@ export default class TestReportView extends BaseView {
 
     generateJSON() {
         if (this.state.selectedPath.length === 0) {
-            this.setState({
-                snackbarIsShown: true,
-                snackbarSeverity: "error",
-                snackbarMessage: "Please select a path!"
-            })
-            return
+            axios({
+                url: `/api/test/generateMaestro/` + this.state.graphFileId + "?testRunId=" + this.state.task.deviceTestResults[0].id,
+                method: 'GET',
+                responseType: 'blob'
+            }).then((res) => {
+                if (res.data.type.includes('application/json')) {
+                    let reader = new FileReader()
+                    reader.onload = function () {
+                        let result = JSON.parse(reader.result)
+                        if (result.code !==  200) {
+                            this.setState({
+                                snackbarIsShown: true,
+                                snackbarSeverity: "error",
+                                snackbarMessage: "The file could not be downloaded"
+                            })
+                        }
+                    }
+                    reader.readAsText(res.data)
+                } else {
+                    const href = URL.createObjectURL(res.data);
+                    const link = document.createElement('a');
+                    link.href = href;
+                    const filename = res.headers["content-disposition"].replace('attachment;filename=', '');
+                    link.setAttribute('download', 'maestro_case_'+filename);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(href);
+    
+                    if (res.data.code === 200) {
+                        this.setState({
+                            snackbarIsShown: true,
+                            snackbarSeverity: "success",
+                            snackbarMessage: "Maestro case file downloaded"
+                        })
+                    }
+                }
+            }).catch(this.snackBarError);
+        }else{
+            axios({
+                url: `/api/test/generateT2C/` + this.state.graphFileId + "?testRunId=" + this.state.task.deviceTestResults[0].id + "&path=" + this.state.selectedPath.join(','),
+                method: 'GET',
+            }).then((res) => {
+                var blob = new Blob([res.data.content]);
+                const href = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = href;
+                link.setAttribute('download', this.state.task.pkgName + '_t2c.json');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(href);
+    
+                if (res.data.code === 200) {
+                    this.setState({
+                        snackbarIsShown: true,
+                        snackbarSeverity: "success",
+                        snackbarMessage: "T2C JSON file downloaded"
+                    })
+                }
+            }).catch(this.snackBarError);
         }
-        axios({
-            url: `/api/test/generateT2C/` + this.state.graphFileId + "?testRunId=" + this.state.task.deviceTestResults[0].id + "&path=" + this.state.selectedPath.join(','),
-            method: 'GET',
-        }).then((res) => {
-            var blob = new Blob([res.data.content]);
-            const href = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = href;
-            link.setAttribute('download', this.state.task.pkgName + '_t2c.json');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(href);
 
-            if (res.data.code === 200) {
-                this.setState({
-                    snackbarIsShown: true,
-                    snackbarSeverity: "success",
-                    snackbarMessage: "T2C JSON file downloaded"
-                })
-            }
-        }).catch(this.snackBarError);
     }
 
     getDeviceLabel = (name) => {

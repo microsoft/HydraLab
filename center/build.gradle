@@ -27,9 +27,12 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    testImplementation 'org.mockito:mockito-core:3.12.4'
-    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
-    testImplementation 'me.paulschwarz:spring-dotenv:2.3.0'
+    compileOnly 'dev.langchain4j:langchain4j:0.11.0'
+    compileOnly 'dev.langchain4j:langchain4j-pinecone:0.11.0'
+    implementation 'org.dom4j:dom4j:2.1.4'
+    testCompile 'org.mockito:mockito-core:3.12.4'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootWebVersion
+    testCompile 'me.paulschwarz:spring-dotenv:2.3.0'
 
     compile project(":common")
     compile project(":taps_to_cases:runner")
