@@ -23,6 +23,7 @@ public class TestTaskEngineServiceTest extends BaseTest {
 
     @Resource
     TestTaskEngineService testTaskEngineService;
+
     @BeforeEach
     public void setUp() {
         Set<DeviceInfo> deviceInfoList = new HashSet<>();
