@@ -153,7 +153,10 @@ public class MainActivity extends Activity {
                 false, // Disallow metered network usage
                 true, // Enable web view capturing
                 Collections.singletonList("*"), // Allowed domains
-                ApplicationFramework.Native);
+                ApplicationFramework.Native,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                false);
 
         Clarity.initialize(getApplicationContext(), config);
     }
