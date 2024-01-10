@@ -7,12 +7,16 @@ import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import lombok.Data;
 
-import java.util.HashMap;
+import javax.persistence.Transient;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Data
 public class AgentDeviceGroup {
+    @Transient
+    private static final int DEFAULT_ANALYSIS_COUNT = 3;
+
     private String agentId;
     private String agentName;
     private String agentOS;
@@ -28,7 +32,7 @@ public class AgentDeviceGroup {
     private String ip;
     private List<DeviceInfo> devices;
     private List<AgentFunctionAvailability> functionAvailabilities;
-    private Map<String, Integer> availableAnalysisTaskCount = new HashMap<>();
+    private ConcurrentMap<String, Integer> availableAnalysisTaskCount = new ConcurrentHashMap<>();
 
     public void initWithAgentUser(AgentUser agentUser) {
         agentId = agentUser.getId();
@@ -58,10 +62,13 @@ public class AgentDeviceGroup {
     }
 
     public void runAnalysisTask(String runnerType) {
-        availableAnalysisTaskCount.put(runnerType, availableAnalysisTaskCount.getOrDefault(runnerType, 3) - 1);
+        availableAnalysisTaskCount.put(runnerType, availableAnalysisTaskCount.getOrDefault(runnerType, DEFAULT_ANALYSIS_COUNT) - 1);
     }
 
     public void finishAnalysisTask(String runnerType) {
-        availableAnalysisTaskCount.put(runnerType, availableAnalysisTaskCount.getOrDefault(runnerType, 0) + 1);
+        if (availableAnalysisTaskCount.get(runnerType) == null) {
+            return;
+        }
+        availableAnalysisTaskCount.put(runnerType, availableAnalysisTaskCount.get(runnerType) + 1);
     }
 }

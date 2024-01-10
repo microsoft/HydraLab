@@ -1,6 +1,5 @@
 package com.microsoft.hydralab.agent.service;
 
-import com.microsoft.hydralab.agent.runner.TestRunnerManager;
 import com.microsoft.hydralab.agent.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Task;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Resource;
 import java.util.HashSet;
@@ -25,12 +23,6 @@ public class TestTaskEngineServiceTest extends BaseTest {
 
     @Resource
     TestTaskEngineService testTaskEngineService;
-    @Resource
-    ApplicationContext applicationContext;
-
-    @Resource
-    TestRunnerManager testRunnerManager;
-
     @BeforeEach
     public void setUp() {
         Set<DeviceInfo> deviceInfoList = new HashSet<>();
