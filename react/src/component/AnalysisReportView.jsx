@@ -3,7 +3,6 @@
 
 import React, { PureComponent, useEffect } from 'react'
 import { Link } from "react-router-dom";
-import cssObj from '@/css/style.scss'
 import 'bootstrap/dist/css/bootstrap.css'
 import _ from 'lodash';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, BarChart, CartesianGrid, Legend, Bar } from 'recharts';
@@ -11,12 +10,6 @@ import moment from 'moment';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Button from "@mui/material/Button";
 import axios from "@/axios";
-import PerfTestDashboard from './PerfTestDashboard';
-import Sigma from "sigma";
-import Graph from "graphology";
-import { parse } from "graphology-gexf/browser";
-import FA2Layout from "graphology-layout-forceatlas2/worker";
-import forceAtlas2 from "graphology-layout-forceatlas2";
 import BaseView from "@/component/BaseView";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -37,7 +30,6 @@ import Stack from "@mui/material/Stack";
 import copy from 'copy-to-clipboard';
 
 const COLORS = ['#00C49F', '#FF8042', '#0088FE', '#FFBB28'];
-const badgeList = ['primary', 'info', 'secondary', 'light'];
 
 class CustomizedLabel extends PureComponent {
     render() {
@@ -237,13 +229,13 @@ export default class AnalysisReportView extends BaseView {
                             <td>
                                 <h4>Scan result summary</h4>
                                 {taskResult ? <li> Package info: {taskResult.buildInfo.buildFlavor ?
-                                    <span> flavor is <span style={{ fontSize: '20', color: 'red' }}> {taskResult.buildInfo.buildFlavor} </span>, </span>
+                                    <span> flavor is <b style={{ fontSize: '20' }}> {taskResult.buildInfo.buildFlavor} </b>, </span>
                                     : null}
-                                    version name is <span style={{ fontSize: '20', color: 'red' }}>{taskResult.apkManifest.versionName}</span>, version code is <span style={{ fontSize: '20', color: 'red' }}>{taskResult.apkManifest.versionCode}</span>.</li> : null}
-                                {apkSizeReport ? <li> The total size of the package is <span style={{ fontSize: '20', color: 'red' }}>{this.fileSizeInMB(apkSizeReport.totalSize)}MB</span>.
-                                    There are <span style={{ fontSize: '20', color: 'red' }}>{duplicatedFiles.length}</span>  duplicated files and <span style={{ fontSize: '20', color: 'red' }}>{largeFiles.length}</span> large files in the package.</li> : null}
+                                    version name is <b style={{ fontSize: '20' }}>{taskResult.apkManifest.versionName}</b>, version code is <b style={{ fontSize: '20' }}>{taskResult.apkManifest.versionCode}</b>.</li> : null}
+                                {apkSizeReport ? <li> The total size of the package is <b style={{ fontSize: '20' }}>{this.fileSizeInMB(apkSizeReport.totalSize)}MB</b>.
+                                    There are <b style={{ fontSize: '20' }}>{duplicatedFiles.length}</b>  duplicated files and <b style={{ fontSize: '20' }}>{largeFiles.length}</b> large files in the package.</li> : null}
 
-                                {leakReport ? <li> There are <span style={{ fontSize: '20', color: 'red' }}> {leakReport.length} </span> code leaks in the package</li> : null}
+                                {leakReport ? <li> There are <b style={{ fontSize: '20' }}> {leakReport.length} </b> code leaks in the package</li> : null}
                             </td>
                         </tr>
                     </tbody>
@@ -324,7 +316,7 @@ export default class AnalysisReportView extends BaseView {
                                                 {duplicatedFiles.filter(file => file.size > 20480).slice(0, 5).map((d, index) => {
                                                     return <tr key={index}>
                                                         <td style={{ textAlign: 'left', border: '3px solid white', borderCollapse: 'collapse', whiteSpace: 'pre-line' }}>{d.fileList.join("\n")}</td>
-                                                        <td style={{ textAlign: 'center', border: '3px solid white', borderCollapse: 'collapse' }}>{this.getfilesize(d.size)}</td>
+                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', border: '3px solid white', borderCollapse: 'collapse' }}>{this.getfilesize(d.size)}</td>
                                                     </tr>
                                                 })}
                                             </tbody>
