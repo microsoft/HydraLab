@@ -166,3 +166,9 @@ This project may contain trademarks or logos for projects, products, or services
 
 We use the Microsoft Clarity Analysis Platform for front end client data dashboard, please refer to [Clarity Overview](https://learn.microsoft.com/en-us/clarity/setup-and-installation/about-clarity) and https://clarity.microsoft.com/ to learn more.
 
+Instructions to turn off the Clarity:
+
+Open [MainActivity](https://github.com/microsoft/HydraLab/blob/main/android_client/app/src/main/java/com/microsoft/hydralab/android/client/MainActivity.java), comment the line which call the initClarity(), and rebuild the Hydra Lab Client apk, repalce the one in the agent resources folder.
+
+[Telemetry/data collection notice](https://docs.opensource.microsoft.com/releasing/general-guidance/telemetry)
+
