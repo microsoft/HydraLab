@@ -683,7 +683,7 @@ export default class PerfTestDashboard extends React.Component {
                 { key: "appId", value: inspection.appId, "op": "equal" },
                 { key: "parserType", value: perfResult.parserType, "op": "equal" },
                 { key: "testSuite", value: this.state.testTask.testSuite, "op": "equal" },
-                { key: "runningType", value: this.state.testTask.runningType, "op": "equal" },
+                { key: "runningType", value: this.state.testTask.runnerType, "op": "equal" },
                 { key: "deviceId", value: inspection.deviceIdentifier, "op": "equal" },
             ];
             axios.post("api/test/performance/history", postBody).then(res => {

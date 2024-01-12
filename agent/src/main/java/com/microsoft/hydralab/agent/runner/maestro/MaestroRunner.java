@@ -61,7 +61,7 @@ public class MaestroRunner extends TestRunner {
                 testRun, testTask, testRunDeviceOrchestrator, performanceTestManagementService);
         maestroListener.startRecording(testTask.getTimeOutSecond());
         File xmlFile = generateResultXMLFile(testRun);
-        String command = buildCommand(testRunDevice, testRun, testTask.getInstrumentationArgs(), xmlFile);
+        String command = buildCommand(testRunDevice, testRun, testTask.getTaskRunArgs(), xmlFile);
         checkTestTaskCancel(testTask);
         try {
             Process process = Runtime.getRuntime().exec(command);

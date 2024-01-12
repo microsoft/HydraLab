@@ -8,7 +8,7 @@ import com.microsoft.hydralab.common.entity.center.DeviceGroup;
 import com.microsoft.hydralab.common.entity.center.TestTaskQueuedInfo;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
-import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
@@ -55,6 +55,9 @@ public class TestTaskService {
     }
 
     public Boolean isDeviceFree(String deviceIdentifier) {
+        if (deviceIdentifier == null) {
+            return false;
+        }
         Set<String> relatedIdentifiers = new HashSet<>();
         relatedIdentifiers.add(deviceIdentifier);
         if (deviceIdentifier.contains(",")) {
@@ -93,7 +96,7 @@ public class TestTaskService {
             Iterator<TestTaskSpec> queueIterator = taskQueue.iterator();
             while (queueIterator.hasNext()) {
                 TestTaskSpec testTaskSpec = queueIterator.next();
-                TestTask testTask = TestTask.convertToTestTask(testTaskSpec);
+                Task task = Task.RunnerType.valueOf(testTaskSpec.runningType).transferToTask(testTaskSpec);
                 try {
                     logger.info("Start trying to trigger queued test task: " + testTaskSpec.testTaskId + ", target deviceIdentifier: " + testTaskSpec.deviceIdentifier);
                     JSONObject result = deviceAgentManagementService.runTestTaskBySpec(testTaskSpec);
@@ -102,17 +105,17 @@ public class TestTaskService {
                         logger.warn("Trigger test task: " + testTaskSpec.testTaskId + " failed.");
                     } else {
                         logger.info("Trigger test task: " + testTaskSpec.testTaskId + " successfully on device: " + runningDeviceIdentifier);
-                        testTask.setTestDevicesCount(runningDeviceIdentifier.split(",").length);
-                        testDataService.saveTestTaskData(testTask);
+                        task.setDeviceCount(runningDeviceIdentifier.split(",").length);
+                        testDataService.saveTaskData(task);
                         queueIterator.remove();
                     }
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                     //the task will be saved in memory if taskSpec is error
-                    testTask.setStatus(TestTask.TestStatus.EXCEPTION);
-                    testTask.setTestErrorMsg(e.getMessage());
+                    task.setStatus(Task.TaskStatus.EXCEPTION);
+                    task.setErrorMsg(e.getMessage());
                     try{
-                        testDataService.saveTestTaskData(testTask);
+                        testDataService.saveTaskData(task);
                         queueIterator.remove();
                     }catch (Exception ex) {
                         logger.error(ex.getMessage(), ex);
@@ -168,12 +171,15 @@ public class TestTaskService {
     }
 
     public void checkTestTaskTeamConsistency(TestTaskSpec testTaskSpec) throws HydraLabRuntimeException {
-        if (TestTask.TestRunningType.APPIUM_CROSS.equals(testTaskSpec.runningType)
-                || TestTask.TestRunningType.T2C_JSON_TEST.equals(testTaskSpec.runningType)) {
+        if (Task.RunnerType.APPIUM_CROSS.name().equals(testTaskSpec.runningType)
+                || Task.RunnerType.T2C_JSON.name().equals(testTaskSpec.runningType)) {
             String[] identifiers = testTaskSpec.deviceIdentifier.split(",");
             for (String identifier : identifiers) {
                 checkDeviceTeamConsistency(identifier, testTaskSpec.teamId, testTaskSpec.accessKey);
             }
+        } else if (Task.RunnerType.APK_SCANNER.name().equals(testTaskSpec.runningType)) {
+            // no need to check team consistency for apk scanner
+            logger.info("No need to check team consistency for apk scanner");
         } else {
             String deviceIdentifier = testTaskSpec.deviceIdentifier;
             if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
@@ -213,9 +219,9 @@ public class TestTaskService {
     }
 
     public void updateTaskTeam(String teamId, String teamName) {
-        List<TestTask> testTasks = testDataService.getTasksByTeamId(teamId);
+        List<Task> tasks = testDataService.getTasksByTeamId(teamId);
 
-        testTasks.forEach(testTask -> testTask.setTeamName(teamName));
-        testDataService.saveAllTestTasks(testTasks);
+        tasks.forEach(task -> task.setTeamName(teamName));
+        testDataService.saveAllTestTasks(tasks);
     }
 }

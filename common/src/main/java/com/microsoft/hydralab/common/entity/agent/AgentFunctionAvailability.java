@@ -30,6 +30,7 @@ public class AgentFunctionAvailability implements Serializable {
 
     public enum AgentFunctionType {
         TEST_RUNNER,
+        ANALYSIS_RUNNER,
         DEVICE_DRIVER
     }
 }

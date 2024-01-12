@@ -339,7 +339,7 @@ public class PerformanceTestManagementService implements IPerformanceInspectionS
                             testResult.parserType,
                             testResult.getResultSummary(),
                             testTask.getTestSuite(),
-                            testTask.getRunningType(),
+                            testTask.getRunnerType(),
                             inspection.appId,
                             inspection.deviceIdentifier,
                             testRun.isSuccess(),

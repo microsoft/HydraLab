@@ -115,6 +115,8 @@ public abstract class EnvCapabilityScanner {
             Matcher matcher = versionPattern.matcher(versionOutput);
             if (matcher.find()) {
                 capability.setVersion(matcher.group());
+            } else if (capability.getKeyword() == EnvCapability.CapabilityKeyword.apkanalyzer && versionOutput.contains("--human-readable")) {
+                capability.setVersion("1.0.0");
             } else {
                 LOGGER.warn("Failed to get version of " + capability.getKeyword().name() + " in " + versionOutput);
             }

@@ -4,11 +4,16 @@ import com.microsoft.hydralab.center.test.BaseTest;
 import com.microsoft.hydralab.common.entity.center.SysRole;
 import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.entity.center.SysUser;
+import com.microsoft.hydralab.common.entity.common.TaskResult;
+import com.microsoft.hydralab.common.entity.common.scanner.ApkManifest;
+import com.microsoft.hydralab.common.entity.common.scanner.ApkReport;
+import com.microsoft.hydralab.common.repository.TaskResultRepository;
 import com.microsoft.hydralab.common.util.Const;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 public class SysUserServiceTest extends BaseTest {
 
@@ -20,6 +25,12 @@ public class SysUserServiceTest extends BaseTest {
     SysTeamService sysTeamService;
     @Resource
     UserTeamManagementService userTeamManagementService;
+
+    @Resource
+    TestDataService testDataService;
+
+    @Resource
+    TaskResultRepository taskResultRepository;
 
     @Test
     public void createUser() {
@@ -33,4 +44,30 @@ public class SysUserServiceTest extends BaseTest {
         userTeamManagementService.addUserTeamRelation(defaultTeam.getTeamId(), user, false);
         baseLogger.info("success");
     }
+
+    @Test
+    public void testSave(){
+        TaskResult taskResult = new TaskResult();
+        taskResult.addReportFile("test");
+        taskResult.addReportFile("test2");
+        taskResult.setState(TaskResult.TaskState.PASS.name());
+        taskResultRepository.save(taskResult);
+
+        ApkReport apkReport = new ApkReport();
+        apkReport.addReportFile("atest");
+        apkReport.addReportFile("atest2");
+        apkReport.setState(TaskResult.TaskState.FAIL.name());
+        ApkManifest apkmainfest = new ApkManifest();
+        apkmainfest.setPackageName("testname");
+        apkReport.setApkManifest(apkmainfest);
+        taskResultRepository.save(apkReport);
+
+    }
+
+    @Test
+    public void query(){
+        List<TaskResult> results = taskResultRepository.findAll();
+        System.out.println(results.size());
+    }
+
 }

@@ -128,35 +128,35 @@ export default class DeviceAgentsView extends BaseView {
                                             <div>
                                                 {
                                                     Number(agent.agentVersionCode) >= Number(this.state.latestAgentVersion) ?
-                                                    <MUITooltip
-                                                        title={
-                                                            <Stack>
-                                                                Host:{agent.hostname}<br />
-                                                                Version:{agent.agentVersionName}<br />
-                                                                OS:{agent.agentOS}
-                                                            </Stack>}
-                                                        style={{ padding: "0" }}>
-                                                        <IconButton>
-                                                            <span style={{ color: 'white', }}
-                                                                className="material-icons-outlined">info</span>
-                                                        </IconButton>
-                                                    </MUITooltip>
-                                                    :
-                                                    agent.agentStatus === "UPDATING" ?
                                                         <MUITooltip
-                                                            title={this.state.agentUpdateStatus}
-                                                            onOpen={() => this.getUpdateStatus(agent.agentId)}
+                                                            title={
+                                                                <Stack>
+                                                                    Host:{agent.hostname}<br />
+                                                                    Version:{agent.agentVersionName}<br />
+                                                                    OS:{agent.agentOS}
+                                                                </Stack>}
                                                             style={{ padding: "0" }}>
-                                                            <Button color="inherit" size="small" style={{ padding: "0" }}>
-                                                                Updating
-                                                            </Button>
+                                                            <IconButton>
+                                                                <span style={{ color: 'white', }}
+                                                                    className="material-icons-outlined">info</span>
+                                                            </IconButton>
                                                         </MUITooltip>
                                                         :
-                                                        <Button variant="contained" color="error" size="small"
-                                                            style={{ padding: "0" }}
-                                                            onClick={() => this.updateAgent(agent)}>
-                                                            Update
-                                                        </Button>
+                                                        agent.agentStatus === "UPDATING" ?
+                                                            <MUITooltip
+                                                                title={this.state.agentUpdateStatus}
+                                                                onOpen={() => this.getUpdateStatus(agent.agentId)}
+                                                                style={{ padding: "0" }}>
+                                                                <Button color="inherit" size="small" style={{ padding: "0" }}>
+                                                                    Updating
+                                                                </Button>
+                                                            </MUITooltip>
+                                                            :
+                                                            <Button variant="contained" color="error" size="small"
+                                                                style={{ padding: "0" }}
+                                                                onClick={() => this.updateAgent(agent)}>
+                                                                Update
+                                                            </Button>
                                                 }
                                                 <MUITooltip
                                                     title={
@@ -165,46 +165,46 @@ export default class DeviceAgentsView extends BaseView {
                                                                 Drivers:
                                                                 {
                                                                     agent.functionAvailabilities
-                                                                    .filter(
-                                                                        (fa) => fa.functionType === "DEVICE_DRIVER"
-                                                                    )
-                                                                    .sort(
-                                                                        (fa1, fa2) => {
-                                                                            var s1 = 0
-                                                                            var s2 = 0
-                                                                            s1 += fa1.available ? 1 : 0
-                                                                            s1 += fa1.enabled ? 1 : 0
-                                                                            s2 += fa2.available ? 1 : 0
-                                                                            s2 += fa2.enabled ? 1 : 0
-                                                                            return s2 - s1
-                                                                        }
-                                                                    )
-                                                                    .map(
-                                                                        (fa) => this.convertFunctionAvailability(fa)
-                                                                    )
+                                                                        .filter(
+                                                                            (fa) => fa.functionType === "DEVICE_DRIVER"
+                                                                        )
+                                                                        .sort(
+                                                                            (fa1, fa2) => {
+                                                                                var s1 = 0
+                                                                                var s2 = 0
+                                                                                s1 += fa1.available ? 1 : 0
+                                                                                s1 += fa1.enabled ? 1 : 0
+                                                                                s2 += fa2.available ? 1 : 0
+                                                                                s2 += fa2.enabled ? 1 : 0
+                                                                                return s2 - s1
+                                                                            }
+                                                                        )
+                                                                        .map(
+                                                                            (fa) => this.convertFunctionAvailability(fa)
+                                                                        )
                                                                 }
                                                             </div>
                                                             <div style={{ userSelect: 'none', padding: 2, fontSize: '0.8rem' }}>
                                                                 Runners:
                                                                 {
                                                                     agent.functionAvailabilities
-                                                                    .filter(
-                                                                        (fa) => fa.functionType === "TEST_RUNNER"
-                                                                    )
-                                                                    .sort(
-                                                                        (fa1, fa2) => {
-                                                                            var s1 = 0
-                                                                            var s2 = 0
-                                                                            s1 += fa1.available ? 1 : 0
-                                                                            s1 += fa1.enabled ? 1 : 0
-                                                                            s2 += fa2.available ? 1 : 0
-                                                                            s2 += fa2.enabled ? 1 : 0
-                                                                            return s2 - s1
-                                                                        }
-                                                                    )
-                                                                    .map(
-                                                                        (fa) => this.convertFunctionAvailability(fa)
-                                                                    )
+                                                                        .filter(
+                                                                            (fa) => (fa.functionType === "TEST_RUNNER" || fa.functionType === "ANALYSIS_RUNNER")
+                                                                        )
+                                                                        .sort(
+                                                                            (fa1, fa2) => {
+                                                                                var s1 = 0
+                                                                                var s2 = 0
+                                                                                s1 += fa1.available ? 1 : 0
+                                                                                s1 += fa1.enabled ? 1 : 0
+                                                                                s2 += fa2.available ? 1 : 0
+                                                                                s2 += fa2.enabled ? 1 : 0
+                                                                                return s2 - s1
+                                                                            }
+                                                                        )
+                                                                        .map(
+                                                                            (fa) => this.convertFunctionAvailability(fa)
+                                                                        )
                                                                 }
                                                             </div>
                                                         </Stack>}
@@ -339,7 +339,7 @@ export default class DeviceAgentsView extends BaseView {
                     </PieChart> */}
                 </div>
                 <div>
-                    
+
                 </div>
                 {agentRows}
                 <Snackbar
@@ -493,33 +493,35 @@ export default class DeviceAgentsView extends BaseView {
             name = "Maestro"
         } else if ((availability.functionName.endsWith("PythonRunner"))) {
             name = "Python"
+        } else if ((availability.functionName.endsWith("APK_SCANNER"))) {
+            name = "APK Scanner"
         }
 
         return (
-            <div style={{ display: 'flex', fontSize: '0.75rem', paddingLeft: 8, color: color, alignItems: 'center' } }>
+            <div style={{ display: 'flex', fontSize: '0.75rem', paddingLeft: 8, color: color, alignItems: 'center' }}>
                 <span style={{ color: 'white', fontSize: '0.8rem', userSelect: 'none', marginRight: 4 }}
                     className="material-icons-outlined" >{icon}</span>
-                <span style={{userSelect: 'none'}}>{name}</span>
+                <span style={{ userSelect: 'none' }}>{name}</span>
                 {
                     requires === null ? null :
-                    <MUITooltip
-                        title={
-                            <Stack>
-                                <text style={{ fontSize: '0.8rem' }}>Absent Dependency:</text>
-                                {
-                                    requires.map(
-                                        (r) => {
-                                            return <span style={{ fontSize: '0.8rem', color: 'OrangeRed' }}>{r}</span>
-                                        }
-                                    )
-                                }
-                            </Stack>}
-                        placement='right'
-                        style={{ padding: "0" }}>
-                        <IconButton>
-                            <span style={{ color: 'orange', fontSize: '1.05rem', marginLeft: 4 }} className="material-icons-outlined">info</span>
-                        </IconButton>
-                    </MUITooltip>
+                        <MUITooltip
+                            title={
+                                <Stack>
+                                    <text style={{ fontSize: '0.8rem' }}>Absent Dependency:</text>
+                                    {
+                                        requires.map(
+                                            (r) => {
+                                                return <span style={{ fontSize: '0.8rem', color: 'OrangeRed' }}>{r}</span>
+                                            }
+                                        )
+                                    }
+                                </Stack>}
+                            placement='right'
+                            style={{ padding: "0" }}>
+                            <IconButton>
+                                <span style={{ color: 'orange', fontSize: '1.05rem', marginLeft: 4 }} className="material-icons-outlined">info</span>
+                            </IconButton>
+                        </MUITooltip>
                 }
             </div>
         )

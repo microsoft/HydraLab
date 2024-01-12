@@ -7,10 +7,16 @@ import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import lombok.Data;
 
+import javax.persistence.Transient;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Data
 public class AgentDeviceGroup {
+    @Transient
+    private static final int DEFAULT_ANALYSIS_COUNT = 3;
+
     private String agentId;
     private String agentName;
     private String agentOS;
@@ -26,6 +32,7 @@ public class AgentDeviceGroup {
     private String ip;
     private List<DeviceInfo> devices;
     private List<AgentFunctionAvailability> functionAvailabilities;
+    private ConcurrentMap<String, Integer> availableAnalysisTaskCount = new ConcurrentHashMap<>();
 
     public void initWithAgentUser(AgentUser agentUser) {
         agentId = agentUser.getId();
@@ -40,11 +47,28 @@ public class AgentDeviceGroup {
         agentVersionName = agentUser.getVersionName();
         agentVersionCode = agentUser.getVersionCode();
         functionAvailabilities = agentUser.getFunctionAvailabilities();
+        for (AgentFunctionAvailability functionAvailability : functionAvailabilities) {
+            if (AgentFunctionAvailability.AgentFunctionType.ANALYSIS_RUNNER.equals(functionAvailability.getFunctionType()) && functionAvailability.isEnabled() &&
+                    functionAvailability.isAvailable()) {
+                availableAnalysisTaskCount.put(functionAvailability.getFunctionName(), 3);
+            }
+        }
     }
 
     public interface Status {
         String HEALTHY = "HEALTHY";
         String ERROR = "ERROR";
         String UPDATING = "UPDATING";
+    }
+
+    public void runAnalysisTask(String runnerType) {
+        availableAnalysisTaskCount.put(runnerType, availableAnalysisTaskCount.getOrDefault(runnerType, DEFAULT_ANALYSIS_COUNT) - 1);
+    }
+
+    public void finishAnalysisTask(String runnerType) {
+        if (availableAnalysisTaskCount.get(runnerType) == null) {
+            return;
+        }
+        availableAnalysisTaskCount.put(runnerType, availableAnalysisTaskCount.get(runnerType) + 1);
     }
 }

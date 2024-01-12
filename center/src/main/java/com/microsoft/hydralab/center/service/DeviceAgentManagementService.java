@@ -9,6 +9,8 @@ import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.center.openai.SuggestionService;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.util.MetricUtil;
+import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
+import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.center.AgentDeviceGroup;
 import com.microsoft.hydralab.common.entity.center.DeviceGroup;
@@ -18,10 +20,12 @@ import com.microsoft.hydralab.common.entity.common.AccessInfo;
 import com.microsoft.hydralab.common.entity.common.AgentMetadata;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
+import com.microsoft.hydralab.common.entity.common.AnalysisTask;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.entity.common.StatisticData;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
@@ -282,41 +286,45 @@ public class DeviceAgentManagementService {
                 }
                 break;
             case Const.Path.TEST_TASK_UPDATE:
-                if (message.getBody() instanceof TestTask) {
-                    TestTask testTask = (TestTask) message.getBody();
-                    boolean isFinished = testTask.getStatus().equals(TestTask.TestStatus.FINISHED);
+                if (message.getBody() instanceof Task) {
+                    Task task = (Task) message.getBody();
+                    boolean isFinished = task.getStatus().equals(Task.TaskStatus.FINISHED);
                     //after the task finishing, update the status of device used
                     if (isFinished) {
-                        List<TestRun> deviceTestResults = testTask.getDeviceTestResults();
+                        List<TestRun> deviceTestResults = task.getTaskRunList();
                         for (TestRun deviceTestResult : deviceTestResults) {
-                            if (testTask.isEnablePerformanceSuggestion()) {
+                            if (task instanceof TestTask && ((TestTask) task).isEnablePerformanceSuggestion()) {
                                 suggestionService.performanceAnalyze(deviceTestResult);
                             }
                             String[] identifiers = deviceTestResult.getDeviceSerialNumber().split(",");
                             for (String identifier : identifiers) {
-                                updateDeviceStatus(identifier, DeviceInfo.ONLINE, null);
+                                if (Task.RunnerType.APK_SCANNER.name().equals(task.getRunnerType())) {
+                                    agentDeviceGroups.get(identifier).finishAnalysisTask(task.getRunnerType());
+                                } else {
+                                    updateDeviceStatus(identifier, DeviceInfo.ONLINE, null);
+                                }
                             }
                         }
                         //run the task saved in queue
                         testTaskService.runTask();
                     }
-                    testDataService.saveTestTaskDataFromAgent(testTask, isFinished, savedSession.agentUser.getId());
+                    testDataService.saveTaskDataFromAgent(task, isFinished, savedSession.agentUser.getId());
                 }
                 break;
             case Const.Path.TEST_TASK_RUN:
                 log.info("Message from agent {}", message);
                 break;
             case Const.Path.TEST_TASK_RETRY:
-                if (message.getBody() instanceof TestTask) {
-                    TestTask testTask = (TestTask) message.getBody();
-                    if (testTask.getRetryTime() == Const.AgentConfig.RETRY_TIME) {
-                        testDataService.saveTestTaskData(testTask);
+                if (message.getBody() instanceof Task) {
+                    Task task = (Task) message.getBody();
+                    if (task.getRetryTime() == Const.AgentConfig.RETRY_TIME) {
+                        testDataService.saveTaskData(task);
                     } else {
-                        TestTaskSpec taskSpec = TestTask.convertToTestTaskSpec(testTask);
+                        TestTaskSpec taskSpec = task.convertToTaskSpec();
                         taskSpec.retryTime++;
                         testTaskService.addTask(taskSpec);
-                        log.info("Retry task {} for {} time", testTask.getId(), taskSpec.retryTime);
-                        cancelTestTaskById(testTask.getId(), "Error happened:" + testTask.getTestErrorMsg() + ". Will cancel the task and retry.");
+                        log.info("Retry task {} for {} time", task.getId(), taskSpec.retryTime);
+                        cancelTestTaskById(task.getId(), "Error happened:" + task.getErrorMsg() + ". Will cancel the task and retry.");
                         //run the task saved in queue
                         testTaskService.runTask();
                     }
@@ -596,6 +604,7 @@ public class DeviceAgentManagementService {
 
     public void onError(Session session, Throwable error) {
         log.error("onError from session " + session.getId(), error);
+
         error.printStackTrace();
         deleteSessionAndDevice(session);
     }
@@ -680,10 +689,12 @@ public class DeviceAgentManagementService {
     public JSONObject runTestTaskBySpec(TestTaskSpec testTaskSpec) {
         JSONObject result;
 
-        if (TestTask.TestRunningType.APPIUM_CROSS.equals(testTaskSpec.runningType)) {
+        if (Task.RunnerType.APPIUM_CROSS.name().equals(testTaskSpec.runningType)) {
             result = runAppiumTestTask(testTaskSpec);
-        } else if (TestTask.TestRunningType.T2C_JSON_TEST.equals(testTaskSpec.runningType)) {
+        } else if (Task.RunnerType.T2C_JSON.name().equals(testTaskSpec.runningType)) {
             result = runT2CTest(testTaskSpec);
+        } else if (Task.RunnerType.APK_SCANNER.name().equals(testTaskSpec.runningType)) {
+            result = runAnalysisTask(testTaskSpec);
         } else {
             if (testTaskSpec.deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
                 result = runTestTaskByGroup(testTaskSpec);
@@ -691,6 +702,62 @@ public class DeviceAgentManagementService {
                 result = runTestTaskByDevice(testTaskSpec);
             }
         }
+        return result;
+    }
+
+    private JSONObject runAnalysisTask(TestTaskSpec testTaskSpec) {
+        List<AnalysisTask.AnalysisConfig> analysisConfigs = testTaskSpec.analysisConfigs;
+        Assert.notEmpty(analysisConfigs, "No analysis config found!");
+        JSONObject result = new JSONObject();
+        List<AnalysisTask.AnalysisConfig> configs = testTaskSpec.analysisConfigs;
+
+        List<AgentDeviceGroup> availableAgents = new ArrayList<>();
+
+        for (AgentDeviceGroup tempAgentDeviceGroup : agentDeviceGroups.values()) {
+            AgentFunctionAvailability function = tempAgentDeviceGroup.getFunctionAvailabilities().stream()
+                    .filter(functionAvailability -> functionAvailability.getFunctionName().equals(testTaskSpec.runningType)).findFirst().get();
+            if (function.isEnabled()) {
+                List<EnvCapabilityRequirement> requirements = function.getEnvCapabilityRequirements();
+                boolean isMatch = true;
+                for (AnalysisTask.AnalysisConfig config : configs) {
+                    if ("apkcanary".equals(config.getExecutor())) {
+                        continue;
+                    }
+                    isMatch = requirements.stream().anyMatch(requirement -> requirement.getName().equals(config.getExecutor()) && requirement.isReady()) && isMatch;
+                }
+                if (isMatch) {
+                    availableAgents.add(tempAgentDeviceGroup);
+                }
+            }
+        }
+
+        Assert.notEmpty(availableAgents, "No available agent found!");
+        Collections.shuffle(availableAgents);
+
+        AgentDeviceGroup agentDeviceGroup = null;
+
+        for (AgentDeviceGroup availableAgent : availableAgents) {
+            if (!isAgentUpdating(availableAgent.getAgentId()) && availableAgent.getAvailableAnalysisTaskCount().get(testTaskSpec.runningType) > 0) {
+                agentDeviceGroup = availableAgent;
+                break;
+            }
+        }
+        if (agentDeviceGroup == null) {
+            return result;
+        }
+        testTaskSpec.deviceIdentifier = agentDeviceGroup.getAgentId();
+        testTaskSpec.agentIds.add(agentDeviceGroup.getAgentId());
+        agentDeviceGroups.get(agentDeviceGroup.getAgentId()).runAnalysisTask(testTaskSpec.runningType);
+        Message message = new Message();
+        message.setBody(testTaskSpec);
+        message.setPath(Const.Path.TEST_TASK_RUN);
+
+        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentDeviceGroup.getAgentId());
+        Assert.notNull(agentSessionInfoByAgentId, "Device/Agent Offline!");
+        result.put(Const.Param.TEST_DEVICE_SN, agentDeviceGroup.getAgentId());
+        message.setBody(testTaskSpec);
+        sendMessageToSession(agentSessionInfoByAgentId.session, message);
+
         return result;
     }
 

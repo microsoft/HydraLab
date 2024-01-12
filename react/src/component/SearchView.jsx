@@ -10,6 +10,7 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import TestReportView from '@/component/TestReportView';
+import AnalysisReportView from '@/component/AnalysisReportView';
 import VideoNavView from '@/component/VideoNavView';
 import Typography from "@material-ui/core/Typography";
 import TextField from "@mui/material/TextField";
@@ -57,7 +58,7 @@ export default class SearchView extends BaseView {
                         <FormControlLabel
                             value="task"
                             control={<Radio color="primary" />}
-                            label="Test task report" />
+                            label="Task report" />
                     </RadioGroup>
                     <Stack direction="row" spacing={2} alignItems="center" style={{ width: '720px' }}>
                         <TextField fullWidth
@@ -185,7 +186,7 @@ export default class SearchView extends BaseView {
                 if (res.data && res.data.code === 200) {
                     const details = res.data.content;
                     this.setState({
-                        infoDisplay: <center><TestReportView testTask={details} /></center>,
+                        infoDisplay: details.analysisConfigs ? <center><AnalysisReportView testTask={details} /></center> : <center><TestReportView testTask={details} /></center>,
                         querying: false
                     })
                 } else {

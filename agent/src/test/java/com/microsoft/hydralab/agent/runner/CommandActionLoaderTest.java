@@ -36,7 +36,7 @@ class CommandActionLoaderTest extends BaseTest {
     @Test
     void testAttachCommandAction() {
         TestTask testTask = new TestTask();
-        testTask.setTestSuite("com.microsoft.test");
+        testTask.setTaskAlias("com.microsoft.test");
         commandLoader.loadCommandAction(testTask);
         Assertions.assertEquals(testTask.getDeviceActions().size(), 2, "Analysis commands failed!");
         Assertions.assertEquals(testTask.getDeviceActions().get("setUp").size(), 4, "Analysis commands failed!");

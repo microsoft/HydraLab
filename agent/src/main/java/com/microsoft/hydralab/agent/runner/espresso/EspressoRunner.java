@@ -52,10 +52,10 @@ public class EspressoRunner extends TestRunner {
     }
 
     @Override
-    protected void setUp(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
-        super.setUp(testRunDevice, testTask, testRun);
+    public void setup(TestTask testTask, TestRun testRun) throws Exception {
+        super.setup(testTask, testRun);
         if (testTask.isEnableTestOrchestrator()) {
-            reinstallOrchestratorDependency(testRunDevice, testTask, testRun.getLogger());
+            reinstallOrchestratorDependency(testRun.getDevice(), testTask, testRun.getLogger());
         }
     }
 
@@ -97,7 +97,7 @@ public class EspressoRunner extends TestRunner {
             }
 
             String command = buildCommand(testTask.getTestSuite(), testTask.getTestPkgName(), testTask.getTestRunnerName(),
-                    testTask.getTestScope(), testTask.getInstrumentationArgs(), testTask.isEnableTestOrchestrator(), pathToTestServicePack.toString());
+                    testTask.getTestScope(), testTask.getTaskRunArgs(), testTask.isEnableTestOrchestrator(), pathToTestServicePack.toString());
             String result = startInstrument(testRunDevice.getDeviceInfo(), reportLogger,
                     instrumentationResultParser, testTask.getTimeOutSecond(), command);
             if (Const.TaskResult.ERROR_DEVICE_OFFLINE.equals(result)) {

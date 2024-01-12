@@ -68,6 +68,9 @@ app:
   location: ${user.dir}
   device-script:
     commands:
+  runner:
+    analysis:
+      enabled: false
 # Prometheus Configuration
 management:
   endpoints:

@@ -14,8 +14,8 @@ import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.PerformanceTestResultEntity;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestRun;
-import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.repository.KeyValueRepository;
@@ -238,6 +238,35 @@ public class TestDetailController {
         }
     }
 
+    @GetMapping(value = {"/api/test/loadCanaryReport/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result getAPKScannerCanaryReport(@CurrentSecurityContext SysUser requestor,
+                                            @PathVariable(value = "fileId") String fileId) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+        }
+
+        try {
+            StorageFileInfo canaryReportBlobFile = storageFileInfoRepository.findById(fileId).orElse(null);
+            if (canaryReportBlobFile == null) {
+                throw new HydraLabRuntimeException("apk canary report file not exist!");
+            }
+            File canaryReportFile = new File(CENTER_TEMP_FILE_DIR, canaryReportBlobFile.getBlobPath());
+
+            if (!canaryReportFile.exists()) {
+                storageServiceClientProxy.download(canaryReportFile, canaryReportBlobFile);
+            }
+            String json = FileUtil.getStringFromFilePath(canaryReportFile.getAbsolutePath());
+            JSONArray objects = JSON.parseArray(json);
+            return Result.ok(objects);
+        } catch (HydraLabRuntimeException e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+    }
+
     @GetMapping(value = {"/api/test/loadGraph/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result getSmartTestGraphXML(@CurrentSecurityContext SysUser requestor,
                                        @PathVariable(value = "fileId") String fileId,
@@ -401,10 +430,10 @@ public class TestDetailController {
         String t2cJson = null;
 
         TestRun testRun = testDataService.findTestRunById(testRunId);
-        TestTask testTask = testDataService.getTestTaskDetail(testRun.getTestTaskId());
+        Task task = testDataService.getTaskDetail(testRun.getTestTaskId());
         try (FileInputStream in = new FileInputStream(graphFile)) {
             String graphXml = IOUtils.toString(in, StandardCharsets.UTF_8);
-            t2cJson = T2CJsonGenerator.generateT2CJsonFromGraphXml(graphXml, path, logger, testTask.getPkgName(), "ANDROID");
+            t2cJson = T2CJsonGenerator.generateT2CJsonFromGraphXml(graphXml, path, logger, task.getPkgName(), "ANDROID");
         } catch (Exception e) {
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error when parse graph xml");
         }

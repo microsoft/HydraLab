@@ -11,6 +11,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import TestReportView from '@/component/TestReportView';
+import AnalysisReportView from '@/component/AnalysisReportView';
 import 'bootstrap/dist/css/bootstrap.css'
 import {Cell, Pie, PieChart} from 'recharts';
 import moment from 'moment';
@@ -57,12 +58,13 @@ const TestType = {
     "XCTEST": "XCTest",
     "MAESTRO":"Maestro",
     "PYTHON": "Python",
+    "APK_SCANNER": "APK Scanner",
     "All": "All"
 }
 
 let params = {
     Timestamp: ["Last 24 Hours", "Last 7 Days", "Last 30 Days", "All"],
-    TestType: ["INSTRUMENTATION", "APPIUM", "SMART", "MONKEY", "APPIUM_MONKEY", "APPIUM_CROSS", "T2C_JSON", "XCTEST", "MAESTRO", "PYTHON"],
+    TestType: ["INSTRUMENTATION", "APPIUM", "SMART", "MONKEY", "APPIUM_MONKEY", "APPIUM_CROSS", "T2C_JSON", "XCTEST", "MAESTRO", "PYTHON","APK_SCANNER"],
     Result: ["Passed", "Failed"],
     TriggerType: ["PullRequest", "IndividualCI", "API"]
 };
@@ -70,7 +72,7 @@ let params = {
 let defaultSelectedParams = {
     time: "Last 24 Hours",
     suite: '',
-    TestType: ["INSTRUMENTATION", "APPIUM", "SMART", "MONKEY", "APPIUM_MONKEY", "APPIUM_CROSS", "T2C_JSON", "XCTEST", "MAESTRO", "PYTHON"],
+    TestType: ["INSTRUMENTATION", "APPIUM", "SMART", "MONKEY", "APPIUM_MONKEY", "APPIUM_CROSS", "T2C_JSON", "XCTEST", "MAESTRO", "PYTHON","APK_SCANNER"],
     Result: ["Passed", "Failed"],
     TriggerType: ["PullRequest", "IndividualCI", "API"]
 }
@@ -178,11 +180,11 @@ class TasksView extends BaseView {
                 <StyledTableCell key={'TestType'} align="center">
                     <ThemeProvider theme={darkTheme}>
                         <FormControl className="ml-0" fullWidth={true}>
-                            <InputLabel id="test-type-select-label" >Test Type</InputLabel>
+                            <InputLabel id="test-type-select-label" >Task Type</InputLabel>
                             <Select
                                 labelId="test-type-select-label"
                                 id="test-type-select"
-                                label="Test Type"
+                                label="Task Type"
                                 size="small"
                                 multiple
                                 value={selectedParams.TestType}
@@ -297,7 +299,7 @@ class TasksView extends BaseView {
 
         return <div>
             <Typography variant="h4" className="m-2">
-                Test Task History</Typography>
+                Task History</Typography>
             <TableContainer style={{ margin: "auto", overflowY: 'initial', height: `${tableBodyHeight + 100}px` }}>
                 <Table stickyHeader size="medium">
                     <TableHead>
@@ -327,7 +329,8 @@ class TasksView extends BaseView {
                     maxWidth="lg"
                     onClose={() => this.handleCloseDetailDialog()}
             >
-                <TestReportView testTask={this.state.testDetailInfo} />
+                {this.state.testDetailInfo && this.state.testDetailInfo.analysisConfigs ? <AnalysisReportView testTask={this.state.testDetailInfo} /> : <TestReportView testTask={this.state.testDetailInfo} />}
+                
                 <DialogActions>
                     <Button
                         onClick={() => this.handleCloseDetailDialog()}>Close</Button>
@@ -499,8 +502,8 @@ class TasksView extends BaseView {
                     className='badge badge-success'>Running</span>
                 </TableCell>
                 <TableCell id={task.id} align="center" style={{maxWidth: '400px'}}>
-                    {task.testSuite.length > 100 ? task.testSuite.substring(0, 100) + '...' : task.testSuite}
-                    <IconButton onClick={() => this.copyContent(task.testSuite)}>
+                    {task.taskAlias.length > 100 ? task.taskAlias.substring(0, 100) + '...' : task.taskAlias}
+                    <IconButton onClick={() => this.copyContent(task.taskAlias)}>
                             <span className="material-icons-outlined">content_copy</span>
                     </IconButton>
                 </TableCell>
@@ -511,7 +514,7 @@ class TasksView extends BaseView {
                     -
                 </TableCell>
                 <TableCell id={task.id} align="center">
-                    {task.type}
+                    {task.triggerType}
                 </TableCell>
                 <TableCell id={task.id} align="center">
                     <Button variant="outlined" color="warning" size='small'
@@ -533,8 +536,8 @@ class TasksView extends BaseView {
                     {moment(task.startDate).format('yyyy-MM-DD HH:mm:ss') + ' - ' + moment(task.endDate).format('HH:mm:ss')}
                 </TableCell>
                 <TableCell id={task.id} align="center" style={{maxWidth: '400px'}}>
-                    {task.testSuite.length > 100 ? task.testSuite.substring(0, 100) + '...' : task.testSuite}
-                    <IconButton onClick={() => this.copyContent(task.testSuite)}>
+                    {task.taskAlias.length > 100 ? task.taskAlias.substring(0, 100) + '...' : task.taskAlias}
+                    <IconButton onClick={() => this.copyContent(task.taskAlias)}>
                             <span className="material-icons-outlined">content_copy</span>
                     </IconButton>
                 </TableCell>
@@ -560,14 +563,18 @@ class TasksView extends BaseView {
                                     </PieChart>
                                 </td>
                                 <td style={{ fontSize: '0.875rem' }}>
-                                    {task.overallSuccessRate}({(task.totalTestCount - task.totalFailCount) + '/' + task.totalTestCount})
+                                    {task.overallSuccessRate}({
+                                        task.totalTestCount ? (task.totalTestCount - task.totalFailCount) + '/' + task.totalTestCount : 0
+                                    
+                            
+                                    })
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </TableCell>
                 <TableCell id={task.id} align="center">
-                    {task.type}
+                    {task.triggerType}
                 </TableCell>
                 <TableCell id={task.id} align="center">
                     {/* color definition: https://mui.com/material-ui/customization/palette/#adding-new-colors */}
@@ -587,8 +594,8 @@ class TasksView extends BaseView {
             </StyledTableRow>
     }
 
-    copyContent(testSuite) {
-        copy(testSuite)
+    copyContent(taskAlias) {
+        copy(taskAlias)
         this.setState({
             snackbarIsShown: true,
             snackbarSeverity: "success",
@@ -630,7 +637,7 @@ class TasksView extends BaseView {
     }
 
     getTestType = (t) => {
-        return TestType[t.runningType]
+        return TestType[t.runnerType]
     }
 
     clickCancel = (element, taskId) => {
@@ -688,7 +695,7 @@ class TasksView extends BaseView {
     taskParamUpdate(queryParams) {
         if (this.state.selectedParams.suite !== '') {
             queryParams.push({
-                "key": "testSuite",
+                "key": "taskAlias",
                 "op": "like",
                 "likeRule": "all",
                 "value": this.state.selectedParams.suite
@@ -746,12 +753,12 @@ class TasksView extends BaseView {
                 "value": "running"
             },
             {
-                "key": "runningType",
+                "key": "runnerType",
                 "op": "in",
                 "value": this.state.selectedParams.TestType.length > 0 ? this.state.selectedParams.TestType : params.TestType
             },
             {
-                "key": "type",
+                "key": "triggerType",
                 "op": "in",
                 "value": this.state.selectedParams.TriggerType
             }
@@ -796,12 +803,12 @@ class TasksView extends BaseView {
                     "value": "running"
                 },
                 {
-                    "key": "runningType",
+                    "key": "runnerType",
                     "op": "in",
                     "value": this.state.selectedParams.TestType.length > 0 ? this.state.selectedParams.TestType : params.TestType
                 },
                 {
-                    "key": "type",
+                    "key": "triggerType",
                     "op": "in",
                     "value": this.state.selectedParams.TriggerType
                 }
@@ -853,7 +860,7 @@ class TasksView extends BaseView {
         if (!task) {
             return null
         }
-        const runTestType = task.runningType
+        const runTestType = task.runnerType
 
         return <Box sx={{ display: 'flex', flexDirection: 'column', pt: 3 }}>
             <TextField
@@ -878,7 +885,7 @@ class TasksView extends BaseView {
             />
             <br/>
             <FormControl fullWidth>
-                <InputLabel>Test type</InputLabel>
+                <InputLabel>Task type</InputLabel>
                 <Select
                     disabled
                     margin="dense"
@@ -904,7 +911,7 @@ class TasksView extends BaseView {
                 label="Test Suite Class"
                 fullWidth
                 variant="standard"
-                value={task.testSuite}
+                value={task.taskAlias}
                 onChange={this.handleValueChange}
             />
             <br />
@@ -1015,8 +1022,8 @@ class TasksView extends BaseView {
             apkSetId: task.apkSetId,
             pkgName: task.pkgName,
             testPkgName: task.testPkgName,
-            runningType: task.runningType,
-            testSuiteClass: task.testSuite,
+            runnerType: task.runnerType,
+            testSuiteClass: task.taskAlias,
             deviceIdentifier: task.deviceIdentifier,
             groupTestType: task.groupTestType,
             maxStepCount: task.maxStepCount,

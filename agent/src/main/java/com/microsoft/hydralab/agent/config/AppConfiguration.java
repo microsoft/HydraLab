@@ -143,16 +143,7 @@ public class AppConfiguration {
 
     // TODO: refactor test runner to remove DependsOn
     @Bean
-    @DependsOn({"espressoRunner",
-            "appiumRunner",
-            "appiumCrossRunner",
-            "smartRunner",
-            "adbMonkeyRunner",
-            "appiumMonkeyRunner",
-            "t2cRunner",
-            "xctestRunner",
-            "maestroRunner",
-            "pythonRunner"})
+    @DependsOn({"testRunnerManager"})
     public AgentWebSocketClient agentWebSocketClient(AgentWebSocketClientService agentWebSocketClientService)
             throws Exception {
         String wsUrl = String.format("%s://%s/agent/connect", registrySchema, registryServer);

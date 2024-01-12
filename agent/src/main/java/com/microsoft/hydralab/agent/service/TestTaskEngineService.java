@@ -1,16 +1,17 @@
 package com.microsoft.hydralab.agent.service;
 
 import com.microsoft.hydralab.agent.command.DeviceScriptCommandLoader;
-import com.microsoft.hydralab.agent.config.TestRunnerConfig;
 import com.microsoft.hydralab.agent.runner.DeviceTaskControlExecutor;
 import com.microsoft.hydralab.agent.runner.TestRunDeviceOrchestrator;
-import com.microsoft.hydralab.agent.runner.TestRunner;
+import com.microsoft.hydralab.agent.runner.TestRunnerManager;
 import com.microsoft.hydralab.agent.runner.TestTaskRunCallback;
 import com.microsoft.hydralab.agent.util.FileLoadUtil;
 import com.microsoft.hydralab.common.entity.agent.DeviceTaskControl;
+import com.microsoft.hydralab.common.entity.common.AnalysisTask;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.EntityType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestRunDevice;
 import com.microsoft.hydralab.common.entity.common.TestRunDeviceCombo;
@@ -62,52 +63,60 @@ public class TestTaskEngineService implements TestTaskRunCallback {
     DeviceScriptCommandLoader deviceScriptCommandLoader;
     @Resource
     TestRunDeviceOrchestrator testRunDeviceOrchestrator;
-    private final Map<String, TestTask> runningTestTask = new HashMap<>();
+    @Resource
+    private TestRunnerManager testRunnerManager;
+    private final Map<String, Task> runningTestTask = new HashMap<>();
 
-    public TestTask runTestTask(TestTask testTask) {
-        String beanName = TestRunnerConfig.testRunnerMap.get(testTask.getRunningType());
-        TestRunner runner = applicationContext.getBean(beanName, TestRunner.class);
-
-        Set<TestRunDevice> chosenDevices = chooseDevices(testTask);
-        if (chosenDevices.size() == 0) {
-            handleNoAvailableDevice(testTask);
-            return testTask;
-        }
-
-        onTaskStart(testTask);
-        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices,
-                new DeviceTaskControlExecutor.DeviceTask() {
-                    @Override
-                    public boolean doTask(TestRunDevice testRunDevice) throws Exception {
-                        runner.runTestOnDevice(testTask, testRunDevice);
-                        return false;
-                    }
-                },
-                () -> {
-                    testTask.onFinished();
-                    if (!testTask.isCanceled()) {
-                        testTask.setStatus(TestTask.TestStatus.FINISHED);
-                    }
-
-                    onTaskComplete(testTask);
-                });
-
-        if (deviceTaskControl == null) {
-            handleNoAvailableDevice(testTask);
-        } else {
-            testTask.setTestDevicesCount(deviceTaskControl.devices.size());
-        }
-        return testTask;
+    public TestTaskEngineService() {
     }
 
-    private static void handleNoAvailableDevice(TestTask testTask) {
-        testTask.setTestDevicesCount(0);
-        testTask.setStatus(TestTask.TestStatus.CANCELED);
+    public Task runTestTask(Task task) {
+        Set<TestRunDevice> chosenDevices = chooseDevices(task);
+        if (chosenDevices.size() == 0) {
+            handleNoAvailableDevice(task);
+            return task;
+        }
+
+        onTaskStart(task);
+        DeviceTaskControl deviceTaskControl = deviceTaskControlExecutor.runForAllDeviceAsync(chosenDevices,
+                testRunDevice -> {
+                    testRunnerManager.runTestTask(task, testRunDevice);
+                    return false;
+                },
+                () -> {
+                    task.onFinished();
+                    if (!task.isCanceled()) {
+                        task.setStatus(Task.TaskStatus.FINISHED);
+                    }
+
+                    onTaskComplete(task);
+                }, task instanceof AnalysisTask);
+
+        if (deviceTaskControl == null) {
+            handleNoAvailableDevice(task);
+        } else {
+            task.setDeviceCount(deviceTaskControl.devices.size());
+        }
+        return task;
+    }
+
+    private static void handleNoAvailableDevice(Task task) {
+        TestTask testTask = (TestTask) task;
+        testTask.setDeviceCount(0);
+        testTask.setStatus(Task.TaskStatus.CANCELED);
         log.warn("No available device found for {}, group devices: {}, task {} is canceled on this agent",
                 testTask.getDeviceIdentifier(), testTask.getGroupDevices(), testTask.getId());
     }
 
-    protected Set<TestRunDevice> chooseDevices(TestTask testTask) {
+    protected Set<TestRunDevice> chooseDevices(Task task) {
+        if (task instanceof AnalysisTask) {
+            DeviceInfo fakeDeviceInfo = new DeviceInfo();
+            fakeDeviceInfo.setSerialNum(task.getDeviceIdentifier());
+            fakeDeviceInfo.setName("agent_task");
+            TestRunDevice fakeDevice = new TestRunDevice(fakeDeviceInfo, "agent_task");
+            return Set.of(fakeDevice);
+        }
+        TestTask testTask = (TestTask) task;
         String identifier = testTask.getDeviceIdentifier();
 
         String targetedDevicesDescriptor;
@@ -134,8 +143,8 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             return chosenDevices;
         }
 
-        String runningType = testTask.getRunningType();
-        if (((TestTask.TestRunningType.APPIUM_CROSS.equals(runningType)) || (TestTask.TestRunningType.T2C_JSON_TEST.equals(runningType))) && devices.size() > 1) {
+        String runningType = testTask.getRunnerType();
+        if (((Task.RunnerType.APPIUM_CROSS.name().equals(runningType)) || (Task.RunnerType.T2C_JSON.name().equals(runningType))) && devices.size() > 1) {
             Optional<DeviceInfo> mainDeviceInfo = devices.stream().filter(deviceInfo -> !DeviceType.WINDOWS.name().equals(deviceInfo.getType())).findFirst();
             Assert.isTrue(mainDeviceInfo.isPresent(), "There are more than 1 device, but all of them is windows device!");
             devices.remove(mainDeviceInfo.get());
@@ -150,64 +159,64 @@ public class TestTaskEngineService implements TestTaskRunCallback {
         return chosenDevices;
     }
 
-    public void setupTestDir(TestTask testTask) {
+    public void setupTestDir(Task task) {
         File baseDir = new File(agentManagementService.getTestBaseDir(), DateUtil.nowDirFormat.format(new Date()));
         if (!baseDir.exists()) {
             if (!baseDir.mkdirs()) {
                 throw new RuntimeException("mkdirs fail for: " + baseDir);
             }
         }
-        testTask.setResourceDir(baseDir);
+        task.setResourceDir(baseDir);
     }
 
-    public Map<String, TestTask> getRunningTestTask() {
+    public Map<String, Task> getRunningTestTask() {
         return runningTestTask;
     }
 
     public boolean cancelTestTaskById(String testId) {
-        final Map<String, TestTask> runningTestTask = getRunningTestTask();
-        final TestTask testTask = runningTestTask.get(testId);
-        if (testTask == null || testTask.isCanceled()) {
+        final Map<String, Task> runningTestTask = getRunningTestTask();
+        final Task task = runningTestTask.get(testId);
+        if (task == null || task.isCanceled()) {
             return false;
         }
-        testTask.setStatus(TestTask.TestStatus.CANCELED);
+        task.setStatus(Task.TaskStatus.CANCELED);
         agentManagementService.resetDeviceByTestId(testId, log);
         return true;
     }
 
     @Override
-    public void onTaskStart(TestTask testTask) {
-        setupTestDir(testTask);
-        fileLoadUtil.loadAttachments(testTask);
-        deviceScriptCommandLoader.loadCommandAction(testTask);
-        runningTestTask.put(testTask.getId(), testTask);
+    public void onTaskStart(Task task) {
+        setupTestDir(task);
+        fileLoadUtil.loadAttachments(task);
+        deviceScriptCommandLoader.loadCommandAction(task);
+        runningTestTask.put(task.getId(), task);
     }
 
     @Override
-    public void onTaskComplete(TestTask testTask) {
+    public void onTaskComplete(Task task) {
         try {
-            fileLoadUtil.clearAttachments(testTask);
+            fileLoadUtil.clearAttachments(task);
         } catch (Exception e) {
             log.error("clear attachments error", e);
         }
 
-        if (testTask.isCanceled()) {
-            log.warn("test task {} is canceled, no data will be saved", testTask.getId());
+        if (task.isCanceled()) {
+            log.warn("test task {} is canceled, no data will be saved", task.getId());
             return;
         }
 
         if (webSocketCallback != null) {
-            webSocketCallback.onTaskComplete(testTask);
+            webSocketCallback.onTaskComplete(task);
         }
 
-        log.info("test task {} is completed, start to save info", testTask.getId());
+        log.info("test task {} is completed, start to save info", task.getId());
 
-        testDataService.saveTestTaskData(testTask);
-        runningTestTask.remove(testTask.getId());
+        testDataService.saveTestTaskData(task);
+        runningTestTask.remove(task.getId());
     }
 
     @Override
-    public void onOneDeviceComplete(TestTask testTask, TestRunDevice testRunDevice, Logger logger, TestRun result) {
+    public void onOneDeviceComplete(Task task, TestRunDevice testRunDevice, Logger logger, TestRun result) {
         log.info("onOneDeviceComplete: {}", testRunDevice.getDeviceInfo().getSerialNum());
         testRunDeviceOrchestrator.finishTask(testRunDevice);
         //check if the device is needed to reboot
@@ -227,41 +236,22 @@ public class TestTaskEngineService implements TestTaskRunCallback {
             }
         }
         result.setAttachments(attachments);
-        processAndSaveDeviceTestResultBlobUrl(result);
+        result.processAndSaveDeviceTestResultBlobUrl();
     }
 
     @Override
-    public void onDeviceOffline(TestTask testTask) {
-        testTask.setStatus(TestTask.TestStatus.CANCELED);
+    public void onDeviceOffline(Task task) {
+        task.setStatus(Task.TaskStatus.CANCELED);
         if (webSocketCallback != null) {
-            webSocketCallback.onDeviceOffline(testTask);
+            webSocketCallback.onDeviceOffline(task);
         }
-        log.warn("device disconnected, test task {} will be re-queue, no data will be saved", testTask.getId());
+        log.warn("device disconnected, test task {} will be re-queue, no data will be saved", task.getId());
     }
 
-    private StorageFileInfo saveFileToBlob(File file, File folder, Logger logger) {
+    public StorageFileInfo saveFileToBlob(File file, File folder, Logger logger) {
         StorageFileInfo storageFileInfo = new StorageFileInfo(file,
                 "test/result/" + folder.getParentFile().getName() + "/" + folder.getName(),
                 StorageFileInfo.FileType.COMMON_FILE);
         return attachmentService.saveFileInStorageAndDB(storageFileInfo, file, EntityType.TEST_RESULT, logger);
-    }
-
-    private void processAndSaveDeviceTestResultBlobUrl(TestRun result) {
-        Assert.isTrue(result.getAttachments().size() > 0, "deviceTestResultBlobUrl should not null");
-        String deviceTestResultBlobUrl = result.getAttachments().get(0).getCDNUrl();
-        String fileName = result.getAttachments().get(0).getFileName();
-        log.info("deviceTestResultBlobUrl is {}", deviceTestResultBlobUrl);
-
-        int start = deviceTestResultBlobUrl.lastIndexOf(fileName);
-        deviceTestResultBlobUrl = deviceTestResultBlobUrl.substring(0, start);
-
-        if (deviceTestResultBlobUrl.endsWith("%2F")) {
-            deviceTestResultBlobUrl = deviceTestResultBlobUrl.substring(0, deviceTestResultBlobUrl.length() - 3);
-        } else if (deviceTestResultBlobUrl.endsWith("/")) {
-            deviceTestResultBlobUrl = deviceTestResultBlobUrl.substring(0, deviceTestResultBlobUrl.length() - 1);
-        }
-
-        log.info("After process: deviceTestResultBlobUrl is {}", deviceTestResultBlobUrl);
-        result.setDeviceTestResultFolderUrl(deviceTestResultBlobUrl);
     }
 }

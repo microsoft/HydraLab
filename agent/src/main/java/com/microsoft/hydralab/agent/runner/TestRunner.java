@@ -7,6 +7,8 @@ import cn.hutool.core.lang.Assert;
 import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
 import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceAction;
+import com.microsoft.hydralab.common.entity.common.Task;
+import com.microsoft.hydralab.common.entity.common.TaskResult;
 import com.microsoft.hydralab.common.entity.common.TestReport;
 import com.microsoft.hydralab.common.entity.common.TestResult;
 import com.microsoft.hydralab.common.entity.common.TestRun;
@@ -36,7 +38,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
+public abstract class TestRunner implements TestRunEngine, TaskRunLifecycle<TestTask> {
     protected final Logger log = LoggerFactory.getLogger(TestRunner.class);
     protected final AgentManagementService agentManagementService;
     protected final TestTaskRunCallback testTaskRunCallback;
@@ -60,86 +62,57 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
     protected abstract List<EnvCapabilityRequirement> getEnvCapabilityRequirements();
 
     @Override
-    public TestReport run(TestTask testTask, TestRunDevice testRunDevice) {
+    public TestReport run(Task task, TestRunDevice testRunDevice) {
+        TestTask testTask = (TestTask) task;
         checkTestTaskCancel(testTask);
-        TestRun testRun = setup(testTask, testRunDevice);
+        TestRun testRun = initTestRun(testTask, testRunDevice);
         checkTestTaskCancel(testTask);
 
         TestReport testReport = null;
         TestResult testResult = null;
         try {
-            execute(testRun);
+            setup(testTask, testRun);
             checkTestTaskCancel(testTask);
-
-            testResult = analyze(testRun);
-            checkTestTaskCancel(testTask);
-
-            testReport = report(testRun, testResult);
+            execute(testTask, testRun);
             checkTestTaskCancel(testTask);
         } catch (Exception e) {
             testRun.getLogger().error(testRunDevice.getDeviceInfo().getSerialNum() + ": " + e.getMessage(), e);
             saveErrorSummary(testRun, e);
         } finally {
-            teardown(testRun);
+            testResult = analyze(testRun);
+            testRun.setTaskResult(testResult);
+            testReport = report(testRun, testResult);
+            teardown(testTask, testRun);
             help(testRun, testResult);
         }
         return testReport;
     }
 
     @Override
-    public TestRun setup(TestTask testTask, TestRunDevice testRunDevice) {
-        return null;
-    }
-
-    @Override
-    public void execute(TestRun testRun) throws Exception {
-
-    }
-
-    @Override
-    public TestResult analyze(TestRun testRun) {
-        return null;
-    }
-
-    @Override
-    public TestReport report(TestRun testRun, TestResult testResult) {
-        return null;
-    }
-
-    @Override
-    public void teardown(TestRun testRun) {
-
-    }
-
-    @Override
-    public void help(TestRun testRun, TestResult testResult) {
-
-    }
-
-    public void runTestOnDevice(TestTask testTask, TestRunDevice testRunDevice) {
-        checkTestTaskCancel(testTask);
-        Assert.notNull(testRunDevice.getLogger(), "testRunDevice.getLogger() is null, but it's required for a test run");
-        testRunDevice.getLogger().info("Start running tests {}, timeout {}s", testTask.getTestSuite(), testTask.getTimeOutSecond());
-
-        TestRun testRun = createTestRun(testRunDevice, testTask);
-        checkTestTaskCancel(testTask);
-
-        try {
-            setUp(testRunDevice, testTask, testRun);
-            checkTestTaskCancel(testTask);
-            runByFutureTask(testRunDevice, testTask, testRun);
-        } catch (Exception e) {
-            testRun.getLogger().error(testRunDevice.getDeviceInfo().getSerialNum() + ": " + e.getMessage(), e);
-            saveErrorSummary(testRun, e);
-        } finally {
-            tearDown(testRunDevice, testTask, testRun);
+    public TestRun initTestRun(TestTask testTask, TestRunDevice testRunDevice) {
+        TestRun testRun = new TestRun(testRunDeviceOrchestrator.getSerialNum(testRunDevice), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
+        testRun.setDevice(testRunDevice);
+        File testRunResultFolder = new File(testTask.getResourceDir(), testRunDevice.getDeviceInfo().getSerialNum());
+        Logger parentLogger = testRunDevice.getLogger();
+        parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
+        if (!testRunResultFolder.exists()) {
+            if (!testRunResultFolder.mkdirs()) {
+                throw new RuntimeException("testRunResultFolder.mkdirs() failed: " + testRunResultFolder);
+            }
         }
+
+        testRun.setResultFolder(testRunResultFolder);
+        Logger loggerForTestRun = createLoggerForTestRun(testRun, testTask.getPkgName(), parentLogger);
+        testRun.setLogger(loggerForTestRun);
+        testTask.addTestedDeviceResult(testRun);
+        return testRun;
     }
 
-    private void runByFutureTask(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
+    @Override
+    public void execute(TestTask testTask, TestRun testRun) throws Exception {
         FutureTask<String> futureTask = new FutureTask<>(() -> {
             loadTestRunToCurrentThread(testRun);
-            run(testRunDevice, testTask, testRun);
+            run(testRun.getDevice(), testTask, testRun);
             return null;
         });
         ThreadPoolUtil.TEST_EXECUTOR.execute(futureTask);
@@ -151,9 +124,81 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
             }
         } catch (TimeoutException | InterruptedException | ExecutionException e) {
             futureTask.cancel(true);
-            stopTest(testRunDevice);
+            stopTest(testRun.getDevice());
             throw e;
         }
+    }
+
+    @Override
+    public TestResult analyze(TestRun testRun) {
+        TestResult testResult = new TestResult();
+        testResult.setTotalCount(testRun.getTotalCount());
+        testResult.setFailCount(testRun.getFailCount());
+        testResult.setTaskId(testRun.getTestTaskId());
+        testResult.setTaskRunId(testRun.getId());
+        testResult.analysisState();
+        return testResult;
+    }
+
+    @Override
+    public TestReport report(TestRun testRun, TaskResult testResult) {
+        return null;
+    }
+
+    @Override
+    public void teardown(TestTask testTask, TestRun testRun) {
+        TestRunDevice testRunDevice = testRun.getDevice();
+        // stop performance test
+        if (performanceTestManagementService != null) {
+            try {
+                performanceTestManagementService.testTearDown(testRun.getDevice(), testTask, testRun, agentManagementService.getRegistryServer());
+            } catch (Exception e) {
+                testRun.getLogger().error("Error in performance test tearDown", e);
+            }
+        }
+
+        //execute actions
+        if (testTask.getDeviceActions() != null) {
+            testRun.getLogger().info("Start executing tearDown actions.");
+            List<Exception> exceptions = testRunDeviceOrchestrator.doActions(testRunDevice, testRun.getLogger(),
+                    testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
+            if (exceptions.size() > 0) {
+                testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
+            }
+        }
+
+        try {
+            //TODO: if the other test run resources are not released, release them here
+            testRunDeviceOrchestrator.releaseScreenRecorder(testRunDevice, testRun.getLogger());
+        } catch (Exception e) {
+            testRun.getLogger().error("Error in release Screen Recorder", e);
+        }
+
+        testRunDeviceOrchestrator.testDeviceUnset(testRunDevice, testRun.getLogger());
+
+        //generate xml report and upload files
+        if (testRun.getTotalCount() > 0) {
+            try {
+                String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
+                testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
+            } catch (Exception e) {
+                testRun.getLogger().error("Error in buildTestResultXml", e);
+            }
+        }
+        if (testTaskRunCallback != null) {
+            try {
+                testTaskRunCallback.onOneDeviceComplete(testTask, testRunDevice, testRun.getLogger(), testRun);
+            } catch (Exception e) {
+                testRun.getLogger().error("Error in onOneDeviceComplete", e);
+            }
+        }
+        testRun.getLogger().info("Start Close/finish resource");
+        LogUtils.releaseLogger(testRun.getLogger());
+    }
+
+    @Override
+    public void help(TestRun testRun, TaskResult testResult) {
+
     }
 
     /**
@@ -177,26 +222,9 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
         Assert.isFalse(testTask.isCanceled(), "Task {} is canceled", testTask.getId());
     }
 
-    protected TestRun createTestRun(TestRunDevice testRunDevice, TestTask testTask) {
-        TestRun testRun = new TestRun(testRunDeviceOrchestrator.getSerialNum(testRunDevice), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
-        testRun.setDevice(testRunDevice);
-        File testRunResultFolder = new File(testTask.getResourceDir(), testRunDevice.getDeviceInfo().getSerialNum());
-        Logger parentLogger = testRunDevice.getLogger();
-        parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
-        if (!testRunResultFolder.exists()) {
-            if (!testRunResultFolder.mkdirs()) {
-                throw new RuntimeException("testRunResultFolder.mkdirs() failed: " + testRunResultFolder);
-            }
-        }
-
-        testRun.setResultFolder(testRunResultFolder);
-        Logger loggerForTestRun = createLoggerForTestRun(testRun, testTask.getPkgName(), parentLogger);
-        testRun.setLogger(loggerForTestRun);
-        testTask.addTestedDeviceResult(testRun);
-        return testRun;
-    }
-
-    protected void setUp(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
+    @Override
+    public void setup(TestTask testTask, TestRun testRun) throws Exception {
+        TestRunDevice testRunDevice = testRun.getDevice();
         // grant battery white list when testing android_client
         if (PhoneAppScreenRecorder.RECORD_PACKAGE_NAME.equals(testTask.getPkgName())) {
             Map<String, List<DeviceAction>> deviceActionsMap = testTask.getDeviceActions();
@@ -243,55 +271,6 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
     }
 
     protected abstract void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception;
-
-    protected void tearDown(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
-        // stop performance test
-        if (performanceTestManagementService != null) {
-            try {
-                performanceTestManagementService.testTearDown(testRunDevice, testTask, testRun, agentManagementService.getRegistryServer());
-            } catch (Exception e) {
-                testRun.getLogger().error("Error in performance test tearDown", e);
-            }
-        }
-
-        //execute actions
-        if (testTask.getDeviceActions() != null) {
-            testRun.getLogger().info("Start executing tearDown actions.");
-            List<Exception> exceptions = testRunDeviceOrchestrator.doActions(testRunDevice, testRun.getLogger(),
-                    testTask.getDeviceActions(), DeviceAction.When.TEAR_DOWN);
-            if (exceptions.size() > 0) {
-                testRun.getLogger().error("Execute actions failed when tearDown!", exceptions.get(0));
-            }
-        }
-
-        try {
-            //TODO: if the other test run resources are not released, release them here
-            testRunDeviceOrchestrator.releaseScreenRecorder(testRunDevice, testRun.getLogger());
-        } catch (Exception e) {
-            testRun.getLogger().error("Error in release Screen Recorder", e);
-        }
-
-        testRunDeviceOrchestrator.testDeviceUnset(testRunDevice, testRun.getLogger());
-
-        //generate xml report and upload files
-        if (testRun.getTotalCount() > 0) {
-            try {
-                String absoluteReportPath = xmlBuilder.buildTestResultXml(testTask, testRun);
-                testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-            } catch (Exception e) {
-                testRun.getLogger().error("Error in buildTestResultXml", e);
-            }
-        }
-        if (testTaskRunCallback != null) {
-            try {
-                testTaskRunCallback.onOneDeviceComplete(testTask, testRunDevice, testRun.getLogger(), testRun);
-            } catch (Exception e) {
-                testRun.getLogger().error("Error in onOneDeviceComplete", e);
-            }
-        }
-        testRun.getLogger().info("Start Close/finish resource");
-        LogUtils.releaseLogger(testRun.getLogger());
-    }
 
     protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger reportLogger) throws Exception {
         checkTestTaskCancel(testTask);

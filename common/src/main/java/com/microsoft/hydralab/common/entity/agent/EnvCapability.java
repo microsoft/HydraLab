@@ -30,7 +30,9 @@ public class EnvCapability {
         gradle("--version"),
         // xcode("--version"),
         maestro("--version"),
-        appium("--version");
+        appium("--version"),
+        apkleaks("--help"),
+        apkanalyzer("-h");
 
         CapabilityKeyword(String fetchVersionParam, String... brokenIndicatorMessageParts) {
             this.fetchVersionParam = fetchVersionParam;
