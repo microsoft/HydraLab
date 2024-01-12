@@ -170,3 +170,11 @@ The entire codebase is under [MIT license](https://github.com/microsoft/HydraLab
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft’s Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
 
+We use the Microsoft Clarity Analysis Platform for front end client data dashboard, please refer to [Clarity Overview](https://learn.microsoft.com/en-us/clarity/setup-and-installation/about-clarity) and https://clarity.microsoft.com/ to learn more.
+
+Instructions to turn off the Clarity:
+
+Open [MainActivity](https://github.com/microsoft/HydraLab/blob/main/android_client/app/src/main/java/com/microsoft/hydralab/android/client/MainActivity.java), comment the line which call the initClarity(), and rebuild the Hydra Lab Client apk, repalce the one in the agent resources folder.
+
+[Telemetry/data collection notice](https://docs.opensource.microsoft.com/releasing/general-guidance/telemetry)
+
