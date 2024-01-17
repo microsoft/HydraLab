@@ -65,5 +65,4 @@ dependencies {
     implementation 'io.appium:java-client:8.0.0'
     implementation 'org.seleniumhq.selenium:selenium-java:4.1.4'
 
-    implementation 'com.microsoft.clarity:clarity:2.1.1'
 }
