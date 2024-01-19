@@ -118,6 +118,10 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
     public abstract void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
                                                @NotNull Logger logger);
 
+    public boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath, String extraArgs, @Nullable Logger logger) {
+        return false;
+    }
+
     public abstract boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath, @Nullable Logger logger);
 
     public abstract boolean uninstallApp(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @Nullable Logger logger);

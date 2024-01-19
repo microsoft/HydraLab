@@ -69,6 +69,18 @@ public class TestRunDeviceOrchestrator {
         }
     }
 
+    public boolean installApp(@NotNull TestRunDevice testRunDevice, @NotNull String packagePath, String extraArgs, @Nullable Logger logger) {
+        if (testRunDevice instanceof TestRunDeviceCombo) {
+            boolean isInstalled = true;
+            for (TestRunDevice testRunDevice1 : ((TestRunDeviceCombo) testRunDevice).getDevices()) {
+                isInstalled = isInstalled && deviceDriverManager.installApp(testRunDevice1.getDeviceInfo(), packagePath, extraArgs, logger);
+            }
+            return isInstalled;
+        } else {
+            return deviceDriverManager.installApp(testRunDevice.getDeviceInfo(), packagePath, extraArgs, logger);
+        }
+    }
+
     public boolean installApp(@NotNull TestRunDevice testRunDevice, @NotNull String packagePath, @Nullable Logger logger) {
         if (testRunDevice instanceof TestRunDeviceCombo) {
             boolean isInstalled = true;

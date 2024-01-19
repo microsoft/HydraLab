@@ -315,6 +315,21 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
      * -t: Allow test APKs to be installed.
      * -g: Grant all permissions listed in the app manifest.
      */
+    public boolean installApp(DeviceInfo deviceInfo, String packagePath, String extraArgs, @Nullable Logger logger) {
+        File apk = new File(packagePath);
+        Assert.isTrue(apk.exists(), "apk not exist!!");
+        return adbOperateUtil.installApp(deviceInfo, apk.getAbsolutePath(), true, "-t -d -g" + (extraArgs.isBlank() ? "" : " " + extraArgs), logger);
+    }
+
+    @Override
+    /**
+     * https://developer.android.com/studio/command-line/adb#pm
+     * This method is leveraging the pm install command to do the operation.
+     * -d: Allow version code downgrade.
+     * -r: Reinstall an existing app, keeping its data.
+     * -t: Allow test APKs to be installed.
+     * -g: Grant all permissions listed in the app manifest.
+     */
     public boolean installApp(DeviceInfo deviceInfo, String packagePath, @Nullable Logger logger) {
         File apk = new File(packagePath);
         Assert.isTrue(apk.exists(), "apk not exist!!");
