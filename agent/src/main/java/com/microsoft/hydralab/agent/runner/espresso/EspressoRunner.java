@@ -203,11 +203,12 @@ public class EspressoRunner extends TestRunner {
         testRunDeviceOrchestrator.uninstallApp(testRunDevice, "androidx.test.orchestrator", reportLogger);
         ThreadUtils.safeSleep(2000);
 
+        String extraArgs = "--force-queryable";
         FlowUtil.retryAndSleepWhenFalse(3, 5,
-                () -> testRunDeviceOrchestrator.installApp(testRunDevice, new File(pathToTestOrchestratorApk).getAbsolutePath(),
+                () -> testRunDeviceOrchestrator.installApp(testRunDevice, new File(pathToTestOrchestratorApk).getAbsolutePath(), extraArgs,
                         reportLogger));
         FlowUtil.retryAndSleepWhenFalse(3, 5,
-                () -> testRunDeviceOrchestrator.installApp(testRunDevice, new File(pathToTestServicesApk).getAbsolutePath(),
+                () -> testRunDeviceOrchestrator.installApp(testRunDevice, new File(pathToTestServicesApk).getAbsolutePath(), extraArgs,
                         reportLogger));
     }
 }

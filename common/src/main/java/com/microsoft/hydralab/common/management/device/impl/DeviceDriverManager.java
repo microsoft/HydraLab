@@ -94,6 +94,15 @@ public class DeviceDriverManager implements DeviceDriver {
     }
 
     @Override
+    public boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath, String extraArgs, @Nullable Logger logger) {
+        String suffix = packagePath.substring(packagePath.lastIndexOf(".") + 1);
+        if (!DeviceType.valueOf(deviceInfo.getType()).getSupportedAppSuffix().contains(suffix)) {
+            return true;
+        }
+        return getDeviceDriver(deviceInfo.getType()).installApp(deviceInfo, packagePath, extraArgs,  logger);
+    }
+
+    @Override
     public boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath, @Nullable Logger logger) {
         String suffix = packagePath.substring(packagePath.lastIndexOf(".") + 1);
         if (!DeviceType.valueOf(deviceInfo.getType()).getSupportedAppSuffix().contains(suffix)) {

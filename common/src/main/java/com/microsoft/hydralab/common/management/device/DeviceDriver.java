@@ -34,6 +34,8 @@ public interface DeviceDriver {
     void addToBatteryWhiteList(@NotNull DeviceInfo deviceInfo, @NotNull String packageName,
                                @NotNull Logger logger);
 
+    boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath, String extraArgs, @Nullable Logger logger);
+
     boolean installApp(@NotNull DeviceInfo deviceInfo, @NotNull String packagePath, @Nullable Logger logger);
 
     boolean uninstallApp(@NotNull DeviceInfo deviceInfo, @NotNull String packageName, @Nullable Logger logger);
