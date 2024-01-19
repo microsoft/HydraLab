@@ -1,7 +1,9 @@
 package com.microsoft.hydralab.common.entity.common.scanner;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
+import javax.persistence.AttributeConverter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,5 +34,17 @@ public class ApkSizeReport implements Serializable {
     public static class FileItem implements Serializable {
         public long size;
         public String fileName;
+    }
+
+    public static class Converter implements AttributeConverter<ApkSizeReport, String> {
+        @Override
+        public String convertToDatabaseColumn(ApkSizeReport attribute) {
+            return JSONObject.toJSONString(attribute);
+        }
+
+        @Override
+        public ApkSizeReport convertToEntityAttribute(String dbData) {
+            return JSONObject.parseObject(dbData, ApkSizeReport.class);
+        }
     }
 }

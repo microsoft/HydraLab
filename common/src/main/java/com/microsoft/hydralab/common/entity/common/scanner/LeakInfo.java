@@ -3,8 +3,10 @@
 
 package com.microsoft.hydralab.common.entity.common.scanner;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
+import javax.persistence.AttributeConverter;
 import java.io.Serializable;
 import java.util.List;
 
@@ -23,5 +25,17 @@ public class LeakInfo implements Serializable {
     public LeakInfo(String keyword, List<String> LeakWordList) {
         this.keyword = keyword;
         this.LeakWordList = LeakWordList;
+    }
+
+    public static class Converter implements AttributeConverter<List<LeakInfo>, String> {
+        @Override
+        public String convertToDatabaseColumn(List<LeakInfo> attribute) {
+            return JSONObject.toJSONString(attribute);
+        }
+
+        @Override
+        public List<LeakInfo> convertToEntityAttribute(String dbData) {
+            return JSONObject.parseArray(dbData, LeakInfo.class);
+        }
     }
 }

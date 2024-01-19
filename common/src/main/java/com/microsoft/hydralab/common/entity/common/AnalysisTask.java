@@ -3,13 +3,13 @@
 
 package com.microsoft.hydralab.common.entity.common;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
+import javax.persistence.AttributeConverter;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -24,11 +24,10 @@ import java.util.Map;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class AnalysisTask extends Task implements Serializable {
 
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = AnalysisConfig.Converter.class)
+    @Column(columnDefinition = "text")
     private List<AnalysisConfig> analysisConfigs;
 
     public AnalysisTask() {
@@ -52,6 +51,18 @@ public class AnalysisTask extends Task implements Serializable {
         String analysisType;
         String executor;
         Map<String, String> analysisConfig = new HashMap<>();
+
+        public static class Converter implements AttributeConverter<List<AnalysisConfig>, String> {
+            @Override
+            public String convertToDatabaseColumn(List<AnalysisConfig> attribute) {
+                return JSONObject.toJSONString(attribute);
+            }
+
+            @Override
+            public List<AnalysisConfig> convertToEntityAttribute(String dbData) {
+                return JSONObject.parseArray(dbData, AnalysisConfig.class);
+            }
+        }
     }
 
     public enum AnalysisType {
