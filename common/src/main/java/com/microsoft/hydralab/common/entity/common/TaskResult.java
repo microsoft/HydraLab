@@ -3,12 +3,12 @@
 
 package com.microsoft.hydralab.common.entity.common;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
+import javax.persistence.AttributeConverter;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
@@ -25,7 +25,6 @@ import java.util.UUID;
  */
 @Data
 @Entity
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Inheritance(strategy = InheritanceType.JOINED)
 public class TaskResult implements Serializable {
     @Id
@@ -35,10 +34,21 @@ public class TaskResult implements Serializable {
     private String state;
     private Date ingestTime;
 
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = Converter.class)
+    @Column(columnDefinition = "text")
     private List<String> reportFiles = new ArrayList<>();
 
+    public static class Converter implements AttributeConverter<List<String>, String> {
+        @Override
+        public String convertToDatabaseColumn(List<String> attribute) {
+            return JSONObject.toJSONString(attribute);
+        }
+
+        @Override
+        public List<String> convertToEntityAttribute(String dbData) {
+            return JSONObject.parseArray(dbData, String.class);
+        }
+    }
 
     public TaskResult() {
         this.id = UUID.randomUUID().toString();

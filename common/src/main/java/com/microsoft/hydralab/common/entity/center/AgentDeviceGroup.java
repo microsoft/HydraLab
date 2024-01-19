@@ -48,8 +48,7 @@ public class AgentDeviceGroup {
         agentVersionCode = agentUser.getVersionCode();
         functionAvailabilities = agentUser.getFunctionAvailabilities();
         for (AgentFunctionAvailability functionAvailability : functionAvailabilities) {
-            if (AgentFunctionAvailability.AgentFunctionType.ANALYSIS_RUNNER.equals(functionAvailability.getFunctionType()) && functionAvailability.isEnabled() &&
-                    functionAvailability.isAvailable()) {
+            if (AgentFunctionAvailability.AgentFunctionType.ANALYSIS_RUNNER.equals(functionAvailability.getFunctionType()) && functionAvailability.isEnabled()) {
                 availableAnalysisTaskCount.put(functionAvailability.getFunctionName(), 3);
             }
         }

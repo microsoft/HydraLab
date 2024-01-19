@@ -1,13 +1,11 @@
 package com.microsoft.hydralab.common.entity.common.scanner;
 
 import com.microsoft.hydralab.common.entity.common.TaskResult;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,21 +14,21 @@ import java.util.List;
 @Data
 @Entity
 @EqualsAndHashCode(callSuper=true)
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class ApkReport extends TaskResult implements Serializable {
     private String packageName;
     private String buildFlavor;
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
+
+    @Convert(converter = ApkSizeReport.Converter.class)
+    @Column(columnDefinition = "text")
     private ApkSizeReport apkSizeReport = new ApkSizeReport();
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = ApkManifest.Converter.class)
+    @Column(columnDefinition = "text")
     private ApkManifest apkManifest = new ApkManifest();
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = BuildInfo.Converter.class)
+    @Column(columnDefinition = "text")
     private BuildInfo buildInfo = new BuildInfo();
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
+    @Convert(converter = LeakInfo.Converter.class)
+    @Column(columnDefinition = "text")
     private List<LeakInfo> leakInfoList = new ArrayList<>();
 
     public ApkReport(String name) {
