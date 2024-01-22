@@ -65,13 +65,19 @@ public class FileLoadUtil {
                     task.setAppFile(appFile);
                     break;
                 case StorageFileInfo.FileType.TEST_APP_FILE:
+                    if (!(task instanceof TestTask)) {
+                        return;
+                    }
                     File testAppFile = downloadFile(attachment);
-                    Assert.isTrue(testAppFile != null && testAppFile.exists() && task instanceof TestTask, "Download test app file failed!");
+                    Assert.isTrue(testAppFile != null && testAppFile.exists(), "Download test app file failed!");
                     ((TestTask) task).setTestAppFile(testAppFile);
                     break;
                 case StorageFileInfo.FileType.T2C_JSON_FILE:
+                    if (!(task instanceof TestTask)) {
+                        return;
+                    }
                     File testJsonFile = downloadFile(attachment);
-                    Assert.isTrue(testJsonFile != null && testJsonFile.exists() && task instanceof TestTask, "Download test json file failed!");
+                    Assert.isTrue(testJsonFile != null && testJsonFile.exists(), "Download test json file failed!");
                     ((TestTask) task).addTestJsonFile(testJsonFile);
                     break;
                 default:
