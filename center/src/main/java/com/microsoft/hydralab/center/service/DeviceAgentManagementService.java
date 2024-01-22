@@ -346,12 +346,17 @@ public class DeviceAgentManagementService {
 
     public void cancelTestTaskById(String taskId, String reason) {
         Set<String> agentIds = testDataService.cancelTaskById(taskId, reason);
+        Task task = testDataService.getTaskDetail(taskId);
         JSONObject data = new JSONObject();
         Message message = new Message();
         data.put(Const.AgentConfig.TASK_ID_PARAM, taskId);
         message.setPath(Const.Path.TEST_TASK_CANCEL);
         message.setBody(data);
         for (String agentId : agentIds) {
+            if (Task.RunnerType.APK_SCANNER.name().equals(task.getRunnerType())) {
+                agentDeviceGroups.get(agentId).finishAnalysisTask(task.getRunnerType());
+            }
+
             AgentSessionInfo agentSession = getAgentSessionInfoByAgentId(agentId);
             if (agentSession == null || agentSession.session == null) {
                 continue;
