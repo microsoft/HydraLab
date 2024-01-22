@@ -85,6 +85,18 @@ public class Task implements Serializable {
     @Transient
     private boolean disableRecording = false;
 
+    //@Deprecated
+    @Transient
+    private List<TestRun> deviceTestResults = new ArrayList<>();
+
+    //@Deprecated
+    @Transient
+    private int testDevicesCount;
+
+    //@Deprecated
+    @Transient
+    private String testErrorMsg;
+
     public synchronized void addTestedDeviceResult(TestRun deviceTestResult) {
         taskRunList.add(deviceTestResult);
     }
