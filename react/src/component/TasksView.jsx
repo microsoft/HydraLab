@@ -563,11 +563,8 @@ class TasksView extends BaseView {
                                     </PieChart>
                                 </td>
                                 <td style={{ fontSize: '0.875rem' }}>
-                                    {task.overallSuccessRate}({
-                                        task.totalTestCount ? (task.totalTestCount - task.totalFailCount) + '/' + task.totalTestCount : 0
-                                    
-                            
-                                    })
+                                    {task.overallSuccessRate}
+                                    {task.totalTestCount ? '(' +(task.totalTestCount - task.totalFailCount) + '/' + task.totalTestCount+ ')' : task.status}
                                 </td>
                             </tr>
                         </tbody>
