@@ -720,8 +720,8 @@ public class DeviceAgentManagementService {
 
         for (AgentDeviceGroup tempAgentDeviceGroup : agentDeviceGroups.values()) {
             AgentFunctionAvailability function = tempAgentDeviceGroup.getFunctionAvailabilities().stream()
-                    .filter(functionAvailability -> functionAvailability.getFunctionName().equals(testTaskSpec.runningType)).findFirst().get();
-            if (function.isEnabled()) {
+                    .filter(functionAvailability -> functionAvailability.getFunctionName().equals(testTaskSpec.runningType)).findFirst().orElse(null);
+            if (function != null && function.isEnabled()) {
                 List<EnvCapabilityRequirement> requirements = function.getEnvCapabilityRequirements();
                 boolean isMatch = true;
                 for (AnalysisTask.AnalysisConfig config : configs) {

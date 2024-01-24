@@ -564,7 +564,7 @@ class TasksView extends BaseView {
                                 </td>
                                 <td style={{ fontSize: '0.875rem' }}>
                                     {task.overallSuccessRate}
-                                    {task.totalTestCount ? '(' +(task.totalTestCount - task.totalFailCount) + '/' + task.totalTestCount+ ')' : task.status}
+                                    {task.analysisConfigs ? task.status : '(' +(task.totalTestCount - task.totalFailCount) + '/' + task.totalTestCount+ ')'}
                                 </td>
                             </tr>
                         </tbody>
