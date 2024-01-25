@@ -118,11 +118,6 @@ public class TestDataService {
             deviceTestResult.setAttachments(attachmentService.getAttachments(deviceTestResult.getId(), EntityType.TEST_RESULT));
             deviceTestResult.setTaskResult(taskResultRepository.findByTaskRunId(deviceTestResult.getId()).orElse(null));
         }
-
-        // for deprecated field
-        task.getDeviceTestResults().addAll(byTestTaskId);
-        task.setTestDevicesCount(task.getDeviceCount());
-        task.setTestErrorMsg(task.getErrorMsg());
         return task;
     }
 
