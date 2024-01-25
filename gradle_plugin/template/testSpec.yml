@@ -71,3 +71,9 @@ testSpec:
   enableNetworkMonitor: # <Optional>
   networkMonitorRule: # <Optional>
   enableTestOrchestrator: # <Optional>
+  analysisConfigs: # <Optional> <Array>
+    - analysisType: # <FILE_SIZE | LEAK_INFO>
+      executor: # <apkcanary | apkanalyzer | apkleaks>
+      analysisConfig: # <Optional>
+        key1: value1
+        key2: value2

@@ -258,6 +258,11 @@ public class HydraLabAPIClient {
             if (testConfig.testRunArgs != null) {
                 jsonElement.add("testRunArgs", GSON.toJsonTree(testConfig.testRunArgs).getAsJsonObject());
             }
+            if (StringUtils.isNotBlank(testConfig.analysisConfigsStr) && "APK_SCANNER".equals(testConfig.runningType)) {
+                JsonParser parser = new JsonParser();
+                JsonArray jsonArray = parser.parse(testConfig.analysisConfigsStr).getAsJsonArray();
+                jsonElement.add("analysisConfigs", jsonArray);
+            }
 
         } catch (JsonParseException e) {
             throw new RuntimeException("trigger test running fail: " + e.getMessage(), e);

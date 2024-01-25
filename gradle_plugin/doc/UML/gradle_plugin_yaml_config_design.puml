@@ -98,5 +98,16 @@ testSpec:
     enableNetworkMonitor: false
     networkMonitorRule: NETWORK_TEST_RULE_NONE
     enableTestOrchestrator: false
+    analysisConfig:
+    - analysisType: FILE_SIZE
+      executor: apkcanary
+      analysisConfig:
+    - analysisType: FILE_SIZE
+      executor: apkanalyzer
+      analysisConfig:
+    - analysisType: LEAK_INFO
+      executor: apkleaks
+      analysisConfig:
+        AWS_API_Key_copy: AKIA[0-9A-Z]{16}1
 
 @endyaml
