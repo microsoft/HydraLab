@@ -85,6 +85,10 @@ public class Task implements Serializable {
     @Transient
     private boolean disableRecording = false;
 
+    @Transient
+    @Deprecated
+    private List<TestRun> deviceTestResults = taskRunList;
+
     public synchronized void addTestedDeviceResult(TestRun deviceTestResult) {
         taskRunList.add(deviceTestResult);
     }
@@ -211,11 +215,6 @@ public class Task implements Serializable {
         String PR = "PullRequest";
         String API = "API";
         String Schedule = "Schedule";
-    }
-
-    @Deprecated
-    public List<TestRun> getDeviceTestResults() {
-        return taskRunList;
     }
 
     @Deprecated
