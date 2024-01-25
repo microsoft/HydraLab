@@ -29,15 +29,26 @@ public abstract class Scanner<T extends TaskResult> extends AnalysisRunner {
         T report = initReport(analysisTask);
         report.setTaskId(analysisTask.getId());
         report.setTaskRunId(testRun.getId());
+
+        testRun.setTotalCount(analysisTask.getAnalysisConfigs().size());
         for (AnalysisTask.AnalysisConfig config : analysisTask.getAnalysisConfigs()) {
             String analysisType = config.getAnalysisType();
-            if (AnalysisTask.AnalysisType.LEAK_INFO.name().equals(analysisType)) {
-                report = scanSensitiveWords(report, analysisTask.getAppFile(), testRun.getResultFolder(), config, testRun.getLogger());
-            } else if (AnalysisTask.AnalysisType.FILE_SIZE.name().equals(analysisType)) {
-                report = analysisPackage(report, analysisTask.getAppFile(), testRun.getResultFolder(), config, testRun.getLogger());
+            try {
+                if (AnalysisTask.AnalysisType.LEAK_INFO.name().equals(analysisType)) {
+                    report = scanSensitiveWords(report, analysisTask.getAppFile(), testRun.getResultFolder(), config, testRun.getLogger());
+                } else if (AnalysisTask.AnalysisType.FILE_SIZE.name().equals(analysisType)) {
+                    report = analysisPackage(report, analysisTask.getAppFile(), testRun.getResultFolder(), config, testRun.getLogger());
+                } else {
+                    testRun.oneMoreFailure();
+                    testRun.getLogger().error("Unsupported analysis type: " + analysisType);
+                }
+            } catch (Exception e) {
+                testRun.oneMoreFailure();
+                testRun.getLogger().error("Failed to execute analysis task: " + analysisTask.getId() + " with analysis type: " + analysisType, e);
             }
         }
         testRun.setTaskResult(report);
+        testRun.setSuccess(testRun.getFailCount() == 0);
     }
 
     abstract T initReport(AnalysisTask task);

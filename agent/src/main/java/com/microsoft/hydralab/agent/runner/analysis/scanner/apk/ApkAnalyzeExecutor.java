@@ -76,18 +76,20 @@ public class ApkAnalyzeExecutor {
 
                     sizeInMB = (float) Math.round(sizeInMB * 100) / 100;
                     report.getApkSizeReport().setDownloadSizeInMB(sizeInMB);
+                    return report;
                 } catch (Exception e) {
                     logger.info("failed to get download size");
+                    throw new RuntimeException(e);
                 }
             }
-            logger.error("error in apk analyzer: {}", error);
-
+            logger.error("failed to get download size, code: {}, error: {}", code, error);
+            throw new RuntimeException(error);
         } catch (InterruptedException e) {
             logger.error("Interrupted in APK analyser", e);
+            throw new RuntimeException(e);
         } catch (IOException e) {
             logger.error("error in APK analyser", e);
+            throw new RuntimeException(e);
         }
-        return report;
     }
-
 }

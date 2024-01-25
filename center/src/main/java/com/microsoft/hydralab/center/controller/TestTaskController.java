@@ -135,6 +135,7 @@ public class TestTaskController {
 //                if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
 //                    return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
 //                }
+                task.setDeviceTestResults(task.getTaskRunList());
                 return Result.ok(task);
             }
             TestTaskQueuedInfo queuedInfo = testTaskService.getTestQueuedInfo(testId);

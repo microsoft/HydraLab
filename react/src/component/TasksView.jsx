@@ -702,15 +702,15 @@ class TasksView extends BaseView {
         if (this.state.selectedParams.Result.length < 2) {
             if (this.state.selectedParams.Result.includes('Passed')) {
                 queryParams.push({
-                    "key": "totalFailCount",
+                    "key": "isSucceed",
                     "op": "equal",
-                    "value": 0
+                    "value": 1
                 })
             }
             if (this.state.selectedParams.Result.includes('Failed')) {
                 queryParams.push({
-                    "key": "totalFailCount",
-                    "op": "gt",
+                    "key": "isSucceed",
+                    "op": "equal",
                     "value": 0
                 })
             }
