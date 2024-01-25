@@ -196,11 +196,21 @@ public class TestDataService {
 
     @CachePut(key = "#task.id")
     public Task saveTaskData(Task task) {
-        taskRepository.save(task);
         List<TestRun> deviceTestResults = task.getTaskRunList();
         if (deviceTestResults.isEmpty()) {
+            task.setSucceed(false);
+            taskRepository.save(task);
             return task;
         }
+        boolean isSuccess = true;
+        for (TestRun deviceTestResult : deviceTestResults) {
+            if (!deviceTestResult.isSuccess()) {
+                isSuccess = false;
+                break;
+            }
+        }
+        task.setSucceed(isSuccess);
+        taskRepository.save(task);
 
         testRunRepository.saveAll(deviceTestResults);
 

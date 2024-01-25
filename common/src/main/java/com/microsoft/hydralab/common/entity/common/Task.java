@@ -84,10 +84,11 @@ public class Task implements Serializable {
     private String notifyUrl;
     @Transient
     private boolean disableRecording = false;
+    @Column(columnDefinition = "boolean default false")
+    private boolean isSucceed = false;
 
     @Transient
-    @Deprecated
-    private List<TestRun> deviceTestResults = taskRunList;
+    private List<TestRun> deviceTestResults;
 
     public synchronized void addTestedDeviceResult(TestRun deviceTestResult) {
         taskRunList.add(deviceTestResult);

@@ -124,12 +124,14 @@ public class ApkLeaksExecutor {
                 return getLeaksFromJsonReport(report, reportFile);
             }
             logger.error("error in apk leaks: {}", error);
+            throw new RuntimeException(error);
         } catch (InterruptedException e) {
             logger.error("Interrupted in APK leaks scan", e);
+            throw new RuntimeException(e);
         } catch (IOException e) {
             logger.error("error in APK leaks scan", e);
+            throw new RuntimeException(e);
         }
-        return report;
     }
 
     private ApkReport getLeaksFromJsonReport(ApkReport report, File file) {

@@ -160,12 +160,14 @@ public class ApkCanaryExecutor {
                 return getApkReportFromJsonReport(report, reportFile);
             }
             logger.info(error);
+            throw new RuntimeException(error);
         } catch (InterruptedException e) {
             logger.error("Interrupted in analyzeApk", e);
+            throw new RuntimeException(e);
         } catch (IOException e) {
             logger.error("error in analyzeApk", e);
+            throw new RuntimeException(e);
         }
-        return report;
     }
 
     public static ApkReport getApkReportFromJsonReport(ApkReport apkReport, File file) {
