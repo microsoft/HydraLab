@@ -32,7 +32,7 @@ ehcache.xml @zhou9584 @olivershen-wow
 
 # AgentManager,DeviceDriver,TestRunner,TestDevice
 /common/src/main/java/com/microsoft/hydralab/common/management/ @zhou9584 @TedaLIEz @AC-Phoenix
-**/runner/ @zhou9584 @TedaLIEz @AC-Phoenix
+**/runner/ @zhou9584 @TedaLIEz @AC-Phoenix @olivershen-wow
 
 # Smart Test
 
