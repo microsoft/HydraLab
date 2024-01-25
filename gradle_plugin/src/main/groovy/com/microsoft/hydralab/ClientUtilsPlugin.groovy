@@ -169,6 +169,10 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('enableTestOrchestrator')) {
                     testConfig.enableTestOrchestrator = project.enableTestOrchestrator
                 }
+                if (project.hasProperty('analysisConfigsStr')) {
+                    // add quotes back as quotes in gradle plugins will be replaced by blanks
+                    testConfig.analysisConfigsStr = project.analysisConfigsStr.replace("\\", "\"")
+                }
 
                 requiredParamCheck(apiConfig, testConfig)
 
@@ -187,7 +191,7 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 || StringUtils.isBlank(testConfig.pkgName)
                 || StringUtils.isBlank(testConfig.runningType)
                 || testConfig.runTimeOutSeconds == 0
-                || StringUtils.isBlank(testConfig.deviceConfig.deviceIdentifier)
+                || (!"APK_SCANNER".equals(testConfig.runningType) && StringUtils.isBlank(testConfig.deviceConfig.deviceIdentifier))
         ) {
             throw new IllegalArgumentException('Required params not provided! Make sure the following params are all provided correctly: hydraLabAPIHost, authToken, deviceIdentifier, appPath, pkgName, runningType, runTimeOutSeconds.')
         }
@@ -232,6 +236,10 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 break
             case "MONKEY":
                 break
+            case "APK_SCANNER":
+                if (StringUtils.isBlank(testConfig.analysisConfigsStr)) {
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param analysisConfigs/analysisConfigsStr not provided!')
+                }
             default:
                 break
         }

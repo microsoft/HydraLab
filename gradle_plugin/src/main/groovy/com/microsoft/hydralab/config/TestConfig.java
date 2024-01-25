@@ -4,6 +4,7 @@
 package com.microsoft.hydralab.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.hydralab.entity.AnalysisConfig;
 import com.microsoft.hydralab.entity.AttachmentInfo;
 import com.microsoft.hydralab.entity.performance.InspectionStrategy;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +58,8 @@ public class TestConfig {
     public boolean enableNetworkMonitor = false;
     public String networkMonitorRule = "";
     public boolean enableTestOrchestrator = false;
+    public List<AnalysisConfig> analysisConfigs = new ArrayList<>();
+    public String analysisConfigsStr = "";
 
     public void constructField(HashMap<String, Object> map) {
         Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");
@@ -79,6 +82,9 @@ public class TestConfig {
     public void extractFromExistingField() {
         if (StringUtils.isBlank(this.inspectionStrategiesStr) && this.inspectionStrategies.size() != 0) {
             this.inspectionStrategiesStr = GSON.toJson(this.inspectionStrategies);
+        }
+        if (StringUtils.isBlank(this.analysisConfigsStr) && this.analysisConfigs.size() != 0) {
+            this.analysisConfigsStr = GSON.toJson(this.analysisConfigs);
         }
     }
 
@@ -117,6 +123,7 @@ public class TestConfig {
                 "\tenableFailingTask=" + enableFailingTask + "\n" +
                 "\tenableNetworkMonitor=" + enableNetworkMonitor + "\n" +
                 "\tnetworkMonitorRule=" + networkMonitorRule + "\n" +
-                "\tenableTestOrchestrator=" + enableTestOrchestrator;
+                "\tenableTestOrchestrator=" + enableTestOrchestrator + "\n" +
+                "\tanalysisConfigsStr=" + analysisConfigsStr;
     }
 }
