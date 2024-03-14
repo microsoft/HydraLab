@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 
 public class TestTTS {
     // Replace below with your own speechSubscriptionKey. The following is just an example.
-    String speechSubscriptionKey = "d029eb2ca32145b5afbe434a33dfa28b";
+    String speechSubscriptionKey;
     // Replace below with your own service region (e.g., "westus").
     String serviceRegion = "eastus";
 
@@ -44,7 +44,7 @@ public class TestTTS {
 
     @Test
     public void testTtsSSML() throws IOException {
-        processScripts(1);
+        processScripts(2);
     }
 
     private void processScripts(int... index) throws IOException {
