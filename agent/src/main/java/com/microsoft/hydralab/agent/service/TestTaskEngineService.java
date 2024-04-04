@@ -79,7 +79,7 @@ public class TestTaskEngineService implements TestTaskRunCallback {
                 new DeviceTaskControlExecutor.DeviceTask() {
                     @Override
                     public boolean doTask(TestRunDevice testRunDevice) throws Exception {
-                        runner.runTestOnDevice(testTask, testRunDevice);
+                        runner.run(testTask, testRunDevice);
                         return false;
                     }
                 },

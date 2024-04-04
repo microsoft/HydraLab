@@ -88,12 +88,86 @@ public abstract class TestRunner implements TestRunEngine, TestRunLifecycle {
 
     @Override
     public TestRun setup(TestTask testTask, TestRunDevice testRunDevice) {
-        return null;
+        TestRun testRun = new TestRun(testRunDeviceOrchestrator.getSerialNum(testRunDevice), testRunDeviceOrchestrator.getName(testRunDevice), testTask.getId());
+        testRun.setDevice(testRunDevice);
+        File testRunResultFolder = new File(testTask.getResourceDir(), testRunDevice.getDeviceInfo().getSerialNum());
+        Logger parentLogger = testRunDevice.getLogger();
+        parentLogger.info("DeviceTestResultFolder {}", testRunResultFolder);
+        if (!testRunResultFolder.exists()) {
+            if (!testRunResultFolder.mkdirs()) {
+                throw new RuntimeException("testRunResultFolder.mkdirs() failed: " + testRunResultFolder);
+            }
+        }
+
+        testRun.setResultFolder(testRunResultFolder);
+        Logger loggerForTestRun = createLoggerForTestRun(testRun, testTask.getTestSuite(), parentLogger);
+        testRun.setLogger(loggerForTestRun);
+        testTask.addTestedDeviceResult(testRun);
+
+        if (PhoneAppScreenRecorder.RECORD_PACKAGE_NAME.equals(testTask.getPkgName())) {
+            Map<String, List<DeviceAction>> deviceActionsMap = testTask.getDeviceActions();
+            List<DeviceAction> setUpDeviceActions = deviceActionsMap.getOrDefault(DeviceAction.When.SET_UP, new ArrayList<>());
+            DeviceAction deviceAction1 = new DeviceAction(Const.OperatedDevice.ANDROID, "addToBatteryWhiteList");
+            deviceAction1.setArgs(List.of(PhoneAppScreenRecorder.RECORD_PACKAGE_NAME));
+            setUpDeviceActions.add(deviceAction1);
+            deviceActionsMap.put(DeviceAction.When.SET_UP, setUpDeviceActions);
+        }
+
+        testRunDeviceOrchestrator.killAll(testRunDevice);
+        // this key will be used to recover device status when lost the connection between agent and master
+        testRunDeviceOrchestrator.addCurrentTask(testRunDevice, testTask);
+        loadTestRunToCurrentThread(testRun);
+        /* set up device */
+        testRun.getLogger().info("Start setup device");
+        testRunDeviceOrchestrator.testDeviceSetup(testRunDevice, testRun.getLogger());
+        testRunDeviceOrchestrator.wakeUpDevice(testRunDevice, testRun.getLogger());
+        testRunDeviceOrchestrator.unlockDevice(testRunDevice, testRun.getLogger());
+        ThreadUtils.safeSleep(1000);
+        checkTestTaskCancel(testTask);
+        reInstallApp(testRunDevice, testTask, testRun.getLogger());
+        reInstallTestApp(testRunDevice, testTask, testRun.getLogger());
+
+        //execute actions
+        if (testTask.getDeviceActions() != null) {
+            testRun.getLogger().info("Start executing setUp actions.");
+            List<Exception> exceptions = testRunDeviceOrchestrator.doActions(testRunDevice, testRun.getLogger(),
+                    testTask.getDeviceActions(), DeviceAction.When.SET_UP);
+            Assert.isTrue(exceptions.size() == 0, () -> exceptions.get(0));
+        }
+
+        testRun.getLogger().info("Start granting all package needed permissions device");
+        testRunDeviceOrchestrator.grantAllTaskNeededPermissions(testRunDevice, testTask, testRun.getLogger());
+
+        checkTestTaskCancel(testTask);
+        testRunDeviceOrchestrator.getScreenShot(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
+
+        if (performanceTestManagementService != null && testTask.getInspectionStrategies() != null) {
+            for (InspectionStrategy strategy : testTask.getInspectionStrategies()) {
+                performanceTestManagementService.inspectWithStrategy(strategy);
+            }
+        }
+        return testRun;
     }
 
     @Override
     public void execute(TestRun testRun) throws Exception {
-
+        FutureTask<String> futureTask = new FutureTask<>(() -> {
+            loadTestRunToCurrentThread(testRun);
+            run(testRun);
+            return null;
+        });
+        ThreadPoolUtil.TEST_EXECUTOR.execute(futureTask);
+        try {
+            if (testTask.getTimeOutSecond() > 0) {
+                futureTask.get(testTask.getTimeOutSecond(), TimeUnit.SECONDS);
+            } else {
+                futureTask.get();
+            }
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            futureTask.cancel(true);
+            stopTest(testRunDevice);
+            throw e;
+        }
     }
 
     @Override
