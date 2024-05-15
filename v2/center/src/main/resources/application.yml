@@ -1,0 +1,109 @@
+server:
+  port: 9886
+  compression:
+    enabled: true
+    min-response-size: 102400
+spring:
+  cache:
+    type: ehcache
+    ehcache:
+      config: classpath:ehcache.xml
+  application:
+    name: device-network-center
+  output:
+    ansi:
+      enabled: always
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+      max-request-size: 2048MB
+  datasource:
+    url: jdbc:sqlite:${app.location}/hydra_lab_center_db.sqlite
+    username: sqlite
+    password: 98765432
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
+    show-sql: false
+    hibernate:
+      dialect: org.sqlite.hibernate.dialect.SQLiteDialect
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 400
+          batch_versioned_data: true
+  security:
+    oauth2:
+      enabled: false
+
+# log file split
+logging:
+  config: classpath:logback-common.xml
+  level:
+    org.hibernate.SQL: INFO
+
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+
+app:
+  batteryStrategy: ${BATTERY_STRATEGY:Economic}
+  access-token-limit: 2
+  # Mail Address Format
+  default-user: ${DEFAULT_USER:default@hydralab.com}
+  storage:
+    type: ${STORAGE_TYPE:LOCAL} # current available options: LOCAL (default), AZURE
+    azure:
+      connection: ${BLOB_CONNECTION_STR:}
+      fileExpiryDay: ${fileExpiryDay:6}
+      CDNUrl: ${CDN_URL:}
+      SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
+      SASExpiryTimeAgent: ${BLOB_SAS_EXPIRY_AGENT:120}
+      SASExpiryUpdate: ${BLOB_SAS_EXPIRY_UPDATE:10}
+      timeUnit: ${TIME_UNIT:MINUTES}
+    local:
+      token: ${CENTER_TOKEN:token=CENTER_LOCAL_STORAGE_TOKEN}
+      endpoint: ${LOCAL_STORAGE_ENDPOINT:http://localhost:9886/}
+      fileExpiryDay: ${fileExpiryDay:-1}
+  location: ${user.dir}
+  error-reporter:
+    app-center:
+      center:
+        enabled: ${AC_CENTER_ENABLED:false}
+        secret: ${AC_CENTER_SECRET:}
+      agent:
+        enabled: ${AC_AGENT_ENABLED:false}
+        secret: ${AC_AGENT_SECRET:}
+    log-file:
+      center:
+        enabled: ${LF_CENTER_ENABLED:false}
+      agent:
+        enabled: ${LF_AGENT_ENABLED:true}
+  openai:
+    apiKey: ${OPENAI_API_KEY:}
+    deployment: ${OPENAI_DEPLOYMENT:}
+    endpoint: ${OPENAI_ENDPOINT:}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+      health:
+        show-details: always
+      metrics:
+        tags:
+          application: ${spring.application.name}
+  metrics:
+    export:
+      prometheus:
+        pushgateway:
+          enabled: ${PUSHGATEWAY_ENABLED:false}
+          base-url: http://localhost:9091
+          job: ${spring.application.name}
+          push-rate: 10s
+          username: ${PUSHGATEWAY_USERNAME:admin}
+          password: ${PUSHGATEWAY_PASSWORD:}

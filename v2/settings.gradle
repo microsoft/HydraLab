@@ -1,0 +1,4 @@
+rootProject.name = 'HydraLabV2'
+include 'common'
+include 'agent'
+include 'center'

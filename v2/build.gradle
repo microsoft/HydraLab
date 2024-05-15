@@ -1,0 +1,21 @@
+group = 'com.microsoft.hydralab'
+version = '2.0.0-SNAPSHOT'
+
+
+
+ext {
+    set('springAiVersion', "0.8.1")
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+        maven { url 'https://repo.spring.io/milestone' }
+    }
+}
