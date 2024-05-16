@@ -57,7 +57,7 @@ def create_base_retriever(code_documents, search_count=3):
     return db.as_retriever(search_kwargs={"k": search_count})
 
 
-loader = create_source_dir_loader('/Users/bsp/Desktop/GitHub/HydraLab/v2/center/src/main/java/com/microsoft/hydralab/center/controller')
+loader = create_source_dir_loader('../center/src/main/java/com/microsoft/hydralab/center/controller')
 code_docs = loader.load()
 print("Code docs:", len(code_docs))
 
