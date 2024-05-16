@@ -1,0 +1,14 @@
+hnswlib
+jupyter
+matplotlib
+gensim
+sentence-transformers
+scipy==1.10.1
+numpy
+langchain
+langchain-openai
+langchain-community
+unstructured
+python-dotenv
+pypdf
+chromadb
