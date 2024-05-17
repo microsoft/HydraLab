@@ -3,7 +3,7 @@ package com.microsoft.hydralab.common.entity.common;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;

@@ -4,7 +4,7 @@ package com.microsoft.hydralab.common.entity.common;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

@@ -3,7 +3,7 @@ package com.microsoft.hydralab.common.entity.common;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 @Entity
 @Data

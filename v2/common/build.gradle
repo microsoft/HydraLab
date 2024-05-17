@@ -44,9 +44,9 @@ dependencies {
     implementation 'com.vladmihalcea:hibernate-types-52:2.3.4'
     implementation group: 'org.python', name: 'jython-standalone', version: '2.7.0'
     compileOnly 'org.hibernate:hibernate-core:5.4.18.Final'
-    compileOnly group: 'com.alibaba', name: 'fastjson', version: '1.2.72'
+    implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.72'
 
-    implementation 'io.appium:java-client:8.0.0'
+    implementation 'io.appium:java-client:8.3.0'
     implementation 'org.seleniumhq.selenium:selenium-java:4.1.4'
     implementation 'org.apache.httpcomponents:httpcore:4.4.9'
 

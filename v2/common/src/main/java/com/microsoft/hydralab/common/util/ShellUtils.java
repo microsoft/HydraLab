@@ -6,7 +6,7 @@ import com.microsoft.hydralab.agent.runner.ITestRun;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;

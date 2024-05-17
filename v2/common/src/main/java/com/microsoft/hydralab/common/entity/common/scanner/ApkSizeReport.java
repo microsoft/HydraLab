@@ -3,7 +3,7 @@ package com.microsoft.hydralab.common.entity.common.scanner;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

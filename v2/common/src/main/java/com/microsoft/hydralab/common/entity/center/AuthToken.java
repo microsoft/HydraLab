@@ -4,7 +4,7 @@ package com.microsoft.hydralab.common.entity.center;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Data
 @Entity

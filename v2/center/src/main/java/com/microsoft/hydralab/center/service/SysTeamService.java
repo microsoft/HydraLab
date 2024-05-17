@@ -9,8 +9,8 @@ import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.util.AttachmentService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;

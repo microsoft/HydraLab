@@ -73,6 +73,8 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.72'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 }

@@ -7,7 +7,7 @@ import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import lombok.Data;
 
-import javax.persistence.Transient;
+import jakarta.persistence.Transient;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

@@ -50,7 +50,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.websocket.CloseReason;
 import javax.websocket.Session;
 import java.io.File;

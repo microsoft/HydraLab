@@ -8,8 +8,8 @@ import com.microsoft.hydralab.common.entity.center.RolePermissionRelation;
 import com.microsoft.hydralab.common.entity.center.SysPermission;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

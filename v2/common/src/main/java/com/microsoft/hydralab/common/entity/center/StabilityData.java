@@ -5,7 +5,7 @@ package com.microsoft.hydralab.common.entity.center;
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Data

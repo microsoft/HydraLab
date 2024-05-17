@@ -4,9 +4,9 @@ import com.microsoft.hydralab.common.entity.common.TaskResult;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

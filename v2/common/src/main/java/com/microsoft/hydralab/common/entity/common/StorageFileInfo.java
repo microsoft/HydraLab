@@ -8,7 +8,7 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.DigestUtils;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.*;
 import java.util.Date;
 

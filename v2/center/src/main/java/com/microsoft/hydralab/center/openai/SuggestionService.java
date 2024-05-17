@@ -25,7 +25,7 @@ import com.microsoft.hydralab.performance.entity.WindowsBatteryParsedData;
 import com.microsoft.hydralab.performance.entity.WindowsMemoryParsedData;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -7,7 +7,7 @@ import com.microsoft.hydralab.common.management.device.impl.IOSDeviceDriver;
 import org.openqa.selenium.net.UrlChecker;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.File;
 import java.net.URL;
 import java.time.Duration;

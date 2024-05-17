@@ -4,7 +4,7 @@ package com.microsoft.hydralab.common.entity.common;
 
 import com.alibaba.fastjson.JSONObject;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
 
 public class JsonConverter implements AttributeConverter<JSONObject, String> {
     @Override
