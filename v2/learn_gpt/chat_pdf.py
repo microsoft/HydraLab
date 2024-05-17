@@ -45,7 +45,7 @@ def create_default_embedding():
 
 
 def create_pdf_source_splits():
-    loader = PyPDFLoader("NaturalLanguageCommandingviaProgram.pdf")
+    loader = PyPDFLoader("你的PDF.pdf")
     return loader.load_and_split()
 
 
