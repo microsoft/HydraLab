@@ -50,7 +50,6 @@ dependencies {
 
     implementation(group: 'net.sf.ehcache', name: 'ehcache', version: '2.10.8')
 
-
     implementation group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.6.Final'
 
     implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.7.0'
@@ -77,6 +76,8 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    implementation 'com.android.tools.ddms:ddmlib:27.0.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
 }
 dependencyManagement {
     imports {

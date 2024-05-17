@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
-import com.azure.ai.openai.models.ChatMessage;
 import com.azure.ai.openai.models.ChatRole;
 import com.microsoft.hydralab.center.openai.data.ChatRequest;
 import okhttp3.MediaType;

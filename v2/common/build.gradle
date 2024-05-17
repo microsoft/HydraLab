@@ -54,6 +54,7 @@ dependencies {
     implementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation group: 'org.junit.platform', name: 'junit-platform-suite-engine', version: '1.8.1'
     implementation 'org.junit.platform:junit-platform-launcher:1.8.1'
+    implementation 'org.apache.httpcomponents.client5:httpclient5'
 
     // prometheus + micrometer
     implementation 'io.micrometer:micrometer-registry-prometheus:1.9.0'
