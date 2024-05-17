@@ -8,6 +8,7 @@ import com.microsoft.hydralab.center.util.AuthUtil;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,19 +17,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import jakarta.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /**
  * @author shbu
  */
 @Component
-public class BaseInterceptor extends HandlerInterceptorAdapter {
+public class BaseInterceptor implements HandlerInterceptor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseInterceptor.class);
 
@@ -47,8 +48,7 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
         String requestURI = request.getRequestURI();
         String oauthToken = null;
         if (LogUtils.isLegalStr(requestURI, Const.RegexString.URL, true) && LogUtils.isLegalStr(remoteUser, Const.RegexString.MAIL_ADDRESS, true)) {
-            LOGGER.info("New access from IP {}, host {}, user {}, for path {}", request.getRemoteAddr(), request.getRemoteHost(), remoteUser,
-                    requestURI);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
+            LOGGER.info("New access from IP {}, host {}, user {}, for path {}", request.getRemoteAddr(), request.getRemoteHost(), remoteUser, requestURI);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
         } else {
             return false;
         }
@@ -86,13 +86,8 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
             if (StringUtils.isEmpty(oauthToken) || !authUtil.verifyToken(oauthToken)) {
                 if (requestURI.contains(Const.FrontEndPath.PREFIX_PATH)) {
                     String queryString = request.getQueryString();
-                    if (StringUtils.isNotEmpty(queryString)
-                            && queryString.startsWith(Const.FrontEndPath.REDIRECT_PARAM)
-                            && LogUtils.isLegalStr(queryString.replace(Const.FrontEndPath.REDIRECT_PARAM + "=", ""), Const.RegexString.URL, false)
-                            && LogUtils.isLegalStr(requestURI, Const.RegexString.URL, true)
-                    ) {
-                        response.sendRedirect(authUtil.getLoginUrl(requestURI,
-                                queryString));// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
+                    if (StringUtils.isNotEmpty(queryString) && queryString.startsWith(Const.FrontEndPath.REDIRECT_PARAM) && LogUtils.isLegalStr(queryString.replace(Const.FrontEndPath.REDIRECT_PARAM + "=", ""), Const.RegexString.URL, false) && LogUtils.isLegalStr(requestURI, Const.RegexString.URL, true)) {
+                        response.sendRedirect(authUtil.getLoginUrl(requestURI, queryString));// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
                     } else {
                         response.sendRedirect(authUtil.getLoginUrl());
                     }
@@ -105,8 +100,7 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
             //redirect
             String redirectUrl = request.getParameter(Const.FrontEndPath.REDIRECT_PARAM);
             if (StringUtils.isNotEmpty(redirectUrl) && LogUtils.isLegalStr(redirectUrl, Const.RegexString.URL, false)) {
-                response.sendRedirect(Const.FrontEndPath.INDEX_PATH + Const.FrontEndPath.ANCHOR +
-                        redirectUrl);// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
+                response.sendRedirect(Const.FrontEndPath.INDEX_PATH + Const.FrontEndPath.ANCHOR + redirectUrl);// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
                 return false;
             }
         }
@@ -115,17 +109,8 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-                           ModelAndView modelAndView) {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
     }
 
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        super.afterCompletion(request, response, handler, ex);
-    }
 
-    @Override
-    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        super.afterConcurrentHandlingStarted(request, response, handler);
-    }
 }

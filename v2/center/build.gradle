@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'org.springframework.boot' version '3.2.5'
     id 'io.spring.dependency-management' version '1.1.4'
 }
@@ -32,7 +32,7 @@ configurations {
 }
 
 dependencies {
-    implementation project(":common")
+    api project(":common")
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
@@ -78,6 +78,11 @@ dependencies {
 
     implementation 'com.android.tools.ddms:ddmlib:27.0.2'
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.9.0'
+    implementation 'io.micrometer:micrometer-core:1.9.0'
+    implementation 'io.prometheus:simpleclient_pushgateway:0.16.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
 }
 dependencyManagement {
     imports {

@@ -2,10 +2,8 @@ package com.microsoft.hydralab.center.openai;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.azure.ai.openai.models.ChatChoice;
-import com.azure.ai.openai.models.ChatCompletions;
-import com.azure.ai.openai.models.ChatCompletionsOptions;
-import com.azure.ai.openai.models.ChatRole;
+import com.azure.ai.openai.models.*;
+import com.microsoft.hydralab.center.openai.data.ChatMessage;
 import com.microsoft.hydralab.center.openai.data.ChatRequest;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -23,9 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-    // Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-    public class AzureOpenAIServiceClient {
+public class AzureOpenAIServiceClient {
     public static final String API_VERSION_CHAT = "2023-03-15-preview";
     public static final String API_VERSION_IMAGE = "2023-06-01-preview";
     private final Logger logger = LoggerFactory.getLogger(AzureOpenAIServiceClient.class);
@@ -41,9 +39,9 @@ import java.util.Objects;
         this.deployment = deployment == null ? "" : deployment;
         if (!apiKey.isEmpty()) {
             this.azureClient = new OpenAIClientBuilder()
-                .endpoint(endpoint)
-                .credential(new AzureKeyCredential(apiKey))
-                .buildClient();
+                    .endpoint(endpoint)
+                    .credential(new AzureKeyCredential(apiKey))
+                    .buildClient();
         }
     }
 
@@ -51,9 +49,9 @@ import java.util.Objects;
         if (azureClient == null) {
             return "";
         }
-        List<ChatMessage> chatMessages = new ArrayList<>();
-        chatMessages.add(new ChatMessage(ChatRole.SYSTEM, "You are a helpful assistant."));
-        chatMessages.add(new ChatMessage(ChatRole.USER, question));
+        List<ChatRequestMessage> chatMessages = new ArrayList<>();
+        chatMessages.add(new ChatRequestSystemMessage("You are a helpful assistant."));
+        chatMessages.add(new ChatRequestUserMessage(question));
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(chatMessages);
         options.setN(1);

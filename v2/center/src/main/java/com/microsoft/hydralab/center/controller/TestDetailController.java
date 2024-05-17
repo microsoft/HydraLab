@@ -26,7 +26,6 @@ import com.microsoft.hydralab.common.util.DownloadUtils;
 import com.microsoft.hydralab.common.util.FileUtil;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
-import com.microsoft.hydralab.t2c.runner.T2CJsonGenerator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -43,8 +42,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.annotation.Resource;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -416,29 +415,5 @@ public class TestDetailController {
         return graphZipFile;
     }
 
-    @GetMapping(value = {"/api/test/generateT2C/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<String> generateT2CJsonFromSmartTest(@CurrentSecurityContext SysUser requestor,
-                                                       @PathVariable(value = "fileId") String fileId,
-                                                       @RequestParam(value = "testRunId") String testRunId,
-                                                       @RequestParam(value = "path") String path) {
-        if (requestor == null) {
-            return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
-        }
-
-        File graphZipFile = loadGraphFile(fileId);
-        File graphFile = new File(graphZipFile.getParentFile().getAbsolutePath(), Const.SmartTestConfig.GRAPH_FILE_NAME);
-        String t2cJson = null;
-
-        TestRun testRun = testDataService.findTestRunById(testRunId);
-        Task task = testDataService.getTaskDetail(testRun.getTestTaskId());
-        try (FileInputStream in = new FileInputStream(graphFile)) {
-            String graphXml = IOUtils.toString(in, StandardCharsets.UTF_8);
-            t2cJson = T2CJsonGenerator.generateT2CJsonFromGraphXml(graphXml, path, logger, task.getPkgName(), "ANDROID");
-        } catch (Exception e) {
-            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error when parse graph xml");
-        }
-
-        return Result.ok(t2cJson);
-    }
 
 }

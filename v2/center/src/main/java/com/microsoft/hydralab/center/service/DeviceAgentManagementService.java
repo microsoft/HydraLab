@@ -50,6 +50,7 @@ import org.springframework.util.Assert;
 import jakarta.annotation.Resource;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.Session;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -693,8 +694,6 @@ public class DeviceAgentManagementService {
 
         if (Task.RunnerType.APPIUM_CROSS.name().equals(testTaskSpec.runningType)) {
             result = runAppiumTestTask(testTaskSpec);
-        } else if (Task.RunnerType.T2C_JSON.name().equals(testTaskSpec.runningType)) {
-            result = runT2CTest(testTaskSpec);
         } else if (Task.RunnerType.APK_SCANNER.name().equals(testTaskSpec.runningType)) {
             result = runAnalysisTask(testTaskSpec);
         } else {
@@ -763,91 +762,6 @@ public class DeviceAgentManagementService {
         return result;
     }
 
-    private JSONObject runT2CTest(TestTaskSpec testTaskSpec) {
-        JSONObject result = new JSONObject();
-        StorageFileInfo initialTestJson = attachmentService.filterFirstAttachment(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.TEST_APP_FILE);
-        List<StorageFileInfo> attachmentTestJsonList = attachmentService.filterAttachments(testTaskSpec.testFileSet.getAttachments(), StorageFileInfo.FileType.T2C_JSON_FILE);
-        if (initialTestJson != null) {
-            attachmentTestJsonList.add(initialTestJson);
-        }
-
-        Map<String, Integer> aggregateDeviceCountMap = new HashMap<>();
-        for (StorageFileInfo testJsonInfo : attachmentTestJsonList) {
-            Map<String, Integer> deviceCountMap = new HashMap<>();
-            File testJsonFile = new File(CENTER_FILE_BASE_DIR, testJsonInfo.getBlobPath());
-            TestInfo testInfo;
-            try {
-                storageServiceClientProxy.download(testJsonFile, testJsonInfo);
-                T2CJsonParser t2CJsonParser = new T2CJsonParser(LoggerFactory.getLogger(this.getClass()));
-                String testJsonFilePath = CENTER_FILE_BASE_DIR + testJsonInfo.getBlobPath();
-                testInfo = t2CJsonParser.parseJsonFile(testJsonFilePath);
-            } finally {
-                testJsonFile.delete();
-            }
-            Assert.notNull(testInfo, "Failed to parse the json file for test automation.");
-            int edgeCount = 0;
-            for (DriverInfo driverInfo : testInfo.getDrivers()) {
-                if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.ANDROID.name())) {
-                    deviceCountMap.put(DeviceType.ANDROID.name(), deviceCountMap.getOrDefault(DeviceType.ANDROID.name(), 0) + 1);
-                }
-                if (driverInfo.getPlatform().equalsIgnoreCase("browser")) {
-                    edgeCount++;
-                }
-                if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.IOS.name())) {
-                    deviceCountMap.put(DeviceType.IOS.name(), deviceCountMap.getOrDefault(DeviceType.IOS.name(), 0) + 1);
-                }
-                if (driverInfo.getPlatform().equalsIgnoreCase(DeviceType.WINDOWS.name())) {
-                    deviceCountMap.put(DeviceType.WINDOWS.name(), deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) + 1);
-                }
-            }
-            Assert.isTrue(deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) <= 1, "No enough Windows device to run this test.");
-            Assert.isTrue(edgeCount <= 1, "No enough Edge browser to run this test.");
-            if (deviceCountMap.getOrDefault(DeviceType.WINDOWS.name(), 0) == 0 && edgeCount == 1) {
-                deviceCountMap.put(DeviceType.WINDOWS.name(), 1);
-            }
-            for (Map.Entry<String, Integer> entry : deviceCountMap.entrySet()) {
-                aggregateDeviceCountMap.put(entry.getKey(), Math.max(aggregateDeviceCountMap.getOrDefault(entry.getKey(), 0), entry.getValue()));
-            }
-        }
-
-        String[] deviceIdentifiers = testTaskSpec.deviceIdentifier.split(",");
-        String agentId = null;
-        List<DeviceInfo> devices = new ArrayList<>();
-        for (String tempIdentifier : deviceIdentifiers) {
-            DeviceInfo device = deviceListMap.get(tempIdentifier);
-            Assert.notNull(device, "error deviceIdentifier!");
-            if (agentId == null) {
-                agentId = device.getAgentId();
-            }
-            Assert.isTrue(agentId.equals(device.getAgentId()), "Device not in the same agent");
-            Assert.isTrue(device.isAlive(), "Device offline");
-            if (device.isTesting()) {
-                return result;
-            }
-            aggregateDeviceCountMap.put(device.getType(), aggregateDeviceCountMap.getOrDefault(device.getType(), 0) - 1);
-            devices.add(device);
-        }
-        for (Map.Entry<String, Integer> entry : aggregateDeviceCountMap.entrySet()) {
-            Assert.isTrue(entry.getValue() <= 0, "No enough " + entry.getKey() + " device to run this test.");
-        }
-        Message message = new Message();
-        message.setBody(testTaskSpec);
-        message.setPath(Const.Path.TEST_TASK_RUN);
-
-        AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentId);
-        Assert.notNull(agentSessionInfoByAgentId, "Device/Agent Offline!");
-        if (isAgentUpdating(agentSessionInfoByAgentId.agentUser.getId())) {
-            return result;
-        }
-        for (DeviceInfo device : devices) {
-            updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
-        }
-        testTaskSpec.agentIds.add(agentId);
-        sendMessageToSession(agentSessionInfoByAgentId.session, message);
-        result.put(Const.Param.TEST_DEVICE_SN, testTaskSpec.deviceIdentifier);
-
-        return result;
-    }
 
     private JSONObject runAppiumTestTask(TestTaskSpec testTaskSpec) {
         JSONObject result = new JSONObject();

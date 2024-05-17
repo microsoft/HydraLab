@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
 import jakarta.annotation.Resource;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 @Order(2)
 @Component

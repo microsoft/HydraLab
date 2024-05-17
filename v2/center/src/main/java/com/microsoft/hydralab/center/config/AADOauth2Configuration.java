@@ -3,26 +3,31 @@
 
 package com.microsoft.hydralab.center.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 @Profile({"auth"})
-public class AADOauth2Configuration extends WebSecurityConfigurerAdapter {
+public class AADOauth2Configuration {
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/oauth2/**", "/login/**", "/agent/connect").permitAll()
+                .requestMatchers("/oauth2/**", "/login/**", "/agent/connect").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .oauth2Login()
-                .defaultSuccessUrl("/portal/");
-//        http.csrf().disable();
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/portal/", true)
+                        .failureUrl("/login?error")
+                        .permitAll());
+        return http.build();
     }
 }
