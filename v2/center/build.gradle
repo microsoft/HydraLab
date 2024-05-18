@@ -1,5 +1,5 @@
 plugins {
-    id 'java-library'
+    id 'java'
     id 'org.springframework.boot' version '3.2.5'
     id 'io.spring.dependency-management' version '1.1.4'
 }
@@ -21,7 +21,7 @@ ext {
 }
 
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
@@ -32,7 +32,7 @@ configurations {
 }
 
 dependencies {
-    api project(":common")
+    implementation project(":common")
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
@@ -43,14 +43,11 @@ dependencies {
 
     implementation 'org.springframework.ai:spring-ai-azure-openai-spring-boot-starter'
 
-//    implementation 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure'
     implementation 'org.springframework.security:spring-security-oauth2-client'
 
     implementation "me.paulschwarz:spring-dotenv:4.0.0"
 
     implementation(group: 'net.sf.ehcache', name: 'ehcache', version: '2.10.8')
-
-    implementation group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.6.Final'
 
     implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.7.0'
 
@@ -58,31 +55,21 @@ dependencies {
 
     implementation group: 'com.azure', name: 'azure-ai-openai', version: '1.0.0-beta.8'
 
-    implementation('org.springdoc:springdoc-openapi-core:1.1.49')
-    implementation('org.springdoc:springdoc-openapi-ui:1.4.1')
+    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
 
-    implementation group: 'org.jsoup', name: 'jsoup', version: '1.10.1'
-    implementation group: 'org.yaml', name: 'snakeyaml', version: '1.25'
+    implementation 'org.yaml:snakeyaml:2.0'
 
     implementation 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
 
-    implementation 'org.xerial:sqlite-jdbc:3.36.0.2'
-    implementation 'com.github.gwenn:sqlite-dialect:0.1.2'
+    implementation 'org.xerial:sqlite-jdbc:3.41.2.2'
+    implementation 'com.github.gwenn:sqlite-dialect:0.1.4'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.72'
-
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    implementation 'com.android.tools.ddms:ddmlib:27.0.2'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
 
-    implementation 'io.micrometer:micrometer-registry-prometheus:1.9.0'
-    implementation 'io.micrometer:micrometer-core:1.9.0'
-    implementation 'io.prometheus:simpleclient_pushgateway:0.16.0'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
 }
 dependencyManagement {
     imports {

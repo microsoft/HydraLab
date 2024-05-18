@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'org.springframework.boot' version '3.2.5'
     id 'io.spring.dependency-management' version '1.1.4'
 }
@@ -33,18 +33,20 @@ configurations {
 
 dependencies {
     implementation 'kxml2:kxml2:2.3.0'
-    implementation 'com.android.tools.ddms:ddmlib:27.0.2'
-    implementation group: 'junit', name: 'junit', version: '4.12'
+    api 'com.android.tools.ddms:ddmlib:27.0.2'
+    implementation group: 'junit', name: 'junit', version: '4.13.1'
 
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.security:spring-security-core'
 
-    implementation 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
+    implementation 'org.springframework.data:spring-data-commons'
+    implementation 'org.springframework.data:spring-data-jpa'
+    implementation 'jakarta.persistence:jakarta.persistence-api'
+
+    implementation 'org.springframework:spring-web'
+    implementation 'org.springframework.boot:spring-boot'
+
     implementation 'com.vladmihalcea:hibernate-types-52:2.3.4'
-    implementation group: 'org.python', name: 'jython-standalone', version: '2.7.0'
-    compileOnly 'org.hibernate:hibernate-core:5.4.18.Final'
-    implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.72'
+    implementation 'org.python:jython-standalone:2.7.1b3'
 
     implementation 'io.appium:java-client:8.3.0'
     implementation 'org.seleniumhq.selenium:selenium-java:4.1.4'
@@ -52,27 +54,27 @@ dependencies {
 
     implementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     implementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    implementation group: 'org.junit.platform', name: 'junit-platform-suite-engine', version: '1.8.1'
+    implementation 'org.junit.platform:junit-platform-suite-engine:1.8.1'
     implementation 'org.junit.platform:junit-platform-launcher:1.8.1'
     implementation 'org.apache.httpcomponents.client5:httpclient5'
 
     // prometheus + micrometer
     implementation 'io.micrometer:micrometer-registry-prometheus:1.9.0'
     implementation 'io.micrometer:micrometer-core:1.9.0'
-    implementation 'io.prometheus:simpleclient_pushgateway:0.16.0'
-    implementation 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
-    implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.75'
-    implementation group: 'commons-codec', name: 'commons-codec', version: '1.10'
-    implementation 'org.slf4j:slf4j-api:1.7.30'
-    implementation 'ch.qos.logback:logback-classic:1.2.3'
-    implementation 'cn.hutool:hutool-all:5.7.13'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
-    implementation 'com.google.guava:guava:31.1-jre'
-    implementation group: 'io.netty', name: 'netty-tcnative', version: '2.0.51.Final'
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.5'
-    implementation group: 'org.jsoup', name: 'jsoup', version: '1.10.1'
+    api 'io.prometheus:simpleclient_pushgateway:0.16.0'
+    api 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
+    api group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    api 'commons-io:commons-io:2.7'
+    api 'com.alibaba:fastjson:1.2.83'
+    api 'commons-codec:commons-codec:1.13'
+    api 'org.slf4j:slf4j-api'
+    api 'ch.qos.logback:logback-classic'
+    api 'cn.hutool:hutool-all:5.8.25'
+    api 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.google.guava:guava'
+    implementation 'io.netty:netty-tcnative:2.0.51.Final'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation 'org.jsoup:jsoup:1.15.3'
     // https://docs.microsoft.com/en-us/graph/sdks/sdk-installation?context=graph%2Fapi%2F1.0&view=graph-rest-1.0
     implementation 'com.microsoft.graph:microsoft-graph:5.4.0'
     implementation 'com.azure:azure-identity:1.9.2'
@@ -81,7 +83,7 @@ dependencies {
     //Apk analysis
     implementation group: 'net.dongliu', name: 'apk-parser', version: '2.6.10'
     //Ipa Parse
-    implementation group: 'com.googlecode.plist', name: 'dd-plist', version: '1.3'
+    implementation 'com.googlecode.plist:dd-plist:1.17'
 
     implementation 'com.squareup.haha:haha:2.1'
 
