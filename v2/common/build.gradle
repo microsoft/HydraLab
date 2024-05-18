@@ -21,7 +21,7 @@ ext {
 }
 
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
@@ -34,7 +34,7 @@ configurations {
 dependencies {
     implementation 'kxml2:kxml2:2.3.0'
     api 'com.android.tools.ddms:ddmlib:27.0.2'
-    implementation group: 'junit', name: 'junit', version: '4.13.1'
+    api group: 'junit', name: 'junit', version: '4.13.1'
 
     implementation 'org.springframework.security:spring-security-core'
 
@@ -48,14 +48,14 @@ dependencies {
     implementation 'com.vladmihalcea:hibernate-types-52:2.3.4'
     implementation 'org.python:jython-standalone:2.7.1b3'
 
-    implementation 'io.appium:java-client:8.3.0'
+    api 'io.appium:java-client:8.3.0'
     implementation 'org.seleniumhq.selenium:selenium-java:4.1.4'
     implementation 'org.apache.httpcomponents:httpcore:4.4.9'
 
-    implementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    api 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     implementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation 'org.junit.platform:junit-platform-suite-engine:1.8.1'
-    implementation 'org.junit.platform:junit-platform-launcher:1.8.1'
+    api 'org.junit.platform:junit-platform-launcher:1.8.1'
     implementation 'org.apache.httpcomponents.client5:httpclient5'
 
     // prometheus + micrometer
