@@ -1,0 +1,127 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+package com.microsoft.hydralab.agent.runner;
+
+import com.microsoft.hydralab.common.entity.common.AndroidTestUnit;
+import com.microsoft.hydralab.common.entity.common.TestRun;
+import com.microsoft.hydralab.common.entity.common.TestTask;
+import com.microsoft.hydralab.common.util.DateUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Date;
+
+/**
+ * @author zhoule
+ * @date 10/31/2022
+ */
+public class XmlBuilder {
+    private static final String TEST_RESULT_FILE_SUFFIX = ".xml";
+    public static final String TEST_RESULT_FILE_PREFIX = "hydra_result_";
+    private static final String TEST_RESULT_FILE_ENCODE_PROPERTY = "encoding";
+    private static final String TEST_RESULT_FILE_ENCODE_VALUE = "UTF-8";
+    private static final String TEST_RESULT_FILE_OUTPUT_VALUE = "xml";
+    private static final String TEST_RESULT_FILE_FORMAT_PROPERTY = "indent-number";
+    private static final String TEST_RESULT_FILE_FORMAT_VALUE = "2";
+    private static final String TEST_RESULT_FILE_INDENT_VALUE = "yes";
+
+    private static final String TESTSUITE = "testsuite";
+    private static final String TESTCASE = "testcase";
+    private static final String FAILURE = "failure";
+    private static final String ATTR_NAME = "name";
+    private static final String ATTR_TIME = "time";
+    private static final String ATTR_FAILURES = "failures";
+    private static final String ATTR_SKIPPED = "skipped";
+    private static final String ATTR_TESTS = "tests";
+    private static final String ATTR_CLASSNAME = "classname";
+    private static final String TIMESTAMP = "timestamp";
+    private static final String HOSTNAME = "hostname";
+
+    public String buildTestResultXml(TestTask testTask, TestRun testRun) throws Exception {
+        File resultFolder = testRun.getResultFolder();
+        File[] files = resultFolder.listFiles();
+        for (File tempfile : files) {
+            if (tempfile.getName().startsWith(TEST_RESULT_FILE_PREFIX) && tempfile.getName().endsWith(TEST_RESULT_FILE_SUFFIX)) {
+                testRun.getLogger().info("find test result file: " + tempfile.getAbsolutePath());
+                return tempfile.getAbsolutePath();
+            }
+        }
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = factory.newDocumentBuilder();
+        Document document = db.newDocument();
+        Element testSuite = buildTestSuite(document, testTask, testRun);
+        document.appendChild(testSuite);
+
+        File xmlFile =
+                File.createTempFile(TEST_RESULT_FILE_PREFIX, TEST_RESULT_FILE_SUFFIX, testRun.getResultFolder());
+        transferToFile(document, xmlFile);
+        return xmlFile.getAbsolutePath();
+    }
+
+    private Element buildTestSuite(Document document, TestTask testTask, TestRun testRun)
+            throws UnknownHostException {
+        Element testSuite = document.createElement(TESTSUITE);
+
+        testSuite.setAttribute(ATTR_NAME, testTask.getTestSuite());
+        testSuite.setAttribute(ATTR_TESTS, String.valueOf(testRun.getTotalCount()));
+        testSuite.setAttribute(ATTR_FAILURES, String.valueOf(testRun.getFailCount()));
+        testSuite.setAttribute(ATTR_TIME, Double.toString(
+                (double) (testRun.getTestEndTimeMillis() - testRun.getTestStartTimeMillis()) / 1000.f));
+        testSuite.setAttribute(TIMESTAMP,
+                DateUtil.appCenterFormat2.format(DateUtil.localToUTC(new Date(testRun.getTestStartTimeMillis()))));
+        testSuite.setAttribute(HOSTNAME, InetAddress.getLocalHost().getHostName());
+        if (testRun.getTestUnitList() != null) {
+            testSuite.setAttribute(ATTR_SKIPPED,
+                    String.valueOf(testRun.getTotalCount() - testRun.getTestUnitList().size()));
+            for (AndroidTestUnit unitTest : testRun.getTestUnitList()) {
+                Element testCase = buildTestCase(document, unitTest);
+                testSuite.appendChild(testCase);
+            }
+        } else {
+            testSuite.setAttribute(ATTR_SKIPPED, String.valueOf(testRun.getTotalCount() - testRun.getFailCount()));
+        }
+        return testSuite;
+    }
+
+    private Element buildTestCase(Document document, AndroidTestUnit unitTest) {
+        Element testCase = document.createElement(TESTCASE);
+        testCase.setAttribute(ATTR_NAME, unitTest.getTestName());
+        testCase.setAttribute(ATTR_CLASSNAME, unitTest.getTestedClass());
+        testCase.setAttribute(ATTR_TIME,
+                Double.toString((double) (unitTest.getEndTimeMillis() - unitTest.getStartTimeMillis()) / 1000.f));
+        if (!unitTest.isSuccess()) {
+            Element failure = document.createElement(FAILURE);
+            failure.setTextContent(unitTest.getStack());
+            testCase.appendChild(failure);
+        }
+        return testCase;
+    }
+
+    private void transferToFile(Document document, File xmlFile) throws TransformerException {
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setAttribute(TEST_RESULT_FILE_FORMAT_PROPERTY,
+                Integer.valueOf(TEST_RESULT_FILE_FORMAT_VALUE));
+        Source xmlSource = new DOMSource(document);
+        Result outputTarget = new StreamResult(xmlFile);
+
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(TEST_RESULT_FILE_ENCODE_PROPERTY, TEST_RESULT_FILE_ENCODE_VALUE);
+        transformer.setOutputProperty(OutputKeys.METHOD, TEST_RESULT_FILE_OUTPUT_VALUE);
+        transformer.setOutputProperty(OutputKeys.INDENT, TEST_RESULT_FILE_INDENT_VALUE);
+        transformer.transform(xmlSource, outputTarget);
+    }
+}
