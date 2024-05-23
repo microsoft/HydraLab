@@ -50,12 +50,13 @@ dependencies {
 
     api 'io.appium:java-client:8.3.0'
     implementation 'org.seleniumhq.selenium:selenium-java:4.1.4'
-    implementation 'org.apache.httpcomponents:httpcore:4.4.9'
+
 
     api 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    api 'org.junit.platform:junit-platform-launcher:1.8.1'
     implementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation 'org.junit.platform:junit-platform-suite-engine:1.8.1'
-    api 'org.junit.platform:junit-platform-launcher:1.8.1'
+
     implementation 'org.apache.httpcomponents.client5:httpclient5'
 
     // prometheus + micrometer
@@ -63,8 +64,8 @@ dependencies {
     implementation 'io.micrometer:micrometer-core:1.9.0'
     api 'io.prometheus:simpleclient_pushgateway:0.16.0'
     api 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
-    api group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
-    api 'commons-io:commons-io:2.7'
+    api 'org.apache.commons:commons-lang3:3.14.0'
+    api 'commons-io:commons-io:2.11.0'
     api 'com.alibaba:fastjson:1.2.83'
     api 'commons-codec:commons-codec:1.13'
     api 'org.slf4j:slf4j-api'
@@ -73,7 +74,7 @@ dependencies {
     api 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.google.guava:guava'
     implementation 'io.netty:netty-tcnative:2.0.51.Final'
-    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+
     implementation 'org.jsoup:jsoup:1.15.3'
     // https://docs.microsoft.com/en-us/graph/sdks/sdk-installation?context=graph%2Fapi%2F1.0&view=graph-rest-1.0
     implementation 'com.microsoft.graph:microsoft-graph:5.4.0'

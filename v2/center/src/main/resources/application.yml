@@ -4,6 +4,16 @@ server:
     enabled: true
     min-response-size: 102400
 spring:
+  ai:
+    azure:
+      openai:
+        endpoint: ${AZURE_ENDPOINT:empty}
+        api-key: ${AZURE_API_KEY:empty}
+        chat:
+          options:
+            deployment_name: ${AZURE_DEPLOYMENT:empty}
+  main:
+    allow-circular-references: true
   cache:
     type: ehcache
     ehcache:
@@ -23,10 +33,10 @@ spring:
     password: 98765432
     driver-class-name: org.sqlite.JDBC
   jpa:
-    database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
     show-sql: false
     hibernate:
-      dialect: org.sqlite.hibernate.dialect.SQLiteDialect
+      dialect: org.hibernate.community.dialect.SQLiteDialect
       ddl-auto: update
     properties:
       hibernate:

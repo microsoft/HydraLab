@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.Data;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 
 import java.util.Map;
 import java.util.UUID;

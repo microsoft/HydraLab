@@ -1,6 +1,7 @@
 spring:
   main:
     web-application-type: none
+    allow-circular-references: true
   application:
     name: ${app.registry.name:device-network-agent}
   output:
@@ -18,10 +19,10 @@ spring:
     hikari:
       maximum-pool-size: 1
   jpa:
-    database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
     show-sql: false
     hibernate:
-      dialect: org.sqlite.hibernate.dialect.SQLiteDialect
+      dialect: org.hibernate.community.dialect.SQLiteDialect
       ddl-auto: update
     properties:
       hibernate:
