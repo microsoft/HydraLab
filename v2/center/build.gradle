@@ -47,11 +47,11 @@ dependencies {
 
     implementation "me.paulschwarz:spring-dotenv:4.0.0"
 
-    implementation(group: 'net.sf.ehcache', name: 'ehcache', version: '2.10.8')
+    implementation 'net.sf.ehcache:ehcache:2.10.8'
 
-    implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.7.0'
+    implementation 'org.apache.commons:commons-pool2:2.7.0'
 
-    implementation group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '7.4.0.jre8'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.0.jre8'
 
     implementation group: 'com.azure', name: 'azure-ai-openai', version: '1.0.0-beta.8'
 
@@ -59,10 +59,8 @@ dependencies {
 
     implementation 'org.yaml:snakeyaml:2.0'
 
-    implementation 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
-
     implementation 'org.xerial:sqlite-jdbc:3.41.2.2'
-    implementation 'com.github.gwenn:sqlite-dialect:0.1.4'
+    implementation 'org.hibernate.orm:hibernate-community-dialects:6.2.7.Final'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

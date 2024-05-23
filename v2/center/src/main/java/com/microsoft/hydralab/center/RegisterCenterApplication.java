@@ -13,7 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
-@EnableCaching
+//TODO @EnableCaching
 @EnableWebMvc
 @EnableScheduling
 @EnableJpaRepositories(basePackages = {"com.microsoft.hydralab.common.repository", "com.microsoft.hydralab.center.repository"})

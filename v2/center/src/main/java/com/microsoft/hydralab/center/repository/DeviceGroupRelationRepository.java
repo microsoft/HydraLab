@@ -8,7 +8,7 @@ import com.microsoft.hydralab.common.entity.center.DeviceGroupRelationId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.List;
 
 public interface DeviceGroupRelationRepository extends JpaRepository<DeviceGroupRelation, DeviceGroupRelationId> {

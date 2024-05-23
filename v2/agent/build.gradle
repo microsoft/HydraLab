@@ -48,7 +48,7 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
 
     implementation 'org.xerial:sqlite-jdbc:3.36.0.2'
-    implementation 'com.github.gwenn:sqlite-dialect:0.1.2'
+    implementation 'org.hibernate.orm:hibernate-community-dialects:6.2.7.Final'
 
     implementation group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.5.2'
 
