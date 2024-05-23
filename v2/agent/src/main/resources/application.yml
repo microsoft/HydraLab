@@ -1,6 +1,7 @@
 spring:
   main:
     web-application-type: none
+    allow-circular-references: true
   application:
     name: ${app.registry.name:device-network-agent}
   output:
