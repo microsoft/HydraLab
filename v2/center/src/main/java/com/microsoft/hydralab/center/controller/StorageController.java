@@ -153,10 +153,10 @@ public class StorageController {
     }
 
     @GetMapping("/api/storage/getToken")
-    public Result generateReadToken(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result generateReadToken(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        return Result.ok(storageTokenManageService.generateReadToken(requestor.getMailAddress()).getToken());
+        return Result.ok(storageTokenManageService.generateReadToken(requester.getMailAddress()).getToken());
     }
 }

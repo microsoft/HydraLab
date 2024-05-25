@@ -20,14 +20,17 @@ public class AADOauth2Configuration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .requestMatchers("/oauth2/**", "/login/**", "/agent/connect").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/portal/", true)
-                        .failureUrl("/login?error")
-                        .permitAll());
+        http.authorizeHttpRequests(
+                httpSecurity ->
+                        httpSecurity.requestMatchers("/oauth2/**", "/login/**", "/agent/connect")
+                                .permitAll()
+                                .anyRequest().authenticated()
+        ).oauth2Login(
+                oauth2 ->
+                        oauth2.defaultSuccessUrl("/portal/", true)
+                                .failureUrl("/login?error")
+                                .permitAll()
+        );
         return http.build();
     }
 }

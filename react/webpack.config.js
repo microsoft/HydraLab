@@ -10,7 +10,7 @@ const htmlPlugin = new HtmlWebPackPlugin({
     template: path.join(__dirname, './src/index.html'),
     filename: 'index.html'
 })
-const distPath = '../center/src/main/resources/static/dist'
+const distPath = '../v2/center/src/main/resources/static/dist'
 // Change the 'webpack.config.json' to point it to your Hydra Lab API service
 const devHydraLabServer = userConfig.devServer
 

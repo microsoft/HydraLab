@@ -127,9 +127,9 @@ public class DeviceGroupService {
 
         if (teamAdminRequired) {
             // TEAM_ADMIN of current TEAM
-            return userTeamManagementService.checkRequestorTeamAdmin(requestor, deviceGroup.getTeamId());
+            return userTeamManagementService.checkRequesterTeamAdmin(requestor, deviceGroup.getTeamId());
         } else {
-            return userTeamManagementService.checkRequestorTeamRelation(requestor, deviceGroup.getTeamId());
+            return userTeamManagementService.checkRequesterTeamRelation(requestor, deviceGroup.getTeamId());
         }
     }
 

@@ -269,7 +269,7 @@ public class TestDataService {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "The TestTask linked doesn't exist!");
         }
         // temporarily disable team auth check before a better solution on access to test result comes out.
-//        else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
+//        else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequesterTeamRelation(requestor, testTask.getTeamId())) {
 //            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
 //        }
     }

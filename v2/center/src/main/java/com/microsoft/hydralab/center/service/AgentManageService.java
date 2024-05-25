@@ -122,7 +122,7 @@ public class AgentManageService {
         }
 
         // TEAM_ADMIN of current TEAM
-        return userTeamManagementService.checkRequestorTeamAdmin(requestor, agentUser.getTeamId());
+        return userTeamManagementService.checkRequesterTeamAdmin(requestor, agentUser.getTeamId());
     }
 
     public void updateAgentTeam(String teamId, String teamName) {

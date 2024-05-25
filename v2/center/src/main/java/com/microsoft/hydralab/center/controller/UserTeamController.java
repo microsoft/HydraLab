@@ -53,7 +53,7 @@ public class UserTeamController {
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(value = {"/api/team/delete"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result deleteTeam(@CurrentSecurityContext SysUser requestor, @RequestParam("teamId") String teamId) {
+    public Result deleteTeam(@CurrentSecurityContext(expression = "authentication") SysUser requester, @RequestParam("teamId") String teamId) {
         SysTeam sysTeam = sysTeamService.queryTeamById(teamId);
         if (sysTeam == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
@@ -61,8 +61,8 @@ public class UserTeamController {
         if (Const.DefaultTeam.DEFAULT_TEAM_NAME.equals(sysTeam.getTeamName())) {
             return Result.error(HttpStatus.FORBIDDEN.value(), "Cannot delete default team as it's for public use.");
         }
-        // if the only user in TEAM is the requestor ADMIN & TEAM_ADMIN, make it deletable
-        if (userTeamManagementService.checkUserExistenceWithTeam(requestor, sysTeam.getTeamId())) {
+        // if the only user in TEAM is the requester ADMIN & TEAM_ADMIN, make it deletable
+        if (userTeamManagementService.checkUserExistenceWithTeam(requester, sysTeam.getTeamId())) {
             return Result.error(HttpStatus.FORBIDDEN.value(), "There are still users under this team, operation is forbidden.");
         }
 
@@ -77,13 +77,13 @@ public class UserTeamController {
      */
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','TEAM_ADMIN')")
     @PostMapping(value = {"/api/team/update"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<SysTeam> updateTeam(@CurrentSecurityContext SysUser requestor,
+    public Result<SysTeam> updateTeam(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                       @RequestParam("teamId") String teamId,
                                       @RequestParam(value = "teamName") String teamName) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+        if (sysUserService.checkUserRole(requester, Const.DefaultRole.TEAM_ADMIN) && !userTeamManagementService.checkRequesterTeamRelation(requester, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized for another team");
         }
         SysTeam sysTeam = sysTeamService.queryTeamById(teamId);
@@ -116,14 +116,14 @@ public class UserTeamController {
      */
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','TEAM_ADMIN')")
     @PostMapping(value = {"/api/userTeam/addRelation"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<UserTeamRelation> addUserTeamRelation(@CurrentSecurityContext SysUser requestor,
+    public Result<UserTeamRelation> addUserTeamRelation(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                                         @RequestParam("mailAddress") String mailAddress,
                                                         @RequestParam("teamId") String teamId,
                                                         @RequestParam("isTeamAdmin") boolean isTeamAdmin) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+        if (sysUserService.checkUserRole(requester, Const.DefaultRole.TEAM_ADMIN) && !userTeamManagementService.checkRequesterTeamRelation(requester, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized for another team");
         }
         SysTeam team = sysTeamService.queryTeamById(teamId);
@@ -151,13 +151,13 @@ public class UserTeamController {
      */
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','TEAM_ADMIN')")
     @PostMapping(value = {"/api/userTeam/deleteRelation"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result deleteUserTeamRelation(@CurrentSecurityContext SysUser requestor,
+    public Result deleteUserTeamRelation(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                          @RequestParam("userId") String userId,
                                          @RequestParam("teamId") String teamId) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+        if (sysUserService.checkUserRole(requester, Const.DefaultRole.TEAM_ADMIN) && !userTeamManagementService.checkRequesterTeamRelation(requester, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized for another team");
         }
         SysTeam team = sysTeamService.queryTeamById(teamId);
@@ -184,12 +184,12 @@ public class UserTeamController {
      * 2) Only admin/super_admin can see Default team member
      */
     @PostMapping(value = {"/api/userTeam/queryUsers"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<SysUser>> queryUsersByTeam(@CurrentSecurityContext SysUser requestor,
+    public Result<List<SysUser>> queryUsersByTeam(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                                   @RequestParam("teamId") String teamId) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
         }
-        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+        if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized for another team");
         }
 
@@ -201,19 +201,19 @@ public class UserTeamController {
      * Authenticated USER: all
      */
     @GetMapping(value = {"/api/userTeam/listAuthorizedTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<SysTeam>> getAuthorizedTeam(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<List<SysTeam>> getAuthorizedTeam(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
 
         List<SysTeam> teamList;
-        if (sysUserService.checkUserAdmin(requestor)) {
+        if (sysUserService.checkUserAdmin(requester)) {
             teamList = sysTeamService.queryTeams();
             teamList.forEach(team -> team.setManageable(true));
         } else {
-            teamList = userTeamManagementService.queryTeamsByUser(requestor.getMailAddress());
-            if (sysUserService.checkUserRole(requestor, Const.DefaultRole.TEAM_ADMIN)) {
-                Map<String, Boolean> teamAdminMap = requestor.getTeamAdminMap();
+            teamList = userTeamManagementService.queryTeamsByUser(requester.getMailAddress());
+            if (sysUserService.checkUserRole(requester, Const.DefaultRole.TEAM_ADMIN)) {
+                Map<String, Boolean> teamAdminMap = requester.getTeamAdminMap();
                 for (SysTeam team : teamList) {
                     if (teamAdminMap.get(team.getTeamId())) {
                         team.setManageable(true);
@@ -229,12 +229,12 @@ public class UserTeamController {
      * Authenticated USER: all
      */
     @GetMapping(value = {"/api/userTeam/listSelfTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<SysTeam>> getSelfTeamList(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<List<SysTeam>> getSelfTeamList(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
 
-        return Result.ok(userTeamManagementService.queryTeamsByUser(requestor.getMailAddress()));
+        return Result.ok(userTeamManagementService.queryTeamsByUser(requester.getMailAddress()));
     }
 
     /**
@@ -243,10 +243,10 @@ public class UserTeamController {
      * 2) USERs can switch their own default TEAM info
      */
     @PostMapping(value = {"/api/userTeam/switchDefaultTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<SysUser> switchDefaultTeam(@CurrentSecurityContext SysUser requestor,
+    public Result<SysUser> switchDefaultTeam(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                              @RequestParam(value = "mailAddress", required = false) String mailAddress,
                                              @RequestParam("teamId") String teamId) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
         }
 
@@ -258,8 +258,8 @@ public class UserTeamController {
         String localMailAddress = mailAddress;
         if (StringUtils.isEmpty(localMailAddress)) {
             // [All USERs] request for self default TEAM update
-            localMailAddress = requestor.getMailAddress();
-            user = requestor;
+            localMailAddress = requester.getMailAddress();
+            user = requester;
         } else {
             // [Admin only] request for others' default TEAM update
             user = sysUserService.queryUserByMailAddress(localMailAddress);
@@ -268,7 +268,7 @@ public class UserTeamController {
             }
         }
 
-        if (sysUserService.checkUserAdmin(requestor) || localMailAddress.equals(requestor.getMailAddress())) {
+        if (sysUserService.checkUserAdmin(requester) || localMailAddress.equals(requester.getMailAddress())) {
             if (!userTeamManagementService.checkUserTeamRelation(localMailAddress, teamId)) {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "USER isn't under the TEAM, cannot switch the default TEAM to it.");
             }
@@ -286,19 +286,19 @@ public class UserTeamController {
      * 2) USERs can query their own default TEAM info
      */
     @PostMapping(value = {"/api/userTeam/queryDefaultTeam"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<SysTeam> queryDefaultTeam(@CurrentSecurityContext SysUser requestor,
+    public Result<SysTeam> queryDefaultTeam(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                             @RequestParam(value = "mailAddress", required = false) String mailAddress) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
         }
 
         SysUser user;
         if (StringUtils.isEmpty(mailAddress)) {
             // [All USERs] request for self default TEAM update
-            user = requestor;
+            user = requester;
         } else {
             // [Admin only] request for others' default TEAM update
-            if (!sysUserService.checkUserAdmin(requestor)) {
+            if (!sysUserService.checkUserAdmin(requester)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized to query info of this USER");
             }
 

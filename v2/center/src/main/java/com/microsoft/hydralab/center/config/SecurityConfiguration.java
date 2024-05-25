@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -19,14 +20,19 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 @Profile({"default", "dev", "release", "docker"})
 public class SecurityConfiguration {
 
     @Bean
     protected UserDetailsService userDetailsService() {
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(User.withUsername("LabAdmin").password(passwordEncoder().encode("ADMIN")).roles("ADMIN").build());
+        manager.createUser(
+                User.withUsername("LabAdmin")
+                        .password(passwordEncoder().encode("ADMIN"))
+                        .roles("ADMIN")
+                        .build()
+        );
         return manager;
     }
 
@@ -38,8 +44,7 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .anyRequest().permitAll();
+        http.authorizeHttpRequests(httpSecurity -> httpSecurity.anyRequest().permitAll());
         http.httpBasic(Customizer.withDefaults());
         http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
         return http.build();

@@ -44,6 +44,8 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-azure-openai-spring-boot-starter'
     implementation 'org.springframework.security:spring-security-oauth2-client'
 
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
     implementation 'org.xerial:sqlite-jdbc:3.45.3.0'
     implementation 'org.hibernate.orm:hibernate-community-dialects:6.2.7.Final'
 
@@ -52,8 +54,6 @@ dependencies {
     implementation 'net.sf.ehcache:ehcache:2.10.9.2'
 
     implementation 'com.microsoft.sqlserver:mssql-jdbc:12.4.2.jre11'
-
-    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
 
     implementation 'org.yaml:snakeyaml:2.0'
 
@@ -71,4 +71,20 @@ dependencyManagement {
 }
 test {
     useJUnitPlatform()
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+String npmCommand = 'npm'
+if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    npmCommand = 'npm.cmd'
+}
+String reactDir = "${projectDir.parentFile.parentFile.absolutePath}${File.separator}react"
+task installWebFront(type: Exec, group: 'build') {
+    workingDir reactDir
+    commandLine npmCommand, 'ci'
+}
+
+task buildWebFront(type: Exec, group: 'build', dependsOn: installWebFront) {
+    workingDir reactDir
+    commandLine npmCommand, 'run', 'pub'
 }

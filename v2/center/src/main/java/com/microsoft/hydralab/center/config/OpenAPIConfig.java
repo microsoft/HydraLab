@@ -12,10 +12,10 @@ import org.springframework.context.annotation.Configuration;
  * Created by bsp on 17/12/16.
  */
 @Configuration
-@OpenAPIDefinition(info =
-@Info(title = "Hydra Lab API", version = "1.0.0", description = "Hydra Lab", contact =
-@Contact(name = "Microsoft Hydra Lab Support", email = "hydra_lab_support@microsoft.com")
+@OpenAPIDefinition(
+        info = @Info(title = "Hydra Lab API", version = "1.0.0", description = "Hydra Lab",
+                contact = @Contact(name = "Microsoft Hydra Lab Support", email = "hydra_lab_support@microsoft.com")
+        )
 )
-)
-public class SwaggerConfig {
+public class OpenAPIConfig {
 }

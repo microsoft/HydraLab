@@ -43,17 +43,17 @@ public class RolePermissionController {
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(value = {"/api/role/create"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<SysRole> createRole(@CurrentSecurityContext SysUser requestor,
+    public Result<SysRole> createRole(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                       @RequestParam("roleName") String roleName,
                                       @RequestParam("authLevel") int authLevel) {
-        SysRole requestorRole = sysRoleService.getRequestorRole(requestor);
-        if (requestorRole == null) {
+        SysRole requesterRole = sysRoleService.getRequesterRole(requester);
+        if (requesterRole == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         if (!sysRoleService.isAuthLevelValid(authLevel)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Auth level not valid, input value larger than 0.");
         }
-        if (requestorRole.getAuthLevel() >= authLevel) {
+        if (requesterRole.getAuthLevel() >= authLevel) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Current user must has a role with higher permission to create a role with the target auth level.");
         }
         SysRole sysRole = sysRoleService.queryRoleByName(roleName);
@@ -67,17 +67,17 @@ public class RolePermissionController {
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(value = {"/api/role/delete"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result deleteRole(@CurrentSecurityContext SysUser requestor,
+    public Result deleteRole(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                              @RequestParam("roleId") String roleId) {
-        SysRole requestorRole = sysRoleService.getRequestorRole(requestor);
-        if (requestorRole == null) {
+        SysRole requesterRole = sysRoleService.getRequesterRole(requester);
+        if (requesterRole == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         SysRole sysRole = sysRoleService.queryRoleById(roleId);
         if (sysRole == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Role doesn't exist.");
         }
-        if (requestorRole.getAuthLevel() >= sysRole.getAuthLevel()) {
+        if (requesterRole.getAuthLevel() >= sysRole.getAuthLevel()) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Current user must has a role with higher permission to delete a role with the target auth level.");
         }
         if (sysUserService.checkUserExistenceWithRole(sysRole.getRoleId())) {
@@ -90,20 +90,20 @@ public class RolePermissionController {
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(value = {"/api/role/update"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<SysRole> updateRole(@CurrentSecurityContext SysUser requestor,
+    public Result<SysRole> updateRole(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                       @RequestParam("roleId") String roleId,
                                       @RequestParam(value = "roleName", required = false) String roleName,
                                       @RequestParam(value = "authLevel", required = false) Integer authLevel) {
-        SysRole requestorRole = sysRoleService.getRequestorRole(requestor);
-        if (requestorRole == null) {
+        SysRole requesterRole = sysRoleService.getRequesterRole(requester);
+        if (requesterRole == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         SysRole sysRole = sysRoleService.queryRoleById(roleId);
         if (sysRole == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Role doesn't exist.");
         }
-        if (requestorRole.getAuthLevel() >= sysRole.getAuthLevel()
-                || (authLevel != null && requestorRole.getAuthLevel() >= authLevel)) {
+        if (requesterRole.getAuthLevel() >= sysRole.getAuthLevel()
+                || (authLevel != null && requesterRole.getAuthLevel() >= authLevel)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Current user must has a role with higher permission to update a role with the original/target auth level.");
         }
 

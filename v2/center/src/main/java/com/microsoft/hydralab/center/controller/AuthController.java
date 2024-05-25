@@ -17,7 +17,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,15 +78,15 @@ public class AuthController {
      * Authenticated USER: all
      */
     @GetMapping(value = {"/api/auth/create"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<AuthToken> createAuthToken(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<AuthToken> createAuthToken(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
         String token = secretGenerator.generateSecret();
         AuthToken authToken = new AuthToken();
         authToken.setToken(token);
-        authToken.setCreator(requestor.getMailAddress());
+        authToken.setCreator(requester.getMailAddress());
 
         authToken = authTokenService.saveAuthToken(authToken);
 
@@ -104,30 +106,30 @@ public class AuthController {
      * Authenticated USER: all
      */
     @GetMapping(value = {"/api/auth/querySelfToken"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<AuthToken>> queryAuthTokenByName(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<List<AuthToken>> queryAuthTokenByName(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
-        List<AuthToken> authTokens = authTokenService.queryAuthTokenByName(requestor.getMailAddress());
+        List<AuthToken> authTokens = authTokenService.queryAuthTokenByName(requester.getMailAddress());
         return Result.ok(authTokens);
     }
 
     /**
      * Authenticated USER: all
-     * Data access: verify if requestor is the creator of the token
+     * Data access: verify if requester is the creator of the token
      */
     @GetMapping(value = {"/api/auth/deleteToken/{tokenId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result deleteToken(@CurrentSecurityContext SysUser requestor,
+    public Result deleteToken(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                               @PathVariable(value = "tokenId") Long tokenId) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
         AuthToken authToken = authTokenService.getAuthToken(tokenId);
         if (authToken == null) {
             return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "tokenId error !");
         }
-        if (!requestor.getMailAddress().equals(authToken.getCreator())) {
+        if (!requester.getMailAddress().equals(authToken.getCreator())) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         authTokenService.deleteAuthToken(authToken);
@@ -138,12 +140,12 @@ public class AuthController {
      * Authenticated USER: all
      */
     @GetMapping(value = {"/api/auth/getUser"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getUserInfo(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result getUserInfo(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
-        return Result.ok(requestor);
+        return Result.ok(requester);
     }
 
     /**
@@ -151,14 +153,14 @@ public class AuthController {
      */
     @GetMapping(value = {"/api/auth/getUserPhoto"}, produces = MediaType.IMAGE_JPEG_VALUE)
     @ResponseBody
-    public void getUserPhoto(@CurrentSecurityContext SysUser requestor,
+    public void getUserPhoto(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                              HttpServletResponse response) {
         try {
             InputStream inputStream = null;
-            if (requestor == null || requestor.getAccessToken() == null) {
+            if (requester == null || requester.getAccessToken() == null) {
                 inputStream = FileUtils.class.getClassLoader().getResourceAsStream(Const.Path.DEFAULT_PHOTO);
             } else {
-                inputStream = authUtil.requestPhoto(requestor.getAccessToken());
+                inputStream = authUtil.requestPhoto(requester.getAccessToken());
             }
             byte[] bytes = new byte[inputStream.available()];
             inputStream.read(bytes, 0, inputStream.available());

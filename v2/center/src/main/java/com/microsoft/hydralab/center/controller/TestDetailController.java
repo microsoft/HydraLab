@@ -78,13 +78,13 @@ public class TestDetailController {
      * 2) members of the TEAM that test case is in
      */
     @GetMapping("/api/test/case/{id}")
-    public Result getTestUnitDetail(@CurrentSecurityContext SysUser requestor, @PathVariable("id") String testCaseId) {
+    public Result getTestUnitDetail(@CurrentSecurityContext(expression = "authentication") SysUser requester, @PathVariable("id") String testCaseId) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
             AndroidTestUnit androidTestUnit = keyValueRepository.getAndroidTestUnit(testCaseId);
-            testDataService.checkTestDataAuthorization(requestor, androidTestUnit.getTestTaskId());
+            testDataService.checkTestDataAuthorization(requester, androidTestUnit.getTestTaskId());
 
             return Result.ok(androidTestUnit);
         } catch (HydraLabRuntimeException e) {
@@ -102,15 +102,15 @@ public class TestDetailController {
      * 2) members of the TEAM that crash data is in
      */
     @GetMapping("/api/test/crash/{id}")
-    public Result getCrashStack(@CurrentSecurityContext SysUser requestor,
+    public Result getCrashStack(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                 @PathVariable("id") String crashId) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
             TestRun testInfo = testDataService.getTestRunByCrashId(crashId);
-            testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
+            testDataService.checkTestDataAuthorization(requester, testInfo.getTestTaskId());
 
             return Result.ok(keyValueRepository.getCrashStack(crashId));
         } catch (HydraLabRuntimeException e) {
@@ -128,10 +128,10 @@ public class TestDetailController {
      * 2) members of the TEAM that video is in
      */
     @GetMapping("/api/test/videos/{id}")
-    public Result videoFolder(@CurrentSecurityContext SysUser requestor,
+    public Result videoFolder(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                               @PathVariable("id") String resultId) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
             if (!LogUtils.isLegalStr(resultId, Const.RegexString.UUID, false)) {
@@ -140,7 +140,7 @@ public class TestDetailController {
                 logger.info("result id {}", resultId); // CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
             }
             TestRun testInfo = testDataService.getTestRunWithVideoInfo(resultId);
-            testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
+            testDataService.checkTestDataAuthorization(requester, testInfo.getTestTaskId());
 
             JSONObject data = new JSONObject();
             JSONArray videos = new JSONArray();
@@ -163,10 +163,10 @@ public class TestDetailController {
      * 2) members of the TEAM that TestRun is in
      */
     @GetMapping("/api/test/task/device/{deviceTaskId}")
-    public Result deviceTaskInfo(@CurrentSecurityContext SysUser requestor,
+    public Result deviceTaskInfo(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                  @PathVariable("deviceTaskId") String deviceTaskId) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
             if (LogUtils.isLegalStr(deviceTaskId, Const.RegexString.UUID, false)) {
@@ -175,7 +175,7 @@ public class TestDetailController {
                 return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error param! Should be UUID");
             }
             TestRun testInfo = testDataService.getTestRunWithVideoInfo(deviceTaskId);
-            testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
+            testDataService.checkTestDataAuthorization(requester, testInfo.getTestTaskId());
 
             return Result.ok(testInfo);
         } catch (HydraLabRuntimeException e) {
@@ -188,14 +188,14 @@ public class TestDetailController {
     }
 
     @GetMapping(value = {"/api/test/performance/{fileId}"})
-    public Result getPerformanceTestReport(@CurrentSecurityContext SysUser requestor,
+    public Result getPerformanceTestReport(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                            @PathVariable(value = "fileId") String fileId) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
-            AccessToken token = storageTokenManageService.generateReadToken(requestor.getMailAddress());
+            AccessToken token = storageTokenManageService.generateReadToken(requester.getMailAddress());
             StorageFileInfo tempFileInfo = storageFileInfoRepository.findById(fileId).get();
             String blobUrl = tempFileInfo.getBlobUrl();
 
@@ -216,10 +216,10 @@ public class TestDetailController {
     }
 
     @PostMapping(value = {"/api/test/performance/history"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<PerformanceTestResultEntity>> getPerformanceTestHistory(@CurrentSecurityContext SysUser requestor,
+    public Result<List<PerformanceTestResultEntity>> getPerformanceTestHistory(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                                                                @RequestBody List<CriteriaType> criteriaTypes) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
@@ -238,9 +238,9 @@ public class TestDetailController {
     }
 
     @GetMapping(value = {"/api/test/loadCanaryReport/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getAPKScannerCanaryReport(@CurrentSecurityContext SysUser requestor,
+    public Result getAPKScannerCanaryReport(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                             @PathVariable(value = "fileId") String fileId) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
 
@@ -267,10 +267,10 @@ public class TestDetailController {
     }
 
     @GetMapping(value = {"/api/test/loadGraph/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getSmartTestGraphXML(@CurrentSecurityContext SysUser requestor,
+    public Result getSmartTestGraphXML(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                        @PathVariable(value = "fileId") String fileId,
                                        HttpServletResponse response) throws IOException {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
 
@@ -305,11 +305,11 @@ public class TestDetailController {
     }
 
     @GetMapping(value = {"/api/test/loadNodePhoto/{fileId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getSmartTestGraphPhoto(@CurrentSecurityContext SysUser requestor,
+    public Result getSmartTestGraphPhoto(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                          @PathVariable(value = "fileId") String fileId,
                                          @RequestParam(value = "node") String node,
                                          HttpServletResponse response) throws IOException {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         if (!LogUtils.isLegalStr(node, Const.RegexString.INTEGER, false)) {
@@ -344,11 +344,11 @@ public class TestDetailController {
     }
 
     @PostMapping(value = {"/api/test/suggestion/provide"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result saveGPTSuggestion(@CurrentSecurityContext SysUser requestor,
+    public Result saveGPTSuggestion(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                     @RequestParam(value = "id", defaultValue = "") String id,
                                     @RequestParam(value = "suggestion", defaultValue = "") String suggestion,
                                     @RequestParam(value = "type", defaultValue = "") String type) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         if (StringUtils.isEmpty(id) || StringUtils.isEmpty(suggestion) || StringUtils.isEmpty(type)) {

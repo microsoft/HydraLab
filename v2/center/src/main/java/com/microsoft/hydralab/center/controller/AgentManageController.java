@@ -66,14 +66,14 @@ public class AgentManageController {
      * Authenticated USER: all
      */
     @PostMapping("/api/agent/create")
-    public Result<AgentUser> create(@CurrentSecurityContext SysUser requestor,
+    public Result<AgentUser> create(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                     @RequestParam(value = "teamId") String teamId,
                                     @RequestParam(value = "os", required = false) String os,
                                     @RequestParam(value = "name") String name) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        if (!userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+        if (!userTeamManagementService.checkRequesterTeamRelation(requester, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "User doesn't belong to this Team");
         }
         SysTeam team = sysTeamService.queryTeamById(teamId);
@@ -84,7 +84,7 @@ public class AgentManageController {
             return Result.error(HttpStatus.FORBIDDEN.value(), "Agent name already registered");
         }
 
-        AgentUser agentUserInfo = agentManageService.createAgent(teamId, team.getTeamName(), requestor.getMailAddress(), os, name);
+        AgentUser agentUserInfo = agentManageService.createAgent(teamId, team.getTeamName(), requester.getMailAddress(), os, name);
         return Result.ok(agentUserInfo);
     }
 
@@ -95,11 +95,11 @@ public class AgentManageController {
      * 3) admin of the TEAM that agent is in
      */
     @PostMapping("/api/agent/updateAgent")
-    public Result updateAgentPackage(@CurrentSecurityContext SysUser requestor,
+    public Result updateAgentPackage(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                      @RequestParam(value = "agentId") String agentId,
                                      @RequestParam(value = "fileId") String fileId) {
         try {
-            if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
+            if (!agentManageService.checkAgentAuthorization(requester, agentId)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
             }
 
@@ -118,10 +118,10 @@ public class AgentManageController {
      * 3) admin of the TEAM that agent is in
      */
     @PostMapping("/api/agent/restartAgent")
-    public Result restartAgent(@CurrentSecurityContext SysUser requestor,
+    public Result restartAgent(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                @RequestParam(value = "agentId") String agentId) {
 
-        if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
+        if (!agentManageService.checkAgentAuthorization(requester, agentId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
@@ -136,9 +136,9 @@ public class AgentManageController {
      * 3) admin of the TEAM that agent is in
      */
     @GetMapping("/api/agent/getUpdateInfo/{agentId}")
-    public Result getUpdateInfo(@CurrentSecurityContext SysUser requestor,
+    public Result getUpdateInfo(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                 @PathVariable(value = "agentId") String agentId) {
-        if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
+        if (!agentManageService.checkAgentAuthorization(requester, agentId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
@@ -165,18 +165,18 @@ public class AgentManageController {
      * 2) For the rest users, return data that the user is the agent's TEAM admin or creator
      */
     @GetMapping("/api/agent/list")
-    public Result<List<AgentUser>> list(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<List<AgentUser>> list(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
         List<AgentUser> returnedAgents;
-        if (sysUserService.checkUserAdmin(requestor)) {
+        if (sysUserService.checkUserAdmin(requester)) {
             returnedAgents = agentManageService.getAllAgentsWithoutCredentials();
         } else {
             // return all AgentUsers in TEAMs that user is team admin, and all AgentUser which mailAddress equals to user's
             List<CriteriaType> criteriaTypes = new ArrayList<>();
-            Map<String, Boolean> teamAdminMap = requestor.getTeamAdminMap();
+            Map<String, Boolean> teamAdminMap = requester.getTeamAdminMap();
 
             if (!CollectionUtils.isEmpty(teamAdminMap)) {
                 CriteriaType teamIdCriteria = new CriteriaType();
@@ -198,7 +198,7 @@ public class AgentManageController {
             CriteriaType mailAddressCriteria = new CriteriaType();
             mailAddressCriteria.setKey("mailAddress");
             mailAddressCriteria.setOp(CriteriaType.OpType.Equal);
-            mailAddressCriteria.setValue(requestor.getMailAddress());
+            mailAddressCriteria.setValue(requester.getMailAddress());
             criteriaTypes.add(mailAddressCriteria);
 
             returnedAgents = agentManageService.getFilteredAgentsWithoutCredentials(criteriaTypes);
@@ -212,9 +212,9 @@ public class AgentManageController {
      * Data access: Return data for all requests, but with secret for only the user that is the agent's TEAM admin or creator
      */
     @GetMapping("/api/agent/{agentId}")
-    public Result<AgentUser> getAgentInfo(@CurrentSecurityContext SysUser requestor,
+    public Result<AgentUser> getAgentInfo(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                           @PathVariable(value = "agentId") String agentId) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
         AgentUser agentUser = agentManageService.getAgent(agentId);
@@ -222,7 +222,7 @@ public class AgentManageController {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Agent user doesn't exist");
         }
 
-        if (userTeamManagementService.checkRequestorTeamAdmin(requestor, agentUser.getTeamId()) || agentUser.getMailAddress().equals(requestor.getMailAddress())) {
+        if (userTeamManagementService.checkRequesterTeamAdmin(requester, agentUser.getTeamId()) || agentUser.getMailAddress().equals(requester.getMailAddress())) {
             return Result.ok(agentUser);
         } else {
             agentUser.setSecret(null);
@@ -236,11 +236,11 @@ public class AgentManageController {
      * Data access: For only the user that is the agent's TEAM admin or creator will be downloaded the agent config file with specific data
      */
     @GetMapping("/api/agent/downloadAgentConfigFile/{agentId}")
-    public Result downloadAgentConfigFile(@CurrentSecurityContext SysUser requestor,
+    public Result downloadAgentConfigFile(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                           @PathVariable(value = "agentId") String agentId,
                                           @RequestHeader(HttpHeaders.HOST) String host,
                                           HttpServletResponse response) throws IOException {
-        if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
+        if (!agentManageService.checkAgentAuthorization(requester, agentId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
         File agentConfigFile = agentManageService.generateAgentConfigFile(agentId, host);
@@ -286,9 +286,9 @@ public class AgentManageController {
      * 3) admin of the TEAM that agent is in
      */
     @GetMapping(value = {"/api/auth/deleteAgent/{agentId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result deleteAgent(@CurrentSecurityContext SysUser requestor,
+    public Result deleteAgent(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                               @PathVariable(value = "agentId") String agentId) {
-        if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
+        if (!agentManageService.checkAgentAuthorization(requester, agentId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 

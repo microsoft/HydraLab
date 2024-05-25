@@ -64,10 +64,10 @@ public class TestTaskController {
      * 2) TestTaskSpec and related resources (Agent/Device/Group) should have a uniform same teamId as user
      */
     @PostMapping(value = {Const.Path.TEST_TASK_RUN}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Object> runTestTask(@CurrentSecurityContext SysUser requestor,
+    public Result<Object> runTestTask(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                       @RequestBody TestTaskSpec testTaskSpec) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
@@ -80,8 +80,8 @@ public class TestTaskController {
             testTaskSpec.teamId = testFileSet.getTeamId();
             testTaskSpec.teamName = testFileSet.getTeamName();
             testTaskSpec.testTaskId = UUID.randomUUID().toString();
-            if (!sysUserService.checkUserAdmin(requestor)) {
-                if (!userTeamManagementService.checkRequestorTeamRelation(requestor, testTaskSpec.teamId)) {
+            if (!sysUserService.checkUserAdmin(requester)) {
+                if (!userTeamManagementService.checkRequesterTeamRelation(requester, testTaskSpec.teamId)) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestFileSet doesn't belong to user's Teams");
                 }
                 testTaskService.checkTestTaskTeamConsistency(testTaskSpec);
@@ -124,15 +124,15 @@ public class TestTaskController {
      * 2) members of the TEAM that TestTask is in
      */
     @GetMapping(value = {"/api/test/task/{testId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Object> getTaskStatus(@CurrentSecurityContext SysUser requestor,
+    public Result<Object> getTaskStatus(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                         @PathVariable("testId") String testId) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
             Task task = testDataService.getTaskDetail(testId);
             if (task != null) {
-//                if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testTask.getTeamId())) {
+//                if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, testTask.getTeamId())) {
 //                    return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
 //                }
                 task.setDeviceTestResults(task.getTaskRunList());
@@ -143,7 +143,7 @@ public class TestTaskController {
             if (queuedTaskSpec == null) {
                 return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "The testId is error!");
             }
-            if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, queuedTaskSpec.teamId)) {
+            if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, queuedTaskSpec.teamId)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
             }
 
@@ -165,19 +165,19 @@ public class TestTaskController {
      * 2) For the rest users, return data that is in the user's TEAMs
      */
     @GetMapping(value = {"/api/test/task/queue"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<TestTaskQueuedInfo>> getTaskQueue(@CurrentSecurityContext SysUser requestor) {
+    public Result<List<TestTaskQueuedInfo>> getTaskQueue(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
-            boolean isAdmin = sysUserService.checkUserAdmin(requestor);
+            boolean isAdmin = sysUserService.checkUserAdmin(requester);
             List<TestTaskQueuedInfo> result = new ArrayList<>();
             Queue<TestTaskSpec> taskQueueCopy = testTaskService.getTestQueueCopy();
             int index = 0;
             while (!taskQueueCopy.isEmpty()) {
                 index++;
                 TestTaskSpec temp = taskQueueCopy.poll();
-                if (!isAdmin && !requestor.getTeamAdminMap().keySet().contains(temp.teamId)) {
+                if (!isAdmin && !requester.getTeamAdminMap().keySet().contains(temp.teamId)) {
                     continue;
                 }
                 TestTaskQueuedInfo taskQueuedInfo = new TestTaskQueuedInfo();
@@ -202,17 +202,17 @@ public class TestTaskController {
      * 2) For the rest users, return data that is in the user's TEAMs
      */
     @PostMapping(value = {"/api/test/task/list"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Page<Task>> getTaskList(@CurrentSecurityContext SysUser requestor,
+    public Result<Page<Task>> getTaskList(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                               @RequestBody JSONObject data) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
             List<CriteriaType> criteriaTypes = new ArrayList<>();
             // filter all TestTask in TEAMs that user is in
-            if (!sysUserService.checkUserAdmin(requestor)) {
-                criteriaTypes = userTeamManagementService.formTeamIdCriteria(requestor.getTeamAdminMap());
+            if (!sysUserService.checkUserAdmin(requester)) {
+                criteriaTypes = userTeamManagementService.formTeamIdCriteria(requester.getTeamAdminMap());
                 if (criteriaTypes.size() == 0) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "User belongs to no TEAM, please contact administrator for binding TEAM");
                 }
@@ -239,17 +239,17 @@ public class TestTaskController {
     }
 
     @PostMapping(value = {"/api/test/task/listFirst"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Task> getTaskListFirst(@CurrentSecurityContext SysUser requestor,
+    public Result<Task> getTaskListFirst(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                          @RequestBody JSONObject data) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
             List<CriteriaType> criteriaTypes = new ArrayList<>();
             // filter all TestTask in TEAMs that user is in
-            if (!sysUserService.checkUserAdmin(requestor)) {
-                criteriaTypes = userTeamManagementService.formTeamIdCriteria(requestor.getTeamAdminMap());
+            if (!sysUserService.checkUserAdmin(requester)) {
+                criteriaTypes = userTeamManagementService.formTeamIdCriteria(requester.getTeamAdminMap());
                 if (criteriaTypes.size() == 0) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "User belongs to no TEAM, please contact administrator for binding TEAM");
                 }
@@ -287,16 +287,16 @@ public class TestTaskController {
      * 2) For the rest users, return data that is in the user's TEAMs
      */
     @PostMapping(value = {"/api/test/task/listSuite"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List> getTaskSuiteList(@CurrentSecurityContext SysUser requestor,
+    public Result<List> getTaskSuiteList(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                          @RequestBody List<CriteriaType> criteriaTypes) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
             // filter all Task Suite in TEAMs that user is in
-            if (!sysUserService.checkUserAdmin(requestor)) {
-                List<CriteriaType> criteriaTypeList = userTeamManagementService.formTeamIdCriteria(requestor.getTeamAdminMap());
+            if (!sysUserService.checkUserAdmin(requester)) {
+                List<CriteriaType> criteriaTypeList = userTeamManagementService.formTeamIdCriteria(requester.getTeamAdminMap());
                 if (criteriaTypeList.size() == 0) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "User belongs to no TEAM, please contact administrator for binding TEAM");
                 }
@@ -315,11 +315,11 @@ public class TestTaskController {
      * 2) members of the TEAM that the running/queued TestTask is in
      */
     @GetMapping(value = {"/api/test/task/cancel/{testId}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<Object> cancelTask(@CurrentSecurityContext SysUser requestor,
+    public Result<Object> cancelTask(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                      @PathVariable("testId") String testId,
                                      @RequestParam("reason") String reason) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
@@ -329,7 +329,7 @@ public class TestTaskController {
             TestTaskQueuedInfo queuedInfo = testTaskService.getTestQueuedInfo(testId);
             TestTaskSpec queuedTaskSpec = queuedInfo.getTestTaskSpec();
             if (queuedTaskSpec != null) {
-                if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, queuedTaskSpec.teamId)) {
+                if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, queuedTaskSpec.teamId)) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
                 }
 
@@ -338,7 +338,7 @@ public class TestTaskController {
                 Task task = testDataService.getTaskDetail(testId);
                 if (task == null) {
                     return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "The testId is wrong!");
-                } else if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, task.getTeamId())) {
+                } else if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, task.getTeamId())) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestTask doesn't belong to user's Teams");
                 }
 

@@ -52,13 +52,13 @@ public class DeviceGroupController {
      * Authenticated USER: all
      */
     @GetMapping(value = {"/api/deviceGroup/create"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<DeviceGroup> createGroup(@CurrentSecurityContext SysUser requestor,
+    public Result<DeviceGroup> createGroup(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                            @QueryParam(value = "teamId") String teamId,
                                            @QueryParam(value = "groupName") String groupName) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
-        if (!userTeamManagementService.checkRequestorTeamAdmin(requestor, teamId)) {
+        if (!userTeamManagementService.checkRequesterTeamAdmin(requester, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "User is not admin of this Team");
         }
         SysTeam team = sysTeamService.queryTeamById(teamId);
@@ -76,7 +76,7 @@ public class DeviceGroupController {
             return Result.error(HttpStatus.FORBIDDEN.value(), "groupName already exist!");
         }
 
-        DeviceGroup deviceGroup = deviceGroupService.createGroup(teamId, team.getTeamName(), groupName, requestor.getMailAddress());
+        DeviceGroup deviceGroup = deviceGroupService.createGroup(teamId, team.getTeamName(), groupName, requester.getMailAddress());
         return Result.ok(deviceGroup);
     }
 
@@ -88,10 +88,10 @@ public class DeviceGroupController {
      */
     @GetMapping(value = {"/api/deviceGroup/delete"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("IllegalCatch")
-    public Result deleteGroup(@CurrentSecurityContext SysUser requestor,
+    public Result deleteGroup(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                               @QueryParam(value = "groupName") String groupName) {
         try {
-            if (!deviceGroupService.checkGroupAuthorization(requestor, groupName, true)) {
+            if (!deviceGroupService.checkGroupAuthorization(requester, groupName, true)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
             }
 
@@ -113,10 +113,10 @@ public class DeviceGroupController {
      */
     @GetMapping(value = {"/api/deviceGroup/enableVerify"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("IllegalCatch")
-    public Result<DeviceGroup> enableGroup(@CurrentSecurityContext SysUser requestor,
+    public Result<DeviceGroup> enableGroup(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                            @QueryParam(value = "groupName") String groupName) {
         try {
-            if (!deviceGroupService.checkGroupAuthorization(requestor, groupName, true)) {
+            if (!deviceGroupService.checkGroupAuthorization(requester, groupName, true)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
             }
 
@@ -139,10 +139,10 @@ public class DeviceGroupController {
      */
     @GetMapping(value = {"/api/deviceGroup/disableVerify"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("IllegalCatch")
-    public Result<DeviceGroup> disableGroup(@CurrentSecurityContext SysUser requestor,
+    public Result<DeviceGroup> disableGroup(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                             @QueryParam(value = "groupName") String groupName) {
         try {
-            if (!deviceGroupService.checkGroupAuthorization(requestor, groupName, true)) {
+            if (!deviceGroupService.checkGroupAuthorization(requester, groupName, true)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
             }
 
@@ -164,17 +164,17 @@ public class DeviceGroupController {
      * 2) For the rest users, return data that the group is in the user's TEAMs
      */
     @GetMapping(value = {"/api/deviceGroup/queryGroups"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result<List<DeviceGroup>> queryGroups(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<List<DeviceGroup>> queryGroups(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
         List<DeviceGroup> returnedGroups;
-        if (sysUserService.checkUserAdmin(requestor)) {
+        if (sysUserService.checkUserAdmin(requester)) {
             returnedGroups = deviceGroupService.queryAllGroups();
         } else {
             // return all DeviceGroups in TEAMs that user is in
-            List<CriteriaType> criteriaTypes = userTeamManagementService.formTeamIdCriteria(requestor.getTeamAdminMap());
+            List<CriteriaType> criteriaTypes = userTeamManagementService.formTeamIdCriteria(requester.getTeamAdminMap());
             if (criteriaTypes.size() == 0) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "User belongs to no TEAM, please contact administrator for binding TEAM");
             }
@@ -193,18 +193,18 @@ public class DeviceGroupController {
      */
     @PostMapping(value = {"/api/deviceGroup/addRelation"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("IllegalCatch")
-    public Result<DeviceGroupRelation> addRelation(@CurrentSecurityContext SysUser requestor,
+    public Result<DeviceGroupRelation> addRelation(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                                    @RequestParam(value = "groupName") String groupName,
                                                    @RequestParam(value = "deviceSerial") String deviceSerial,
                                                    @RequestParam(value = "accessKey", required = false) String accessKey) {
         try {
-            if (!deviceGroupService.checkGroupAuthorization(requestor, groupName, true)) {
+            if (!deviceGroupService.checkGroupAuthorization(requester, groupName, true)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
             }
             if (!deviceAgentManagementService.checkDeviceInfo(deviceSerial)) {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "DeviceSerial is incorrect");
             }
-            testTaskService.checkDeviceTeamConsistency(deviceSerial, requestor.getDefaultTeamId(), accessKey);
+            testTaskService.checkDeviceTeamConsistency(deviceSerial, requester.getDefaultTeamId(), accessKey);
             deviceAgentManagementService.addDeviceToGroup(groupName, deviceSerial);
             DeviceGroupRelation deviceGroupRelation = deviceGroupService.saveRelation(groupName, deviceSerial);
             return Result.ok(deviceGroupRelation);
@@ -223,11 +223,11 @@ public class DeviceGroupController {
      */
     @PostMapping(value = {"/api/deviceGroup/deleteRelation"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("IllegalCatch")
-    public Result deleteRelation(@CurrentSecurityContext SysUser requestor,
+    public Result deleteRelation(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                  @RequestParam(value = "groupName", required = true) String groupName,
                                  @RequestParam(value = "deviceSerial", required = true) String deviceSerial) {
         try {
-            if (!deviceGroupService.checkGroupAuthorization(requestor, groupName, true)) {
+            if (!deviceGroupService.checkGroupAuthorization(requester, groupName, true)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
             }
             if (deviceGroupService.getRelation(groupName, deviceSerial) == null) {
@@ -257,18 +257,18 @@ public class DeviceGroupController {
      */
     @GetMapping(value = "/api/deviceGroup/generate", produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("IllegalCatch")
-    public Result<AccessInfo> generateDeviceToken(@CurrentSecurityContext SysUser requestor,
+    public Result<AccessInfo> generateDeviceToken(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                                   @QueryParam(value = "deviceIdentifier") String deviceIdentifier) {
         try {
             if (deviceIdentifier == null || "".equals(deviceIdentifier)) {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "deviceIdentifier is required");
             }
             if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
-                if (!deviceGroupService.checkGroupAuthorization(requestor, deviceIdentifier, true)) {
+                if (!deviceGroupService.checkGroupAuthorization(requester, deviceIdentifier, true)) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
                 }
             } else {
-                if (!deviceAgentManagementService.checkDeviceAuthorization(requestor, deviceIdentifier)) {
+                if (!deviceAgentManagementService.checkDeviceAuthorization(requester, deviceIdentifier)) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
                 }
             }
@@ -290,10 +290,10 @@ public class DeviceGroupController {
      */
     @GetMapping(value = "/api/deviceGroup/queryDeviceList", produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("IllegalCatch")
-    public Result<List<DeviceInfo>> queryDevicesByGroup(@CurrentSecurityContext SysUser requestor,
+    public Result<List<DeviceInfo>> queryDevicesByGroup(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                                         @QueryParam(value = "groupName") String groupName) {
         try {
-            if (!deviceGroupService.checkGroupAuthorization(requestor, groupName, false)) {
+            if (!deviceGroupService.checkGroupAuthorization(requester, groupName, false)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
             }
 

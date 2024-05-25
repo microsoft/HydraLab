@@ -184,11 +184,11 @@ public class UserTeamManagementService {
         return false;
     }
 
-    public boolean checkRequestorTeamRelation(SysUser requestor, String teamId) {
+    public boolean checkRequesterTeamRelation(SysUser requestor, String teamId) {
         return requestor.getTeamAdminMap().get(teamId) != null;
     }
 
-    public boolean checkRequestorTeamAdmin(SysUser requestor, String teamId) {
+    public boolean checkRequesterTeamAdmin(SysUser requestor, String teamId) {
         return requestor.getTeamAdminMap().get(teamId);
     }
 

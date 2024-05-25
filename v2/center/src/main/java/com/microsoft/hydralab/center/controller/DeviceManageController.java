@@ -48,16 +48,16 @@ public class DeviceManageController {
      * 2) For the rest users, return agents with non-private devices, and agents with devices connected that are in user's TEAMs.
      */
     @GetMapping(Const.Path.DEVICE_LIST)
-    public Result<List<AgentDeviceGroup>> list(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<List<AgentDeviceGroup>> list(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
         deviceAgentManagementService.requestAllAgentDeviceListUpdate();
         List<AgentDeviceGroup> deviceGroupList = deviceAgentManagementService.getAgentDeviceGroups();
-        if (!sysUserService.checkUserAdmin(requestor)) {
+        if (!sysUserService.checkUserAdmin(requester)) {
             deviceGroupList.forEach(agentDeviceGroup -> {
-                if (!userTeamManagementService.checkRequestorTeamRelation(requestor, agentDeviceGroup.getTeamId())) {
+                if (!userTeamManagementService.checkRequesterTeamRelation(requester, agentDeviceGroup.getTeamId())) {
                     List<DeviceInfo> devices = agentDeviceGroup.getDevices();
                     List<DeviceInfo> newDevices = new ArrayList<>();
                     devices.forEach(device -> {
@@ -95,8 +95,8 @@ public class DeviceManageController {
      * 2) For the rest users, return non-private or user TEAMs' devices/groups/APPIUM-support agents.
      */
     @GetMapping("/api/device/runnable")
-    public Result<JSONObject> getGroupAndDevice(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<JSONObject> getGroupAndDevice(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
         }
 
@@ -106,16 +106,16 @@ public class DeviceManageController {
         List<AgentDeviceGroup> agentDeviceList = deviceAgentManagementService.getAllAppiumAgents();
         List<DeviceInfo> deviceList = deviceAgentManagementService.getAllDevice();
 
-        if (!sysUserService.checkUserAdmin(requestor)) {
+        if (!sysUserService.checkUserAdmin(requester)) {
             groupList = groupList.stream()
-                    .filter(group -> userTeamManagementService.checkRequestorTeamRelation(requestor, group.getTeamId())
+                    .filter(group -> userTeamManagementService.checkRequesterTeamRelation(requester, group.getTeamId())
                             || !group.getIsPrivate())
                     .collect(Collectors.toList());
             agentDeviceList = agentDeviceList.stream()
-                    .filter(agentDeviceGroup -> userTeamManagementService.checkRequestorTeamRelation(requestor, agentDeviceGroup.getTeamId()))
+                    .filter(agentDeviceGroup -> userTeamManagementService.checkRequesterTeamRelation(requester, agentDeviceGroup.getTeamId()))
                     .collect(Collectors.toList());
             deviceList = deviceList.stream()
-                    .filter(device -> userTeamManagementService.checkRequestorTeamRelation(requestor, agentManageService.getAgent(device.getAgentId()).getTeamId())
+                    .filter(device -> userTeamManagementService.checkRequesterTeamRelation(requester, agentManageService.getAgent(device.getAgentId()).getTeamId())
                             || !device.getIsPrivate())
                     .collect(Collectors.toList());
         }
@@ -144,11 +144,11 @@ public class DeviceManageController {
      */
     @PostMapping(value = "/api/device/updateDeviceScope", produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("IllegalCatch")
-    public Result updateDeviceScope(@CurrentSecurityContext SysUser requestor,
+    public Result updateDeviceScope(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                     @RequestParam(value = "deviceSerial") String deviceSerial,
                                     @RequestParam(value = "isPrivate") Boolean isPrivate) {
         try {
-            if (!deviceAgentManagementService.checkDeviceAuthorization(requestor, deviceSerial)) {
+            if (!deviceAgentManagementService.checkDeviceAuthorization(requester, deviceSerial)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
             }
 

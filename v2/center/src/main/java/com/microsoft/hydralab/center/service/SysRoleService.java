@@ -105,7 +105,7 @@ public class SysRoleService {
         return aRole.getAuthLevel() < bRole.getAuthLevel();
     }
 
-    public SysRole getRequestorRole(SysUser requestor) {
+    public SysRole getRequesterRole(SysUser requestor) {
         if (requestor == null) {
             return null;
         }

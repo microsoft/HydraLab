@@ -78,7 +78,7 @@ public class PackageSetController {
      */
     @PostMapping(value = {"/api/package/add"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @SuppressWarnings("ParameterNumber")
-    public Result add(@CurrentSecurityContext SysUser requestor,
+    public Result add(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                       @RequestParam(value = "teamName", required = false) String teamName,
                       @RequestParam(value = "commitId", required = false) String commitId,
                       @RequestParam(value = "commitCount", defaultValue = "-1") String commitCount,
@@ -87,18 +87,18 @@ public class PackageSetController {
                       @RequestParam("appFile") MultipartFile appFile,
                       @RequestParam(value = "appVersion", required = false) String appVersion, // required only for apps with param skipInstall = true
                       @RequestParam(value = "testAppFile", required = false) MultipartFile testAppFile) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         String localTeamName = teamName;
         if (StringUtils.isEmpty(teamName)) {
-            localTeamName = requestor.getDefaultTeamName();
+            localTeamName = requester.getDefaultTeamName();
         }
         SysTeam team = sysTeamService.queryTeamByName(localTeamName);
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
-        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, team.getTeamId())) {
+        if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, team.getTeamId())) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "User doesn't belong to this Team");
         }
         if (appFile.isEmpty()) {
@@ -176,16 +176,16 @@ public class PackageSetController {
      * 2) members of the TEAM that fileSet is in
      */
     @GetMapping("/api/package/{fileSetId}")
-    public Result<TestFileSet> getFileSetInfo(@CurrentSecurityContext SysUser requestor,
+    public Result<TestFileSet> getFileSetInfo(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                               @PathVariable(value = "fileSetId") String fileSetId) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         TestFileSet testFileSet = testFileSetService.getFileSetInfo(fileSetId);
         if (testFileSet == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "FileSetId is error!");
         }
-        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testFileSet.getTeamId())) {
+        if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, testFileSet.getTeamId())) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestFileSet doesn't belong to user's Teams");
         }
 
@@ -199,17 +199,17 @@ public class PackageSetController {
      * 2) For the rest users, return the TestFileSet data that is in user's TEAMs
      */
     @PostMapping("/api/package/list")
-    public Result<Page<TestFileSet>> list(@CurrentSecurityContext SysUser requestor,
+    public Result<Page<TestFileSet>> list(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                           @RequestBody JSONObject data) {
         try {
-            if (requestor == null) {
+            if (requester == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
             }
 
             List<CriteriaType> criteriaTypes = new ArrayList<>();
             // filter all TestFileSets in TEAMs that user is in
-            if (!sysUserService.checkUserAdmin(requestor)) {
-                criteriaTypes = userTeamManagementService.formTeamIdCriteria(requestor.getTeamAdminMap());
+            if (!sysUserService.checkUserAdmin(requester)) {
+                criteriaTypes = userTeamManagementService.formTeamIdCriteria(requester.getTeamAdminMap());
                 if (criteriaTypes.size() == 0) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "User belongs to no TEAM, please contact administrator for binding TEAM");
                 }
@@ -262,12 +262,12 @@ public class PackageSetController {
      */
     @Deprecated
     // @PostMapping(value = {"/api/package/uploadJson"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result uploadTestJson(@CurrentSecurityContext SysUser requestor,
+    public Result uploadTestJson(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                  @RequestParam(value = "teamName", required = false) String teamName,
                                  @RequestParam(value = "packageName") String packageName,
                                  @RequestParam(value = "caseName") String caseName,
                                  @RequestParam(value = "testJsonFile") MultipartFile testJsonFile) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         if (!LogUtils.isLegalStr(packageName, Const.RegexString.PACKAGE_NAME, false)) {
@@ -275,13 +275,13 @@ public class PackageSetController {
         }
         String localTeamName = teamName;
         if (StringUtils.isEmpty(localTeamName)) {
-            localTeamName = requestor.getDefaultTeamName();
+            localTeamName = requester.getDefaultTeamName();
         }
         SysTeam team = sysTeamService.queryTeamByName(localTeamName);
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
-        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, team.getTeamId())) {
+        if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, team.getTeamId())) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "User doesn't belong to this Team");
         }
 
@@ -320,16 +320,16 @@ public class PackageSetController {
      */
     @Deprecated
     // @GetMapping("/api/package/testJsonList")
-    public Result<List<TestJsonInfo>> testJsonList(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<List<TestJsonInfo>> testJsonList(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
 
         // filter all TestJsonInfos in TEAMs that user is in
         List<CriteriaType> criteriaTypes = new ArrayList<>();
         List<TestJsonInfo> testJsonInfoList;
-        if (!sysUserService.checkUserAdmin(requestor)) {
-            criteriaTypes = userTeamManagementService.formTeamIdCriteria(requestor.getTeamAdminMap());
+        if (!sysUserService.checkUserAdmin(requester)) {
+            criteriaTypes = userTeamManagementService.formTeamIdCriteria(requester.getTeamAdminMap());
             if (criteriaTypes.size() == 0) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "User belongs to no TEAM, please contact administrator for binding TEAM");
             }
@@ -346,15 +346,15 @@ public class PackageSetController {
      */
     @Deprecated
     // @GetMapping("/api/package/testJsonHistory/{packageName}/{caseName}")
-    public Result<List<TestJsonInfo>> testJsonHistory(@CurrentSecurityContext SysUser requestor, @PathVariable("packageName") String packageName,
+    public Result<List<TestJsonInfo>> testJsonHistory(@CurrentSecurityContext(expression = "authentication") SysUser requester, @PathVariable("packageName") String packageName,
                                                       @PathVariable("caseName") String caseName) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         List<TestJsonInfo> testJsonInfoList = attachmentService.getTestJsonHistory(packageName, caseName);
         if (!CollectionUtils.isEmpty(testJsonInfoList)) {
             String jsonTeamId = testJsonInfoList.get(0).getTeamId();
-            if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, jsonTeamId)) {
+            if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, jsonTeamId)) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestJsonInfos don't belong to user's Teams");
             }
         }
@@ -375,13 +375,13 @@ public class PackageSetController {
      * 2) members of the TEAM that TestFileSet is in
      */
     @PostMapping(value = {"/api/package/addAttachment"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result addAttachment(@CurrentSecurityContext SysUser requestor,
+    public Result addAttachment(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                 @RequestParam(value = "fileSetId") String fileSetId,
                                 @RequestParam(value = "fileType") String fileType,
                                 @RequestParam(value = "loadType", required = false) String loadType,
                                 @RequestParam(value = "loadDir", required = false) String loadDir,
                                 @RequestParam(value = "attachment") MultipartFile attachment) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         if (attachment.isEmpty()) {
@@ -391,7 +391,7 @@ public class PackageSetController {
         if (testFileSet == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Error fileSetId");
         }
-        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testFileSet.getTeamId())) {
+        if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, testFileSet.getTeamId())) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestFileSet doesn't belong to user's Teams");
         }
 
@@ -440,17 +440,17 @@ public class PackageSetController {
      * 2) members of the TEAM that TestFileSet is in
      */
     @PostMapping(value = {"/api/package/removeAttachment"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result removeAttachment(@CurrentSecurityContext SysUser requestor,
+    public Result removeAttachment(@CurrentSecurityContext(expression = "authentication") SysUser requester,
                                    @RequestParam(value = "fileSetId") String fileSetId,
                                    @RequestParam(value = "fileId") String fileId) {
-        if (requestor == null) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
         TestFileSet testFileSet = testFileSetService.getFileSetInfo(fileSetId);
         if (testFileSet == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Error fileSetId");
         }
-        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, testFileSet.getTeamId())) {
+        if (!sysUserService.checkUserAdmin(requester) && !userTeamManagementService.checkRequesterTeamRelation(requester, testFileSet.getTeamId())) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestFileSet doesn't belong to user's Teams");
         }
 
@@ -462,10 +462,10 @@ public class PackageSetController {
 
     @Deprecated
     @GetMapping("/api/package/getSAS")
-    public Result<SASData> generateReadSAS(@CurrentSecurityContext SysUser requestor) {
-        if (requestor == null) {
+    public Result<SASData> generateReadSAS(@CurrentSecurityContext(expression = "authentication") SysUser requester) {
+        if (requester == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        return Result.ok((SASData) storageTokenManageService.temporaryGetReadSAS(requestor.getMailAddress()));
+        return Result.ok((SASData) storageTokenManageService.temporaryGetReadSAS(requester.getMailAddress()));
     }
 }
