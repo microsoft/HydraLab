@@ -34,7 +34,7 @@ configurations {
 dependencies {
     implementation 'kxml2:kxml2:2.3.0'
     api 'com.android.tools.ddms:ddmlib:27.0.2'
-    api group: 'junit', name: 'junit', version: '4.13.1'
+    api 'junit:junit:4.13.2'
 
     implementation 'org.springframework.security:spring-security-core'
 
@@ -78,11 +78,11 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.15.3'
     // https://docs.microsoft.com/en-us/graph/sdks/sdk-installation?context=graph%2Fapi%2F1.0&view=graph-rest-1.0
     implementation 'com.microsoft.graph:microsoft-graph:5.4.0'
-    implementation 'com.azure:azure-identity:1.9.2'
+    implementation 'com.azure:azure-identity:1.12.1'
     //blob storage
-    implementation 'com.azure:azure-storage-blob:12.23.0'
+    implementation 'com.azure:azure-storage-blob:12.26.0'
     //Apk analysis
-    implementation group: 'net.dongliu', name: 'apk-parser', version: '2.6.10'
+    implementation 'net.dongliu:apk-parser:2.6.10'
     //Ipa Parse
     implementation 'com.googlecode.plist:dd-plist:1.17'
 
