@@ -56,13 +56,9 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         // Sequence should be kept, currently this converter is only used for /v3/api-docs endpoint to avoid malformed content which should be in json format
+        // https://springdoc.org/#why-am-i-getting-an-error-swagger-ui-unable-to-render-definition-when-overriding-the-default-spring-registered-httpmessageconverter
         converters.add(new ByteArrayHttpMessageConverter());
         converters.add(fastJsonHttpMessageConverter);
     }
 
-    @Bean
-    public InternalResourceViewResolver defaultViewResolver() {
-        // Add this to make sure redirect can be made when /swagger-ui.html would redirect to swagger-ui/index.html using the configUrl in /v3/api-docs
-        return new InternalResourceViewResolver();
-    }
 }
