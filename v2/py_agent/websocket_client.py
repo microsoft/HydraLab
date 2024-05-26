@@ -237,4 +237,4 @@ class AgentWebSocketClient:
             except Exception as e:
                 logging.error(f"Error sending message: {e}")
                 await asyncio.sleep(sleep_time)
-        raise Exception("Failed to send message
+        raise Exception("Failed to send message")
