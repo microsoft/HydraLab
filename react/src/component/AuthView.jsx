@@ -416,7 +416,7 @@ export default class AuthView extends BaseView {
         formParams.append("name", this.state.agentName)
         formParams.append("os", this.state.agentOS)
 
-        axios.post('/api/agent/create/', formParams, {
+        axios.post('/api/agent/create', formParams, {
             headers: {'content-type': 'application/x-www-form-urlencoded'}
         }).then(res => {
             if (res.data && res.data.code === 200) {

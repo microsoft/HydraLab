@@ -52,9 +52,9 @@ public class PhoneAppScreenRecorder implements ScreenRecorder {
             recordApk.delete();
         }
         try (InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(name); OutputStream out = new FileOutputStream(recordApk)) {
-            IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
-        } catch (IOException e) {
-            e.printStackTrace();
+            IOUtils.copy(Objects.requireNonNull(resourceAsStream, "the required resource " + name + " may not exist"), out);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
