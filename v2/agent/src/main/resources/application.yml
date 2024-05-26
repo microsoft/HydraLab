@@ -43,7 +43,7 @@ app:
   registry:
     # The url of Hydra Lab Center. If nginx enabled, switch to port of nginx
     server: "localhost:9886"
-    schema: "wss" # Value: {wss (Default, Only Domain), ws}.
+    schema: "wss" # Value: wss or ws. Default value is wss for center using https, otherwise it should be ws.
     # The Agent info registered in Hydra Lab Center
     id: ${AGENT_ID}
     secret: ${AGENT_SECRET}

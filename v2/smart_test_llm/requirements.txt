@@ -11,12 +11,7 @@ beautifulsoup4==4.12.3
 lxml==5.2.1
 uiautomator2==3.0.8
 # jsonpickle==2.0.0
-pillow
 # sentence-transformers
 tenacity
 matplotlib
-pypdf
-esprima
-tree_sitter
-tree_sitter_languages
-unstructured
+pillow

@@ -12,3 +12,8 @@ unstructured
 python-dotenv
 pypdf
 chromadb
+tree_sitter
+tree_sitter_languages
+unstructured
+pillow
+esprima
