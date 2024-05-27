@@ -49,13 +49,9 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.45.3.0'
     implementation 'org.hibernate.orm:hibernate-community-dialects:6.2.7.Final'
 
-    implementation "me.paulschwarz:spring-dotenv:4.0.0"
-
     implementation 'net.sf.ehcache:ehcache:2.10.9.2'
 
     implementation 'com.microsoft.sqlserver:mssql-jdbc:12.4.2.jre11'
-
-    implementation 'org.yaml:snakeyaml:2.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
