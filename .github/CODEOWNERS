@@ -3,7 +3,7 @@
 *.puml  @hydraxman @zhou9584
 
 # Front-end architect
-/react/ @dexterdreeeam  @lifesaver0129 @olivershen-wow
+/react/ @lifesaver0129 @olivershen-wow
 
 # Encache
 ehcache.xml @zhou9584 @olivershen-wow
