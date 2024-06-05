@@ -7,6 +7,9 @@ import {withStyles} from "@material-ui/core/styles";
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
 import {createTheme} from "@mui/material/styles";
+import { initialize } from 'react-native-clarity';
+
+initialize("kj0ror1pki");
 
 /**
  * Palette
