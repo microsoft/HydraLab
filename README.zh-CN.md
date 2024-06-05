@@ -2,7 +2,7 @@
 <p align="center">搭建属于你的智能移动云测平台</p>
 <div align="center">
 
-[![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/HydraLab-CI?branchName=main)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=743&branchName=main)
+[![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/HydraLab-CI-NonPro?branchName=main)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=805&branchName=main)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
