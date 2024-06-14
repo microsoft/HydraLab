@@ -1,6 +1,6 @@
 import os
 from langchain_core.messages import HumanMessage
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, AzureChatOpenAI
 from dotenv import load_dotenv, find_dotenv
 import base64
 from PIL import Image
@@ -41,26 +41,43 @@ _ = load_dotenv(find_dotenv())
 key = os.environ.get("OPENAI_API_KEY")
 llm = ChatOpenAI(model="gpt-4o", api_key=os.environ.get("OPENAI_API_KEY"))
 
-resp = llm.invoke("上海是个什么样的城市")
+azure_gpt4_text_model_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_gpt4_text_model_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_gpt4_text_model_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
+azure_llm = AzureChatOpenAI(
+    openai_api_version="2024-02-01",
+    azure_deployment=azure_gpt4_text_model_deployment,
+    azure_endpoint=azure_gpt4_text_model_endpoint,
+    api_key=azure_gpt4_text_model_api_key
+)
+
+resp = azure_llm.invoke("上海是个什么样的城市")
 print(resp)
 
 
 def image_engage():
-    base64_img_1 = get_image_base64("screenshots/541ab5a000bd_screenshot_extracted_0.png", 480)
-    base64_img_2 = get_image_base64("screenshots/ab7e98af29a0_screenshot_extracted_1.png", 480)
+    base64_img_1 = get_image_base64("screenshots/screenshot_extracted_0.png", 480)
+    base64_img_2 = get_image_base64("screenshots/screenshot_extracted_26.png", 480)
+    base64_img_3 = get_image_base64("screenshots/screenshot_extracted_27.png", 480)
 
     messages = HumanMessage(
         content=[
             {'type': 'text',
-             'text': 'Tell me the link between the 2 screenshots and the possible interactions happened between them.'},
+             'text': 'Tell me the link between the 3 screenshots and the possible interactions happened between them.'},
             {'type': 'image_url', 'image_url':
                 {'url': f"data:image/jpeg;base64,{base64_img_1}"}
              },
             {'type': 'image_url', 'image_url':
                 {'url': f"data:image/jpeg;base64,{base64_img_2}"}
+             },
+            {'type': 'image_url', 'image_url':
+                {'url': f"data:image/jpeg;base64,{base64_img_3}"}
              }
         ]
     )
-    resp = llm.invoke([messages])
+    resp = azure_llm.invoke([messages])
 
     print(resp.content)
+
+
+image_engage()

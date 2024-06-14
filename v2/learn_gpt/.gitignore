@@ -1,1 +1,4 @@
 .env
+*.pdf
+venv
+.ipynb_checkpoints

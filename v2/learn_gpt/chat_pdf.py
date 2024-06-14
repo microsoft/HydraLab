@@ -45,7 +45,7 @@ def create_default_embedding():
 
 
 def create_pdf_source_splits():
-    loader = PyPDFLoader("你的PDF.pdf")
+    loader = PyPDFLoader("AppAgent Multimodal Agents as Smartphone Users.pdf")
     return loader.load_and_split()
 
 
@@ -63,7 +63,7 @@ retriever = create_base_retriever()
 compression_retriever = create_compress_retriever(model, retriever)
 retriever_multi = MultiQueryRetriever.from_llm(retriever, llm=model)
 
-query = "Explain what is Analysis-Retrieval Method"
+query = "How could the agent know whether the agent is on the right path to fulfill the user's request?"
 find_br = retriever.get_relevant_documents(query)
 print_docs("BR", find_br)
 find_mqr = retriever_multi.get_relevant_documents(query=query)
@@ -71,7 +71,7 @@ print_docs("MQR", retriever_multi.get_relevant_documents(query=query))
 find_c = compression_retriever.get_relevant_documents(query=query)
 print_docs("Compress", find_c)
 
-concat_doc = "\n=====\n".join([doc.page_content for doc in find_br])
+concat_doc = "\n=====\n".join([doc.page_content for doc in find_c])
 
 
 def split_web_page(url:str):
@@ -98,9 +98,9 @@ prompt_template = ChatPromptTemplate.from_messages([
     ('user', prompt_content)
 ])
 
-azure_gpt4_text_model_api_key = os.getenv("AZURE_GPT4_TEXT_MODEL_API_KEY")
-azure_gpt4_text_model_endpoint = os.getenv("AZURE_GPT4_TEXT_MODEL_ENDPOINT")
-azure_gpt4_text_model_deployment = os.getenv("AZURE_GPT4_TEXT_MODEL_DEPLOYMENT")
+azure_gpt4_text_model_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_gpt4_text_model_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_gpt4_text_model_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
 model_gpt_4 = AzureChatOpenAI(
     openai_api_version="2024-02-01",
@@ -111,4 +111,6 @@ model_gpt_4 = AzureChatOpenAI(
 
 chain = prompt_template | model_gpt_4
 
-print("result: ", chain.invoke({"query": query, "concat_doc": concat_doc}))
+result = chain.invoke({"query": query, "concat_doc": concat_doc})
+
+print("result: ", result.content)

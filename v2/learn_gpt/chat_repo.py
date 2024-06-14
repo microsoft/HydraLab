@@ -52,12 +52,12 @@ def create_source_dir_loader(path: str):
     return DirectoryLoader(path, glob="**/*.java")
 
 
-def create_base_retriever(code_documents, search_count=3):
+def create_base_retriever(code_documents, search_count=5):
     db = Chroma.from_documents(documents=code_documents, embedding=create_default_embedding())
     return db.as_retriever(search_kwargs={"k": search_count})
 
 
-loader = create_source_dir_loader('../center/src/main/java/com/microsoft/hydralab/center/controller')
+loader = create_source_dir_loader('../center/src/main/java/com/microsoft/hydralab/center')
 code_docs = loader.load()
 print("Code docs:", len(code_docs))
 
@@ -91,9 +91,9 @@ prompt_template = ChatPromptTemplate.from_messages([
     ('user', prompt_content)
 ])
 
-azure_gpt4_text_model_api_key = os.getenv("AZURE_GPT4_TEXT_MODEL_API_KEY")
-azure_gpt4_text_model_endpoint = os.getenv("AZURE_GPT4_TEXT_MODEL_ENDPOINT")
-azure_gpt4_text_model_deployment = os.getenv("AZURE_GPT4_TEXT_MODEL_DEPLOYMENT")
+azure_gpt4_text_model_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+azure_gpt4_text_model_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+azure_gpt4_text_model_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
 model_gpt_4 = AzureChatOpenAI(
     openai_api_version="2024-02-01",
@@ -104,4 +104,6 @@ model_gpt_4 = AzureChatOpenAI(
 
 chain = prompt_template | model_gpt_4
 
-print("result: ", chain.invoke({"query": query, "concat_doc": concat_doc}))
+result = chain.invoke({"query": query, "concat_doc": concat_doc})
+
+print("result content: ", result.content)
