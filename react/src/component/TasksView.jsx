@@ -105,7 +105,7 @@ class TasksView extends BaseView {
             page: this.props.page ? this.props.page : 1,
 
             testTimeOutSec: null,
-            instrumentationArgs: null,
+            testRunArgs: null,
 
             selectedParams: ls.get('selectedParams') ? ls.get('selectedParams') : defaultSelectedParams,
         };
@@ -979,12 +979,12 @@ class TasksView extends BaseView {
             />
             <TextField
                 margin="dense"
-                name="instrumentationArgs"
+                name="testRunArgs"
                 type="text"
                 label="Test config"
                 fullWidth
                 variant="standard"
-                value={this.state.instrumentationArgs}
+                value={this.state.testRunArgs}
                 onChange={this.handleValueChange}
             />
             <Button
@@ -1003,9 +1003,9 @@ class TasksView extends BaseView {
             return
         }
         let argsObj = {}
-        if (this.state.instrumentationArgs !== "") {
+        if (this.state.testRunArgs !== "") {
             try {
-                argsObj = JSON.parse(this.state.instrumentationArgs)
+                argsObj = JSON.parse(this.state.testRunArgs)
             } catch (error) {
                 this.snackBarMsg("Error Test config, please input JSON Object")
                 return
@@ -1028,7 +1028,7 @@ class TasksView extends BaseView {
             frameworkType: task.frameworkType,
 
             testTimeOutSec: this.state.timeOutSecond,
-            instrumentationArgs: argsObj
+            testRunArgs: argsObj
         }
 
         axios.post('/api/test/task/run/', formParams, {
@@ -1048,7 +1048,7 @@ class TasksView extends BaseView {
         })
         this.setState({
             testTimeOutSec: null,
-            instrumentationArgs: null
+            testRunArgs: null
         })
     }
 }

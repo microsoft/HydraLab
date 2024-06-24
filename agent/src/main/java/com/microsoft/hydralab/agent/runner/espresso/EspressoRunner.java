@@ -155,10 +155,10 @@ public class EspressoRunner extends TestRunner {
 
     @NotNull
     private String buildCommand(String suiteName, String testPkgName,
-                                String testRunnerName, String scope, Map<String, String> instrumentationArgs, boolean enableTestOrchestrator, String pathToTestServicePack) {
+                                String testRunnerName, String scope, Map<String, String> taskRunArgs, boolean enableTestOrchestrator, String pathToTestServicePack) {
         StringBuilder argString = new StringBuilder();
-        if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
-            instrumentationArgs.forEach(
+        if (taskRunArgs != null && !taskRunArgs.isEmpty()) {
+            taskRunArgs.forEach(
                     (k, v) -> argString.append(" -e ").append(k.replaceAll("\\s|\"", "")).append(" ")
                             .append(v.replaceAll("\\s|\"", "")));
         }
