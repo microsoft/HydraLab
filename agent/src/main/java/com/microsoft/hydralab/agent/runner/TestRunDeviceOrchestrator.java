@@ -128,18 +128,18 @@ public class TestRunDeviceOrchestrator {
     }
 
     public String stopScreenRecorder(@NotNull TestRunDevice testRunDevice, @NotNull File folder, @Nullable Logger logger) {
+        List<String> videoFilePaths = new ArrayList<>();
         if (testRunDevice instanceof TestRunDeviceCombo) {
-            List<String> videoFilePaths = new ArrayList<>();
             ((TestRunDeviceCombo) testRunDevice).getDevices().forEach(testRunDevice1 -> {
                 String path = testRunDevice1.getScreenRecorder().finishRecording();
                 if (path != null && !path.isEmpty()) {
                     videoFilePaths.add(path);
                 }
             });
-            return FFmpegConcatUtil.mergeVideosSideBySide(videoFilePaths, folder, logger).getAbsolutePath();
         } else {
-            return testRunDevice.getScreenRecorder().finishRecording();
+            videoFilePaths.add(testRunDevice.getScreenRecorder().finishRecording());
         }
+        return FFmpegConcatUtil.mergeVideosSideBySide(videoFilePaths, folder, logger).getAbsolutePath();
     }
 
     public void startNetworkMonitor(@NotNull TestRunDevice testRunDevice, String rule, File resultFolder, @Nullable Logger logger) {
