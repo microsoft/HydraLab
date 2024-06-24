@@ -83,9 +83,9 @@ public class AppiumRunner extends TestRunner {
                                 TestRun testRun, File deviceTestResultFolder, Logger reportLogger) {
         //set appium test property
         reportLogger.info("Start set appium test property");
-        Map<String, String> instrumentationArgs = testTask.getTaskRunArgs();
-        if (instrumentationArgs == null) {
-            instrumentationArgs = new HashMap<>();
+        Map<String, String> taskRunArgs = testTask.getTaskRunArgs();
+        if (taskRunArgs == null) {
+            taskRunArgs = new HashMap<>();
         }
         AppiumParam appiumParam = new AppiumParam(
                 testRunDevice.getDeviceInfo().getSerialNum(),
@@ -94,9 +94,9 @@ public class AppiumRunner extends TestRunner {
                 IOSUtils.getWdaPortByUdid(testRunDevice.getDeviceInfo().getSerialNum(), reportLogger),
                 testTask.getAppFile().getAbsolutePath(),
                 deviceTestResultFolder.getAbsolutePath());
-        ThreadParam.init(appiumParam, instrumentationArgs);
+        ThreadParam.init(appiumParam, taskRunArgs);
         reportLogger.info("ThreadParam init success, AppiumParam is {} , args is {}", appiumParam,
-                LogUtils.scrubSensitiveArgs(instrumentationArgs.toString()));
+                LogUtils.scrubSensitiveArgs(taskRunArgs.toString()));
         File gifFile = null;
         if (TestTask.TestFrameworkType.JUNIT5.equals(testTask.getFrameworkType())) {
             reportLogger.info("Start init listener");

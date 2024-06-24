@@ -84,7 +84,6 @@ public class Task implements Serializable {
     private String notifyUrl;
     @Transient
     private boolean disableRecording = false;
-    @Column(columnDefinition = "boolean default false")
     private boolean isSucceed = false;
 
     @Transient
@@ -175,6 +174,9 @@ public class Task implements Serializable {
         setPipelineLink(testTaskSpec.pipelineLink);
         setTimeOutSecond(testTaskSpec.testTimeOutSec);
         setDeviceActions(testTaskSpec.deviceActions);
+        if (testTaskSpec.instrumentationArgs != null) {
+            testTaskSpec.testRunArgs.putAll(testTaskSpec.instrumentationArgs);
+        }
         setTaskRunArgs(testTaskSpec.testRunArgs);
         setFileSetId(testTaskSpec.fileSetId);
         setPkgName(testTaskSpec.pkgName);

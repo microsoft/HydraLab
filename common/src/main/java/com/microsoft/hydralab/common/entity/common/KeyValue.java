@@ -12,7 +12,7 @@ import java.io.Serializable;
 public class KeyValue implements Serializable {
     @Id
     private String keyid;
-    @Column(name = "value", columnDefinition = "CLOB", nullable = true)
+    @Column(name = "value", columnDefinition = "text", nullable = true)
     private String value;
 
     public KeyValue() {
