@@ -64,7 +64,7 @@ public class MaestroListener {
         ongoingTestUnit = new AndroidTestUnit();
         ongoingTestUnit.setNumtests(index);
         ongoingTestUnit.setStartTimeMillis(System.currentTimeMillis() - testSeconds * 1000);
-        ongoingTestUnit.setRelStartTimeInVideo(ongoingTestUnit.getStartTimeMillis() - testSeconds * 1000 - recordingStartTimeMillis);
+        ongoingTestUnit.setRelStartTimeInVideo(ongoingTestUnit.getStartTimeMillis() - recordingStartTimeMillis);
         ongoingTestUnit.setCurrentIndexNum(unitIndex);
         ongoingTestUnit.setTestName(caseName);
         ongoingTestUnit.setTestedClass("MaestroTest");
