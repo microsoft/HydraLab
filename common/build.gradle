@@ -67,7 +67,8 @@ dependencies {
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.1'
     // https://docs.microsoft.com/en-us/graph/sdks/sdk-installation?context=graph%2Fapi%2F1.0&view=graph-rest-1.0
     compile 'com.microsoft.graph:microsoft-graph:5.4.0'
-    compile 'com.azure:azure-identity:1.9.2'
+    compile 'com.azure:azure-identity:1.11.1'
+    compile 'com.azure:azure-identity-broker:1.1.2'
     //blob storage
     compile 'com.azure:azure-storage-blob:12.23.0'
     //Apk analysis

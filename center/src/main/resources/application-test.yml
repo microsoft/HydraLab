@@ -1,6 +1,13 @@
 app:
   default-user: 'test@test.com'
 
+spring:
+  datasource:
+    url: jdbc:sqlite:${app.location}/hydra_lab_center_db.sqlite
+    driver-class-name: org.sqlite.JDBC
+    username: sqlite
+    password: 98765432
+
 management:
   metrics:
     export:
