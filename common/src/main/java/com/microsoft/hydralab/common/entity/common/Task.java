@@ -166,6 +166,7 @@ public class Task implements Serializable {
         return testTaskSpec;
     }
 
+    @SuppressWarnings("deprecation")
     public Task(TestTaskSpec testTaskSpec) {
         setId(testTaskSpec.testTaskId);
         setAccessKey(testTaskSpec.accessKey);
