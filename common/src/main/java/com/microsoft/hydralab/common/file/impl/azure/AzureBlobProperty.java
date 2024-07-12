@@ -18,7 +18,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.storage.azure")
 @Component
 public class AzureBlobProperty extends StorageProperties {
-    private String connection;
+    private String endpoint;
+    private String container;
     private long SASExpiryTimeFront;
     private long SASExpiryTimeAgent;
     private long SASExpiryUpdate;

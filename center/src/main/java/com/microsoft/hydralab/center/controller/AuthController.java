@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -59,6 +60,31 @@ public class AuthController {
         }
 
         securityUserService.addSessionAndUserAuth(authUtil.getLoginUserName(accessToken), accessToken, request.getSession());
+
+        String state = request.getParameter("state");
+        String prefix = Const.FrontEndPath.INDEX_PATH + "?" + Const.FrontEndPath.REDIRECT_PARAM + "=";
+
+        if (StringUtils.isNotEmpty(state) && state.startsWith(prefix)) {
+            String newUrl = state.replace(prefix, "");
+            if (LogUtils.isLegalStr(newUrl, Const.RegexString.URL, false)) {
+                redirectUrl = state;
+            }
+        }
+        response.sendRedirect(redirectUrl);// CodeQL [java/unvalidated-url-redirection] False Positive: Has verified the string by regular expression
+    }
+
+    @PostMapping(value = {"/api/auth"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public void getIdToken(@RequestParam("code") String code,
+                           @RequestParam("id_token") String idToken,
+                           HttpServletRequest request,
+                           HttpServletResponse response) throws IOException {
+        String redirectUrl = Const.FrontEndPath.INDEX_PATH;
+        if (idToken == null) {
+            response.sendRedirect(authUtil.getLoginUrl());
+            return;
+        }
+
+        securityUserService.addSessionAndUserAuth(authUtil.getLoginUserName(idToken), idToken, request.getSession());
 
         String state = request.getParameter("state");
         String prefix = Const.FrontEndPath.INDEX_PATH + "?" + Const.FrontEndPath.REDIRECT_PARAM + "=";

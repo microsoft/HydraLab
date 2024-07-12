@@ -2,23 +2,29 @@
 // Licensed under the MIT License.
 package com.microsoft.hydralab.common.file.impl.azure;
 
+import com.azure.storage.blob.sas.BlobContainerSasPermission;
+
 import java.time.temporal.ChronoUnit;
 
 public enum SASPermission {
     /**
      * Define permission
      */
-    WRITE("b", "co", "war"),
-    READ("b", "o", "r");
+    WRITE(true, true),
+    READ(true, false);
 
-    public final String serviceStr, resourceStr, permissionStr;
     public long expiryTime;
     public ChronoUnit timeUnit;
 
-    SASPermission(String serviceStr, String resourceStr, String permissionStr) {
-        this.serviceStr = serviceStr;
-        this.resourceStr = resourceStr;
-        this.permissionStr = permissionStr;
+    public final BlobContainerSasPermission permission = new BlobContainerSasPermission();
+
+    SASPermission(boolean read, boolean write) {
+        if (read) {
+            this.permission.setReadPermission(true);
+        }
+        if (write) {
+            this.permission.setWritePermission(true);
+        }
     }
 
     public void setExpiryTime(long expiryTime, String unit) {
@@ -29,9 +35,9 @@ public enum SASPermission {
     @Override
     public String toString() {
         return "SASPermission{" +
-                "serviceStr='" + serviceStr + '\'' +
-                ", resourceStr='" + resourceStr + '\'' +
-                ", permissionStr='" + permissionStr + '\'' +
+                "expiryTime=" + expiryTime +
+                ", timeUnit=" + timeUnit +
+                ", permission=" + permission +
                 '}';
     }
 }
