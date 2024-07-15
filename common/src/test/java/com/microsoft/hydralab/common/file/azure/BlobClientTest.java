@@ -6,6 +6,7 @@ import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.file.impl.azure.AzureBlobClientAdapter;
 import com.microsoft.hydralab.common.file.impl.azure.AzureBlobProperty;
+import com.microsoft.hydralab.common.file.impl.azure.SASData;
 import com.microsoft.hydralab.common.test.BaseTest;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.ThreadUtils;
@@ -30,23 +31,26 @@ class BlobClientTest extends BaseTest {
 
     @BeforeAll
     void initBlob() {
-        String connectionString = null;
+        String endpoint = null;
+        String container = null;
         try {
             Dotenv dotenv = Dotenv.load();
-            connectionString = dotenv.get("BLOB_CONNECTION_STRING");
+            endpoint = dotenv.get("BLOB_ENDPOINT");
+            container = dotenv.get("BLOB_CONTAINER");
             logger.info("Get connectionString from env file successfully!");
         } catch (Exception e) {
             logger.error("Get connectionString from env file failed!", e);
         }
 
-        property.setConnection(connectionString);
+        property.setEndpoint(endpoint);
+        property.setContainer(container);
         property.setFileExpiryDay(6);
         property.setSASExpiryTimeAgent(30);
         property.setSASExpiryTimeFront(5);
         property.setSASExpiryUpdate(0);
         property.setTimeUnit("SECONDS");
 
-        if (StringUtils.isBlank(connectionString)) {
+        if (StringUtils.isBlank(endpoint)) {
             storageServiceClient = new MockAzureBlobClient(property);
         } else {
             storageServiceClient = new AzureBlobClientAdapter(property);
