@@ -53,7 +53,8 @@ app:
   storage:
     type: ${STORAGE_TYPE:LOCAL} # current available options: LOCAL (default), AZURE
     azure:
-      connection: ${BLOB_CONNECTION_STR:}
+      endpoint: ${BLOB_ENDPOINT:}
+      container: ${BLOB_CONTAINER:}
       fileExpiryDay: ${fileExpiryDay:6}
       CDNUrl: ${CDN_URL:}
       SASExpiryTimeFront: ${BLOB_SAS_EXPIRY_FRONT:120}
