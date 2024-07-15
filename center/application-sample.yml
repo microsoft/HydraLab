@@ -18,7 +18,12 @@ spring:
             redirect-uri: ${MICROSOFT_RERIRECT_URL}
             ignore-uri: '/api/auth,/agent/connect'
             scope: 'https://graph.microsoft.com/User.Read'
-
+  spring:
+    datasource:
+      url: jdbc:sqlite:${app.location}/hydra_lab_center_db.sqlite
+      driver-class-name: org.sqlite.JDBC
+      username: sqlite
+      password: 98765432
 app:
   # Mail Address Format
   default-user: ${DEFAULT_USER}

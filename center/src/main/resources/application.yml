@@ -17,7 +17,6 @@ spring:
     multipart:
       max-file-size: 1024MB
       max-request-size: 2048MB
-  datasource:
   jpa:
     database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
     show-sql: false
