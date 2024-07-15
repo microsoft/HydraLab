@@ -4,7 +4,9 @@
 package com.microsoft.hydralab.common.file.impl.azure;
 
 import com.azure.core.credential.AzureSasCredential;
+import com.azure.core.credential.TokenCredential;
 import com.azure.core.util.Context;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
@@ -13,10 +15,8 @@ import com.azure.storage.blob.models.BlobHttpHeaders;
 import com.azure.storage.blob.models.BlobProperties;
 import com.azure.storage.blob.models.BlobStorageException;
 import com.azure.storage.blob.models.PublicAccessType;
-import com.azure.storage.common.sas.AccountSasPermission;
-import com.azure.storage.common.sas.AccountSasResourceType;
-import com.azure.storage.common.sas.AccountSasService;
-import com.azure.storage.common.sas.AccountSasSignatureValues;
+import com.azure.storage.blob.models.UserDelegationKey;
+import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
 import com.google.common.net.MediaType;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.file.AccessToken;
@@ -36,6 +36,8 @@ import java.time.temporal.ChronoUnit;
 public class AzureBlobClientAdapter extends StorageServiceClient {
     private static boolean isAuthedBySAS = true;
     private BlobServiceClient blobServiceClient;
+
+    private String containerName;
     Logger classLogger = LoggerFactory.getLogger(AzureBlobClientAdapter.class);
     private long SASExpiryUpdate;
     private SASData sasDataInUse = null;
@@ -50,7 +52,14 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         SASExpiryUpdate = azureBlobProperty.getSASExpiryUpdate();
         SASPermission.READ.setExpiryTime(azureBlobProperty.getSASExpiryTimeFront(), azureBlobProperty.getTimeUnit());
         SASPermission.WRITE.setExpiryTime(azureBlobProperty.getSASExpiryTimeAgent(), azureBlobProperty.getTimeUnit());
-        blobServiceClient = new BlobServiceClientBuilder().connectionString(azureBlobProperty.getConnection()).buildClient();
+        TokenCredential defaultAzureCredential = new DefaultAzureCredentialBuilder().build();
+        blobServiceClient = new BlobServiceClientBuilder()
+                .endpoint(azureBlobProperty.getEndpoint())
+                .credential(defaultAzureCredential)
+                .buildClient();
+        containerName = azureBlobProperty.getContainer();
+        // init container
+        getContainer();
         fileExpiryDay = azureBlobProperty.getFileExpiryDay();
         cdnUrl = azureBlobProperty.getCDNUrl();
         isAuthedBySAS = false;
@@ -100,9 +109,10 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         return fileInfo;
     }
 
-    private void buildClientBySAS(SASData sasData) {
+    public void buildClientBySAS(SASData sasData) {
         AzureSasCredential azureSasCredential = new AzureSasCredential(sasData.getToken());
         blobServiceClient = new BlobServiceClientBuilder().endpoint(sasData.getEndpoint()).credential(azureSasCredential).buildClient();
+        containerName = sasData.getContainer();
         fileExpiryDay = sasData.getFileExpiryDay();
         cdnUrl = sasData.getCdnUrl();
         isConnected = true;
@@ -116,12 +126,14 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         }
     }
 
-    private BlobContainerClient getContainer(String containerName) {
+    private BlobContainerClient getContainer() {
         BlobContainerClient blobContainerClient;
         try {
             blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
             classLogger.info("Get a BlobContainerClient for container {}", containerName);
-            if (!blobContainerClient.exists()) {
+            // If the container doesn't exist, create it.
+            // If the client is authed by SAS, we don't have permission to create a container.
+            if (!isAuthedBySAS && !blobContainerClient.exists()) {
                 classLogger.info("Container {} doesn't exist, will try to create it.", containerName);
                 blobContainerClient.create();
             }
@@ -134,22 +146,23 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
 
     public SASData generateSAS(SASPermission sasPermission) {
         Assert.isTrue(!isAuthedBySAS, "The client was init by SAS and can't generate SAS!");
-
         SASData sasData = new SASData();
-        AccountSasService services = AccountSasService.parse(sasPermission.serviceStr);
-        AccountSasResourceType resourceTypes = AccountSasResourceType.parse(sasPermission.resourceStr);
-        AccountSasPermission permissions = AccountSasPermission.parse(sasPermission.permissionStr);
         OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, sasPermission.timeUnit), ZoneId.systemDefault());
 
-        AccountSasSignatureValues sasSignatureValues = new AccountSasSignatureValues(expiryTime, permissions,
-                services, resourceTypes);
-
-        sasData.setToken(blobServiceClient.generateAccountSas(sasSignatureValues));
+        UserDelegationKey userDelegationKey = blobServiceClient.getUserDelegationKey(OffsetDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), expiryTime);
+        BlobServiceSasSignatureValues blobServiceSasSignatureValues = new BlobServiceSasSignatureValues(expiryTime, sasPermission.permission);
+        BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient("testlocalauth");
+        if (!blobContainerClient.exists()) {
+            blobContainerClient.create();
+        }
+        String sas = blobContainerClient.generateUserDelegationSas(blobServiceSasSignatureValues, userDelegationKey);
+        sasData.setToken(sas);
         sasData.setExpiredTime(expiryTime);
         sasData.setEndpoint(blobServiceClient.getAccountUrl());
         sasData.setSasPermission(sasPermission);
         sasData.setFileExpiryDay(fileExpiryDay);
         sasData.setCdnUrl(cdnUrl);
+        sasData.setContainer(containerName);
         return sasData;
     }
 
@@ -171,7 +184,7 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
             logger = classLogger;
         }
 
-        BlobClient blobClient = getContainer(containerName).getBlobClient(blobFilePath);
+        BlobClient blobClient = getContainer().getBlobClient(containerName + "/" + blobFilePath);
         if (uploadFile.getName().endsWith(MediaType.MP4_VIDEO.subtype())) {
             BlobHttpHeaders headers = new BlobHttpHeaders();
             headers.setContentType(MediaType.MP4_VIDEO.toString());
@@ -200,7 +213,7 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
         if (!saveDir.exists()) {
             Assert.isTrue(saveDir.mkdirs(), "mkdirs fail in downloadFileFromUrl");
         }
-        BlobClient blobClient = getContainer(containerName).getBlobClient(blobFilePath);
+        BlobClient blobClient = getContainer().getBlobClient(containerName + "/" + blobFilePath);
         return blobClient.downloadToFile(downloadToFile.getAbsolutePath(), true);
     }
 }

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class AuthUtil {
@@ -76,10 +77,9 @@ public class AuthUtil {
      */
     public boolean verifyToken(String token) {
         JSONObject userInfo = decodeAccessToken(token);
-        if (clientId != null && userInfo != null && clientId.equals(userInfo.getString("appid"))) {
+        if (clientId != null && userInfo != null && clientId.equals(userInfo.getString("aud"))) {
             return true;
         }
-
         return false;
     }
 
@@ -106,7 +106,7 @@ public class AuthUtil {
         String username = "";
         JSONObject userInfo = decodeAccessToken(accessToken);
         if (userInfo != null) {
-            username = userInfo.getString("unique_name");
+            username = userInfo.getString("email");
         }
         return username;
     }
@@ -126,7 +126,9 @@ public class AuthUtil {
      * @return
      */
     public String getLoginUrl() {
-        String loginUrl = authorizationUri + "?client_id=" + clientId + "&response_type=code&redirect_uri=" + redirectUri + "&response_mode=query&scope=" + scope;
+        String loginUrl = authorizationUri + "?client_id=" + clientId +
+                "&response_type=code+id_token&redirect_uri=" + redirectUri +
+                "&response_mode=form_post&nonce="+ UUID.randomUUID() +"&scope=" + scope;
         return loginUrl;
     }
 
