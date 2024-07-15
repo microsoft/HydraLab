@@ -17,11 +17,6 @@ spring:
     multipart:
       max-file-size: 1024MB
       max-request-size: 2048MB
-  datasource:
-    url: jdbc:sqlite:${app.location}/hydra_lab_center_db.sqlite
-    username: sqlite
-    password: 98765432
-    driver-class-name: org.sqlite.JDBC
   jpa:
     database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
     show-sql: false

@@ -47,7 +47,7 @@ dependencies {
 
     compile group: 'org.apache.commons', name: 'commons-pool2', version: '2.7.0'
 
-    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '7.4.0.jre8'
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '12.6.1.jre8'
 //    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
 
     compile group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.2.2.RELEASE'

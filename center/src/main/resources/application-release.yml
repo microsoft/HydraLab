@@ -17,12 +17,10 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: ${MICROSOFT_RERIRECT_URL}
             ignore-uri: '/api/auth,/agent/connect'
-            scope: 'https://graph.microsoft.com/User.Read'
+            scope: ${MICROSOFT_AUTH_SCOPE:openid+profile+email}
   datasource:
-    url: ${DB_URL}
+    url: ${DB_URL} # UAMI integrated only
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    username: ${DB_NAME}
-    password: ${DB_PASS}
   jpa:
     database-platform: org.hibernate.dialect.SQLServer2012Dialect
     show-sql: false
