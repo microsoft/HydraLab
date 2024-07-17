@@ -151,7 +151,7 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
 
         UserDelegationKey userDelegationKey = blobServiceClient.getUserDelegationKey(OffsetDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), expiryTime);
         BlobServiceSasSignatureValues blobServiceSasSignatureValues = new BlobServiceSasSignatureValues(expiryTime, sasPermission.permission);
-        BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient("testlocalauth");
+        BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
         if (!blobContainerClient.exists()) {
             blobContainerClient.create();
         }
