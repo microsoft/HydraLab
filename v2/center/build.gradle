@@ -55,6 +55,7 @@ dependencies {
     implementation 'net.sf.ehcache:ehcache:2.10.9.2'
 
     implementation 'com.microsoft.sqlserver:mssql-jdbc:12.4.2.jre11'
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
