@@ -14,7 +14,7 @@ import com.microsoft.appcenter.crashes.model.ErrorReport;
 import java.util.logging.Logger;
 
 public class MainApplication extends Application {
-    private static final String APP_CENTER_TEST_APP_SECRET = "2c3adb2a-241d-47b2-9385-1a39fd6f2bc0";
+    private static final String APP_CENTER_TEST_APP_SECRET = "";
 
     public MainApplication() {
     }
