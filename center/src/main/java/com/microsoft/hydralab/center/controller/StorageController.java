@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author Li Shen
@@ -91,6 +93,12 @@ public class StorageController {
         }
         if (!LogUtils.isLegalStr(fileUri, Const.RegexString.STORAGE_FILE_REL_PATH, false)) {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path, file name should not include ';'!");
+        }
+
+        Path publicFolder = Paths.get(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT).normalize().toAbsolutePath();
+        Path filePath = publicFolder.resolve(fileUri).normalize().toAbsolutePath();
+        if (!filePath.startsWith(publicFolder + File.separator)) {
+            throw new IllegalArgumentException("Invalid filename");
         }
 
         File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
