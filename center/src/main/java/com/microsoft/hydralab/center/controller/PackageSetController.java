@@ -415,10 +415,11 @@ public class PackageSetController {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "Error fileType");
         }
         try {
-            String newFileName = FileUtil.getLegalFileName(attachment.getOriginalFilename());
-            if (newFileName.contains("..") || newFileName.contains("/") || newFileName.contains("\\")) {
+            String originalFilename = attachment.getOriginalFilename();
+            if (originalFilename.contains("..") || originalFilename.contains("/") || originalFilename.contains("\\")) {
                 throw new IllegalArgumentException("Invalid filename");
             }
+            String newFileName = FileUtil.getLegalFileName(originalFilename);
             String fileRelativeParent = FileUtil.getPathForToday();
             String parentDir = CENTER_FILE_BASE_DIR + fileRelativeParent;
 
