@@ -23,7 +23,7 @@ def create_file(path, content):
 
 def filter_functions(class_name, functions):
     ret = functions
-    ret = [s for s in ret if re.match(r"public\s+\w+\s+\w+\((\w+,\s*|\w+\s*)*\)", s)]
+    ret = [s for s in ret if re.match(r"public\s+\w+\s+\w+\((\w+\s+\w+\s*,\s*)*\w+\s+\w+\s*\)", s)]
     ret = [s for s in ret if (class_name + "(") not in s]
     return ret
 
