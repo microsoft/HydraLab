@@ -253,7 +253,11 @@ public class AttachmentService {
         if (!parentDirFile.exists() && !parentDirFile.mkdirs()) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "mkdirs failed!");
         }
-        String filename = FileUtil.getLegalFileName(originFile.getOriginalFilename());
+        String originalFilename = originFile.getOriginalFilename();
+        if (originalFilename.contains("..") || originalFilename.contains("/") || originalFilename.contains("\\")) {
+            throw new HydraLabRuntimeException("Invalid filename");
+        }
+        String filename = FileUtil.getLegalFileName(originalFilename);
         String fileSuffix = null;
         boolean isMatch = false;
         if (filename == null) {

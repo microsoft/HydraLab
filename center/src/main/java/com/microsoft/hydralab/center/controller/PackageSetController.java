@@ -415,7 +415,11 @@ public class PackageSetController {
                 return Result.error(HttpStatus.BAD_REQUEST.value(), "Error fileType");
         }
         try {
-            String newFileName = FileUtil.getLegalFileName(attachment.getOriginalFilename());
+            String originalFilename = attachment.getOriginalFilename();
+            if (originalFilename.contains("..") || originalFilename.contains("/") || originalFilename.contains("\\")) {
+                throw new HydraLabRuntimeException("Invalid filename");
+            }
+            String newFileName = FileUtil.getLegalFileName(originalFilename);
             String fileRelativeParent = FileUtil.getPathForToday();
             String parentDir = CENTER_FILE_BASE_DIR + fileRelativeParent;
 

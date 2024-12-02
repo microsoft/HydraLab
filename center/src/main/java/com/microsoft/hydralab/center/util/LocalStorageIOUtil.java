@@ -16,6 +16,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author Li Shen
@@ -28,6 +30,11 @@ public final class LocalStorageIOUtil {
     }
 
     public static void copyUploadedStreamToFile(InputStream inputStream, String fileUri) {
+        Path publicFolder = Paths.get(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT).normalize().toAbsolutePath();
+        Path filePath = publicFolder.resolve(fileUri).normalize().toAbsolutePath();
+        if (!filePath.startsWith(publicFolder + File.separator)) {
+            throw new HydraLabRuntimeException("Invalid file uri");
+        }
         File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
         File parentDirFile = new File(file.getParent());
         if (!parentDirFile.exists() && !parentDirFile.mkdirs()) {

@@ -56,6 +56,8 @@ import javax.websocket.Session;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -777,6 +779,12 @@ public class DeviceAgentManagementService {
         Map<String, Integer> aggregateDeviceCountMap = new HashMap<>();
         for (StorageFileInfo testJsonInfo : attachmentTestJsonList) {
             Map<String, Integer> deviceCountMap = new HashMap<>();
+
+            Path publicFolder = Paths.get(CENTER_FILE_BASE_DIR).normalize().toAbsolutePath();
+            Path filePath = publicFolder.resolve(testJsonInfo.getBlobPath()).normalize().toAbsolutePath();
+            if (!filePath.startsWith(publicFolder + File.separator)) {
+                throw new HydraLabRuntimeException("Invalid blob path");
+            }
             File testJsonFile = new File(CENTER_FILE_BASE_DIR, testJsonInfo.getBlobPath());
             TestInfo testInfo;
             try {
