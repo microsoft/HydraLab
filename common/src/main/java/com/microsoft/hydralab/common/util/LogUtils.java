@@ -28,8 +28,7 @@ public class LogUtils {
         RESET_PASSWORD_TOKEN("(reset[_\\s-]*password[_\\s-]*token)[=:\"\\s]*(\\w*)"),
         UPLOAD_TOKEN("(upload[_\\s-]*token)[=:\"\\s]*(\\w*)"),
         AUTH_TOKEN("(auth[_\\s-]*token)[=:\"\\s]*(\\w*)"),
-        ACCESS_KEY("(access[_\\s-]*key)[=:\"\\s]*(\\w*)"),
-        FUNTION_NAME("public\\s+\\w+\\s+\\w+\\((\\w+,?\\s*)*\\)");
+        ACCESS_KEY("(access[_\\s-]*key)[=:\"\\s]*(\\w*)");
 
         private String regEx;
 
