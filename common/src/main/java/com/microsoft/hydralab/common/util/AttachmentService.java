@@ -254,6 +254,9 @@ public class AttachmentService {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "mkdirs failed!");
         }
         String filename = FileUtil.getLegalFileName(originFile.getOriginalFilename());
+        if (newFileName.contains("..") || newFileName.contains("/") || newFileName.contains("\\")) {
+            throw new IllegalArgumentException("Invalid filename");
+        }
         String fileSuffix = null;
         boolean isMatch = false;
         if (filename == null) {
