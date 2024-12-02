@@ -318,7 +318,9 @@ public class TestDetailController {
         }
         try {
             File graphZipFile = loadGraphFile(fileId);
-
+            if (node.contains("..") || node.contains("/") || node.contains("\\")) {
+                throw new IllegalArgumentException("Invalid filename");
+            }
             File nodeFile = new File(graphZipFile.getParentFile().getAbsolutePath(), node + "/" + node + "-0.jpg");
             if (!nodeFile.exists()) {
                 throw new HydraLabRuntimeException("Graph photo file not found");
