@@ -416,6 +416,9 @@ public class PackageSetController {
         }
         try {
             String newFileName = FileUtil.getLegalFileName(attachment.getOriginalFilename());
+            if (newFileName.contains("..") || newFileName.contains("/") || newFileName.contains("\\")) {
+                throw new IllegalArgumentException("Invalid filename");
+            }
             String fileRelativeParent = FileUtil.getPathForToday();
             String parentDir = CENTER_FILE_BASE_DIR + fileRelativeParent;
 
