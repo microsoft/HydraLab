@@ -783,7 +783,7 @@ public class DeviceAgentManagementService {
             Path publicFolder = Paths.get(CENTER_FILE_BASE_DIR).normalize().toAbsolutePath();
             Path filePath = publicFolder.resolve(testJsonInfo.getBlobPath()).normalize().toAbsolutePath();
             if (!filePath.startsWith(publicFolder + File.separator)) {
-                throw new IllegalArgumentException("Invalid filename");
+                throw new HydraLabRuntimeException("Invalid blob path");
             }
             File testJsonFile = new File(CENTER_FILE_BASE_DIR, testJsonInfo.getBlobPath());
             TestInfo testInfo;

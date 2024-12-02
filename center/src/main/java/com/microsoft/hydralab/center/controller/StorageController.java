@@ -98,7 +98,7 @@ public class StorageController {
         Path publicFolder = Paths.get(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT).normalize().toAbsolutePath();
         Path filePath = publicFolder.resolve(fileUri).normalize().toAbsolutePath();
         if (!filePath.startsWith(publicFolder + File.separator)) {
-            throw new IllegalArgumentException("Invalid filename");
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path");
         }
 
         File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);

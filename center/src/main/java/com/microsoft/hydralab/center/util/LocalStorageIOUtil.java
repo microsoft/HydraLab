@@ -33,7 +33,7 @@ public final class LocalStorageIOUtil {
         Path publicFolder = Paths.get(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT).normalize().toAbsolutePath();
         Path filePath = publicFolder.resolve(fileUri).normalize().toAbsolutePath();
         if (!filePath.startsWith(publicFolder + File.separator)) {
-            throw new IllegalArgumentException("Invalid filename");
+            throw new HydraLabRuntimeException("Invalid file uri");
         }
         File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
         File parentDirFile = new File(file.getParent());

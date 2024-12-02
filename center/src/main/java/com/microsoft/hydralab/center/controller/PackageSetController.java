@@ -417,7 +417,7 @@ public class PackageSetController {
         try {
             String originalFilename = attachment.getOriginalFilename();
             if (originalFilename.contains("..") || originalFilename.contains("/") || originalFilename.contains("\\")) {
-                throw new IllegalArgumentException("Invalid filename");
+                throw new HydraLabRuntimeException("Invalid filename");
             }
             String newFileName = FileUtil.getLegalFileName(originalFilename);
             String fileRelativeParent = FileUtil.getPathForToday();

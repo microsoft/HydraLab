@@ -255,7 +255,7 @@ public class AttachmentService {
         }
         String originalFilename = originFile.getOriginalFilename();
         if (originalFilename.contains("..") || originalFilename.contains("/") || originalFilename.contains("\\")) {
-            throw new IllegalArgumentException("Invalid filename");
+            throw new HydraLabRuntimeException("Invalid filename");
         }
         String filename = FileUtil.getLegalFileName(originalFilename);
         String fileSuffix = null;
