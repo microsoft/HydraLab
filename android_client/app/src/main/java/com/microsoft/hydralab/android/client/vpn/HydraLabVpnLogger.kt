@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import kotlin.io.path.Path
 
 class HydraLabVpnLogger(private var filePath: String?) {
     private var lines = mutableListOf<String>()
@@ -16,6 +17,13 @@ class HydraLabVpnLogger(private var filePath: String?) {
     init {
         if (filePath != null) {
             filePath = Environment.getExternalStorageDirectory().toString() + filePath
+
+            val publicFolder = Path(Environment.getExternalStorageDirectory().toString()).toString()
+            val fileUrl = Path(filePath.toString()).toString()
+            if (!fileUrl.startsWith(publicFolder + File.separator)) {
+                throw IllegalArgumentException("Invalid file path")
+            }
+
             val file = File(filePath ?: "")
             if (file.exists()) {
                 file.writeText("")
