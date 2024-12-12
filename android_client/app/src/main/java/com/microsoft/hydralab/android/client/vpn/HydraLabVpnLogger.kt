@@ -24,7 +24,7 @@ class HydraLabVpnLogger(private var filePath: String?) {
                 throw IllegalArgumentException("Invalid file path")
             }
 
-            val file = File(filePath ?: "")
+            val file = File(fileUrl ?: "")
             if (file.exists()) {
                 file.writeText("")
             } else {
