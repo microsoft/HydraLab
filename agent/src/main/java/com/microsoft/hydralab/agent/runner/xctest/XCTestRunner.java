@@ -93,9 +93,9 @@ public class XCTestRunner extends TestRunner {
         }
         testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
         StringBuilder argString = new StringBuilder();
-        Map<String, String> instrumentationArgs = testTask.getTaskRunArgs();
-        if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
-            instrumentationArgs.forEach((k, v) -> argString.append(" ").append(k).append(" ").append(v));
+        Map<String, String> taskRunArgs = testTask.getTaskRunArgs();
+        if (taskRunArgs != null && !taskRunArgs.isEmpty()) {
+            taskRunArgs.forEach((k, v) -> argString.append(" ").append(k).append(" ").append(v));
         }
         String commFormat;
         if (StringUtils.isBlank(argString.toString())) {
