@@ -18,13 +18,7 @@ class HydraLabVpnLogger(private var filePath: String?) {
         if (filePath != null) {
             filePath = Environment.getExternalStorageDirectory().toString() + filePath
 
-            val publicFolder = Path(Environment.getExternalStorageDirectory().toString()).toString()
-            val fileUrl = Path(filePath.toString()).toString()
-            if (!fileUrl.startsWith(publicFolder + File.separator)) {
-                throw IllegalArgumentException("Invalid file path")
-            }
-
-            val file = File(fileUrl ?: "")
+            val file = File(filePath ?: "")
             if (file.exists()) {
                 file.writeText("")
             } else {
