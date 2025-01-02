@@ -38,11 +38,11 @@ object ToNetworkQueueWorker : Runnable {
 
     private lateinit var vpnInput: FileChannel
 
-    private lateinit var vpnLogger: HydraLabVpnLogger
+    private lateinit var vpnLogger: HydraLabVpnLoggerTemp
 
     var totalInputCount = 0L
 
-    fun start(vpnFileDescriptor: FileDescriptor, logger: HydraLabVpnLogger) {
+    fun start(vpnFileDescriptor: FileDescriptor, logger: HydraLabVpnLoggerTemp) {
         if (this::thread.isInitialized && thread.isAlive) throw IllegalStateException("Running already")
         vpnInput = FileInputStream(vpnFileDescriptor).channel
         vpnLogger = logger
@@ -107,9 +107,9 @@ object ToDeviceQueueWorker : Runnable {
 
     private lateinit var vpnOutput: FileChannel
 
-    private lateinit var vpnLogger: HydraLabVpnLogger
+    private lateinit var vpnLogger: HydraLabVpnLoggerTemp
 
-    fun start(vpnFileDescriptor: FileDescriptor, logger: HydraLabVpnLogger) {
+    fun start(vpnFileDescriptor: FileDescriptor, logger: HydraLabVpnLoggerTemp) {
         if (this::thread.isInitialized && thread.isAlive) throw IllegalStateException("Is already running")
         vpnOutput = FileOutputStream(vpnFileDescriptor).channel
         vpnLogger = logger
