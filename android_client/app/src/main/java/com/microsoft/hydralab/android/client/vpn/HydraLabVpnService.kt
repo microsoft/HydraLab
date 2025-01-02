@@ -27,7 +27,7 @@ class HydraLabVpnService : VpnService() {
 
     private lateinit var vpnInterface: ParcelFileDescriptor
 
-    private lateinit var vpnLogger: HydraLabVpnLogger
+    private lateinit var vpnLogger: HydraLabVpnLoggerTemp
 
     override fun onCreate() {
         UdpSendWorker.start(this)
@@ -62,7 +62,7 @@ class HydraLabVpnService : VpnService() {
 
     private fun connect(config: VpnUserConfig) {
         vpnInterface = createVpnInterface(config)
-        vpnLogger = HydraLabVpnLogger(config.dumpPath)
+        vpnLogger = HydraLabVpnLoggerTemp(config.dumpPath)
         val fileDescriptor = vpnInterface.fileDescriptor
         ToNetworkQueueWorker.start(fileDescriptor, vpnLogger)
         ToDeviceQueueWorker.start(fileDescriptor, vpnLogger)

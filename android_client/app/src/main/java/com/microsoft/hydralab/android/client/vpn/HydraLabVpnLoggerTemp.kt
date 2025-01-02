@@ -10,7 +10,7 @@ import java.io.FileWriter
 import java.io.IOException
 import kotlin.io.path.Path
 
-class HydraLabVpnLogger(private var filePath: String?) {
+class HydraLabVpnLoggerTemp(private var filePath: String?) {
     private var lines = mutableListOf<String>()
     private var linesStaging = listOf<String>()
 
