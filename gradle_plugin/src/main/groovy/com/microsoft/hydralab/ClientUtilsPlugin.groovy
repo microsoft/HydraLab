@@ -173,6 +173,18 @@ class ClientUtilsPlugin implements Plugin<Project> {
                     // add quotes back as quotes in gradle plugins will be replaced by blanks
                     testConfig.analysisConfigsStr = project.analysisConfigsStr.replace("\\", "\"")
                 }
+                if (project.hasProperty('blockDevice')) {
+                    // block a device from a group of devices
+                    testConfig.blockDevice = project.blockDevice
+                }
+                if (project.hasProperty('unblockDevice')) {
+                   // unblock a device
+                    testConfig.unblockDevice = project.unblockDevice
+                }
+                if (project.hasProperty('unblockDeviceSecretKey')) {
+                    // secret key to unblock a device
+                    testConfig.unblockDeviceSecretKey = project.unblockDeviceSecretKey
+                }
 
                 requiredParamCheck(apiConfig, testConfig)
 
@@ -210,6 +222,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 }
                 if (StringUtils.isBlank(testConfig.testSuiteName)) {
                     throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param testSuiteName not provided!')
+                }
+                if (testConfig.unblockDevice && StringUtils.isBlank(testConfig.unblockDeviceSecretKey)) {
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param unblockDeviceSecretKey not provided!')
                 }
                 break
             case "APPIUM":

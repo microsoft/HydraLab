@@ -82,6 +82,8 @@ public class ClientUtilsPluginTest {
         testConfig.testSuiteName = "";
         testConfig.testPkgName = "";
         testConfig.testScope = "";
+        testConfig.unblockDevice = false;
+        testConfig.unblockDeviceSecretKey = "";
         apiConfig.host = "www.test.host";
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
         deviceConfig.deviceIdentifier = "TESTDEVICESN001";
@@ -106,6 +108,12 @@ public class ClientUtilsPluginTest {
         clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
 
         testConfig.testScope = ClientUtilsPlugin.TestScope.CLASS;
+        clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
+
+        testConfig.unblockDevice = true;
+        typeSpecificParamCheck(apiConfig, testConfig, "unblockDeviceSecretKey");
+
+        testConfig.unblockDeviceSecretKey = "UNBLOCKDEVICESECRET001";
         clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
     }
 

@@ -29,6 +29,7 @@ import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
+import com.microsoft.hydralab.common.entity.common.BlockedDeviceInfo;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
@@ -58,6 +59,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -67,8 +70,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -81,7 +86,7 @@ public class DeviceAgentManagementService {
      * Connected session count
      */
     private final AtomicInteger onlineCount = new AtomicInteger(0);
-
+    private static volatile AtomicBoolean isUnblockingDevices = new AtomicBoolean(false);
     //save agent session <sessionId,session&agentUser>
     private final ConcurrentHashMap<String, AgentSessionInfo> agentSessionMap = new ConcurrentHashMap<>();
     //save agent info <agentId,agentInfo>
@@ -94,6 +99,9 @@ public class DeviceAgentManagementService {
     private final ConcurrentHashMap<String, AccessInfo> accessInfoMap = new ConcurrentHashMap<>();
     //save agent update info <agentId,updateTask>
     private final ConcurrentHashMap<String, AgentUpdateTask> agentUpdateMap = new ConcurrentHashMap<>();
+    // save blocked devices <deviceSerial, blockedDeviceInfo>
+    private final ConcurrentHashMap<String, BlockedDeviceInfo> blockedDevicesMap = new ConcurrentHashMap<>();
+
     @Resource
     MetricUtil metricUtil;
     @Resource
@@ -695,7 +703,7 @@ public class DeviceAgentManagementService {
 
     public JSONObject runTestTaskBySpec(TestTaskSpec testTaskSpec) {
         JSONObject result;
-
+        unblockFrozenBlockedDevices();
         if (Task.RunnerType.APPIUM_CROSS.name().equals(testTaskSpec.runningType)) {
             result = runAppiumTestTask(testTaskSpec);
         } else if (Task.RunnerType.T2C_JSON.name().equals(testTaskSpec.runningType)) {
@@ -921,12 +929,21 @@ public class DeviceAgentManagementService {
                 Assert.isTrue(!isAll, "Device/Agent Offline!");
                 continue;
             }
+
+            if (isDeviceBlocked(deviceSerial)) {
+                Assert.isTrue(!isAll, "Some of the devices in the device group are blocked!");
+                continue;
+            }
+
             isAllOffline = false;
             if (device.isOnline()) {
                 List<String> devices = testAgentDevicesMap.getOrDefault(device.getAgentId(), new ArrayList<>());
                 devices.add(device.getSerialNum());
                 testAgentDevicesMap.put(device.getAgentId(), devices);
                 testTaskSpec.agentIds.add(device.getAgentId());
+                if (testTaskSpec.blockDevice) {
+                    blockDevice(deviceSerial, testTaskSpec.testTaskId);
+                }
                 if (isSingle) {
                     break;
                 }
@@ -949,6 +966,10 @@ public class DeviceAgentManagementService {
                 result.put(Const.Param.TEST_DEVICE_SN, result.get(Const.Param.TEST_DEVICE_SN) + "," + groupDevices);
             }
             testTaskSpec.groupDevices = groupDevices;
+            if (testTaskSpec.blockDevice) {
+                testTaskSpec.blockedDeviceSerialNumber = groupDevices;
+                testTaskSpec.unblockDeviceSecretKey = testTaskSpec.testTaskId;
+            }
             message.setBody(testTaskSpec);
             sendMessageToSession(agentSessionInfoByAgentId.session, message);
         }
@@ -957,6 +978,11 @@ public class DeviceAgentManagementService {
     }
 
     private JSONObject runTestTaskByDevice(TestTaskSpec testTaskSpec) {
+        if (testTaskSpec.unblockDevice) {
+            unBlockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.unblockDeviceSecretKey);
+            testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
+        }
+
         JSONObject result = new JSONObject();
 
         DeviceInfo device = deviceListMap.get(testTaskSpec.deviceIdentifier);
@@ -964,12 +990,15 @@ public class DeviceAgentManagementService {
         Message message = new Message();
         message.setBody(testTaskSpec);
         message.setPath(Const.Path.TEST_TASK_RUN);
+
         Assert.isTrue(device.isAlive(), "Device/Agent Offline!");
-        if (device.isTesting()) {
+        if (device.isTesting() || isDeviceBlocked(testTaskSpec.deviceIdentifier)) {
             return result;
         }
         AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(device.getAgentId());
+
         Assert.notNull(agentSessionInfoByAgentId, "Device/Agent Offline!");
+
         if (isAgentUpdating(agentSessionInfoByAgentId.agentUser.getId())) {
             return result;
         }
@@ -1106,6 +1135,79 @@ public class DeviceAgentManagementService {
 
     public int getAliveDeviceNum() {
         return (int) deviceListMap.values().stream().filter(DeviceInfo::isAlive).count();
+    }
+
+    public void blockDevice(String deviceIdentifier, String testTaskId) {
+        synchronized (blockedDevicesMap) {
+            if (blockedDevicesMap.containsKey(deviceIdentifier)) {
+                throw new IllegalArgumentException("Device is already blocked by some other task!");
+            }
+
+            BlockedDeviceInfo blockedDeviceInfo = new BlockedDeviceInfo();
+            blockedDeviceInfo.setBlockedTime(Instant.now());
+            blockedDeviceInfo.setBlockingTaskUUID(testTaskId);
+            blockedDeviceInfo.setBlockedDeviceSerialNumber(deviceIdentifier);
+            blockedDevicesMap.put(deviceIdentifier,blockedDeviceInfo);
+        }
+    }
+
+    public boolean isDeviceBlocked(String deviceIdentifier) {
+        synchronized (blockedDevicesMap) {
+            return blockedDevicesMap.containsKey(deviceIdentifier);
+        }
+    }
+
+    public boolean areAllDevicesBlocked(String deviceIdentifier) {
+        if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
+            Set<String> deviceSerials = queryDeviceByGroup(deviceIdentifier);
+            synchronized (blockedDevicesMap) {
+                for (String deviceSerial : deviceSerials) {
+                    if (!blockedDevicesMap.containsKey(deviceSerial)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void unBlockDevice(String deviceIdentifier, String unblockDeviceSecretKey) {
+        synchronized (blockedDevicesMap) {
+            if (blockedDevicesMap.containsKey(deviceIdentifier)) {
+                BlockedDeviceInfo blockedDeviceInfo = blockedDevicesMap.get(deviceIdentifier);
+                if (blockedDeviceInfo.getBlockingTaskUUID().equals(unblockDeviceSecretKey)) {
+                    blockedDevicesMap.remove(deviceIdentifier);
+                } else {
+                    throw new IllegalArgumentException("Invalid unblock device secret key!");
+                }
+            } else {
+                log.info("Device {} is already unblocked.", deviceIdentifier);
+            }
+        }
+    }
+
+    public void unblockFrozenBlockedDevices() {
+
+        if (isUnblockingDevices.get()){
+            return;
+        }
+        isUnblockingDevices.set(true);
+        synchronized (blockedDevicesMap) {
+            Instant currentTime = Instant.now();
+            Iterator<Map.Entry<String, BlockedDeviceInfo>> iterator = blockedDevicesMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, BlockedDeviceInfo> entry = iterator.next();
+                Instant blockedTime = entry.getValue().getBlockedTime();
+                Duration durationBlocked = Duration.between(blockedTime, currentTime);
+                if (durationBlocked.compareTo(Const.DeviceGroup.BLOCKED_DEVICE_TIMEOUT) > 0) {
+                    log.info("Unblocking device {} since it has been blocked for more than {} hours.", entry.getKey(), durationBlocked);
+                    iterator.remove();
+                }
+            }
+        }
+        isUnblockingDevices.set(false);
     }
 
     @Scheduled(cron = "0 * * * * *")
