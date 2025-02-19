@@ -1003,6 +1003,9 @@ public class DeviceAgentManagementService {
             return result;
         }
         updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
+        if (testTaskSpec.blockDevice) {
+            blockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.testTaskId);
+        }
         testTaskSpec.agentIds.add(device.getAgentId());
         sendMessageToSession(agentSessionInfoByAgentId.session, message);
         result.put(Const.Param.TEST_DEVICE_SN, testTaskSpec.deviceIdentifier);

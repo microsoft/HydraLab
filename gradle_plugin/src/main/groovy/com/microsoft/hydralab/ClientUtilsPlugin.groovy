@@ -226,6 +226,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (testConfig.unblockDevice && StringUtils.isBlank(testConfig.unblockDeviceSecretKey)) {
                     throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' required param unblockDeviceSecretKey not provided!')
                 }
+                if (testConfig.blockDevice && testConfig.unblockDevice) {
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' param block and unblock device should not be true in the same test task!')
+                }
                 break
             case "APPIUM":
                 if (StringUtils.isBlank(testConfig.testAppPath)) {
