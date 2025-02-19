@@ -19,6 +19,9 @@ public class TestTask {
     public String testErrorMsg;
     public String message;
     public int retryTime;
+    public String blockedDeviceSerialNumber;
+    public String unblockedDeviceSerialNumber;
+    public String unblockDeviceSecretKey;
 
     @Override
     public String toString() {

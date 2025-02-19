@@ -60,6 +60,9 @@ public class TestConfig {
     public boolean enableTestOrchestrator = false;
     public List<AnalysisConfig> analysisConfigs = new ArrayList<>();
     public String analysisConfigsStr = "";
+    public Boolean blockDevice = false;
+    public Boolean unblockDevice = false;
+    public String unblockDeviceSecretKey = "";
 
     public void constructField(HashMap<String, Object> map) {
         Object queueTimeOutSeconds = map.get("queueTimeOutSeconds");

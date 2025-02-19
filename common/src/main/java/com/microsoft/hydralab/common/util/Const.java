@@ -3,6 +3,7 @@
 
 package com.microsoft.hydralab.common.util;
 
+import java.time.Duration;
 import java.util.List;
 
 public interface Const {
@@ -32,6 +33,7 @@ public interface Const {
         String SINGLE_TYPE = "SINGLE";
         String REST_TYPE = "REST";
         String ALL_TYPE = "ALL";
+        Duration BLOCKED_DEVICE_TIMEOUT = Duration.ofHours(4);
     }
 
     interface AgentConfig {
