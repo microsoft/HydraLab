@@ -11,6 +11,7 @@ import com.microsoft.hydralab.utils.YamlParser
 import org.apache.commons.lang3.StringUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.internal.impldep.com.sun.xml.bind.v2.runtime.reflect.opt.Const
 
 
 class ClientUtilsPlugin implements Plugin<Project> {
@@ -228,6 +229,9 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 }
                 if (testConfig.blockDevice && testConfig.unblockDevice) {
                     throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' param block and unblock device should not be true in the same test task!')
+                }
+                if(testConfig.unblockDevice && testConfig.deviceConfig.deviceIdentifier.startsWith("G.")) {
+                    throw new IllegalArgumentException('Running type ' + testConfig.runningType + ' param deviceIdentifier should not be a Group when unblockDevice is set to true!')
                 }
                 break
             case "APPIUM":

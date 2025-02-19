@@ -117,8 +117,12 @@ public class ClientUtilsPluginTest {
         testConfig.unblockDeviceSecretKey = "UNBLOCKDEVICESECRET001";
         testConfig.blockDevice = true;
         typeSpecificParamCheck(apiConfig, testConfig, "blockUnblockDevice");
-
         testConfig.blockDevice = false;
+
+        deviceConfig.deviceIdentifier = "G.GROUP001";
+        typeSpecificParamCheck(apiConfig, testConfig, "unblockDeviceGroup");
+
+        deviceConfig.deviceIdentifier = "TESTDEVICESN001";
 
         clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
     }
@@ -267,7 +271,10 @@ public class ClientUtilsPluginTest {
         }, "IllegalArgumentException was expected");
         if (requiredParamName.equals("blockUnblockDevice")) {
             Assertions.assertEquals("Running type " + testConfig.runningType + " param block and unblock device should not be true in the same test task!", thrown.getMessage());
-        } else {
+        } else if(requiredParamName.equals("unblockDeviceGroup")) {
+            Assertions.assertEquals("Running type " + testConfig.runningType + " param deviceIdentifier should not be a Group when unblockDevice is set to true!", thrown.getMessage());
+        }
+        else {
             Assertions.assertEquals("Running type " + testConfig.runningType + " required param " + requiredParamName + " not provided!", thrown.getMessage());
         }
     }

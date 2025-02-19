@@ -227,7 +227,7 @@ public class HydraLabClientUtils {
         if (testConfig.blockDevice) {
             assertNotNull(runningTest.blockedDeviceSerialNumber, "blockedDeviceSerialNumber");
             printlnf("##vso[task.setvariable variable=BlockedDeviceSerialNumber;isOutput=true]%s", runningTest.blockedDeviceSerialNumber);
-            printlnf("##vso[task.setvariable variable=BlockingTaskUUID;isOutput=true]%s", runningTest.unblockDeviceSecretKey);
+            printlnf("##vso[task.setvariable variable=UnblockDeviceSecretKey;isOutput=true]%s", runningTest.unblockDeviceSecretKey);
         }
 
         if (testConfig.unblockDevice && testConfig.deviceConfig.deviceIdentifier.equals(runningTest.unblockedDeviceSerialNumber)) {
