@@ -189,6 +189,8 @@ public class ClientUtilsPluginTest {
         testConfig.appPath = "src/test/resources/app.txt";
         testConfig.testAppPath = "src/test/resources/test_app.txt";
         testConfig.attachmentInfos = new ArrayList<>();
+        testConfig.blockDevice = true;
+        testConfig.unblockDevice = false;
 
         String returnId = "id123456";
         when(client.uploadApp(Mockito.any(HydraLabAPIConfig.class), Mockito.any(TestConfig.class), Mockito.anyString(), Mockito.anyString(),
@@ -225,6 +227,8 @@ public class ClientUtilsPluginTest {
         returnTestTask.totalTestCount = 5;
         returnTestTask.totalFailCount = 1;
         returnTestTask.reportImagePath = "./image_path/image";
+        returnTestTask.blockedDeviceSerialNumber = "TESTDEVICESN001";
+        returnTestTask.unblockDeviceSecretKey = "UNBLOCKDEVICESECRET001";
         when(client.getTestStatus(Mockito.any(HydraLabAPIConfig.class), Mockito.anyString()))
                 .thenReturn(returnTestTask);
 
