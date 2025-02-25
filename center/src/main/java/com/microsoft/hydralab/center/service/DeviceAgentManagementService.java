@@ -1003,7 +1003,7 @@ public class DeviceAgentManagementService {
             unBlockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.unblockDeviceSecretKey);
             testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
         }
-        
+
         if (testTaskSpec.blockDevice) {
             blockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.testTaskId);
             testTaskSpec.blockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
