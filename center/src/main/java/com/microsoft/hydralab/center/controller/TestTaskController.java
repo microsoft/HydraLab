@@ -89,7 +89,7 @@ public class TestTaskController {
             //if the queue is not empty, the task will be added to the queue directly
             if (testTaskService.isQueueEmpty()
                     || Task.RunnerType.APK_SCANNER.name().equals(testTaskSpec.runningType)
-                    || testTaskService.isDeviceFree(testTaskSpec.deviceIdentifier)) {
+                    || deviceAgentManagementService.isRunOnBlockedDevice(testTaskSpec) || testTaskService.isDeviceFree(testTaskSpec.deviceIdentifier)) {
                 result = deviceAgentManagementService.runTestTaskBySpec(testTaskSpec);
                 if (result.get(Const.Param.TEST_DEVICE_SN) == null) {
                     //if there is no alive device, the task will be added to the queue directly

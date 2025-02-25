@@ -992,7 +992,7 @@ public class DeviceAgentManagementService {
         message.setPath(Const.Path.TEST_TASK_RUN);
 
         Assert.isTrue(device.isAlive(), "Device/Agent Offline!");
-        if (device.isTesting() || isDeviceBlocked(testTaskSpec.deviceIdentifier)) {
+        if (device.isTesting() || (!isRunOnBlockedDevice(testTaskSpec) && isDeviceBlocked(testTaskSpec.deviceIdentifier))) {
             return result;
         }
         AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(device.getAgentId());
@@ -1005,6 +1005,8 @@ public class DeviceAgentManagementService {
         updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
         if (testTaskSpec.blockDevice) {
             blockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.testTaskId);
+            testTaskSpec.blockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
+            testTaskSpec.unblockDeviceSecretKey = testTaskSpec.testTaskId;
         }
         testTaskSpec.agentIds.add(device.getAgentId());
         sendMessageToSession(agentSessionInfoByAgentId.session, message);
@@ -1211,6 +1213,21 @@ public class DeviceAgentManagementService {
             }
         }
         isUnblockingDevices.set(false);
+    }
+
+    public boolean isRunOnBlockedDevice(TestTaskSpec testTaskSpec) {
+        if (testTaskSpec.unblockDeviceSecretKey == null || testTaskSpec.unblockDeviceSecretKey.isEmpty()) {
+            return false;
+        }
+
+        synchronized (blockedDevicesMap) {
+            BlockedDeviceInfo blockedDeviceInfo = blockedDevicesMap.get(testTaskSpec.deviceIdentifier);
+
+            if (blockedDeviceInfo == null) {
+                return false;
+            }
+            return blockedDeviceInfo.getBlockingTaskUUID().equals(testTaskSpec.unblockDeviceSecretKey);
+        }
     }
 
     @Scheduled(cron = "0 * * * * *")
