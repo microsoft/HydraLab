@@ -978,11 +978,6 @@ public class DeviceAgentManagementService {
     }
 
     private JSONObject runTestTaskByDevice(TestTaskSpec testTaskSpec) {
-        if (testTaskSpec.unblockDevice) {
-            unBlockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.unblockDeviceSecretKey);
-            testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
-        }
-
         JSONObject result = new JSONObject();
 
         DeviceInfo device = deviceListMap.get(testTaskSpec.deviceIdentifier);
@@ -1003,6 +998,12 @@ public class DeviceAgentManagementService {
             return result;
         }
         updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
+
+        if (testTaskSpec.unblockDevice) {
+            unBlockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.unblockDeviceSecretKey);
+            testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
+        }
+        
         if (testTaskSpec.blockDevice) {
             blockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.testTaskId);
             testTaskSpec.blockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
