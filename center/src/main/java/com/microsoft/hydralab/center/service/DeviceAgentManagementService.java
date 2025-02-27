@@ -942,7 +942,8 @@ public class DeviceAgentManagementService {
                 testAgentDevicesMap.put(device.getAgentId(), devices);
                 testTaskSpec.agentIds.add(device.getAgentId());
                 if (testTaskSpec.blockDevice) {
-                    blockDevice(deviceSerial, testTaskSpec.testTaskId);
+                    testTaskSpec.deviceIdentifier = deviceSerial;
+                    blockDevice(testTaskSpec);
                 }
                 if (isSingle) {
                     break;
@@ -966,10 +967,6 @@ public class DeviceAgentManagementService {
                 result.put(Const.Param.TEST_DEVICE_SN, result.get(Const.Param.TEST_DEVICE_SN) + "," + groupDevices);
             }
             testTaskSpec.groupDevices = groupDevices;
-            if (testTaskSpec.blockDevice) {
-                testTaskSpec.blockedDeviceSerialNumber = groupDevices;
-                testTaskSpec.unblockDeviceSecretKey = testTaskSpec.testTaskId;
-            }
             message.setBody(testTaskSpec);
             sendMessageToSession(agentSessionInfoByAgentId.session, message);
         }
@@ -1000,14 +997,11 @@ public class DeviceAgentManagementService {
         updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
 
         if (testTaskSpec.unblockDevice) {
-            unBlockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.unblockDeviceSecretKey);
-            testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
+            unBlockDevice(testTaskSpec);
         }
 
         if (testTaskSpec.blockDevice) {
-            blockDevice(testTaskSpec.deviceIdentifier, testTaskSpec.testTaskId);
-            testTaskSpec.blockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
-            testTaskSpec.unblockDeviceSecretKey = testTaskSpec.testTaskId;
+            blockDevice(testTaskSpec);
         }
         testTaskSpec.agentIds.add(device.getAgentId());
         sendMessageToSession(agentSessionInfoByAgentId.session, message);
@@ -1143,17 +1137,20 @@ public class DeviceAgentManagementService {
         return (int) deviceListMap.values().stream().filter(DeviceInfo::isAlive).count();
     }
 
-    public void blockDevice(String deviceIdentifier, String testTaskId) {
+    public void blockDevice(TestTaskSpec testTaskSpec) {
         synchronized (blockedDevicesMap) {
-            if (blockedDevicesMap.containsKey(deviceIdentifier)) {
-                throw new IllegalArgumentException("Device is already blocked by some other task!");
+            if (blockedDevicesMap.containsKey(testTaskSpec.deviceIdentifier)) {
+                log.warn("Device {} is already blocked!", testTaskSpec.deviceIdentifier);
+                return;
             }
 
             BlockedDeviceInfo blockedDeviceInfo = new BlockedDeviceInfo();
             blockedDeviceInfo.setBlockedTime(Instant.now());
-            blockedDeviceInfo.setBlockingTaskUUID(testTaskId);
-            blockedDeviceInfo.setBlockedDeviceSerialNumber(deviceIdentifier);
-            blockedDevicesMap.put(deviceIdentifier,blockedDeviceInfo);
+            blockedDeviceInfo.setBlockingTaskUUID(testTaskSpec.testTaskId);
+            blockedDeviceInfo.setBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier);
+            blockedDevicesMap.put(testTaskSpec.deviceIdentifier,blockedDeviceInfo);
+            testTaskSpec.blockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
+            testTaskSpec.unblockDeviceSecretKey = testTaskSpec.testTaskId;
         }
     }
 
@@ -1179,23 +1176,24 @@ public class DeviceAgentManagementService {
         }
     }
 
-    public void unBlockDevice(String deviceIdentifier, String unblockDeviceSecretKey) {
+    public void unBlockDevice(TestTaskSpec testTaskSpec) {
         synchronized (blockedDevicesMap) {
-            if (blockedDevicesMap.containsKey(deviceIdentifier)) {
-                BlockedDeviceInfo blockedDeviceInfo = blockedDevicesMap.get(deviceIdentifier);
-                if (blockedDeviceInfo.getBlockingTaskUUID().equals(unblockDeviceSecretKey)) {
-                    blockedDevicesMap.remove(deviceIdentifier);
+            if (blockedDevicesMap.containsKey(testTaskSpec.deviceIdentifier)) {
+                BlockedDeviceInfo blockedDeviceInfo = blockedDevicesMap.get(testTaskSpec.deviceIdentifier);
+                if (blockedDeviceInfo.getBlockingTaskUUID().equals(testTaskSpec.unblockDeviceSecretKey)) {
+                    blockedDevicesMap.remove(testTaskSpec.deviceIdentifier);
+                    testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
                 } else {
                     throw new IllegalArgumentException("Invalid unblock device secret key!");
                 }
             } else {
-                log.info("Device {} is already unblocked.", deviceIdentifier);
+                log.warn("Device {} is already unblocked.", testTaskSpec.deviceIdentifier);
+                testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
             }
         }
     }
 
     public void unblockFrozenBlockedDevices() {
-
         if (isUnblockingDevices.get()){
             return;
         }
