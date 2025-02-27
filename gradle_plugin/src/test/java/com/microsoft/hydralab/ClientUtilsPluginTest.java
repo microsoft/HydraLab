@@ -82,6 +82,9 @@ public class ClientUtilsPluginTest {
         testConfig.testSuiteName = "";
         testConfig.testPkgName = "";
         testConfig.testScope = "";
+        testConfig.unblockDevice = false;
+        testConfig.blockDevice = false;
+        testConfig.unblockDeviceSecretKey = "";
         apiConfig.host = "www.test.host";
         apiConfig.authToken = "thisisanauthtokenonlyfortest";
         deviceConfig.deviceIdentifier = "TESTDEVICESN001";
@@ -106,6 +109,21 @@ public class ClientUtilsPluginTest {
         clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
 
         testConfig.testScope = ClientUtilsPlugin.TestScope.CLASS;
+        clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
+
+        testConfig.unblockDevice = true;
+        typeSpecificParamCheck(apiConfig, testConfig, "unblockDeviceSecretKey");
+
+        testConfig.unblockDeviceSecretKey = "UNBLOCKDEVICESECRET001";
+        testConfig.blockDevice = true;
+        typeSpecificParamCheck(apiConfig, testConfig, "blockUnblockDevice");
+        testConfig.blockDevice = false;
+
+        deviceConfig.deviceIdentifier = "G.GROUP001";
+        typeSpecificParamCheck(apiConfig, testConfig, "unblockDeviceGroup");
+
+        deviceConfig.deviceIdentifier = "TESTDEVICESN001";
+
         clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
     }
 
@@ -171,6 +189,8 @@ public class ClientUtilsPluginTest {
         testConfig.appPath = "src/test/resources/app.txt";
         testConfig.testAppPath = "src/test/resources/test_app.txt";
         testConfig.attachmentInfos = new ArrayList<>();
+        testConfig.blockDevice = true;
+        testConfig.unblockDevice = false;
 
         String returnId = "id123456";
         when(client.uploadApp(Mockito.any(HydraLabAPIConfig.class), Mockito.any(TestConfig.class), Mockito.anyString(), Mockito.anyString(),
@@ -207,6 +227,8 @@ public class ClientUtilsPluginTest {
         returnTestTask.totalTestCount = 5;
         returnTestTask.totalFailCount = 1;
         returnTestTask.reportImagePath = "./image_path/image";
+        returnTestTask.blockedDeviceSerialNumber = "TESTDEVICESN001";
+        returnTestTask.unblockDeviceSecretKey = "UNBLOCKDEVICESECRET001";
         when(client.getTestStatus(Mockito.any(HydraLabAPIConfig.class), Mockito.anyString()))
                 .thenReturn(returnTestTask);
 
@@ -251,6 +273,13 @@ public class ClientUtilsPluginTest {
         IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             clientUtilsPlugin.requiredParamCheck(apiConfig, testConfig);
         }, "IllegalArgumentException was expected");
-        Assertions.assertEquals("Running type " + testConfig.runningType + " required param " + requiredParamName + " not provided!", thrown.getMessage());
+        if (requiredParamName.equals("blockUnblockDevice")) {
+            Assertions.assertEquals("Running type " + testConfig.runningType + " param block and unblock device should not be true in the same test task!", thrown.getMessage());
+        } else if(requiredParamName.equals("unblockDeviceGroup")) {
+            Assertions.assertEquals("Running type " + testConfig.runningType + " param deviceIdentifier should not be a Group when unblockDevice is set to true!", thrown.getMessage());
+        }
+        else {
+            Assertions.assertEquals("Running type " + testConfig.runningType + " required param " + requiredParamName + " not provided!", thrown.getMessage());
+        }
     }
 }
