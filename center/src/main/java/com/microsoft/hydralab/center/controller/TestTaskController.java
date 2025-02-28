@@ -83,7 +83,7 @@ public class TestTaskController {
             testTaskSpec.testTaskId = UUID.randomUUID().toString();
 
             if (testTaskSpec.blockDevice && testTaskSpec.unblockDevice) {
-                throw new IllegalArgumentException("Cannot block and unblock device at the same time");
+                throw new IllegalArgumentException("Cannot block and unblock device in the same test task.");
             }
             if (testTaskSpec.unblockDevice && Strings.isNullOrEmpty(testTaskSpec.unblockDeviceSecretKey)) {
                 throw new IllegalArgumentException("Unblock secret key is required when unblocking a device.");
