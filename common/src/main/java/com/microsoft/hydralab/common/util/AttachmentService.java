@@ -142,10 +142,9 @@ public class AttachmentService {
     }
 
     public boolean compareFileInfo(StorageFileInfo newFileInfo, StorageFileInfo oldFileInfo) {
-        if (newFileInfo.getLoadType() == null && oldFileInfo.getLoadType() == null) {
-            return true;
-        } else if (newFileInfo.getFileName().equals(oldFileInfo.getFileName())
-                && newFileInfo.getLoadType().equals(oldFileInfo.getLoadType())
+        if (newFileInfo.getFileName().equals(oldFileInfo.getFileName())
+                && ((newFileInfo.getLoadType() == null && oldFileInfo.getLoadType() == null) ||
+                (newFileInfo.getLoadType() != null && newFileInfo.getLoadType().equals(oldFileInfo.getLoadType())))
                 && newFileInfo.getLoadDir().equals(oldFileInfo.getLoadDir())
                 && newFileInfo.getBlobContainer().equals(oldFileInfo.getBlobContainer())
                 && newFileInfo.getFileType().equals(oldFileInfo.getFileType())) {
