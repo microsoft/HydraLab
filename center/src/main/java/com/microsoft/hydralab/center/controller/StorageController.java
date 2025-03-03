@@ -14,6 +14,7 @@ import com.microsoft.hydralab.common.util.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,7 +46,7 @@ public class StorageController {
     @javax.annotation.Resource
     private StorageTokenManageService storageTokenManageService;
 
-    @PostMapping(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_UPLOAD)
+    @PostMapping(value = Const.LocalStorageURL.CENTER_LOCAL_STORAGE_UPLOAD, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result uploadFile(HttpServletRequest request,
                              @RequestParam("file") MultipartFile uploadedFile,
                              @RequestParam("fileUri") String fileUri) {
