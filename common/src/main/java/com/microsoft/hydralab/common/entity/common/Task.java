@@ -86,6 +86,13 @@ public class Task implements Serializable {
     private boolean disableRecording = false;
     @Column(columnDefinition = "boolean default false")
     private boolean isSucceed = false;
+    public String blockedDeviceSerialNumber;
+    public String unblockedDeviceSerialNumber;
+    public String unblockDeviceSecretKey;
+    @Transient
+    public boolean blockDevice = false;
+    @Transient
+    public boolean unblockDevice = false;
 
     @Transient
     private List<TestRun> deviceTestResults;
@@ -164,6 +171,16 @@ public class Task implements Serializable {
         testTaskSpec.disableRecording = isDisableRecording();
         testTaskSpec.retryTime = getRetryTime();
 
+        if (isBlockDevice()) {
+            testTaskSpec.blockDevice = true;
+            testTaskSpec.blockedDeviceSerialNumber = getBlockedDeviceSerialNumber();
+            testTaskSpec.unblockDeviceSecretKey = getUnblockDeviceSecretKey();
+        }
+        if (isUnblockDevice()) {
+            testTaskSpec.unblockDevice = true;
+            testTaskSpec.unblockedDeviceSerialNumber = getUnblockedDeviceSerialNumber();
+            testTaskSpec.unblockDeviceSecretKey = getUnblockDeviceSecretKey();
+        }
         return testTaskSpec;
     }
 
@@ -198,6 +215,18 @@ public class Task implements Serializable {
         setTeamName(testTaskSpec.teamName);
         setNotifyUrl(testTaskSpec.notifyUrl);
         setDisableRecording(testTaskSpec.disableRecording);
+
+        if (testTaskSpec.blockDevice) {
+            setBlockDevice(true);
+            setBlockedDeviceSerialNumber(testTaskSpec.blockedDeviceSerialNumber);
+            setUnblockDeviceSecretKey(testTaskSpec.unblockDeviceSecretKey);
+        }
+
+        if (testTaskSpec.unblockDevice) {
+            setUnblockDevice(true);
+            setUnblockedDeviceSerialNumber(testTaskSpec.unblockedDeviceSerialNumber);
+            setUnblockDeviceSecretKey(testTaskSpec.unblockDeviceSecretKey);
+        }
     }
 
     public Task() {

@@ -224,6 +224,15 @@ public class HydraLabClientUtils {
 
         assertNotNull(runningTest, "runningTest");
         assertNotNull(runningTest.deviceTestResults, "runningTest.deviceTestResults");
+        if (testConfig.blockDevice) {
+            assertNotNull(runningTest.blockedDeviceSerialNumber, "blockedDeviceSerialNumber");
+            printlnf("##vso[task.setvariable variable=BlockedDeviceSerialNumber;isOutput=true]%s", runningTest.blockedDeviceSerialNumber);
+            printlnf("##vso[task.setvariable variable=UnblockDeviceSecretKey;isOutput=true]%s", runningTest.unblockDeviceSecretKey);
+        }
+
+        if (testConfig.unblockDevice && testConfig.deviceConfig.deviceIdentifier.equals(runningTest.unblockedDeviceSerialNumber)) {
+            printlnf("##[section] Device % s, unblocked.", runningTest.unblockedDeviceSerialNumber);
+        }
 
         String testReportUrl = apiConfig.getTestReportUrl(runningTest.id);
 

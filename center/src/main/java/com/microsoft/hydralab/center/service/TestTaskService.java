@@ -66,8 +66,16 @@ public class TestTaskService {
                 relatedIdentifiers.addAll(deviceAgentManagementService.queryGroupByDevice(deviceIdentifier));
             }
         } else if (deviceIdentifier.startsWith(Const.DeviceGroup.GROUP_NAME_PREFIX)) {
+            if (deviceAgentManagementService.areAllDevicesBlocked(deviceIdentifier)) {
+                logger.warn("All Devices in the DeviceGroup " + deviceIdentifier + " are blocked currently.");
+                return false;
+            }
             relatedIdentifiers.addAll(deviceAgentManagementService.queryDeviceByGroup(deviceIdentifier));
         } else {
+            if (deviceAgentManagementService.isDeviceBlocked(deviceIdentifier)) {
+                logger.warn("Device " + deviceIdentifier + " is blocked currently.");
+                return false;
+            }
             relatedIdentifiers.addAll(deviceAgentManagementService.queryGroupByDevice(deviceIdentifier));
         }
         synchronized (taskQueue) {
@@ -92,6 +100,7 @@ public class TestTaskService {
             return;
         }
         isRunning.set(true);
+
         synchronized (taskQueue) {
             Iterator<TestTaskSpec> queueIterator = taskQueue.iterator();
             while (queueIterator.hasNext()) {

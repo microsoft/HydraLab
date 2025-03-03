@@ -5,6 +5,7 @@ package com.microsoft.hydralab.center.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Strings;
 import com.microsoft.hydralab.center.service.DeviceAgentManagementService;
 import com.microsoft.hydralab.center.service.SysUserService;
 import com.microsoft.hydralab.center.service.TestDataService;
@@ -80,6 +81,18 @@ public class TestTaskController {
             testTaskSpec.teamId = testFileSet.getTeamId();
             testTaskSpec.teamName = testFileSet.getTeamName();
             testTaskSpec.testTaskId = UUID.randomUUID().toString();
+
+            if (testTaskSpec.blockDevice && testTaskSpec.unblockDevice) {
+                throw new IllegalArgumentException("Cannot block and unblock device in the same test task.");
+            }
+            if (testTaskSpec.unblockDevice && Strings.isNullOrEmpty(testTaskSpec.unblockDeviceSecretKey)) {
+                throw new IllegalArgumentException("Unblock secret key is required when unblocking a device.");
+            }
+
+            if (testTaskSpec.unblockDevice && testTaskSpec.deviceIdentifier.startsWith("G.")) {
+                throw new IllegalArgumentException("deviceIdentifier should not be a group when unblocking a device.");
+            }
+
             if (!sysUserService.checkUserAdmin(requestor)) {
                 if (!userTeamManagementService.checkRequestorTeamRelation(requestor, testTaskSpec.teamId)) {
                     return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, the TestFileSet doesn't belong to user's Teams");
@@ -89,7 +102,7 @@ public class TestTaskController {
             //if the queue is not empty, the task will be added to the queue directly
             if (testTaskService.isQueueEmpty()
                     || Task.RunnerType.APK_SCANNER.name().equals(testTaskSpec.runningType)
-                    || testTaskService.isDeviceFree(testTaskSpec.deviceIdentifier)) {
+                    || deviceAgentManagementService.isRunOnBlockedDevice(testTaskSpec) || testTaskService.isDeviceFree(testTaskSpec.deviceIdentifier)) {
                 result = deviceAgentManagementService.runTestTaskBySpec(testTaskSpec);
                 if (result.get(Const.Param.TEST_DEVICE_SN) == null) {
                     //if there is no alive device, the task will be added to the queue directly

@@ -240,6 +240,9 @@ public class HydraLabAPIClient {
         jsonElement.addProperty("networkMonitorRule", testConfig.networkMonitorRule);
         jsonElement.addProperty("enableTestOrchestrator", testConfig.enableTestOrchestrator);
         jsonElement.addProperty("notifyUrl", testConfig.notifyUrl);
+        jsonElement.addProperty("blockDevice", testConfig.blockDevice);
+        jsonElement.addProperty("unblockDevice", testConfig.unblockDevice);
+        jsonElement.addProperty("unblockDeviceSecretKey", testConfig.unblockDeviceSecretKey);
 
         try {
             if (testConfig.neededPermissions.size() > 0) {

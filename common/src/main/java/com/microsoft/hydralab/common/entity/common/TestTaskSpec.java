@@ -57,6 +57,11 @@ public class TestTaskSpec {
     public boolean enableNetworkMonitor;
     public String networkMonitorRule;
     public boolean enableTestOrchestrator = false;
+    public boolean blockDevice = false;
+    public boolean unblockDevice = false;
+    public String blockedDeviceSerialNumber;
+    public String unblockedDeviceSerialNumber;
+    public String unblockDeviceSecretKey;
 
     public void updateWithDefaultValues() {
         determineScopeOfTestCase();
