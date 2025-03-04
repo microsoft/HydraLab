@@ -4,8 +4,9 @@
 package com.microsoft.hydralab.center.util;
 
 import com.alibaba.fastjson.JSONObject;
-import com.microsoft.hydralab.common.util.FileUtil;
+import com.alibaba.fastjson.parser.ParserConfig;
 import com.microsoft.hydralab.common.util.RestTemplateConfig;
+import com.microsoft.hydralab.common.util.FileUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -95,7 +96,10 @@ public class AuthUtil {
             String[] pieces = accessToken.split("\\.");
             String b64payload = pieces[1];
             String jsonString = new String(Base64.decodeBase64(b64payload), FileUtil.UTF_8);
-            userInfo = JSONObject.parseObject(jsonString, JSONObject.class); // CodeQL [java/unsafe-deserialization] False Positive: the input is a JWT token, which is safe
+            ParserConfig.getGlobalInstance().setSafeMode(true);
+            userInfo = JSONObject.parseObject(jsonString);
+            // reset safe mode to avoid the impact on other json parse
+            ParserConfig.getGlobalInstance().setSafeMode(false);
         } catch (Exception e) {
             e.printStackTrace();
         }
