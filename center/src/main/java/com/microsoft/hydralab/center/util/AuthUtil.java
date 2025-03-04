@@ -96,7 +96,7 @@ public class AuthUtil {
             String[] pieces = accessToken.split("\\.");
             String b64payload = pieces[1];
             String jsonString = new String(Base64.decodeBase64(b64payload), FileUtil.UTF_8);
-            userInfo = JSONObject.parseObject(jsonString);
+            userInfo = JSONObject.parseObject(jsonString, JSONObject.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
