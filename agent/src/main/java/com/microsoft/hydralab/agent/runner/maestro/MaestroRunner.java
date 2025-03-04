@@ -100,11 +100,11 @@ public class MaestroRunner extends TestRunner {
         return xmlFile;
     }
 
-    private String buildCommand(TestRunDevice testRunDevice, TestRun testRun, Map<String, String> instrumentationArgs, File xmlFile) {
+    private String buildCommand(TestRunDevice testRunDevice, TestRun testRun, Map<String, String> taskRunArgs, File xmlFile) {
         // sample: maestro --device 123456 test -e var=aaa --format junit --output /tmp/result.xml /tmp/caseFolder/
         StringBuilder argString = new StringBuilder();
-        if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
-            instrumentationArgs.forEach((k, v) -> argString.append(" -e ").append(k.replaceAll("\\s|\"", "")).append("=").append(v.replaceAll("\\s|\"", "")));
+        if (taskRunArgs != null && !taskRunArgs.isEmpty()) {
+            taskRunArgs.forEach((k, v) -> argString.append(" -e ").append(k.replaceAll("\\s|\"", "")).append("=").append(v.replaceAll("\\s|\"", "")));
         }
         String commFormat;
         if (StringUtils.isBlank(argString.toString())) {
