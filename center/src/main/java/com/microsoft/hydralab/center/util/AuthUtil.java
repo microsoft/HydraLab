@@ -95,7 +95,7 @@ public class AuthUtil {
             String[] pieces = accessToken.split("\\.");
             String b64payload = pieces[1];
             String jsonString = new String(Base64.decodeBase64(b64payload), FileUtil.UTF_8);
-            userInfo = JSONObject.parseObject(jsonString, JSONObject.class); // CodeQL [java/unsafe-deserialization] False Positive: the input is a JWT token, which is safe to deserialize
+            userInfo = JSONObject.parseObject(jsonString, JSONObject.class); // CodeQL [java/unsafe-deserialization] False Positive: the input is a JWT token, which is safe
         } catch (Exception e) {
             e.printStackTrace();
         }
