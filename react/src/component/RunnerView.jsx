@@ -109,7 +109,7 @@ export default class RunnerView extends BaseView {
         maxStepCount: "",
         deviceTestCount: "",
         testTimeOutSec: "",
-        instrumentationArgs: "",
+        testRunArgs: "",
         frameworkType: "JUnit4",
         testRunnerName: "androidx.test.runner.AndroidJUnitRunner",
         enableTestOrchestrator: false,
@@ -760,12 +760,12 @@ export default class RunnerView extends BaseView {
                     <Stack direction="row" alignItems="flex-end">
                         <TextField
                             margin="dense"
-                            name="instrumentationArgs"
+                            name="testRunArgs"
                             type="text"
                             label="Test config"
                             fullWidth
                             variant="standard"
-                            value={this.state.instrumentationArgs}
+                            value={this.state.testRunArgs}
                             onChange={this.handleValueChange}
                         />
                         <Tooltip title="Additional parameters">
@@ -1036,7 +1036,7 @@ export default class RunnerView extends BaseView {
                 maxStepCount: "",
                 deviceTestCount: "",
                 testTimeOutSec: "",
-                instrumentationArgs: "",
+                testRunArgs: "",
             })
         })
 
@@ -1098,11 +1098,11 @@ export default class RunnerView extends BaseView {
     }
 
     runTest = () => {
-        let instrumentationArgsObj = {};
+        let testRunArgsObj = {};
         let neededPermissionsObj = [];
         let deviceActionsObj = {};
         try {
-            instrumentationArgsObj = this.handleJSONParams(this.state.instrumentationArgs);
+            testRunArgsObj = this.handleJSONParams(this.state.testRunArgs);
             neededPermissionsObj = this.handleJSONParams(this.state.neededPermissions, []);
             deviceActionsObj = this.handleJSONParams(this.state.deviceActions);
         } catch (error) {
@@ -1124,7 +1124,7 @@ export default class RunnerView extends BaseView {
             maxStepCount: this.state.maxStepCount,
             deviceTestCount: this.state.deviceTestCount,
             testTimeOutSec: this.state.testTimeOutSec,
-            instrumentationArgs: instrumentationArgsObj,
+            testRunArgs: testRunArgsObj,
             frameworkType: this.state.frameworkType,
             testRunnerName: this.state.testRunnerName,
             neededPermissions: neededPermissionsObj,

@@ -84,7 +84,6 @@ public class Task implements Serializable {
     private String notifyUrl;
     @Transient
     private boolean disableRecording = false;
-    @Column(columnDefinition = "boolean default false")
     private boolean isSucceed = false;
     public String blockedDeviceSerialNumber;
     public String unblockedDeviceSerialNumber;
@@ -184,6 +183,7 @@ public class Task implements Serializable {
         return testTaskSpec;
     }
 
+    @SuppressWarnings("deprecation")
     public Task(TestTaskSpec testTaskSpec) {
         setId(testTaskSpec.testTaskId);
         setAccessKey(testTaskSpec.accessKey);
@@ -192,6 +192,9 @@ public class Task implements Serializable {
         setPipelineLink(testTaskSpec.pipelineLink);
         setTimeOutSecond(testTaskSpec.testTimeOutSec);
         setDeviceActions(testTaskSpec.deviceActions);
+        if (testTaskSpec.instrumentationArgs != null) {
+            testTaskSpec.testRunArgs.putAll(testTaskSpec.instrumentationArgs);
+        }
         setTaskRunArgs(testTaskSpec.testRunArgs);
         setFileSetId(testTaskSpec.fileSetId);
         setPkgName(testTaskSpec.pkgName);
