@@ -18,7 +18,7 @@ ehcache.xml @zhou9584 @olivershen-wow
 /common/src/main/java/com/microsoft/hydralab/common/entity/ @olivershen-wow @zhou9584 @dexterdreeeam 
 
 # Gradle Plugin
-/gradle_plugin/ @olivershen-wow @taoran6 @dexterdreeeam 
+/gradle_plugin/ @olivershen-wow @taoran6 @dexterdreeeam @zhou9584
 
 # ADO extension
 /vsts_extension/ @olivershen-wow @dexterdreeeam  @taoran6

@@ -98,6 +98,8 @@ public class AuthUtil {
             String jsonString = new String(Base64.decodeBase64(b64payload), FileUtil.UTF_8);
             ParserConfig.getGlobalInstance().setSafeMode(true);
             userInfo = JSONObject.parseObject(jsonString);
+            // reset safe mode to avoid the impact on other json parse
+            ParserConfig.getGlobalInstance().setSafeMode(false);
         } catch (Exception e) {
             e.printStackTrace();
         }
