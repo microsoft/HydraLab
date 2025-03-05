@@ -127,6 +127,9 @@ public class TestConfig {
                 "\tenableNetworkMonitor=" + enableNetworkMonitor + "\n" +
                 "\tnetworkMonitorRule=" + networkMonitorRule + "\n" +
                 "\tenableTestOrchestrator=" + enableTestOrchestrator + "\n" +
-                "\tanalysisConfigsStr=" + analysisConfigsStr;
+                "\tanalysisConfigsStr=" + analysisConfigsStr + "\n" +
+                "\tblockDevice=" + blockDevice + "\n" +
+                "\tunblockDevice=" + unblockDevice + "\n" +
+                "\tunblockDeviceSecretKey=" + unblockDeviceSecretKey;
     }
 }

@@ -31,6 +31,8 @@ public class TestTask {
                 ", startDate=" + startDate +
                 ", totalTestCount=" + totalTestCount +
                 ", status='" + status + '\'' +
+                ", blockedDeviceSerialNumber='" + blockedDeviceSerialNumber + '\'' +
+                ", unblockedDeviceSerialNumber='" + unblockedDeviceSerialNumber + '\'' +
                 '}';
     }
 
