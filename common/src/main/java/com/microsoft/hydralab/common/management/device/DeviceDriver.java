@@ -2,6 +2,7 @@ package com.microsoft.hydralab.common.management.device;
 
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
@@ -104,4 +105,6 @@ public interface DeviceDriver {
     void rebootDeviceAsync(DeviceInfo deviceInfo, Logger logger);
 
     void rebootDeviceIfNeeded(DeviceInfo deviceInfo, Logger logger);
+
+    void execDeviceOperation(DeviceInfo deviceInfo, DeviceOperation operation, Logger logger);
 }

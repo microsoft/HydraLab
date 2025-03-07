@@ -8,6 +8,7 @@ import com.microsoft.hydralab.agent.repository.MobileDeviceRepository;
 import com.microsoft.hydralab.common.entity.agent.MobileDevice;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.management.device.DeviceType;
@@ -18,6 +19,7 @@ import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMon
 import com.microsoft.hydralab.common.management.listener.impl.PreInstallListener;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
+import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -164,5 +166,19 @@ public class DeviceControlService {
                         log.error("Failed to reboot device: {}", deviceInfo.getSerialNum(), e);
                     }
                 });
+    }
+
+    public void operateDevice(DeviceOperation deviceOperation) {
+        Set<DeviceInfo> allActiveConnectedDevice = agentManagementService.getActiveDeviceList(log);
+        List<DeviceInfo> devices = allActiveConnectedDevice.stream()
+                .filter(adbDeviceInfo -> deviceOperation.getDeviceSerial().equals(adbDeviceInfo.getSerialNum()))
+                .collect(Collectors.toList());
+        if (devices.size() != 1) {
+            throw new RuntimeException("Device " + deviceOperation.getDeviceSerial() + " not connected!");
+        }
+        DeviceInfo device = devices.get(0);
+        deviceDriverManager.execDeviceOperation(device, deviceOperation, log);
+        ThreadUtils.safeSleep(500);
+        deviceDriverManager.getScreenShot(device, log);
     }
 }

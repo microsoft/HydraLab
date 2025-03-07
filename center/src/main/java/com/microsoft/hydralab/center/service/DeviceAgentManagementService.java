@@ -22,6 +22,7 @@ import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.AnalysisTask;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.entity.common.StatisticData;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
@@ -1238,6 +1239,21 @@ public class DeviceAgentManagementService {
         log.info("Storing current online agent number {}.", currentAgentNum);
         statisticDataRepository.save(new StatisticData("device_num", currentDeviceNum));
         log.info("Storing current online device number {}.", currentDeviceNum);
+    }
+
+    public void operateDevice(DeviceOperation operation) {
+        DeviceInfo deviceInfo = deviceListMap.get(operation.getDeviceSerial());
+        if (deviceInfo == null) {
+            return;
+        }
+        AgentSessionInfo agentSessionInfo = getAgentSessionInfoByAgentId(deviceInfo.getAgentId());
+        if (agentSessionInfo == null) {
+            return;
+        }
+        Message message = new Message();
+        message.setPath(Const.Path.DEVICE_OPERATION);
+        message.setBody(operation);
+        sendMessageToSession(agentSessionInfo.session, message);
     }
 
     static class AgentSessionInfo {

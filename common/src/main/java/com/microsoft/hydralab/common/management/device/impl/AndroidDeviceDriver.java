@@ -13,6 +13,7 @@ import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.entity.agent.EnvCapability;
 import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.MultiLineNoCancelLoggingReceiver;
@@ -158,6 +159,34 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
             PhoneAppScreenRecorder.copyAPK(agentManagementService.getPreAppDir());
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "adbOperateUtil init failed", e);
+        }
+    }
+
+    @Override
+    public void execDeviceOperation(DeviceInfo deviceInfo, DeviceOperation operation, Logger logger) {
+        String command = "";
+        switch (operation.getOperationType()) {
+            case TAP:
+                command = String.format("input tap %s %s", operation.getFromPositionX(), operation.getFromPositionY());
+                break;
+            case SWIPE:
+                command = String.format("input swipe %s %s %s %s", operation.getFromPositionX(),
+                        operation.getFromPositionY(), operation.getToPositionX(), operation.getToPositionY());
+                break;
+            case REBOOT:
+                command = "reboot";
+                break;
+            case WAKEUP:
+                command = "input keyevent 82";
+                break;
+            default:
+                logger.error("Invalid operation type");
+                return;
+        }
+        try {
+            adbOperateUtil.execOnDevice(deviceInfo, command, new MultiLineNoCancelLoggingReceiver(logger), logger);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -378,7 +407,7 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
 
     @Override
     public ScreenRecorder getScreenRecorder(DeviceInfo deviceInfo, File folder, Logger logger) {
-        if (PhoneAppScreenRecorder.RECORD_PACKAGE_NAME.equals(deviceInfo.getRunningTaskPackageName())) {
+        if (RECORD_PACKAGE_NAME.equals(deviceInfo.getRunningTaskPackageName())) {
             return new ADBScreenRecorder(this, this.adbOperateUtil, deviceInfo, logger, folder);
         }
         return new PhoneAppScreenRecorder(this, this.adbOperateUtil, deviceInfo, folder, logger);

@@ -22,6 +22,7 @@ public interface Const {
         String AGENT_UPDATE = "/api/agent/update";
         String AGENT_RESTART = "/api/agent/restart";
         String DEFAULT_PHOTO = "static/dist/images/default_user.png";
+        String DEVICE_OPERATION = "deviceOperation";
     }
 
     interface DeviceGroup {

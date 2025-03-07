@@ -144,14 +144,15 @@ export default class DeviceDetailView extends React.Component {
     }
 
     getAndroidPhoneCase(item) {
-        return <div className='deviceScreen' style={deviceStyle}>
+        return <div className='deviceScreen' style={deviceStyle} onClick={()=>{ this.props.OnDeviceSelected(item.serialNum) }}>
             <div className="androidPhone black portrait">
                 <div className="case" />
                 <div className="camera" />
                 <div className="content">
                     <img className={cssObj.mobile_screenshot}
                         src={item.screenshotImageUrl + '?rand=' + Math.random() + '&' + require('local-storage').get('FileToken')}
-                        alt="Android Phone" />
+                        alt="Android Phone" 
+                        />
                 </div>
             </div>
         </div>
