@@ -16,6 +16,7 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -177,13 +178,13 @@ public class DeviceManageController {
             }
             switch (operation.getOperationType()) {
                 case TAP:
-                    if(operation.getFromPositionX() == null || operation.getFromPositionY() == null) {
+                    if(StringUtils.isEmpty(operation.getFromPositionX())|| StringUtils.isEmpty(operation.getFromPositionY())){
                         return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid tap position");
                     }
                     break;
                 case SWIPE:
-                    if (operation.getFromPositionX() == null || operation.getFromPositionY() == null
-                            || operation.getToPositionX() == null || operation.getToPositionY() == null) {
+                    if (StringUtils.isEmpty(operation.getFromPositionX()) || StringUtils.isEmpty(operation.getFromPositionY())
+                            || StringUtils.isEmpty(operation.getToPositionX()) || StringUtils.isEmpty(operation.getToPositionY())) {
                         return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid swipe position");
                     }
                     break;
