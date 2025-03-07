@@ -8,6 +8,7 @@ import com.microsoft.hydralab.center.util.AuthUtil;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.identity.service.essentials.MiseValidationInput;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +102,20 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
                     response.setHeader("Location", authUtil.getLoginUrl());
                 }
                 return false;
+            } else {
+//                MiseValidationInput input = MiseValidationInput(
+//                    oauthToken,
+//                    request.getHeader("X-Forwarded-For"),
+//                    request.originalUriHeader,
+//                    request.getMethod(),
+//                    request.miseCorrelationId
+//                );
+
+//                try(var validationResult = mise.Validate(input)) {
+//                    if (validationResult.getHttpResponseStatusCode() == 200) {
+//                        System.out.println("OK");
+//                    }
+//                }
             }
             //redirect
             String redirectUrl = request.getParameter(Const.FrontEndPath.REDIRECT_PARAM);
