@@ -182,6 +182,11 @@ public class DeviceManageController {
                         return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid tap position");
                     }
                     break;
+                case LONG_TAP:
+                    if (StringUtils.isEmpty(operation.getFromPositionX()) || StringUtils.isEmpty(operation.getFromPositionY())) {
+                        return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid long tap position");
+                    }
+                    break;
                 case SWIPE:
                     if (StringUtils.isEmpty(operation.getFromPositionX()) || StringUtils.isEmpty(operation.getFromPositionY())
                             || StringUtils.isEmpty(operation.getToPositionX()) || StringUtils.isEmpty(operation.getToPositionY())) {

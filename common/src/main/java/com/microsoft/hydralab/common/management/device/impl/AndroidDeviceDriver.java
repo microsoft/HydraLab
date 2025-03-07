@@ -165,9 +165,15 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
     @Override
     public void execDeviceOperation(DeviceInfo deviceInfo, DeviceOperation operation, Logger logger) {
         String command = "";
+        int sleepTime = 500;
         switch (operation.getOperationType()) {
             case TAP:
                 command = String.format("input tap %s %s", operation.getFromPositionX(), operation.getFromPositionY());
+                break;
+            case LONG_TAP:
+                command = String.format("input swipe %s %s %s %s 1000", operation.getFromPositionX(),
+                        operation.getFromPositionY(), operation.getFromPositionX(), operation.getFromPositionY());
+                sleepTime = 500;
                 break;
             case SWIPE:
                 command = String.format("input swipe %s %s %s %s", operation.getFromPositionX(),
@@ -185,6 +191,8 @@ public class AndroidDeviceDriver extends AbstractDeviceDriver {
         }
         try {
             adbOperateUtil.execOnDevice(deviceInfo, command, new MultiLineNoCancelLoggingReceiver(logger), logger);
+            ThreadUtils.safeSleep(sleepTime);
+            getScreenShotNoWakeUp(deviceInfo, logger);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

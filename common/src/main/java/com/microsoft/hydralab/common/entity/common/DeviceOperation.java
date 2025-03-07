@@ -23,7 +23,8 @@ public class DeviceOperation {
         SWIPE,
         TAP,
         REBOOT,
-        WAKEUP
+        WAKEUP,
+        LONG_TAP,
     }
 }
 

@@ -19,7 +19,6 @@ import com.microsoft.hydralab.common.management.listener.impl.DeviceStabilityMon
 import com.microsoft.hydralab.common.management.listener.impl.PreInstallListener;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.ThreadPoolUtil;
-import com.microsoft.hydralab.common.util.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -178,7 +177,5 @@ public class DeviceControlService {
         }
         DeviceInfo device = devices.get(0);
         deviceDriverManager.execDeviceOperation(device, deviceOperation, log);
-        ThreadUtils.safeSleep(500);
-        deviceDriverManager.getScreenShot(device, log);
     }
 }
