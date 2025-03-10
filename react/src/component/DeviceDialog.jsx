@@ -68,7 +68,7 @@ const DeviceDialog = ({ open, onClose, selectedDevice }) => {
         axios.post('/api/device/operate', formParams, {
             headers: { 'content-type': 'application/json' }
         }).then(res => {
-            refshImage();
+            refreshImage();
         })
     };
 
@@ -92,7 +92,7 @@ const DeviceDialog = ({ open, onClose, selectedDevice }) => {
         axios.post('/api/device/operate', formParams, {
             headers: { 'content-type': 'application/json' }
         }).then(res => {
-            refshImage();
+            refreshImage();
         })
     };
 
@@ -123,11 +123,11 @@ const DeviceDialog = ({ open, onClose, selectedDevice }) => {
         axios.post('/api/device/operate', formParams, {
             headers: { 'content-type': 'application/json' }
         }).then(res => {
-            refshImage();
+            refreshImage();
         })
     };
 
-    const refshImage = () => {
+    const refreshImage = () => {
         const interval = setInterval(() => {
             setCount(prevCount => prevCount + 1);
         }, 300);
