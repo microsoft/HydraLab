@@ -231,7 +231,7 @@ public class HydraLabClientUtils {
         }
 
         if (testConfig.unblockDevice && testConfig.deviceConfig.deviceIdentifier.equals(runningTest.unblockedDeviceSerialNumber)) {
-            printlnf("##[section] Device % s, unblocked.", runningTest.unblockedDeviceSerialNumber);
+            printlnf("##[section] Device %s, unblocked.", runningTest.unblockedDeviceSerialNumber);
         }
 
         String testReportUrl = apiConfig.getTestReportUrl(runningTest.id);

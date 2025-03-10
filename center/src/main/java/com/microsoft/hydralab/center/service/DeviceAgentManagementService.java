@@ -32,6 +32,7 @@ import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.BlockedDeviceInfo;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.device.DeviceType;
+import com.microsoft.hydralab.common.repository.BlockedDeviceInfoRepository;
 import com.microsoft.hydralab.common.repository.StatisticDataRepository;
 import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.util.AttachmentService;
@@ -102,6 +103,8 @@ public class DeviceAgentManagementService {
     // save blocked devices <deviceSerial, blockedDeviceInfo>
     private final ConcurrentHashMap<String, BlockedDeviceInfo> blockedDevicesMap = new ConcurrentHashMap<>();
 
+    @Resource
+    BlockedDeviceInfoRepository blockedDeviceInfoRepository;
     @Resource
     MetricUtil metricUtil;
     @Resource
@@ -1149,6 +1152,7 @@ public class DeviceAgentManagementService {
             blockedDeviceInfo.setBlockingTaskUUID(testTaskSpec.testTaskId);
             blockedDeviceInfo.setBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier);
             blockedDevicesMap.put(testTaskSpec.deviceIdentifier,blockedDeviceInfo);
+            blockedDeviceInfoRepository.save(blockedDeviceInfo);
             testTaskSpec.blockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
             testTaskSpec.unblockDeviceSecretKey = testTaskSpec.testTaskId;
         }
@@ -1156,7 +1160,14 @@ public class DeviceAgentManagementService {
 
     public boolean isDeviceBlocked(String deviceIdentifier) {
         synchronized (blockedDevicesMap) {
-            return blockedDevicesMap.containsKey(deviceIdentifier);
+            if (blockedDevicesMap.containsKey(deviceIdentifier)){
+                return true;
+            }
+            if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(deviceIdentifier)) {
+                blockedDevicesMap.put(deviceIdentifier, blockedDeviceInfoRepository.findByBlockedDeviceSerialNumber(deviceIdentifier));
+                return true;
+            }
+            return false;
         }
     }
 
@@ -1166,6 +1177,10 @@ public class DeviceAgentManagementService {
             synchronized (blockedDevicesMap) {
                 for (String deviceSerial : deviceSerials) {
                     if (!blockedDevicesMap.containsKey(deviceSerial)) {
+                        if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(deviceIdentifier)) {
+                            blockedDevicesMap.put(deviceIdentifier, blockedDeviceInfoRepository.findByBlockedDeviceSerialNumber(deviceIdentifier));
+                            continue;
+                        }
                         return false;
                     }
                 }
@@ -1182,11 +1197,18 @@ public class DeviceAgentManagementService {
                 BlockedDeviceInfo blockedDeviceInfo = blockedDevicesMap.get(testTaskSpec.deviceIdentifier);
                 if (blockedDeviceInfo.getBlockingTaskUUID().equals(testTaskSpec.unblockDeviceSecretKey)) {
                     blockedDevicesMap.remove(testTaskSpec.deviceIdentifier);
+                    if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier)) {
+                        blockedDeviceInfoRepository.deleteByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier);
+                    }
                     testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
+
                 } else {
                     throw new IllegalArgumentException("Invalid unblock device secret key!");
                 }
             } else {
+                if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier)) {
+                    blockedDeviceInfoRepository.deleteByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier);
+                }
                 log.warn("Device {} is already unblocked.", testTaskSpec.deviceIdentifier);
                 testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
             }
@@ -1198,18 +1220,32 @@ public class DeviceAgentManagementService {
             return;
         }
         isUnblockingDevices.set(true);
+
         synchronized (blockedDevicesMap) {
             Instant currentTime = Instant.now();
             Iterator<Map.Entry<String, BlockedDeviceInfo>> iterator = blockedDevicesMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<String, BlockedDeviceInfo> entry = iterator.next();
                 Instant blockedTime = entry.getValue().getBlockedTime();
+                String blockedDeviceSerialNumber = entry.getValue().getBlockedDeviceSerialNumber();
                 Duration durationBlocked = Duration.between(blockedTime, currentTime);
                 if (durationBlocked.compareTo(Const.DeviceGroup.BLOCKED_DEVICE_TIMEOUT) > 0) {
                     log.info("Unblocking device {} since it has been blocked for more than {} hours.", entry.getKey(), durationBlocked);
                     iterator.remove();
+                    if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(blockedDeviceSerialNumber)) {
+                        blockedDeviceInfoRepository.deleteByBlockedDeviceSerialNumber(blockedDeviceSerialNumber);
+                    }
                 }
             }
+
+            List<BlockedDeviceInfo> expiredBlockedDevices = new ArrayList<>();
+            for (BlockedDeviceInfo device : blockedDeviceInfoRepository.findAll()) {
+                if (Duration.between(device.getBlockedTime(), currentTime)
+                        .compareTo(Const.DeviceGroup.BLOCKED_DEVICE_TIMEOUT) > 0) {
+                    expiredBlockedDevices.add(device);
+                }
+            }
+            blockedDeviceInfoRepository.deleteAll(expiredBlockedDevices);
         }
         isUnblockingDevices.set(false);
     }
@@ -1223,6 +1259,11 @@ public class DeviceAgentManagementService {
             BlockedDeviceInfo blockedDeviceInfo = blockedDevicesMap.get(testTaskSpec.deviceIdentifier);
 
             if (blockedDeviceInfo == null) {
+                if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier)){
+                    blockedDeviceInfo = blockedDeviceInfoRepository.findByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier);
+                    blockedDevicesMap.put(testTaskSpec.deviceIdentifier, blockedDeviceInfo);
+                    return blockedDeviceInfo.getBlockingTaskUUID().equals(testTaskSpec.unblockDeviceSecretKey);
+                }
                 return false;
             }
             return blockedDeviceInfo.getBlockingTaskUUID().equals(testTaskSpec.unblockDeviceSecretKey);
