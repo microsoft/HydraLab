@@ -7,10 +7,12 @@ import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.microsoft.hydralab.center.interceptor.BaseInterceptor;
 import com.microsoft.hydralab.center.interceptor.CorsInterceptor;
 import com.microsoft.hydralab.common.util.Const;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -31,6 +33,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     private CorsInterceptor corsInterceptor;
     @Resource
     private FastJsonHttpMessageConverter fastJsonHttpMessageConverter;
+    @Value("${app.registry.server}")
+    private String registryServer;
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
@@ -54,6 +58,15 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+//                .allowedOrigins(registryServer)
+                .allowedHeaders("Origin", "Content-Type", "Authorization")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowCredentials(true);
     }
 
     @Override

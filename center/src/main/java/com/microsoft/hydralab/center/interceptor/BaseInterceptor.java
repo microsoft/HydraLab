@@ -3,12 +3,18 @@
 
 package com.microsoft.hydralab.center.interceptor;
 
+import com.microsoft.aad.msal4j.AuthorizationRequestUrlParameters;
+import com.microsoft.aad.msal4j.ClientCredentialFactory;
+import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.hydralab.center.service.AuthTokenService;
 import com.microsoft.hydralab.center.util.AuthUtil;
+import com.microsoft.hydralab.center.util.SecurityUtil;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.LogUtils;
+import com.microsoft.identity.service.essentials.Mise;
 import com.microsoft.identity.service.essentials.MiseValidationInput;
+import com.microsoft.identity.service.essentials.MiseValidationResult;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +30,14 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * @author shbu
  */
 @Component
 public class BaseInterceptor extends HandlerInterceptorAdapter {
+    private final Logger logger = LoggerFactory.getLogger(BaseInterceptor.class);
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseInterceptor.class);
 
@@ -103,19 +111,27 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
                 }
                 return false;
             } else {
-//                MiseValidationInput input = MiseValidationInput(
-//                    oauthToken,
-//                    request.getHeader("X-Forwarded-For"),
-//                    request.originalUriHeader,
-//                    request.getMethod(),
-//                    request.miseCorrelationId
-//                );
+                Mise mise = SecurityUtil.generateMISEClient(this.logger);
 
-//                try(var validationResult = mise.Validate(input)) {
-//                    if (validationResult.getHttpResponseStatusCode() == 200) {
-//                        System.out.println("OK");
-//                    }
-//                }
+                MiseValidationInput input = new MiseValidationInput();
+                input.authorizationHeader = "Bear " + oauthToken;
+//                input.xForwardedForHeader = request.getHeader("X-Forwarded-For");
+                input.originalMethodHeader = request.getMethod();
+                var originUriHeader = request.getHeader("Origin");
+                if (originUriHeader == null) {
+                    input.originalUriHeader = "http" + request.getHeader("Host");
+                } else {
+                    input.originalUriHeader = request.getHeader("Origin");
+                }
+
+                try (MiseValidationResult validationResult = mise.validate(input)) {
+                    int statusCode = validationResult.getHttpResponseStatusCode();
+                    logger.info("MISE result:" + statusCode);
+                    if (validationResult.getErrorDescription() != null) {
+                        logger.error("Error message " + validationResult.getErrorDescription());
+                        return false;
+                    }
+                }
             }
             //redirect
             String redirectUrl = request.getParameter(Const.FrontEndPath.REDIRECT_PARAM);
