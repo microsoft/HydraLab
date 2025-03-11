@@ -7,6 +7,7 @@ import cn.hutool.core.img.ImgUtil;
 import com.microsoft.hydralab.common.entity.agent.EnvCapability;
 import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.impl.WindowsLogCollector;
@@ -68,6 +69,11 @@ public class WindowsDeviceDriver extends AbstractDeviceDriver {
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "WindowsDeviceDriver init failed", e);
         }
+    }
+
+    @Override
+    public void execDeviceOperation(DeviceInfo deviceInfo, DeviceOperation operation, Logger logger) {
+
     }
 
     @Override

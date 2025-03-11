@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.agent.EnvCapability;
 import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.logger.LogCollector;
 import com.microsoft.hydralab.common.logger.impl.IOSLogCollector;
@@ -68,6 +69,11 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "IOSDeviceDriver init failed", e);
         }
+    }
+
+    @Override
+    public void execDeviceOperation(DeviceInfo deviceInfo, DeviceOperation operation, Logger logger) {
+        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
     @Override

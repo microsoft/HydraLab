@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React from 'react'
+import React from 'react';
+import DeviceDialog from '@/component/DeviceDialog';
 import 'bootstrap/dist/css/bootstrap.css'
 import axios from '@/axios'
 import DeviceDetailView from '@/component/DeviceDetailView';
@@ -36,20 +37,28 @@ const PieCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percen
 };
 
 export default class DeviceAgentsView extends BaseView {
-
     state = {
         agents: null,
         collapseStatus: {},
         refreshing: false,
         latestAgentVersion: null,
         fileId: null,
-        agentUpdateStatus: "UPDATING"
+        agentUpdateStatus: "UPDATING",
+        openDevice: false,
+        selectedDevice: {},
     }
 
     render() {
         const { agents, refreshing } = this.state;
         const { snackbarIsShown, snackbarSeverity, snackbarMessage } = this.state
         const agentRows = []
+        const OnDeviceSelected = (deviceSerialnum)=>{
+            var device = agents.flatMap(agent=>agent.devices).find(device=>device.serialNum===deviceSerialnum)
+            this.setState({
+                openDevice:true,
+                selectedDevice:device,
+            })
+        }
         var agentChartData = []
         var deviceChartData = []
         var deviceStatusChartData = []
@@ -233,7 +242,7 @@ export default class DeviceAgentsView extends BaseView {
                                 <div className='deviceAgents-devicesList'>
                                     {
                                         agent.devices.map((d) => {
-                                            return <DeviceDetailView deviceItem={d} />
+                                            return <DeviceDetailView deviceItem={d} OnDeviceSelected={OnDeviceSelected} hover/>
                                         })
                                     }
                                 </div>
@@ -338,9 +347,11 @@ export default class DeviceAgentsView extends BaseView {
                         <Tooltip />
                     </PieChart> */}
                 </div>
-                <div>
-
-                </div>
+                <DeviceDialog
+                    open={this.state.openDevice}
+                    onClose={() => this.handleCloseDeviceDialog()}
+                    selectedDevice={this.state.selectedDevice}
+                />
                 {agentRows}
                 <Snackbar
                     anchorOrigin={{
@@ -553,5 +564,11 @@ export default class DeviceAgentsView extends BaseView {
     componentDidMount() {
         this.getLatestAgentVersion()
         this.updateDeviceListData()
+    }
+
+    handleCloseDeviceDialog() {
+        this.setState({
+            openDevice:false
+        })
     }
 }

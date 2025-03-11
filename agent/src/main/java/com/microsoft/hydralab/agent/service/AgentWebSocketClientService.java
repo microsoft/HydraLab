@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.AgentMetadata;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestRun;
@@ -163,6 +164,13 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
                     break;
                 }
                 response = handleTestTaskRun(message);
+                break;
+            case Const.Path.DEVICE_OPERATION:
+                if (!(message.getBody() instanceof DeviceOperation)) {
+                    break;
+                }
+                DeviceOperation deviceOperation = (DeviceOperation) message.getBody();
+                deviceControlService.operateDevice(deviceOperation);
                 break;
             default:
                 break;

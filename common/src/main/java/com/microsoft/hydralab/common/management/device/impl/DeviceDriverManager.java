@@ -5,6 +5,7 @@ package com.microsoft.hydralab.common.management.device.impl;
 
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.logger.LogCollector;
@@ -236,5 +237,10 @@ public class DeviceDriverManager implements DeviceDriver {
     @Override
     public void rebootDeviceIfNeeded(DeviceInfo deviceInfo, Logger logger) {
         getDeviceDriver(deviceInfo.getType()).rebootDeviceIfNeeded(deviceInfo, logger);
+    }
+
+    @Override
+    public void execDeviceOperation(DeviceInfo deviceInfo, DeviceOperation operation, Logger logger) {
+        getDeviceDriver(deviceInfo.getType()).execDeviceOperation(deviceInfo, operation, logger);
     }
 }

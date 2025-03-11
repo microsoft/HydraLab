@@ -85,7 +85,31 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
         return screenShotImageFile;
     }
 
-    ;
+    public File getScreenShotNoWakeUp(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
+        File screenShotImageFile = deviceInfo.getScreenshotImageFile();
+        if (screenShotImageFile == null) {
+            screenShotImageFile = new File(agentManagementService.getScreenshotDir(), deviceInfo.getName() + "-" + deviceInfo.getSerialNum() + ".jpg");
+            deviceInfo.setScreenshotImageFile(screenShotImageFile);
+            String imageRelPath = screenShotImageFile.getAbsolutePath().replace(new File(agentManagementService.getDeviceStoragePath()).getAbsolutePath(), "");
+            imageRelPath = agentManagementService.getDeviceFolderUrlPrefix() + imageRelPath.replace(File.separator, "/");
+            deviceInfo.setImageRelPath(imageRelPath);
+        }
+        deviceInfo.setScreenshotUpdateTimeMilli(System.currentTimeMillis());
+        try {
+            screenCapture(deviceInfo, screenShotImageFile.getAbsolutePath(), logger);
+        } catch (Exception e) {
+            classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
+        }
+        StorageFileInfo fileInfo = new StorageFileInfo(screenShotImageFile,
+                "device/screenshots/" + screenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        String fileDownloadUrl = agentManagementService.getStorageServiceClientProxy().upload(screenShotImageFile, fileInfo).getBlobUrl();
+        if (org.apache.commons.lang3.StringUtils.isBlank(fileDownloadUrl)) {
+            classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
+        } else {
+            deviceInfo.setScreenshotImageUrl(fileDownloadUrl);
+        }
+        return screenShotImageFile;
+    }
 
     public File getScreenShotWithStrategy(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger,
                                           @NotNull AgentUser.BatteryStrategy batteryStrategy) {

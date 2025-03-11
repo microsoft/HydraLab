@@ -13,14 +13,17 @@ import com.microsoft.hydralab.common.entity.center.AgentDeviceGroup;
 import com.microsoft.hydralab.common.entity.center.DeviceGroup;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.util.Const;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -160,5 +163,49 @@ public class DeviceManageController {
         }
 
         return Result.ok("Saved success!");
+    }
+
+    // API used to operate the device
+    @PostMapping(value = "/api/device/operate", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result operateDevice(@CurrentSecurityContext SysUser requestor,
+                                @RequestBody DeviceOperation operation) {
+        try {
+            if (!deviceAgentManagementService.checkDeviceAuthorization(requestor, operation.getDeviceSerial())) {
+                return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
+            }
+            if (operation.getOperationType() == null) {
+                return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid operation type");
+            }
+            switch (operation.getOperationType()) {
+                case TAP:
+                    if(StringUtils.isEmpty(operation.getFromPositionX())|| StringUtils.isEmpty(operation.getFromPositionY())){
+                        return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid tap position");
+                    }
+                    break;
+                case LONG_TAP:
+                    if (StringUtils.isEmpty(operation.getFromPositionX()) || StringUtils.isEmpty(operation.getFromPositionY())) {
+                        return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid long tap position");
+                    }
+                    break;
+                case SWIPE:
+                    if (StringUtils.isEmpty(operation.getFromPositionX()) || StringUtils.isEmpty(operation.getFromPositionY())
+                            || StringUtils.isEmpty(operation.getToPositionX()) || StringUtils.isEmpty(operation.getToPositionY())) {
+                        return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid swipe position");
+                    }
+                    break;
+                case REBOOT:
+                    break;
+                case WAKEUP:
+                    break;
+                default:
+                    return Result.error(HttpStatus.BAD_REQUEST.value(), "Invalid operation type");
+            }
+            deviceAgentManagementService.operateDevice(operation);
+        } catch (IllegalArgumentException e) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), e);
+        } catch (Exception e) {
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+        }
+        return Result.ok("Operate success!");
     }
 }
