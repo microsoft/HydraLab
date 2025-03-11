@@ -3,10 +3,12 @@ package com.microsoft.hydralab.center.service;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
+import com.microsoft.hydralab.common.entity.common.BlockedDeviceInfo;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.file.impl.local.LocalStorageClientAdapter;
 import com.microsoft.hydralab.common.file.impl.local.LocalStorageProperty;
+import com.microsoft.hydralab.common.repository.BlockedDeviceInfoRepository;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.SerializeUtil;
 import org.junit.jupiter.api.Test;
@@ -19,7 +21,10 @@ import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.mockito.BDDMockito.given;
 
@@ -30,6 +35,10 @@ public class DeviceAgentManagementServiceTest extends BaseTest {
     AgentUserRepository agentUserRepository;
     @Resource
     DeviceAgentManagementService deviceAgentManagementService;
+    @Resource
+    BlockedDeviceInfoRepository blockedDeviceInfoRepository;
+
+    private final ConcurrentHashMap<String, BlockedDeviceInfo> blockedDevicesMap = new ConcurrentHashMap<>();
 
     @Test
     public void testOnMessage_NoException() throws IOException {
@@ -61,5 +70,30 @@ public class DeviceAgentManagementServiceTest extends BaseTest {
 
         deviceAgentManagementService.onMessage(SerializeUtil.byteArrToMessage(byteMsg), session);
         session.close();
+    }
+
+    @Test
+    public void blockDevice() {
+        BlockedDeviceInfo blockedDeviceInfo = new BlockedDeviceInfo();
+        blockedDeviceInfo.setBlockedDeviceSerialNumber("123456");
+        blockedDeviceInfo.setBlockedTime(Instant.now());
+        blockedDeviceInfo.setBlockingTaskUUID("88888");
+
+        synchronized (blockedDevicesMap) {
+            blockedDevicesMap.put(blockedDeviceInfo.getBlockedDeviceSerialNumber(), blockedDeviceInfo);
+            blockedDeviceInfoRepository.save(blockedDeviceInfo);
+
+            if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(blockedDeviceInfo.getBlockedDeviceSerialNumber())) {
+                blockedDeviceInfoRepository.deleteByBlockedDeviceSerialNumber(blockedDeviceInfo.getBlockedDeviceSerialNumber());
+            }
+
+            List<BlockedDeviceInfo> blockedDeviceInfoList = blockedDeviceInfoRepository.findAll();
+            for (BlockedDeviceInfo blockedDeviceInfo1 : blockedDeviceInfoList) {
+                blockedDeviceInfoRepository.deleteByBlockedTimeBefore(Instant.now());
+            }
+
+        }
+
+
     }
 }
