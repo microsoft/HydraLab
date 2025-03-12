@@ -130,11 +130,11 @@ const DeviceDialog = ({ open, onClose, selectedDevice }) => {
     const refreshImage = () => {
         const interval = setInterval(() => {
             setCount(prevCount => prevCount + 1);
-        }, 300);
+        }, 750);
 
         setTimeout(() => {
             clearInterval(interval);
-        }, 3000);
+        }, 4000);
     }
     
     const refreshDeviceScreen = () => {
@@ -145,13 +145,7 @@ const DeviceDialog = ({ open, onClose, selectedDevice }) => {
         axios.post('/api/device/operate', formParams, {
             headers: { 'content-type': 'application/json' }
         }).then(res => {
-            const interval = setInterval(() => {
-                setCount(prevCount => prevCount + 1);
-            }, 300); // refresh every 0.3s
-
-            setTimeout(() => {
-                clearInterval(interval);
-            }, 3000); // stop after 3s
+            refreshImage();
         })
     }
 
