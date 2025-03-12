@@ -97,7 +97,6 @@ const DeviceDialog = ({ open, onClose, selectedDevice }) => {
     };
 
     const handleSwipe = (e) => {
-        debugger
         var startX = startPosition.x - e.target.getBoundingClientRect().left;
         var startY = startPosition.y - e.target.getBoundingClientRect().top;
         var endX = e.clientX - e.target.getBoundingClientRect().left;
