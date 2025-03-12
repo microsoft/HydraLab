@@ -1159,8 +1159,10 @@ public class DeviceAgentManagementService {
             if (blockedDevicesMap.containsKey(deviceIdentifier)){
                 return true;
             }
-            if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(deviceIdentifier)) {
-                blockedDevicesMap.put(deviceIdentifier, blockedDeviceInfoRepository.findByBlockedDeviceSerialNumber(deviceIdentifier));
+            Optional<BlockedDeviceInfo> blockedDeviceInfoOpt = blockedDeviceInfoRepository.findByBlockedDeviceSerialNumber(deviceIdentifier);
+            if (blockedDeviceInfoOpt.isPresent()){
+                BlockedDeviceInfo blockedDeviceInfo = blockedDeviceInfoOpt.get();
+                blockedDevicesMap.put(deviceIdentifier, blockedDeviceInfo);
                 return true;
             }
             return false;
@@ -1173,8 +1175,10 @@ public class DeviceAgentManagementService {
             synchronized (blockedDevicesMap) {
                 for (String deviceSerial : deviceSerials) {
                     if (!blockedDevicesMap.containsKey(deviceSerial)) {
-                        if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(deviceIdentifier)) {
-                            blockedDevicesMap.put(deviceIdentifier, blockedDeviceInfoRepository.findByBlockedDeviceSerialNumber(deviceIdentifier));
+                        Optional<BlockedDeviceInfo> blockedDeviceInfoOpt = blockedDeviceInfoRepository.findByBlockedDeviceSerialNumber(deviceIdentifier);
+                        if (blockedDeviceInfoOpt.isPresent()){
+                            BlockedDeviceInfo blockedDeviceInfo = blockedDeviceInfoOpt.get();
+                            blockedDevicesMap.put(deviceIdentifier, blockedDeviceInfo);
                             continue;
                         }
                         return false;
@@ -1193,18 +1197,14 @@ public class DeviceAgentManagementService {
                 BlockedDeviceInfo blockedDeviceInfo = blockedDevicesMap.get(testTaskSpec.deviceIdentifier);
                 if (blockedDeviceInfo.getBlockingTaskUUID().equals(testTaskSpec.unblockDeviceSecretKey)) {
                     blockedDevicesMap.remove(testTaskSpec.deviceIdentifier);
-                    if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier)) {
-                        blockedDeviceInfoRepository.deleteByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier);
-                    }
+                    blockedDeviceInfoRepository.deleteIfExists(testTaskSpec.deviceIdentifier);
                     testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
 
                 } else {
                     throw new IllegalArgumentException("Invalid unblock device secret key!");
                 }
             } else {
-                if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier)) {
-                    blockedDeviceInfoRepository.deleteByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier);
-                }
+                blockedDeviceInfoRepository.deleteIfExists(testTaskSpec.deviceIdentifier);
                 log.warn("Device {} is already unblocked.", testTaskSpec.deviceIdentifier);
                 testTaskSpec.unblockedDeviceSerialNumber = testTaskSpec.deviceIdentifier;
             }
@@ -1223,7 +1223,6 @@ public class DeviceAgentManagementService {
             while (iterator.hasNext()) {
                 Map.Entry<String, BlockedDeviceInfo> entry = iterator.next();
                 Instant blockedTime = entry.getValue().getBlockedTime();
-                String blockedDeviceSerialNumber = entry.getValue().getBlockedDeviceSerialNumber();
                 Duration durationBlocked = Duration.between(blockedTime, currentTime);
                 if (durationBlocked.compareTo(Const.DeviceGroup.BLOCKED_DEVICE_TIMEOUT) > 0) {
                     log.info("Unblocking device {} since it has been blocked for more than {} hours.", entry.getKey(), durationBlocked);
@@ -1245,8 +1244,9 @@ public class DeviceAgentManagementService {
             BlockedDeviceInfo blockedDeviceInfo = blockedDevicesMap.get(testTaskSpec.deviceIdentifier);
 
             if (blockedDeviceInfo == null) {
-                if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier)){
-                    blockedDeviceInfo = blockedDeviceInfoRepository.findByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier);
+                Optional<BlockedDeviceInfo> blockedDeviceInfoOpt = blockedDeviceInfoRepository.findByBlockedDeviceSerialNumber(testTaskSpec.deviceIdentifier);
+                if (blockedDeviceInfoOpt.isPresent()) {
+                    blockedDeviceInfo = blockedDeviceInfoOpt.get();
                     blockedDevicesMap.put(testTaskSpec.deviceIdentifier, blockedDeviceInfo);
                     return blockedDeviceInfo.getBlockingTaskUUID().equals(testTaskSpec.unblockDeviceSecretKey);
                 }
