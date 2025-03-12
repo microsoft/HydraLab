@@ -83,17 +83,12 @@ public class DeviceAgentManagementServiceTest extends BaseTest {
             blockedDevicesMap.put(blockedDeviceInfo.getBlockedDeviceSerialNumber(), blockedDeviceInfo);
             blockedDeviceInfoRepository.save(blockedDeviceInfo);
 
-            if (blockedDeviceInfoRepository.existsByBlockedDeviceSerialNumber(blockedDeviceInfo.getBlockedDeviceSerialNumber())) {
-                blockedDeviceInfoRepository.deleteByBlockedDeviceSerialNumber(blockedDeviceInfo.getBlockedDeviceSerialNumber());
-            }
+            blockedDeviceInfoRepository.deleteIfExists(blockedDeviceInfo.getBlockedDeviceSerialNumber());
 
             List<BlockedDeviceInfo> blockedDeviceInfoList = blockedDeviceInfoRepository.findAll();
             for (BlockedDeviceInfo blockedDeviceInfo1 : blockedDeviceInfoList) {
-                blockedDeviceInfoRepository.deleteByBlockedTimeBefore(Instant.now());
+                System.out.println(blockedDeviceInfo1);
             }
-
         }
-
-
     }
 }
