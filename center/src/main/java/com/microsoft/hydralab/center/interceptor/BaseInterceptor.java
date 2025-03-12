@@ -3,9 +3,6 @@
 
 package com.microsoft.hydralab.center.interceptor;
 
-import com.microsoft.aad.msal4j.AuthorizationRequestUrlParameters;
-import com.microsoft.aad.msal4j.ClientCredentialFactory;
-import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.hydralab.center.service.AuthTokenService;
 import com.microsoft.hydralab.center.util.AuthUtil;
 import com.microsoft.hydralab.center.util.SecurityUtil;
@@ -30,7 +27,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * @author shbu
