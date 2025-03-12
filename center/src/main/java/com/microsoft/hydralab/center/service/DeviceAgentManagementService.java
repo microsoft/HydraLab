@@ -30,6 +30,7 @@ import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.entity.common.BlockedDeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.repository.BlockedDeviceInfoRepository;
@@ -1267,6 +1268,21 @@ public class DeviceAgentManagementService {
         log.info("Storing current online device number {}.", currentDeviceNum);
     }
 
+    public void operateDevice(DeviceOperation operation) {
+        DeviceInfo deviceInfo = deviceListMap.get(operation.getDeviceSerial());
+        if (deviceInfo == null) {
+            return;
+        }
+        AgentSessionInfo agentSessionInfo = getAgentSessionInfoByAgentId(deviceInfo.getAgentId());
+        if (agentSessionInfo == null) {
+            return;
+        }
+        Message message = new Message();
+        message.setPath(Const.Path.DEVICE_OPERATION);
+        message.setBody(operation);
+        sendMessageToSession(agentSessionInfo.session, message);
+    }
+
     static class AgentSessionInfo {
         Session session;
         AgentUser agentUser;
@@ -1276,4 +1292,5 @@ public class DeviceAgentManagementService {
             this.agentUser = agentUser;
         }
     }
+
 }
