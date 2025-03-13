@@ -707,7 +707,6 @@ public class DeviceAgentManagementService {
 
     public JSONObject runTestTaskBySpec(TestTaskSpec testTaskSpec) {
         JSONObject result;
-        unblockFrozenBlockedDevices();
         if (Task.RunnerType.APPIUM_CROSS.name().equals(testTaskSpec.runningType)) {
             result = runAppiumTestTask(testTaskSpec);
         } else if (Task.RunnerType.T2C_JSON.name().equals(testTaskSpec.runningType)) {
