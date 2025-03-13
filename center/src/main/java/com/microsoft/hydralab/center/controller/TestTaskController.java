@@ -99,6 +99,8 @@ public class TestTaskController {
                 }
                 testTaskService.checkTestTaskTeamConsistency(testTaskSpec);
             }
+            // unblock frozen devices
+            deviceAgentManagementService.unblockFrozenBlockedDevices();
             //if the queue is not empty, the task will be added to the queue directly
             if (testTaskService.isQueueEmpty()
                     || Task.RunnerType.APK_SCANNER.name().equals(testTaskSpec.runningType)

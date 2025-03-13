@@ -101,6 +101,8 @@ public class TestTaskService {
         }
         isRunning.set(true);
 
+        // unblock frozen devices
+        deviceAgentManagementService.unblockFrozenBlockedDevices();
         synchronized (taskQueue) {
             Iterator<TestTaskSpec> queueIterator = taskQueue.iterator();
             while (queueIterator.hasNext()) {
