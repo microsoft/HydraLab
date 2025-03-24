@@ -17,7 +17,7 @@ import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.center.TestTaskQueuedInfo;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.entity.common.Task;
-//import com.microsoft.hydralab.common.entity.common.TestFileSet;
+import com.microsoft.hydralab.common.entity.common.TestFileSet;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
@@ -68,18 +68,18 @@ public class TestTaskController {
     public Result<Object> runTestTask(@CurrentSecurityContext SysUser requestor,
                                       @RequestBody TestTaskSpec testTaskSpec) {
         try {
-//            if (requestor == null) {
-//                return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
-//            }
+            if (requestor == null) {
+                return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
+            }
 
             JSONObject result = new JSONObject();
-//            TestFileSet testFileSet = testFileSetService.getFileSetInfo(testTaskSpec.fileSetId);
-//            if (testFileSet == null) {
-//                return Result.error(HttpStatus.NOT_FOUND.value(), "no such test file set");
-//            }
-//            testTaskSpec.testFileSet = testFileSet;
-//            testTaskSpec.teamId = testFileSet.getTeamId();
-//            testTaskSpec.teamName = testFileSet.getTeamName();
+            TestFileSet testFileSet = testFileSetService.getFileSetInfo(testTaskSpec.fileSetId);
+            if (testFileSet == null) {
+                return Result.error(HttpStatus.NOT_FOUND.value(), "no such test file set");
+            }
+            testTaskSpec.testFileSet = testFileSet;
+            testTaskSpec.teamId = testFileSet.getTeamId();
+            testTaskSpec.teamName = testFileSet.getTeamName();
             testTaskSpec.testTaskId = UUID.randomUUID().toString();
 
             if (testTaskSpec.blockDevice && testTaskSpec.unblockDevice) {
@@ -100,7 +100,7 @@ public class TestTaskController {
                 testTaskService.checkTestTaskTeamConsistency(testTaskSpec);
             }
             // unblock frozen devices
-//            deviceAgentManagementService.unblockFrozenBlockedDevices();
+            deviceAgentManagementService.unblockFrozenBlockedDevices();
             //if the queue is not empty, the task will be added to the queue directly
             if (testTaskService.isQueueEmpty()
                     || Task.RunnerType.APK_SCANNER.name().equals(testTaskSpec.runningType)
@@ -109,12 +109,11 @@ public class TestTaskController {
                 if (result.get(Const.Param.TEST_DEVICE_SN) == null) {
                     //if there is no alive device, the task will be added to the queue directly
                     testTaskService.addTask(testTaskSpec);
+                } else {
+                    Task task = Task.RunnerType.valueOf(testTaskSpec.runningType).transferToTask(testTaskSpec);
+                    task.setDeviceCount(result.getString(Const.Param.TEST_DEVICE_SN).split(",").length);
+                    testDataService.saveTaskData(task);
                 }
-//                else {
-//                    Task task = Task.RunnerType.valueOf(testTaskSpec.runningType).transferToTask(testTaskSpec);
-//                    task.setDeviceCount(result.getString(Const.Param.TEST_DEVICE_SN).split(",").length);
-//                    testDataService.saveTaskData(task);
-//                }
             } else {
                 testTaskService.addTask(testTaskSpec);
             }
@@ -219,7 +218,7 @@ public class TestTaskController {
      */
     @PostMapping(value = {"/api/test/task/list"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<Page<Task>> getTaskList(@CurrentSecurityContext SysUser requestor,
-                                              @RequestBody JSONObject data) {
+                                          @RequestBody JSONObject data) {
         try {
             if (requestor == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
