@@ -48,7 +48,9 @@ public class AppiumMonkeyRunner extends AppiumRunner {
             testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, deviceTestResultFolder, testTask.getTimeOutSecond(), logger);
         }
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
-        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        if(!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        }
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
         testRun.setTotalCount(1);
 
@@ -77,7 +79,9 @@ public class AppiumMonkeyRunner extends AppiumRunner {
 
         runAppiumMonkey(testRunDevice, pkgName, testTask.getMaxStepCount(), logger);
 
-        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        }
         if (!testTask.isDisableRecording()) {
             testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
         }

@@ -94,6 +94,7 @@ testSpec:
         description: test schedule
     notifyUrl: NOTIFY_URL
     disableRecording: false
+    disableGifEncoder: false
     enableFailingTask: true
     enableNetworkMonitor: false
     networkMonitorRule: NETWORK_TEST_RULE_NONE

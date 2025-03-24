@@ -54,6 +54,7 @@ public class TestTaskSpec {
     public boolean enablePerformanceSuggestion;
     public String notifyUrl;
     public boolean disableRecording = false;
+    public boolean disableGifEncoder = false;
     public boolean enableNetworkMonitor;
     public String networkMonitorRule;
     public boolean enableTestOrchestrator = false;

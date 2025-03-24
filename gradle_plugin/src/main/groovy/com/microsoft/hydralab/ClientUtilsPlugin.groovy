@@ -158,6 +158,10 @@ class ClientUtilsPlugin implements Plugin<Project> {
                 if (project.hasProperty('disableRecording')) {
                     testConfig.disableRecording = Boolean.parseBoolean(project.disableRecording)
                 }
+                if (project.hasProperty('disableGifEncoder')) {
+                    testConfig.disableRecording = Boolean.parseBoolean(project.disableGifEncoder)
+                }
+
                 if (project.hasProperty('enableFailingTask')) {
                     testConfig.enableFailingTask = Boolean.parseBoolean(project.enableFailingTask)
                 }

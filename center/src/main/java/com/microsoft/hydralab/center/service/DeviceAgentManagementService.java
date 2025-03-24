@@ -955,9 +955,9 @@ public class DeviceAgentManagementService {
         for (String agentId : testAgentDevicesMap.keySet()) {
             AgentSessionInfo agentSessionInfoByAgentId = getAgentSessionInfoByAgentId(agentId);
             List<String> testDeviceSerials = testAgentDevicesMap.get(agentId);
-            for (String temp : testDeviceSerials) {
-                updateDeviceStatus(temp, DeviceInfo.TESTING, testTaskSpec.testTaskId);
-            }
+//            for (String temp : testDeviceSerials) {
+//                updateDeviceStatus(temp, DeviceInfo.TESTING, testTaskSpec.testTaskId);
+//            }
             String groupDevices = String.join(",", testDeviceSerials);
             Assert.notNull(agentSessionInfoByAgentId, "Device/Agent Offline!");
             if (result.get(Const.Param.TEST_DEVICE_SN) == null) {
@@ -993,7 +993,7 @@ public class DeviceAgentManagementService {
         if (isAgentUpdating(agentSessionInfoByAgentId.agentUser.getId())) {
             return result;
         }
-        updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
+//        updateDeviceStatus(device.getSerialNum(), DeviceInfo.TESTING, testTaskSpec.testTaskId);
 
         if (testTaskSpec.unblockDevice) {
             unBlockDevice(testTaskSpec);

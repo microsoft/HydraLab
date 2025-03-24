@@ -67,6 +67,7 @@ testSpec:
         description: # <Required if inspectionStrategies is enabled>
   notifyUrl: # <Optional>
   disableRecording: # <Optional>
+  disableGifEncoder: # <Optional>
   enableFailingTask: # <Optional>
   enableNetworkMonitor: # <Optional>
   networkMonitorRule: # <Optional>
