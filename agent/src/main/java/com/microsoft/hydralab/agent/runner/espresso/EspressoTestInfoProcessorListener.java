@@ -102,8 +102,10 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
-        logger.info("Start gif frames collection");
-        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        if(!testTask.isDisableGifEncoder()) {
+            logger.info("Start gif frames collection");
+            testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        }
     }
 
     private void infoLogEnter(Object... args) {
@@ -242,7 +244,9 @@ public class EspressoTestInfoProcessorListener extends XmlTestRunListener {
         if (testTask.isEnableNetworkMonitor()) {
             testRunDeviceOrchestrator.stopNetworkMonitor(testRunDevice, logger);
         }
-        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        }
         if (!testTask.isDisableRecording()) {
             testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
         }

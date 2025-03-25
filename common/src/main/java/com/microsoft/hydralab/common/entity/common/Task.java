@@ -84,6 +84,8 @@ public class Task implements Serializable {
     private String notifyUrl;
     @Transient
     private boolean disableRecording = false;
+    @Transient
+    private boolean disableGifEncoder = false;
     @Column(columnDefinition = "boolean default false")
     private boolean isSucceed = false;
     public String blockedDeviceSerialNumber;
@@ -169,6 +171,7 @@ public class Task implements Serializable {
         testTaskSpec.teamName = getTeamName();
         testTaskSpec.notifyUrl = getNotifyUrl();
         testTaskSpec.disableRecording = isDisableRecording();
+        testTaskSpec.disableGifEncoder = isDisableGifEncoder();
         testTaskSpec.retryTime = getRetryTime();
 
         if (isBlockDevice()) {
@@ -215,6 +218,7 @@ public class Task implements Serializable {
         setTeamName(testTaskSpec.teamName);
         setNotifyUrl(testTaskSpec.notifyUrl);
         setDisableRecording(testTaskSpec.disableRecording);
+        setDisableGifEncoder(testTaskSpec.disableGifEncoder);
 
         if (testTaskSpec.blockDevice) {
             setBlockDevice(true);

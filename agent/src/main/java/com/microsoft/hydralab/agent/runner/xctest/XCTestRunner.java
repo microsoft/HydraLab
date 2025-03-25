@@ -60,7 +60,9 @@ public class XCTestRunner extends TestRunner {
             testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), testTask.getTimeOutSecond(), testRun.getLogger());
         }
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, testTask.getPkgName(), testRun, testRun.getLogger());
-        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
+        if(!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
+        }
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
         testRun.addNewTimeTag("Initializing", 0);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
@@ -206,7 +208,9 @@ public class XCTestRunner extends TestRunner {
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
         testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
         testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(testRunDevice.getGifFile()));
-        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
+        }
         if (!testTask.isDisableRecording()) {
             testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), testRun.getLogger());
         }

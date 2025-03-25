@@ -96,8 +96,10 @@ public class SmartRunner extends TestRunner {
         testRun.addNewTimeTag(initializing, 0);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
 
-        logger.info("Start gif frames collection");
-        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
+        if (!testTask.isDisableGifEncoder()) {
+            logger.info("Start gif frames collection");
+            testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
+        }
     }
 
     public void runSmartTestOnce(int i, TestRunDevice testRunDevice, TestTask testTask, TestRun testRun, SmartTestParam smartTestParam, Logger logger) {
@@ -180,7 +182,9 @@ public class SmartRunner extends TestRunner {
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - testRun.getTestStartTimeMillis());
         testRun.onTestEnded();
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
-        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
+        }
         if (!testTask.isDisableRecording()) {
             testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), testRun.getLogger());
         }

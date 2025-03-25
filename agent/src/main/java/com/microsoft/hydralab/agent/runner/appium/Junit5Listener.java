@@ -69,8 +69,10 @@ public class Junit5Listener extends SummaryGeneratingListener {
         if (!testTask.isDisableRecording()) {
             testRunDeviceOrchestrator.startScreenRecorder(testRunDevice, testRun.getResultFolder(), maxTime <= 0 ? 30 * 60 : maxTime, logger);
         }
-        logger.info("Start gif frames collection");
-        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        if (!testTask.isDisableGifEncoder()) {
+            logger.info("Start gif frames collection");
+            testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        }
         logger.info("Start logcat collection");
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
@@ -123,7 +125,9 @@ public class Junit5Listener extends SummaryGeneratingListener {
             testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
             testRun.onTestEnded();
             testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
-            testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+            if (!testTask.isDisableGifEncoder()) {
+                testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+            }
             if (!testTask.isDisableRecording()) {
                 testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
             }

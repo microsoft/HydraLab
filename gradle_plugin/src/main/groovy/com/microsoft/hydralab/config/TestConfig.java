@@ -54,6 +54,7 @@ public class TestConfig {
     public String inspectionStrategiesStr = "";
     public String notifyUrl = "";
     public boolean disableRecording = false;
+    public boolean disableGifEncoder = false;
     public boolean enableFailingTask = true;
     public boolean enableNetworkMonitor = false;
     public String networkMonitorRule = "";
@@ -123,6 +124,7 @@ public class TestConfig {
                 "\tinspectionStrategiesStr=" + inspectionStrategiesStr + "\n" +
                 "\tnotifyUrl=" + notifyUrl + "\n" +
                 "\tdisableRecording=" + disableRecording + "\n" +
+                "\tdisableGifEncoder=" + disableGifEncoder + "\n" +
                 "\tenableFailingTask=" + enableFailingTask + "\n" +
                 "\tenableNetworkMonitor=" + enableNetworkMonitor + "\n" +
                 "\tnetworkMonitorRule=" + networkMonitorRule + "\n" +

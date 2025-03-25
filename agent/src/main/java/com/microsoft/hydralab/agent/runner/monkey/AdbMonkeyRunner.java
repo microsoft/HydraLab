@@ -101,8 +101,10 @@ public class AdbMonkeyRunner extends TestRunner {
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, testTask.getPkgName(), testRun, logger);
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
 
-        logger.info("Start gif frames collection");
-        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
+        if (!testTask.isDisableGifEncoder()) {
+            logger.info("Start gif frames collection");
+            testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), testTask.getPkgName() + ".gif");
+        }
     }
 
     public long runMonkeyTestOnce(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun, AndroidTestUnit ongoingMonkeyTest, Logger logger) {
@@ -165,7 +167,9 @@ public class AdbMonkeyRunner extends TestRunner {
 
     public void releaseResource(TestTask testTask, TestRunDevice testRunDevice, TestRun testRun) {
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
-        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
+        }
         if (!testTask.isDisableRecording()) {
             testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), testRun.getLogger());
         }

@@ -218,7 +218,7 @@ public class TestTaskController {
      */
     @PostMapping(value = {"/api/test/task/list"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result<Page<Task>> getTaskList(@CurrentSecurityContext SysUser requestor,
-                                              @RequestBody JSONObject data) {
+                                          @RequestBody JSONObject data) {
         try {
             if (requestor == null) {
                 return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");

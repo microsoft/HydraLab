@@ -71,7 +71,9 @@ public class T2CRunner extends AppiumRunner {
         long recordingStartTimeMillis = System.currentTimeMillis();
 
         testRunDeviceOrchestrator.startLogCollector(testRunDevice, pkgName, testRun, logger);
-        testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.startGifEncoder(testRunDevice, testRun.getResultFolder(), pkgName + ".gif");
+        }
         testRun.setLogcatPath(agentManagementService.getTestBaseRelPathInUrl(new File(testRunDevice.getLogPath())));
         testRun.setTotalCount(testTask.testJsonFileList.size() + (initialJsonFile == null ? 0 : 1));
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
@@ -96,7 +98,9 @@ public class T2CRunner extends AppiumRunner {
         testRun.addNewTimeTag("testRunEnded", System.currentTimeMillis() - recordingStartTimeMillis);
         testRun.onTestEnded();
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, null);
-        testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
+        }
         if (!testTask.isDisableRecording()) {
             testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
         }
