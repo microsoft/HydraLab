@@ -124,7 +124,9 @@ public class AdbMonkeyRunner extends TestRunner {
         testRun.addNewTestUnit(ongoingMonkeyTest);
 
         logger.info(ongoingMonkeyTest.getTitle());
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 2, logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 2, logger);
+        }
         //run monkey test
         testRun.addNewTimeTag(unitIndex + ". " + ongoingMonkeyTest.getTitle(),
                 System.currentTimeMillis() - testRun.getTestStartTimeMillis());

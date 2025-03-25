@@ -93,7 +93,9 @@ public class XCTestRunner extends TestRunner {
         if (testRunDevice.getDeviceInfo() == null) {
             throw new RuntimeException("No such device: " + testRunDevice.getDeviceInfo());
         }
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
+        }
         StringBuilder argString = new StringBuilder();
         Map<String, String> instrumentationArgs = testTask.getTaskRunArgs();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
@@ -138,7 +140,9 @@ public class XCTestRunner extends TestRunner {
             out.start();
             proc.waitFor();
             result = out.getResult();
-            testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
+            if (!testTask.isDisableGifEncoder()) {
+                testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Execute XCTest failed");
         }

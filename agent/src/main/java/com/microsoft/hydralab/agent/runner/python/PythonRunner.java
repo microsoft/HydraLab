@@ -146,7 +146,9 @@ public class PythonRunner extends TestRunner {
         testRun.addNewTestUnit(ongoingPythonTest);
 
         logger.info(ongoingPythonTest.getTitle());
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 2, logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 2, logger);
+        }
         //run Python test
         testRun.addNewTimeTag(unitIndex + ". " + ongoingPythonTest.getTitle(),
                 System.currentTimeMillis() - testRun.getTestStartTimeMillis());

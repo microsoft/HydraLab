@@ -56,7 +56,9 @@ public class MaestroListener {
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, "MaestroTest.testRunStarted");
         performanceTestListener.testRunStarted();
         performanceTestListener.testStarted("MaestroTestCase" + index);
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
+        }
     }
 
     private void initUnitCase(String caseName, int testSeconds) {
@@ -75,7 +77,9 @@ public class MaestroListener {
         testRun.addNewTimeTag(unitIndex + ". " + ongoingTestUnit.getTitle(),
                 System.currentTimeMillis() - testSeconds * 1000 - recordingStartTimeMillis);
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, ongoingTestUnit.getTitle());
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
+        }
         performanceTestListener.testStarted("MaestroTestCase" + index);
     }
 
