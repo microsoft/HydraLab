@@ -128,6 +128,7 @@ public class T2CRunner extends AppiumRunner {
 
         performanceTestManagementService.testStarted(ongoingTest.getTitle());
 
+        // TODO do not call this method if testTask.isDisableGifEncoder() is true
         testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 5, logger);
 
         // Run Test

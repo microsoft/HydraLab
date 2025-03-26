@@ -80,9 +80,11 @@ public class AdbMonkeyRunner extends TestRunner {
         /* set paths */
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
         testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-        File gifFile = testRunDevice.getGifFile();
-        if (gifFile.exists() && gifFile.length() > 0) {
-            testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+        if (!testTask.isDisableGifEncoder()) {
+            File gifFile = testRunDevice.getGifFile();
+            if (gifFile.exists() && gifFile.length() > 0) {
+                testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+            }
         }
 
     }
@@ -124,7 +126,9 @@ public class AdbMonkeyRunner extends TestRunner {
         testRun.addNewTestUnit(ongoingMonkeyTest);
 
         logger.info(ongoingMonkeyTest.getTitle());
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 2, logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 2, logger);
+        }
         //run monkey test
         testRun.addNewTimeTag(unitIndex + ". " + ongoingMonkeyTest.getTitle(),
                 System.currentTimeMillis() - testRun.getTestStartTimeMillis());

@@ -74,9 +74,11 @@ public class SmartRunner extends TestRunner {
         /* set paths */
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
         testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-        File gifFile = testRunDevice.getGifFile();
-        if (gifFile.exists() && gifFile.length() > 0) {
-            testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+        if (!testTask.isDisableGifEncoder()) {
+            File gifFile = testRunDevice.getGifFile();
+            if (gifFile.exists() && gifFile.length() > 0) {
+                testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+            }
         }
 
     }
@@ -121,7 +123,9 @@ public class SmartRunner extends TestRunner {
         testRun.addNewTimeTag(unitIndex + ". " + ongoingSmartTest.getTitle(), System.currentTimeMillis() - testRun.getTestStartTimeMillis());
         testRunDeviceOrchestrator.setRunningTestName(testRunDevice, ongoingSmartTest.getTitle());
         logger.info(ongoingSmartTest.getTitle());
-        testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 1, logger);
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 1, logger);
+        }
 
         performanceTestManagementService.testStarted(ongoingSmartTest.getTitle());
 

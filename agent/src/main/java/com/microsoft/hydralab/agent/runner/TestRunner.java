@@ -261,7 +261,9 @@ public abstract class TestRunner implements TestRunEngine, TaskRunLifecycle<Test
         testRunDeviceOrchestrator.grantAllTaskNeededPermissions(testRunDevice, testTask, testRun.getLogger());
 
         checkTestTaskCancel(testTask);
-        testRunDeviceOrchestrator.getScreenShot(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
+        if (!testTask.isDisableGifEncoder()) {
+            testRunDeviceOrchestrator.getScreenShot(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
+        }
 
         if (performanceTestManagementService != null && testTask.getInspectionStrategies() != null) {
             for (InspectionStrategy strategy : testTask.getInspectionStrategies()) {
