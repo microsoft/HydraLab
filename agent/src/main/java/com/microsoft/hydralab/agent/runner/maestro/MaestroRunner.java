@@ -71,9 +71,11 @@ public class MaestroRunner extends TestRunner {
             /* set paths */
             testRun.setTestXmlReportPath(
                     agentManagementService.getTestBaseRelPathInUrl(xmlFile));
-            File gifFile = maestroListener.getGifFile();
-            if (gifFile.exists() && gifFile.length() > 0) {
-                testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+            if (!testTask.isDisableGifEncoder()) {
+                File gifFile = maestroListener.getGifFile();
+                if (gifFile.exists() && gifFile.length() > 0) {
+                    testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+                }
             }
         } catch (Exception e) {
             logger.error("Maestro test failed", e);

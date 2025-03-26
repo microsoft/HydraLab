@@ -110,7 +110,9 @@ public class AppiumRunner extends TestRunner {
             checkTestTaskCancel(testTask);
             startJunit5(appiumJarFile, appiumCommand, junit5Listener, reportLogger);
             checkTestTaskCancel(testTask);
-            gifFile = junit5Listener.getGifFile();
+            if (!testTask.isDisableGifEncoder()) {
+                gifFile = junit5Listener.getGifFile();
+            }
         } else {
             /** xml report: parse listener */
             reportLogger.info("Start init listener");
@@ -124,7 +126,9 @@ public class AppiumRunner extends TestRunner {
             checkTestTaskCancel(testTask);
             startJunit(appiumJarFile, appiumCommand, listener, reportLogger);
             checkTestTaskCancel(testTask);
-            gifFile = listener.getGifFile();
+            if (!testTask.isDisableGifEncoder()) {
+                gifFile = listener.getGifFile();
+            }
         }
         /** set paths */
         String absoluteReportPath = deviceTestResultFolder.getAbsolutePath();

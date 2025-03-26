@@ -110,9 +110,12 @@ public class EspressoRunner extends TestRunner {
             String absoluteReportPath = listener.getAbsoluteReportPath();
             testRun.setTestXmlReportPath(
                     agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-            File gifFile = listener.getGifFile();
-            if (gifFile.exists() && gifFile.length() > 0) {
-                testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+
+            if (!testTask.isDisableGifEncoder()) {
+                File gifFile = listener.getGifFile();
+                if (gifFile.exists() && gifFile.length() > 0) {
+                    testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+                }
             }
 
         } finally {

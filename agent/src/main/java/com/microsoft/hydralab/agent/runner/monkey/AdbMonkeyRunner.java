@@ -80,9 +80,11 @@ public class AdbMonkeyRunner extends TestRunner {
         /* set paths */
         String absoluteReportPath = testRun.getResultFolder().getAbsolutePath();
         testRun.setTestXmlReportPath(agentManagementService.getTestBaseRelPathInUrl(new File(absoluteReportPath)));
-        File gifFile = testRunDevice.getGifFile();
-        if (gifFile.exists() && gifFile.length() > 0) {
-            testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+        if (!testTask.isDisableGifEncoder()) {
+            File gifFile = testRunDevice.getGifFile();
+            if (gifFile.exists() && gifFile.length() > 0) {
+                testRun.setTestGifPath(agentManagementService.getTestBaseRelPathInUrl(gifFile));
+            }
         }
 
     }
