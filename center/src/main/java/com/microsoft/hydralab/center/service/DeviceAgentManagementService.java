@@ -21,7 +21,9 @@ import com.microsoft.hydralab.common.entity.common.AgentMetadata;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.AnalysisTask;
+import com.microsoft.hydralab.common.entity.common.BlockedDeviceInfo;
 import com.microsoft.hydralab.common.entity.common.DeviceInfo;
+import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.entity.common.StatisticData;
 import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
@@ -29,8 +31,6 @@ import com.microsoft.hydralab.common.entity.common.Task;
 import com.microsoft.hydralab.common.entity.common.TestRun;
 import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.entity.common.TestTaskSpec;
-import com.microsoft.hydralab.common.entity.common.BlockedDeviceInfo;
-import com.microsoft.hydralab.common.entity.common.DeviceOperation;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.management.device.DeviceType;
 import com.microsoft.hydralab.common.repository.BlockedDeviceInfoRepository;
@@ -68,11 +68,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -431,10 +431,10 @@ public class DeviceAgentManagementService {
             DeviceInfo centerDevice = deviceListMap.get(agentDeviceInfo.getSerialNum());
             // if the status saved in Center is testing, the value will not be covered
             if (centerDevice != null && centerDevice.isTesting()) {
-                log.warn("Center status: {}, Agent status: {}, status should be synced to CENTER's value when TESTING.", centerDevice.getStatus(), agentDeviceInfo.getStatus());
+                log.info("Center status: {}, Agent status: {}, status should be synced to CENTER's value when TESTING.", centerDevice.getStatus(), agentDeviceInfo.getStatus());
                 agentDeviceInfo.setStatus(DeviceInfo.TESTING);
-            } else if (agentDeviceInfo.isTesting()) {
-                log.warn("Test on the device is canceled, status of device in AGENT should be reset to ONLINE, otherwise TESTING would never be covered by agent");
+            } else if (agentDeviceInfo.isTesting() && !checkTaskIsRunning(agentDeviceInfo)) {
+                log.info("Test on the device is canceled, status of device in AGENT should be reset to ONLINE, otherwise TESTING would never be covered by agent");
                 agentDeviceInfo.setStatus(DeviceInfo.ONLINE);
             }
 
@@ -446,6 +446,27 @@ public class DeviceAgentManagementService {
                 addDeviceToGroup(group.getGroupName(), group.getDeviceSerial());
             }
         }
+    }
+
+    private boolean checkTaskIsRunning(DeviceInfo deviceInfo) {
+        String taskId = deviceInfo.getRunningTaskId();
+        if (taskId == null) {
+            return false;
+        }
+        Task task = testDataService.getTaskDetail(taskId);
+        // check if the task is running
+        if (task == null || !Task.TaskStatus.RUNNING.equals(task.getStatus())) {
+            return false;
+        }
+
+        // check the timeout of the task
+        if (task.getTimeOutSecond() > 0) {
+            long timeout = task.getStartDate().getTime() + TimeUnit.SECONDS.toMillis(task.getTimeOutSecond());
+            if (System.currentTimeMillis() > timeout) {
+                return false;
+            }
+        }
+        return true;
     }
 
     //update Device Status : start task,complete task,device offline,device online
