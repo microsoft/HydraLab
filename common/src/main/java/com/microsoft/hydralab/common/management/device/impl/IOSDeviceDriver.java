@@ -64,8 +64,9 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     @Override
     public void init() {
         try {
-            ShellUtils.killProcessByCommandStr("tidevice", classLogger);
-            IOSUtils.startIOSDeviceWatcher(classLogger, this);
+            ShellUtils.killProcessByCommandStr("t3", classLogger);
+//            ShellUtils.killProcessByCommandStr("pymobiledevice3", classLogger);
+            updateAllDeviceInfo();
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "IOSDeviceDriver init failed", e);
         }
@@ -242,12 +243,12 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
 
     public DeviceInfo parseJsonToDevice(JSONObject deviceObject) {
         DeviceInfo deviceInfo = new DeviceInfo();
-        String udid = deviceObject.getString("udid");
+        String udid = deviceObject.getString("Identifier");
         deviceInfo.setSerialNum(udid);
         deviceInfo.setDeviceId(udid);
-        deviceInfo.setName(deviceObject.getString("name"));
-        deviceInfo.setModel(deviceObject.getString("market_name"));
-        deviceInfo.setOsVersion(deviceObject.getString("product_version"));
+        deviceInfo.setName(deviceObject.getString("DeviceName"));
+        deviceInfo.setModel(deviceObject.getString("ProductType"));
+        deviceInfo.setOsVersion(deviceObject.getString("ProductVersion"));
         deviceInfo.setBrand(iOSDeviceManufacturer);
         deviceInfo.setManufacturer(iOSDeviceManufacturer);
         deviceInfo.setOsSDKInt("");
@@ -261,7 +262,7 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     public void updateDeviceDetailByUdid(DeviceInfo deviceInfo, String udid) {
         String deviceDetailJsonStr = IOSUtils.getIOSDeviceDetailInfo(udid, classLogger);
         JSONObject deviceDetailJson = JSON.parseObject(deviceDetailJsonStr);
-        deviceInfo.setAbiList(deviceDetailJson.getString("CPUArchitecture"));
+        deviceInfo.setAbiList(deviceDetailJson.getString("ProductVersion"));
 
         String productType = deviceDetailJson.getString("ProductType");
         if ("-".equals(deviceInfo.getModel())) {
