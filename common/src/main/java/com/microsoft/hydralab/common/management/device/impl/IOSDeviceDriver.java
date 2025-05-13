@@ -65,7 +65,8 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     public void init() {
         try {
             ShellUtils.killProcessByCommandStr("t3", classLogger);
-//            ShellUtils.killProcessByCommandStr("pymobiledevice3", classLogger);
+            ShellUtils.killProcessByCommandStr("pymobiledevice3", classLogger);
+            IOSUtils.startIOSDeviceWatcher(classLogger, this);
             updateAllDeviceInfo();
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "IOSDeviceDriver init failed", e);
