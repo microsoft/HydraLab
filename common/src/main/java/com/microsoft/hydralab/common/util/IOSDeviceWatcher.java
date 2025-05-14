@@ -33,7 +33,7 @@ public class IOSDeviceWatcher extends Thread {
                 if (iosDeviceDriverRef.get() == null) {
                     break;
                 }
-                if (line.contains("MessageType")) {
+                if (line.contains("tunnel --rsd")) {
                     Objects.requireNonNull(iosDeviceDriverRef.get()).updateAllDeviceInfo();
                 }
                 logger.info(line);
