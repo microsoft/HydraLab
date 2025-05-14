@@ -4,7 +4,7 @@
 
 [中文(完善中)](README.zh-CN.md)
 
-[![Build Status](https://dlwteam.visualstudio.com/Next/_apis/build/status/HydraLab-CI-NonPro?branchName=main)](https://dlwteam.visualstudio.com/Next/_build/latest?definitionId=805&branchName=main)
+[![Build Status](https://microsoft.visualstudio.com/MMX/_apis/build/status/HydraLab-CI?branchName=main)](https://microsoft.visualstudio.com/MMX/_build/latest?definitionId=162632&branchName=main)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-v2.2.5-blue)
 ![Appium](https://img.shields.io/badge/Appium-v8.0.0-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
