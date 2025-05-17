@@ -200,15 +200,35 @@ export default class SearchView extends BaseView {
                         const vList = [res.data.content.videoBlobUrl + '?' + require('local-storage').get('FileToken')]
                         const info = res.data.content.videoTimeTagArr
                         const properties = []
+                        const suggestions = []
 
                         for (var k in details) {
                             if (k === "stream") {
                                 continue
                             }
-                            properties.push({ k: k, v: details[k] })
+                            if (k === "suggestion") {
+                                const obj = JSON.parse(details[k]);
+                                for (const [key, value] of Object.entries(obj)) {
+                                    suggestions.push({ k: key, v: value })
+                                }
+                            }
+                            else {
+                                properties.push({ k: k, v: details[k] })
+                            }
                         }
+
                         this.setState({
-                            infoDisplay: <center><VideoNavView videoInfo={info} videos={vList} />
+                            infoDisplay: <center>
+                                <VideoNavView videoInfo={info} videos={vList} />
+                                {
+                                    suggestions.length > 0 ?
+                                    <AdaptivePropertyTable properties={suggestions}
+                                        title='LLM Suggestions'
+                                        lineTextCount='1'
+                                        propertyValueProcessor={(key, value) => {
+                                            return <div>{value}</div>
+                                        }} /> : null
+                                }
                                 <AdaptivePropertyTable properties={properties}
                                     title='Test Case Details'
                                     propertyValueProcessor={(key, value) => {
