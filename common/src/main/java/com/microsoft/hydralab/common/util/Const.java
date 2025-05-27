@@ -34,7 +34,7 @@ public interface Const {
         String SINGLE_TYPE = "SINGLE";
         String REST_TYPE = "REST";
         String ALL_TYPE = "ALL";
-        Duration BLOCKED_DEVICE_TIMEOUT = Duration.ofHours(4);
+        Duration BLOCKED_DEVICE_TIMEOUT = Duration.ofHours(2);
     }
 
     interface AgentConfig {
