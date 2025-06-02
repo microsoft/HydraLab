@@ -55,7 +55,7 @@ public class AppiumServerManager {
     private final Map<String, WindowsDriver> windowsAppDrivers = new ConcurrentHashMap<>();
     private final Map<String, Date> driverCreateTime = new ConcurrentHashMap<>();
     private AppiumDriverLocalService service;
-    private int appiumServerPort = 10086;
+    private int appiumServerPort = 10096;
     private String appiumServerHost = "127.0.0.1";
     private String workspacePath;
     private String edgeDriverZipPath;
@@ -147,7 +147,7 @@ public class AppiumServerManager {
         caps.setCapability(IOSMobileCapabilityType.USE_PREBUILT_WDA, false);
         caps.setCapability("useXctestrunFile", false);
         caps.setCapability("skipLogCapture", true);
-        caps.setCapability("mjpegServerPort", IOSUtils.getMjpegServerPortByUdid(udid, logger, deviceInfo));
+//        caps.setCapability("mjpegServerPort", IOSUtils.getMjpegServerPortByUdid(udid, logger, deviceInfo));
 
         int tryTimes = 3;
         boolean sessionCreated = false;

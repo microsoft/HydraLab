@@ -173,6 +173,9 @@ public class PkgUtil {
         version = parameters.toString();
         //Application display name
         parameters = (NSString) rootDict.objectForKey("CFBundleDisplayName");
+        if (parameters == null) {
+            parameters = (NSString) rootDict.objectForKey("CFBundleName");
+        }
         name = parameters.toString();
 
         //If necessary, the decompressed files should be deleted
