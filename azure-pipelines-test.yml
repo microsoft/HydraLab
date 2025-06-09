@@ -20,7 +20,7 @@ jobs:
 
         echo "Calling protected API..."
         
-        response=$(curl -s -X GET \
+        response=$(curl -v -X GET \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $ACCESS_TOKEN" \
              https://hydralabtest.azurewebsites.net/api/device/list
