@@ -14,6 +14,8 @@ jobs:
       inlineScript: |
         echo "Getting token via federated identity..."
 
+        az login
+
         ACCESS_TOKEN=$(az account get-access-token \
           --resource HydraLab.Test \
           --query accessToken -o tsv)
