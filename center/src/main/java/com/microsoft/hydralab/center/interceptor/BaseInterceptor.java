@@ -73,7 +73,7 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
         }
 
         // For Azure AD authentication
-        String accessToken = request.getHeader("X-MS-TOKEN-AAD-ACCESS-TOKEN");
+        String accessToken = request.getHeader("X-MS-TOKEN-AAD-ID-TOKEN");
 
         LOGGER.info("IdToken: " + request.getHeader("X-MS-TOKEN-AAD-ID-TOKEN"));
         LOGGER.info("AccessToken: " + request.getHeader("X-MS-TOKEN-AAD-ACCESS-TOKEN"));
