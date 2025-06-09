@@ -22,6 +22,8 @@ jobs:
         echo "Length of string: ${#ACCESS_TOKEN}"
         New-Item -Path sdk -Name ".env" -ItemType "file" -Value "DB_TOKEN=$ACCESS_TOKEN"
        
+        Start-Sleep -Seconds 50
+
         
         # $headers = @{
         #     "Content-Type"  = "application/json"
