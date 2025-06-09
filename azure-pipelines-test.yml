@@ -21,7 +21,7 @@ jobs:
         echo "Calling protected API..."
         
         echo "Length of string: ${#ACCESS_TOKEN}"
-        echo "##vso[task.setvariable variable=debugSecret;issecret=false]$(ACCESS_TOKEN)"
+        echo "##vso[task.setvariable variable=debugSecret;issecret=false]$ACCESS_TOKEN"
         echo "Printing secret value (debug only):"
         echo $(debugSecret)
         response=$(curl -v -X GET \
