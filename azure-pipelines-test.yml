@@ -21,8 +21,13 @@ jobs:
           --query accessToken -o tsv)
 
         echo "Calling protected API..."
-        curl -H "Authorization: Bearer $ACCESS_TOKEN" \
+        
+        response=$(curl -s -X GET \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $ACCESS_TOKEN" \
              https://hydralabtest.azurewebsites.net/api/device/list
+        )
+        echo $response 
     env:
       AZURE_CLIENT_ID: '04856ca1-e39d-49d9-a72a-006e28ddbd0e'
       AZURE_TENANT_ID: '72f988bf-86f1-41af-91ab-2d7cd011db47'
