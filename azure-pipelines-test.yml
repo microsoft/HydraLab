@@ -20,6 +20,8 @@ jobs:
 
         echo "Calling protected API..."
         
+        echo "Length of string: ${#ACCESS_TOKEN}"
+        
         response=$(curl -v -X GET \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $ACCESS_TOKEN" \
