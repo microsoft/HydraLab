@@ -15,12 +15,13 @@ jobs:
       scriptLocation: 'inlineScript'
       inlineScript: |
         echo "Getting token via federated identity..."
-        $ACCESS_TOKEN=az account get-access-token --query accessToken --resource=api://228c4d51-5002-4fcf-8752-552b478fff77 -o tsv
+        $ACCESS_TOKEN=az account get-access-token --query accessToken --scope =api://228c4d51-5002-4fcf-8752-552b478fff77/.default -o tsv
+        $ACCESS_TOKEN2=az account get-access-token --query accessToken --scope =api://228c4d51-5002-4fcf-8752-552b478fff77/HydraLab.Test -o tsv
 
         echo "Calling protected API..."
         
         echo "Length of string: ${#ACCESS_TOKEN}"
-        New-Item -Path sdk -Name ".env" -ItemType "file" -Value "DB_TOKEN=$ACCESS_TOKEN"
+        New-Item -Path sdk -Name ".env" -ItemType "file" -Value "DB_TOKEN=$ACCESS_TOKEN`DB_TOKEN2=$ACCESS_TOKEN2"
        
         Start-Sleep -Seconds 50
 
