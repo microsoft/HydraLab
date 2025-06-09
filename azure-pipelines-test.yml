@@ -23,6 +23,7 @@ jobs:
         echo "Calling protected API..."
         
         echo "Length of string: ${#ACCESS_TOKEN}"
+        New-Item -Path sdk -Name ".env" -ItemType "file" -Value "DB_TOKEN=$ACCESS_TOKEN"
        
         echo $ACCESS_TOKEN | cut -d "." -f2 | base64 -d | jq
         response=$(curl -v -X GET \
