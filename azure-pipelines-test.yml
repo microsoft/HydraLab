@@ -4,7 +4,9 @@ trigger:
 jobs:
 - job: call_api
   pool:
-    vmImage: 'ubuntu-latest'
+    name: YP_Performance_Test
+    demands:
+      - Agent.Name -equals MININT-T69DC43
   steps:
   - task: AzureCLI@2
     inputs:
