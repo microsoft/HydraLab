@@ -21,13 +21,13 @@ jobs:
           --allow-no-subscriptions
 
         ACCESS_TOKEN=$(az account get-access-token \
-          --resource api://04856ca1-e39d-49d9-a72a-006e28ddbd0e \
+          --resource api://0d3e6299-ee68-44de-8ea8-a93433a00f8a \
           --query accessToken -o tsv)
 
         echo "Calling protected API..."
         curl -H "Authorization: Bearer $ACCESS_TOKEN" \
              https://hydralabtest.azurewebsites.net/api/device/list
     env:
-      AZURE_CLIENT_ID: '04856ca1-e39d-49d9-a72a-006e28ddbd0e'
+      AZURE_CLIENT_ID: '0d3e6299-ee68-44de-8ea8-a93433a00f8a'
       AZURE_TENANT_ID: '72f988bf-86f1-41af-91ab-2d7cd011db47'
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
