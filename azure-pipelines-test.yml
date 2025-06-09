@@ -17,7 +17,7 @@ jobs:
         az login
 
         ACCESS_TOKEN=$(az account get-access-token \
-          --resource HydraLab.Test \
+          --resource api://0d3e6299-ee68-44de-8ea8-a93433a00f8a \
           --query accessToken -o tsv)
 
         echo "Calling protected API..."
