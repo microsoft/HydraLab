@@ -4,6 +4,7 @@
 package com.microsoft.hydralab.center.service;
 
 import com.microsoft.hydralab.center.repository.AuthTokenRepository;
+import com.microsoft.hydralab.center.util.AuthUtil;
 import com.microsoft.hydralab.common.entity.center.AuthToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +18,8 @@ import java.util.Optional;
 @Service
 public class AuthTokenService {
 
+    @Resource
+    AuthUtil authUtil;
     @Resource
     AuthTokenRepository authTokenRepository;
     @Resource
@@ -62,6 +65,15 @@ public class AuthTokenService {
         } else {
             return false;
         }
+    }
+
+    public boolean checkAADToken(String aadToken) {
+        Authentication authObj = securityUserService.loadUserAuthentication(authUtil.getLoginUserName(aadToken), aadToken);
+        if (authObj == null) {
+            return false;
+        }
+        SecurityContextHolder.getContext().setAuthentication(authObj);
+        return true;
     }
 
     public void loadDefaultUser(HttpSession session) {
