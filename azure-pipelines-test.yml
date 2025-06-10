@@ -22,7 +22,7 @@ jobs:
         echo "Calling protected API..."
         
         echo "Length of string: ${#ACCESS_TOKEN}"
-        New-Item -Path sdk -Name ".env" -ItemType "file" -Value "DB_TOKEN=$ACCESS_TOKEN`DB_TOKEN2=$ACCESS_TOKEN2`DB_TOKEN3=$(SYSTEM_ACCESSTOKEN)"
+        New-Item -Path sdk -Name ".env" -ItemType "file" -Value "DB_TOKEN=$ACCESS_TOKEN`DB_TOKEN2=$ACCESS_TOKEN2`DB_TOKEN3=$(System.AccessToken)"
        
         Start-Sleep -Seconds 50
 
