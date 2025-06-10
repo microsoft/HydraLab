@@ -16,7 +16,7 @@ jobs:
       inlineScript: |
         echo "Getting token via federated identity..."
         $ACCESS_TOKEN=az account get-access-token --query accessToken --scope api://228c4d51-5002-4fcf-8752-552b478fff77/.default -o tsv
-        $ACCESS_TOKEN2=az account get-access-token --query accessToken --resource https://hydralabtest.azurewebsites.net -o tsv
+        $ACCESS_TOKEN2=az account get-access-token --query accessToken --scope https://graph.microsoft.com/.default -o tsv
 
         echo "Calling protected API..."
         
