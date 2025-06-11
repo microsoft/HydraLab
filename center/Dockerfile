@@ -29,11 +29,18 @@ RUN \
     apt-get install -y cron && \
     apt-get install -y vim && \
     apt-get install -y sysstat && \
+    apt-get install -y clamav && \
+    freshclam && \
+    apt-get install -y clamav-daemon && \
+    mkdir -p /var/run/clamav && \
+    chown clamav:clamav /var/run/clamav && \
+    chmod 755 /var/run/clamav && \
     mkdir -p /hydra/data
 
 COPY ${STARTUP_FOLDER_PATH}/prometheus-2.36.2.linux-amd64.tar.gz /opt/
 COPY ${STARTUP_FOLDER_PATH}/pushgateway-1.4.3.linux-amd64.tar.gz /opt/
 COPY ${STARTUP_FOLDER_PATH}/grafana-enterprise-9.0.1.linux-amd64.tar.gz /opt/
+COPY ${STARTUP_FOLDER_PATH}/clamAV/clamd.conf /opt/
 
 RUN cd /opt/ && \
     tar -zxvf prometheus-2.36.2.linux-amd64.tar.gz && \

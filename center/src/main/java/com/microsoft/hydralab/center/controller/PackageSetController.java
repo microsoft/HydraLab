@@ -10,6 +10,7 @@ import com.microsoft.hydralab.center.service.SysTeamService;
 import com.microsoft.hydralab.center.service.SysUserService;
 import com.microsoft.hydralab.center.service.TestFileSetService;
 import com.microsoft.hydralab.center.service.UserTeamManagementService;
+import com.microsoft.hydralab.center.util.ClamAVScanner;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.entity.center.SysUser;
@@ -132,6 +133,7 @@ public class PackageSetController {
             testFileSet.setTeamName(team.getTeamName());
 
             //Save app file to server
+            ClamAVScanner.getInstance().scan(appFile.getOriginalFilename(), appFile.getInputStream());
             File tempAppFile =
                     attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativeParent, false, null,
                             new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE, FILE_SUFFIX.ZIP_FILE});
@@ -150,6 +152,7 @@ public class PackageSetController {
 
             //Save test app file to server if exist
             if (testAppFile != null && !testAppFile.isEmpty()) {
+                ClamAVScanner.getInstance().scan(testAppFile.getOriginalFilename(), testAppFile.getInputStream());
                 File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativeParent, false, null,
                         new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE, FILE_SUFFIX.ZIP_FILE});
 
@@ -423,6 +426,7 @@ public class PackageSetController {
             String fileRelativeParent = FileUtil.getPathForToday();
             String parentDir = CENTER_FILE_BASE_DIR + fileRelativeParent;
 
+            ClamAVScanner.getInstance().scan(attachment.getOriginalFilename(), attachment.getInputStream());
             File savedAttachment = attachmentService.verifyAndSaveFile(attachment, parentDir, false, newFileName, limitFileTypes);
             StorageFileInfo storageFileInfo = new StorageFileInfo(savedAttachment, fileRelativeParent, fileType, loadType, loadDir);
             attachmentService.addAttachment(fileSetId, EntityType.APP_FILE_SET, storageFileInfo, savedAttachment, logger);

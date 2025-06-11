@@ -12,5 +12,9 @@ fi
 /usr/sbin/sshd &
 /etc/init.d/cron start &
 
+if ${CLAMAV_ENABLED}; then
+  clamd -c /opt/clamd.conf &
+fi
+
 cd /
 java -jar /app.jar --spring.profiles.active=${CENTER_APP_PROFILE}
