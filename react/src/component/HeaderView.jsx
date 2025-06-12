@@ -51,7 +51,7 @@ export default class HeaderView extends BaseView {
         const settings = [
             { text: this.state.userInfo ? this.state.userInfo.userName : 'Loading', dialog: null },
             { text: `Default Team: ${this.state.userInfo && this.state.userInfo.defaultTeamName ? this.state.userInfo.defaultTeamName : 'Loading'}`, dialog: 'changeDefaultTeamIsShown' },
-            { text: 'Logout', dialog: null }
+            { text: 'Logout', dialog: null, href: '/.auth/logout' }
         ];
         const helpSettings = [
             { text: 'Feedback', href: 'https://forms.office.com/r/0wnc2Sk0tp' },
@@ -136,6 +136,9 @@ export default class HeaderView extends BaseView {
                                 this.handleStatus(setting.dialog, true)
                                 this.getUserInfo()
                                 this.refreshTeamList()
+                                if (setting.href) {
+                                    window.location.href = setting.href
+                                }
                             }}>
                                 <Typography textAlign="center">{setting.text}</Typography>
                             </MenuItem>

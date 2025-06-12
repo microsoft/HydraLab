@@ -71,8 +71,26 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
         if (authToken != null) {
             authToken = authToken.replaceAll("Bearer ", "");
         }
+
+        // For Azure AD authentication
+        String accessToken = request.getHeader("X-MS-TOKEN-AAD-ID-TOKEN");
+
+        LOGGER.info("IdToken: " + request.getHeader("X-MS-TOKEN-AAD-ID-TOKEN"));
+        LOGGER.info("AccessToken: " + request.getHeader("X-MS-TOKEN-AAD-ACCESS-TOKEN"));
+        LOGGER.info("UserId: " + request.getHeader("X-MS-CLIENT-PRINCIPAL-ID"));
+        LOGGER.info("UserName: " + request.getHeader("X-MS-CLIENT-PRINCIPAL-NAME"));
+
         //check is ignore
         if (!authUtil.isIgnore(requestURI)) {
+            //invoked by API client
+            if (!StringUtils.isEmpty(accessToken)) {
+                if (authTokenService.checkAADToken(accessToken)) {
+                    return true;
+                } else {
+                    response.sendError(HttpStatus.UNAUTHORIZED.value(), "unauthorized, error authorization code");
+                }
+            }
+
             //invoke by client
             if (!StringUtils.isEmpty(authToken)) {
                 if (authTokenService.checkAuthToken(authToken)) {
