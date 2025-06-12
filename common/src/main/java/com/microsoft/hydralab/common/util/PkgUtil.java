@@ -45,7 +45,7 @@ public class PkgUtil {
                     res = analysisIpaFile(file);
                 } else if (file.getName().endsWith(FILE_SUFFIX.ZIP_FILE)) {
                     // check for zip bomb attacks
-                    if (!ZipBombChecker.checkZipBomb(file)) {
+                    if (ZipBombChecker.isZipBomb(file)) {
                         throw new HydraLabRuntimeException("Zip file is too large, possible zip bomb attack.");
                     }
                     res = analysisZipFile(file);
@@ -116,7 +116,7 @@ public class PkgUtil {
         try {
             String name, pkgName, version;
             File zipFile = convertToZipFile(ipa, FILE_SUFFIX.IPA_FILE);
-            if (!ZipBombChecker.checkZipBomb(zipFile)) {
+            if (ZipBombChecker.isZipBomb(zipFile)) {
                 throw new HydraLabRuntimeException("Zip file is too large, possible zip bomb attack.");
             }
             Assert.notNull(zipFile, "Convert .ipa file to .zip file failed.");

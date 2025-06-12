@@ -3,106 +3,69 @@
 
 package com.microsoft.hydralab.common.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class ZipBombChecker {
+    private static final long MAX_UNCOMPRESSED_SIZE = 1024 * 1024 * 1024; // 1024 MB
+    private static final int MAX_ENTRIES = 10000;
+    private static final int MAX_NESTING_DEPTH = 5;
 
-    private static final int THRESHOLD_ENTRIES = 10000; // Limit the number of entries
-    private static final long THRESHOLD_SIZE = 1_000_000_000L; // Limit the uncompressed size (1 GB)
-    private static final double THRESHOLD_RATIO = 10; // Limit the compression ratio
-    private static final int BUFFER_SIZE = 2048; // Buffer size for reading data
+    public static boolean isZipBomb(File file) {
+        return isZipBomb(file, 0);
+    }
 
-    private static void extractZip(String zipFilePath, String destDirectory) throws IOException {
-        int totalEntryArchive = 0;
-        long totalSizeArchive = 0;
+    private static boolean isZipBomb(File file, int depth) {
+        if (depth > MAX_NESTING_DEPTH) {
+            return true;
+        }
 
-        try (ZipInputStream zipIn = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFilePath)))) {
+        long totalUncompressedSize = 0;
+        int entryCount = 0;
+
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(file))) {
             ZipEntry entry;
-            while ((entry = zipIn.getNextEntry()) != null) {
-                totalEntryArchive++;
+            byte[] buffer = new byte[8192];
 
-                // Check for entry count limit
-                if (totalEntryArchive > THRESHOLD_ENTRIES) {
-                    throw new IOException("Too many entries in the archive. Possible Zip Bomb attack.");
+            while ((entry = zis.getNextEntry()) != null) {
+                entryCount++;
+                if (entryCount > MAX_ENTRIES) {
+                    return true;
                 }
 
-                // Get the uncompressed size (if available)
-                long uncompressedSize = entry.getSize();
-
-                // Check for compression ratio limit (if compressed size is available)
-                if (entry.getCompressedSize() != -1 && uncompressedSize != -1) {
-                    double compressionRatio = (double) uncompressedSize / entry.getCompressedSize();
-                    if (compressionRatio > THRESHOLD_RATIO) {
-                        throw new IOException("Suspicious compression ratio. Possible Zip Bomb attack.");
+                if (!entry.isDirectory()) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    int read;
+                    while ((read = zis.read(buffer)) != -1) {
+                        baos.write(buffer, 0, read);
+                        totalUncompressedSize += read;
+                        if (totalUncompressedSize > MAX_UNCOMPRESSED_SIZE) {
+                            return true;
+                        }
+                    }
+                    // check if the entry is a nested zip file
+                    if (entry.getName().toLowerCase().endsWith(".zip")) {
+                        byte[] nestedZipBytes = baos.toByteArray();
+                        File tempZip = File.createTempFile("nested", ".zip");
+                        try (FileOutputStream fos = new FileOutputStream(tempZip)) {
+                            fos.write(nestedZipBytes);
+                        }
+                        boolean nestedBomb = isZipBomb(tempZip, depth + 1);
+                        tempZip.delete();
+                        if (nestedBomb) {
+                            return true;
+                        }
                     }
                 }
-
-                // Check for total uncompressed size limit
-                totalSizeArchive += uncompressedSize;
-                if (totalSizeArchive > THRESHOLD_SIZE) {
-                    throw new IOException("Total uncompressed size exceeds the limit. Possible Zip Bomb attack.");
-                }
-
-                // Extract the entry (with size checks)
-                if (!entry.isDirectory()) {
-                    extractFile(zipIn, destDirectory + File.separator + entry.getName(), uncompressedSize);
-                } else {
-                    File dir = new File(destDirectory + File.separator + entry.getName());
-                    dir.mkdir();
-                }
-
-                zipIn.closeEntry();
+                zis.closeEntry();
             }
+        } catch (Exception e) {
+            return true; // If there's an error reading the zip, treat it as a potential zip bomb
         }
-    }
-
-    private static void extractFile(ZipInputStream zipIn, String filePath, long uncompressedSize) throws IOException {
-        long totalSizeEntry = 0;
-        try (OutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
-            byte[] bytesIn = new byte[BUFFER_SIZE];
-            int read;
-            while ((read = zipIn.read(bytesIn)) != -1) {
-                bos.write(bytesIn, 0, read);
-                totalSizeEntry += read;
-
-                // Check for individual entry size limit (if uncompressed size is known)
-                if (uncompressedSize != -1 && totalSizeEntry > uncompressedSize) {
-                    throw new IOException("Uncompressed size exceeds the reported size. Possible Zip Bomb attack.");
-                }
-            }
-        }
-    }
-
-    public static boolean checkZipBomb(File file) {
-        // Check if the file is a valid ZIP file
-        if (!file.exists() || !file.isFile() || !file.getName().endsWith(".zip")) {
-            return false; // Not a valid ZIP file
-        }
-        try {
-            // Create a temporary directory for extraction
-            File tempDir = new File(file.getParent(), UUID.randomUUID().toString().replace("-", ""));
-            if (!tempDir.exists() && !tempDir.mkdirs()) {
-                throw new IOException("Failed to create temporary directory for extraction.");
-            }
-
-            // Extract the ZIP file and check for Zip Bomb conditions
-            extractZip(file.getAbsolutePath(), tempDir.getAbsolutePath());
-
-            // Clean up the temporary directory
-            FileUtil.deleteFile(tempDir);
-            return true; // No Zip Bomb detected
-        } catch (IOException e) {
-            // Log the exception or handle it as needed
-            return false; // Zip Bomb detected or error occurred
-        }
+        return false;
     }
 }
