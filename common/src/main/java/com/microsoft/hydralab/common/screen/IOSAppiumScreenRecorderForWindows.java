@@ -51,7 +51,7 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
         int timeout = maxTimeInSecond > 0 ? maxTimeInSecond : DEFAULT_TIMEOUT_IN_SECOND;
         destPath = new File(recordDir, Const.ScreenRecoderConfig.DEFAULT_FILE_NAME).getAbsolutePath();
         try {
-            iosDriver.startRecordingScreen();
+//            iosDriver.startRecordingScreen();
             recordProcess = ShellUtils.execLocalCommand("ffmpeg -f mjpeg -i http://127.0.0.1:" + IOSUtils.getMjpegServerPortByUdid(deviceInfo.getSerialNum(), CLASS_LOGGER, deviceInfo) + " -vf scale=720:360 -vcodec h264 -y " + destPath, false, CLASS_LOGGER);
             timer.schedule(new TimerTask() {
                 @Override
@@ -83,7 +83,7 @@ public class IOSAppiumScreenRecorderForWindows extends IOSAppiumScreenRecorder {
             ThreadUtils.safeSleep(5000);
             CLASS_LOGGER.info("Stopping recording");
             synchronized (this) {
-                iosDriver.stopRecordingScreen();
+//                iosDriver.stopRecordingScreen();
                 if (recordProcess != null) {
                     long pid = recordProcess.pid();
                     ShellUtils.execLocalCommand(POWER_SHELL_PATH + " -Command " + scriptFile.getPath() + " " + pid, CLASS_LOGGER);
