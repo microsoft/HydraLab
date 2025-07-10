@@ -9,6 +9,9 @@ spring:
             token-uri: https://login.microsoftonline.com/${MICROSOFT_PROVIDER_TENANT_ID}/oauth2/v2.0/token
             jwk-set-uri: https://login.microsoftonline.com/${MICROSOFT_PROVIDER_TENANT_ID}/discovery/v2.0/keys
             photo-uri: https://graph.microsoft.com/v1.0/me/photo/$value
+            tenant-id: ${MICROSOFT_PROVIDER_TENANT_ID}
+            audience: ${MICROSOFT_PROVIDER_AUDIENCE}
+            instance-uri: ${MICROSOFT_PROVIDER_INSTANCE_URI}
         registration:
           azure-client:
             provider: azure-ad

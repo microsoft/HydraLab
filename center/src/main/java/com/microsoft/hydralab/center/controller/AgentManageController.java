@@ -295,4 +295,27 @@ public class AgentManageController {
         agentManageService.deleteAgent(agentManageService.getAgent(agentId));
         return Result.ok("Delete Success");
     }
+
+    /**
+     * Authenticated USER:
+     * 1) users with ROLE SUPER_ADMIN/ADMIN,
+     * 2) agent creator,
+     * 3) admin of the TEAM that agent is in
+     */
+    @PostMapping("/api/agent/updateDeviceId")
+    public Result updateAgentDeviceId(@CurrentSecurityContext SysUser requestor,
+                                      @RequestParam(value = "agentId", required = true) String agentId,
+                                      @RequestParam(value = "deviceId", required = true) String deviceId) {
+        if (!agentManageService.checkAgentAuthorization(requestor, agentId)) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed");
+        }
+
+        try {
+            agentManageService.updateAgentDeviceId(agentId, deviceId);
+        } catch (Exception e) {
+            log.error("Failed to update device info for agent {}: {}", agentId, e.getMessage());
+            return Result.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to update device info: " + e.getMessage());
+        }
+        return Result.ok("Update Device Info Success!");
+    }
 }

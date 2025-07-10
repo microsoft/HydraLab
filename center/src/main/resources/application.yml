@@ -83,6 +83,7 @@ app:
     apiKey: ${OPENAI_API_KEY:}
     deployment: ${OPENAI_DEPLOYMENT:}
     endpoint: ${OPENAI_ENDPOINT:}
+  agent-auth-mode: ${AGENT_AUTH_MODE:SECRET} # options: TOKEN, SECRET
 management:
   endpoints:
     web:

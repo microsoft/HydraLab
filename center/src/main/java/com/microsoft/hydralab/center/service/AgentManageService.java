@@ -10,6 +10,7 @@ import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
 import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -130,6 +131,16 @@ public class AgentManageService {
         agents.forEach(agent -> agent.setTeamName(teamName));
 
         agentUserRepository.saveAll(agents);
+    }
+
+    public void updateAgentDeviceId(String agentId, String deviceId) {
+        Optional<AgentUser> findUser = agentUserRepository.findById(agentId);
+        if (!findUser.isPresent()) {
+            throw new HydraLabRuntimeException("Agent with ID " + agentId + " not found.");
+        }
+        AgentUser user = findUser.get();
+        user.setDeviceId(deviceId);
+        agentUserRepository.saveAndFlush(user);
     }
 
     public File generateAgentConfigFile(String agentId, String host) {

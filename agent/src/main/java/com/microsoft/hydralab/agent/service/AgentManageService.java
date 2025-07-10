@@ -3,6 +3,9 @@
 
 package com.microsoft.hydralab.agent.service;
 
+import com.azure.core.credential.TokenCredential;
+import com.azure.core.credential.TokenRequestContext;
+import com.azure.identity.AzureCliCredentialBuilder;
 import com.microsoft.hydralab.agent.config.AppOptions;
 import com.microsoft.hydralab.common.entity.common.AgentUpdateTask;
 import com.microsoft.hydralab.common.entity.common.Message;
@@ -91,6 +94,18 @@ public class AgentManageService {
             e.printStackTrace();
             sendMessageToCenter(false, "Exec Command Failed! Check The Agent Log For Detail!", e.getMessage(),
                     path);
+        }
+    }
+
+    public String getAgentAccessToken(String appId) {
+        try {
+            TokenCredential defaultAzureCredential = new AzureCliCredentialBuilder().build();
+            TokenRequestContext tokenRequestContext = new TokenRequestContext().addScopes("api://" + appId);
+            logger.info("Requesting access token for appId: {}", appId);
+            return defaultAzureCredential.getToken(tokenRequestContext).block().getToken();
+        } catch (Exception e) {
+            logger.error("Failed to get agent access token for appId: {}", appId, e);
+            return null;
         }
     }
 }
