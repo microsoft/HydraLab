@@ -5,7 +5,7 @@ import React, { PureComponent, useEffect } from 'react'
 import { Link } from "react-router-dom";
 import cssObj from '@/css/style.scss'
 import 'bootstrap/dist/css/bootstrap.css'
-import _ from 'lodash';
+import _, { get } from 'lodash';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ReferenceLine } from 'recharts';
 import moment from 'moment';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
@@ -379,7 +379,7 @@ export default class TestReportView extends BaseView {
                                                             <p><Link to={"/info/videos/" + d.id}
                                                                 target='_blank'>
                                                                 <img style={{ height: '105px' }}
-                                                                    src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('FileToken') : 'images/hydra_lab_logo.png'}
+                                                                    src={d.testGifBlobUrl ? d.testGifBlobUrl : 'images/hydra_lab_logo.png'}
                                                                     alt={d.deviceName} />
                                                             </Link></p>
                                                         </td>
@@ -412,11 +412,14 @@ export default class TestReportView extends BaseView {
                                                 <CloudDownloadIcon className='ml-1 mr-1'
                                                     style={{ height: '21px' }} />
                                                 <a className='badge badge-light m-1' target='_blank'
-                                                    href={d.logcatBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Device Log</a>
+                                                    onClick={() => {this.getFileDownloadUrlAndDownload(d.logcatBlobPath, t.logcatBlobUrl)}}
+                                                    download rel="noopener noreferrer">Device Log</a>
                                                 <a className='badge badge-light m-1' target='_blank'
-                                                    href={d.testXmlReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">XML</a>
+                                                    onClick={() => {this.getFileDownloadUrlAndDownload(d.testXmlReportBlobPath, t.testXmlReportBlobUrl)}}
+                                                    download rel="noopener noreferrer">XML</a>
                                                 <a className='badge badge-light m-1' target='_blank'
-                                                    href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Agent Log</a>
+                                                    onClick={() => {this.getFileDownloadUrlAndDownload(d.instrumentReportBlobPath, t.instrumentReportBlobUrl)}}
+                                                    download rel="noopener noreferrer">Agent Log</a>
                                                 <IconButton id={d.id} onClick={() => { 
                                                         const tempAttachmentsRows = [];
                                                         d.attachments.forEach((t) => {
@@ -428,7 +431,7 @@ export default class TestReportView extends BaseView {
                                                                     {this.getfilesize(t.fileLen)}
                                                                 </TableCell>
                                                                 <TableCell id={t.fileId} align="center">
-                                                                    <IconButton id={t.fileId} href={t.blobUrl + '?' + require('local-storage').get('FileToken')}>
+                                                                    <IconButton id={t.fileId} onClick={() => {this.getFileDownloadUrlAndDownload(t.blobPath, t.blobUrl)}}>
                                                                         <span id={t.fileId} className="material-icons-outlined">download</span>
                                                                     </IconButton>
                                                                 </TableCell>
@@ -460,7 +463,7 @@ export default class TestReportView extends BaseView {
                                                 </table>
                                                 {d.errorMessage ? <div className='mb-3 mt-2'>
                                                     <a className="badge badge-warning"
-                                                        href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')}
+                                                        href={d.instrumentReportBlobUrl}
                                                         rel="noopener noreferrer"
                                                         style={{ whiteSpace: 'normal' }}
                                                         target='_blank'>{_.truncate(d.errorMessage, 50)}</a>
@@ -503,7 +506,7 @@ export default class TestReportView extends BaseView {
                                                         <td>
                                                             <p><Link to={"/info/videos/" + d.id} target='_blank'>
                                                                 <img style={{ height: '105px' }}
-                                                                    src={d.testGifBlobUrl ? d.testGifBlobUrl + '?' + require('local-storage').get('FileToken') : 'images/logo/m.png'}
+                                                                    src={d.testGifBlobUrl ? d.testGifBlobUrl : 'images/logo/m.png'}
                                                                     alt={d.deviceName} />
                                                             </Link></p>
                                                             <p className='badge badge-light'>{d.displayTotalTime}</p>
@@ -531,11 +534,14 @@ export default class TestReportView extends BaseView {
                                                 <CloudDownloadIcon className='ml-1 mr-1'
                                                     style={{ height: '21px' }} />
                                                 <a className='badge badge-light m-1' target='_blank'
-                                                    href={d.logcatBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Device Log</a>
+                                                    onClick={() => {this.getFileDownloadUrlAndDownload(d.logcatBlobPath, t.logcatBlobUrl)}}
+                                                    download rel="noopener noreferrer">Device Log</a>
                                                 <a className='badge badge-light m-1' target='_blank'
-                                                    href={d.testXmlReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">XML</a>
+                                                    onClick={() => {this.getFileDownloadUrlAndDownload(d.testXmlReportBlobPath, t.testXmlReportBlobUrl)}}
+                                                    download rel="noopener noreferrer">XML</a>
                                                 <a className='badge badge-light m-1' target='_blank'
-                                                    href={d.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Agent Log</a>
+                                                    onClick={() => {this.getFileDownloadUrlAndDownload(d.instrumentReportBlobPath, t.instrumentReportBlobUrl)}}
+                                                    download rel="noopener noreferrer">Agent Log</a>
                                                 <IconButton id={d.id} onClick={() => { 
                                                         const tempAttachmentsRows = [];
                                                         d.attachments.forEach((t) => {
@@ -547,7 +553,7 @@ export default class TestReportView extends BaseView {
                                                                     {this.getfilesize(t.fileLen)}
                                                                 </TableCell>
                                                                 <TableCell id={t.fileId} align="center">
-                                                                    <IconButton id={t.fileId} href={t.blobUrl + '?' + require('local-storage').get('FileToken')}>
+                                                                    <IconButton id={t.fileId} onClick={() => {this.getFileDownloadUrlAndDownload(t.blobPath, t.blobUrl)}}>
                                                                         <span id={t.fileId} className="material-icons-outlined">download</span>
                                                                     </IconButton>
                                                                 </TableCell>
@@ -844,13 +850,30 @@ export default class TestReportView extends BaseView {
     componentDidMount() {
         console.log("componentDidMount")
         console.log(this.props.testTask)
-        this.queryTaskHistory()
-        console.log(this.state.history)
-        this.props.testTask.taskRunList[0].attachments.forEach((attachment) => {
-            if (attachment.fileName === 'smartTestResult.zip') {
-                this.state.graphFileId = attachment.fileId
+        // update download URL
+        const task = { ...this.props.testTask };
+        const updatePromises = [];
+        task.taskRunList.forEach((taskRun) => {
+            updatePromises.push(
+                this.getFileDownloadUrl(taskRun.testGifBlobPath, taskRun.testGifBlobUrl).then((url) => {
+                    taskRun.testGifBlobUrl = url;
+                })
+            );
+        });
+        Promise.all(updatePromises).then(() => {
+            this.setState({
+                task: task
+            });
+            this.queryTaskHistory();
+            console.log(this.state.history)
+            if (task.taskRunList[0] && task.taskRunList[0].attachments) {
+                task.taskRunList[0].attachments.forEach((attachment) => {
+                    if (attachment.fileName === 'smartTestResult.zip') {
+                        this.state.graphFileId = attachment.fileId
+                    }
+                })
             }
-        })
+        });
     }
 
     getfilesize(size) {

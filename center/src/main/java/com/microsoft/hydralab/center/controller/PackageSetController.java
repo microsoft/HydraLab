@@ -137,7 +137,7 @@ public class PackageSetController {
             File tempAppFile =
                     attachmentService.verifyAndSaveFile(appFile, CENTER_FILE_BASE_DIR + relativeParent, false, null,
                             new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.IPA_FILE, FILE_SUFFIX.ZIP_FILE});
-            StorageFileInfo appFileInfo = new StorageFileInfo(tempAppFile, relativeParent, StorageFileInfo.FileType.APP_FILE);
+            StorageFileInfo appFileInfo = new StorageFileInfo(tempAppFile, relativeParent, StorageFileInfo.FileType.APP_FILE, team.getTeamId(), team.getTeamName());
             //Upload app file
             appFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, appFileInfo, tempAppFile, logger);
             JSONObject appFileParser = appFileInfo.getFileParser();
@@ -156,7 +156,8 @@ public class PackageSetController {
                 File tempTestAppFile = attachmentService.verifyAndSaveFile(testAppFile, CENTER_FILE_BASE_DIR + relativeParent, false, null,
                         new String[]{FILE_SUFFIX.APK_FILE, FILE_SUFFIX.JAR_FILE, FILE_SUFFIX.JSON_FILE, FILE_SUFFIX.ZIP_FILE});
 
-                StorageFileInfo testAppFileInfo = new StorageFileInfo(tempTestAppFile, relativeParent, StorageFileInfo.FileType.TEST_APP_FILE);
+                StorageFileInfo testAppFileInfo =
+                        new StorageFileInfo(tempTestAppFile, relativeParent, StorageFileInfo.FileType.TEST_APP_FILE, team.getTeamId(), team.getTeamName());
                 //Upload app file
                 testAppFileInfo = attachmentService.addAttachment(testFileSet.getId(), EntityType.APP_FILE_SET, testAppFileInfo, tempTestAppFile, logger);
                 testFileSet.getAttachments().add(testAppFileInfo);
@@ -248,7 +249,7 @@ public class PackageSetController {
         String parentDir = CENTER_FILE_BASE_DIR + fileRelativeParent;
         try {
             File savedPkg = attachmentService.verifyAndSaveFile(packageFile, parentDir, false, null, new String[]{FILE_SUFFIX.JAR_FILE});
-            StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativeParent, StorageFileInfo.FileType.AGENT_PACKAGE);
+            StorageFileInfo storageFileInfo = new StorageFileInfo(savedPkg, fileRelativeParent, StorageFileInfo.FileType.AGENT_PACKAGE, null, null);
             return Result.ok(attachmentService.saveFileInStorageAndDB(storageFileInfo, savedPkg, EntityType.AGENT_PACKAGE, logger));
         } catch (HydraLabRuntimeException e) {
             return Result.error(e.getCode(), e);
@@ -428,7 +429,8 @@ public class PackageSetController {
 
             ClamAVScanner.getInstance().scan(attachment.getOriginalFilename(), attachment.getInputStream());
             File savedAttachment = attachmentService.verifyAndSaveFile(attachment, parentDir, false, newFileName, limitFileTypes);
-            StorageFileInfo storageFileInfo = new StorageFileInfo(savedAttachment, fileRelativeParent, fileType, loadType, loadDir);
+            StorageFileInfo storageFileInfo =
+                    new StorageFileInfo(savedAttachment, fileRelativeParent, fileType, loadType, loadDir, testFileSet.getTeamId(), testFileSet.getTeamName());
             attachmentService.addAttachment(fileSetId, EntityType.APP_FILE_SET, storageFileInfo, savedAttachment, logger);
             testFileSet.setAttachments(attachmentService.getAttachments(fileSetId, EntityType.APP_FILE_SET));
             testFileSetService.saveFileSetToMem(testFileSet);

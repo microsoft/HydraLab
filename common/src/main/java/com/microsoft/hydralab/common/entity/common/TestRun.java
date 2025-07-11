@@ -51,6 +51,7 @@ public class TestRun implements Serializable, ITestRun {
     private String controlLogPath;
     private String testXmlReportPath;
     private String testGifPath;
+    private String videoPath;
 
     private String crashStackId;
     private String errorInProcess;
@@ -71,8 +72,6 @@ public class TestRun implements Serializable, ITestRun {
     private List<AndroidTestUnit> testUnitList = new ArrayList<>();
     @Transient
     private JSONArray videoTimeTagArr = new JSONArray();
-    @Transient
-    private String videoBlobUrl;
     @Transient
     private String performanceBlobUrl;
     @Transient
@@ -178,8 +177,32 @@ public class TestRun implements Serializable, ITestRun {
         return getBlobUrlStr(testGifPath);
     }
 
-    public void setVideoBlobUrl() {
-        videoBlobUrl = deviceTestResultFolderUrl + "/" + Const.ScreenRecoderConfig.DEFAULT_FILE_NAME;
+    public String getVideoBlobUrl() {
+        return getBlobUrlStr(videoPath);
+    }
+
+    public String getInstrumentReportBlobPath() {
+        return getBlobPathStr(instrumentReportPath);
+    }
+
+    public String getLogcatBlobPath() {
+        return getBlobPathStr(logcatPath);
+    }
+
+    public String getControlLogBlobPath() {
+        return getBlobPathStr(controlLogPath);
+    }
+
+    public String getTestXmlReportBlobPath() {
+        return getBlobPathStr(testXmlReportPath);
+    }
+
+    public String getTestGifBlobPath() {
+        return getBlobPathStr(testGifPath);
+    }
+
+    public String getVideoBlobPath() {
+        return getBlobPathStr(videoPath);
     }
 
     public void setPerformanceJsonBlobUrl() {
@@ -193,6 +216,26 @@ public class TestRun implements Serializable, ITestRun {
         String[] paths = path.split("/");
         String fileName = paths[paths.length - 1];
         return deviceTestResultFolderUrl + "/" + fileName;
+    }
+
+    /**
+     * Get the blob path for downloading the file.
+     * This is used to construct the URL for downloading the file from the local storage.
+     *
+     * @param path The relative path of the file. For example: /test/result/2023/12/28/153708/RFCT40A8FYP/logcat.log
+     * @return The blob URL for downloading the file. For example: /test/result/153708/RFCT40A8FYP/logcat.log
+     */
+    private String getBlobPathStr(String path) {
+        if (path == null) {
+            return null;
+        }
+        String[] paths = path.split("/");
+        StringBuilder relativePath = new StringBuilder();
+        relativePath.append("/test/result");
+        for (int i = paths.length - 3; i < paths.length; i++) {
+            relativePath.append("/").append(paths[i]);
+        }
+        return relativePath.toString();
     }
 
     @Override

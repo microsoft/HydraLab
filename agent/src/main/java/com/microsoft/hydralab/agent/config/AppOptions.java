@@ -36,7 +36,7 @@ public class AppOptions {
     }
 
     public String getScreenshotStorageLocation() {
-        return getDeviceStorageLocation() + "/screenshot/";
+        return getDeviceStorageLocation() + "/screenshots/";
     }
 
     public String getTestPackageLocation() {

@@ -161,4 +161,47 @@ export default class BaseView extends React.Component {
             }).catch((error) => { this.snackBarError(error) })
         }
     }
+
+    getFileDownloadToken(fileUri) {
+        // call /api/storage/getFileDownloadUrl to get the download URL
+        return axios.get(`/api/storage/getFileDownloadToken?fileUri=${fileUri}`).then(res => {
+            if (res.data && res.data.code === 200) {
+                return res.data.content;
+            } else {
+                return null;
+            }
+        });
+    }
+
+    getFileDownloadUrl(fileUri, downloadUri) {
+        // call /api/storage/getFileDownloadUrl to get the download URL
+        return axios.get(`/api/storage/getFileDownloadToken?fileUri=${fileUri}`).then(res => {
+            if (res.data && res.data.code === 200) {
+                return downloadUri+ "?" + res.data.content;
+            } else {
+                return downloadUri;
+            }
+        });
+    }
+
+    getFileDownloadUrlAndDownload(fileUri, downloadUri) {
+        var fileName = fileUri.split('/').pop();
+        if (!fileName) {
+            this.snackBarFail({ message: "File name is empty!" });
+            return;
+        }
+        this.getFileDownloadUrl(fileUri, downloadUri).then(url => {
+            if (url) {
+                var blob = new Blob([url]);
+                const href = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = href;
+                link.setAttribute('download', fileName);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(href);
+            }
+        });
+    }
 }

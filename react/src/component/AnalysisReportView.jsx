@@ -199,7 +199,7 @@ export default class AnalysisReportView extends BaseView {
                                     <CloudDownloadIcon className='ml-1 mr-1'
                                         style={{ height: '21px' }} />
                                     <a className='badge badge-light m-1' target='_blank'
-                                        href={taskRun.instrumentReportBlobUrl + '?' + require('local-storage').get('FileToken')} download rel="noopener noreferrer">Agent Log</a>
+                                        href={this.getFileDownloadUrlAndDownload(taskRun.instrumentReportPath)} download rel="noopener noreferrer">Agent Log</a>
                                     <IconButton id={taskRun.id} onClick={() => {
                                         const tempAttachmentsRows = [];
                                         taskRun.attachments.forEach((t) => {
@@ -211,7 +211,7 @@ export default class AnalysisReportView extends BaseView {
                                                     {this.getfilesize(t.fileLen)}
                                                 </TableCell>
                                                 <TableCell id={t.fileId} align="center">
-                                                    <IconButton id={t.fileId} href={t.blobUrl + '?' + require('local-storage').get('FileToken')}>
+                                                    <IconButton id={t.fileId} href={this.getFileDownloadUrlAndDownload(t.blobPath)}>
                                                         <span id={t.fileId} className="material-icons-outlined">download</span>
                                                     </IconButton>
                                                 </TableCell>
@@ -626,5 +626,4 @@ export default class AnalysisReportView extends BaseView {
             snackbarMessage: "suiteName copied!"
         })
     }
-
 }

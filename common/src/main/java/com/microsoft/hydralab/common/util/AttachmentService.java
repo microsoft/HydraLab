@@ -91,7 +91,8 @@ public class AttachmentService {
     }
 
     public TestJsonInfo addTestJsonFile(TestJsonInfo testJsonInfo, File file, EntityType entityType, Logger logger) {
-        StorageFileInfo storageFileInfo = new StorageFileInfo(file, testJsonInfo.getBlobPath(), StorageFileInfo.FileType.T2C_JSON_FILE, entityType);
+        StorageFileInfo storageFileInfo =
+                new StorageFileInfo(file, testJsonInfo.getBlobPath(), StorageFileInfo.FileType.T2C_JSON_FILE, entityType, testJsonInfo.getTeamId(), testJsonInfo.getTeamName());
         testJsonInfo.setBlobUrl(saveFileInStorage(file, storageFileInfo, logger));
         testJsonInfo.setBlobContainer(entityType.storageContainer);
         List<TestJsonInfo> oldJsonInfoList = testJsonInfoRepository.findByIsLatestAndPackageNameAndCaseName(true, testJsonInfo.getPackageName(), testJsonInfo.getCaseName());
@@ -147,7 +148,8 @@ public class AttachmentService {
                 (newFileInfo.getLoadType() != null && newFileInfo.getLoadType().equals(oldFileInfo.getLoadType())))
                 && newFileInfo.getLoadDir().equals(oldFileInfo.getLoadDir())
                 && newFileInfo.getBlobContainer().equals(oldFileInfo.getBlobContainer())
-                && newFileInfo.getFileType().equals(oldFileInfo.getFileType())) {
+                && newFileInfo.getFileType().equals(oldFileInfo.getFileType())
+                && newFileInfo.getTeamId().equals(oldFileInfo.getTeamId())) {
             return true;
         }
         return false;

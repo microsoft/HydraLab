@@ -75,6 +75,10 @@ public class StorageServiceClientProxy {
         return storageServiceClient.generateAccessToken(permissionType);
     }
 
+    public AccessToken generateAccessTokenForFile(String permissionType, String fileUri) {
+        return storageServiceClient.generateAccessTokenForFile(permissionType, fileUri);
+    }
+
     public boolean isAccessTokenExpired(AccessToken token) {
         return storageServiceClient.isAccessTokenExpired(token);
     }
