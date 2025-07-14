@@ -185,8 +185,10 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
             blobContainerClient.create();
         }
         BlobClient blobClient = blobContainerClient.getBlobClient(fileUri);
+        // check if the blob exists, if not, return null
         if (!blobClient.exists()) {
-            blobClient.uploadFromFile(fileUri, true);
+            classLogger.warn("Blob {} doesn't exist in container {}, can't generate SAS for it.", fileUri, containerName);
+            return null;
         }
         String sas = blobClient.generateUserDelegationSas(blobServiceSasSignatureValues, userDelegationKey);
         sasData.setToken(sas);
