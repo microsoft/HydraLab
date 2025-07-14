@@ -176,9 +176,9 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
     public SASData generateSAS(SASPermission sasPermission, String fileUri) {
         Assert.isTrue(!isAuthedBySAS, "The client was init by SAS and can't generate SAS!");
         SASData sasData = new SASData();
-        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, sasPermission.timeUnit), ZoneId.of("GMT+8"));
+        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, sasPermission.timeUnit), ZoneId.systemDefault());
 
-        UserDelegationKey userDelegationKey = blobServiceClient.getUserDelegationKey(OffsetDateTime.ofInstant(Instant.now(), ZoneId.of("GMT+8")), expiryTime);
+        UserDelegationKey userDelegationKey = blobServiceClient.getUserDelegationKey(OffsetDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), expiryTime);
         BlobServiceSasSignatureValues blobServiceSasSignatureValues = new BlobServiceSasSignatureValues(expiryTime, sasPermission.permission);
         BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
         if (!blobContainerClient.exists()) {
