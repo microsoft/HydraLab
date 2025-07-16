@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.android.ddmlib.IDevice;
 import com.microsoft.hydralab.center.openai.SuggestionService;
 import com.microsoft.hydralab.center.repository.AgentUserRepository;
+import com.microsoft.hydralab.center.util.AuthUtil;
 import com.microsoft.hydralab.center.util.MetricUtil;
 import com.microsoft.hydralab.common.entity.agent.AgentFunctionAvailability;
 import com.microsoft.hydralab.common.entity.agent.EnvCapabilityRequirement;
@@ -105,6 +106,8 @@ public class DeviceAgentManagementService {
     private final ConcurrentHashMap<String, BlockedDeviceInfo> blockedDevicesMap = new ConcurrentHashMap<>();
 
     @Resource
+    AuthUtil authUtil;
+    @Resource
     BlockedDeviceInfoRepository blockedDeviceInfoRepository;
     @Resource
     MetricUtil metricUtil;
@@ -133,7 +136,6 @@ public class DeviceAgentManagementService {
 
     @Value("${app.storage.type}")
     private String storageType;
-
     @Value("${app.access-token-limit}")
     int accessLimit;
     @Value("${app.batteryStrategy}")
@@ -147,6 +149,8 @@ public class DeviceAgentManagementService {
     private boolean appCenterEnabled;
     @Value("${app.error-reporter.app-center.agent.secret: ''}")
     private String appCenterSecret;
+    @Value("${app.agent-auth-mode: 'SECRET'}")
+    private String agentAuthMode;
 
     public void onOpen(Session session) {
         onlineCount.incrementAndGet();
@@ -193,7 +197,12 @@ public class DeviceAgentManagementService {
     }
 
     private void requestAuth(Session session) {
-        sendMessageToSession(session, Message.auth());
+        Message message = Message.auth();
+        JSONObject authData = new JSONObject();
+        authData.put(Const.AgentConfig.AGENT_AUTH_MODE_PARAM, agentAuthMode);
+        authData.put(Const.AgentConfig.AUTH_APP_ID_PARAM, authUtil.getClientId());
+        message.setBody(authData);
+        sendMessageToSession(session, message);
     }
 
     public void onMessage(Message message, @NotNull Session session) throws IOException {
@@ -617,6 +626,52 @@ public class DeviceAgentManagementService {
             return null;
         }
         AgentUser agentUser = (AgentUser) body;
+        AgentUser user;
+        switch (agentAuthMode) {
+            case Const.AgentAuthMode.TOKEN:
+                user = searchAgentByToken(agentUser);
+                break;
+            case Const.AgentAuthMode.SECRET:
+                user = searchAgentBySecret(agentUser);
+                break;
+            default:
+                log.error("Unknown agent auth mode: {}, please check your configuration.", agentAuthMode);
+                return null;
+        }
+        if (user == null) {
+            log.warn("Agent user {} is not found or invalid.", agentUser);
+            return null;
+        }
+
+        user.setHostname(agentUser.getHostname());
+        user.setIp(agentUser.getIp());
+        user.setVersionName(agentUser.getVersionName());
+        user.setVersionCode(agentUser.getVersionCode());
+        user.setSecret(null);
+        user.setFunctionAvailabilities(agentUser.getFunctionAvailabilities());
+        return user;
+    }
+
+    private AgentUser searchAgentByToken(AgentUser agentUser) {
+        String accessToken = agentUser.getSecret();
+        if (accessToken == null || accessToken.isEmpty()) {
+            return null;
+        }
+        if (!authUtil.isValidToken(accessToken)) {
+            return null;
+        }
+        String deviceId = authUtil.decodeAccessToken(accessToken).getString("deviceid");
+        if (deviceId == null || deviceId.isEmpty()) {
+            return null;
+        }
+        Optional<AgentUser> findUser = agentUserRepository.findByDeviceId(deviceId);
+        if (!findUser.isPresent()) {
+            return null;
+        }
+        return findUser.get();
+    }
+
+    private AgentUser searchAgentBySecret(AgentUser agentUser) {
         String id = agentUser.getId();
 
         Optional<AgentUser> findUser = agentUserRepository.findById(id);
@@ -624,15 +679,9 @@ public class DeviceAgentManagementService {
             return null;
         }
         AgentUser user = findUser.get();
-        if (!user.getSecret().equals(agentUser.getSecret()) || !user.getName().equals(agentUser.getName())) {
+        if (!user.getSecret().equals(agentUser.getSecret())) {
             return null;
         }
-        user.setHostname(agentUser.getHostname());
-        user.setIp(agentUser.getIp());
-        user.setVersionName(agentUser.getVersionName());
-        user.setVersionCode(agentUser.getVersionCode());
-        user.setSecret(null);
-        user.setFunctionAvailabilities(agentUser.getFunctionAvailabilities());
         return user;
     }
 

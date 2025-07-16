@@ -5,9 +5,17 @@ package com.microsoft.hydralab.center.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.ParserConfig;
-import com.microsoft.hydralab.common.util.RestTemplateConfig;
 import com.microsoft.hydralab.common.util.FileUtil;
+import com.microsoft.hydralab.common.util.RestTemplateConfig;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -19,7 +27,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLEncoder;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -33,7 +45,12 @@ public class AuthUtil {
     String photoUrl;
     @Value("${spring.security.oauth2.client.provider.azure-ad.authorization-uri:}")
     String authorizationUri;
-
+    @Value("${spring.security.oauth2.client.provider.azure-ad.tenant-id:}")
+    String tenantId;
+    @Value("${spring.security.oauth2.client.provider.azure-ad.audience:}")
+    String audience;
+    @Value("${spring.security.oauth2.client.provider.azure-ad.instance-uri:}")
+    String instanceUri;
     @Value("${spring.security.oauth2.client.registration.azure-client.client-id:}")
     String clientId;
     @Value("${spring.security.oauth2.client.registration.azure-client.client-secret:}")
@@ -46,6 +63,76 @@ public class AuthUtil {
     String scope;
 
     Map<String, Boolean> urlMapping = null;
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthUtil.class);
+
+    public boolean isValidToken(String token) {
+        LOGGER.info("Starting token validation...");
+        return validateTokenWithPublicKey(token) && validateAudienceAndExpiredTime(token);
+    }
+
+    private boolean validateAudienceAndExpiredTime(String token) {
+        try {
+            JSONObject tokenInfo = decodeAccessToken(token);
+            if (tokenInfo == null) {
+                throw new IllegalArgumentException("Invalid token: unable to decode access token");
+            }
+            String aud = tokenInfo.getString("aud");
+            String[] audiences = this.audience.split(",");
+            if (aud == null || aud.isEmpty() || !Arrays.stream(audiences).anyMatch(a -> a.equals(aud))) {
+                throw new IllegalArgumentException("Invalid token: audience does not match client ID");
+            }
+            // Additional checks for expiration can be added here
+            Long exp = tokenInfo.getLong("exp");
+            if (exp == null || exp < System.currentTimeMillis() / 1000) {
+                throw new IllegalArgumentException("Invalid token: token has expired");
+            }
+            LOGGER.info("Token validation passed: audience and expiration time are valid");
+            return true;
+        } catch (Exception e) {
+            LOGGER.error("Token validation failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean validateTokenWithPublicKey(String token) {
+        try {
+            URL jwkSetURL = new URL("https://login.microsoftonline.com/" + tenantId + "/discovery/keys?appid=" + clientId);
+
+            JWKSet jwkSet = JWKSet.load(jwkSetURL);
+
+            JWSObject jwsObject = JWSObject.parse(token);
+
+            PublicKey publicKey = getPublicKey(jwsObject, jwkSet);
+            RSASSAVerifier verifier = new RSASSAVerifier((RSAPublicKey) publicKey);
+
+            boolean isVerified = jwsObject.verify(verifier);
+            return isVerified;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private PublicKey getPublicKey(JWSObject jwsObject, JWKSet jwkSet) throws JOSEException {
+        JWSAlgorithm algorithm = jwsObject.getHeader().getAlgorithm();
+        if (!algorithm.equals(JWSAlgorithm.RS256)) {
+            throw new IllegalArgumentException("No RS256");
+        }
+
+        RSAKey rsaKey = null;
+        for (JWK jwk : jwkSet.getKeys()) {
+            if (jwk.getKeyID().equals(jwsObject.getHeader().getKeyID())) {
+                rsaKey = (RSAKey) jwk;
+                break;
+            }
+        }
+        if (rsaKey == null) {
+            throw new IllegalArgumentException("No publicKey");
+        }
+
+        PublicKey publicKey = rsaKey.toRSAPublicKey();
+        return publicKey;
+    }
 
     /**
      * check the uri is need verify auth
@@ -202,5 +289,12 @@ public class AuthUtil {
         ResponseEntity<Resource> result = restTemplateHttps.exchange(photoUrl, HttpMethod.GET, entity, Resource.class);
         Resource body = result.getBody();
         return body.getInputStream();
+    }
+
+    public String getClientId() {
+        if (clientId == null || clientId.isEmpty()) {
+            throw new IllegalStateException("Client ID is not configured");
+        }
+        return clientId;
     }
 }

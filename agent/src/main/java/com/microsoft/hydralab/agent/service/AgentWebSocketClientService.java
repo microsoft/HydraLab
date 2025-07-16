@@ -92,6 +92,9 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         Message response = null;
         switch (path) {
             case Const.Path.AUTH:
+                if (!(message.getBody() instanceof JSONObject)) {
+                    break;
+                }
                 provideAuthInfo(message);
                 return;
             case Const.Path.AGENT_INIT:
@@ -240,6 +243,8 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
     }
 
     private void provideAuthInfo(Message message) {
+        JSONObject authData = (JSONObject) message.getBody();
+        String authMode = authData.getString(Const.AgentConfig.AGENT_AUTH_MODE_PARAM);
         Message responseAuth = new Message();
         responseAuth.setSessionId(message.getSessionId());
 
@@ -248,7 +253,22 @@ public class AgentWebSocketClientService implements TestTaskRunCallback {
         }
         agentUser.setId(agentId);
         agentUser.setName(agentName);
-        agentUser.setSecret(agentSecret);
+        switch (authMode) {
+            case Const.AgentAuthMode.TOKEN:
+                String appId = authData.getString(Const.AgentConfig.AUTH_APP_ID_PARAM);
+                agentUser.setSecret(agentManageService.getAgentAccessToken(appId));
+                break;
+            case Const.AgentAuthMode.SECRET:
+                agentUser.setSecret(agentSecret);
+                break;
+            default:
+                log.error("Unknown auth mode: {}", authMode);
+                responseAuth.setCode(400);
+                responseAuth.setMessage("Unknown auth mode: " + authMode);
+                send(responseAuth);
+                return;
+        }
+
         try {
             InetAddress localHost = InetAddress.getLocalHost();
             agentUser.setHostname(localHost.getHostName());

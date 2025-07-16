@@ -9,8 +9,11 @@ import com.microsoft.hydralab.center.util.SecretGenerator;
 import com.microsoft.hydralab.common.entity.center.SysUser;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.CriteriaType;
+import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.CriteriaTypeUtil;
+import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +33,8 @@ public class AgentManageService {
     private UserTeamManagementService userTeamManagementService;
     @Resource
     private SysUserService sysUserService;
+    @Value("${app.agent-auth-mode: 'SECRET'}")
+    private String agentAuthMode;
 
     public AgentUser createAgent(String teamId, String teamName, String mailAddress, String os, String name) {
         AgentUser agentUserInfo = new AgentUser();
@@ -51,7 +56,16 @@ public class AgentManageService {
 
     public AgentUser getAgent(String agentId) {
         Optional<AgentUser> agent = agentUserRepository.findById(agentId);
-        return agent.orElse(null);
+        if (!agent.isPresent()) {
+            return null;
+        }
+        AgentUser agentUser = agent.get();
+        // If agentAuthMode is TOKEN
+        if (Const.AgentAuthMode.TOKEN.equals(agentAuthMode)) {
+            // Set secret to "Not_Required" for TOKEN auth mode
+            agentUser.setSecret("Not_Required");
+        }
+        return agentUser;
     }
 
     public void deleteAgent(AgentUser agentUser) {
@@ -132,6 +146,16 @@ public class AgentManageService {
         agentUserRepository.saveAll(agents);
     }
 
+    public void updateAgentDeviceId(String agentId, String deviceId) {
+        Optional<AgentUser> findUser = agentUserRepository.findById(agentId);
+        if (!findUser.isPresent()) {
+            throw new HydraLabRuntimeException("Agent with ID " + agentId + " not found.");
+        }
+        AgentUser user = findUser.get();
+        user.setDeviceId(deviceId);
+        agentUserRepository.saveAndFlush(user);
+    }
+
     public File generateAgentConfigFile(String agentId, String host) {
         AgentUser agentUser = getAgent(agentId);
         if (agentUser != null) {
@@ -148,6 +172,9 @@ public class AgentManageService {
                         new File(CenterConstant.CENTER_TEMP_FILE_DIR));
 
                 FileWriter fileWriter = new FileWriter(agentConfigFile.getAbsolutePath());
+                if(Const.AgentAuthMode.TOKEN.equals(agentAuthMode)){
+                    agentUser.setSecret("Not_Required");
+                }
                 fileWriter.write("app:\n" +
                         "  # register to Hydra Lab Center\n" +
                         "  registry:\n" +

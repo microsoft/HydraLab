@@ -100,6 +100,7 @@ export default class AuthView extends BaseView {
         agentList: null,
         agentName: null,
         agentTeam: null,
+        deviceId: null,
         agentOS: null,
         currentAgent: null,
         agentCreateDialogIsShown: false,
@@ -284,8 +285,19 @@ export default class AuthView extends BaseView {
                         Agent ID: {currentAgent != null ? currentAgent.id : null} <br/>
                         Agent secret: {currentAgent != null ? (currentAgent.secret ? currentAgent.secret : 'No permission') : null}
                     </DialogContentText>
+                    <TextField
+                        margin="dense"
+                        name="deviceId"
+                        label="Device Id"
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                        onChange={this.handleValueChange}
+                        value={this.state.deviceId || ""} // Bind to state.deviceId
+                    />
                 </DialogContent>
                 <DialogActions>
+                    <Button onClick={() => this.updateDeviceId(currentAgent.id)}>Save</Button>
                     <Button onClick={() => this.handleStatus("currentAgent", null)}>Done</Button>
                 </DialogActions>
             </Dialog>
@@ -416,7 +428,7 @@ export default class AuthView extends BaseView {
         formParams.append("name", this.state.agentName)
         formParams.append("os", this.state.agentOS)
 
-        axios.post('/api/agent/create/', formParams, {
+        axios.post('/api/agent/create', formParams, {
             headers: {'content-type': 'application/x-www-form-urlencoded'}
         }).then(res => {
             if (res.data && res.data.code === 200) {
@@ -550,11 +562,37 @@ export default class AuthView extends BaseView {
             if (res.data && res.data.code === 200) {
                 this.setState({
                     currentAgent: res.data.content,
+                    deviceId: res.data.content.deviceId // Set deviceId in state
                 })
             } else {
                 this.snackBarFail(res)
             }
         }).catch(this.snackBarError)
+    }
+
+    updateDeviceId(agentId) {
+        const formParams = new URLSearchParams()
+        formParams.append("agentId", agentId)
+        formParams.append("deviceId", this.state.deviceId)
+
+        axios.post('/api/agent/updateDeviceId', formParams, {
+            headers: {'content-type': 'application/x-www-form-urlencoded'}
+        }).then(res => {
+            if (res.data && res.data.code === 200) {
+                this.setState({
+                    snackbarSeverity: "success",
+                    snackbarMessage: "Agent successfully updated",
+                    snackbarIsShown: true,
+                    deviceId: null,
+                    currentAgent: false,
+                })
+                this.refreshAgentList()
+            } else {
+                this.snackBarFail(res)
+            }
+        }).catch((error) => {
+            this.snackBarError(error)
+        })
     }
 
     downloadAgentConfigFile(agentId) {

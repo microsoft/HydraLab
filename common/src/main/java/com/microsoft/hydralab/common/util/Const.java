@@ -46,6 +46,8 @@ public interface Const {
         String SCOPE_PARAM = "isPrivate";
         String RESTART_FILE_MAC = "restartAgent.sh";
         String RESTART_FILE_WIN = "restartAgent.bat";
+        String AGENT_AUTH_MODE_PARAM = "agentAuthMode";
+        String AUTH_APP_ID_PARAM = "authAppId";
     }
 
     interface TaskResult {
@@ -216,5 +218,10 @@ public interface Const {
         String WINDOWS = "Windows";
         String ANDROID = "Android";
         String IOS = "iOS";
+    }
+
+    interface AgentAuthMode {
+        String TOKEN = "TOKEN";
+        String SECRET = "SECRET";
     }
 }

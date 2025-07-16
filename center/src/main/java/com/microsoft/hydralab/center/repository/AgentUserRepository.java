@@ -24,4 +24,6 @@ public interface AgentUserRepository extends JpaRepository<AgentUser, String>, J
     List<AgentUser> findAllByMailAddress(String mailAddress);
 
     List<AgentUser> findAllByTeamId(String teamId);
+
+    Optional<AgentUser> findByDeviceId(String deviceId);
 }

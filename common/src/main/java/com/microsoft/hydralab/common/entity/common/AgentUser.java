@@ -35,6 +35,7 @@ public class AgentUser {
     private String teamName;
     @Transient
     private BatteryStrategy batteryStrategy;
+    private String deviceId;
 
     @Transient
     private List<AgentFunctionAvailability> functionAvailabilities;
