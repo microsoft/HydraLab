@@ -6,7 +6,6 @@ import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageServiceClient;
 import com.microsoft.hydralab.common.file.impl.azure.AzureBlobClientAdapter;
 import com.microsoft.hydralab.common.file.impl.azure.AzureBlobProperty;
-import com.microsoft.hydralab.common.file.impl.azure.SASData;
 import com.microsoft.hydralab.common.test.BaseTest;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.ThreadUtils;
@@ -60,7 +59,7 @@ class BlobClientTest extends BaseTest {
     @Test
     @Order(1)
     void uploadFile() {
-        StorageFileInfo fileInfo = new StorageFileInfo(sampleFile, "test/unit/" + sampleFile.getName(), StorageFileInfo.FileType.APP_FILE, EntityType.APP_FILE_SET);
+        StorageFileInfo fileInfo = new StorageFileInfo(sampleFile, "test/unit/" + sampleFile.getName(), StorageFileInfo.FileType.APP_FILE, EntityType.APP_FILE_SET, null, null);
         fileInfo.setBlobContainer(property.getAppFileContainerName());
         String downloadUrl = storageServiceClient.upload(sampleFile, fileInfo).getBlobUrl();
         logger.info("Upload sample file finished, blobUrl: " + downloadUrl);

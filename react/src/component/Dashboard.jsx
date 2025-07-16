@@ -152,16 +152,6 @@ export default function Dashboard() {
         }).catch((error) => {
             this.snackBarError(error)
         })
-
-        axios.get('/api/storage/getToken').then(res => {
-            if (res.data && res.data.code === 200) {
-                ls.set("FileToken", res.data.content);
-            } else {
-                this.snackBarFail(res)
-            }
-        }).catch((error) => {
-            this.snackBarError(error)
-        })
     });
 
     return (

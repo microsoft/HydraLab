@@ -165,7 +165,7 @@ const DeviceDialog = ({ open, onClose, selectedDevice }) => {
                 <div className='deviceScreen' style={{width: `450px`, alignItems: "center", justifyContent: "center", border:"1px solid #000"}}>
                     <AspectRatio ratio={selectedDeviceRatio} style={{alignItems: "center", justifyContent: "center"}}>
                         <img style={{ maxWidth: '448px' , border:"1px solid #000"}} 
-                            src={selectedDevice.screenshotImageUrl + '?rand=' + count + '&' + require('local-storage').get('FileToken') }
+                            src={selectedDevice.screenshotImageUrl + '&rand=' + Math.random()}
                             alt="Android Phone" 
                             draggable="false"
                             onMouseDown={handleMouseDown}

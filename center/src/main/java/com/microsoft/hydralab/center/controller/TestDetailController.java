@@ -142,10 +142,24 @@ public class TestDetailController {
             }
             TestRun testInfo = testDataService.getTestRunWithVideoInfo(resultId);
             testDataService.checkTestDataAuthorization(requestor, testInfo.getTestTaskId());
+            String videoPath = testInfo.getVideoBlobPath();
+            if (videoPath.startsWith("/")) {
+                videoPath = videoPath.substring(1);
+            }
+            List<StorageFileInfo> storageFiles = storageFileInfoRepository.queryStorageFileInfoByBlobPathOrderByUpdateTimeDesc(videoPath);
+            if (storageFiles.size() == 0) {
+                return Result.error(HttpStatus.NOT_FOUND.value(), "File not found");
+            }
+            StorageFileInfo storageFileInfo = storageFiles.get(0);
+            if (!storageTokenManageService.checkFileAuthorization(requestor, storageFileInfo)) {
+                return Result.error(HttpStatus.FORBIDDEN.value(), "You are not authorized to access this file");
+            }
+            String blobPath = storageFileInfo.getBlobContainer() + "/" + storageFileInfo.getBlobPath();
+            String token = storageTokenManageService.generateReadTokenForFile(requestor.getMailAddress(), blobPath).getToken();
 
             JSONObject data = new JSONObject();
             JSONArray videos = new JSONArray();
-            videos.add(testInfo.getVideoBlobUrl());
+            videos.add(testInfo.getVideoBlobUrl() + "?" + token);
             data.put("videos", videos);
             data.put("videoInfo", testInfo.getVideoTimeTagArr());
             return Result.ok(data);

@@ -175,7 +175,8 @@ public class AdbMonkeyRunner extends TestRunner {
             testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), testRun.getLogger());
         }
         if (!testTask.isDisableRecording()) {
-            testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), testRun.getLogger());
+            String videoFilePath = testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), testRun.getLogger());
+            testRun.setVideoPath(agentManagementService.getTestBaseRelPathInUrl(videoFilePath));
         }
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }

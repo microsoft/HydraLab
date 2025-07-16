@@ -8,6 +8,8 @@ import com.microsoft.hydralab.center.service.StorageTokenManageService;
 import com.microsoft.hydralab.center.util.LocalStorageIOUtil;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysUser;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
+import com.microsoft.hydralab.common.repository.StorageFileInfoRepository;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.LogUtils;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.HandlerMapping;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -32,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * @author Li Shen
@@ -43,8 +47,10 @@ import java.nio.file.Paths;
 public class StorageController {
     private final Logger logger = LoggerFactory.getLogger(StorageController.class);
 
-    @javax.annotation.Resource
+    @Resource
     private StorageTokenManageService storageTokenManageService;
+    @Resource
+    private StorageFileInfoRepository storageFileInfoRepository;
 
     @PostMapping(value = Const.LocalStorageURL.CENTER_LOCAL_STORAGE_UPLOAD, produces = MediaType.APPLICATION_JSON_VALUE)
     public Result uploadFile(HttpServletRequest request,
@@ -160,11 +166,31 @@ public class StorageController {
         logger.info(String.format("Output file: %s , size: %d!", fileUri, resLen));
     }
 
-    @GetMapping("/api/storage/getToken")
-    public Result generateReadToken(@CurrentSecurityContext SysUser requestor) {
+    @GetMapping("/api/storage/getFileDownloadToken")
+    public Result generateReadToken(@CurrentSecurityContext SysUser requestor,
+                                    @QueryParam("fileUri") String fileUri) {
         if (requestor == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "unauthorized");
         }
-        return Result.ok(storageTokenManageService.generateReadToken(requestor.getMailAddress()).getToken());
+
+        if (fileUri.startsWith("/devices/screenshots/")) {
+            return Result.ok(storageTokenManageService.generateReadTokenForFile(requestor.getMailAddress(), "images" + fileUri).getToken());
+        }
+        String blobPath = fileUri;
+        if (blobPath.startsWith("/")) {
+            blobPath = blobPath.substring(1);
+        }
+        List<StorageFileInfo> storageFiles = storageFileInfoRepository.queryStorageFileInfoByBlobPathOrderByUpdateTimeDesc(blobPath);
+        if (storageFiles.size() == 0) {
+            return Result.error(HttpStatus.NOT_FOUND.value(), "File not found");
+        }
+        StorageFileInfo storageFileInfo = storageFiles.get(0);
+        if (!storageTokenManageService.checkFileAuthorization(requestor, storageFileInfo)) {
+            return Result.error(HttpStatus.FORBIDDEN.value(), "You are not authorized to access this file");
+        }
+        String fullBlobPath = storageFileInfo.getBlobContainer() + "/" + storageFileInfo.getBlobPath();
+        String token = storageTokenManageService.generateReadTokenForFile(requestor.getMailAddress(), fullBlobPath).getToken();
+
+        return Result.ok(token);
     }
 }

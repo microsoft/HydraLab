@@ -74,8 +74,8 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
         } catch (Exception e) {
             classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
         }
-        StorageFileInfo fileInfo = new StorageFileInfo(screenShotImageFile,
-                "device/screenshots/" + screenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+        StorageFileInfo fileInfo = new StorageFileInfo(screenShotImageFile, "devices/screenshots/" + screenShotImageFile.getName(),
+                StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT, null, null);
         String fileDownloadUrl = agentManagementService.getStorageServiceClientProxy().upload(screenShotImageFile, fileInfo).getBlobUrl();
         if (org.apache.commons.lang3.StringUtils.isBlank(fileDownloadUrl)) {
             classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());
@@ -101,7 +101,7 @@ public abstract class AbstractDeviceDriver implements DeviceDriver {
             classLogger.error("Screen capture failed for device: {}", deviceInfo, e);
         }
         StorageFileInfo fileInfo = new StorageFileInfo(screenShotImageFile,
-                "device/screenshots/" + screenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT);
+                "devices/screenshots/" + screenShotImageFile.getName(), StorageFileInfo.FileType.SCREENSHOT, EntityType.SCREENSHOT, null, null);
         String fileDownloadUrl = agentManagementService.getStorageServiceClientProxy().upload(screenShotImageFile, fileInfo).getBlobUrl();
         if (org.apache.commons.lang3.StringUtils.isBlank(fileDownloadUrl)) {
             classLogger.warn("Screenshot download url is empty for device {}", deviceInfo.getName());

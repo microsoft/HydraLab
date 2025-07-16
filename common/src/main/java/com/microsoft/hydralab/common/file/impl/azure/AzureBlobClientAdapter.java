@@ -88,6 +88,13 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
     }
 
     @Override
+    public AccessToken generateAccessTokenForFile(String permissionType, String fileUri) {
+        SASPermission permission = SASPermission.valueOf(permissionType);
+
+        return generateSAS(permission, fileUri);
+    }
+
+    @Override
     public boolean isAccessTokenExpired(AccessToken accessToken) {
         Assert.isTrue(accessToken instanceof SASData, "Current accessToken object: " + accessToken + " is not of SASData class!");
         SASData sasData = (SASData) accessToken;
@@ -156,6 +163,34 @@ public class AzureBlobClientAdapter extends StorageServiceClient {
             blobContainerClient.create();
         }
         String sas = blobContainerClient.generateUserDelegationSas(blobServiceSasSignatureValues, userDelegationKey);
+        sasData.setToken(sas);
+        sasData.setExpiredTime(expiryTime);
+        sasData.setEndpoint(blobServiceClient.getAccountUrl());
+        sasData.setSasPermission(sasPermission);
+        sasData.setFileExpiryDay(fileExpiryDay);
+        sasData.setCdnUrl(cdnUrl);
+        sasData.setContainer(containerName);
+        return sasData;
+    }
+
+    public SASData generateSAS(SASPermission sasPermission, String fileUri) {
+        Assert.isTrue(!isAuthedBySAS, "The client was init by SAS and can't generate SAS!");
+        SASData sasData = new SASData();
+        OffsetDateTime expiryTime = OffsetDateTime.ofInstant(Instant.now().plus(sasPermission.expiryTime, sasPermission.timeUnit), ZoneId.systemDefault());
+
+        UserDelegationKey userDelegationKey = blobServiceClient.getUserDelegationKey(OffsetDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), expiryTime);
+        BlobServiceSasSignatureValues blobServiceSasSignatureValues = new BlobServiceSasSignatureValues(expiryTime, sasPermission.permission);
+        BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerName);
+        if (!blobContainerClient.exists()) {
+            blobContainerClient.create();
+        }
+        BlobClient blobClient = blobContainerClient.getBlobClient(fileUri);
+        // check if the blob exists, if not, return null
+        if (!blobClient.exists()) {
+            classLogger.warn("Blob {} doesn't exist in container {}, can't generate SAS for it.", fileUri, containerName);
+            return null;
+        }
+        String sas = blobClient.generateUserDelegationSas(blobServiceSasSignatureValues, userDelegationKey);
         sasData.setToken(sas);
         sasData.setExpiredTime(expiryTime);
         sasData.setEndpoint(blobServiceClient.getAccountUrl());

@@ -97,7 +97,7 @@ export default class TestJsonView extends BaseView {
                         {t.displayIngestTime}
                     </TableCell>
                     <TableCell id={t.id} align="center">
-                        <a href={t.blobUrl + '?' + require('local-storage').get('FileToken')}> Download URL</a>
+                        <a href={t.blobUrl}> Download URL</a>
                     </TableCell>
                     <TableCell id={t.id} align="center">
                         <IconButton onClick={() => this.getJsonHistory(t.packageName, t.caseName)}>
@@ -122,7 +122,7 @@ export default class TestJsonView extends BaseView {
                         {t.displayIngestTime}
                     </TableCell>
                     <TableCell id={t.id} align="center">
-                        <a href={t.blobUrl + '?' + require('local-storage').get('FileToken')}> Download URL</a>
+                        <a href={t.blobUrl}> Download URL</a>
                     </TableCell>
                 </StyledTableRow>)
             })
@@ -306,9 +306,17 @@ export default class TestJsonView extends BaseView {
         axios.get('/api/package/testJsonList').then(res => {
             const jsonList = res.data.content;
             console.log(jsonList)
-            this.setState({
-                testJsonList: jsonList,
-                hideSkeleton: true
+            const promises = jsonList.map((item) => {
+                item.displayIngestTime = this.getDisplayTime(item.ingestTime);
+                return this.getFileDownloadUrl(item.blobPath, item.blobUrl).then((url) => {
+                    item.blobUrl = url;
+                })
+            });
+            Promise.all(promises).then(() => {
+                this.setState({
+                    testJsonList: jsonList,
+                    hideSkeleton: true
+                })
             })
         })
     }

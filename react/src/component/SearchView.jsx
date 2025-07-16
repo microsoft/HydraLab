@@ -156,7 +156,7 @@ export default class SearchView extends BaseView {
             const details = res.data.content
             if (requestPath === "videos") {
                 for (let i = 0; i < details.videos.length; i++) {
-                    details.videos[i] = details.videos[i] + '?' + require('local-storage').get('FileToken');
+                    details.videos[i] = details.videos[i];
                 }
                 const vList = details.videos
                 const info = details.videoInfo
@@ -195,41 +195,47 @@ export default class SearchView extends BaseView {
             } else {
                 axios.get('/api/test/task/device/' + details.deviceTestResultId,).then(res => {
                     if (res.data && res.data.code === 200) {
+                        const updatePromise = new Promise((resolve) => {
+                            this.getFileDownloadUrl(taskRun.videoBlobPath, taskRun.videoBlobUrl).then((url) => {
+                                details.videoBlobUrl = url;
+                                resolve();
+                            })
+                        });
+                        updatePromise.then(() => {
+                            const vList = [details.videoBlobUrl]
+                            const info = res.data.content.videoTimeTagArr
+                            const properties = []
 
-
-                        const vList = [res.data.content.videoBlobUrl + '?' + require('local-storage').get('FileToken')]
-                        const info = res.data.content.videoTimeTagArr
-                        const properties = []
-
-                        for (var k in details) {
-                            if (k === "stream") {
-                                continue
+                            for (var k in details) {
+                                if (k === "stream") {
+                                    continue
+                                }
+                                properties.push({ k: k, v: details[k] })
                             }
-                            properties.push({ k: k, v: details[k] })
-                        }
-                        this.setState({
-                            infoDisplay: <center><VideoNavView videoInfo={info} videos={vList} />
-                                <AdaptivePropertyTable properties={properties}
-                                    title='Test Case Details'
-                                    propertyValueProcessor={(key, value) => {
-                                        if (key.toLowerCase().includes('stack')) {
-                                            return <pre>{value.toString()}</pre>
-                                        }
-                                        if (key.toLowerCase().includes("html")) {
-                                            return <pre><div
-                                                dangerouslySetInnerHTML={{ __html: value.toString() }} /></pre>
-                                        }
-                                        if (key === "deviceTestResultId" || key === "id" || key === "relEndTimeInVideo"
-                                            || key === "startTimeMillis" || key === "numtests"
-                                            || key === "testIndex" || key === "testTaskId" || key === "statusCode"
-                                            || key === "relStartTimeInVideo" || key === "endTimeMillis") {
-                                            return "SKIP"
-                                        }
-                                        return null
-                                    }} />
-                            </center>,
-                            querying: false
-                        })
+                            this.setState({
+                                infoDisplay: <center><VideoNavView videoInfo={info} videos={vList} />
+                                    <AdaptivePropertyTable properties={properties}
+                                        title='Test Case Details'
+                                        propertyValueProcessor={(key, value) => {
+                                            if (key.toLowerCase().includes('stack')) {
+                                                return <pre>{value.toString()}</pre>
+                                            }
+                                            if (key.toLowerCase().includes("html")) {
+                                                return <pre><div
+                                                    dangerouslySetInnerHTML={{ __html: value.toString() }} /></pre>
+                                            }
+                                            if (key === "deviceTestResultId" || key === "id" || key === "relEndTimeInVideo"
+                                                || key === "startTimeMillis" || key === "numtests"
+                                                || key === "testIndex" || key === "testTaskId" || key === "statusCode"
+                                                || key === "relStartTimeInVideo" || key === "endTimeMillis") {
+                                                return "SKIP"
+                                            }
+                                            return null
+                                        }} />
+                                </center>,
+                                querying: false
+                            })
+                        });
                     } else {
                         this.snackBarFail(res)
                     }

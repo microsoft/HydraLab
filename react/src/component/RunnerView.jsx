@@ -186,7 +186,7 @@ export default class RunnerView extends BaseView {
                             <IconButton id={t.fileId} onClick={this.showDeleteDialog}>
                                 <span id={t.fileId} className="material-icons-outlined">delete</span>
                             </IconButton>
-                            <IconButton id={t.fileId} href={t.blobUrl + '?' + require('local-storage').get('FileToken')}>
+                            <IconButton id={t.fileId} onClick={() => this.getFileDownloadUrlAndDownload(t.blobPath, t.blobUrl)}>
                                 <span id={t.fileId} className="material-icons-outlined">download</span>
                             </IconButton>
                         </TableCell>

@@ -39,4 +39,6 @@ public abstract class StorageServiceClient {
             storageFileInfo.setCDNUrl(downloadUrl.replace(originDomain, this.cdnUrl));
         }
     }
+
+    public abstract AccessToken generateAccessTokenForFile(String permissionType, String fileUri);
 }

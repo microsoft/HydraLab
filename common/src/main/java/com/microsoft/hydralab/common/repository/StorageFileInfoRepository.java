@@ -11,4 +11,5 @@ public interface StorageFileInfoRepository extends JpaRepository<StorageFileInfo
     List<StorageFileInfo> queryStorageFileInfoByMd5(String MD5);
     List<StorageFileInfo> queryStorageFileInfoByFileType(String fileType);
     List<StorageFileInfo> queryStorageFileInfoByFileTypeOrderByCreateTimeDesc(String fileType);
+    List<StorageFileInfo> queryStorageFileInfoByBlobPathOrderByUpdateTimeDesc(String blobPath);
 }

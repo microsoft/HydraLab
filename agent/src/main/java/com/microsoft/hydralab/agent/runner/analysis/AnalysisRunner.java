@@ -125,11 +125,11 @@ public abstract class AnalysisRunner implements TaskRunLifecycle<AnalysisTask>, 
         Assert.notNull(files, "should have result file to upload");
         for (File file : files) {
             if (!file.isDirectory()) {
-                attachments.add(testTaskEngineService.saveFileToBlob(file, deviceTestResultFolder, testRun.getLogger()));
+                attachments.add(testTaskEngineService.saveFileToBlob(file, deviceTestResultFolder, testRun.getLogger(), testTask.getTeamId(), testTask.getTeamName()));
             } else if (file.listFiles().length > 0) {
                 File zipFile = FileUtil.zipFile(file.getAbsolutePath(),
                         deviceTestResultFolder + "/" + file.getName() + ".zip");
-                attachments.add(testTaskEngineService.saveFileToBlob(zipFile, deviceTestResultFolder, testRun.getLogger()));
+                attachments.add(testTaskEngineService.saveFileToBlob(zipFile, deviceTestResultFolder, testRun.getLogger(), testTask.getTeamId(), testTask.getTeamName()));
             }
         }
         testRun.setAttachments(attachments);

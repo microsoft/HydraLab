@@ -165,7 +165,16 @@ public class AgentManagementService {
     }
 
     public String getTestBaseRelPathInUrl(File report) {
-        return report.getAbsolutePath().replace(testBaseDir.getAbsolutePath(), testBaseDirUrlMapping)
+        return getTestBaseRelPathInUrl(report.getAbsolutePath());
+    }
+
+    public String getTestBaseRelPathInUrl(String path) {
+        // check the path is real path
+        if (path == null || !path.startsWith(testBaseDir.getAbsolutePath())) {
+            classLogger.warn("Path {} is not under test base dir {}", path, testBaseDir.getAbsolutePath());
+            return path.replace(File.separator, "/");
+        }
+        return path.replace(testBaseDir.getAbsolutePath(), testBaseDirUrlMapping)
                 .replace(File.separator, "/");
     }
 

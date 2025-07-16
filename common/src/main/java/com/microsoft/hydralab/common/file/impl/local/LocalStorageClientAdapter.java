@@ -59,6 +59,11 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
     }
 
     @Override
+    public AccessToken generateAccessTokenForFile(String permissionType, String fileUri) {
+        return generateAccessToken(permissionType);
+    }
+
+    @Override
     public boolean isAccessTokenExpired(AccessToken accessToken) {
         Assert.isTrue(accessToken instanceof LocalStorageToken, "Current accessToken object: " + accessToken + " is not of LocalStorageToken class!");
         LocalStorageToken localStorageToken = (LocalStorageToken) accessToken;

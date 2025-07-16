@@ -3,6 +3,8 @@
 
 package com.microsoft.hydralab.center.service;
 
+import com.microsoft.hydralab.common.entity.center.SysUser;
+import com.microsoft.hydralab.common.entity.common.StorageFileInfo;
 import com.microsoft.hydralab.common.file.AccessToken;
 import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.util.Const;
@@ -23,6 +25,10 @@ import java.util.concurrent.ConcurrentMap;
 public class StorageTokenManageService {
     @Resource
     StorageServiceClientProxy storageServiceClientProxy;
+    @Resource
+    SysUserService sysUserService;
+    @Resource
+    UserTeamManagementService userTeamManagementService;
     private final ConcurrentMap<String, AccessToken> accessTokenMap = new ConcurrentHashMap<>();
 
     public AccessToken generateReadToken(String uniqueId) {
@@ -33,6 +39,43 @@ public class StorageTokenManageService {
             accessToken = storageServiceClientProxy.generateAccessToken(Const.FilePermission.READ);
             Assert.notNull(accessToken, "Generate access token with READ permission failed! Access token generated is null!");
             accessTokenMap.put(uniqueId, accessToken);
+        }
+
+        return accessToken;
+    }
+
+    public boolean checkFileAuthorization(SysUser requestor, StorageFileInfo storageFileInfo) {
+        if (requestor == null) {
+            return false;
+        }
+
+        if (storageFileInfo == null) {
+            return false;
+        }
+
+        // Check if the file is public
+        if (storageFileInfo.isPublicFile()) {
+            return true;
+        }
+
+        // ROLE = SUPER_ADMIN / ADMIN
+        if (sysUserService.checkUserAdmin(requestor)) {
+            return true;
+        }
+
+        // TEAM_ADMIN of current TEAM
+        return userTeamManagementService.checkRequestorTeamRelation(requestor, storageFileInfo.getTeamId());
+    }
+
+    public AccessToken generateReadTokenForFile(String uniqueId, String fileUri) {
+        Assert.notNull(uniqueId, "The key of access token can't be null!");
+        Assert.notNull(fileUri, "The file URI can't be null!");
+        AccessToken accessToken = accessTokenMap.get(uniqueId + fileUri);
+
+        if (accessToken == null || storageServiceClientProxy.isAccessTokenExpired(accessToken)) {
+            accessToken = storageServiceClientProxy.generateAccessTokenForFile(Const.FilePermission.READ, fileUri);
+            Assert.notNull(accessToken, "Generate access token with READ permission failed! Access token generated is null!");
+            accessTokenMap.put(uniqueId + fileUri, accessToken);
         }
 
         return accessToken;

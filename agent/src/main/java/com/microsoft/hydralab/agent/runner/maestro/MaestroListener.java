@@ -156,7 +156,8 @@ public class MaestroListener {
                 testRunDeviceOrchestrator.stopGitEncoder(testRunDevice, agentManagementService.getScreenshotDir(), logger);
             }
             if (!testTask.isDisableRecording()) {
-                testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+                String videoFilePath = testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), logger);
+                testRun.setVideoPath(agentManagementService.getTestBaseRelPathInUrl(videoFilePath));
             }
             testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
             alreadyEnd = true;

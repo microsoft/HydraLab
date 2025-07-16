@@ -8,8 +8,16 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.DigestUtils;
 
-import javax.persistence.*;
-import java.io.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
@@ -37,21 +45,28 @@ public class StorageFileInfo implements Serializable {
     private Date updateTime;
     // CDN download URL (absolute path)
     private String CDNUrl;
+    @Column(name = "team_id")
+    private String teamId;
+    private String teamName;
 
 
     public StorageFileInfo() {
 
     }
-    public StorageFileInfo(File file, String relativeParent, String fileType, String loadType, String loadDir){
-        this(file, relativeParent, fileType);
+
+    public StorageFileInfo(File file, String relativeParent, String fileType, String loadType, String loadDir, String teamId, String teamName) {
+        this(file, relativeParent, fileType, teamId, teamName);
         this.loadType = loadType;
         this.loadDir = loadDir;
     }
-    public StorageFileInfo(File file, String relativeParent, String fileType) {
+
+    public StorageFileInfo(File file, String relativeParent, String fileType, String teamId, String teamName) {
         this.fileType = fileType;
         this.fileName = file.getName();
         this.fileLen = file.length();
         this.blobPath = relativeParent + "/" + file.getName();
+        this.teamId = teamId;
+        this.teamName = teamName;
 
         try {
             FileInputStream inputStream = new FileInputStream(file);
@@ -64,12 +79,14 @@ public class StorageFileInfo implements Serializable {
         }
     }
 
-    public StorageFileInfo(File file, String fileRelPath, String fileType, EntityType entityType) {
+    public StorageFileInfo(File file, String fileRelPath, String fileType, EntityType entityType, String teamId, String teamName) {
         this.fileType = fileType;
         this.fileName = file.getName();
         this.fileLen = file.length();
         this.blobPath = fileRelPath;
         this.blobContainer = entityType.storageContainer;
+        this.teamId = teamId;
+        this.teamName = teamName;
 
         try {
             FileInputStream inputStream = new FileInputStream(file);
@@ -79,6 +96,14 @@ public class StorageFileInfo implements Serializable {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Generate temp file failed!", e);
         } catch (IOException e) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Get the MD5 of temp file failed!", e);
+        }
+    }
+
+    public boolean isPublicFile() {
+        if (teamId == null || teamId.isEmpty()) {
+            return true;
+        } else {
+            return false;
         }
     }
 

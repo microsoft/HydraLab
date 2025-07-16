@@ -18,7 +18,7 @@ import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import '../css/deviceAgentsView.css';
-import _ from 'lodash';
+import _, { get } from 'lodash';
 import { AreaChart, Area, XAxis, YAxis, PieChart, Tooltip, Pie, Cell, Legend, ReferenceLine } from 'recharts';
 import { string } from 'prop-types';
 const COLORS = ['#00C49F', '#90C12F', '#44C16F', '#00C12F', '#00612F', '#59C12F', '#0061FF', '#0061aa'];
@@ -399,20 +399,32 @@ export default class DeviceAgentsView extends BaseView {
                 console.log(res.data)
                 const agents = res.data.content
                 const collapseStatus = {}
+                let tokenPromises = [];
                 for (let i = 0; i < agents.length; i++) {
                     agents[i].groupedDevices = []
                     const sliceLen = agents[i].agentDeviceType == 2 ? 2 : 4;
                     for (let j = 0; j < agents[i].devices.length; j += sliceLen) {
                         agents[i].groupedDevices.push(agents[i].devices.slice(j, j + sliceLen))
                     }
+                    // get image url for each device
+                    agents[i].devices.forEach((device) => {
+                        if (device.imageRelPath) {
+                            const p = this.getFileDownloadToken(device.imageRelPath).then((token) => {
+                                device.screenshotImageUrl = (device.screenshotImageUrl || '') + '?' + token;
+                            });
+                            tokenPromises.push(p);
+                        }
+                    })
                     collapseStatus[agents[i].agentId] = true
                 }
-
-                this.setState({
-                    agents: agents,
-                    collapseStatus: collapseStatus,
-                    refreshing: false,
-                })
+                // 等待所有 token 获取完毕后再 setState
+                Promise.all(tokenPromises).then(() => {
+                    this.setState({
+                        agents: agents,
+                        collapseStatus: collapseStatus,
+                        refreshing: false,
+                    })
+                });
             } else {
                 this.snackBarFail(res)
             }
