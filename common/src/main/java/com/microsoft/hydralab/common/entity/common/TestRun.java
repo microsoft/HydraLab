@@ -229,13 +229,8 @@ public class TestRun implements Serializable, ITestRun {
         if (path == null) {
             return null;
         }
-        String[] paths = path.split("/");
-        StringBuilder relativePath = new StringBuilder();
-        relativePath.append("/test/result");
-        for (int i = paths.length - 3; i < paths.length; i++) {
-            relativePath.append("/").append(paths[i]);
-        }
-        return relativePath.toString();
+        String relativePath = path.replaceAll("/test/result/\\d{4}/\\d{2}/\\d{2}/", "/test/result/");
+        return relativePath;
     }
 
     @Override
