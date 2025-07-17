@@ -27,6 +27,7 @@ import Skeleton from '@mui/material/Skeleton';
 import BaseView from "@/component/BaseView";
 import moment from 'moment';
 import TeamUserManagement from "@/component/TeamUserManagement";
+import TeamAppRegistrationManagement from "@/component/TeamAppRegistrationManagement";
 
 
 /**
@@ -69,6 +70,7 @@ export default class TeamManagement extends BaseView {
         toBeDeletedTeamId: null,
 
         teamMemberDetailIsShown: false,
+        teamClientIdListIsShown: false,
         selectedTeamId: null,
         selectedTeamManageable: false,
 
@@ -105,6 +107,9 @@ export default class TeamManagement extends BaseView {
                     <TableCell id={t.teamId} align="center">
                         <IconButton onClick={() => this.showTeamInfo(t.teamId, t.manageable)} disabled={t.teamName === 'Default' && !t.manageable}>
                             <span className="material-icons-outlined">info</span>
+                        </IconButton>
+                        <IconButton onClick={() => this.showPipelineClientInfo(t.teamId, t.manageable)} disabled={t.teamName === 'Default'}>
+                            <span className="material-icons-outlined">verified_user</span>
                         </IconButton>
                         <IconButton onClick={() => this.openDeleteTeamDialog(t.teamId)} disabled={t.teamName === 'Default' || !t.manageable}>
                             <span className="material-icons-outlined">delete</span>
@@ -207,6 +212,18 @@ export default class TeamManagement extends BaseView {
                         onClick={() => this.handleStatus("teamMemberDetailIsShown", false)}>Close</Button>
                 </DialogActions>
             </Dialog>
+            <Dialog open={this.state.teamClientIdListIsShown}
+                    fullWidth
+                    maxWidth="lg"
+                    onClose={() => this.handleStatus("teamClientIdListIsShown", false)}>
+                <DialogContent>
+                    <TeamAppRegistrationManagement teamId={this.state.selectedTeamId} manageable={this.state.selectedTeamManageable} />
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => this.handleStatus("teamClientIdListIsShown", false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
             <Snackbar
                 anchorOrigin={{
                     vertical: 'top',
@@ -290,6 +307,15 @@ export default class TeamManagement extends BaseView {
         console.log(teamId)
         this.setState({
             teamMemberDetailIsShown: true,
+            selectedTeamId: teamId,
+            selectedTeamManageable: manageable
+        })
+    }
+
+    showPipelineClientInfo(teamId, manageable) {
+        console.log(teamId)
+        this.setState({
+            teamClientIdListIsShown: true,
             selectedTeamId: teamId,
             selectedTeamManageable: manageable
         })
