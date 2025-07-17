@@ -6,13 +6,16 @@ package com.microsoft.hydralab.center.controller;
 import com.microsoft.hydralab.center.service.SecurityUserService;
 import com.microsoft.hydralab.center.service.SysTeamService;
 import com.microsoft.hydralab.center.service.SysUserService;
+import com.microsoft.hydralab.center.service.TeamAppManagementService;
 import com.microsoft.hydralab.center.service.UserTeamManagementService;
 import com.microsoft.hydralab.common.entity.agent.Result;
 import com.microsoft.hydralab.common.entity.center.SysTeam;
 import com.microsoft.hydralab.common.entity.center.SysUser;
+import com.microsoft.hydralab.common.entity.center.TeamAppRelation;
 import com.microsoft.hydralab.common.entity.center.UserTeamRelation;
 import com.microsoft.hydralab.common.util.Const;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,7 +32,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping
-public class UserTeamController {
+public class TeamController {
     @Resource
     SysTeamService sysTeamService;
     @Resource
@@ -38,6 +41,8 @@ public class UserTeamController {
     UserTeamManagementService userTeamManagementService;
     @Resource
     SecurityUserService securityUserService;
+    @Autowired
+    private TeamAppManagementService teamAppManagementService;
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(value = {"/api/team/create"}, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -311,4 +316,49 @@ public class UserTeamController {
         return Result.ok(sysTeamService.queryTeamById(user.getDefaultTeamId()));
     }
 
+    /**
+     * Authenticated USER: all
+     */
+    @PostMapping(value = {"/api/teamApp/addRelation"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<TeamAppRelation> addTeamAppRelation(@CurrentSecurityContext SysUser requestor,
+                                                        @RequestParam("appClientId") String appClientId,
+                                                        @RequestParam("teamId") String teamId) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
+        }
+        ///  todo: app client ID format check
+        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, user doesn't belong to this Team");
+        }
+        TeamAppRelation relation = teamAppManagementService.queryRelation(appClientId, teamId);
+        if (relation != null) {
+            return Result.error(HttpStatus.FORBIDDEN.value(), "Relation exists.");
+        }
+
+        relation = teamAppManagementService.addTeamAppRelation(teamId, appClientId);
+        return Result.ok(relation);
+    }
+
+    /**
+     * Authenticated USER: all
+     */
+    @PostMapping(value = {"/api/teamApp/deleteRelation"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result deleteTeamAppRelation(@CurrentSecurityContext SysUser requestor,
+                                     @RequestParam("appClientId") String appClientId,
+                                     @RequestParam("teamId") String teamId) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
+        }
+        ///  todo: app client ID format check
+        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, user doesn't belong to this Team");
+        }
+        TeamAppRelation relation = teamAppManagementService.queryRelation(appClientId, teamId);
+        if (relation == null) {
+            return Result.error(HttpStatus.BAD_REQUEST.value(), "Relation doesn't exist.");
+        }
+
+        teamAppManagementService.deleteTeamAppRelation(relation);
+        return Result.ok("delete team-app relation successfully!");
+    }
 }
