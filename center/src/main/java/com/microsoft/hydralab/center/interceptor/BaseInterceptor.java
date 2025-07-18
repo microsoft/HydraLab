@@ -45,7 +45,9 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         String remoteUser = request.getRemoteUser();
         String requestURI = request.getRequestURI();
-        String oauthToken = null;
+        String sessionAuthToken = null;
+        String authorizationToken;
+        String aadIdToken;
         if (LogUtils.isLegalStr(requestURI, Const.RegexString.URL, true) && LogUtils.isLegalStr(remoteUser, Const.RegexString.MAIL_ADDRESS, true)) {
             LOGGER.info("New access from IP {}, host {}, user {}, for path {}", request.getRemoteAddr(), request.getRemoteHost(), remoteUser,
                     requestURI);// CodeQL [java/log-injection] False Positive: Has verified the string by regular expression
@@ -64,41 +66,43 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
         SecurityContext securityContext = (SecurityContext) request.getSession().getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
         if (securityContext != null) {
             SysUser userAuthentication = (SysUser) securityContext.getAuthentication();
-            oauthToken = userAuthentication.getAccessToken();
+            sessionAuthToken = userAuthentication.getAccessToken();
         }
 
-        String authToken = request.getHeader("Authorization");
-        if (authToken != null) {
-            authToken = authToken.replaceAll("Bearer ", "");
+        authorizationToken = request.getHeader("Authorization");
+        if (authorizationToken != null) {
+            authorizationToken = authorizationToken.replaceAll("Bearer ", "");
         }
 
         // For Azure AD authentication
-        String accessToken = request.getHeader("X-MS-TOKEN-AAD-ID-TOKEN");
+        aadIdToken = request.getHeader("X-MS-TOKEN-AAD-ID-TOKEN");
         LOGGER.info("UserId: " + request.getHeader("X-MS-CLIENT-PRINCIPAL-ID"));
         LOGGER.info("UserName: " + request.getHeader("X-MS-CLIENT-PRINCIPAL-NAME"));
 
-        //check is ignore
+        // check is ignore
         if (!authUtil.isIgnore(requestURI)) {
-            //invoked by API client
-            if (!StringUtils.isEmpty(accessToken)) {
-                if (authTokenService.checkAADToken(accessToken)) {
+            // invoked by API client
+            if (!StringUtils.isEmpty(aadIdToken)) {
+                if (authTokenService.checkAADToken(aadIdToken)) {
                     return true;
                 } else {
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), "unauthorized, error authorization code");
                 }
             }
 
-            //invoke by client
-            if (!StringUtils.isEmpty(authToken)) {
-                if (authTokenService.checkAuthToken(authToken)) {
+            // invoked by agent client
+            if (!StringUtils.isEmpty(authorizationToken)) {
+                if (authTokenService.checkAuthToken(authorizationToken)) {
+                    return true;
+                } else if (authTokenService.setUserAuthByAppClientToken(authorizationToken)) {
                     return true;
                 } else {
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), "unauthorized, error authorization code");
                 }
-
             }
-            //invoke by browser
-            if (StringUtils.isEmpty(oauthToken) || !authUtil.verifyToken(oauthToken)) {
+
+            // invoke by browser
+            if (StringUtils.isEmpty(sessionAuthToken) || !authUtil.verifyToken(sessionAuthToken)) {
                 if (requestURI.contains(Const.FrontEndPath.PREFIX_PATH)) {
                     String queryString = request.getQueryString();
                     if (StringUtils.isNotEmpty(queryString)
