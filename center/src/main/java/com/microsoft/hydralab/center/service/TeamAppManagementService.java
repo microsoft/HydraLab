@@ -73,7 +73,7 @@ public class TeamAppManagementService {
         return new ArrayList<>(clientIds);
     }
 
-    public String queryTeamByClientId(String appClientId) {
+    public String queryTeamIdByClientId(String appClientId) {
         return appTeamListMap.get(appClientId);
     }
 }

@@ -108,7 +108,7 @@ export default class TeamManagement extends BaseView {
                         <IconButton onClick={() => this.showTeamInfo(t.teamId, t.manageable)} disabled={t.teamName === 'Default' && !t.manageable}>
                             <span className="material-icons-outlined">info</span>
                         </IconButton>
-                        <IconButton onClick={() => this.showPipelineClientInfo(t.teamId, t.manageable)} disabled={t.teamName === 'Default'}>
+                        <IconButton onClick={() => this.showPipelineClientInfo(t.teamId)}>
                             <span className="material-icons-outlined">verified_user</span>
                         </IconButton>
                         <IconButton onClick={() => this.openDeleteTeamDialog(t.teamId)} disabled={t.teamName === 'Default' || !t.manageable}>
@@ -217,7 +217,7 @@ export default class TeamManagement extends BaseView {
                     maxWidth="lg"
                     onClose={() => this.handleStatus("teamClientIdListIsShown", false)}>
                 <DialogContent>
-                    <TeamAppRegistrationManagement teamId={this.state.selectedTeamId} manageable={this.state.selectedTeamManageable} />
+                    <TeamAppRegistrationManagement teamId={this.state.selectedTeamId} />
                 </DialogContent>
                 <DialogActions>
                     <Button
@@ -312,12 +312,11 @@ export default class TeamManagement extends BaseView {
         })
     }
 
-    showPipelineClientInfo(teamId, manageable) {
+    showPipelineClientInfo(teamId) {
         console.log(teamId)
         this.setState({
             teamClientIdListIsShown: true,
-            selectedTeamId: teamId,
-            selectedTeamManageable: manageable
+            selectedTeamId: teamId
         })
     }
 

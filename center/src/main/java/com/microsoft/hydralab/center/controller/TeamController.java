@@ -330,13 +330,16 @@ public class TeamController {
         if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, user doesn't belong to this Team");
         }
-        TeamAppRelation relation = teamAppManagementService.queryRelation(appClientId, teamId);
-        if (relation != null) {
-            return Result.error(HttpStatus.FORBIDDEN.value(), "Relation exists.");
+        String existingTeamId = teamAppManagementService.queryTeamIdByClientId(appClientId);
+        if (existingTeamId != null) {
+            if (existingTeamId.equals(teamId)) {
+                return Result.error(HttpStatus.FORBIDDEN.value(), "Client ID already linked in current team.");
+            } else {
+                return Result.error(HttpStatus.FORBIDDEN.value(), "Client ID already linked in another team.");
+            }
         }
 
-        relation = teamAppManagementService.addTeamAppRelation(teamId, appClientId);
-        return Result.ok(relation);
+        return Result.ok(teamAppManagementService.addTeamAppRelation(teamId, appClientId));
     }
 
     /**
@@ -360,5 +363,23 @@ public class TeamController {
 
         teamAppManagementService.deleteTeamAppRelation(relation);
         return Result.ok("delete team-app relation successfully!");
+    }
+
+    /**
+     * Authenticated USER: all
+     */
+    @PostMapping(value = {"/api/team/clientIds"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result<List<String>> queryTeamClientIds(@CurrentSecurityContext SysUser requestor,
+                                                      @RequestParam("teamId") String teamId) {
+        if (requestor == null) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
+        }
+        ///  todo: app client ID format check
+        if (!sysUserService.checkUserAdmin(requestor) && !userTeamManagementService.checkRequestorTeamRelation(requestor, teamId)) {
+            return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, user doesn't belong to this Team");
+        }
+
+        List<String> clientIds = teamAppManagementService.queryClientIdsByTeam(teamId);
+        return Result.ok(clientIds);
     }
 }
