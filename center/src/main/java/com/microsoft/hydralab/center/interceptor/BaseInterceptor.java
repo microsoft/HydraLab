@@ -40,6 +40,8 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
     AuthTokenService authTokenService;
     @Value("${app.storage.type}")
     private String storageType;
+    @Value("${app.api-auth-mode}")
+    private String apiAuthMode;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
@@ -92,9 +94,9 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
 
             // invoked by agent client
             if (!StringUtils.isEmpty(authorizationToken)) {
-                if (authTokenService.checkAuthToken(authorizationToken)) {
+                if ("SECRET".equals(apiAuthMode) && authTokenService.checkAuthToken(authorizationToken)) {
                     return true;
-                } else if (authTokenService.setUserAuthByAppClientToken(authorizationToken)) {
+                } else if ("TOKEN".equals(apiAuthMode) && authTokenService.setUserAuthByAppClientToken(authorizationToken)) {
                     return true;
                 } else {
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), "unauthorized, error authorization code");
