@@ -1,18 +1,18 @@
 # Back-end architectFront-end architect
-**/doc/UML @hydraxman @zhou9584
-*.puml  @hydraxman @zhou9584
+**/doc/UML @hydraxman  @zhou9584 @olivershen-wow
+*.puml  @hydraxman  @zhou9584 @olivershen-wow
 
 # Front-end architect
-/react/ @lifesaver0129 @olivershen-wow
+/react/ @lifesaver0129  @zhou9584 @olivershen-wow
 
 # Encache
 ehcache.xml @zhou9584 @olivershen-wow
 
 # Onboarding
-*.md @zhou9584 @hydraxman @dexterdreeeam 
+*.md @zhou9584 @olivershen-wow @hydraxman @dexterdreeeam 
 
 # Hydra Lab Android client
-/android_client/app/ @lifesaver0129 @TedaLIEz @dexterdreeeam  @taoran6
+/android_client/app/ @lifesaver0129 @TedaLIEz @dexterdreeeam  @taoran6  @zhou9584 @olivershen-wow
 
 # TestTaskSpec
 /common/src/main/java/com/microsoft/hydralab/common/entity/ @olivershen-wow @zhou9584 @dexterdreeeam 
@@ -21,17 +21,17 @@ ehcache.xml @zhou9584 @olivershen-wow
 /gradle_plugin/ @olivershen-wow @taoran6 @dexterdreeeam @zhou9584
 
 # ADO extension
-/vsts_extension/ @olivershen-wow @dexterdreeeam  @taoran6
+/vsts_extension/  @zhou9584 @olivershen-wow @dexterdreeeam  @taoran6
 
 # Grafana/Prometheus
 /center/deploy_startup/ @olivershen-wow @zhou9584
 /center/* @olivershen-wow @zhou9584
 
 # File Storage
-/common/src/main/java/com/microsoft/hydralab/common/file/ @olivershen-wow @AC-Phoenix
+/common/src/main/java/com/microsoft/hydralab/common/file/  @zhou9584 @olivershen-wow @AC-Phoenix
 
 # AgentManager,DeviceDriver,TestRunner,TestDevice
-/common/src/main/java/com/microsoft/hydralab/common/management/ @zhou9584 @TedaLIEz @AC-Phoenix
+/common/src/main/java/com/microsoft/hydralab/common/management/ @zhou9584 @olivershen-wow @TedaLIEz @AC-Phoenix
 **/runner/ @zhou9584 @TedaLIEz @AC-Phoenix @olivershen-wow
 
 # Smart Test
@@ -43,13 +43,13 @@ ehcache.xml @zhou9584 @olivershen-wow
 **/runner/appium/ @zhou9584 @taoran6 @olivershen-wow
 
 # Taps to cases
-**/runner/t2c/  @TedaLIEz @taoran6 @dexterdreeeam 
-/taps_to_cases/ @TedaLIEz @taoran6 @dexterdreeeam 
+**/runner/t2c/  @TedaLIEz @taoran6 @dexterdreeeam @zhou9584 @olivershen-wow
+/taps_to_cases/ @TedaLIEz @taoran6 @dexterdreeeam @zhou9584 @olivershen-wow
 
 # XCTest(iOS)
-**/runner/xctest/ @lifesaver0129 @zhou9584 @TedaLIEz
+**/runner/xctest/ @lifesaver0129 @zhou9584 @olivershen-wow @TedaLIEz
 
 # Performance testing
-**/hydralab/performance/ @taoran6 @AC-Phoenix @TedaLIEz
+**/hydralab/performance/ @taoran6 @AC-Phoenix @TedaLIEz @zhou9584 @olivershen-wow
 
 
