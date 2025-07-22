@@ -134,6 +134,15 @@ public class AuthUtil {
         return publicKey;
     }
 
+    public String getAppClientId(String accessToken) {
+        String clientId = "";
+        JSONObject clientInfo = decodeAccessToken(accessToken);
+        if (clientInfo != null) {
+            clientId = clientInfo.getString("appid");
+        }
+        return clientId;
+    }
+
     /**
      * check the uri is need verify auth
      *

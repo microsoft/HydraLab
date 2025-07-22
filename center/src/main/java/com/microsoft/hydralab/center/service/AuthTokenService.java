@@ -6,6 +6,7 @@ package com.microsoft.hydralab.center.service;
 import com.microsoft.hydralab.center.repository.AuthTokenRepository;
 import com.microsoft.hydralab.center.util.AuthUtil;
 import com.microsoft.hydralab.common.entity.center.AuthToken;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,10 @@ public class AuthTokenService {
     AuthTokenRepository authTokenRepository;
     @Resource
     SecurityUserService securityUserService;
+    @Autowired
+    private TeamAppManagementService teamAppManagementService;
+    @Autowired
+    private UserTeamManagementService userTeamManagementService;
 
     public AuthToken saveAuthToken(AuthToken authToken) {
         return authTokenRepository.save(authToken);
@@ -72,6 +77,23 @@ public class AuthTokenService {
         if (authObj == null) {
             return false;
         }
+        SecurityContextHolder.getContext().setAuthentication(authObj);
+        return true;
+    }
+
+    public boolean setUserAuthByAppClientToken(String clientAadToken) {
+        if (!authUtil.isValidToken(clientAadToken)) {
+            return false;
+        }
+        String appClientId = authUtil.getAppClientId(clientAadToken);
+        String teamId = teamAppManagementService.queryTeamIdByClientId(appClientId);
+        Authentication authObj = userTeamManagementService.queryUsersByTeam(teamId).stream()
+                .findFirst()
+                .orElse(null);
+        if (authObj == null) {
+            return false;
+        }
+
         SecurityContextHolder.getContext().setAuthentication(authObj);
         return true;
     }
