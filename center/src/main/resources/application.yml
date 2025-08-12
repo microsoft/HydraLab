@@ -84,7 +84,7 @@ app:
     deployment: ${OPENAI_DEPLOYMENT:}
     endpoint: ${OPENAI_ENDPOINT:}
   agent-auth-mode: ${AGENT_AUTH_MODE:SECRET} # options: TOKEN, SECRET
-  api-auth-mode: ${API_AUTH_MODE:SECRET} # options: TOKEN, SECRET
+  api-auth-mode: ${API_AUTH_MODE:SECRET} # options: TOKEN, SECRET, HYBRID
 management:
   endpoints:
     web:

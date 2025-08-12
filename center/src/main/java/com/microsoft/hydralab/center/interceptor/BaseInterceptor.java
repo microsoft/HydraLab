@@ -94,7 +94,10 @@ public class BaseInterceptor extends HandlerInterceptorAdapter {
 
             // invoked by agent client
             if (!StringUtils.isEmpty(authorizationToken)) {
-                if ("SECRET".equals(apiAuthMode) && authTokenService.checkAuthToken(authorizationToken)) {
+                if ("HYBRID".equals(apiAuthMode) && (authTokenService.checkAuthToken(authorizationToken) ||
+                        authTokenService.setUserAuthByAppClientToken(authorizationToken))) {
+                    return true;
+                } else if ("SECRET".equals(apiAuthMode) && authTokenService.checkAuthToken(authorizationToken)) {
                     return true;
                 } else if ("TOKEN".equals(apiAuthMode) && authTokenService.setUserAuthByAppClientToken(authorizationToken)) {
                     return true;
