@@ -62,9 +62,8 @@ public final class ClamAVScanner {
                 );
             }
         } else {
-            // todo: restart or ignore?
+            // todo: send custom metric and config alert on it.
             LOGGER.error("ClamAV is shutdown");
-            throw new HydraLabRuntimeException("ClamAV is shutdown");
         }
     }
 }

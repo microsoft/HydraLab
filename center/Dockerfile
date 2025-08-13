@@ -35,12 +35,13 @@ RUN \
     mkdir -p /var/run/clamav && \
     chown clamav:clamav /var/run/clamav && \
     chmod 755 /var/run/clamav && \
+    echo 'TCPSocket 3310' >> /etc/clamav/clamd.conf && \
+    echo 'TCPAddr 127.0.0.1' >> /etc/clamav/clamd.conf && \
     mkdir -p /hydra/data
 
 COPY ${STARTUP_FOLDER_PATH}/prometheus-2.36.2.linux-amd64.tar.gz /opt/
 COPY ${STARTUP_FOLDER_PATH}/pushgateway-1.4.3.linux-amd64.tar.gz /opt/
 COPY ${STARTUP_FOLDER_PATH}/grafana-enterprise-9.0.1.linux-amd64.tar.gz /opt/
-COPY ${STARTUP_FOLDER_PATH}/clamAV/clamd.conf /opt/
 
 RUN cd /opt/ && \
     tar -zxvf prometheus-2.36.2.linux-amd64.tar.gz && \

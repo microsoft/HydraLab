@@ -13,7 +13,7 @@ fi
 /etc/init.d/cron start &
 
 if ${CLAMAV_ENABLED}; then
-  clamd -c /opt/clamd.conf &
+  clamd &
 fi
 
 cd /
