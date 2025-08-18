@@ -37,6 +37,9 @@ RUN \
     chmod 755 /var/run/clamav && \
     echo 'TCPSocket 3310' >> /etc/clamav/clamd.conf && \
     echo 'TCPAddr 127.0.0.1' >> /etc/clamav/clamd.conf && \
+    sed -i '/StreamMaxLength/c\StreamMaxLength 2048M' /etc/clamav/clamd.conf && \
+    sed -i '/MaxScanSize/c\MaxScanSize 0' /etc/clamav/clamd.conf && \
+    sed -i '/MaxFileSize/c\MaxFileSize 0' /etc/clamav/clamd.conf && \
     mkdir -p /hydra/data
 
 COPY ${STARTUP_FOLDER_PATH}/prometheus-2.36.2.linux-amd64.tar.gz /opt/
