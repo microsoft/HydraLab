@@ -6,6 +6,7 @@ package com.microsoft.hydralab.center.service;
 import com.microsoft.hydralab.center.repository.AuthTokenRepository;
 import com.microsoft.hydralab.center.util.AuthUtil;
 import com.microsoft.hydralab.common.entity.center.AuthToken;
+import com.microsoft.hydralab.common.entity.center.SysUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -87,9 +88,13 @@ public class AuthTokenService {
         }
         String appClientId = authUtil.getAppClientId(clientAadToken);
         String teamId = teamAppManagementService.queryTeamIdByClientId(appClientId);
-        Authentication authObj = userTeamManagementService.queryUsersByTeam(teamId).stream()
+        SysUser sysUser = userTeamManagementService.queryUsersByTeam(teamId).stream()
                 .findFirst()
                 .orElse(null);
+        if(sysUser == null){
+            return false;
+        }
+        Authentication authObj = securityUserService.loadUserAuthentication(sysUser.getMailAddress(), null);
         if (authObj == null) {
             return false;
         }
