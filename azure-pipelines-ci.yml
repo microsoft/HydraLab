@@ -149,6 +149,8 @@ stages:
         script: |
           cp android_client/app/build/outputs/apk/release/app-release.apk common/src/main/resources/record_release.apk -force
     - task: Gradle@2
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
       displayName: Build center (with MISE)
       inputs:
         gradleWrapperFile: 'gradlew'
@@ -158,7 +160,7 @@ stages:
         jdkVersionOption: '1.11'
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
-        options: '-PIDDPUsername=IdentityDivision -PIDDPPassword=$(IDDPPassword) -PenableMISE=true'
+        options: '-PenableMISE=true'
     - task: Gradle@2
       displayName: Build agent
       inputs:
