@@ -159,6 +159,7 @@ stages:
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
         options: '-PIDDPUsername=IdentityDivision -PIDDPPassword=$(IDDPPassword) -PenableMISE=true'
+      condition: eq(variables.fullBuild, 'true')
     - task: Gradle@2
       displayName: Build agent
       inputs:
