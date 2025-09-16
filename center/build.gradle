@@ -18,14 +18,10 @@ repositories {
         maven {
             url 'https://identitydivision.pkgs.visualstudio.com/_packaging/IDDP/maven/v1'
             name 'IDDP'
-            credentials {
-                username = "AzureDevOps"
-                password = System.getenv("SYSTEM_ACCESSTOKEN")
-            }
+            credentials(PasswordCredentials)
             authentication {
                 basic(BasicAuthentication)
             }
-
         }
     }
 }
