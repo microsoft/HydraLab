@@ -61,12 +61,17 @@ public class AuthUtil {
     String ignoreUri;
     @Value("${spring.security.oauth2.client.registration.azure-client.scope:}")
     String scope;
+    @Value("${spring.security.oauth2.client.provider.azure-ad.miseEnabled:false}")
+    boolean miseEnabled;
 
     Map<String, Boolean> urlMapping = null;
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthUtil.class);
 
     public boolean isValidToken(String token) {
         LOGGER.info("Starting token validation...");
+        if (miseEnabled) {
+            return validateTokenWithMISE(token);
+        }
         return validateTokenWithPublicKey(token) && validateAudienceAndExpiredTime(token);
     }
 
@@ -111,6 +116,89 @@ public class AuthUtil {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean validateTokenWithMISE(String token) {
+        LOGGER.info("Starting MISE token validation...");
+
+        try {
+            // Mise mise = Mise.createClient();
+            Class<?> miseClass = Class.forName("com.microsoft.identity.service.essentials.Mise");
+            Object mise = miseClass.getMethod("createClient").invoke(null);
+
+            // mise.assignLogMessageCallback(new Mise.ILogCallback() {...}, null);
+            Class<?> logLevelClass = Class.forName("com.microsoft.identity.service.essentials.MiseLogLevel");
+            Class<?> iLogCallbackClass = Class.forName("com.microsoft.identity.service.essentials.Mise$ILogCallback");
+
+            Object logCallback = java.lang.reflect.Proxy.newProxyInstance(
+                    iLogCallbackClass.getClassLoader(),
+                    new Class<?>[]{iLogCallbackClass},
+                    (proxy, method, args) -> {
+                        String methodName = method.getName();
+                        if ("callback".equals(methodName)) {
+                            Object level = args[0];
+                            String message = (String) args[1];
+                            // Print all log levels for simplicity
+                            LOGGER.info(message);
+                        }
+                        return null;
+                    }
+            );
+
+            miseClass.getMethod("assignLogMessageCallback", iLogCallbackClass, Object.class)
+                    .invoke(mise, logCallback, null);
+
+            // Configure MISE
+            JSONObject config = new JSONObject();
+            JSONObject azureAd = new JSONObject();
+            azureAd.put("Instance", instanceUri);
+            azureAd.put("ClientId", clientId);
+            azureAd.put("TenantId", tenantId);
+            String[] audiences = audience.split(",");
+            azureAd.put("Audiences", audiences);
+            JSONObject logging = new JSONObject();
+            logging.put("logLevel", "Debug");
+            azureAd.put("Logging", logging);
+            config.put("AzureAd", azureAd);
+
+            miseClass.getMethod("configure", String.class, String.class)
+                    .invoke(mise, config.toString(), null);
+
+            // MiseValidationInput miseValidationInput = new MiseValidationInput();
+            Class<?> miseValidationInputClass = Class.forName("com.microsoft.identity.service.essentials.MiseValidationInput");
+            Object miseValidationInput = miseValidationInputClass.getDeclaredConstructor().newInstance();
+
+            miseValidationInputClass.getField("authorizationHeader").set(miseValidationInput, "Bearer " + token);
+            miseValidationInputClass.getField("originalMethodHeader").set(miseValidationInput, "GET");
+            miseValidationInputClass.getField("originalUriHeader").set(miseValidationInput, "https://myapi.com/api/values");
+
+            // try (MiseValidationResult validationResult = mise.validate(miseValidationInput)) { ... }
+            Object validationResult = miseClass.getMethod("validate", miseValidationInputClass)
+                    .invoke(mise, miseValidationInput);
+
+            Class<?> miseValidationResultClass = Class.forName("com.microsoft.identity.service.essentials.MiseValidationResult");
+            int statusCode = (int) miseValidationResultClass.getMethod("getHttpResponseStatusCode").invoke(validationResult);
+            LOGGER.info("Status code " + statusCode);
+
+            String errorDescription = (String) miseValidationResultClass.getMethod("getErrorDescription").invoke(validationResult);
+            if (errorDescription != null) {
+                LOGGER.error("Error message " + errorDescription);
+            }
+
+            // Close validationResult if AutoCloseable
+            if (validationResult instanceof AutoCloseable) {
+                ((AutoCloseable) validationResult).close();
+            }
+            if (statusCode != 200) {
+                LOGGER.error("MISE token validation failed with status code: " + statusCode);
+                return false;
+            }
+            LOGGER.info("MISE token validation passed");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     private PublicKey getPublicKey(JWSObject jwsObject, JWKSet jwkSet) throws JOSEException {
@@ -228,7 +316,7 @@ public class AuthUtil {
     public String getLoginUrl() {
         String loginUrl = authorizationUri + "?client_id=" + clientId +
                 "&response_type=code+id_token&redirect_uri=" + redirectUri +
-                "&response_mode=form_post&nonce="+ UUID.randomUUID() +"&scope=" + scope;
+                "&response_mode=form_post&nonce=" + UUID.randomUUID() + "&scope=" + scope;
         return loginUrl;
     }
 

@@ -12,6 +12,7 @@ spring:
             tenant-id: ${MICROSOFT_PROVIDER_TENANT_ID}
             audience: ${MICROSOFT_PROVIDER_AUDIENCE}
             instance-uri: ${MICROSOFT_PROVIDER_INSTANCE_URI}
+            mise-enabled: ${MICROSOFT_MISE_ENABLED:false}
         registration:
           azure-client:
             provider: azure-ad
