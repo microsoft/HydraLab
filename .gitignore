@@ -74,3 +74,4 @@ env.properties
 /common/src/test/resources/.DS_Store
 
 /hercules/config.json
+gradle.properties
