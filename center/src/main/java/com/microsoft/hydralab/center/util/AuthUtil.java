@@ -61,7 +61,7 @@ public class AuthUtil {
     String ignoreUri;
     @Value("${spring.security.oauth2.client.registration.azure-client.scope:}")
     String scope;
-    @Value("${spring.security.oauth2.client.provider.azure-ad.miseEnabled:false}")
+    @Value("${spring.security.oauth2.client.provider.azure-ad.mise-enabled:false}")
     boolean miseEnabled;
 
     Map<String, Boolean> urlMapping = null;
@@ -125,28 +125,6 @@ public class AuthUtil {
             // Mise mise = Mise.createClient();
             Class<?> miseClass = Class.forName("com.microsoft.identity.service.essentials.Mise");
             Object mise = miseClass.getMethod("createClient").invoke(null);
-
-            // mise.assignLogMessageCallback(new Mise.ILogCallback() {...}, null);
-            Class<?> logLevelClass = Class.forName("com.microsoft.identity.service.essentials.MiseLogLevel");
-            Class<?> iLogCallbackClass = Class.forName("com.microsoft.identity.service.essentials.Mise$ILogCallback");
-
-            Object logCallback = java.lang.reflect.Proxy.newProxyInstance(
-                    iLogCallbackClass.getClassLoader(),
-                    new Class<?>[]{iLogCallbackClass},
-                    (proxy, method, args) -> {
-                        String methodName = method.getName();
-                        if ("callback".equals(methodName)) {
-                            Object level = args[0];
-                            String message = (String) args[1];
-                            // Print all log levels for simplicity
-                            LOGGER.info(message);
-                        }
-                        return null;
-                    }
-            );
-
-            miseClass.getMethod("assignLogMessageCallback", iLogCallbackClass, Object.class)
-                    .invoke(mise, logCallback, null);
 
             // Configure MISE
             JSONObject config = new JSONObject();
