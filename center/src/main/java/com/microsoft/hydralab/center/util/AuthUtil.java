@@ -61,11 +61,12 @@ public class AuthUtil {
     String ignoreUri;
     @Value("${spring.security.oauth2.client.registration.azure-client.scope:}")
     String scope;
-    @Value("${spring.security.oauth2.client.provider.azure-ad.miseEnabled:false}")
+    @Value("${spring.security.oauth2.client.provider.azure-ad.mise-enabled:false}")
     boolean miseEnabled;
 
     Map<String, Boolean> urlMapping = null;
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthUtil.class);
+    private static Boolean isMiseLogInitialized = false;
 
     public boolean isValidToken(String token) {
         LOGGER.info("Starting token validation...");
@@ -118,7 +119,7 @@ public class AuthUtil {
         }
     }
 
-    public boolean validateTokenWithMISE(String token) {
+    private boolean validateTokenWithMISE(String token) {
         LOGGER.info("Starting MISE token validation...");
 
         try {
@@ -126,27 +127,30 @@ public class AuthUtil {
             Class<?> miseClass = Class.forName("com.microsoft.identity.service.essentials.Mise");
             Object mise = miseClass.getMethod("createClient").invoke(null);
 
-            // mise.assignLogMessageCallback(new Mise.ILogCallback() {...}, null);
-            Class<?> logLevelClass = Class.forName("com.microsoft.identity.service.essentials.MiseLogLevel");
-            Class<?> iLogCallbackClass = Class.forName("com.microsoft.identity.service.essentials.Mise$ILogCallback");
+            if (!isMiseLogInitialized) {
+                LOGGER.info("Initializing MISE...");
+                // mise.assignLogMessageCallback(new Mise.ILogCallback() {...}, null);
+                Class<?> iLogCallbackClass = Class.forName("com.microsoft.identity.service.essentials.Mise$ILogCallback");
 
-            Object logCallback = java.lang.reflect.Proxy.newProxyInstance(
-                    iLogCallbackClass.getClassLoader(),
-                    new Class<?>[]{iLogCallbackClass},
-                    (proxy, method, args) -> {
-                        String methodName = method.getName();
-                        if ("callback".equals(methodName)) {
-                            Object level = args[0];
-                            String message = (String) args[1];
-                            // Print all log levels for simplicity
-                            LOGGER.info(message);
+                Object logCallback = java.lang.reflect.Proxy.newProxyInstance(
+                        iLogCallbackClass.getClassLoader(),
+                        new Class<?>[]{iLogCallbackClass},
+                        (proxy, method, args) -> {
+                            String methodName = method.getName();
+                            if ("callback".equals(methodName)) {
+                                Object level = args[0];
+                                String message = (String) args[1];
+                                // Print all log levels for simplicity
+                                LOGGER.info(message);
+                            }
+                            return null;
                         }
-                        return null;
-                    }
-            );
+                );
 
-            miseClass.getMethod("assignLogMessageCallback", iLogCallbackClass, Object.class)
-                    .invoke(mise, logCallback, null);
+                miseClass.getMethod("assignLogMessageCallback", iLogCallbackClass, Object.class)
+                        .invoke(mise, logCallback, null);
+                isMiseLogInitialized = true;
+            }
 
             // Configure MISE
             JSONObject config = new JSONObject();
