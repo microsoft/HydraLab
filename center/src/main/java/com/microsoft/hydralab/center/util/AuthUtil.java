@@ -66,7 +66,6 @@ public class AuthUtil {
 
     Map<String, Boolean> urlMapping = null;
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthUtil.class);
-    private static Boolean isMiseLogInitialized = false;
 
     public boolean isValidToken(String token) {
         LOGGER.info("Starting token validation...");
@@ -127,31 +126,27 @@ public class AuthUtil {
             Class<?> miseClass = Class.forName("com.microsoft.identity.service.essentials.Mise");
             Object mise = miseClass.getMethod("createClient").invoke(null);
 
-            if (!isMiseLogInitialized) {
-                LOGGER.info("Initializing MISE...");
-                // mise.assignLogMessageCallback(new Mise.ILogCallback() {...}, null);
-                Class<?> iLogCallbackClass = Class.forName("com.microsoft.identity.service.essentials.Mise$ILogCallback");
+            LOGGER.info("Initializing MISE...");
+            // mise.assignLogMessageCallback(new Mise.ILogCallback() {...}, null);
+            Class<?> iLogCallbackClass = Class.forName("com.microsoft.identity.service.essentials.Mise$ILogCallback");
 
-                Object logCallback = java.lang.reflect.Proxy.newProxyInstance(
-                        iLogCallbackClass.getClassLoader(),
-                        new Class<?>[]{iLogCallbackClass},
-                        (proxy, method, args) -> {
-                            String methodName = method.getName();
-                            if ("callback".equals(methodName)) {
-                                Object level = args[0];
-                                String message = (String) args[1];
-                                // Print all log levels for simplicity
-                                LOGGER.info(message);
-                            }
-                            return null;
+            Object logCallback = java.lang.reflect.Proxy.newProxyInstance(
+                    iLogCallbackClass.getClassLoader(),
+                    new Class<?>[]{iLogCallbackClass},
+                    (proxy, method, args) -> {
+                        String methodName = method.getName();
+                        if ("callback".equals(methodName)) {
+                            Object level = args[0];
+                            String message = (String) args[1];
+                            // Print all log levels for simplicity
+                            LOGGER.info(message);
                         }
-                );
+                        return null;
+                    }
+            );
 
-                miseClass.getMethod("assignLogMessageCallback", iLogCallbackClass, Object.class)
-                        .invoke(mise, logCallback, null);
-                isMiseLogInitialized = true;
-            }
-
+            miseClass.getMethod("assignLogMessageCallback", iLogCallbackClass, Object.class)
+                    .invoke(mise, logCallback, null);
             // Configure MISE
             JSONObject config = new JSONObject();
             JSONObject azureAd = new JSONObject();
@@ -180,6 +175,10 @@ public class AuthUtil {
             Object validationResult = miseClass.getMethod("validate", miseValidationInputClass)
                     .invoke(mise, miseValidationInput);
 
+            // mise.unassignLogMessageCallback();
+            miseClass.getMethod("unassignLogMessageCallback")
+                    .invoke(mise);
+
             Class<?> miseValidationResultClass = Class.forName("com.microsoft.identity.service.essentials.MiseValidationResult");
             int statusCode = (int) miseValidationResultClass.getMethod("getHttpResponseStatusCode").invoke(validationResult);
             LOGGER.info("Status code " + statusCode);
@@ -188,7 +187,6 @@ public class AuthUtil {
             if (errorDescription != null) {
                 LOGGER.error("Error message " + errorDescription);
             }
-
             // Close validationResult if AutoCloseable
             if (validationResult instanceof AutoCloseable) {
                 ((AutoCloseable) validationResult).close();
