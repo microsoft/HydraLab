@@ -13,6 +13,7 @@ spring:
             audience: ${MICROSOFT_PROVIDER_AUDIENCE}
             instance-uri: ${MICROSOFT_PROVIDER_INSTANCE_URI}
             mise-enabled: ${MICROSOFT_MISE_ENABLED:false}
+            mise-endpoint: ${MICROSOFT_MISE_ENDPOINT}
         registration:
           azure-client:
             provider: azure-ad

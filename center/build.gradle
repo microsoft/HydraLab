@@ -14,16 +14,6 @@ bootJar.dependsOn("checkstyleMain")
 
 repositories {
     mavenCentral()
-    if (project.hasProperty("enableMISE")) {
-        maven {
-            url 'https://identitydivision.pkgs.visualstudio.com/_packaging/IDDP/maven/v1'
-            name 'IDDP'
-            credentials(PasswordCredentials)
-            authentication {
-                basic(BasicAuthentication)
-            }
-        }
-    }
 }
 
 bootJar {
@@ -77,9 +67,6 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
-    if (project.hasProperty("enableMISE")) {
-        compile(group: 'com.microsoft.identity.service.essentials', name: 'java-adapter', version: '1.32.0')
-    }
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os

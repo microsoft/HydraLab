@@ -1,0 +1,7 @@
+# run this after: ./gradlew.bat :bootJar
+FROM  hydralabreistry.azurecr.io/mise-1p-container-image:1.36.0-mise-azurelinux3.0-distroless
+
+ARG CONFIG_FILE=appsettings.json
+COPY ${CONFIG_FILE} /app/appsettings.json
+
+ENTRYPOINT ["dotnet", "Microsoft.Identity.ServiceEssentials.Container.dll"]
