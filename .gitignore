@@ -75,3 +75,4 @@ env.properties
 
 /hercules/config.json
 gradle.properties
+center/appsettings.json

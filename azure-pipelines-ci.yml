@@ -149,7 +149,7 @@ stages:
         script: |
           cp android_client/app/build/outputs/apk/release/app-release.apk common/src/main/resources/record_release.apk -force
     - task: Gradle@2
-      displayName: Build center (with MISE)
+      displayName: Build center
       inputs:
         gradleWrapperFile: 'gradlew'
         tasks: 'center:bootJar --stacktrace'
@@ -158,7 +158,6 @@ stages:
         jdkVersionOption: '1.11'
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
-        options: '-PIDDPUsername=IdentityDivision -PIDDPPassword=$(IDDPPassword) -PenableMISE=true'
       condition: eq(variables.fullBuild, 'true')
     - task: Gradle@2
       displayName: Build agent
@@ -206,23 +205,6 @@ stages:
         SourceFolder: 'center/build/libs/'
         Contents: '*.jar'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
-      condition: eq(variables.fullBuild, 'true')
-    - task: Gradle@2
-      displayName: Build center (without MISE)
-      inputs:
-        gradleWrapperFile: 'gradlew'
-        tasks: 'center:bootJar --stacktrace'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false
-    - task: CopyFiles@2
-      displayName: Copy center jar
-      inputs:
-        SourceFolder: 'center/build/libs/'
-        Contents: '*.jar'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_publish'
       condition: eq(variables.fullBuild, 'true')
     - task: Gradle@2
       displayName: Package Mac installer
