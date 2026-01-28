@@ -47,8 +47,8 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     private final Map<String, DeviceInfo> iOSDeviceInfoMap = new HashMap<>();
     private static final int MAJOR_APPIUM_VERSION = 1;
     private static final int MINOR_APPIUM_VERSION = -1;
-    private static final int MAJOR_TIDEVICE_VERSION = 0;
-    private static final int MINOR_TIDEVICE_VERSION = 10;
+    private static final int MAJOR_PYMOBILEDEVICE3_VERSION = 0;
+    private static final int MINOR_PYMOBILEDEVICE3_VERSION = 0;
 
     public IOSDeviceDriver(AgentManagementService agentManagementService,
                            AppiumServerManager appiumServerManager) {
@@ -64,7 +64,7 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     @Override
     public void init() {
         try {
-            ShellUtils.killProcessByCommandStr("tidevice", classLogger);
+            ShellUtils.killProcessByCommandStr("pymobiledevice3", classLogger);
             IOSUtils.startIOSDeviceWatcher(classLogger, this);
         } catch (Exception e) {
             throw new HydraLabRuntimeException(500, "IOSDeviceDriver init failed", e);
@@ -80,7 +80,7 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     public List<EnvCapabilityRequirement> getEnvCapabilityRequirements() {
         // todo XCCode / iTunes
         return List.of(new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.appium, MAJOR_APPIUM_VERSION, MINOR_APPIUM_VERSION),
-                new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.tidevice, MAJOR_TIDEVICE_VERSION, MINOR_TIDEVICE_VERSION));
+                new EnvCapabilityRequirement(EnvCapability.CapabilityKeyword.pymobiledevice3, MAJOR_PYMOBILEDEVICE3_VERSION, MINOR_PYMOBILEDEVICE3_VERSION));
     }
 
     @Override
@@ -97,7 +97,16 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     @Override
     public void unlockDevice(@NotNull DeviceInfo deviceInfo, @Nullable Logger logger) {
         classLogger.info("Unlocking may not work as expected, please keep your device wake.");
-        getAppiumServerManager().getIOSDriver(deviceInfo, logger).unlockDevice();
+        try {
+            getAppiumServerManager().getIOSDriver(deviceInfo, logger).unlockDevice();
+        } catch (Exception e) {
+            // Unlock via Appium is optional for XCTest execution (uses xcodebuild command)
+            // Log the error but don't fail the test run
+            classLogger.warn("Failed to unlock device via Appium (this is non-fatal for XCTest): " + e.getMessage());
+            if (logger != null) {
+                logger.warn("Device unlock via Appium failed but test can proceed with XCTest. Error: " + e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -242,12 +251,47 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
 
     public DeviceInfo parseJsonToDevice(JSONObject deviceObject) {
         DeviceInfo deviceInfo = new DeviceInfo();
-        String udid = deviceObject.getString("udid");
+        // pymobiledevice3 uses different field names than tidevice
+        // Try new format first (Identifier), fallback to old format (udid)
+        String udid = deviceObject.getString("Identifier");
+        if (udid == null || udid.isEmpty()) {
+            udid = deviceObject.getString("UniqueDeviceID");
+        }
+        if (udid == null || udid.isEmpty()) {
+            udid = deviceObject.getString("udid"); // fallback for tidevice compatibility
+        }
         deviceInfo.setSerialNum(udid);
         deviceInfo.setDeviceId(udid);
-        deviceInfo.setName(deviceObject.getString("name"));
-        deviceInfo.setModel(deviceObject.getString("market_name"));
-        deviceInfo.setOsVersion(deviceObject.getString("product_version"));
+        
+        // Try new format (DeviceName), fallback to old format (name)
+        String name = deviceObject.getString("DeviceName");
+        if (name == null || name.isEmpty()) {
+            name = deviceObject.getString("name");
+        }
+        deviceInfo.setName(name);
+        
+        // Try new format (ProductType mapped to model name), fallback to old format (market_name)
+        String productType = deviceObject.getString("ProductType");
+        String model = "-";
+        if (productType != null && !productType.isEmpty()) {
+            String mappedModel = AgentConstant.iOSProductModelMap.get(productType);
+            if (mappedModel != null && !mappedModel.isEmpty()) {
+                model = mappedModel;
+            } else {
+                model = productType; // use ProductType as fallback
+            }
+        } else {
+            model = deviceObject.getString("market_name"); // fallback for tidevice
+        }
+        deviceInfo.setModel(model != null ? model : "-");
+        
+        // Try new format (ProductVersion), fallback to old format (product_version)
+        String osVersion = deviceObject.getString("ProductVersion");
+        if (osVersion == null || osVersion.isEmpty()) {
+            osVersion = deviceObject.getString("product_version");
+        }
+        deviceInfo.setOsVersion(osVersion);
+        
         deviceInfo.setBrand(iOSDeviceManufacturer);
         deviceInfo.setManufacturer(iOSDeviceManufacturer);
         deviceInfo.setOsSDKInt("");
