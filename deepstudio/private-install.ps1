@@ -25,7 +25,7 @@ function DelCfg($k) { try { npm config delete --global $k | Out-Null } catch {} 
 
 Require-Npm
 
-$registry = Read-Host "Enter npm registry URL (Azure Artifacts)"
+$registry = Read-Host "Enter npm registry URL (for ex: https://xxx.pkgs.xxx.com/xxx/_packaging/xxx/npm/registry/)"
 if ([string]::IsNullOrWhiteSpace($registry)) {
   throw "Registry URL is required."
 }
@@ -49,15 +49,18 @@ try {
   Write-Host "Installing $PackageName@latest"
 
   SetCfg "registry" "$registry/"
-  SetCfg "${authPrefix}:username" "microsoft"
+  SetCfg "${authPrefix}:username" "ms"
   SetCfg "${authPrefix}:_password" $patB64
   SetCfg "${authPrefix}:email" "npm@example.com"
 
   npm install -g "$PackageName@latest" --registry "$registry/"
+  Write-Host "✅ Installed $PackageName@latest successfully."
+  Write-Host "You can now run $PackageName to launch it."
 }
 finally {
   DelCfg "registry"
   DelCfg "${authPrefix}:username"
   DelCfg "${authPrefix}:_password"
   DelCfg "${authPrefix}:email"
+  Write-Host "✅ Cleanup complete."
 }
