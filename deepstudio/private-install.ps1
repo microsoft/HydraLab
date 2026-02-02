@@ -44,6 +44,12 @@ function Require-Npm {
   }
 }
 
+function Get-NpmPath {
+  $cmd = Get-Command npm -ErrorAction Stop
+  # On Windows this is typically ...\npm.cmd
+  return $cmd.Source
+}
+
 function Read-Secure([string]$msg) {
   $secure = Read-Host $msg -AsSecureString
   $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
@@ -74,9 +80,7 @@ function SetCfg([string]$k, [string]$v) {
 
 function DelCfg([string]$k) {
   if ($DryRun) { Info "DRYRUN: npm config delete --global $k"; return }
-  try {
-    npm config delete --global $k | Out-Null
-  } catch {}
+  try { npm config delete --global $k | Out-Null } catch {}
 }
 
 # IMPORTANT: Do NOT name parameters as $args (PowerShell automatic variable).
@@ -94,11 +98,13 @@ function Run-NpmInstall([string[]]$npmArgs) {
     return
   }
 
-  # Logging enabled: capture stdout/stderr to file AND show on console
+  # Logging enabled: use the resolved npm path (e.g., npm.cmd) for compatibility
+  $npmPath = Get-NpmPath
   Info "Logging enabled. Log file: $LogPath"
+  Info ("Resolved npm path: " + $npmPath)
 
   $psi = New-Object System.Diagnostics.ProcessStartInfo
-  $psi.FileName = "npm"
+  $psi.FileName = $npmPath
   $psi.Arguments = ($npmArgs -join " ")
   $psi.RedirectStandardOutput = $true
   $psi.RedirectStandardError  = $true
@@ -109,13 +115,9 @@ function Run-NpmInstall([string[]]$npmArgs) {
   $p.StartInfo = $psi
   [void]$p.Start()
 
-  $outTask = $p.StandardOutput.ReadToEndAsync()
-  $errTask = $p.StandardError.ReadToEndAsync()
-
+  $stdout = $p.StandardOutput.ReadToEnd()
+  $stderr = $p.StandardError.ReadToEnd()
   $p.WaitForExit()
-
-  $stdout = $outTask.Result
-  $stderr = $errTask.Result
 
   if ($stdout) { Write-Host $stdout }
   if ($stderr) { Write-Host $stderr }
@@ -126,6 +128,7 @@ function Run-NpmInstall([string[]]$npmArgs) {
     "Package: $PackageName@latest"
     "VerboseInstall: $VerboseInstall"
     "Registry: $registry/"
+    "ResolvedNpm: $npmPath"
     "Command: npm " + ($npmArgs -join " ")
     ""
     "---- STDOUT ----"
@@ -203,6 +206,7 @@ try {
   SetCfg "${authPrefix}:username" "ms"
   SetCfg "${authPrefix}:_password" $patB64
   SetCfg "${authPrefix}:email" "npm@example.com"
+  # NOTE: always-auth intentionally not set (deprecated/invalid in modern npm)
 
   Info ""
   Info ("Command: npm " + ($npmInstallArgs -join " "))
