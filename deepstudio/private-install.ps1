@@ -85,27 +85,27 @@ function DelCfg([string]$k) {
 
 # IMPORTANT: Do NOT name parameters as $args (PowerShell automatic variable).
 function Run-NpmInstall([string[]]$npmArgs) {
+  $cmdLine = "npm " + ($npmArgs -join " ")
+
   if ($DryRun) {
-    Info ("DRYRUN: npm " + ($npmArgs -join " "))
+    Info ("DRYRUN: " + $cmdLine)
     return
   }
 
   if (-not $EnableLog) {
-    & npm @npmArgs
+    & cmd.exe /d /s /c $cmdLine
     if ($LASTEXITCODE -ne 0) {
       throw "npm failed with exit code $LASTEXITCODE. (Tip: set DEEPSTUDIO_LOG=1 to capture full logs.)"
     }
     return
   }
 
-  # Logging enabled: use the resolved npm path (e.g., npm.cmd) for compatibility
-  $npmPath = Get-NpmPath
   Info "Logging enabled. Log file: $LogPath"
-  Info ("Resolved npm path: " + $npmPath)
+  Info ("Command via cmd.exe: " + $cmdLine)
 
   $psi = New-Object System.Diagnostics.ProcessStartInfo
-  $psi.FileName = $npmPath
-  $psi.Arguments = ($npmArgs -join " ")
+  $psi.FileName = "cmd.exe"
+  $psi.Arguments = "/d /s /c " + $cmdLine
   $psi.RedirectStandardOutput = $true
   $psi.RedirectStandardError  = $true
   $psi.UseShellExecute = $false
@@ -128,8 +128,7 @@ function Run-NpmInstall([string[]]$npmArgs) {
     "Package: $PackageName@latest"
     "VerboseInstall: $VerboseInstall"
     "Registry: $registry/"
-    "ResolvedNpm: $npmPath"
-    "Command: npm " + ($npmArgs -join " ")
+    "Command: $cmdLine"
     ""
     "---- STDOUT ----"
     $stdout
@@ -146,6 +145,7 @@ function Run-NpmInstall([string[]]$npmArgs) {
     throw "npm failed with exit code $($p.ExitCode). See log: $LogPath"
   }
 }
+
 
 # ---------------------------
 # Start
