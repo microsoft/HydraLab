@@ -203,7 +203,6 @@ try {
   SetCfg "${authPrefix}:username" "ms"
   SetCfg "${authPrefix}:_password" $patB64
   SetCfg "${authPrefix}:email" "npm@example.com"
-  SetCfg "always-auth" "true"
 
   Info ""
   Info ("Command: npm " + ($npmInstallArgs -join " "))
@@ -261,7 +260,6 @@ finally {
   DelCfg "${authPrefix}:username"
   DelCfg "${authPrefix}:_password"
   DelCfg "${authPrefix}:email"
-  DelCfg "always-auth"
 
   if ($VerboseInstall) {
     Remove-Item Env:\NPM_CONFIG_LOGLEVEL -ErrorAction SilentlyContinue
