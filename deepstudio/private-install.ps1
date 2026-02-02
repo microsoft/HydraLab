@@ -79,14 +79,15 @@ function DelCfg([string]$k) {
   } catch {}
 }
 
-function Run-NpmInstall([string[]]$args) {
+# IMPORTANT: Do NOT name parameters as $args (PowerShell automatic variable).
+function Run-NpmInstall([string[]]$npmArgs) {
   if ($DryRun) {
-    Info ("DRYRUN: npm " + ($args -join " "))
+    Info ("DRYRUN: npm " + ($npmArgs -join " "))
     return
   }
 
   if (-not $EnableLog) {
-    & npm @args
+    & npm @npmArgs
     if ($LASTEXITCODE -ne 0) {
       throw "npm failed with exit code $LASTEXITCODE. (Tip: set DEEPSTUDIO_LOG=1 to capture full logs.)"
     }
@@ -98,7 +99,7 @@ function Run-NpmInstall([string[]]$args) {
 
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = "npm"
-  $psi.Arguments = ($args -join " ")
+  $psi.Arguments = ($npmArgs -join " ")
   $psi.RedirectStandardOutput = $true
   $psi.RedirectStandardError  = $true
   $psi.UseShellExecute = $false
@@ -125,7 +126,7 @@ function Run-NpmInstall([string[]]$args) {
     "Package: $PackageName@latest"
     "VerboseInstall: $VerboseInstall"
     "Registry: $registry/"
-    "Command: npm " + ($args -join " ")
+    "Command: npm " + ($npmArgs -join " ")
     ""
     "---- STDOUT ----"
     $stdout
@@ -202,6 +203,7 @@ try {
   SetCfg "${authPrefix}:username" "ms"
   SetCfg "${authPrefix}:_password" $patB64
   SetCfg "${authPrefix}:email" "npm@example.com"
+  SetCfg "always-auth" "true"
 
   Info ""
   Info ("Command: npm " + ($npmInstallArgs -join " "))
@@ -226,7 +228,6 @@ catch {
   Fail "❌ Installation failed."
   Fail ("Error: " + $_.Exception.Message)
 
-  # Helpful hints for common 401/403 issues
   Warn ""
   Warn "Common causes for 401/403:"
   Warn "  - PAT missing Packaging:Read scope"
@@ -260,6 +261,7 @@ finally {
   DelCfg "${authPrefix}:username"
   DelCfg "${authPrefix}:_password"
   DelCfg "${authPrefix}:email"
+  DelCfg "always-auth"
 
   if ($VerboseInstall) {
     Remove-Item Env:\NPM_CONFIG_LOGLEVEL -ErrorAction SilentlyContinue
