@@ -44,12 +44,6 @@ function Require-Npm {
   }
 }
 
-function Get-NpmPath {
-  $cmd = Get-Command npm -ErrorAction Stop
-  # On Windows this is typically ...\npm.cmd
-  return $cmd.Source
-}
-
 function Read-Secure([string]$msg) {
   $secure = Read-Host $msg -AsSecureString
   $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
@@ -72,21 +66,30 @@ function Ensure-Registry([string]$reg) {
   return $reg
 }
 
-function SetCfg([string]$k, [string]$v) {
-  if ($DryRun) { Info "DRYRUN: npm config set --global $k <value>"; return }
-  npm config set --global $k $v | Out-Null
-  if ($LASTEXITCODE -ne 0) { throw "npm config set failed ($k). exit=$LASTEXITCODE" }
+function New-TempNpmrc {
+  $path = Join-Path $env:TEMP ("deepstudio-npmrc-" + [Guid]::NewGuid().ToString("N") + ".npmrc")
+  return $path
 }
 
-function DelCfg([string]$k) {
-  if ($DryRun) { Info "DRYRUN: npm config delete --global $k"; return }
-  try { npm config delete --global $k | Out-Null } catch {}
+function Write-IsolatedNpmrc([string]$path, [string]$registry, [string]$authPrefix, [string]$pat) {
+  # Use _authToken to avoid conflicts with user's existing .npmrc and avoid base64 encoding pitfalls.
+  # NOTE: This writes PAT into a temporary file; we delete it in finally.
+  $content = @"
+registry=$registry/
+${authPrefix}:_authToken=$pat
+"@
+
+  if ($DryRun) {
+    Info "DRYRUN: write isolated npmrc to $path"
+    Info ("DRYRUN: npmrc content (token masked):`nregistry=$registry/`n${authPrefix}:_authToken=$(Mask-Token $pat)")
+    return
+  }
+
+  # ASCII is safest for .npmrc formatting
+  Set-Content -Path $path -Value $content -Encoding ASCII
 }
 
-# IMPORTANT: Do NOT name parameters as $args (PowerShell automatic variable).
-function Run-NpmInstall([string[]]$npmArgs) {
-  $cmdLine = "npm " + ($npmArgs -join " ")
-
+function Run-NpmViaCmd([string]$cmdLine) {
   if ($DryRun) {
     Info ("DRYRUN: " + $cmdLine)
     return
@@ -146,7 +149,6 @@ function Run-NpmInstall([string[]]$npmArgs) {
   }
 }
 
-
 # ---------------------------
 # Start
 # ---------------------------
@@ -171,7 +173,7 @@ $registry = Ensure-Registry $registryInput
 $uri = [Uri]$registry
 $authPrefix = "//" + $uri.Host + $uri.AbsolutePath + "/"
 
-# Read PAT securely then TRIM it (fix common 401 due to whitespace/newlines)
+# Read PAT securely then TRIM it (fix common whitespace/newlines)
 $patRaw = Read-Secure "Enter Azure DevOps PAT (Packaging:Read)"
 if ([string]::IsNullOrWhiteSpace($patRaw)) { throw "PAT is empty." }
 
@@ -183,16 +185,11 @@ Info ("PAT (masked): " + (Mask-Token $pat))
 Info "Tip: if masked prefix/suffix looks wrong, you likely pasted extra chars/spaces."
 Info ""
 
-$patB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($pat))
-$pat = $null
-
-# npm install args
+# npm install args / loglevel
 $logLevel = if ($VerboseInstall) { "verbose" } else { "notice" }
-$npmInstallArgs = @(
-  "install", "-g", "$PackageName@latest",
-  "--registry", "$registry/",
-  "--loglevel", $logLevel
-)
+
+# Create isolated npmrc to avoid user's existing ~/.npmrc conflicts
+$tmpNpmrc = New-TempNpmrc
 
 # Optional: extra debug signal for npm
 if ($VerboseInstall) {
@@ -201,25 +198,23 @@ if ($VerboseInstall) {
 }
 
 try {
-  Info "Configuring npm auth for this registry..."
-  SetCfg "registry" "$registry/"
-  SetCfg "${authPrefix}:username" "ms"
-  SetCfg "${authPrefix}:_password" $patB64
-  SetCfg "${authPrefix}:email" "npm@example.com"
-  # NOTE: always-auth intentionally not set (deprecated/invalid in modern npm)
+  Info "Preparing isolated npm config (ignores your existing .npmrc)..."
+  Write-IsolatedNpmrc -path $tmpNpmrc -registry $registry -authPrefix $authPrefix -pat $pat
+
+  # Build command line (use cmd.exe to avoid PowerShell alias/function issues with npm)
+  # IMPORTANT: Use --userconfig so npm only reads our isolated temp npmrc for this run.
+  $installCmd = 'npm install -g "{0}@latest" --registry "{1}/" --loglevel {2} --userconfig "{3}"' -f $PackageName, $registry, $logLevel, $tmpNpmrc
 
   Info ""
-  Info ("Command: npm " + ($npmInstallArgs -join " "))
+  Info ("Command: " + $installCmd)
   Info ""
 
-  Run-NpmInstall $npmInstallArgs
+  Run-NpmViaCmd $installCmd
 
-  # Extra safety: verify it's actually installed
+  # Extra safety: verify it's actually installed (still using isolated userconfig is ok)
   if (-not $DryRun) {
-    npm list -g --depth=0 "$PackageName" | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-      throw "Install command finished but package not found in global npm list. Something is wrong."
-    }
+    $verifyCmd = 'npm list -g --depth=0 "{0}" --userconfig "{1}"' -f $PackageName, $tmpNpmrc
+    Run-NpmViaCmd $verifyCmd
   }
 
   Info ""
@@ -247,7 +242,7 @@ catch {
   } else {
     Warn ""
     Warn "Tip: re-run with verbose:"
-    Warn "  `$env:DEEPSTUDIO_VERBOSE='1'; irm <url> | iex"
+    Warn "  `$env:DEEPSTUDIO_VERBOSE='1'; `$env:DEEPSTUDIO_LOG='1'; irm <url> | iex"
   }
 
   if ($EnableLog -and -not $DryRun) {
@@ -258,18 +253,15 @@ catch {
   throw
 }
 finally {
-  Info ""
-  Info "Cleaning up npm global config..."
-  DelCfg "registry"
-  DelCfg "${authPrefix}:username"
-  DelCfg "${authPrefix}:_password"
-  DelCfg "${authPrefix}:email"
-
+  # Clean up temp npmrc and env vars
+  if (-not $DryRun) {
+    Remove-Item $tmpNpmrc -Force -ErrorAction SilentlyContinue
+  }
   if ($VerboseInstall) {
     Remove-Item Env:\NPM_CONFIG_LOGLEVEL -ErrorAction SilentlyContinue
     Remove-Item Env:\NPM_CONFIG_PROGRESS -ErrorAction SilentlyContinue
   }
-
+  Info ""
   Info "✅ Cleanup complete."
   Info ""
 }
