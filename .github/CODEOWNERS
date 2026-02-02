@@ -1,55 +1,7 @@
 # Back-end architectFront-end architect
-**/doc/UML @hydraxman  @zhou9584 @olivershen-wow
-*.puml  @hydraxman  @zhou9584 @olivershen-wow
+**/doc/UML @hydraxman @zhou9584
+*.puml  @hydraxman
 
 # Front-end architect
-/react/ @lifesaver0129  @zhou9584 @olivershen-wow
-
-# Encache
-ehcache.xml @zhou9584 @olivershen-wow
-
-# Onboarding
-*.md @zhou9584 @olivershen-wow @hydraxman @dexterdreeeam 
-
-# Hydra Lab Android client
-/android_client/app/ @lifesaver0129 @TedaLIEz @dexterdreeeam  @taoran6  @zhou9584 @olivershen-wow
-
-# TestTaskSpec
-/common/src/main/java/com/microsoft/hydralab/common/entity/ @olivershen-wow @zhou9584 @dexterdreeeam 
-
-# Gradle Plugin
-/gradle_plugin/ @olivershen-wow @taoran6 @dexterdreeeam @zhou9584
-
-# ADO extension
-/vsts_extension/  @zhou9584 @olivershen-wow @dexterdreeeam  @taoran6
-
-# Grafana/Prometheus
-/center/deploy_startup/ @olivershen-wow @zhou9584
-/center/* @olivershen-wow @zhou9584
-
-# File Storage
-/common/src/main/java/com/microsoft/hydralab/common/file/  @zhou9584 @olivershen-wow @AC-Phoenix
-
-# AgentManager,DeviceDriver,TestRunner,TestDevice
-/common/src/main/java/com/microsoft/hydralab/common/management/ @zhou9584 @olivershen-wow @TedaLIEz @AC-Phoenix
-**/runner/ @zhou9584 @TedaLIEz @AC-Phoenix @olivershen-wow
-
-# Smart Test
-
-# Espresso
-**/runner/espresso/ @zhou9584 @hydraxman @olivershen-wow
-
-# Appium
-**/runner/appium/ @zhou9584 @taoran6 @olivershen-wow
-
-# Taps to cases
-**/runner/t2c/  @TedaLIEz @taoran6 @dexterdreeeam @zhou9584 @olivershen-wow
-/taps_to_cases/ @TedaLIEz @taoran6 @dexterdreeeam @zhou9584 @olivershen-wow
-
-# XCTest(iOS)
-**/runner/xctest/ @lifesaver0129 @zhou9584 @olivershen-wow @TedaLIEz
-
-# Performance testing
-**/hydralab/performance/ @taoran6 @AC-Phoenix @TedaLIEz @zhou9584 @olivershen-wow
-
+/react/ @hydraxman
 
