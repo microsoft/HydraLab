@@ -167,8 +167,9 @@ function Get-AzAccessToken {
   Info "Azure CLI found. Checking for existing az login session..."
 
   try {
-    $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>$null
+    $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
+      if ($VerboseInstall -and $tokenJson) { Info "az output: $tokenJson" }
       Info "No valid az login session found. Will fall back to manual PAT entry."
       return $null
     }
@@ -208,7 +209,7 @@ Info ""
 
 # derive auth prefix (npmrc style)
 $uri = [Uri]$registry
-$authPrefix = "//" + $uri.Host + $uri.AbsolutePath + "/"
+$authPrefix = "//" + $uri.Host + $uri.AbsolutePath.TrimEnd("/") + "/"
 
 # Try Azure CLI token first, fall back to manual PAT
 $pat = Get-AzAccessToken
@@ -273,7 +274,7 @@ try {
   $startChoice = Read-Host "Start $PackageName now? [Y/n]"
   if ([string]::IsNullOrWhiteSpace($startChoice) -or $startChoice -match '^[Yy]') {
     Info ""
-    Info "🚀 Launching $PackageName..."
+    Info "🚀 Launching $PackageName (press Ctrl+C to stop)..."
     Info ""
     if ($DryRun) {
       Info "DRYRUN: would run $PackageName"
