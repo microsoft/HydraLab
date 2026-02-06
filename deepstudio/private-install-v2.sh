@@ -18,21 +18,22 @@ DEFAULT_REGISTRY_B64="aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL1
 # ---------------------------
 # Color helpers
 # ---------------------------
-RED='\033[0;31m'
-YELLOW='\033[0;33m'
-GREEN='\033[0;32m'
-CYAN='\033[0;36m'
-MAGENTA='\033[0;35m'
-BLUE='\033[0;34m'
-DIM='\033[0;90m'
-WHITE='\033[1;37m'
-NC='\033[0m' # No Color
+# Use $'...' syntax so escape sequences become real ANSI bytes
+RED=$'\033[0;31m'
+YELLOW=$'\033[0;33m'
+GREEN=$'\033[0;32m'
+CYAN=$'\033[0;36m'
+MAGENTA=$'\033[0;35m'
+BLUE=$'\033[0;34m'
+DIM=$'\033[0;90m'
+WHITE=$'\033[1;37m'
+NC=$'\033[0m' # No Color
 
-info()    { printf "  ${CYAN}%s${NC}\n" "$*"; }
-warn()    { printf "  ${YELLOW}⚠  %s${NC}\n" "$*"; }
-fail()    { printf "  ${RED}✖  %s${NC}\n" "$*"; }
-success() { printf "  ${GREEN}✔  %s${NC}\n" "$*"; }
-dim()     { printf "  ${DIM}%s${NC}\n" "$*"; }
+info()    { printf "  %s%s%s\n" "$CYAN" "$*" "$NC"; }
+warn()    { printf "  %s⚠  %s%s\n" "$YELLOW" "$*" "$NC"; }
+fail()    { printf "  %s✖  %s%s\n" "$RED" "$*" "$NC"; }
+success() { printf "  %s✔  %s%s\n" "$GREEN" "$*" "$NC"; }
+dim()     { printf "  %s%s%s\n" "$DIM" "$*" "$NC"; }
 
 show_banner() {
   local lines=(
@@ -210,13 +211,13 @@ upgrade_node() {
 require_node() {
   if ! command -v node >/dev/null 2>&1; then
     echo ""
-    printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
-    printf "  ${YELLOW}│  ⚙️  Node.js is not installed                       │${NC}\n"
-    printf "  ${YELLOW}│  Node.js >= %s is required to continue.             │${NC}\n" "$MIN_NODE_VERSION"
-    printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
+    printf "  %b┌─────────────────────────────────────────────────────┐%b\n" "$YELLOW" "$NC"
+    printf "  %b│  ⚙️  Node.js is not installed                       │%b\n" "$YELLOW" "$NC"
+    printf "  %b│  Node.js >= %s is required to continue.             │%b\n" "$YELLOW" "$NC" "$MIN_NODE_VERSION"
+    printf "  %b└─────────────────────────────────────────────────────┘%b\n" "$YELLOW" "$NC"
     echo ""
-    printf "  ${CYAN}📥 ${NC}"
-    read -r -p "Install Node.js now? [Y/n] " install_choice
+    printf "  %b📥 %b" "$CYAN" "$NC"
+    read -r -p "Install Node.js now? [Y/n] " install_choice < /dev/tty
     if [ -z "$install_choice" ] || echo "$install_choice" | grep -qi '^y'; then
       install_node
       if ! command -v node >/dev/null 2>&1; then
@@ -239,14 +240,14 @@ require_node() {
 
   if [ "$major" -lt "$MIN_NODE_VERSION" ] 2>/dev/null; then
     echo ""
-    printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
-    printf "  ${YELLOW}│  ⬆️  Node.js upgrade required                       │${NC}\n"
-    printf "  ${YELLOW}│  Current: v%-40s│${NC}\n" "$version_str"
-    printf "  ${YELLOW}│  Required: >= v%s.0.0                              │${NC}\n" "$MIN_NODE_VERSION"
-    printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
+    printf "  %b┌─────────────────────────────────────────────────────┐%b\n" "$YELLOW" "$NC"
+    printf "  %b│  ⬆️  Node.js upgrade required                       │%b\n" "$YELLOW" "$NC"
+    printf "  %b│  Current: v%-40s│%b\n" "$YELLOW" "$NC" "$version_str"
+    printf "  %b│  Required: >= v%s.0.0                              │%b\n" "$YELLOW" "$NC" "$MIN_NODE_VERSION"
+    printf "  %b└─────────────────────────────────────────────────────┘%b\n" "$YELLOW" "$NC"
     echo ""
-    printf "  ${CYAN}⬆️  ${NC}"
-    read -r -p "Upgrade Node.js to >= v${MIN_NODE_VERSION}? [Y/n] " upgrade_choice
+    printf "  %b⬆️  %b" "$CYAN" "$NC"
+    read -r -p "Upgrade Node.js to >= v${MIN_NODE_VERSION}? [Y/n] " upgrade_choice < /dev/tty
     if [ -z "$upgrade_choice" ] || echo "$upgrade_choice" | grep -qi '^y'; then
       upgrade_node
       version_str=$(node --version 2>/dev/null | sed 's/^v//')
@@ -322,13 +323,13 @@ get_az_access_token() {
 
   if [ "$az_available" = false ]; then
     echo ""
-    printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
-    printf "  ${YELLOW}│  🔧 Azure CLI (az) is not installed                 │${NC}\n"
-    printf "  ${YELLOW}│  It is recommended for automatic token auth.        │${NC}\n"
-    printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
+    printf "  %b┌─────────────────────────────────────────────────────┐%b\n" "$YELLOW" "$NC"
+    printf "  %b│  🔧 Azure CLI (az) is not installed                 │%b\n" "$YELLOW" "$NC"
+    printf "  %b│  It is recommended for automatic token auth.        │%b\n" "$YELLOW" "$NC"
+    printf "  %b└─────────────────────────────────────────────────────┘%b\n" "$YELLOW" "$NC"
     echo ""
-    printf "  ${CYAN}📥 ${NC}"
-    read -r -p "Install Azure CLI now? [Y/n] " install_choice
+    printf "  %b📥 %b" "$CYAN" "$NC"
+    read -r -p "Install Azure CLI now? [Y/n] " install_choice < /dev/tty
     if [ -z "$install_choice" ] || echo "$install_choice" | grep -qi '^y'; then
       if install_az_cli; then
         az_available=true
@@ -463,8 +464,8 @@ echo ""
 DEFAULT_REGISTRY=$(b64_decode "$DEFAULT_REGISTRY_B64")
 REGISTRY_INPUT="$REGISTRY_FROM_ENV"
 if [ -z "$REGISTRY_INPUT" ]; then
-  printf "  ${CYAN}🏢 ${NC}"
-  read -r -p "Enter ADO org name [microsoft] " ado_org
+  printf "  %b🏢 %b" "$CYAN" "$NC"
+  read -r -p "Enter ADO org name [microsoft] " ado_org < /dev/tty
   if [ -z "$ado_org" ]; then ado_org="microsoft"; fi
   REGISTRY_INPUT=$(echo "$DEFAULT_REGISTRY" | sed "s/microsoft\.pkgs/${ado_org}.pkgs/")
   dim "Using org: $ado_org"
@@ -493,16 +494,16 @@ if get_az_access_token; then
   success "Using temporary token from Azure CLI (no PAT creation needed)."
 else
   echo ""
-  printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
-  printf "  ${YELLOW}│  🔑 Manual PAT required                            │${NC}\n"
-  printf "  ${YELLOW}│  Create one at:                                     │${NC}\n"
-  printf "  ${YELLOW}│  https://dev.azure.com/ > User Settings > PATs      │${NC}\n"
-  printf "  ${YELLOW}│  Scope: Packaging > Read                            │${NC}\n"
-  printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
+  printf "  %b┌─────────────────────────────────────────────────────┐%b\n" "$YELLOW" "$NC"
+  printf "  %b│  🔑 Manual PAT required                            │%b\n" "$YELLOW" "$NC"
+  printf "  %b│  Create one at:                                     │%b\n" "$YELLOW" "$NC"
+  printf "  %b│  https://dev.azure.com/ > User Settings > PATs      │%b\n" "$YELLOW" "$NC"
+  printf "  %b│  Scope: Packaging > Read                            │%b\n" "$YELLOW" "$NC"
+  printf "  %b└─────────────────────────────────────────────────────┘%b\n" "$YELLOW" "$NC"
   echo ""
   printf "  🔑 Enter Azure DevOps PAT (Packaging:Read): "
   stty -echo 2>/dev/null || true
-  read -r PAT
+  read -r PAT < /dev/tty
   stty echo 2>/dev/null || true
   printf "\n"
 
@@ -559,7 +560,7 @@ echo ""
 
 # Ask user whether to start
 printf "  ${MAGENTA}🚀 ${NC}"
-read -r -p "Start ${PKG} now? [Y/n] " start_choice
+read -r -p "Start ${PKG} now? [Y/n] " start_choice < /dev/tty
 if [ -z "$start_choice" ] || echo "$start_choice" | grep -qi '^y'; then
   echo ""
   printf "  ${MAGENTA}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
