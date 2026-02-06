@@ -71,13 +71,131 @@ function Mask-Url([string]$url) {
   }
 }
 
-function Require-Npm {
+function Require-Node {
+  $nodeAvailable = [bool](Get-Command node -ErrorAction SilentlyContinue)
+  $MinNodeVersion = 22
+
+  if (-not $nodeAvailable) {
+    Write-Host ""
+    Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
+    Write-Host "  │  ⚙️  Node.js is not installed                       │" -ForegroundColor Yellow
+    Write-Host "  │  Node.js >= $MinNodeVersion is required to continue.             │" -ForegroundColor Yellow
+    Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
+    Write-Host ""
+
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+      Fail "winget not found — cannot auto-install Node.js."
+      Info "Please install Node.js manually:"
+      Info "👉 https://nodejs.org/en/download"
+      Write-Host ""
+      exit 1
+    }
+
+    Write-Host "  📥 " -NoNewline -ForegroundColor Cyan
+    $installChoice = Read-Host "Install Node.js via winget? [Y/n]"
+    if ([string]::IsNullOrWhiteSpace($installChoice) -or $installChoice -match '^[Yy]') {
+      Info "📥 Installing Node.js via winget..."
+      Write-Host ""
+      try {
+        & winget install --id OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements
+        if ($LASTEXITCODE -ne 0) {
+          Fail "winget install returned exit code $LASTEXITCODE."
+          exit 1
+        }
+        # Refresh PATH so node/npm are available in the current session
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+        if (Get-Command node -ErrorAction SilentlyContinue) {
+          Success "Node.js installed successfully."
+          $nodeAvailable = $true
+        } else {
+          Warn "Node.js installed but 'node' not found in PATH. You may need to restart your terminal."
+          exit 1
+        }
+      }
+      catch {
+        Fail "Failed to install Node.js: $($_.Exception.Message)"
+        exit 1
+      }
+    } else {
+      Fail "Node.js is required. Please install it and try again."
+      Info "👉 https://nodejs.org/en/download"
+      Write-Host ""
+      exit 1
+    }
+  }
+
+  # Check Node.js version — must be >= MinNodeVersion
+  if ($nodeAvailable) {
+    try {
+      $versionStr = & node --version 2>$null
+      # node --version returns e.g. "v22.1.0"
+      $versionStr = $versionStr -replace '^v', ''
+      $major = [int]($versionStr.Split('.')[0])
+      Dim "Node.js version: v$versionStr"
+
+      if ($major -lt $MinNodeVersion) {
+        Write-Host ""
+        Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
+        Write-Host "  │  ⬆️  Node.js upgrade recommended                    │" -ForegroundColor Yellow
+        Write-Host "  │  Current: v$versionStr" -NoNewline -ForegroundColor Yellow
+        # Pad to fill the box
+        $pad = 39 - "Current: v$versionStr".Length
+        if ($pad -lt 0) { $pad = 0 }
+        Write-Host (" " * $pad + "│") -ForegroundColor Yellow
+        Write-Host "  │  Required: >= v$MinNodeVersion.0.0                              │" -ForegroundColor Yellow
+        Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
+        Write-Host ""
+
+        if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+          Fail "winget not found — cannot auto-upgrade Node.js."
+          Info "Please upgrade Node.js manually:"
+          Info "👉 https://nodejs.org/en/download"
+          Write-Host ""
+          exit 1
+        }
+
+        Write-Host "  ⬆️  " -NoNewline -ForegroundColor Cyan
+        $upgradeChoice = Read-Host "Upgrade Node.js to latest LTS via winget? [Y/n]"
+        if ([string]::IsNullOrWhiteSpace($upgradeChoice) -or $upgradeChoice -match '^[Yy]') {
+          Info "📥 Upgrading Node.js via winget..."
+          Write-Host ""
+          try {
+            & winget upgrade --id OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements
+            if ($LASTEXITCODE -ne 0) {
+              Fail "winget upgrade returned exit code $LASTEXITCODE."
+              exit 1
+            }
+            # Refresh PATH
+            $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+            $newVersionStr = (& node --version 2>$null) -replace '^v', ''
+            $newMajor = [int]($newVersionStr.Split('.')[0])
+            if ($newMajor -ge $MinNodeVersion) {
+              Success "Node.js upgraded to v$newVersionStr."
+            } else {
+              Warn "Node.js is now v$newVersionStr but still below v$MinNodeVersion. You may need to restart your terminal."
+              exit 1
+            }
+          }
+          catch {
+            Fail "Failed to upgrade Node.js: $($_.Exception.Message)"
+            exit 1
+          }
+        } else {
+          Fail "Node.js >= v$MinNodeVersion is required. Please upgrade and try again."
+          Info "👉 https://nodejs.org/en/download"
+          Write-Host ""
+          exit 1
+        }
+      }
+    }
+    catch {
+      Warn "Could not determine Node.js version: $($_.Exception.Message)"
+    }
+  }
+
+  # Final check: npm must be available
   if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
-    Write-Host ""
-    Fail "Node.js / npm not found."
-    Info "Please install Node.js first:"
-    Info "👉 https://nodejs.org/en/download"
-    Write-Host ""
+    Fail "npm not found (Node.js may need a terminal restart)."
     exit 1
   }
 }
@@ -292,7 +410,7 @@ function Get-AzAccessToken {
 # ---------------------------
 # Start
 # ---------------------------
-Require-Npm
+Require-Node
 
 Show-Banner
 
