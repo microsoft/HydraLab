@@ -33,16 +33,50 @@ $DefaultRegistry = [System.Text.Encoding]::UTF8.GetString([System.Convert]::From
 # ---------------------------
 # Helpers
 # ---------------------------
-function Info([string]$msg) { Write-Host $msg }
-function Warn([string]$msg) { Write-Host $msg }
-function Fail([string]$msg) { Write-Host $msg }
+function Info([string]$msg) { Write-Host "  $msg" -ForegroundColor Cyan }
+function Warn([string]$msg) { Write-Host "  ⚠  $msg" -ForegroundColor Yellow }
+function Fail([string]$msg) { Write-Host "  ✖  $msg" -ForegroundColor Red }
+function Success([string]$msg) { Write-Host "  ✔  $msg" -ForegroundColor Green }
+function Dim([string]$msg) { Write-Host "  $msg" -ForegroundColor DarkGray }
+
+function Show-Banner {
+  $lines = @(
+    "  ____                  ____  _             _ _       "
+    " |  _ \  ___  ___ _ __ / ___|| |_ _   _  __| (_) ___  "
+    " | | | |/ _ \/ _ \ '_ \\___ \| __| | | |/ _`` | |/ _ \ "
+    " | |_| |  __/  __/ |_) |___) | |_| |_| | (_| | | (_) |"
+    " |____/ \___|\___| .__/|____/ \__|\__,_|\__,_|_|\___/ "
+    "                 |_|          I n s t a l l e r  v2    "
+  )
+  $colors = @("Red", "Yellow", "Green", "Cyan", "Blue", "Magenta")
+  Write-Host ""
+  for ($i = 0; $i -lt $lines.Count; $i++) {
+    Write-Host $lines[$i] -ForegroundColor $colors[$i % $colors.Count]
+  }
+  Write-Host ""
+}
+
+function Mask-Url([string]$url) {
+  if ([string]::IsNullOrEmpty($url)) { return "<empty>" }
+  try {
+    $u = [Uri]$url
+    $host_ = $u.Host
+    if ($host_.Length -gt 8) {
+      $host_ = $host_.Substring(0, 4) + "****" + $host_.Substring($host_.Length - 4)
+    }
+    return "$($u.Scheme)://$host_/****"
+  } catch {
+    if ($url.Length -le 10) { return ("*" * $url.Length) }
+    return $url.Substring(0, 5) + "****" + $url.Substring($url.Length - 4)
+  }
+}
 
 function Require-Npm {
   if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
     Write-Host ""
-    Write-Host "❌ Node.js / npm not found."
-    Write-Host "Please install Node.js first:"
-    Write-Host "https://nodejs.org/en/download"
+    Fail "Node.js / npm not found."
+    Info "Please install Node.js first:"
+    Info "👉 https://nodejs.org/en/download"
     Write-Host ""
     exit 1
   }
@@ -154,33 +188,103 @@ function Run-NpmViaCmd([string]$cmdLine) {
 }
 
 # ---------------------------
+# Azure CLI installation
+# ---------------------------
+function Install-AzureCli {
+  # Attempt to install Azure CLI via winget
+  if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Warn "winget not found — cannot auto-install Azure CLI."
+    return $false
+  }
+
+  Info "📥 Installing Azure CLI via winget..."
+  Write-Host ""
+  try {
+    & winget install --id Microsoft.AzureCLI --accept-source-agreements --accept-package-agreements
+    if ($LASTEXITCODE -ne 0) {
+      Warn "winget install returned exit code $LASTEXITCODE."
+      return $false
+    }
+    # Refresh PATH so az is available in the current session
+    $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+    if (Get-Command az -ErrorAction SilentlyContinue) {
+      Success "Azure CLI installed successfully."
+      return $true
+    } else {
+      Warn "Azure CLI installed but 'az' not found in PATH. You may need to restart your terminal."
+      return $false
+    }
+  }
+  catch {
+    Warn "Failed to install Azure CLI: $($_.Exception.Message)"
+    return $false
+  }
+}
+
+# ---------------------------
 # Azure CLI token acquisition
 # ---------------------------
 function Get-AzAccessToken {
   # Try to obtain a temporary access token via Azure CLI for Azure DevOps.
   # The resource ID 499b84ac-1321-427f-aa17-267ca6975798 is the well-known
   # resource identifier for Azure DevOps (Azure Artifacts / Packaging).
-  if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
-    Info "Azure CLI (az) not found. Will fall back to manual PAT entry."
+  $azAvailable = [bool](Get-Command az -ErrorAction SilentlyContinue)
+
+  if (-not $azAvailable) {
+    Write-Host ""
+    Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
+    Write-Host "  │  🔧 Azure CLI (az) is not installed                 │" -ForegroundColor Yellow
+    Write-Host "  │  It is recommended for automatic token auth.        │" -ForegroundColor Yellow
+    Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  📥 " -NoNewline -ForegroundColor Cyan
+    $installChoice = Read-Host "Install Azure CLI now via winget? [Y/n]"
+    if ([string]::IsNullOrWhiteSpace($installChoice) -or $installChoice -match '^[Yy]') {
+      $installed = Install-AzureCli
+      if ($installed) {
+        $azAvailable = $true
+      } else {
+        Dim "Continuing without Azure CLI."
+      }
+    } else {
+      Dim "Skipping Azure CLI installation."
+    }
+  }
+
+  if (-not $azAvailable) {
+    Dim "Will fall back to manual PAT entry."
     return $null
   }
 
-  Info "Azure CLI found. Checking for existing az login session..."
+  Info "🔍 Azure CLI found. Checking login session..."
 
   try {
     $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
-      if ($VerboseInstall -and $tokenJson) { Info "az output: $tokenJson" }
-      Info "No valid az login session found. Will fall back to manual PAT entry."
-      return $null
+      if ($VerboseInstall -and $tokenJson) { Dim "az output: $tokenJson" }
+      Warn "No valid az login session found."
+      Write-Host ""
+      Info "🔐 Please log in to Azure to continue..."
+      Write-Host ""
+      & az login
+      if ($LASTEXITCODE -ne 0) {
+        Warn "az login failed — will fall back to manual PAT entry."
+        return $null
+      }
+      # Retry after login
+      $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
+      if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
+        Warn "Still unable to get token after login — will fall back to manual PAT entry."
+        return $null
+      }
     }
     $token = $tokenJson.Trim()
-    Info "✅ Obtained temporary access token from Azure CLI session."
+    Success "Obtained temporary access token from Azure CLI."
     return $token
   }
   catch {
-    Info "Failed to get token from Azure CLI: $($_.Exception.Message)"
-    Info "Will fall back to manual PAT entry."
+    Warn "Failed to get token from Azure CLI: $($_.Exception.Message)"
+    Dim "Will fall back to manual PAT entry."
     return $null
   }
 }
@@ -190,23 +294,39 @@ function Get-AzAccessToken {
 # ---------------------------
 Require-Npm
 
-Info ""
-Info "=== DeepStudio npm installer (v2) ==="
-Info "Package: $PackageName@latest"
-Info ("VerboseInstall: " + $(if ($VerboseInstall) { "ON" } else { "OFF" }))
-Info ("DryRun: " + $(if ($DryRun) { "ON" } else { "OFF" }))
-Info ("LogToFile: " + $(if ($EnableLog) { "ON ($LogPath)" } else { "OFF" }))
-Info ""
+Show-Banner
 
-# Get registry: env > default
+Write-Host "  ┌─────────────────────────────────────────┐" -ForegroundColor DarkCyan
+Write-Host "  │  📦 Package:  " -NoNewline -ForegroundColor DarkCyan
+Write-Host "$PackageName@latest" -NoNewline -ForegroundColor White
+Write-Host "        │" -ForegroundColor DarkCyan
+Write-Host "  │  🔧 Verbose:  " -NoNewline -ForegroundColor DarkCyan
+Write-Host $(if ($VerboseInstall) { "ON " } else { "OFF" }) -NoNewline -ForegroundColor $(if ($VerboseInstall) { "Green" } else { "DarkGray" })
+Write-Host "                       │" -ForegroundColor DarkCyan
+Write-Host "  │  🧪 DryRun:   " -NoNewline -ForegroundColor DarkCyan
+Write-Host $(if ($DryRun) { "ON " } else { "OFF" }) -NoNewline -ForegroundColor $(if ($DryRun) { "Yellow" } else { "DarkGray" })
+Write-Host "                       │" -ForegroundColor DarkCyan
+Write-Host "  │  📝 LogFile:  " -NoNewline -ForegroundColor DarkCyan
+Write-Host $(if ($EnableLog) { "ON " } else { "OFF" }) -NoNewline -ForegroundColor $(if ($EnableLog) { "Green" } else { "DarkGray" })
+Write-Host "                       │" -ForegroundColor DarkCyan
+Write-Host "  └─────────────────────────────────────────┘" -ForegroundColor DarkCyan
+Write-Host ""
+
+# Get registry: env > construct from org name using default template
 $registryInput = $RegistryFromEnv
 if ([string]::IsNullOrWhiteSpace($registryInput)) {
-  $registryInput = $DefaultRegistry
+  Write-Host "  🏢 " -NoNewline -ForegroundColor Cyan
+  $adoOrg = Read-Host "Enter ADO org name [microsoft]"
+  if ([string]::IsNullOrWhiteSpace($adoOrg)) { $adoOrg = "microsoft" }
+  # Construct registry URL from org name using the base64 template
+  # Template: https://{org}.pkgs.visualstudio.com/OS/_packaging/DeepStudio/npm/registry/
+  $registryInput = $DefaultRegistry -replace "microsoft\.pkgs", "$adoOrg.pkgs"
+  Dim "Using org: $adoOrg"
 }
 $registry = Ensure-Registry $registryInput
 
-Info "Registry: $registry"
-Info ""
+Dim "Registry: $(Mask-Url $registry)"
+Write-Host ""
 
 # derive auth prefix (npmrc style)
 $uri = [Uri]$registry
@@ -216,24 +336,27 @@ $authPrefix = "//" + $uri.Host + $uri.AbsolutePath.TrimEnd("/") + "/"
 $pat = Get-AzAccessToken
 
 if ([string]::IsNullOrWhiteSpace($pat)) {
-  Info ""
-  Info "Manual PAT required. You can create one at:"
-  Info "  https://dev.azure.com/ > User Settings > Personal Access Tokens"
-  Info "  Scope: Packaging > Read"
-  Info ""
+  Write-Host ""
+  Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
+  Write-Host "  │  🔑 Manual PAT required                            │" -ForegroundColor Yellow
+  Write-Host "  │  Create one at:                                     │" -ForegroundColor Yellow
+  Write-Host "  │  https://dev.azure.com/ > User Settings > PATs      │" -ForegroundColor Yellow
+  Write-Host "  │  Scope: Packaging > Read                            │" -ForegroundColor Yellow
+  Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
+  Write-Host ""
 
-  $patRaw = Read-Secure "Enter Azure DevOps PAT (Packaging:Read)"
+  $patRaw = Read-Secure "  🔑 Enter Azure DevOps PAT (Packaging:Read)"
   if ([string]::IsNullOrWhiteSpace($patRaw)) { throw "PAT is empty." }
 
   $pat = $patRaw.Trim()
   $patRaw = $null
 } else {
-  Info "Using temporary token from Azure CLI (no PAT creation needed)."
+  Success "Using temporary token from Azure CLI (no PAT creation needed)."
 }
 
-Info ""
-Info ("Token (masked): " + (Mask-Token $pat))
-Info ""
+Write-Host ""
+Dim ("Token (masked): " + (Mask-Token $pat))
+Write-Host ""
 
 # npm install args / loglevel
 $logLevel = if ($VerboseInstall) { "verbose" } else { "notice" }
@@ -248,16 +371,19 @@ if ($VerboseInstall) {
 }
 
 try {
-  Info "Preparing isolated npm config (ignores your existing .npmrc)..."
+  Info "📄 Preparing isolated npm config..."
   Write-IsolatedNpmrc -path $tmpNpmrc -registry $registry -authPrefix $authPrefix -pat $pat
 
   # Build command line (use cmd.exe to avoid PowerShell alias/function issues with npm)
   # IMPORTANT: Use --userconfig so npm only reads our isolated temp npmrc for this run.
   $installCmd = 'npm install -g "{0}@latest" --registry "{1}/" --loglevel {2} --userconfig "{3}"' -f $PackageName, $registry, $logLevel, $tmpNpmrc
 
-  Info ""
-  Info ("Command: " + $installCmd)
-  Info ""
+  if ($VerboseInstall) {
+    Dim ("Command: " + $installCmd)
+  }
+  Write-Host ""
+  Info "📦 Installing $PackageName@latest ..."
+  Write-Host ""
 
   Run-NpmViaCmd $installCmd
 
@@ -267,53 +393,60 @@ try {
     Run-NpmViaCmd $verifyCmd
   }
 
-  Info ""
-  Info "✅ Installed $PackageName@latest successfully."
-  Info ""
+  Write-Host ""
+  Write-Host "  ┌─────────────────────────────────────────────────┐" -ForegroundColor Green
+  Write-Host "  │  🎉 $PackageName@latest installed successfully! │" -ForegroundColor Green
+  Write-Host "  └─────────────────────────────────────────────────┘" -ForegroundColor Green
+  Write-Host ""
 
   # Ask user whether to start deepstudio-server
+  Write-Host "  🚀 " -NoNewline -ForegroundColor Magenta
   $startChoice = Read-Host "Start $PackageName now? [Y/n]"
   if ([string]::IsNullOrWhiteSpace($startChoice) -or $startChoice -match '^[Yy]') {
-    Info ""
-    Info "🚀 Launching $PackageName (press Ctrl+C to stop)..."
-    Info ""
+    Write-Host ""
+    Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
+    Success "Launching $PackageName (press Ctrl+C to stop)..."
+    Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
+    Write-Host ""
     if ($DryRun) {
-      Info "DRYRUN: would run $PackageName"
+      Dim "DRYRUN: would run $PackageName"
     } else {
       & $PackageName
     }
   } else {
-    Info ""
+    Write-Host ""
     Info "You can start it later by running: $PackageName"
   }
 }
 catch {
-  Info ""
-  Fail "❌ Installation failed."
+  Write-Host ""
+  Write-Host "  ┌─────────────────────────────────────────────────┐" -ForegroundColor Red
+  Write-Host "  │  ❌ Installation failed                         │" -ForegroundColor Red
+  Write-Host "  └─────────────────────────────────────────────────┘" -ForegroundColor Red
   Fail ("Error: " + $_.Exception.Message)
 
-  Warn ""
+  Write-Host ""
   Warn "Common causes for 401/403:"
-  Warn "  - Azure CLI token expired (try: az login)"
-  Warn "  - PAT missing Packaging:Read scope"
-  Warn "  - PAT pasted with extra whitespace (we trimmed, but double-check the masked value)"
-  Warn "  - Wrong registry URL (must be the npm/registry endpoint)"
-  Warn "  - No permission to the Azure Artifacts feed"
-  Warn "  - Corporate proxy/SSL interception issues"
+  Dim "  • Azure CLI token expired (try: az login)"
+  Dim "  • PAT missing Packaging:Read scope"
+  Dim "  • PAT pasted with extra whitespace"
+  Dim "  • Wrong registry URL"
+  Dim "  • No permission to the Azure Artifacts feed"
+  Dim "  • Corporate proxy/SSL interception issues"
 
   if ($VerboseInstall) {
-    Info ""
-    Info "---- Full exception ----"
-    Info $_.Exception.ToString()
-    Info "------------------------"
+    Write-Host ""
+    Dim "---- Full exception ----"
+    Dim $_.Exception.ToString()
+    Dim "------------------------"
   } else {
-    Warn ""
+    Write-Host ""
     Warn "Tip: re-run with verbose:"
-    Warn "  `$env:DEEPSTUDIO_VERBOSE='1'; `$env:DEEPSTUDIO_LOG='1'; irm <url> | iex"
+    Dim "  `$env:DEEPSTUDIO_VERBOSE='1'; `$env:DEEPSTUDIO_LOG='1'; irm <url> | iex"
   }
 
   if ($EnableLog -and -not $DryRun) {
-    Warn ""
+    Write-Host ""
     Warn "Log saved to: $LogPath"
   }
 
@@ -328,7 +461,7 @@ finally {
     Remove-Item Env:\NPM_CONFIG_LOGLEVEL -ErrorAction SilentlyContinue
     Remove-Item Env:\NPM_CONFIG_PROGRESS -ErrorAction SilentlyContinue
   }
-  Info ""
-  Info "✅ Cleanup complete."
-  Info ""
+  Write-Host ""
+  Success "Cleanup complete."
+  Write-Host ""
 }
