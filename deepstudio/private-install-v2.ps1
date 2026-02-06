@@ -188,14 +188,71 @@ function Run-NpmViaCmd([string]$cmdLine) {
 }
 
 # ---------------------------
+# Azure CLI installation
+# ---------------------------
+function Install-AzureCli {
+  # Attempt to install Azure CLI via winget
+  if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Warn "winget not found — cannot auto-install Azure CLI."
+    return $false
+  }
+
+  Info "📥 Installing Azure CLI via winget..."
+  Write-Host ""
+  try {
+    & winget install --id Microsoft.AzureCLI --accept-source-agreements --accept-package-agreements
+    if ($LASTEXITCODE -ne 0) {
+      Warn "winget install returned exit code $LASTEXITCODE."
+      return $false
+    }
+    # Refresh PATH so az is available in the current session
+    $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+    if (Get-Command az -ErrorAction SilentlyContinue) {
+      Success "Azure CLI installed successfully."
+      return $true
+    } else {
+      Warn "Azure CLI installed but 'az' not found in PATH. You may need to restart your terminal."
+      return $false
+    }
+  }
+  catch {
+    Warn "Failed to install Azure CLI: $($_.Exception.Message)"
+    return $false
+  }
+}
+
+# ---------------------------
 # Azure CLI token acquisition
 # ---------------------------
 function Get-AzAccessToken {
   # Try to obtain a temporary access token via Azure CLI for Azure DevOps.
   # The resource ID 499b84ac-1321-427f-aa17-267ca6975798 is the well-known
   # resource identifier for Azure DevOps (Azure Artifacts / Packaging).
-  if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
-    Dim "Azure CLI (az) not found — will fall back to manual PAT entry."
+  $azAvailable = [bool](Get-Command az -ErrorAction SilentlyContinue)
+
+  if (-not $azAvailable) {
+    Write-Host ""
+    Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
+    Write-Host "  │  🔧 Azure CLI (az) is not installed                 │" -ForegroundColor Yellow
+    Write-Host "  │  It is recommended for automatic token auth.        │" -ForegroundColor Yellow
+    Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  📥 " -NoNewline -ForegroundColor Cyan
+    $installChoice = Read-Host "Install Azure CLI now via winget? [Y/n]"
+    if ([string]::IsNullOrWhiteSpace($installChoice) -or $installChoice -match '^[Yy]') {
+      $installed = Install-AzureCli
+      if ($installed) {
+        $azAvailable = $true
+      } else {
+        Dim "Continuing without Azure CLI."
+      }
+    } else {
+      Dim "Skipping Azure CLI installation."
+    }
+  }
+
+  if (-not $azAvailable) {
+    Dim "Will fall back to manual PAT entry."
     return $null
   }
 
@@ -205,8 +262,21 @@ function Get-AzAccessToken {
     $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
       if ($VerboseInstall -and $tokenJson) { Dim "az output: $tokenJson" }
-      Warn "No valid az login session found — will fall back to manual PAT entry."
-      return $null
+      Warn "No valid az login session found."
+      Write-Host ""
+      Info "🔐 Please log in to Azure to continue..."
+      Write-Host ""
+      & az login
+      if ($LASTEXITCODE -ne 0) {
+        Warn "az login failed — will fall back to manual PAT entry."
+        return $null
+      }
+      # Retry after login
+      $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
+      if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
+        Warn "Still unable to get token after login — will fall back to manual PAT entry."
+        return $null
+      }
     }
     $token = $tokenJson.Trim()
     Success "Obtained temporary access token from Azure CLI."
@@ -242,10 +312,16 @@ Write-Host "                       │" -ForegroundColor DarkCyan
 Write-Host "  └─────────────────────────────────────────┘" -ForegroundColor DarkCyan
 Write-Host ""
 
-# Get registry: env > default
+# Get registry: env > construct from org name using default template
 $registryInput = $RegistryFromEnv
 if ([string]::IsNullOrWhiteSpace($registryInput)) {
-  $registryInput = $DefaultRegistry
+  Write-Host "  🏢 " -NoNewline -ForegroundColor Cyan
+  $adoOrg = Read-Host "Enter ADO org name [microsoft]"
+  if ([string]::IsNullOrWhiteSpace($adoOrg)) { $adoOrg = "microsoft" }
+  # Construct registry URL from org name using the base64 template
+  # Template: https://{org}.pkgs.visualstudio.com/OS/_packaging/DeepStudio/npm/registry/
+  $registryInput = $DefaultRegistry -replace "microsoft\.pkgs", "$adoOrg.pkgs"
+  Dim "Using org: $adoOrg"
 }
 $registry = Ensure-Registry $registryInput
 
