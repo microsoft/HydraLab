@@ -26,8 +26,9 @@ $LogPath = if ($env:DEEPSTUDIO_LOG_PATH) { $env:DEEPSTUDIO_LOG_PATH } else {
   Join-Path (Get-Location) ("deepstudio-install-" + (Get-Date -Format "yyyyMMdd-HHmmss") + ".log")
 }
 
-# Default registry for DeepStudio
-$DefaultRegistry = "https://microsoft.pkgs.visualstudio.com/OS/_packaging/DeepStudio/npm/registry/"
+# Default registry for DeepStudio (stored as base64)
+$DefaultRegistryB64 = "aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL19wYWNrYWdpbmcvRGVlcFN0dWRpby9ucG0vcmVnaXN0cnkv"
+$DefaultRegistry = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DefaultRegistryB64))
 
 # ---------------------------
 # Helpers
