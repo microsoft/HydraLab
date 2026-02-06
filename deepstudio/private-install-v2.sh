@@ -18,16 +18,16 @@ DEFAULT_REGISTRY_B64="aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL1
 # ---------------------------
 # Color helpers
 # ---------------------------
-# Use $'...' syntax so escape sequences become real ANSI bytes
-RED=$'\033[0;31m'
-YELLOW=$'\033[0;33m'
-GREEN=$'\033[0;32m'
-CYAN=$'\033[0;36m'
-MAGENTA=$'\033[0;35m'
-BLUE=$'\033[0;34m'
-DIM=$'\033[0;90m'
-WHITE=$'\033[1;37m'
-NC=$'\033[0m' # No Color
+# Generate real ANSI escape bytes using printf (portable across all shells)
+RED=$(printf '\033[0;31m')
+YELLOW=$(printf '\033[0;33m')
+GREEN=$(printf '\033[0;32m')
+CYAN=$(printf '\033[0;36m')
+MAGENTA=$(printf '\033[0;35m')
+BLUE=$(printf '\033[0;34m')
+DIM=$(printf '\033[0;90m')
+WHITE=$(printf '\033[1;37m')
+NC=$(printf '\033[0m')
 
 info()    { printf "  %s%s%s\n" "$CYAN" "$*" "$NC"; }
 warn()    { printf "  %s⚠  %s%s\n" "$YELLOW" "$*" "$NC"; }
@@ -85,14 +85,19 @@ mask_token() {
 }
 
 b64_decode() {
+  local decoded=""
   if command -v base64 >/dev/null 2>&1; then
-    echo -n "$1" | base64 -d 2>/dev/null || echo -n "$1" | base64 -D 2>/dev/null
-  elif command -v openssl >/dev/null 2>&1; then
-    echo -n "$1" | openssl base64 -d -A
-  else
+    # macOS uses -D, Linux uses -d
+    decoded=$(echo -n "$1" | base64 -D 2>/dev/null) || decoded=$(echo -n "$1" | base64 -d 2>/dev/null) || true
+  fi
+  if [ -z "$decoded" ] && command -v openssl >/dev/null 2>&1; then
+    decoded=$(echo -n "$1" | openssl base64 -d -A 2>/dev/null) || true
+  fi
+  if [ -z "$decoded" ]; then
     fail "No base64 decoder found."
     exit 1
   fi
+  printf '%s' "$decoded"
 }
 
 # ---------------------------
@@ -211,12 +216,12 @@ upgrade_node() {
 require_node() {
   if ! command -v node >/dev/null 2>&1; then
     echo ""
-    printf "  %b┌─────────────────────────────────────────────────────┐%b\n" "$YELLOW" "$NC"
-    printf "  %b│  ⚙️  Node.js is not installed                       │%b\n" "$YELLOW" "$NC"
-    printf "  %b│  Node.js >= %s is required to continue.             │%b\n" "$YELLOW" "$NC" "$MIN_NODE_VERSION"
-    printf "  %b└─────────────────────────────────────────────────────┘%b\n" "$YELLOW" "$NC"
+    printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
+    printf "  ${YELLOW}│  ⚙️  Node.js is not installed                       │${NC}\n"
+    printf "  ${YELLOW}│  Node.js >= %s is required to continue.             │${NC}\n" "$MIN_NODE_VERSION"
+    printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
     echo ""
-    printf "  %b📥 %b" "$CYAN" "$NC"
+    printf "  ${CYAN}📥 ${NC}"
     read -r -p "Install Node.js now? [Y/n] " install_choice < /dev/tty
     if [ -z "$install_choice" ] || echo "$install_choice" | grep -qi '^y'; then
       install_node
@@ -240,13 +245,13 @@ require_node() {
 
   if [ "$major" -lt "$MIN_NODE_VERSION" ] 2>/dev/null; then
     echo ""
-    printf "  %b┌─────────────────────────────────────────────────────┐%b\n" "$YELLOW" "$NC"
-    printf "  %b│  ⬆️  Node.js upgrade required                       │%b\n" "$YELLOW" "$NC"
-    printf "  %b│  Current: v%-40s│%b\n" "$YELLOW" "$NC" "$version_str"
-    printf "  %b│  Required: >= v%s.0.0                              │%b\n" "$YELLOW" "$NC" "$MIN_NODE_VERSION"
-    printf "  %b└─────────────────────────────────────────────────────┘%b\n" "$YELLOW" "$NC"
+    printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
+    printf "  ${YELLOW}│  ⬆️  Node.js upgrade required                       │${NC}\n"
+    printf "  ${YELLOW}│  Current: v%-40s│${NC}\n" "$version_str"
+    printf "  ${YELLOW}│  Required: >= v%s.0.0                              │${NC}\n" "$MIN_NODE_VERSION"
+    printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
     echo ""
-    printf "  %b⬆️  %b" "$CYAN" "$NC"
+    printf "  ${CYAN}⬆️  ${NC}"
     read -r -p "Upgrade Node.js to >= v${MIN_NODE_VERSION}? [Y/n] " upgrade_choice < /dev/tty
     if [ -z "$upgrade_choice" ] || echo "$upgrade_choice" | grep -qi '^y'; then
       upgrade_node
@@ -323,12 +328,12 @@ get_az_access_token() {
 
   if [ "$az_available" = false ]; then
     echo ""
-    printf "  %b┌─────────────────────────────────────────────────────┐%b\n" "$YELLOW" "$NC"
-    printf "  %b│  🔧 Azure CLI (az) is not installed                 │%b\n" "$YELLOW" "$NC"
-    printf "  %b│  It is recommended for automatic token auth.        │%b\n" "$YELLOW" "$NC"
-    printf "  %b└─────────────────────────────────────────────────────┘%b\n" "$YELLOW" "$NC"
+    printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
+    printf "  ${YELLOW}│  🔧 Azure CLI (az) is not installed                 │${NC}\n"
+    printf "  ${YELLOW}│  It is recommended for automatic token auth.        │${NC}\n"
+    printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
     echo ""
-    printf "  %b📥 %b" "$CYAN" "$NC"
+    printf "  ${CYAN}📥 ${NC}"
     read -r -p "Install Azure CLI now? [Y/n] " install_choice < /dev/tty
     if [ -z "$install_choice" ] || echo "$install_choice" | grep -qi '^y'; then
       if install_az_cli; then
@@ -464,7 +469,7 @@ echo ""
 DEFAULT_REGISTRY=$(b64_decode "$DEFAULT_REGISTRY_B64")
 REGISTRY_INPUT="$REGISTRY_FROM_ENV"
 if [ -z "$REGISTRY_INPUT" ]; then
-  printf "  %b🏢 %b" "$CYAN" "$NC"
+  printf "  %s🏢 %s" "$CYAN" "$NC"
   read -r -p "Enter ADO org name [microsoft] " ado_org < /dev/tty
   if [ -z "$ado_org" ]; then ado_org="microsoft"; fi
   REGISTRY_INPUT=$(echo "$DEFAULT_REGISTRY" | sed "s/microsoft\.pkgs/${ado_org}.pkgs/")
@@ -494,12 +499,12 @@ if get_az_access_token; then
   success "Using temporary token from Azure CLI (no PAT creation needed)."
 else
   echo ""
-  printf "  %b┌─────────────────────────────────────────────────────┐%b\n" "$YELLOW" "$NC"
-  printf "  %b│  🔑 Manual PAT required                            │%b\n" "$YELLOW" "$NC"
-  printf "  %b│  Create one at:                                     │%b\n" "$YELLOW" "$NC"
-  printf "  %b│  https://dev.azure.com/ > User Settings > PATs      │%b\n" "$YELLOW" "$NC"
-  printf "  %b│  Scope: Packaging > Read                            │%b\n" "$YELLOW" "$NC"
-  printf "  %b└─────────────────────────────────────────────────────┘%b\n" "$YELLOW" "$NC"
+  printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
+  printf "  ${YELLOW}│  🔑 Manual PAT required                            │${NC}\n"
+  printf "  ${YELLOW}│  Create one at:                                     │${NC}\n"
+  printf "  ${YELLOW}│  https://dev.azure.com/ > User Settings > PATs      │${NC}\n"
+  printf "  ${YELLOW}│  Scope: Packaging > Read                            │${NC}\n"
+  printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
   echo ""
   printf "  🔑 Enter Azure DevOps PAT (Packaging:Read): "
   stty -echo 2>/dev/null || true
