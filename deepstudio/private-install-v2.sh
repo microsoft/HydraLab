@@ -18,16 +18,16 @@ DEFAULT_REGISTRY_B64="aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL1
 # ---------------------------
 # Color helpers
 # ---------------------------
-# Generate real ANSI escape bytes using printf (portable across all shells)
-RED=$(printf '\033[0;31m')
-YELLOW=$(printf '\033[0;33m')
-GREEN=$(printf '\033[0;32m')
-CYAN=$(printf '\033[0;36m')
-MAGENTA=$(printf '\033[0;35m')
-BLUE=$(printf '\033[0;34m')
-DIM=$(printf '\033[0;90m')
-WHITE=$(printf '\033[1;37m')
-NC=$(printf '\033[0m')
+ESC=$(printf '\033')
+RED="${ESC}[0;31m"
+YELLOW="${ESC}[0;33m"
+GREEN="${ESC}[0;32m"
+CYAN="${ESC}[0;36m"
+MAGENTA="${ESC}[0;35m"
+BLUE="${ESC}[0;34m"
+DIM="${ESC}[0;90m"
+WHITE="${ESC}[1;37m"
+NC="${ESC}[0m"
 
 info()    { printf "  %s%s%s\n" "$CYAN" "$*" "$NC"; }
 warn()    { printf "  %s⚠  %s%s\n" "$YELLOW" "$*" "$NC"; }
@@ -39,7 +39,7 @@ show_banner() {
   local lines=(
     '  ____                  ____  _             _ _       '
     ' |  _ \  ___  ___ _ __ / ___|| |_ _   _  __| (_) ___  '
-    ' | | | |/ _ \/ _ \ '"'"'_ \\___ \| __| | | |/ _` | |/ _ \ '
+    " | | | |/ _ \\/ _ \\ '_ \\\\___ \\| __| | | |/ _\` | |/ _ \\ "
     ' | |_| |  __/  __/ |_) |___) | |_| |_| | (_| | | (_) |'
     ' |____/ \___|\___| .__/|____/ \__|\__,_|\__,_|_|\___/ '
     '                 |_|          I n s t a l l e r  v2    '
@@ -403,22 +403,42 @@ run_npm() {
     return 0
   fi
 
+  local exit_code=0
   if [ "$ENABLE_LOG" = "1" ]; then
     info "Logging enabled. Log file: $LOG_PATH"
     dim "Command: $cmd_line"
-    eval "$cmd_line" > >(tee -a "$LOG_PATH") 2> >(tee -a "$LOG_PATH" >&2)
-    local exit_code=$?
-    if [ $exit_code -ne 0 ]; then
-      fail "npm failed with exit code $exit_code. See log: $LOG_PATH"
-      return $exit_code
-    fi
+    eval "$cmd_line" > >(tee -a "$LOG_PATH") 2> >(tee -a "$LOG_PATH" >&2) || exit_code=$?
   else
-    eval "$cmd_line"
-    local exit_code=$?
-    if [ $exit_code -ne 0 ]; then
-      fail "npm failed with exit code $exit_code. (Tip: set DEEPSTUDIO_LOG=1 to capture full logs.)"
-      return $exit_code
+    eval "$cmd_line" || exit_code=$?
+  fi
+
+  # If permission denied (EACCES), retry with sudo
+  if [ $exit_code -ne 0 ]; then
+    # Check if it was a permission error
+    local sudo_cmd
+    sudo_cmd=$(echo "$cmd_line" | sed 's/^npm /sudo npm /')
+    if [ "$sudo_cmd" != "$cmd_line" ]; then
+      warn "npm failed (exit code $exit_code). Retrying with elevated privileges..."
+      printf "  ${CYAN}🔐 ${NC}"
+      read -r -p "Retry with sudo? [Y/n] " sudo_choice < /dev/tty
+      if [ -z "$sudo_choice" ] || echo "$sudo_choice" | grep -qi '^y'; then
+        exit_code=0
+        if [ "$ENABLE_LOG" = "1" ]; then
+          eval "$sudo_cmd" > >(tee -a "$LOG_PATH") 2> >(tee -a "$LOG_PATH" >&2) || exit_code=$?
+        else
+          eval "$sudo_cmd" || exit_code=$?
+        fi
+        if [ $exit_code -eq 0 ]; then
+          return 0
+        fi
+      fi
     fi
+    if [ "$ENABLE_LOG" = "1" ]; then
+      fail "npm failed with exit code $exit_code. See log: $LOG_PATH"
+    else
+      fail "npm failed with exit code $exit_code. (Tip: set DEEPSTUDIO_LOG=1 to capture full logs.)"
+    fi
+    return $exit_code
   fi
   return 0
 }
