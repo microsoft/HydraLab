@@ -16,46 +16,28 @@ MIN_NODE_VERSION=22
 DEFAULT_REGISTRY_B64="aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL19wYWNrYWdpbmcvRGVlcFN0dWRpby9ucG0vcmVnaXN0cnkv"
 
 # ---------------------------
-# Color helpers
+# Output helpers
 # ---------------------------
-ESC=$(printf '\033')
-RED="${ESC}[0;31m"
-YELLOW="${ESC}[0;33m"
-GREEN="${ESC}[0;32m"
-CYAN="${ESC}[0;36m"
-MAGENTA="${ESC}[0;35m"
-BLUE="${ESC}[0;34m"
-DIM="${ESC}[0;90m"
-WHITE="${ESC}[1;37m"
-NC="${ESC}[0m"
-
-info()    { printf "  %s%s%s\n" "$CYAN" "$*" "$NC"; }
-warn()    { printf "  %s⚠  %s%s\n" "$YELLOW" "$*" "$NC"; }
-fail()    { printf "  %s✖  %s%s\n" "$RED" "$*" "$NC"; }
-success() { printf "  %s✔  %s%s\n" "$GREEN" "$*" "$NC"; }
-dim()     { printf "  %s%s%s\n" "$DIM" "$*" "$NC"; }
+info()    { echo "  $*"; }
+warn()    { echo "  ⚠  $*"; }
+fail()    { echo "  ✖  $*"; }
+success() { echo "  ✔  $*"; }
+dim()     { echo "  $*"; }
 
 show_banner() {
-  local lines=(
-    '  ____                  ____  _             _ _       '
-    ' |  _ \  ___  ___ _ __ / ___|| |_ _   _  __| (_) ___  '
-    " | | | |/ _ \\/ _ \\ '_ \\\\___ \\| __| | | |/ _\` | |/ _ \\ "
-    ' | |_| |  __/  __/ |_) |___) | |_| |_| | (_| | | (_) |'
-    ' |____/ \___|\___| .__/|____/ \__|\__,_|\__,_|_|\___/ '
-    '                 |_|          I n s t a l l e r  v2    '
-  )
-  local colors=("$RED" "$YELLOW" "$GREEN" "$CYAN" "$BLUE" "$MAGENTA")
   echo ""
-  for i in "${!lines[@]}"; do
-    printf "%s%s%s\n" "${colors[$((i % 6))]}" "${lines[$i]}" "$NC"
-  done
+  echo '  ____                  ____  _             _ _       '
+  echo ' |  _ \  ___  ___ _ __ / ___|| |_ _   _  __| (_) ___  '
+  echo " | | | |/ _ \\/ _ \\ '_ \\\\___ \\| __| | | |/ _\` | |/ _ \\ "
+  echo ' | |_| |  __/  __/ |_) |___) | |_| |_| | (_| | | (_) |'
+  echo ' |____/ \___|\___| .__/|____/ \__|\__,_|\__,_|_|\___/ '
+  echo '                 |_|          I n s t a l l e r  v2    '
   echo ""
 }
 
 mask_url() {
   local url="$1"
   if [ -z "$url" ]; then echo "<empty>"; return; fi
-  # Extract host, mask middle
   local host
   host=$(echo "$url" | sed -n 's|.*://\([^/]*\).*|\1|p')
   if [ ${#host} -gt 8 ]; then
@@ -87,7 +69,6 @@ mask_token() {
 b64_decode() {
   local decoded=""
   if command -v base64 >/dev/null 2>&1; then
-    # macOS uses -D, Linux uses -d
     decoded=$(echo -n "$1" | base64 -D 2>/dev/null) || decoded=$(echo -n "$1" | base64 -d 2>/dev/null) || true
   fi
   if [ -z "$decoded" ] && command -v openssl >/dev/null 2>&1; then
@@ -133,7 +114,6 @@ install_node() {
       ;;
     apt)
       info "📥 Installing Node.js via apt..."
-      # Use NodeSource for latest LTS
       if command -v curl >/dev/null 2>&1; then
         curl -fsSL "https://deb.nodesource.com/setup_${MIN_NODE_VERSION}.x" | sudo -E bash -
         sudo apt-get install -y nodejs
@@ -216,13 +196,12 @@ upgrade_node() {
 require_node() {
   if ! command -v node >/dev/null 2>&1; then
     echo ""
-    printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
-    printf "  ${YELLOW}│  ⚙️  Node.js is not installed                       │${NC}\n"
-    printf "  ${YELLOW}│  Node.js >= %s is required to continue.             │${NC}\n" "$MIN_NODE_VERSION"
-    printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
+    echo "  ┌─────────────────────────────────────────────────────┐"
+    echo "  │  ⚙️  Node.js is not installed                       │"
+    echo "  │  Node.js >= ${MIN_NODE_VERSION} is required to continue.             │"
+    echo "  └─────────────────────────────────────────────────────┘"
     echo ""
-    printf "  ${CYAN}📥 ${NC}"
-    read -r -p "Install Node.js now? [Y/n] " install_choice < /dev/tty
+    read -r -p "  📥 Install Node.js now? [Y/n] " install_choice < /dev/tty
     if [ -z "$install_choice" ] || echo "$install_choice" | grep -qi '^y'; then
       install_node
       if ! command -v node >/dev/null 2>&1; then
@@ -245,14 +224,13 @@ require_node() {
 
   if [ "$major" -lt "$MIN_NODE_VERSION" ] 2>/dev/null; then
     echo ""
-    printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
-    printf "  ${YELLOW}│  ⬆️  Node.js upgrade required                       │${NC}\n"
-    printf "  ${YELLOW}│  Current: v%-40s│${NC}\n" "$version_str"
-    printf "  ${YELLOW}│  Required: >= v%s.0.0                              │${NC}\n" "$MIN_NODE_VERSION"
-    printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
+    echo "  ┌─────────────────────────────────────────────────────┐"
+    echo "  │  ⬆️  Node.js upgrade required                       │"
+    printf "  │  Current: v%-40s│\n" "$version_str"
+    printf "  │  Required: >= v%s.0.0                              │\n" "$MIN_NODE_VERSION"
+    echo "  └─────────────────────────────────────────────────────┘"
     echo ""
-    printf "  ${CYAN}⬆️  ${NC}"
-    read -r -p "Upgrade Node.js to >= v${MIN_NODE_VERSION}? [Y/n] " upgrade_choice < /dev/tty
+    read -r -p "  ⬆️  Upgrade Node.js to >= v${MIN_NODE_VERSION}? [Y/n] " upgrade_choice < /dev/tty
     if [ -z "$upgrade_choice" ] || echo "$upgrade_choice" | grep -qi '^y'; then
       upgrade_node
       version_str=$(node --version 2>/dev/null | sed 's/^v//')
@@ -320,7 +298,6 @@ install_az_cli() {
 }
 
 get_az_access_token() {
-  # Try to obtain a temporary access token via Azure CLI for Azure DevOps.
   local az_available=false
   if command -v az >/dev/null 2>&1; then
     az_available=true
@@ -328,13 +305,12 @@ get_az_access_token() {
 
   if [ "$az_available" = false ]; then
     echo ""
-    printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
-    printf "  ${YELLOW}│  🔧 Azure CLI (az) is not installed                 │${NC}\n"
-    printf "  ${YELLOW}│  It is recommended for automatic token auth.        │${NC}\n"
-    printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
+    echo "  ┌─────────────────────────────────────────────────────┐"
+    echo "  │  🔧 Azure CLI (az) is not installed                 │"
+    echo "  │  It is recommended for automatic token auth.        │"
+    echo "  └─────────────────────────────────────────────────────┘"
     echo ""
-    printf "  ${CYAN}📥 ${NC}"
-    read -r -p "Install Azure CLI now? [Y/n] " install_choice < /dev/tty
+    read -r -p "  📥 Install Azure CLI now? [Y/n] " install_choice < /dev/tty
     if [ -z "$install_choice" ] || echo "$install_choice" | grep -qi '^y'; then
       if install_az_cli; then
         az_available=true
@@ -366,7 +342,6 @@ get_az_access_token() {
       warn "az login failed — will fall back to manual PAT entry."
       return 1
     }
-    # Retry after login
     token=$(az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>/dev/null) || true
     if [ -z "$token" ]; then
       warn "Still unable to get token after login — will fall back to manual PAT entry."
@@ -412,15 +387,13 @@ run_npm() {
     eval "$cmd_line" || exit_code=$?
   fi
 
-  # If permission denied (EACCES), retry with sudo
+  # If failed, retry with sudo
   if [ $exit_code -ne 0 ]; then
-    # Check if it was a permission error
     local sudo_cmd
     sudo_cmd=$(echo "$cmd_line" | sed 's/^npm /sudo npm /')
     if [ "$sudo_cmd" != "$cmd_line" ]; then
       warn "npm failed (exit code $exit_code). Retrying with elevated privileges..."
-      printf "  ${CYAN}🔐 ${NC}"
-      read -r -p "Retry with sudo? [Y/n] " sudo_choice < /dev/tty
+      read -r -p "  🔐 Retry with sudo? [Y/n] " sudo_choice < /dev/tty
       if [ -z "$sudo_choice" ] || echo "$sudo_choice" | grep -qi '^y'; then
         exit_code=0
         if [ "$ENABLE_LOG" = "1" ]; then
@@ -465,32 +438,31 @@ require_node
 show_banner
 
 # Settings panel
-printf "  ${DIM}┌─────────────────────────────────────────┐${NC}\n"
-printf "  ${DIM}│${NC}  📦 Package:  ${WHITE}%s@latest${NC}        ${DIM}│${NC}\n" "$PKG"
+echo "  ┌─────────────────────────────────────────┐"
+printf "  │  📦 Package:  %s@latest        │\n" "$PKG"
 if [ "$VERBOSE" = "1" ]; then
-  printf "  ${DIM}│${NC}  🔧 Verbose:  ${GREEN}ON ${NC}                       ${DIM}│${NC}\n"
+  echo "  │  🔧 Verbose:  ON                        │"
 else
-  printf "  ${DIM}│${NC}  🔧 Verbose:  ${DIM}OFF${NC}                       ${DIM}│${NC}\n"
+  echo "  │  🔧 Verbose:  OFF                       │"
 fi
 if [ "$DRY_RUN" = "1" ]; then
-  printf "  ${DIM}│${NC}  🧪 DryRun:   ${YELLOW}ON ${NC}                       ${DIM}│${NC}\n"
+  echo "  │  🧪 DryRun:   ON                        │"
 else
-  printf "  ${DIM}│${NC}  🧪 DryRun:   ${DIM}OFF${NC}                       ${DIM}│${NC}\n"
+  echo "  │  🧪 DryRun:   OFF                       │"
 fi
 if [ "$ENABLE_LOG" = "1" ]; then
-  printf "  ${DIM}│${NC}  📝 LogFile:  ${GREEN}ON ${NC}                       ${DIM}│${NC}\n"
+  echo "  │  📝 LogFile:  ON                        │"
 else
-  printf "  ${DIM}│${NC}  📝 LogFile:  ${DIM}OFF${NC}                       ${DIM}│${NC}\n"
+  echo "  │  📝 LogFile:  OFF                       │"
 fi
-printf "  ${DIM}└─────────────────────────────────────────┘${NC}\n"
+echo "  └─────────────────────────────────────────┘"
 echo ""
 
 # Get registry: env > construct from org name using default template
 DEFAULT_REGISTRY=$(b64_decode "$DEFAULT_REGISTRY_B64")
 REGISTRY_INPUT="$REGISTRY_FROM_ENV"
 if [ -z "$REGISTRY_INPUT" ]; then
-  printf "  %s🏢 %s" "$CYAN" "$NC"
-  read -r -p "Enter ADO org name [microsoft] " ado_org < /dev/tty
+  read -r -p "  🏢 Enter ADO org name [microsoft] " ado_org < /dev/tty
   if [ -z "$ado_org" ]; then ado_org="microsoft"; fi
   REGISTRY_INPUT=$(echo "$DEFAULT_REGISTRY" | sed "s/microsoft\.pkgs/${ado_org}.pkgs/")
   dim "Using org: $ado_org"
@@ -519,12 +491,12 @@ if get_az_access_token; then
   success "Using temporary token from Azure CLI (no PAT creation needed)."
 else
   echo ""
-  printf "  ${YELLOW}┌─────────────────────────────────────────────────────┐${NC}\n"
-  printf "  ${YELLOW}│  🔑 Manual PAT required                            │${NC}\n"
-  printf "  ${YELLOW}│  Create one at:                                     │${NC}\n"
-  printf "  ${YELLOW}│  https://dev.azure.com/ > User Settings > PATs      │${NC}\n"
-  printf "  ${YELLOW}│  Scope: Packaging > Read                            │${NC}\n"
-  printf "  ${YELLOW}└─────────────────────────────────────────────────────┘${NC}\n"
+  echo "  ┌─────────────────────────────────────────────────────┐"
+  echo "  │  🔑 Manual PAT required                            │"
+  echo "  │  Create one at:                                     │"
+  echo "  │  https://dev.azure.com/ > User Settings > PATs      │"
+  echo "  │  Scope: Packaging > Read                            │"
+  echo "  └─────────────────────────────────────────────────────┘"
   echo ""
   printf "  🔑 Enter Azure DevOps PAT (Packaging:Read): "
   stty -echo 2>/dev/null || true
@@ -578,19 +550,18 @@ if [ "$DRY_RUN" != "1" ]; then
 fi
 
 echo ""
-printf "  ${GREEN}┌─────────────────────────────────────────────────┐${NC}\n"
-printf "  ${GREEN}│  🎉 %s@latest installed successfully! │${NC}\n" "$PKG"
-printf "  ${GREEN}└─────────────────────────────────────────────────┘${NC}\n"
+echo "  ┌─────────────────────────────────────────────────┐"
+printf "  │  🎉 %s@latest installed successfully! │\n" "$PKG"
+echo "  └─────────────────────────────────────────────────┘"
 echo ""
 
 # Ask user whether to start
-printf "  ${MAGENTA}🚀 ${NC}"
-read -r -p "Start ${PKG} now? [Y/n] " start_choice < /dev/tty
+read -r -p "  🚀 Start ${PKG} now? [Y/n] " start_choice < /dev/tty
 if [ -z "$start_choice" ] || echo "$start_choice" | grep -qi '^y'; then
   echo ""
-  printf "  ${MAGENTA}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+  echo "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   success "Launching ${PKG} (press Ctrl+C to stop)..."
-  printf "  ${MAGENTA}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+  echo "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
   if [ "$DRY_RUN" = "1" ]; then
     dim "DRYRUN: would run ${PKG}"
