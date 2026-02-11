@@ -147,7 +147,8 @@ public class AppiumServerManager {
         caps.setCapability(IOSMobileCapabilityType.USE_PREBUILT_WDA, false);
         caps.setCapability("useXctestrunFile", false);
         caps.setCapability("skipLogCapture", true);
-        caps.setCapability("mjpegServerPort", IOSUtils.getMjpegServerPortByUdid(udid, logger, deviceInfo));
+        // Note: mjpegServerPort removed - Appium XCUITest driver handles MJPEG streaming internally
+        // Setting it explicitly was causing port conflicts with iproxy
 
         int tryTimes = 3;
         boolean sessionCreated = false;
