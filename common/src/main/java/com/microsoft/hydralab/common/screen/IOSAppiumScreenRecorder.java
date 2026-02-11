@@ -19,6 +19,7 @@ abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
     protected String recordDir;
 
     protected boolean isStarted = false;
+    protected boolean isDriverInitialized = false;
 
 
     public IOSAppiumScreenRecorder(DeviceDriver deviceDriver, DeviceInfo info, String recordDir) {
@@ -26,7 +27,19 @@ abstract public class IOSAppiumScreenRecorder implements ScreenRecorder {
         this.deviceInfo = info;
         this.recordDir = recordDir;
 
-        this.iosDriver = deviceDriver.getAppiumServerManager().getIOSDriver(deviceInfo, CLASS_LOGGER);
+        CLASS_LOGGER.info("🎬 Initializing iOS screen recorder for device: {} ({})", info.getName(), info.getSerialNum());
+        try {
+            this.iosDriver = deviceDriver.getAppiumServerManager().getIOSDriver(deviceInfo, CLASS_LOGGER);
+            if (this.iosDriver != null) {
+                CLASS_LOGGER.info("✅ IOSDriver initialized successfully for device: {}", info.getSerialNum());
+                isDriverInitialized = true;
+            } else {
+                CLASS_LOGGER.error("❌ Failed to initialize IOSDriver - driver is null. Ensure WDA is installed on device.");
+            }
+        } catch (Exception e) {
+            CLASS_LOGGER.error("❌ Failed to initialize IOSDriver: {}. Video recording will be disabled.", e.getMessage());
+            CLASS_LOGGER.error("💡 To fix: Ensure WDA (WebDriverAgent) is installed on the device and Appium server is running.");
+        }
     }
 
     @Override

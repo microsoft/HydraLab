@@ -84,8 +84,12 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
     }
 
     @Override
-    public void screenCapture(@NotNull DeviceInfo deviceInfo, @NotNull String path, @Nullable Logger logger) {
-        IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), path, classLogger);
+    public void screenCapture(@NotNull DeviceInfo deviceInfo, @NotNull String path, @Nullable Logger logger) throws Exception {
+        boolean success = IOSUtils.takeScreenshot(deviceInfo.getSerialNum(), path, classLogger);
+        if (!success) {
+            throw new Exception("❌ iOS screenshot capture failed for device: " + deviceInfo.getSerialNum() + 
+                    ". Ensure tunneld is running (for iOS 17+ device only): sudo python3 -m pymobiledevice3 remote tunneld");
+        }
     }
 
     @Override

@@ -69,13 +69,36 @@ public class XCTestRunner extends TestRunner {
     }
 
     @Override
-    protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger logger) {
+    protected void reInstallApp(TestRunDevice testRunDevice, TestTask testTask, Logger logger) throws Exception {
         checkTestTaskCancel(testTask);
         if (testTask.getNeedUninstall()) {
+            logger.info("📦 Uninstalling app: {}", testTask.getPkgName());
             testRunDeviceOrchestrator.uninstallApp(testRunDevice, testTask.getPkgName(), logger);
             ThreadUtils.safeSleep(3000);
         } else if (testTask.getNeedClearData()) {
+            logger.info("🧹 Clearing app data: {}", testTask.getPkgName());
             testRunDeviceOrchestrator.resetPackage(testRunDevice, testTask.getPkgName(), logger);
+        }
+
+        // Install the app (IPA) if not skipped
+        if (!testTask.getSkipInstall() && testTask.getAppFile() != null && testTask.getAppFile().exists()) {
+            logger.info("📲 Installing app from: {}", testTask.getAppFile().getAbsolutePath());
+            try {
+                boolean installed = testRunDeviceOrchestrator.installApp(testRunDevice, testTask.getAppFile().getAbsolutePath(), logger);
+                if (installed) {
+                    logger.info("✅ App installed successfully");
+                } else {
+                    logger.error("❌ App installation returned false");
+                    throw new Exception("Failed to install app: " + testTask.getAppFile().getAbsolutePath());
+                }
+            } catch (Exception e) {
+                logger.error("❌ App installation failed: {}", e.getMessage());
+                throw e;
+            }
+        } else {
+            logger.info("⏭️ Skipping app installation (skipInstall={}, appFile={})",
+                    testTask.getSkipInstall(),
+                    testTask.getAppFile() != null ? testTask.getAppFile().getAbsolutePath() : "null");
         }
     }
 
