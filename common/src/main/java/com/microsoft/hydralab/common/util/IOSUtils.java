@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class IOSUtils {
-    public static final String WDA_BUNDLE_ID = "com.microsoft.wdar.xctrunner";
+    public static final String WDA_BUNDLE_ID = "com.microsoft.wdar.xctrunner.xctrunner";
     private static final Map<String, Integer> wdaPortMap = new ConcurrentHashMap<>();
     private static final Map<String, Integer> mjpegServerPortMap = new ConcurrentHashMap<>();
     private static final Set<Integer> PORT_BLACK_LIST = new HashSet<>() {{
@@ -143,18 +143,94 @@ public class IOSUtils {
         return wdaPortMap.get(serialNum);
     }
 
-    public static int getMjpegServerPortByUdid(String serialNum, Logger classLogger, DeviceInfo deviceInfo) {
-        if (!mjpegServerPortMap.containsKey(serialNum) || !isPortOccupied(mjpegServerPortMap.get(serialNum), classLogger)) {
-            // Randomly assign a port
-            int mjpegServerPor = generateRandomPort(classLogger);
-            classLogger.info("Generate a new mjpeg port = " + mjpegServerPor);
-            // Note: usbmux forward uses --serial, not --udid
-            Process process = ShellUtils.execLocalCommand("python3 -m pymobiledevice3 usbmux forward --serial " + serialNum + " " + mjpegServerPor + " 9100", false, classLogger);
-            deviceInfo.addCurrentProcess(process);
-            mjpegServerPortMap.put(serialNum, mjpegServerPor);
+    /**
+     * Gets or reserves an MJPEG server port for the device WITHOUT setting up forwarding.
+     * Use this when Appium will handle its own port forwarding (e.g., on Mac).
+     * For Windows where we need manual ffmpeg-based recording, use getMjpegServerPortByUdid instead.
+     */
+    public static int reserveMjpegServerPortByUdid(String serialNum, Logger classLogger) {
+        if (mjpegServerPortMap.containsKey(serialNum)) {
+            int cachedPort = mjpegServerPortMap.get(serialNum);
+            // For reserved ports (no forwarding), we just check if the port is still free
+            if (!isPortOccupied(cachedPort, classLogger)) {
+                classLogger.info("Reusing reserved mjpeg port = " + cachedPort);
+                return cachedPort;
+            } else {
+                // Port got occupied by something else, need a new one
+                classLogger.warn("Reserved mjpeg port " + cachedPort + " is now occupied, generating new");
+                mjpegServerPortMap.remove(serialNum);
+            }
         }
-        classLogger.info("get mjpeg port = " + mjpegServerPortMap.get(serialNum));
-        return mjpegServerPortMap.get(serialNum);
+        
+        // Generate a new port but DON'T set up forwarding - let Appium handle it
+        int mjpegServerPort = generateRandomPort(classLogger);
+        classLogger.info("Reserved new mjpeg port = " + mjpegServerPort + " (no forwarding - Appium will handle)");
+        mjpegServerPortMap.put(serialNum, mjpegServerPort);
+        return mjpegServerPort;
+    }
+
+    /**
+     * Gets an MJPEG server port and sets up pymobiledevice3 forwarding.
+     * Use this for Mac/Windows where we manually record with ffmpeg.
+     */
+    public static int getMjpegServerPortByUdid(String serialNum, Logger classLogger, DeviceInfo deviceInfo) {
+        // Check if we have a cached port and if it's still active
+        if (mjpegServerPortMap.containsKey(serialNum)) {
+            int cachedPort = mjpegServerPortMap.get(serialNum);
+            if (isPortOccupied(cachedPort, classLogger)) {
+                classLogger.info("Reusing existing mjpeg port = " + cachedPort);
+                return cachedPort;
+            } else {
+                // Port is no longer occupied, clean up and create new
+                classLogger.warn("Cached mjpeg port " + cachedPort + " is no longer active, cleaning up");
+                releaseMjpegServerPortByUdid(serialNum, classLogger);
+            }
+        }
+        
+        // Generate a new port and set up forwarding
+        int mjpegServerPort = generateRandomPort(classLogger);
+        classLogger.info("Generate a new mjpeg port = " + mjpegServerPort);
+        // Note: usbmux forward uses --serial, not --udid
+        Process process = ShellUtils.execLocalCommand("python3 -m pymobiledevice3 usbmux forward --serial " + serialNum + " " + mjpegServerPort + " 9100", false, classLogger);
+        deviceInfo.addCurrentProcess(process);
+        mjpegServerPortMap.put(serialNum, mjpegServerPort);
+        
+        // Wait for the port forwarding to become active (up to 10 seconds)
+        classLogger.info("Waiting for MJPEG port {} to become active...", mjpegServerPort);
+        boolean portReady = waitForPortToBeListening(mjpegServerPort, 10000, classLogger);
+        if (!portReady) {
+            classLogger.warn("MJPEG port {} may not be ready, but continuing anyway", mjpegServerPort);
+        } else {
+            classLogger.info("MJPEG port {} is now active", mjpegServerPort);
+        }
+        
+        return mjpegServerPort;
+    }
+    
+    /**
+     * Waits for a port to start listening.
+     * @param port The port to check
+     * @param timeoutMs Maximum time to wait in milliseconds
+     * @param logger Logger for debug output
+     * @return true if port is listening, false if timeout
+     */
+    private static boolean waitForPortToBeListening(int port, int timeoutMs, Logger logger) {
+        long startTime = System.currentTimeMillis();
+        int checkInterval = 500; // Check every 500ms
+        
+        while (System.currentTimeMillis() - startTime < timeoutMs) {
+            String result = ShellUtils.execLocalCommandWithResult("lsof -i :" + port + " -t", logger);
+            if (result != null && !result.trim().isEmpty()) {
+                return true;
+            }
+            try {
+                Thread.sleep(checkInterval);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return false;
     }
 
     public static void releaseMjpegServerPortByUdid(String serialNum, Logger classLogger) {
@@ -177,10 +253,19 @@ public class IOSUtils {
     }
 
     private static boolean isPortOccupied(int port, Logger classLogger) {
-        String result;
-        result = ShellUtils.execLocalCommandWithResult("netstat -ant", classLogger);
-        boolean b = result != null && result.contains(Integer.toString(port));
-        classLogger.info("isPortOccupied: " + port + "  " + b);
-        return b;
+        // Use lsof which is more reliable for checking port usage, including forwarded ports
+        String result = ShellUtils.execLocalCommandWithResult("lsof -i :" + port + " -t", classLogger);
+        boolean occupied = result != null && !result.trim().isEmpty();
+        
+        // Also check if pymobiledevice3 is forwarding this port (process-based check)
+        String forwardCheck = ShellUtils.execLocalCommandWithResult(
+            "ps aux | grep 'pymobiledevice3 usbmux forward' | grep ' " + port + " ' | grep -v grep", 
+            classLogger
+        );
+        boolean forwardActive = forwardCheck != null && !forwardCheck.trim().isEmpty();
+        
+        boolean isOccupied = occupied || forwardActive;
+        classLogger.info("isPortOccupied: " + port + " (lsof: " + occupied + ", forward: " + forwardActive + ") = " + isOccupied);
+        return isOccupied;
     }
 }
