@@ -163,9 +163,10 @@ public class IOSUtils {
         // Note: usbmux forward uses --serial, not --udid
         String portRelayCommand = "python3 -m pymobiledevice3 usbmux forward --serial " + udid + " " + wdaPort + " 8100";
         ShellUtils.killProcessByCommandStr(portRelayCommand, logger);
-        // Kill WDA process — covers both iOS < 17 (dvt launch) and iOS 17+ (xcodebuild)
-        ShellUtils.killProcessByCommandStr("xcodebuild test-without-building", logger);
-        ShellUtils.killProcessByCommandStr("pymobiledevice3 developer dvt launch.*" + WDA_BUNDLE_ID, logger);
+        // Kill WDA xcodebuild scoped to this device's UDID (iOS 17+)
+        ShellUtils.killProcessByCommandStr("xcodebuild.*WebDriverAgentRunner.*" + udid, logger);
+        // Kill WDA dvt launch scoped to this device (iOS < 17)
+        ShellUtils.killProcessByCommandStr("pymobiledevice3 developer dvt launch.*" + udid + ".*" + WDA_BUNDLE_ID, logger);
     }
 
     @Nullable
