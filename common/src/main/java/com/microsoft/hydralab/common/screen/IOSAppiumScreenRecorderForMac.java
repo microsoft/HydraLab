@@ -36,10 +36,22 @@ public class IOSAppiumScreenRecorderForMac extends IOSAppiumScreenRecorder {
             CLASS_LOGGER.info("Starting ffmpeg recording from MJPEG port {} to {}", mjpegPort, destPath);
             
             // Use ffmpeg to record from MJPEG stream with reconnect options for stability
-            String ffmpegCommand = String.format(
-                "ffmpeg -f mjpeg -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max %d -i http://127.0.0.1:%d -vf scale=720:360 -vcodec h264 -y \"%s\"",
-                timeout + 1, mjpegPort, destPath
-            );
+            String ffmpegCommand;
+            if (IOSUtils.isIOS17OrAbove(deviceInfo.getOsVersion())) {
+                // iOS 17+: fix aspect ratio (scale=720:-2 auto-calculates height), set square
+                // pixels (setsar=1), use standard yuv420p color space for QuickTime compatibility
+                ffmpegCommand = String.format(
+                    "ffmpeg -f mjpeg -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max %d -i http://127.0.0.1:%d -vf \"scale=720:-2,setsar=1\" -pix_fmt yuv420p -vcodec libx264 -y \"%s\"",
+                    timeout + 1, mjpegPort, destPath
+                );
+                CLASS_LOGGER.info("iOS 17+: using QuickTime-compatible ffmpeg settings");
+            } else {
+                // iOS < 17: existing verified command
+                ffmpegCommand = String.format(
+                    "ffmpeg -f mjpeg -reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max %d -i http://127.0.0.1:%d -vf scale=720:360 -vcodec h264 -y \"%s\"",
+                    timeout + 1, mjpegPort, destPath
+                );
+            }
             recordProcess = ShellUtils.execLocalCommand(ffmpegCommand, false, CLASS_LOGGER);
             deviceInfo.addCurrentProcess(recordProcess);
             

@@ -28,6 +28,42 @@ public class IOSUtils {
         add(9100);  //For ffmpeg
         add(10086); //For appium
     }};
+    private static final int IOS_17_MAJOR_VERSION = 17;
+    private static String wdaProjectPath = null;
+
+    /**
+     * Checks if the given iOS version is 17 or above.
+     */
+    public static boolean isIOS17OrAbove(@Nullable String osVersion) {
+        if (osVersion == null || osVersion.isEmpty()) {
+            return false;
+        }
+        try {
+            return Integer.parseInt(osVersion.split("\\.")[0]) >= IOS_17_MAJOR_VERSION;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Finds the WebDriverAgent.xcodeproj path from the Appium installation.
+     * Caches the result for subsequent calls.
+     */
+    @Nullable
+    private static String getWdaProjectPath(Logger logger) {
+        if (wdaProjectPath != null) {
+            return wdaProjectPath;
+        }
+        String result = ShellUtils.execLocalCommandWithResult(
+                "find ~/.appium -name 'WebDriverAgent.xcodeproj' -type d 2>/dev/null | head -1", logger);
+        if (result != null && !result.trim().isEmpty()) {
+            wdaProjectPath = result.trim();
+            logger.info("Found WDA project: {}", wdaProjectPath);
+        } else {
+            logger.error("WebDriverAgent.xcodeproj not found in ~/.appium. Install with: appium driver install xcuitest");
+        }
+        return wdaProjectPath;
+    }
 
     public static void collectCrashInfo(String folder, DeviceInfo deviceInfo, Logger logger) {
         ShellUtils.execLocalCommand("python3 -m pymobiledevice3 crash pull --udid " + deviceInfo.getSerialNum() + " " + folder, logger);
@@ -85,15 +121,36 @@ public class IOSUtils {
 
     public static void proxyWDA(DeviceInfo deviceInfo, Logger logger) {
         String udid = deviceInfo.getSerialNum();
+        String osVersion = deviceInfo.getOsVersion();
         int wdaPort = getWdaPortByUdid(udid, logger);
         if (isWdaRunningByPort(wdaPort, logger)) {
             return;
         }
         // Note: usbmux forward uses --serial, not --udid
         String portRelayCommand = "python3 -m pymobiledevice3 usbmux forward --serial " + udid + " " + wdaPort + " 8100";
-        String startWDACommand = "python3 -m pymobiledevice3 developer dvt launch --udid " + udid + " " + WDA_BUNDLE_ID;
-
         deviceInfo.addCurrentProcess(ShellUtils.execLocalCommand(portRelayCommand, false, logger));
+
+        String startWDACommand;
+        if (isIOS17OrAbove(osVersion)) {
+            // iOS 17+: 'dvt launch' crashes WDA because it doesn't create an XCUITest session.
+            // Use xcodebuild test-without-building which properly keeps WDA's HTTP server alive.
+            String wdaProject = getWdaProjectPath(logger);
+            if (wdaProject != null) {
+                startWDACommand = "xcodebuild test-without-building"
+                        + " -project " + wdaProject
+                        + " -scheme WebDriverAgentRunner"
+                        + " -destination id=" + udid;
+                logger.info("iOS 17+ ({}): starting WDA via xcodebuild for device {}", osVersion, udid);
+            } else {
+                logger.error("iOS 17+ requires WDA project for xcodebuild. Install with: appium driver install xcuitest");
+                return;
+            }
+        } else {
+            // iOS < 17: dvt launch works fine
+            startWDACommand = "python3 -m pymobiledevice3 developer dvt launch --udid " + udid + " " + WDA_BUNDLE_ID;
+            logger.info("iOS < 17 ({}): starting WDA via dvt launch for device {}", osVersion, udid);
+        }
+
         deviceInfo.addCurrentProcess(ShellUtils.execLocalCommand(startWDACommand, false, logger));
         if (!isWdaRunningByPort(wdaPort, logger)) {
             logger.error("Agent may not proxy WDA correctly. Port {} is not accessible", wdaPort);
@@ -104,12 +161,11 @@ public class IOSUtils {
         String udid = deviceInfo.getSerialNum();
         int wdaPort = getWdaPortByUdid(udid, logger);
         // Note: usbmux forward uses --serial, not --udid
-        // We can still try to kill the process even the proxy is not running.
         String portRelayCommand = "python3 -m pymobiledevice3 usbmux forward --serial " + udid + " " + wdaPort + " 8100";
-        String startWDACommand = "python3 -m pymobiledevice3 developer dvt launch --udid " + udid + " " + WDA_BUNDLE_ID;
-
         ShellUtils.killProcessByCommandStr(portRelayCommand, logger);
-        ShellUtils.killProcessByCommandStr(startWDACommand, logger);
+        // Kill WDA process — covers both iOS < 17 (dvt launch) and iOS 17+ (xcodebuild)
+        ShellUtils.killProcessByCommandStr("xcodebuild test-without-building", logger);
+        ShellUtils.killProcessByCommandStr("pymobiledevice3 developer dvt launch.*" + WDA_BUNDLE_ID, logger);
     }
 
     @Nullable
