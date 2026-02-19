@@ -116,6 +116,69 @@ This meant newly connected iOS devices were invisible to the agent until it was 
 
 ---
 
+## Phase 7 — iOS `pullFileFromDevice` Implementation (`uncommitted`)
+
+**Branch:** `pymobiledevice3-ios17-support-005-tti-threshold-fix`
+
+### What changed
+- **`IOSDeviceDriver.java` — `pullFileFromDevice()`**: Replaced the no-op stub (`"Nothing Implemented for iOS"`) with a full implementation that:
+  - Parses the `pathOnDevice` argument in two formats:
+    - **`bundleId:/path`** (recommended) — explicit bundle ID and container path, e.g. `com.6alabat.cuisineApp:/Documents/`
+    - **`/path`** (fallback) — uses the running task's `pkgName` as the bundle ID
+  - Retrieves the current `TestRun` from `TestRunThreadContext` to determine the result folder
+  - **Creates a named subfolder** matching the last component of the remote path (e.g. `/Documents/` → `Documents/`, `/Library/Caches/` → `Caches/`) so pulled files are organized separately from logs, crash reports, and video recordings. Falls back to `pulled_files/` if the remote path is just `/`.
+  - Delegates the actual file transfer to `IOSUtils.pullFileFromApp()`
+- **`IOSUtils.java` — `pullFileFromApp()`**: New static helper method that:
+  - Creates the local target directory if it doesn't exist (`mkdirs()`)
+  - Executes `python3 -m pymobiledevice3 apps pull --udid <UDID> <bundleId> <remotePath> <localPath>`
+  - This is the iOS equivalent of Android's `adb pull` — it uses the AFC (Apple File Conduit) protocol to access the app's sandboxed container
+
+### Path Resolution Logic
+```
+Remote Path          → Subfolder Name   → Local Path
+/Documents/          → Documents         → <resultFolder>/Documents/
+/Library/Caches/     → Caches            → <resultFolder>/Caches/
+/tmp/logs/           → logs              → <resultFolder>/logs/
+/                    → pulled_files      → <resultFolder>/pulled_files/
+```
+
+### Why
+HydraLab's Android implementation uses `adb pull <path> <resultFolder>`, where `adb pull` preserves the directory name automatically. The iOS equivalent (`pymobiledevice3 apps pull`) dumps files flat into the target directory. Without the subfolder logic, pulled files (e.g. `tti_performance.json`, `fwfv2_db_*`) would mix with test artifacts like crash reports (`Crash/`), videos (`merged_test.mp4`), and log files in the result folder root — making it difficult to distinguish test output from HydraLab-generated artifacts.
+
+The subfolder enhancement ensures parity with Android's behavior: pulled files are cleanly separated in a named subdirectory.
+
+### How to use
+Add a `pullFileFromDevice` tearDown action to your test task:
+```json
+{
+  "deviceActions": {
+    "tearDown": [
+      {
+        "deviceType": "IOS",
+        "method": "pullFileFromDevice",
+        "args": ["com.6alabat.cuisineApp:/Documents/"]
+      }
+    ]
+  }
+}
+```
+
+Result folder structure after test execution:
+```
+storage/test/result/YYYY/MM/DD/<timestamp>/<udid>/
+├── Documents/              ← pulled files land here
+│   ├── tti_performance.json
+│   ├── fwfv2_db_cache.json
+│   └── ...
+├── Crash/                  ← crash reports (separate)
+├── LegacyCrash/            ← legacy crash reports (separate)
+├── merged_test.mp4         ← video recording
+├── xctest_output.log       ← test logs
+└── ...
+```
+
+---
+
 ## Summary of All Files Modified
 
 | File                                                                    | Phases  |
@@ -130,8 +193,10 @@ This meant newly connected iOS devices were invisible to the agent until it was 
 | `agent/.../runner/xctest/XCTestCommandReceiver.java`                    | 5       |
 | `agent/.../scheduled/ScheduledDeviceControlTasks.java`                  | 6       |
 | `agent/.../service/DeviceControlService.java`                           | 6       |
+| `common/.../management/device/impl/IOSDeviceDriver.java`               | 1, 7    |
+| `common/.../util/IOSUtils.java`                                        | 1, 2, 4, 7 |
 | `scripts/install_wda.sh`                                                | 4       |
 | `scripts/install_wda_below_ios_17.sh`                                   | 4       |
 | `scripts/cleanup_ios_ports.sh`                                          | 4       |
-| `docs/iOS-Testing-Guide.md`                                             | 4       |
+| `docs/iOS-Testing-Guide.md`                                             | 4, 7    |
 | `TIDEVICE_TO_PYMOBILEDEVICE3_MIGRATION.md`                             | 1       |

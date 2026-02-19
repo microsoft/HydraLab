@@ -21,6 +21,8 @@ import com.microsoft.hydralab.common.network.NetworkMonitor;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForMac;
 import com.microsoft.hydralab.common.screen.IOSAppiumScreenRecorderForWindows;
 import com.microsoft.hydralab.common.screen.ScreenRecorder;
+import com.microsoft.hydralab.agent.runner.ITestRun;
+import com.microsoft.hydralab.agent.runner.TestRunThreadContext;
 import com.microsoft.hydralab.common.util.AgentConstant;
 import com.microsoft.hydralab.common.util.HydraLabRuntimeException;
 import com.microsoft.hydralab.common.util.IOSUtils;
@@ -31,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import java.io.File;
 import java.time.Duration;
@@ -151,10 +154,54 @@ public class IOSDeviceDriver extends AbstractDeviceDriver {
         classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
     }
 
+    /**
+     * Pull files from an iOS app's sandboxed container into the test run's result folder.
+     * <p>
+     * The pathOnDevice format follows the Firebase Test Lab convention:
+     *   bundleId:/path/inside/container
+     * For example: com.6alabat.cuisineApp:/Documents/
+     * <p>
+     * If no colon separator is found, the pathOnDevice is treated as a plain path
+     * and the test task's pkgName is used as the bundle ID.
+     */
     @Override
     public void pullFileFromDevice(@NotNull DeviceInfo deviceInfo, @NotNull String pathOnDevice,
                                    @Nullable Logger logger) {
-        classLogger.info("Nothing Implemented for iOS in " + currentMethodName());
+        ITestRun testRun = TestRunThreadContext.getTestRun();
+        Assert.notNull(testRun, "There is no testRun instance in ThreadContext!");
+        Assert.notNull(testRun.getResultFolder(),
+                "The testRun instance in ThreadContext does not have resultFolder property!");
+
+        String bundleId;
+        String remotePath;
+        if (pathOnDevice.contains(":")) {
+            // Format: bundleId:/path/inside/container
+            String[] parts = pathOnDevice.split(":", 2);
+            bundleId = parts[0];
+            remotePath = parts[1];
+        } else {
+            // Plain path — use the running task's package name as bundle ID
+            bundleId = deviceInfo.getRunningTaskPackageName();
+            remotePath = pathOnDevice;
+            if (StringUtils.isEmpty(bundleId)) {
+                classLogger.error("Cannot determine bundle ID for pullFileFromDevice. "
+                        + "Use format 'bundleId:/path' or ensure a task is running.");
+                return;
+            }
+        }
+
+        // Create a subfolder matching the remote path name (e.g. /Documents/ -> Documents/)
+        // so pulled files don't mix with logs, crash reports, etc.
+        String folderName = remotePath.replaceAll("^/+|/+$", "");
+        if (folderName.contains("/")) {
+            folderName = folderName.substring(folderName.lastIndexOf('/') + 1);
+        }
+        if (folderName.isEmpty()) {
+            folderName = "pulled_files";
+        }
+        String localPath = new File(testRun.getResultFolder(), folderName).getAbsolutePath() + "/";
+        classLogger.info("Pulling files from iOS app {} path {} to {}", bundleId, remotePath, localPath);
+        IOSUtils.pullFileFromApp(deviceInfo.getSerialNum(), bundleId, remotePath, localPath, logger != null ? logger : classLogger);
     }
 
     @Override

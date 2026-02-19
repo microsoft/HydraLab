@@ -203,12 +203,45 @@ tail -f storage/logs/agent.log
 Test results are stored in:
 ```
 storage/test/result/YYYY/MM/DD/<timestamp>/<device-udid>/
-├── Xctest/
-│   ├── test_result.xml
-│   ├── screenshots/
-│   └── logs/
-└── attachments/
+├── Documents/              ← pulled files (from pullFileFromDevice)
+│   ├── tti_performance.json
+│   └── ...
+├── Crash/                  ← crash reports
+├── LegacyCrash/
+├── merged_test.mp4         ← video recording
+├── xctest_output.log       ← test logs
+└── ...
 ```
+
+### 5. Pull Files from App Container
+To pull files from the iOS app's sandboxed container after test execution, add a `pullFileFromDevice` tearDown action:
+```bash
+curl -s -X POST "http://localhost:9886/api/test/task/run" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fileSetId": "<FILE_SET_ID>",
+    "deviceIdentifier": "<DEVICE_UDID>",
+    "runningType": "XCTEST",
+    "pkgName": "com.your.app",
+    "testScope": "TEST_APP",
+    "testTimeOutSec": 1800,
+    "frameworkType": "XCTest",
+    "disableRecording": false,
+    "deviceActions": {
+      "tearDown": [
+        {
+          "deviceType": "IOS",
+          "method": "pullFileFromDevice",
+          "args": ["com.your.app:/Documents/"]
+        }
+      ]
+    }
+  }' | python3 -m json.tool
+```
+
+**Path format:** `bundleId:/path/inside/container` (e.g. `com.your.app:/Documents/`)
+
+Pulled files are placed in a subfolder matching the remote path name (e.g. `Documents/`) within the test result directory, keeping them separate from logs, crash reports, and recordings.
 
 ---
 
@@ -636,6 +669,11 @@ HydraLab/
 
 ## Version History
 
+### v1.2.0 (2026-02-19)
+- ✅ **iOS `pullFileFromDevice` implementation** — Pull files from an iOS app's sandboxed container after test execution using `pymobiledevice3 apps pull`. Supports `bundleId:/path` format (e.g. `com.6alabat.cuisineApp:/Documents/`)
+- ✅ **Subfolder organization** — Pulled files are placed in a named subfolder matching the remote path (e.g. `/Documents/` → `Documents/`) instead of being dumped flat into the result folder root. Ensures parity with Android's `adb pull` behavior
+- ✅ **New `IOSUtils.pullFileFromApp()` helper** — Wraps `pymobiledevice3 apps pull` with local directory creation and error handling
+
 ### v1.1.0 (2026-02-16)
 - ✅ **Fixed video recording for Mac** - Switched to ffmpeg-based recording with pymobiledevice3 port forwarding
 - ✅ **Fixed MJPEG port timing issue** - Added `waitForPortToBeListening()` to ensure port is ready before ffmpeg connects
@@ -677,5 +715,5 @@ ls -lrt storage/test/result/$(date +%Y/%m/%d)/   # Today's results
 
 ---
 
-**Last Updated:** 2026-02-16  
+**Last Updated:** 2026-02-19  
 **Maintained By:** HydraLab Team

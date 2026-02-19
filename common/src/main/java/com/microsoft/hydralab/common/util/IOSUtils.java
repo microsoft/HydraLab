@@ -178,6 +178,28 @@ public class IOSUtils {
         ShellUtils.execLocalCommand("python3 -m pymobiledevice3 developer dvt screenshot --udid " + udid + " \"" + screenshotFilePath + "\"", logger);
     }
 
+    /**
+     * Pull files from an iOS app's sandboxed container to a local directory.
+     * This is the iOS equivalent of 'adb pull' for Android.
+     *
+     * @param udid       device UDID
+     * @param bundleId   the app's bundle identifier (e.g. com.6alabat.cuisineApp)
+     * @param remotePath path inside the app container (e.g. /Documents/)
+     * @param localPath  local directory to save pulled files
+     * @param logger     logger instance
+     */
+    public static void pullFileFromApp(String udid, String bundleId, String remotePath, String localPath, Logger logger) {
+        File localDir = new File(localPath);
+        if (!localDir.exists() && !localDir.mkdirs()) {
+            logger.error("Failed to create local directory for pull: {}", localPath);
+            return;
+        }
+        String command = String.format(
+                "python3 -m pymobiledevice3 apps pull --udid %s %s %s \"%s\"",
+                udid, bundleId, remotePath, localPath);
+        ShellUtils.execLocalCommand(command, logger);
+    }
+
     public static boolean isWdaRunningByPort(int port, Logger logger) {
         try {
             URL status = new URL("http://127.0.0.1:" + port + "/status");
