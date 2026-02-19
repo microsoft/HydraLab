@@ -155,6 +155,15 @@ public class DeviceControlService {
         deviceDriverManager.init();
     }
 
+    /**
+     * Triggers device discovery for all device drivers (iOS, Android, etc.).
+     * Called periodically to detect newly connected or disconnected devices
+     * without an agent restart.
+     */
+    public void updateDeviceList() {
+        deviceDriverManager.updateAllDeviceInfo();
+    }
+
     public void rebootDevices(DeviceType deviceType) {
         Assert.notNull(deviceType, "deviceType cannot be null");
         agentManagementService.getActiveDeviceList(log).stream().filter(deviceInfo -> deviceType.name().equals(deviceInfo.getType()))

@@ -15,6 +15,7 @@ public class XCTestCommandReceiver extends Thread {
     private InputStream inputStream;
     private Logger logger;
     private final ArrayList<String> result = new ArrayList<>();
+    private volatile boolean testComplete = false;
 
     public XCTestCommandReceiver(InputStream inputStream, Logger logger) {
         this.inputStream = inputStream;
@@ -33,6 +34,17 @@ public class XCTestCommandReceiver extends Thread {
                     logger.info(line);
                     result.add(line);
                 }
+                // Detect xcodebuild test completion markers.
+                // Two levels of completion signals:
+                // 1. Early: "Test Suite 'All tests' {passed|failed} at ..." — appears immediately
+                //    when all tests finish, BEFORE the 600s diagnostics collection phase.
+                // 2. Late: "** TEST {SUCCEEDED|FAILED|EXECUTE FAILED} **" — appears only after
+                //    xcodebuild finishes diagnostics collection (~600s later).
+                // We detect the early marker to avoid a 10-minute wait.
+                if ((line.contains("** TEST") && (line.contains("SUCCEEDED **") || line.contains("FAILED **")))
+                        || (line.contains("Test Suite 'All tests'") && !line.contains("started"))) {
+                    testComplete = true;
+                }
             }
             isr.close();
             bufferedReader.close();
@@ -46,6 +58,13 @@ public class XCTestCommandReceiver extends Thread {
                 notify();
             }
         }
+    }
+
+    /**
+     * Returns true when xcodebuild output indicates test suite has finished.
+     */
+    public boolean isTestComplete() {
+        return testComplete;
     }
 
     public ArrayList<String> getResult() {
