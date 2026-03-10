@@ -21,13 +21,6 @@ $EnableLog = ($env:DEEPSTUDIO_LOG -eq "1")
 # Registry can be provided by env var (best for CI / automation)
 $RegistryFromEnv = $env:DEEPSTUDIO_REGISTRY
 
-# By default, do NOT inherit system/global proxy for install.
-# Set DEEPSTUDIO_USE_SYSTEM_PROXY=1 if the user explicitly wants to keep it.
-$UseSystemProxy = ($env:DEEPSTUDIO_USE_SYSTEM_PROXY -eq "1")
-
-# Optional strict ssl override. Default = true.
-$StrictSsl = if ($env:DEEPSTUDIO_STRICT_SSL -eq "0") { $false } else { $true }
-
 # Optional override for log path
 $LogPath = if ($env:DEEPSTUDIO_LOG_PATH) { $env:DEEPSTUDIO_LOG_PATH } else {
   Join-Path (Get-Location) ("deepstudio-install-" + (Get-Date -Format "yyyyMMdd-HHmmss") + ".log")
@@ -36,6 +29,9 @@ $LogPath = if ($env:DEEPSTUDIO_LOG_PATH) { $env:DEEPSTUDIO_LOG_PATH } else {
 # Default registry for DeepStudio (stored as base64)
 $DefaultRegistryB64 = "aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL19wYWNrYWdpbmcvRGVlcFN0dWRpby9ucG0vcmVnaXN0cnkv"
 $DefaultRegistry = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DefaultRegistryB64))
+
+# Will be set later after registry is resolved
+$script:ResolvedRegistry = $null
 
 # ---------------------------
 # Helpers
@@ -53,7 +49,7 @@ function Show-Banner {
     " | | | |/ _ \/ _ \ '_ \\___ \| __| | | |/ _`` | |/ _ \ "
     " | |_| |  __/  __/ |_) |___) | |_| |_| | (_| | | (_) |"
     " |____/ \___|\___| .__/|____/ \__|\__,_|\__,_|_|\___/ "
-    "                 |_|          I n s t a l l e r  v2.1  "
+    "                 |_|          I n s t a l l e r  v2.1    "
   )
   $colors = @("Red", "Yellow", "Green", "Cyan", "Blue", "Magenta")
   Write-Host ""
@@ -234,44 +230,22 @@ function Ensure-Registry([string]$reg) {
 }
 
 function New-TempNpmrc {
-  return Join-Path $env:TEMP ("deepstudio-npmrc-" + [Guid]::NewGuid().ToString("N") + ".npmrc")
+  $path = Join-Path $env:TEMP ("deepstudio-npmrc-" + [Guid]::NewGuid().ToString("N") + ".npmrc")
+  return $path
 }
 
-function To-Base64Ascii([string]$text) {
-  return [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($text))
-}
-
-function Write-IsolatedUserNpmrc([string]$path, [string]$registry, [string]$authPrefix, [string]$pat, [bool]$strictSsl) {
-  # Azure Artifacts npm auth is most reliable with username + base64 PAT + always-auth.
-  $patB64 = To-Base64Ascii $pat
+function Write-IsolatedNpmrc([string]$path, [string]$registry, [string]$authPrefix, [string]$pat) {
   $content = @"
 registry=$registry/
-always-auth=true
-strict-ssl=$($strictSsl.ToString().ToLowerInvariant())
-${authPrefix}:username=deepstudio
-${authPrefix}:_password=$patB64
-${authPrefix}:email=deepstudio@example.invalid
+${authPrefix}:_authToken=$pat
 "@
 
   if ($DryRun) {
-    Info "DRYRUN: write isolated USER npmrc to $path"
-    Info ("DRYRUN: npmrc content (password token masked):`nregistry=$registry/`nalways-auth=true`nstrict-ssl=$($strictSsl.ToString().ToLowerInvariant())`n${authPrefix}:username=deepstudio`n${authPrefix}:_password=$(Mask-Token $patB64)`n${authPrefix}:email=deepstudio@example.invalid")
+    Info "DRYRUN: write isolated npmrc to $path"
+    Info ("DRYRUN: npmrc content (token masked):`nregistry=$registry/`n${authPrefix}:_authToken=$(Mask-Token $pat)")
     return
   }
 
-  Set-Content -Path $path -Value $content -Encoding ASCII
-}
-
-function Write-IsolatedGlobalNpmrc([string]$path, [bool]$strictSsl) {
-  $content = @"
-strict-ssl=$($strictSsl.ToString().ToLowerInvariant())
-fund=false
-audit=false
-"@
-  if ($DryRun) {
-    Info "DRYRUN: write isolated GLOBAL npmrc to $path"
-    return
-  }
   Set-Content -Path $path -Value $content -Encoding ASCII
 }
 
@@ -287,33 +261,23 @@ function Get-NpmConfigValue([string]$key) {
 }
 
 function Show-ProxyDiagnostics {
-
   Write-Host ""
   Info "🔎 Checking proxy-related settings..."
 
-  # PowerShell hashtable key is case-insensitive
-  # so we must normalize keys here
-
+  # PowerShell hashtable keys are case-insensitive, so don't include both HTTP_PROXY and http_proxy as separate keys.
   $pairs = [ordered]@{
     "npm config proxy"       = (Get-NpmConfigValue "proxy")
     "npm config https-proxy" = (Get-NpmConfigValue "https-proxy")
-
-    "HTTP_PROXY" = if ($env:HTTP_PROXY) { $env:HTTP_PROXY } else { $env:http_proxy }
-
-    "HTTPS_PROXY" = if ($env:HTTPS_PROXY) { $env:HTTPS_PROXY } else { $env:https_proxy }
-
-    "ALL_PROXY" = if ($env:ALL_PROXY) { $env:ALL_PROXY } else { $env:all_proxy }
-
-    "NO_PROXY" = if ($env:NO_PROXY) { $env:NO_PROXY } else { $env:no_proxy }
+    "HTTP_PROXY"             = if ($env:HTTP_PROXY) { $env:HTTP_PROXY } else { $env:http_proxy }
+    "HTTPS_PROXY"            = if ($env:HTTPS_PROXY) { $env:HTTPS_PROXY } else { $env:https_proxy }
+    "ALL_PROXY"              = if ($env:ALL_PROXY) { $env:ALL_PROXY } else { $env:all_proxy }
+    "NO_PROXY"               = if ($env:NO_PROXY) { $env:NO_PROXY } else { $env:no_proxy }
   }
 
   $hasProxy = $false
-
   foreach ($entry in $pairs.GetEnumerator()) {
-
     $k = $entry.Key
     $v = $entry.Value
-
     if (-not [string]::IsNullOrWhiteSpace($v) -and $v -ne "null") {
       $hasProxy = $true
       Dim ("  {0}: {1}" -f $k, $v)
@@ -322,94 +286,35 @@ function Show-ProxyDiagnostics {
 
   if (-not $hasProxy) {
     Success "No proxy settings detected."
-  }
-  elseif ($UseSystemProxy) {
-    Warn "System/global proxy settings detected and will be preserved because DEEPSTUDIO_USE_SYSTEM_PROXY=1."
-  }
-  else {
-    Warn "Proxy settings detected but installer will ignore them to avoid broken corporate proxy issues."
+  } else {
+    Warn "Proxy settings detected. If install fails with npm network/proxy errors, check npm proxy configuration."
   }
 }
 
-function Build-ProcessEnv([string]$userNpmrc, [string]$globalNpmrc) {
-  $map = @{}
-
-  # Hard isolate npm config sources for this child process.
-  $map["NPM_CONFIG_USERCONFIG"] = $userNpmrc
-  $map["npm_config_userconfig"] = $userNpmrc
-  $map["NPM_CONFIG_GLOBALCONFIG"] = $globalNpmrc
-  $map["npm_config_globalconfig"] = $globalNpmrc
-
-  $map["NPM_CONFIG_FUND"] = "false"
-  $map["NPM_CONFIG_AUDIT"] = "false"
-  $map["NPM_CONFIG_UPDATE_NOTIFIER"] = "false"
-
-  if ($VerboseInstall) {
-    $map["NPM_CONFIG_LOGLEVEL"] = "verbose"
-    $map["NPM_CONFIG_PROGRESS"] = "false"
-  }
-
-  if (-not $UseSystemProxy) {
-    # Force npm/node not to inherit broken proxy values from machine/user/session.
-    $proxyKeys = @(
-      "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY",
-      "http_proxy", "https_proxy", "all_proxy",
-      "NPM_CONFIG_PROXY", "NPM_CONFIG_HTTPS_PROXY",
-      "npm_config_proxy", "npm_config_https_proxy"
-    )
-    foreach ($k in $proxyKeys) { $map[$k] = "" }
-    # Explicitly override npm proxy resolution.
-    $map["NPM_CONFIG_PROXY"] = "null"
-    $map["NPM_CONFIG_HTTPS_PROXY"] = "null"
-    $map["npm_config_proxy"] = "null"
-    $map["npm_config_https_proxy"] = "null"
-  }
-
-  if (-not $StrictSsl) {
-    $map["NPM_CONFIG_STRICT_SSL"] = "false"
-    $map["npm_config_strict_ssl"] = "false"
-  }
-
-  return $map
-}
-
-function Run-ExternalCommand {
-  param(
-    [Parameter(Mandatory = $true)][string]$FileName,
-    [Parameter(Mandatory = $true)][string[]]$Arguments,
-    [hashtable]$EnvironmentOverrides,
-    [string]$LogContext = ""
-  )
-
-  $printable = $FileName + " " + (($Arguments | ForEach-Object {
-    if ($_ -match '\s') { '"' + $_ + '"' } else { $_ }
-  }) -join " ")
-
+function Run-NpmViaCmd([string]$cmdLine) {
   if ($DryRun) {
-    Info ("DRYRUN: " + $printable)
+    Info ("DRYRUN: " + $cmdLine)
     return
   }
 
-  if ($EnableLog) {
-    Info "Logging enabled. Log file: $LogPath"
-  }
-  if ($VerboseInstall) {
-    Dim ("Command: " + $printable)
+  if (-not $EnableLog) {
+    & cmd.exe /d /s /c $cmdLine
+    if ($LASTEXITCODE -ne 0) {
+      throw "npm failed with exit code $LASTEXITCODE. (Tip: set DEEPSTUDIO_LOG=1 to capture full logs.)"
+    }
+    return
   }
 
+  Info "Logging enabled. Log file: $LogPath"
+  Info ("Command via cmd.exe: " + $cmdLine)
+
   $psi = New-Object System.Diagnostics.ProcessStartInfo
-  $psi.FileName = $FileName
-  foreach ($arg in $Arguments) { [void]$psi.ArgumentList.Add($arg) }
+  $psi.FileName = "cmd.exe"
+  $psi.Arguments = "/d /s /c " + $cmdLine
   $psi.RedirectStandardOutput = $true
   $psi.RedirectStandardError  = $true
   $psi.UseShellExecute = $false
   $psi.CreateNoWindow = $true
-
-  if ($EnvironmentOverrides) {
-    foreach ($k in $EnvironmentOverrides.Keys) {
-      $psi.Environment[$k] = [string]$EnvironmentOverrides[$k]
-    }
-  }
 
   $p = New-Object System.Diagnostics.Process
   $p.StartInfo = $psi
@@ -422,35 +327,33 @@ function Run-ExternalCommand {
   if ($stdout) { Write-Host $stdout }
   if ($stderr) { Write-Host $stderr }
 
-  if ($EnableLog) {
-    $content = @(
-      "=== DeepStudio install log ==="
-      "Time: $(Get-Date -Format o)"
-      "Package: $PackageName@latest"
-      "VerboseInstall: $VerboseInstall"
-      "DryRun: $DryRun"
-      "UseSystemProxy: $UseSystemProxy"
-      "StrictSsl: $StrictSsl"
-      if ($LogContext) { "Context: $LogContext" }
-      "Command: $printable"
-      ""
-      "---- STDOUT ----"
-      $stdout
-      ""
-      "---- STDERR ----"
-      $stderr
-      ""
-      "ExitCode: $($p.ExitCode)"
-      ""
-    ) -join "`r`n"
-    Add-Content -Path $LogPath -Value $content -Encoding UTF8
-  }
+  $content = @(
+    "=== DeepStudio install log ==="
+    "Time: $(Get-Date -Format o)"
+    "Package: $PackageName@latest"
+    "VerboseInstall: $VerboseInstall"
+    "Registry: $($script:ResolvedRegistry)/"
+    "Command: $cmdLine"
+    ""
+    "---- STDOUT ----"
+    $stdout
+    ""
+    "---- STDERR ----"
+    $stderr
+    ""
+    "ExitCode: $($p.ExitCode)"
+  ) -join "`r`n"
+
+  Set-Content -Path $LogPath -Value $content -Encoding UTF8
 
   if ($p.ExitCode -ne 0) {
-    throw "Command failed with exit code $($p.ExitCode): $printable"
+    throw "npm failed with exit code $($p.ExitCode). See log: $LogPath"
   }
 }
 
+# ---------------------------
+# Azure CLI installation
+# ---------------------------
 function Install-AzureCli {
   if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     Warn "winget not found — cannot auto-install Azure CLI."
@@ -480,38 +383,67 @@ function Install-AzureCli {
   }
 }
 
-function Ensure-AzLogin {
+# ---------------------------
+# Azure CLI token acquisition
+# ---------------------------
+function Get-AzAccessToken {
   $azAvailable = [bool](Get-Command az -ErrorAction SilentlyContinue)
 
   if (-not $azAvailable) {
     Write-Host ""
     Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
     Write-Host "  │  🔧 Azure CLI (az) is not installed                 │" -ForegroundColor Yellow
-    Write-Host "  │  Optional: useful for login validation only.        │" -ForegroundColor Yellow
+    Write-Host "  │  It is recommended for automatic token auth.        │" -ForegroundColor Yellow
     Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "  📥 " -NoNewline -ForegroundColor Cyan
     $installChoice = Read-Host "Install Azure CLI now via winget? [Y/n]"
     if ([string]::IsNullOrWhiteSpace($installChoice) -or $installChoice -match '^[Yy]') {
-      [void](Install-AzureCli)
+      $installed = Install-AzureCli
+      if ($installed) {
+        $azAvailable = $true
+      } else {
+        Dim "Continuing without Azure CLI."
+      }
     } else {
       Dim "Skipping Azure CLI installation."
-      return
     }
   }
 
-  if (Get-Command az -ErrorAction SilentlyContinue) {
-    try {
-      $account = & az account show --query "user.name" -o tsv 2>$null
-      if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($account)) {
-        Info "🔐 Please log in to Azure..."
-        & az login
-      } else {
-        Success "Azure CLI session detected: $account"
+  if (-not $azAvailable) {
+    Dim "Will fall back to manual PAT entry."
+    return $null
+  }
+
+  Info "🔍 Azure CLI found. Checking login session..."
+
+  try {
+    $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
+      if ($VerboseInstall -and $tokenJson) { Dim "az output: $tokenJson" }
+      Warn "No valid az login session found."
+      Write-Host ""
+      Info "🔐 Please log in to Azure to continue..."
+      Write-Host ""
+      & az login
+      if ($LASTEXITCODE -ne 0) {
+        Warn "az login failed — will fall back to manual PAT entry."
+        return $null
       }
-    } catch {
-      Warn "Azure CLI login check failed: $($_.Exception.Message)"
+      $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
+      if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
+        Warn "Still unable to get token after login — will fall back to manual PAT entry."
+        return $null
+      }
     }
+    $token = $tokenJson.Trim()
+    Success "Obtained temporary access token from Azure CLI."
+    return $token
+  }
+  catch {
+    Warn "Failed to get token from Azure CLI: $($_.Exception.Message)"
+    Dim "Will fall back to manual PAT entry."
+    return $null
   }
 }
 
@@ -519,6 +451,7 @@ function Ensure-AzLogin {
 # Start
 # ---------------------------
 Require-Node
+
 Show-Banner
 
 Write-Host "  ┌─────────────────────────────────────────┐" -ForegroundColor DarkCyan
@@ -533,12 +466,6 @@ Write-Host $(if ($DryRun) { "ON " } else { "OFF" }) -NoNewline -ForegroundColor 
 Write-Host "                       │" -ForegroundColor DarkCyan
 Write-Host "  │  📝 LogFile:  " -NoNewline -ForegroundColor DarkCyan
 Write-Host $(if ($EnableLog) { "ON " } else { "OFF" }) -NoNewline -ForegroundColor $(if ($EnableLog) { "Green" } else { "DarkGray" })
-Write-Host "                       │" -ForegroundColor DarkCyan
-Write-Host "  │  🌐 Proxy:    " -NoNewline -ForegroundColor DarkCyan
-Write-Host $(if ($UseSystemProxy) { "SYSTEM" } else { "IGNORED" }) -NoNewline -ForegroundColor $(if ($UseSystemProxy) { "Yellow" } else { "Green" })
-Write-Host "                    │" -ForegroundColor DarkCyan
-Write-Host "  │  🔒 StrictSSL: " -NoNewline -ForegroundColor DarkCyan
-Write-Host $(if ($StrictSsl) { "ON " } else { "OFF" }) -NoNewline -ForegroundColor $(if ($StrictSsl) { "Green" } else { "Yellow" })
 Write-Host "                       │" -ForegroundColor DarkCyan
 Write-Host "  └─────────────────────────────────────────┘" -ForegroundColor DarkCyan
 Write-Host ""
@@ -555,6 +482,7 @@ if ([string]::IsNullOrWhiteSpace($registryInput)) {
   Dim "Using org: $adoOrg"
 }
 $registry = Ensure-Registry $registryInput
+$script:ResolvedRegistry = $registry
 
 Dim "Registry: $(Mask-Url $registry)"
 Write-Host ""
@@ -563,65 +491,58 @@ Write-Host ""
 $uri = [Uri]$registry
 $authPrefix = "//" + $uri.Host + $uri.AbsolutePath.TrimEnd("/") + "/"
 
-# Azure CLI is optional and now only used for login validation/help, not npm auth
-Ensure-AzLogin
+# Try Azure CLI token first, fall back to manual PAT
+$pat = Get-AzAccessToken
 
-Write-Host ""
-Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
-Write-Host "  │  🔑 Azure DevOps PAT required                       │" -ForegroundColor Yellow
-Write-Host "  │  Create one at:                                     │" -ForegroundColor Yellow
-Write-Host "  │  https://dev.azure.com/ > User Settings > PATs      │" -ForegroundColor Yellow
-Write-Host "  │  Scope: Packaging > Read                            │" -ForegroundColor Yellow
-Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
-Write-Host ""
+if ([string]::IsNullOrWhiteSpace($pat)) {
+  Write-Host ""
+  Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
+  Write-Host "  │  🔑 Manual PAT required                            │" -ForegroundColor Yellow
+  Write-Host "  │  Create one at:                                     │" -ForegroundColor Yellow
+  Write-Host "  │  https://dev.azure.com/ > User Settings > PATs      │" -ForegroundColor Yellow
+  Write-Host "  │  Scope: Packaging > Read                            │" -ForegroundColor Yellow
+  Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
+  Write-Host ""
 
-$patRaw = Read-Secure "  🔑 Enter Azure DevOps PAT (Packaging:Read)"
-if ([string]::IsNullOrWhiteSpace($patRaw)) { throw "PAT is empty." }
-$pat = $patRaw.Trim()
-$patRaw = $null
+  $patRaw = Read-Secure "  🔑 Enter Azure DevOps PAT (Packaging:Read)"
+  if ([string]::IsNullOrWhiteSpace($patRaw)) { throw "PAT is empty." }
+
+  $pat = $patRaw.Trim()
+  $patRaw = $null
+} else {
+  Success "Using temporary token from Azure CLI (no PAT creation needed)."
+}
 
 Write-Host ""
 Dim ("Token (masked): " + (Mask-Token $pat))
 Write-Host ""
 
 $logLevel = if ($VerboseInstall) { "verbose" } else { "notice" }
+$tmpNpmrc = New-TempNpmrc
 
-$tmpUserNpmrc = New-TempNpmrc
-$tmpGlobalNpmrc = New-TempNpmrc
+if ($VerboseInstall) {
+  $env:NPM_CONFIG_LOGLEVEL = "verbose"
+  $env:NPM_CONFIG_PROGRESS = "false"
+}
 
 try {
   Info "📄 Preparing isolated npm config..."
-  Write-IsolatedUserNpmrc -path $tmpUserNpmrc -registry $registry -authPrefix $authPrefix -pat $pat -strictSsl $StrictSsl
-  Write-IsolatedGlobalNpmrc -path $tmpGlobalNpmrc -strictSsl $StrictSsl
+  Write-IsolatedNpmrc -path $tmpNpmrc -registry $registry -authPrefix $authPrefix -pat $pat
 
-  $childEnv = Build-ProcessEnv -userNpmrc $tmpUserNpmrc -globalNpmrc $tmpGlobalNpmrc
+  $installCmd = 'npm install -g "{0}@latest" --registry "{1}/" --loglevel {2} --userconfig "{3}"' -f $PackageName, $registry, $logLevel, $tmpNpmrc
 
+  if ($VerboseInstall) {
+    Dim ("Command: " + $installCmd)
+  }
   Write-Host ""
   Info "📦 Installing $PackageName@latest ..."
   Write-Host ""
 
-  Run-ExternalCommand `
-    -FileName "npm.cmd" `
-    -Arguments @(
-      "install", "-g", "$PackageName@latest",
-      "--registry", "$registry/",
-      "--loglevel", $logLevel,
-      "--userconfig", $tmpUserNpmrc,
-      "--globalconfig", $tmpGlobalNpmrc
-    ) `
-    -EnvironmentOverrides $childEnv `
-    -LogContext "npm install"
+  Run-NpmViaCmd $installCmd
 
   if (-not $DryRun) {
-    Run-ExternalCommand `
-      -FileName "npm.cmd" `
-      -Arguments @(
-        "list", "-g", "--depth=0", $PackageName,
-        "--userconfig", $tmpUserNpmrc,
-        "--globalconfig", $tmpGlobalNpmrc
-      ) `
-      -EnvironmentOverrides $childEnv `
-      -LogContext "npm verify"
+    $verifyCmd = 'npm list -g --depth=0 "{0}" --userconfig "{1}"' -f $PackageName, $tmpNpmrc
+    Run-NpmViaCmd $verifyCmd
   }
 
   Write-Host ""
@@ -656,13 +577,13 @@ catch {
   Fail ("Error: " + $_.Exception.Message)
 
   Write-Host ""
-  Warn "Likely causes:"
-  Dim "  • Broken npm/global/system proxy settings"
+  Warn "Common causes for 401/403:"
+  Dim "  • Azure CLI token expired (try: az login)"
   Dim "  • PAT missing Packaging:Read scope"
   Dim "  • PAT pasted with extra whitespace"
-  Dim "  • Wrong registry URL / org name"
+  Dim "  • Wrong registry URL"
   Dim "  • No permission to the Azure Artifacts feed"
-  Dim "  • Corporate SSL interception (try DEEPSTUDIO_STRICT_SSL=0 only if necessary)"
+  Dim "  • Corporate proxy/SSL interception issues"
 
   if ($VerboseInstall) {
     Write-Host ""
@@ -671,10 +592,8 @@ catch {
     Dim "------------------------"
   } else {
     Write-Host ""
-    Warn "Tip: re-run with verbose logging:"
+    Warn "Tip: re-run with verbose:"
     Dim "  `$env:DEEPSTUDIO_VERBOSE='1'; `$env:DEEPSTUDIO_LOG='1'; irm <url> | iex"
-    Dim "  Optional: keep corporate proxy if needed:"
-    Dim "  `$env:DEEPSTUDIO_USE_SYSTEM_PROXY='1'; irm <url> | iex"
   }
 
   if ($EnableLog -and -not $DryRun) {
@@ -686,8 +605,11 @@ catch {
 }
 finally {
   if (-not $DryRun) {
-    Remove-Item $tmpUserNpmrc -Force -ErrorAction SilentlyContinue
-    Remove-Item $tmpGlobalNpmrc -Force -ErrorAction SilentlyContinue
+    Remove-Item $tmpNpmrc -Force -ErrorAction SilentlyContinue
+  }
+  if ($VerboseInstall) {
+    Remove-Item Env:\NPM_CONFIG_LOGLEVEL -ErrorAction SilentlyContinue
+    Remove-Item Env:\NPM_CONFIG_PROGRESS -ErrorAction SilentlyContinue
   }
   Write-Host ""
   Success "Cleanup complete."
