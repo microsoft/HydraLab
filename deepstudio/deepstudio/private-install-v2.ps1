@@ -26,9 +26,19 @@ $LogPath = if ($env:DEEPSTUDIO_LOG_PATH) { $env:DEEPSTUDIO_LOG_PATH } else {
   Join-Path (Get-Location) ("deepstudio-install-" + (Get-Date -Format "yyyyMMdd-HHmmss") + ".log")
 }
 
+# Installer version
+$InstallerVersion = "2.5"
+
 # Default registry for DeepStudio (stored as base64)
 $DefaultRegistryB64 = "aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL19wYWNrYWdpbmcvRGVlcFN0dWRpby9ucG0vcmVnaXN0cnkv"
 $DefaultRegistry = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DefaultRegistryB64))
+
+# Will be set later after registry is resolved
+$script:ResolvedRegistry = $null
+
+# Rolling in-memory log buffer (last N lines) — dumped on error
+$script:LogBuffer = [System.Collections.Generic.Queue[string]]::new()
+$script:LogBufferMax = 100
 
 # ---------------------------
 # Helpers
@@ -39,6 +49,24 @@ function Fail([string]$msg) { Write-Host "  ✖  $msg" -ForegroundColor Red }
 function Success([string]$msg) { Write-Host "  ✔  $msg" -ForegroundColor Green }
 function Dim([string]$msg) { Write-Host "  $msg" -ForegroundColor DarkGray }
 
+function Add-ToLogBuffer([string]$line) {
+  $script:LogBuffer.Enqueue($line)
+  while ($script:LogBuffer.Count -gt $script:LogBufferMax) {
+    [void]$script:LogBuffer.Dequeue()
+  }
+}
+
+function Dump-LogBuffer {
+  if ($script:LogBuffer.Count -eq 0) { return }
+  Write-Host ""
+  Warn "Recent output (last $($script:LogBuffer.Count) lines):"
+  Write-Host "  ────────────────────────────────────────────────" -ForegroundColor DarkGray
+  foreach ($line in $script:LogBuffer) {
+    Dim $line
+  }
+  Write-Host "  ────────────────────────────────────────────────" -ForegroundColor DarkGray
+}
+
 function Show-Banner {
   $lines = @(
     "  ____                  ____  _             _ _       "
@@ -46,7 +74,7 @@ function Show-Banner {
     " | | | |/ _ \/ _ \ '_ \\___ \| __| | | |/ _`` | |/ _ \ "
     " | |_| |  __/  __/ |_) |___) | |_| |_| | (_| | | (_) |"
     " |____/ \___|\___| .__/|____/ \__|\__,_|\__,_|_|\___/ "
-    "                 |_|          I n s t a l l e r  v2    "
+    "                 |_|          I n s t a l l e r  v$InstallerVersion    "
   )
   $colors = @("Red", "Yellow", "Green", "Cyan", "Blue", "Magenta")
   Write-Host ""
@@ -84,12 +112,10 @@ function Install-NodeViaWinget {
   Write-Host ""
   try {
     & winget install --id OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements
-    # winget exit codes: 0 = success, -1978335189 = already installed (no error)
     if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne -1978335189) {
       Fail "winget install returned exit code $LASTEXITCODE."
       exit 1
     }
-    # Refresh PATH so node/npm are available in the current session
     $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
     if (Get-Command node -ErrorAction SilentlyContinue) {
       Success "Node.js is ready."
@@ -117,9 +143,7 @@ function Upgrade-NodeViaWinget {
   Write-Host ""
   try {
     & winget upgrade --id OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements
-    # winget exit codes: 0 = success, -1978335189 = already up to date (no error)
     if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne -1978335189) {
-      # If upgrade fails, try uninstall + reinstall as fallback
       Warn "winget upgrade returned exit code $LASTEXITCODE. Trying reinstall..."
       & winget uninstall --id OpenJS.NodeJS.LTS --accept-source-agreements 2>$null
       & winget install --id OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements
@@ -128,7 +152,6 @@ function Upgrade-NodeViaWinget {
         exit 1
       }
     }
-    # Refresh PATH
     $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
     if (Get-Command node -ErrorAction SilentlyContinue) {
       $newVersionStr = (& node --version 2>$null) -replace '^v', ''
@@ -168,11 +191,9 @@ function Require-Node {
     }
   }
 
-  # Check Node.js version — must be >= MinNodeVersion
   if ($nodeAvailable) {
     try {
       $versionStr = & node --version 2>$null
-      # node --version returns e.g. "v22.1.0"
       $versionStr = $versionStr -replace '^v', ''
       $major = [int]($versionStr.Split('.')[0])
       Dim "Node.js version: v$versionStr"
@@ -205,7 +226,6 @@ function Require-Node {
     }
   }
 
-  # Final check: npm must be available
   if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
     Fail "npm not found (Node.js may need a terminal restart)."
     exit 1
@@ -240,8 +260,6 @@ function New-TempNpmrc {
 }
 
 function Write-IsolatedNpmrc([string]$path, [string]$registry, [string]$authPrefix, [string]$pat) {
-  # Use _authToken to avoid conflicts with user's existing .npmrc and avoid base64 encoding pitfalls.
-  # NOTE: This writes token into a temporary file; we delete it in finally.
   $content = @"
 registry=$registry/
 ${authPrefix}:_authToken=$pat
@@ -253,8 +271,127 @@ ${authPrefix}:_authToken=$pat
     return
   }
 
-  # ASCII is safest for .npmrc formatting
   Set-Content -Path $path -Value $content -Encoding ASCII
+}
+
+function Get-NpmConfigValue([string]$key) {
+  try {
+    $value = & npm config get $key 2>$null
+    if ($LASTEXITCODE -ne 0) { return $null }
+    if ($null -eq $value) { return $null }
+    return ($value | Out-String).Trim()
+  } catch {
+    return $null
+  }
+}
+
+function Show-ProxyDiagnostics {
+  Write-Host ""
+  Info "🔎 Checking proxy-related settings..."
+
+  # PowerShell hashtable keys are case-insensitive, so don't include both HTTP_PROXY and http_proxy as separate keys.
+  $pairs = [ordered]@{
+    "npm config proxy"       = (Get-NpmConfigValue "proxy")
+    "npm config https-proxy" = (Get-NpmConfigValue "https-proxy")
+    "HTTP_PROXY"             = if ($env:HTTP_PROXY) { $env:HTTP_PROXY } else { $env:http_proxy }
+    "HTTPS_PROXY"            = if ($env:HTTPS_PROXY) { $env:HTTPS_PROXY } else { $env:https_proxy }
+    "ALL_PROXY"              = if ($env:ALL_PROXY) { $env:ALL_PROXY } else { $env:all_proxy }
+    "NO_PROXY"               = if ($env:NO_PROXY) { $env:NO_PROXY } else { $env:no_proxy }
+  }
+
+  $hasProxy = $false
+  foreach ($entry in $pairs.GetEnumerator()) {
+    $k = $entry.Key
+    $v = $entry.Value
+    if (-not [string]::IsNullOrWhiteSpace($v) -and $v -ne "null") {
+      $hasProxy = $true
+      Dim ("  {0}: {1}" -f $k, $v)
+    }
+  }
+
+  if (-not $hasProxy) {
+    Success "No proxy settings detected."
+  } else {
+    Warn "Proxy settings detected. If install fails with npm network/proxy errors, check npm proxy configuration."
+  }
+}
+
+function Show-NpmConfigConflicts {
+  Write-Host ""
+  Info "🔎 Checking for conflicting npm configurations..."
+  $conflicts = 0
+
+  # 1. Check NPM_CONFIG_REGISTRY env var (overrides --registry in some npm versions)
+  $envRegistry = $env:NPM_CONFIG_REGISTRY
+  if (-not [string]::IsNullOrWhiteSpace($envRegistry)) {
+    $conflicts++
+    Warn "NPM_CONFIG_REGISTRY env var is set: $envRegistry"
+    Warn "  This can override --registry flag. Will be cleared during install."
+  }
+
+  # 2. Check for project-level .npmrc in cwd and parent directories
+  $searchDir = Get-Location
+  $projectNpmrcs = @()
+  while ($null -ne $searchDir -and $searchDir.Path.Length -gt 3) {
+    $candidate = Join-Path $searchDir.Path ".npmrc"
+    if (Test-Path $candidate) {
+      $projectNpmrcs += $candidate
+    }
+    $searchDir = Split-Path $searchDir.Path -Parent | Get-Item -ErrorAction SilentlyContinue
+  }
+  if ($projectNpmrcs.Count -gt 0) {
+    foreach ($p in $projectNpmrcs) {
+      $conflicts++
+      Warn "Project .npmrc found: $p"
+      # Check if it sets a registry
+      $content = Get-Content $p -Raw -ErrorAction SilentlyContinue
+      if ($content -match '(?m)^\s*registry\s*=') {
+        Warn "  ↳ Contains 'registry=' — this WILL override the install registry!"
+      }
+      if ($content -match '(?m)^\s*//.*:_auth') {
+        Dim "  ↳ Contains auth tokens"
+      }
+    }
+  }
+
+  # 3. Check for global npmrc
+  try {
+    $globalNpmrc = & npm config get globalconfig 2>$null
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($globalNpmrc) -and (Test-Path $globalNpmrc)) {
+      $content = Get-Content $globalNpmrc -Raw -ErrorAction SilentlyContinue
+      if ($content -match '(?m)^\s*registry\s*=') {
+        $conflicts++
+        Warn "Global .npmrc has 'registry=' set: $globalNpmrc"
+        Warn "  ↳ This can override the install registry!"
+      }
+    }
+  } catch {}
+
+  # 4. Check the user-level npmrc for conflicting registry
+  try {
+    $userNpmrc = & npm config get userconfig 2>$null
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($userNpmrc) -and (Test-Path $userNpmrc)) {
+      $content = Get-Content $userNpmrc -Raw -ErrorAction SilentlyContinue
+      if ($content -match '(?m)^\s*registry\s*=') {
+        Dim "User .npmrc has 'registry=' set: $userNpmrc (will be overridden by --userconfig)"
+      }
+    }
+  } catch {}
+
+  # 5. Check current effective registry
+  $effectiveRegistry = Get-NpmConfigValue "registry"
+  if (-not [string]::IsNullOrWhiteSpace($effectiveRegistry)) {
+    Dim "Current effective registry: $effectiveRegistry"
+  }
+
+  if ($conflicts -eq 0) {
+    Success "No conflicting npm configurations found."
+  } else {
+    Write-Host ""
+    Warn "$conflicts conflict(s) detected — the installer will attempt to override them."
+  }
+
+  return $conflicts
 }
 
 function Run-NpmViaCmd([string]$cmdLine) {
@@ -263,17 +400,13 @@ function Run-NpmViaCmd([string]$cmdLine) {
     return
   }
 
-  if (-not $EnableLog) {
-    & cmd.exe /d /s /c $cmdLine
-    if ($LASTEXITCODE -ne 0) {
-      throw "npm failed with exit code $LASTEXITCODE. (Tip: set DEEPSTUDIO_LOG=1 to capture full logs.)"
-    }
-    return
+  Add-ToLogBuffer "[cmd] $cmdLine"
+
+  if ($EnableLog) {
+    Info "Logging enabled. Log file: $LogPath"
   }
 
-  Info "Logging enabled. Log file: $LogPath"
-  Info ("Command via cmd.exe: " + $cmdLine)
-
+  # Use streaming output so the user sees progress in real-time
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = "cmd.exe"
   $psi.Arguments = "/d /s /c " + $cmdLine
@@ -282,38 +415,76 @@ function Run-NpmViaCmd([string]$cmdLine) {
   $psi.UseShellExecute = $false
   $psi.CreateNoWindow = $true
 
+  $stdoutLines = [System.Collections.Generic.List[string]]::new()
+  $stderrLines = [System.Collections.Generic.List[string]]::new()
+
   $p = New-Object System.Diagnostics.Process
   $p.StartInfo = $psi
-  [void]$p.Start()
+  $p.EnableRaisingEvents = $true
 
-  $stdout = $p.StandardOutput.ReadToEnd()
-  $stderr = $p.StandardError.ReadToEnd()
+  # Stream stdout line-by-line
+  $outAction = {
+    if ($null -ne $EventArgs.Data) {
+      $Event.MessageData.OutLines.Add($EventArgs.Data)
+      Write-Host $EventArgs.Data
+    }
+  }
+  $errAction = {
+    if ($null -ne $EventArgs.Data) {
+      $Event.MessageData.ErrLines.Add($EventArgs.Data)
+      Write-Host $EventArgs.Data -ForegroundColor DarkYellow
+    }
+  }
+
+  $msgData = [PSCustomObject]@{ OutLines = $stdoutLines; ErrLines = $stderrLines }
+  $outEvent = Register-ObjectEvent -InputObject $p -EventName OutputDataReceived -Action $outAction -MessageData $msgData
+  $errEvent = Register-ObjectEvent -InputObject $p -EventName ErrorDataReceived  -Action $errAction -MessageData $msgData
+
+  [void]$p.Start()
+  $p.BeginOutputReadLine()
+  $p.BeginErrorReadLine()
   $p.WaitForExit()
 
-  if ($stdout) { Write-Host $stdout }
-  if ($stderr) { Write-Host $stderr }
+  # Give events a moment to flush
+  Start-Sleep -Milliseconds 200
 
-  $content = @(
-    "=== DeepStudio install log ==="
-    "Time: $(Get-Date -Format o)"
-    "Package: $PackageName@latest"
-    "VerboseInstall: $VerboseInstall"
-    "Registry: $registry/"
-    "Command: $cmdLine"
-    ""
-    "---- STDOUT ----"
-    $stdout
-    ""
-    "---- STDERR ----"
-    $stderr
-    ""
-    "ExitCode: $($p.ExitCode)"
-  ) -join "`r`n"
+  Unregister-Event -SourceIdentifier $outEvent.Name
+  Unregister-Event -SourceIdentifier $errEvent.Name
 
-  Set-Content -Path $LogPath -Value $content -Encoding UTF8
+  # Feed output into rolling in-memory buffer
+  foreach ($line in $stdoutLines) {
+    if ($line) { Add-ToLogBuffer $line }
+  }
+  foreach ($line in $stderrLines) {
+    if ($line) { Add-ToLogBuffer "[ERR] $line" }
+  }
+
+  # Write to log file if enabled
+  if ($EnableLog) {
+    $content = @(
+      "=== DeepStudio install log ==="
+      "Time: $(Get-Date -Format o)"
+      "Package: $PackageName@latest"
+      "VerboseInstall: $VerboseInstall"
+      "Registry: $($script:ResolvedRegistry)/"
+      "Command: $cmdLine"
+      ""
+      "---- STDOUT ----"
+      ($stdoutLines -join "`r`n")
+      ""
+      "---- STDERR ----"
+      ($stderrLines -join "`r`n")
+      ""
+      "ExitCode: $($p.ExitCode)"
+    ) -join "`r`n"
+
+    Set-Content -Path $LogPath -Value $content -Encoding UTF8
+  }
 
   if ($p.ExitCode -ne 0) {
-    throw "npm failed with exit code $($p.ExitCode). See log: $LogPath"
+    $errMsg = "npm failed with exit code $($p.ExitCode)."
+    if ($EnableLog) { $errMsg += " See log: $LogPath" }
+    throw $errMsg
   }
 }
 
@@ -321,7 +492,6 @@ function Run-NpmViaCmd([string]$cmdLine) {
 # Azure CLI installation
 # ---------------------------
 function Install-AzureCli {
-  # Attempt to install Azure CLI via winget
   if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     Warn "winget not found — cannot auto-install Azure CLI."
     return $false
@@ -335,7 +505,6 @@ function Install-AzureCli {
       Warn "winget install returned exit code $LASTEXITCODE."
       return $false
     }
-    # Refresh PATH so az is available in the current session
     $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
     if (Get-Command az -ErrorAction SilentlyContinue) {
       Success "Azure CLI installed successfully."
@@ -355,9 +524,6 @@ function Install-AzureCli {
 # Azure CLI token acquisition
 # ---------------------------
 function Get-AzAccessToken {
-  # Try to obtain a temporary access token via Azure CLI for Azure DevOps.
-  # The resource ID 499b84ac-1321-427f-aa17-267ca6975798 is the well-known
-  # resource identifier for Azure DevOps (Azure Artifacts / Packaging).
   $azAvailable = [bool](Get-Command az -ErrorAction SilentlyContinue)
 
   if (-not $azAvailable) {
@@ -401,7 +567,6 @@ function Get-AzAccessToken {
         Warn "az login failed — will fall back to manual PAT entry."
         return $null
       }
-      # Retry after login
       $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
       if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
         Warn "Still unable to get token after login — will fall back to manual PAT entry."
@@ -442,18 +607,16 @@ Write-Host "                       │" -ForegroundColor DarkCyan
 Write-Host "  └─────────────────────────────────────────┘" -ForegroundColor DarkCyan
 Write-Host ""
 
-# Get registry: env > construct from org name using default template
+Show-ProxyDiagnostics
+$configConflicts = Show-NpmConfigConflicts
+
+# Get registry (always use default; org override only via DEEPSTUDIO_REGISTRY env var)
 $registryInput = $RegistryFromEnv
 if ([string]::IsNullOrWhiteSpace($registryInput)) {
-  Write-Host "  🏢 " -NoNewline -ForegroundColor Cyan
-  $adoOrg = Read-Host "Enter ADO org name [microsoft]"
-  if ([string]::IsNullOrWhiteSpace($adoOrg)) { $adoOrg = "microsoft" }
-  # Construct registry URL from org name using the base64 template
-  # Template: https://{org}.pkgs.visualstudio.com/OS/_packaging/DeepStudio/npm/registry/
-  $registryInput = $DefaultRegistry -replace "microsoft\.pkgs", "$adoOrg.pkgs"
-  Dim "Using org: $adoOrg"
+  $registryInput = $DefaultRegistry
 }
 $registry = Ensure-Registry $registryInput
+$script:ResolvedRegistry = $registry
 
 Dim "Registry: $(Mask-Url $registry)"
 Write-Host ""
@@ -488,25 +651,25 @@ Write-Host ""
 Dim ("Token (masked): " + (Mask-Token $pat))
 Write-Host ""
 
-# npm install args / loglevel
 $logLevel = if ($VerboseInstall) { "verbose" } else { "notice" }
-
-# Create isolated npmrc to avoid user's existing ~/.npmrc conflicts
 $tmpNpmrc = New-TempNpmrc
 
-# Optional: extra debug signal for npm
 if ($VerboseInstall) {
   $env:NPM_CONFIG_LOGLEVEL = "verbose"
   $env:NPM_CONFIG_PROGRESS = "false"
 }
 
+# Save and clear env vars that can override --registry
+$script:SavedNpmConfigRegistry = $env:NPM_CONFIG_REGISTRY
+$env:NPM_CONFIG_REGISTRY = $null
+
 try {
   Info "📄 Preparing isolated npm config..."
   Write-IsolatedNpmrc -path $tmpNpmrc -registry $registry -authPrefix $authPrefix -pat $pat
 
-  # Build command line (use cmd.exe to avoid PowerShell alias/function issues with npm)
-  # IMPORTANT: Use --userconfig so npm only reads our isolated temp npmrc for this run.
-  $installCmd = 'npm install -g "{0}@latest" --registry "{1}/" --loglevel {2} --userconfig "{3}"' -f $PackageName, $registry, $logLevel, $tmpNpmrc
+  # --userconfig overrides ~/.npmrc, --globalconfig overrides {prefix}/etc/npmrc
+  # NUL for globalconfig so npm doesn't see a conflicting global config
+  $installCmd = 'npm install -g "{0}@latest" --registry "{1}/" --loglevel {2} --userconfig "{3}" --globalconfig NUL' -f $PackageName, $registry, $logLevel, $tmpNpmrc
 
   if ($VerboseInstall) {
     Dim ("Command: " + $installCmd)
@@ -517,9 +680,8 @@ try {
 
   Run-NpmViaCmd $installCmd
 
-  # Extra safety: verify it's actually installed (still using isolated userconfig is ok)
   if (-not $DryRun) {
-    $verifyCmd = 'npm list -g --depth=0 "{0}" --userconfig "{1}"' -f $PackageName, $tmpNpmrc
+    $verifyCmd = 'npm list -g --depth=0 "{0}"' -f $PackageName
     Run-NpmViaCmd $verifyCmd
   }
 
@@ -529,17 +691,22 @@ try {
   Write-Host "  └─────────────────────────────────────────────────┘" -ForegroundColor Green
   Write-Host ""
 
-  # Ask user whether to start deepstudio-server
   Write-Host "  🚀 " -NoNewline -ForegroundColor Magenta
   $startChoice = Read-Host "Start $PackageName now? [Y/n]"
   if ([string]::IsNullOrWhiteSpace($startChoice) -or $startChoice -match '^[Yy]') {
+    Write-Host ""
+    Write-Host "  🏢 " -NoNewline -ForegroundColor Cyan
+    $adoOrg = Read-Host "Enter your ADO org name [microsoft]"
+    if ([string]::IsNullOrWhiteSpace($adoOrg)) { $adoOrg = "microsoft" }
+    $env:DEEPSTUDIO_ADO_ORG = $adoOrg
+    Dim "ADO org: $adoOrg"
     Write-Host ""
     Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
     Success "Launching $PackageName (press Ctrl+C to stop)..."
     Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
     Write-Host ""
     if ($DryRun) {
-      Dim "DRYRUN: would run $PackageName"
+      Dim "DRYRUN: would run $PackageName (ADO org: $adoOrg)"
     } else {
       & $PackageName
     }
@@ -564,6 +731,13 @@ catch {
   Dim "  • No permission to the Azure Artifacts feed"
   Dim "  • Corporate proxy/SSL interception issues"
 
+  Write-Host ""
+  Warn "Common causes for 404:"
+  Dim "  • A project-level .npmrc in the current directory set a different registry"
+  Dim "  • NPM_CONFIG_REGISTRY env var overrode the --registry flag"
+  Dim "  • The ADO feed is missing the npmjs.org upstream source"
+  Dim "  • Try running from a clean directory (e.g. cd $env:TEMP)"
+
   if ($VerboseInstall) {
     Write-Host ""
     Dim "---- Full exception ----"
@@ -578,12 +752,17 @@ catch {
   if ($EnableLog -and -not $DryRun) {
     Write-Host ""
     Warn "Log saved to: $LogPath"
+  } else {
+    Dump-LogBuffer
   }
 
   throw
 }
 finally {
-  # Clean up temp npmrc and env vars
+  # Restore env var
+  if ($script:SavedNpmConfigRegistry) {
+    $env:NPM_CONFIG_REGISTRY = $script:SavedNpmConfigRegistry
+  }
   if (-not $DryRun) {
     Remove-Item $tmpNpmrc -Force -ErrorAction SilentlyContinue
   }
