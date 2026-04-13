@@ -26,12 +26,19 @@ $LogPath = if ($env:DEEPSTUDIO_LOG_PATH) { $env:DEEPSTUDIO_LOG_PATH } else {
   Join-Path (Get-Location) ("deepstudio-install-" + (Get-Date -Format "yyyyMMdd-HHmmss") + ".log")
 }
 
+# Installer version
+$InstallerVersion = "2.6"
+
 # Default registry for DeepStudio (stored as base64)
 $DefaultRegistryB64 = "aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL19wYWNrYWdpbmcvRGVlcFN0dWRpby9ucG0vcmVnaXN0cnkv"
 $DefaultRegistry = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DefaultRegistryB64))
 
 # Will be set later after registry is resolved
 $script:ResolvedRegistry = $null
+
+# Rolling in-memory log buffer (last N lines) — dumped on error
+$script:LogBuffer = [System.Collections.Generic.Queue[string]]::new()
+$script:LogBufferMax = 100
 
 # ---------------------------
 # Helpers
@@ -42,6 +49,24 @@ function Fail([string]$msg) { Write-Host "  ✖  $msg" -ForegroundColor Red }
 function Success([string]$msg) { Write-Host "  ✔  $msg" -ForegroundColor Green }
 function Dim([string]$msg) { Write-Host "  $msg" -ForegroundColor DarkGray }
 
+function Add-ToLogBuffer([string]$line) {
+  $script:LogBuffer.Enqueue($line)
+  while ($script:LogBuffer.Count -gt $script:LogBufferMax) {
+    [void]$script:LogBuffer.Dequeue()
+  }
+}
+
+function Dump-LogBuffer {
+  if ($script:LogBuffer.Count -eq 0) { return }
+  Write-Host ""
+  Warn "Recent output (last $($script:LogBuffer.Count) lines):"
+  Write-Host "  ────────────────────────────────────────────────" -ForegroundColor DarkGray
+  foreach ($line in $script:LogBuffer) {
+    Dim $line
+  }
+  Write-Host "  ────────────────────────────────────────────────" -ForegroundColor DarkGray
+}
+
 function Show-Banner {
   $lines = @(
     "  ____                  ____  _             _ _       "
@@ -49,7 +74,7 @@ function Show-Banner {
     " | | | |/ _ \/ _ \ '_ \\___ \| __| | | |/ _`` | |/ _ \ "
     " | |_| |  __/  __/ |_) |___) | |_| |_| | (_| | | (_) |"
     " |____/ \___|\___| .__/|____/ \__|\__,_|\__,_|_|\___/ "
-    "                 |_|          I n s t a l l e r  v2.1    "
+    "                 |_|          I n s t a l l e r  v$InstallerVersion    "
   )
   $colors = @("Red", "Yellow", "Green", "Cyan", "Blue", "Magenta")
   Write-Host ""
@@ -237,12 +262,13 @@ function New-TempNpmrc {
 function Write-IsolatedNpmrc([string]$path, [string]$registry, [string]$authPrefix, [string]$pat) {
   $content = @"
 registry=$registry/
+always-auth=true
 ${authPrefix}:_authToken=$pat
 "@
 
   if ($DryRun) {
     Info "DRYRUN: write isolated npmrc to $path"
-    Info ("DRYRUN: npmrc content (token masked):`nregistry=$registry/`n${authPrefix}:_authToken=$(Mask-Token $pat)")
+    Info ("DRYRUN: npmrc content (token masked):`nregistry=$registry/`nalways-auth=true`n${authPrefix}:_authToken=$(Mask-Token $pat)")
     return
   }
 
@@ -291,23 +317,97 @@ function Show-ProxyDiagnostics {
   }
 }
 
+function Show-NpmConfigConflicts {
+  Write-Host ""
+  Info "🔎 Checking for conflicting npm configurations..."
+  $conflicts = 0
+
+  # 1. Check NPM_CONFIG_REGISTRY env var (overrides --registry in some npm versions)
+  $envRegistry = $env:NPM_CONFIG_REGISTRY
+  if (-not [string]::IsNullOrWhiteSpace($envRegistry)) {
+    $conflicts++
+    Warn "NPM_CONFIG_REGISTRY env var is set: $envRegistry"
+    Warn "  This can override --registry flag. Will be cleared during install."
+  }
+
+  # 2. Check for project-level .npmrc in cwd and parent directories
+  $searchDir = Get-Location
+  $projectNpmrcs = @()
+  while ($null -ne $searchDir -and $searchDir.Path.Length -gt 3) {
+    $candidate = Join-Path $searchDir.Path ".npmrc"
+    if (Test-Path $candidate) {
+      $projectNpmrcs += $candidate
+    }
+    $searchDir = Split-Path $searchDir.Path -Parent | Get-Item -ErrorAction SilentlyContinue
+  }
+  if ($projectNpmrcs.Count -gt 0) {
+    foreach ($p in $projectNpmrcs) {
+      $conflicts++
+      Warn "Project .npmrc found: $p"
+      # Check if it sets a registry
+      $content = Get-Content $p -Raw -ErrorAction SilentlyContinue
+      if ($content -match '(?m)^\s*registry\s*=') {
+        Warn "  ↳ Contains 'registry=' — this WILL override the install registry!"
+      }
+      if ($content -match '(?m)^\s*//.*:_auth') {
+        Dim "  ↳ Contains auth tokens"
+      }
+    }
+  }
+
+  # 3. Check for global npmrc
+  try {
+    $globalNpmrc = & npm config get globalconfig 2>$null
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($globalNpmrc) -and (Test-Path $globalNpmrc)) {
+      $content = Get-Content $globalNpmrc -Raw -ErrorAction SilentlyContinue
+      if ($content -match '(?m)^\s*registry\s*=') {
+        $conflicts++
+        Warn "Global .npmrc has 'registry=' set: $globalNpmrc"
+        Warn "  ↳ This can override the install registry!"
+      }
+    }
+  } catch {}
+
+  # 4. Check the user-level npmrc for conflicting registry
+  try {
+    $userNpmrc = & npm config get userconfig 2>$null
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($userNpmrc) -and (Test-Path $userNpmrc)) {
+      $content = Get-Content $userNpmrc -Raw -ErrorAction SilentlyContinue
+      if ($content -match '(?m)^\s*registry\s*=') {
+        Dim "User .npmrc has 'registry=' set: $userNpmrc (will be overridden by --userconfig)"
+      }
+    }
+  } catch {}
+
+  # 5. Check current effective registry
+  $effectiveRegistry = Get-NpmConfigValue "registry"
+  if (-not [string]::IsNullOrWhiteSpace($effectiveRegistry)) {
+    Dim "Current effective registry: $effectiveRegistry"
+  }
+
+  if ($conflicts -eq 0) {
+    Success "No conflicting npm configurations found."
+  } else {
+    Write-Host ""
+    Warn "$conflicts conflict(s) detected — the installer will attempt to override them."
+  }
+
+  return $conflicts
+}
+
 function Run-NpmViaCmd([string]$cmdLine) {
   if ($DryRun) {
     Info ("DRYRUN: " + $cmdLine)
     return
   }
 
-  if (-not $EnableLog) {
-    & cmd.exe /d /s /c $cmdLine
-    if ($LASTEXITCODE -ne 0) {
-      throw "npm failed with exit code $LASTEXITCODE. (Tip: set DEEPSTUDIO_LOG=1 to capture full logs.)"
-    }
-    return
+  Add-ToLogBuffer "[cmd] $cmdLine"
+
+  if ($EnableLog) {
+    Info "Logging enabled. Log file: $LogPath"
   }
 
-  Info "Logging enabled. Log file: $LogPath"
-  Info ("Command via cmd.exe: " + $cmdLine)
-
+  # Use streaming output so the user sees progress in real-time
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = "cmd.exe"
   $psi.Arguments = "/d /s /c " + $cmdLine
@@ -316,38 +416,76 @@ function Run-NpmViaCmd([string]$cmdLine) {
   $psi.UseShellExecute = $false
   $psi.CreateNoWindow = $true
 
+  $stdoutLines = [System.Collections.Generic.List[string]]::new()
+  $stderrLines = [System.Collections.Generic.List[string]]::new()
+
   $p = New-Object System.Diagnostics.Process
   $p.StartInfo = $psi
-  [void]$p.Start()
+  $p.EnableRaisingEvents = $true
 
-  $stdout = $p.StandardOutput.ReadToEnd()
-  $stderr = $p.StandardError.ReadToEnd()
+  # Stream stdout line-by-line
+  $outAction = {
+    if ($null -ne $EventArgs.Data) {
+      $Event.MessageData.OutLines.Add($EventArgs.Data)
+      Write-Host $EventArgs.Data
+    }
+  }
+  $errAction = {
+    if ($null -ne $EventArgs.Data) {
+      $Event.MessageData.ErrLines.Add($EventArgs.Data)
+      Write-Host $EventArgs.Data -ForegroundColor DarkYellow
+    }
+  }
+
+  $msgData = [PSCustomObject]@{ OutLines = $stdoutLines; ErrLines = $stderrLines }
+  $outEvent = Register-ObjectEvent -InputObject $p -EventName OutputDataReceived -Action $outAction -MessageData $msgData
+  $errEvent = Register-ObjectEvent -InputObject $p -EventName ErrorDataReceived  -Action $errAction -MessageData $msgData
+
+  [void]$p.Start()
+  $p.BeginOutputReadLine()
+  $p.BeginErrorReadLine()
   $p.WaitForExit()
 
-  if ($stdout) { Write-Host $stdout }
-  if ($stderr) { Write-Host $stderr }
+  # Give events a moment to flush
+  Start-Sleep -Milliseconds 200
 
-  $content = @(
-    "=== DeepStudio install log ==="
-    "Time: $(Get-Date -Format o)"
-    "Package: $PackageName@latest"
-    "VerboseInstall: $VerboseInstall"
-    "Registry: $($script:ResolvedRegistry)/"
-    "Command: $cmdLine"
-    ""
-    "---- STDOUT ----"
-    $stdout
-    ""
-    "---- STDERR ----"
-    $stderr
-    ""
-    "ExitCode: $($p.ExitCode)"
-  ) -join "`r`n"
+  Unregister-Event -SourceIdentifier $outEvent.Name
+  Unregister-Event -SourceIdentifier $errEvent.Name
 
-  Set-Content -Path $LogPath -Value $content -Encoding UTF8
+  # Feed output into rolling in-memory buffer
+  foreach ($line in $stdoutLines) {
+    if ($line) { Add-ToLogBuffer $line }
+  }
+  foreach ($line in $stderrLines) {
+    if ($line) { Add-ToLogBuffer "[ERR] $line" }
+  }
+
+  # Write to log file if enabled
+  if ($EnableLog) {
+    $content = @(
+      "=== DeepStudio install log ==="
+      "Time: $(Get-Date -Format o)"
+      "Package: $PackageName@latest"
+      "VerboseInstall: $VerboseInstall"
+      "Registry: $($script:ResolvedRegistry)/"
+      "Command: $cmdLine"
+      ""
+      "---- STDOUT ----"
+      ($stdoutLines -join "`r`n")
+      ""
+      "---- STDERR ----"
+      ($stderrLines -join "`r`n")
+      ""
+      "ExitCode: $($p.ExitCode)"
+    ) -join "`r`n"
+
+    Set-Content -Path $LogPath -Value $content -Encoding UTF8
+  }
 
   if ($p.ExitCode -ne 0) {
-    throw "npm failed with exit code $($p.ExitCode). See log: $LogPath"
+    $errMsg = "npm failed with exit code $($p.ExitCode)."
+    if ($EnableLog) { $errMsg += " See log: $LogPath" }
+    throw $errMsg
   }
 }
 
@@ -471,15 +609,12 @@ Write-Host "  └─────────────────────
 Write-Host ""
 
 Show-ProxyDiagnostics
+$configConflicts = Show-NpmConfigConflicts
 
-# Get registry
+# Get registry (always use default; org override only via DEEPSTUDIO_REGISTRY env var)
 $registryInput = $RegistryFromEnv
 if ([string]::IsNullOrWhiteSpace($registryInput)) {
-  Write-Host "  🏢 " -NoNewline -ForegroundColor Cyan
-  $adoOrg = Read-Host "Enter ADO org name [microsoft]"
-  if ([string]::IsNullOrWhiteSpace($adoOrg)) { $adoOrg = "microsoft" }
-  $registryInput = $DefaultRegistry -replace "microsoft\.pkgs", "$adoOrg.pkgs"
-  Dim "Using org: $adoOrg"
+  $registryInput = $DefaultRegistry
 }
 $registry = Ensure-Registry $registryInput
 $script:ResolvedRegistry = $registry
@@ -525,11 +660,22 @@ if ($VerboseInstall) {
   $env:NPM_CONFIG_PROGRESS = "false"
 }
 
+# Save and clear env vars that can override --registry
+$script:SavedNpmConfigRegistry = $env:NPM_CONFIG_REGISTRY
+$env:NPM_CONFIG_REGISTRY = $null
+
 try {
   Info "📄 Preparing isolated npm config..."
   Write-IsolatedNpmrc -path $tmpNpmrc -registry $registry -authPrefix $authPrefix -pat $pat
 
-  $installCmd = 'npm install -g "{0}@latest" --registry "{1}/" --loglevel {2} --userconfig "{3}"' -f $PackageName, $registry, $logLevel, $tmpNpmrc
+  # --userconfig overrides ~/.npmrc, --globalconfig overrides {prefix}/etc/npmrc
+  # NUL for globalconfig so npm doesn't see a conflicting global config
+  # NOTE: --registry is intentionally omitted from the CLI flags.
+  # It is already set inside the isolated npmrc. Passing it on the CLI as well
+  # puts the registry at CLI precedence while _authToken stays at userconfig
+  # precedence, and npm 11 may refuse to send userconfig auth for a CLI-level
+  # registry.  Keeping both in the same npmrc avoids this precedence split.
+  $installCmd = 'npm install -g "{0}@latest" --loglevel {1} --userconfig "{2}" --globalconfig NUL' -f $PackageName, $logLevel, $tmpNpmrc
 
   if ($VerboseInstall) {
     Dim ("Command: " + $installCmd)
@@ -541,7 +687,7 @@ try {
   Run-NpmViaCmd $installCmd
 
   if (-not $DryRun) {
-    $verifyCmd = 'npm list -g --depth=0 "{0}" --userconfig "{1}"' -f $PackageName, $tmpNpmrc
+    $verifyCmd = 'npm list -g --depth=0 "{0}"' -f $PackageName
     Run-NpmViaCmd $verifyCmd
   }
 
@@ -555,12 +701,18 @@ try {
   $startChoice = Read-Host "Start $PackageName now? [Y/n]"
   if ([string]::IsNullOrWhiteSpace($startChoice) -or $startChoice -match '^[Yy]') {
     Write-Host ""
+    Write-Host "  🏢 " -NoNewline -ForegroundColor Cyan
+    $adoOrg = Read-Host "Enter your ADO org name [microsoft]"
+    if ([string]::IsNullOrWhiteSpace($adoOrg)) { $adoOrg = "microsoft" }
+    $env:DEEPSTUDIO_ADO_ORG = $adoOrg
+    Dim "ADO org: $adoOrg"
+    Write-Host ""
     Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
     Success "Launching $PackageName (press Ctrl+C to stop)..."
     Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
     Write-Host ""
     if ($DryRun) {
-      Dim "DRYRUN: would run $PackageName"
+      Dim "DRYRUN: would run $PackageName (ADO org: $adoOrg)"
     } else {
       & $PackageName
     }
@@ -584,6 +736,15 @@ catch {
   Dim "  • Wrong registry URL"
   Dim "  • No permission to the Azure Artifacts feed"
   Dim "  • Corporate proxy/SSL interception issues"
+  Dim "  • npm 11+: built-in npmrc at <npm-prefix>/node_modules/npm/npmrc has conflicting auth"
+  Dim "    (check: npm config get prefix  then inspect <prefix>/node_modules/npm/npmrc)"
+
+  Write-Host ""
+  Warn "Common causes for 404:"
+  Dim "  • A project-level .npmrc in the current directory set a different registry"
+  Dim "  • NPM_CONFIG_REGISTRY env var overrode the --registry flag"
+  Dim "  • The ADO feed is missing the npmjs.org upstream source"
+  Dim "  • Try running from a clean directory (e.g. cd $env:TEMP)"
 
   if ($VerboseInstall) {
     Write-Host ""
@@ -599,11 +760,17 @@ catch {
   if ($EnableLog -and -not $DryRun) {
     Write-Host ""
     Warn "Log saved to: $LogPath"
+  } else {
+    Dump-LogBuffer
   }
 
   throw
 }
 finally {
+  # Restore env var
+  if ($script:SavedNpmConfigRegistry) {
+    $env:NPM_CONFIG_REGISTRY = $script:SavedNpmConfigRegistry
+  }
   if (-not $DryRun) {
     Remove-Item $tmpNpmrc -Force -ErrorAction SilentlyContinue
   }
