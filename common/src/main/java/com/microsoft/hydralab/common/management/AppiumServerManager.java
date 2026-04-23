@@ -147,7 +147,9 @@ public class AppiumServerManager {
         caps.setCapability(IOSMobileCapabilityType.USE_PREBUILT_WDA, false);
         caps.setCapability("useXctestrunFile", false);
         caps.setCapability("skipLogCapture", true);
-        caps.setCapability("mjpegServerPort", IOSUtils.getMjpegServerPortByUdid(udid, logger, deviceInfo));
+        // Note: Do NOT set mjpegServerPort here - it conflicts with pymobiledevice3 port forwarding.
+        // MJPEG forwarding is handled separately by the screen recorder (IOSAppiumScreenRecorderForMac/Windows)
+        // when screen recording is needed, using pymobiledevice3.
 
         int tryTimes = 3;
         boolean sessionCreated = false;
