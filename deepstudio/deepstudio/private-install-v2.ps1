@@ -27,7 +27,7 @@ $LogPath = if ($env:DEEPSTUDIO_LOG_PATH) { $env:DEEPSTUDIO_LOG_PATH } else {
 }
 
 # Installer version
-$InstallerVersion = "2.5"
+$InstallerVersion = "2.8"
 
 # Default registry for DeepStudio (stored as base64)
 $DefaultRegistryB64 = "aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL19wYWNrYWdpbmcvRGVlcFN0dWRpby9ucG0vcmVnaXN0cnkv"
@@ -35,6 +35,15 @@ $DefaultRegistry = [System.Text.Encoding]::UTF8.GetString([System.Convert]::From
 
 # Will be set later after registry is resolved
 $script:ResolvedRegistry = $null
+
+# Stores az account info after login (populated by Get-AzAccountInfo)
+$script:AzAccountUser = $null
+$script:AzAccountTenant = $null
+$script:AzAccountName = $null
+
+# nvm4w detection (populated by Detect-Nvm)
+$script:IsNvm4w = $false
+$script:NvmNodeVersion = $null
 
 # Rolling in-memory log buffer (last N lines) — dumped on error
 $script:LogBuffer = [System.Collections.Generic.Queue[string]]::new()
@@ -97,6 +106,43 @@ function Mask-Url([string]$url) {
     if ($url.Length -le 10) { return ("*" * $url.Length) }
     return $url.Substring(0, 5) + "****" + $url.Substring($url.Length - 4)
   }
+}
+
+function Detect-Nvm {
+  <# Detect nvm-windows (nvm4w) so we can warn about version-scoped global packages #>
+  # Check NVM_HOME env var (set by the nvm4w installer)
+  if (-not [string]::IsNullOrWhiteSpace($env:NVM_HOME)) {
+    $script:IsNvm4w = $true
+  }
+  # Also check if node.exe lives under a known nvm4w path pattern
+  if (-not $script:IsNvm4w) {
+    try {
+      $nodePath = (Get-Command node -ErrorAction SilentlyContinue).Source
+      if ($nodePath -and ($nodePath -match '\\nvm4?w?\\' -or $nodePath -match '\\nvm\\')) {
+        $script:IsNvm4w = $true
+      }
+    } catch {}
+  }
+  if ($script:IsNvm4w) {
+    try {
+      $script:NvmNodeVersion = (& node --version 2>$null) -replace '^v', ''
+    } catch {}
+  }
+}
+
+function Show-NvmWarning {
+  if (-not $script:IsNvm4w) { return }
+  $ver = if ($script:NvmNodeVersion) { $script:NvmNodeVersion } else { "(unknown)" }
+  Write-Host ""
+  Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
+  Write-Host "  │  📌 nvm-windows detected                            │" -ForegroundColor Yellow
+  Write-Host "  │  Global npm packages are scoped to each Node        │" -ForegroundColor Yellow
+  Write-Host "  │  version. If you switch versions with 'nvm use',    │" -ForegroundColor Yellow
+  Write-Host "  │  $PackageName will NOT be available until   │" -ForegroundColor Yellow
+  Write-Host "  │  you re-run this installer for the new version.     │" -ForegroundColor Yellow
+  Write-Host "  │                                                     │" -ForegroundColor Yellow
+  Write-Host "  │  Current Node version: v$($ver.PadRight(29))│" -ForegroundColor Yellow
+  Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
 }
 
 function Install-NodeViaWinget {
@@ -230,6 +276,11 @@ function Require-Node {
     Fail "npm not found (Node.js may need a terminal restart)."
     exit 1
   }
+
+  Detect-Nvm
+  if ($script:IsNvm4w) {
+    Show-NvmWarning
+  }
 }
 
 function Read-Secure([string]$msg) {
@@ -260,14 +311,21 @@ function New-TempNpmrc {
 }
 
 function Write-IsolatedNpmrc([string]$path, [string]$registry, [string]$authPrefix, [string]$pat) {
-  $content = @"
-registry=$registry/
-${authPrefix}:_authToken=$pat
-"@
+  $lines = @("registry=$registry/")
+  if ($script:NpmMajorVersion -lt 10) {
+    # always-auth is required for unscoped packages in npm 8/9
+    $lines += "always-auth=true"
+  }
+  # else: npm 10+ removed always-auth; auth is sent when the URL matches the scope prefix
+  $lines += "${authPrefix}:_authToken=$pat"
+  $content = $lines -join "`n"
 
   if ($DryRun) {
     Info "DRYRUN: write isolated npmrc to $path"
-    Info ("DRYRUN: npmrc content (token masked):`nregistry=$registry/`n${authPrefix}:_authToken=$(Mask-Token $pat)")
+    foreach ($l in $lines) {
+      if ($l -match '_authToken=') { Dim ("  " + ($l -replace '=.+$', "=$(Mask-Token $pat)")) }
+      else { Dim "  $l" }
+    }
     return
   }
 
@@ -283,6 +341,14 @@ function Get-NpmConfigValue([string]$key) {
   } catch {
     return $null
   }
+}
+
+function Get-NpmMajorVersion {
+  try {
+    $ver = (& npm --version 2>$null)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($ver)) { return 0 }
+    return [int]($ver.Trim().Split('.')[0])
+  } catch { return 0 }
 }
 
 function Show-ProxyDiagnostics {
@@ -378,7 +444,24 @@ function Show-NpmConfigConflicts {
     }
   } catch {}
 
-  # 5. Check current effective registry
+  # 5. Check for built-in npmrc inside npm package (npm 10+/11+ issue)
+  try {
+    $npmPrefix = (& npm config get prefix 2>$null)
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($npmPrefix)) {
+      $builtinNpmrc = Join-Path $npmPrefix.Trim() "node_modules\npm\npmrc"
+      if (Test-Path $builtinNpmrc) {
+        $builtinContent = Get-Content $builtinNpmrc -Raw -ErrorAction SilentlyContinue
+        if (-not [string]::IsNullOrWhiteSpace($builtinContent) -and $builtinContent -match '(?m)^\s*registry\s*=') {
+          $conflicts++
+          Warn "Built-in npmrc found with registry override: $builtinNpmrc"
+          Dim "  ↳ This file ships inside npm itself and can interfere with auth."
+          Dim "  ↳ Fix: remove or empty this file, or delete the registry= line."
+        }
+      }
+    }
+  } catch {}
+
+  # 6. Check current effective registry
   $effectiveRegistry = Get-NpmConfigValue "registry"
   if (-not [string]::IsNullOrWhiteSpace($effectiveRegistry)) {
     Dim "Current effective registry: $effectiveRegistry"
@@ -520,6 +603,168 @@ function Install-AzureCli {
   }
 }
 
+# Microsoft corporate tenant ID — used as fallback when az login hits duplicate-account errors
+$MicrosoftTenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+
+function Clear-AzCachedAccounts {
+  <# Remove stale MSAL token caches that cause "Found multiple accounts with the same username" #>
+  $cacheFiles = @(
+    (Join-Path $env:USERPROFILE ".azure\msal_token_cache.json"),
+    (Join-Path $env:USERPROFILE ".azure\azureProfile.json")
+  )
+  foreach ($f in $cacheFiles) {
+    if (Test-Path $f) {
+      Remove-Item $f -Force -ErrorAction SilentlyContinue
+      Dim "  Removed stale cache: $f"
+    }
+  }
+  # az account clear is the official way to wipe cached accounts
+  & az account clear 2>$null
+}
+
+function Invoke-AzLogin {
+  <#
+    Run az login normally (interactive browser flow).
+    If it fails with "Found multiple accounts with the same username", clear the
+    stale MSAL cache and retry with an explicit tenant.  For every other outcome
+    the function behaves exactly like a bare `az login`.
+  #>
+
+  # Normal interactive login — stdout goes to console, stderr captured for error detection.
+  # Temporarily relax $ErrorActionPreference so that az writing to stderr
+  # (non-zero exit or warning lines) does not become a terminating error.
+  $stderrFile = Join-Path $env:TEMP ("az-login-err-" + [Guid]::NewGuid().ToString("N") + ".txt")
+  $prevEAP = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & az login 2>$stderrFile
+    if ($LASTEXITCODE -eq 0) { return $true }
+
+    $stderrText = if (Test-Path $stderrFile) { Get-Content $stderrFile -Raw -ErrorAction SilentlyContinue } else { "" }
+    if ($stderrText -match 'Found multiple accounts with the same') {
+      Warn "Detected duplicate cached accounts — clearing Azure CLI cache and retrying..."
+      Clear-AzCachedAccounts
+      & az login --tenant $MicrosoftTenantId
+      if ($LASTEXITCODE -eq 0) {
+        Success "Re-login with explicit tenant succeeded."
+        return $true
+      }
+      Warn "az login still failed after cache clear."
+    }
+
+    return $false
+  }
+  finally {
+    $ErrorActionPreference = $prevEAP
+    Remove-Item $stderrFile -Force -ErrorAction SilentlyContinue
+  }
+}
+
+# ---------------------------
+# Azure CLI account inspection
+# ---------------------------
+function Get-AzAccountInfo {
+  <# Returns a hashtable with user, tenantId, subscriptionName or $null on failure #>
+  try {
+    $json = & az account show -o json 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($json)) { return $null }
+    $acct = $json | ConvertFrom-Json
+    return @{
+      User           = if ($acct.user -and $acct.user.name) { $acct.user.name } else { "<unknown>" }
+      UserType       = if ($acct.user -and $acct.user.type) { $acct.user.type } else { "<unknown>" }
+      TenantId       = if ($acct.tenantId) { $acct.tenantId } else { "<unknown>" }
+      Subscription   = if ($acct.name) { $acct.name } else { "<unknown>" }
+    }
+  } catch { return $null }
+}
+
+function Show-AzAccountWarning {
+  <# Display the logged-in account and warn if it looks like a personal (non-corporate) account #>
+  $info = Get-AzAccountInfo
+  if ($null -eq $info) {
+    Dim "Could not retrieve az account details."
+    return
+  }
+
+  # Persist for later diagnostics
+  $script:AzAccountUser   = $info.User
+  $script:AzAccountTenant = $info.TenantId
+  $script:AzAccountName   = $info.Subscription
+
+  Info ("Logged in as: {0}" -f $info.User)
+  Dim ("  Tenant:       {0}" -f $info.TenantId)
+  Dim ("  Subscription: {0}" -f $info.Subscription)
+  Dim ("  Account type: {0}" -f $info.UserType)
+
+  # Heuristic: personal accounts typically use gmail/outlook/hotmail/live/yahoo
+  # or have the "MSA" user type, while corp accounts use an org domain.
+  $personalDomains = @("gmail.com", "outlook.com", "hotmail.com", "live.com", "yahoo.com", "qq.com", "163.com", "126.com")
+  $isPersonal = $false
+  foreach ($d in $personalDomains) {
+    if ($info.User -like "*@$d") { $isPersonal = $true; break }
+  }
+  if ($info.UserType -eq "MSA") { $isPersonal = $true }
+
+  # Also check if the tenant looks like the Microsoft consumer tenant
+  $msaConsumerTenant = "9188040d-6c67-4c5b-b112-36a304b66dad"
+  if ($info.TenantId -eq $msaConsumerTenant) { $isPersonal = $true }
+
+  if ($isPersonal) {
+    Write-Host ""
+    Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
+    Write-Host "  │  ⚠  Personal account detected                      │" -ForegroundColor Yellow
+    Write-Host "  │  The Azure Artifacts feed requires a corporate      │" -ForegroundColor Yellow
+    Write-Host "  │  (AAD/Entra ID) account to authenticate.            │" -ForegroundColor Yellow
+    Write-Host "  │                                                     │" -ForegroundColor Yellow
+    Write-Host "  │  Current: $($info.User.PadRight(40).Substring(0,40))│" -ForegroundColor Yellow
+    Write-Host "  │                                                     │" -ForegroundColor Yellow
+    Write-Host "  │  Fix: az login --tenant <your-corp-tenant-id>       │" -ForegroundColor Yellow
+    Write-Host "  │   or: az login   (choose your corporate account)    │" -ForegroundColor Yellow
+    Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  🔄 " -NoNewline -ForegroundColor Cyan
+    $reloginChoice = Read-Host "Re-login with a corporate account now? [Y/n]"
+    if ([string]::IsNullOrWhiteSpace($reloginChoice) -or $reloginChoice -match '^[Yy]') {
+      $loginOk = Invoke-AzLogin
+      if (-not $loginOk) {
+        Warn "az login failed."
+        return
+      }
+      # Re-check after login
+      $newInfo = Get-AzAccountInfo
+      if ($null -ne $newInfo) {
+        $script:AzAccountUser   = $newInfo.User
+        $script:AzAccountTenant = $newInfo.TenantId
+        $script:AzAccountName   = $newInfo.Subscription
+        Success ("Now logged in as: {0}" -f $newInfo.User)
+        Dim ("  Tenant: {0}" -f $newInfo.TenantId)
+      }
+    }
+  }
+}
+
+function Show-AzAccountDiagnostics {
+  <# Print current az account info in the error handler for troubleshooting #>
+  Write-Host ""
+  Info "🔎 Azure CLI account diagnostics:"
+  if ($script:AzAccountUser) {
+    Dim ("  Logged-in user:  {0}" -f $script:AzAccountUser)
+    Dim ("  Tenant ID:       {0}" -f $script:AzAccountTenant)
+    Dim ("  Subscription:    {0}" -f $script:AzAccountName)
+  } else {
+    # Try live query
+    $info = Get-AzAccountInfo
+    if ($null -ne $info) {
+      Dim ("  Logged-in user:  {0}" -f $info.User)
+      Dim ("  Tenant ID:       {0}" -f $info.TenantId)
+      Dim ("  Account type:    {0}" -f $info.UserType)
+      Dim ("  Subscription:    {0}" -f $info.Subscription)
+    } else {
+      Dim "  No az account session found (az account show failed)."
+    }
+  }
+}
+
 # ---------------------------
 # Azure CLI token acquisition
 # ---------------------------
@@ -554,27 +799,53 @@ function Get-AzAccessToken {
 
   Info "🔍 Azure CLI found. Checking login session..."
 
+  # Run az CLI calls in an isolated block so native stderr under
+  # $ErrorActionPreference = 'Stop' cannot short-circuit our exit-code
+  # handling and jump straight to the catch block (which would skip the
+  # Invoke-AzLogin retry path and force a PAT prompt unnecessarily).
+  $adoResource = "499b84ac-1321-427f-aa17-267ca6975798"
+
+  function script:Get-AzAdoTokenOnce {
+    param([string]$Resource)
+    $prevEAP = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+      $out = (& az account get-access-token --resource $Resource --query "accessToken" -o tsv 2>&1) | Out-String
+      return [PSCustomObject]@{ Output = $out; ExitCode = $LASTEXITCODE }
+    }
+    finally {
+      $ErrorActionPreference = $prevEAP
+    }
+  }
+
   try {
-    $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
-      if ($VerboseInstall -and $tokenJson) { Dim "az output: $tokenJson" }
+    $result = Get-AzAdoTokenOnce -Resource $adoResource
+    $tokenJson = $result.Output
+    if ($result.ExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson) -or $tokenJson -match '^\s*ERROR:') {
+      if ($VerboseInstall -and $tokenJson) { Dim ("az output: " + $tokenJson.Trim()) }
       Warn "No valid az login session found."
       Write-Host ""
       Info "🔐 Please log in to Azure to continue..."
       Write-Host ""
-      & az login
-      if ($LASTEXITCODE -ne 0) {
+      $loginOk = Invoke-AzLogin
+      if (-not $loginOk) {
         Warn "az login failed — will fall back to manual PAT entry."
         return $null
       }
-      $tokenJson = & az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query "accessToken" -o tsv 2>&1
-      if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson)) {
+      $result = Get-AzAdoTokenOnce -Resource $adoResource
+      $tokenJson = $result.Output
+      if ($result.ExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($tokenJson) -or $tokenJson -match '^\s*ERROR:') {
+        if ($VerboseInstall -and $tokenJson) { Dim ("az output: " + $tokenJson.Trim()) }
         Warn "Still unable to get token after login — will fall back to manual PAT entry."
         return $null
       }
     }
     $token = $tokenJson.Trim()
     Success "Obtained temporary access token from Azure CLI."
+
+    # Show which account was used and warn if personal
+    Show-AzAccountWarning
+
     return $token
   }
   catch {
@@ -588,6 +859,9 @@ function Get-AzAccessToken {
 # Start
 # ---------------------------
 Require-Node
+
+$script:NpmMajorVersion = Get-NpmMajorVersion
+Dim "npm: v$(& npm --version 2>$null) (major $($script:NpmMajorVersion))"
 
 Show-Banner
 
@@ -632,13 +906,20 @@ if ([string]::IsNullOrWhiteSpace($pat)) {
   Write-Host ""
   Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
   Write-Host "  │  🔑 Manual PAT required                            │" -ForegroundColor Yellow
+  Write-Host "  │                                                     │" -ForegroundColor Yellow
+  Write-Host "  │  Note: CORP tenant PAT creation is restricted.      │" -ForegroundColor Yellow
+  Write-Host "  │  Only packaging-scoped PATs are still permitted.    │" -ForegroundColor Yellow
+  Write-Host "  │                                                     │" -ForegroundColor Yellow
   Write-Host "  │  Create one at:                                     │" -ForegroundColor Yellow
   Write-Host "  │  https://dev.azure.com/ > User Settings > PATs      │" -ForegroundColor Yellow
-  Write-Host "  │  Scope: Packaging > Read                            │" -ForegroundColor Yellow
+  Write-Host "  │  Scope: Packaging > Read  (select ONLY this scope)  │" -ForegroundColor Yellow
+  Write-Host "  │  Lifetime: keep as short as possible (< 7 days)     │" -ForegroundColor Yellow
+  Write-Host "  │                                                     │" -ForegroundColor Yellow
+  Write-Host "  │  Preferred: fix 'az login' instead (Entra token).   │" -ForegroundColor Yellow
   Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
   Write-Host ""
 
-  $patRaw = Read-Secure "  🔑 Enter Azure DevOps PAT (Packaging:Read)"
+  $patRaw = Read-Secure "  🔑 Enter Azure DevOps PAT (Packaging:Read only)"
   if ([string]::IsNullOrWhiteSpace($patRaw)) { throw "PAT is empty." }
 
   $pat = $patRaw.Trim()
@@ -659,17 +940,42 @@ if ($VerboseInstall) {
   $env:NPM_CONFIG_PROGRESS = "false"
 }
 
-# Save and clear env vars that can override --registry
+# Save and clear env vars that can override --registry or auth
 $script:SavedNpmConfigRegistry = $env:NPM_CONFIG_REGISTRY
+$script:SavedNpmConfigAlwaysAuth = $env:NPM_CONFIG_ALWAYS_AUTH
 $env:NPM_CONFIG_REGISTRY = $null
+$env:NPM_CONFIG_ALWAYS_AUTH = $null
 
 try {
   Info "📄 Preparing isolated npm config..."
   Write-IsolatedNpmrc -path $tmpNpmrc -registry $registry -authPrefix $authPrefix -pat $pat
 
   # --userconfig overrides ~/.npmrc, --globalconfig overrides {prefix}/etc/npmrc
-  # NUL for globalconfig so npm doesn't see a conflicting global config
-  $installCmd = 'npm install -g "{0}@latest" --registry "{1}/" --loglevel {2} --userconfig "{3}" --globalconfig NUL' -f $PackageName, $registry, $logLevel, $tmpNpmrc
+  # NUL for globalconfig so npm doesn't see a conflicting global config.
+  # EXCEPTION: nvm-windows relies on the global config (or builtin prefix) to
+  # resolve the correct version-scoped prefix.  Passing --globalconfig NUL on
+  # nvm4w causes npm to fall back to %APPDATA%\npm, installing the package in
+  # one prefix while the PATH shim lives in another — instant "Cannot find
+  # module" on launch.  So we skip --globalconfig NUL when nvm4w is detected.
+  # NOTE: --registry is intentionally omitted from the CLI flags.
+  # It is already set inside the isolated npmrc. Passing it on the CLI as well
+  # puts the registry at CLI precedence while _authToken stays at userconfig
+  # precedence, and npm 11 may refuse to send userconfig auth for a CLI-level
+  # registry.  Keeping both in the same npmrc avoids this precedence split.
+  if ($script:IsNvm4w) {
+    $globalCfgFlag = ''
+    Dim "nvm-windows: preserving global npm config to keep correct prefix."
+  } else {
+    $globalCfgFlag = ' --globalconfig NUL'
+  }
+
+  # Show the prefix npm will use so mismatches are visible in the log
+  $npmPrefix = (& npm config get prefix 2>$null)
+  if (-not [string]::IsNullOrWhiteSpace($npmPrefix)) {
+    Dim "npm global prefix: $($npmPrefix.Trim())"
+  }
+
+  $installCmd = 'npm install -g "{0}@latest" --loglevel {1} --userconfig "{2}"{3}' -f $PackageName, $logLevel, $tmpNpmrc, $globalCfgFlag
 
   if ($VerboseInstall) {
     Dim ("Command: " + $installCmd)
@@ -681,14 +987,88 @@ try {
   Run-NpmViaCmd $installCmd
 
   if (-not $DryRun) {
-    $verifyCmd = 'npm list -g --depth=0 "{0}"' -f $PackageName
+    # Use the same config flags for verify so it checks the same prefix where we installed
+    $verifyCmd = 'npm list -g --depth=0 "{0}" --userconfig "{1}"{2}' -f $PackageName, $tmpNpmrc, $globalCfgFlag
     Run-NpmViaCmd $verifyCmd
+
+    # Smoke-test: verify the binary actually resolves and runs
+    $binPath = (Get-Command $PackageName -ErrorAction SilentlyContinue).Source
+    if ($binPath) {
+      Dim "Binary found: $binPath"
+      # Quick sanity check: can node resolve the entry module?
+      try {
+        $shimContent = Get-Content $binPath -Raw -ErrorAction SilentlyContinue
+        if ($shimContent -match 'node_modules\\[^"''\s]+\.c?js') {
+          $entryRelative = $Matches[0]
+          $binDir = Split-Path $binPath -Parent
+          $entryFull = Join-Path $binDir $entryRelative
+          if (-not (Test-Path $entryFull)) {
+            Warn "Binary shim exists but entry module is missing: $entryFull"
+            Warn "This can happen with nvm-windows if Node was switched after a previous install."
+            Info "The current install should have fixed this. If not, try: npm install -g $PackageName"
+          } else {
+            Success "Binary entry module verified."
+          }
+        }
+      } catch {
+        Dim "Could not verify binary entry module (non-fatal)."
+      }
+    } else {
+      Warn "$PackageName not found on PATH after install."
+      Warn "You may need to restart your terminal or check your npm prefix."
+    }
   }
 
   Write-Host ""
   Write-Host "  ┌─────────────────────────────────────────────────┐" -ForegroundColor Green
   Write-Host "  │  🎉 $PackageName@latest installed successfully! │" -ForegroundColor Green
   Write-Host "  └─────────────────────────────────────────────────┘" -ForegroundColor Green
+
+  # Post-install tip: DeepStudio prefers Entra tokens via Azure CLI for ADO auth.
+  # Remind users whose `az` session is missing/stale so first PR review doesn't fail.
+  Write-Host ""
+  Write-Host "  ┌─────────────────────────────────────────────────┐" -ForegroundColor Cyan
+  Write-Host "  │  🔑 ADO auth tip                                │" -ForegroundColor Cyan
+  Write-Host "  │  DeepStudio uses your Azure CLI login for ADO.  │" -ForegroundColor Cyan
+  Write-Host "  │  If PR review or work items fail to load, run:  │" -ForegroundColor Cyan
+  Write-Host "  │    az login                                     │" -ForegroundColor White
+  Write-Host "  │  No ADO PAT is needed when az is signed in.     │" -ForegroundColor Cyan
+  Write-Host "  └─────────────────────────────────────────────────┘" -ForegroundColor Cyan
+
+  if ($script:IsNvm4w) {
+    Write-Host ""
+    Warn "nvm-windows reminder: this install is tied to Node v$($script:NvmNodeVersion)."
+    Dim "  After 'nvm use <other-version>', re-run this installer to get $PackageName back."
+
+    # Save a lightweight reinstall script that skips auth (reuses the isolated npmrc)
+    $nvmReinstallPath = Join-Path $env:USERPROFILE ".deepstudio-reinstall.cmd"
+    try {
+      $reinstallContent = @"
+@echo off
+REM Quick reinstall for nvm-windows version switches
+REM Generated by DeepStudio installer v$InstallerVersion on $(Get-Date -Format 'yyyy-MM-dd')
+REM Re-run the full installer if this fails (token may have expired)
+echo Reinstalling $PackageName for current Node version...
+npm install -g $PackageName@latest --registry $registry/
+if %ERRORLEVEL% NEQ 0 (
+  echo.
+  echo Failed. The auth token may have expired.
+  echo Re-run the full DeepStudio installer instead.
+  pause
+  exit /b 1
+)
+echo.
+echo Done. $PackageName is ready for Node %node --version%.
+pause
+"@
+      Set-Content -Path $nvmReinstallPath -Value $reinstallContent -Encoding ASCII
+      Dim "  Quick reinstall script saved: $nvmReinstallPath"
+      Dim "  Run it after 'nvm use' to reinstall without re-authenticating."
+    } catch {
+      Dim "  Could not save reinstall helper (non-fatal)."
+    }
+  }
+
   Write-Host ""
 
   Write-Host "  🚀 " -NoNewline -ForegroundColor Magenta
@@ -696,7 +1076,7 @@ try {
   if ([string]::IsNullOrWhiteSpace($startChoice) -or $startChoice -match '^[Yy]') {
     Write-Host ""
     Write-Host "  🏢 " -NoNewline -ForegroundColor Cyan
-    $adoOrg = Read-Host "Enter your ADO org name [microsoft]"
+    $adoOrg = Read-Host "Enter your ADO org name [If you press enter, the default value is 'microsoft']"
     if ([string]::IsNullOrWhiteSpace($adoOrg)) { $adoOrg = "microsoft" }
     $env:DEEPSTUDIO_ADO_ORG = $adoOrg
     Dim "ADO org: $adoOrg"
@@ -724,12 +1104,20 @@ catch {
 
   Write-Host ""
   Warn "Common causes for 401/403:"
+  Dim "  • Azure CLI logged in with a personal account instead of a corporate (AAD) account"
   Dim "  • Azure CLI token expired (try: az login)"
-  Dim "  • PAT missing Packaging:Read scope"
+  Dim "  • 'Found multiple accounts' error (try: az account clear; az login --tenant $MicrosoftTenantId)"
+  Dim "  • PAT creation blocked by 1ES policy (only packaging-scoped PATs are allowed)"
+  Dim "  • PAT missing Packaging:Read scope or has disallowed scopes"
   Dim "  • PAT pasted with extra whitespace"
   Dim "  • Wrong registry URL"
   Dim "  • No permission to the Azure Artifacts feed"
   Dim "  • Corporate proxy/SSL interception issues"
+  Dim "  • npm 11+: built-in npmrc at <npm-prefix>/node_modules/npm/npmrc has conflicting auth"
+  Dim "    (check: npm config get prefix  then inspect <prefix>/node_modules/npm/npmrc)"
+
+  # Show which az account is active so the user can spot a wrong-account issue
+  Show-AzAccountDiagnostics
 
   Write-Host ""
   Warn "Common causes for 404:"
@@ -759,9 +1147,12 @@ catch {
   throw
 }
 finally {
-  # Restore env var
+  # Restore env vars
   if ($script:SavedNpmConfigRegistry) {
     $env:NPM_CONFIG_REGISTRY = $script:SavedNpmConfigRegistry
+  }
+  if ($script:SavedNpmConfigAlwaysAuth) {
+    $env:NPM_CONFIG_ALWAYS_AUTH = $script:SavedNpmConfigAlwaysAuth
   }
   if (-not $DryRun) {
     Remove-Item $tmpNpmrc -Force -ErrorAction SilentlyContinue
