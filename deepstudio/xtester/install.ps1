@@ -24,7 +24,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.1.0"
+$Script:InstallerVersion = "1.2.0"
+
+# Force UTF-8 console output so winget's progress glyphs and other tool output
+# are not rendered as mojibake in legacy code-page consoles.
+try {
+  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+  $OutputEncoding = [System.Text.Encoding]::UTF8
+} catch { }
 
 function Info([string]$Message) { Write-Host "  $Message" -ForegroundColor Cyan }
 function Success([string]$Message) { Write-Host "  OK  $Message" -ForegroundColor Green }
@@ -399,8 +406,21 @@ function Install-PythonViaWinget {
   Invoke-Step "Installing Python 3.12 via winget (Python.Python.3.12)" {
     # Use --scope user so we do not require an elevation prompt; winget returns
     # non-zero for "already installed" too, so we tolerate any non-fatal exit.
+    # --disable-interactivity suppresses winget's animated progress bar so the
+    # console is not flooded with redraw lines (which can also render as
+    # mojibake on legacy code pages).
     & $winget.Source install -e --id Python.Python.3.12 --scope user `
-      --accept-source-agreements --accept-package-agreements --silent 2>&1 | ForEach-Object { Write-Host "    $_" }
+      --accept-source-agreements --accept-package-agreements --silent `
+      --disable-interactivity 2>&1 | ForEach-Object {
+        $line = [string]$_
+        # Drop empty/whitespace lines and progress redraw lines (block glyphs,
+        # carriage-return progress percentages, and MB/KB transfer counters).
+        if ([string]::IsNullOrWhiteSpace($line)) { return }
+        if ($line -match '^[\s\u2580-\u259F\u2588-\u259B█▒▓░\-\\|/]+\s*\d+\s*%\s*$') { return }
+        if ($line -match '^[\s\u2580-\u259F\u2588-\u259B█▒▓░\-\\|/]+\s*\d[\d.,]*\s*(KB|MB|GB)\s*/\s*\d') { return }
+        if ($line -match '^[\s\-\\|/]+$') { return }
+        Write-Host "    $line"
+    }
     if ($LASTEXITCODE -ne 0) {
       Warn "winget exited with code $LASTEXITCODE (this can mean 'already installed' or 'no upgrade needed' and is often safe to ignore)."
     }
