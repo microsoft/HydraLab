@@ -24,6 +24,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$Script:InstallerVersion = "1.1.0"
+
 function Info([string]$Message) { Write-Host "  $Message" -ForegroundColor Cyan }
 function Success([string]$Message) { Write-Host "  OK  $Message" -ForegroundColor Green }
 function Warn([string]$Message) { Write-Host "  WARN $Message" -ForegroundColor Yellow }
@@ -118,6 +120,34 @@ function New-ManagedVenv($PythonInfo) {
 
   $venvPython = Join-Path $VenvPath "Scripts\python.exe"
   if (-not (Test-Path -LiteralPath $venvPython)) {
+    # Microsoft Store / UWP Python redirects writes under %LOCALAPPDATA% into
+    # %LOCALAPPDATA%\Packages\PythonSoftwareFoundation.Python.*\LocalCache\Local\<rest>.
+    # Try to locate the redirected venv and use that path instead.
+    $redirected = $null
+    $localAppData = $env:LOCALAPPDATA
+    if ($localAppData -and $VenvPath.StartsWith($localAppData, [System.StringComparison]::OrdinalIgnoreCase)) {
+      $relative = $VenvPath.Substring($localAppData.Length).TrimStart('\','/')
+      $packagesRoot = Join-Path $localAppData "Packages"
+      if (Test-Path -LiteralPath $packagesRoot) {
+        $candidates = Get-ChildItem -LiteralPath $packagesRoot -Directory -ErrorAction SilentlyContinue |
+          Where-Object { $_.Name -like "PythonSoftwareFoundation.Python.*" }
+        foreach ($pkg in $candidates) {
+          $candidateVenv = Join-Path $pkg.FullName (Join-Path "LocalCache\Local" $relative)
+          $candidatePython = Join-Path $candidateVenv "Scripts\python.exe"
+          if (Test-Path -LiteralPath $candidatePython) {
+            $redirected = @{ Venv = $candidateVenv; Python = $candidatePython; Package = $pkg.Name }
+            break
+          }
+        }
+      }
+    }
+    if ($redirected) {
+      Warn "Microsoft Store Python redirected the venv into $($redirected.Package)."
+      Warn "Using redirected venv: $($redirected.Venv)"
+      Info "To avoid this, install Python from https://www.python.org/downloads/ or via 'winget install -e --id Python.Python.3.12'."
+      $Script:VenvPath = $redirected.Venv
+      return $redirected.Python
+    }
     throw "Managed venv is missing python.exe: $venvPython"
   }
   return $venvPython
@@ -296,6 +326,20 @@ function Test-PythonExecutable([string]$FilePath, [string[]]$Arguments) {
   $major = [int]$Matches[1]
   $minor = [int]$Matches[2]
   if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 11)) { return $null }
+
+  # Reject Microsoft Store Python distributions. They virtualize writes under
+  # %LOCALAPPDATA% into %LOCALAPPDATA%\Packages\PythonSoftwareFoundation.Python.*\LocalCache\Local\,
+  # which breaks `python -m venv` against our managed venv path.
+  try {
+    $sysExe = & $FilePath @Arguments -c "import sys; print(sys.executable)" 2>&1
+    if ($LASTEXITCODE -eq 0) {
+      $sysExeText = ($sysExe | Out-String).Trim()
+      if ($sysExeText -match "\\WindowsApps\\" -or $sysExeText -match "\\Packages\\PythonSoftwareFoundation\.Python\.") {
+        return $null
+      }
+    }
+  } catch { }
+
   return [pscustomobject]@{
     FilePath  = $FilePath
     Arguments = $Arguments
@@ -394,7 +438,13 @@ function Resolve-Python {
 }
 
 Write-Host ""
-Write-Host "X-Tester MCP installer" -ForegroundColor Magenta
+Write-Host "  __  __    _____         _            " -ForegroundColor Magenta
+Write-Host "  \ \/ /   |_   _|__  ___| |_ ___ _ __ " -ForegroundColor Magenta
+Write-Host "   \  /_____| |/ _ \/ __| __/ _ \ '__|" -ForegroundColor Magenta
+Write-Host "   /  \_____| |  __/\__ \ ||  __/ |   " -ForegroundColor Magenta
+Write-Host "  /_/\_\    |_|\___||___/\__\___|_|   " -ForegroundColor Magenta
+Write-Host ""
+Write-Host "  X-Tester MCP installer  v$Script:InstallerVersion" -ForegroundColor Magenta
 Write-Host ""
 
 $pythonInfo = Resolve-Python
