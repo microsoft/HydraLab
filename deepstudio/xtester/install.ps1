@@ -109,6 +109,42 @@ function Resolve-LocalPackagePath {
   return (Resolve-Path -LiteralPath $candidate).Path
 }
 
+function Get-HostArchitecture {
+  try {
+    return [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+  }
+  catch {
+    return $env:PROCESSOR_ARCHITECTURE
+  }
+}
+
+function Test-IsWindowsArm64Host {
+  $isWindowsHost = $false
+  try { $isWindowsHost = $IsWindows } catch { }
+  if (-not $isWindowsHost -and $env:OS -eq "Windows_NT") { $isWindowsHost = $true }
+  if (-not $isWindowsHost) { return $false }
+
+  $arch = Get-HostArchitecture
+  return $arch -match "^(Arm64|AArch64)$"
+}
+
+function Get-PythonMachine([string]$FilePath, [string[]]$Arguments) {
+  try {
+    $output = & $FilePath @Arguments -c "import platform; print(platform.machine())" 2>&1
+    if ($LASTEXITCODE -ne 0) { return $null }
+    return ($output | Out-String).Trim()
+  }
+  catch {
+    return $null
+  }
+}
+
+function Test-IsUnsupportedWindowsArm64Python([string]$FilePath, [string[]]$Arguments) {
+  if (-not (Test-IsWindowsArm64Host)) { return $false }
+  $machine = Get-PythonMachine $FilePath $Arguments
+  return $machine -match "^(ARM64|AARCH64)$"
+}
+
 function New-ManagedVenv($PythonInfo) {
   if ($Force -and (Test-Path -LiteralPath $VenvPath)) {
     Invoke-Step "Removing existing managed venv: $VenvPath" {
@@ -126,6 +162,19 @@ function New-ManagedVenv($PythonInfo) {
   }
 
   $venvPython = Join-Path $VenvPath "Scripts\python.exe"
+  if ((Test-Path -LiteralPath $venvPython) -and (Test-IsUnsupportedWindowsArm64Python $venvPython @())) {
+    Invoke-Step "Removing native ARM64 managed venv: $VenvPath" {
+      Remove-Item -LiteralPath $VenvPath -Recurse -Force
+    }
+    Invoke-Step "Creating managed X-Tester venv: $VenvPath" {
+      $venvArgs = @()
+      if ($PythonInfo.Arguments) { $venvArgs += $PythonInfo.Arguments }
+      $venvArgs += @("-m", "venv", $VenvPath)
+      Invoke-External $PythonInfo.FilePath $venvArgs
+    }
+    $venvPython = Join-Path $VenvPath "Scripts\python.exe"
+  }
+
   if (-not (Test-Path -LiteralPath $venvPython)) {
     # Microsoft Store / UWP Python redirects writes under %LOCALAPPDATA% into
     # %LOCALAPPDATA%\Packages\PythonSoftwareFoundation.Python.*\LocalCache\Local\<rest>.
@@ -164,7 +213,7 @@ function Install-XTesterIntoVenv([string]$VenvPython) {
   Invoke-WithCleanPythonPath {
     Invoke-Step "Upgrading pip and installing private-feed auth helpers" {
       Invoke-External $VenvPython @("-m", "pip", "install", "-U", "pip")
-      Invoke-External $VenvPython @("-m", "pip", "install", "-U", "keyring", "artifacts-keyring")
+      Invoke-External $VenvPython @("-m", "pip", "install", "-U", "--prefer-binary", "keyring", "artifacts-keyring")
     }
 
     if ($Source -eq "local") {
@@ -184,7 +233,7 @@ function Install-XTesterIntoVenv([string]$VenvPython) {
 
     Invoke-Step "Installing $installLabel" {
       Invoke-External $VenvPython @(
-        "-m", "pip", "install", "-U",
+        "-m", "pip", "install", "-U", "--prefer-binary",
         "--index-url", $FeedUrl,
         "--extra-index-url", $ExtraIndexUrl,
         $packageSpec
@@ -334,6 +383,10 @@ function Test-PythonExecutable([string]$FilePath, [string[]]$Arguments) {
   $minor = [int]$Matches[2]
   if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 11)) { return $null }
 
+  if (Test-IsUnsupportedWindowsArm64Python $FilePath $Arguments) {
+    return $null
+  }
+
   # Reject Microsoft Store Python distributions. They virtualize writes under
   # %LOCALAPPDATA% into %LOCALAPPDATA%\Packages\PythonSoftwareFoundation.Python.*\LocalCache\Local\,
   # which breaks `python -m venv` against our managed venv path.
@@ -373,7 +426,7 @@ function Find-PythonCandidate {
 
   $py = Get-Command "py" -ErrorAction SilentlyContinue
   if ($py) {
-    foreach ($flag in @("-3.13", "-3.12", "-3.11", "-3")) {
+    foreach ($flag in @("-3.12", "-3.11", "-3.13", "-3")) {
       $candidates += ,@($py.Source, @($flag))
     }
   }
@@ -409,9 +462,15 @@ function Install-PythonViaWinget {
     # --disable-interactivity suppresses winget's animated progress bar so the
     # console is not flooded with redraw lines (which can also render as
     # mojibake on legacy code pages).
-    & $winget.Source install -e --id Python.Python.3.12 --scope user `
-      --accept-source-agreements --accept-package-agreements --silent `
-      --disable-interactivity 2>&1 | ForEach-Object {
+    $wingetArgs = @("install", "-e", "--id", "Python.Python.3.12", "--scope", "user")
+    if (Test-IsWindowsArm64Host) {
+      $wingetArgs += @("--architecture", "x64")
+    }
+    $wingetArgs += @(
+      "--accept-source-agreements", "--accept-package-agreements", "--silent",
+      "--disable-interactivity"
+    )
+    & $winget.Source @wingetArgs 2>&1 | ForEach-Object {
         $line = [string]$_
         # Drop empty/whitespace lines and progress redraw lines (block glyphs,
         # carriage-return progress percentages, and MB/KB transfer counters).
@@ -447,16 +506,25 @@ function Resolve-Python {
   }
 
   Fail "No working Python 3.11+ interpreter was found."
-  Info "Tried: python, python3, py -3.13, py -3.12, py -3.11, py -3 plus %LOCALAPPDATA%\Programs\Python\Python3*."
+  Info "Tried: python, python3, py -3.12, py -3.11, py -3.13, py -3 plus %LOCALAPPDATA%\Programs\Python\Python3*."
   Info "The Microsoft Store stub at WindowsApps\python.exe is intentionally ignored."
+  if (Test-IsWindowsArm64Host) {
+    Info "Native ARM64 Python is intentionally ignored because required auth-helper wheels can fall back to cryptography/OpenSSL source builds."
+    Info "Use x64 Python 3.12 on Windows ARM64 for this installer."
+  }
   Info "Install Python manually with one of:"
-  Info "  winget install -e --id Python.Python.3.12"
+  if (Test-IsWindowsArm64Host) {
+    Info "  winget install -e --id Python.Python.3.12 --architecture x64"
+  } else {
+    Info "  winget install -e --id Python.Python.3.12"
+  }
   Info "  choco install python --version=3.12"
   Info "  https://www.python.org/downloads/"
   Info "Then open a new terminal and re-run this installer."
-  exit 1
+  throw "No working Python 3.11+ interpreter was found."
 }
 
+# Entry point
 Write-Host ""
 Write-Host "  __  __    _____         _            " -ForegroundColor Magenta
 Write-Host "  \ \/ /   |_   _|__  ___| |_ ___ _ __ " -ForegroundColor Magenta
