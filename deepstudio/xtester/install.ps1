@@ -24,7 +24,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.3.0"
+$Script:InstallerVersion = "1.4.0"
 
 # Force UTF-8 console output so winget's progress glyphs and other tool output
 # are not rendered as mojibake in legacy code-page consoles.
@@ -419,14 +419,17 @@ function Find-PythonCandidate {
 
   foreach ($name in @("python", "python3")) {
     $cmd = Get-Command $name -ErrorAction SilentlyContinue
-    if (& $isRealPython $cmd) {
+    if ($cmd -and -not (& $isRealPython $cmd)) {
+      Warn "Skipping ${name}: '$($cmd.Source)' is the Microsoft Store WindowsApps stub"
+    }
+    elseif (& $isRealPython $cmd) {
       $candidates += ,@($cmd.Source, @())
     }
   }
 
   $py = Get-Command "py" -ErrorAction SilentlyContinue
   if ($py) {
-    foreach ($flag in @("-3.12", "-3.11", "-3.13", "-3")) {
+    foreach ($flag in @("-3.12", "-3.11", "-3.13", "-3.14", "-3")) {
       $candidates += ,@($py.Source, @($flag))
     }
   }
@@ -443,6 +446,9 @@ function Find-PythonCandidate {
     }
   }
 
+  if ($candidates.Count -eq 0) {
+    Warn "No Python candidates were discovered (no python/python3 on PATH, no py.exe launcher, no %LOCALAPPDATA%\Programs\Python\Python3* install)."
+  }
   foreach ($pair in $candidates) {
     $result = Test-PythonExecutable $pair[0] $pair[1]
     if ($result) { return $result }
