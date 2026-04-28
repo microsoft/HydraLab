@@ -24,7 +24,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.5.0"
+$Script:InstallerVersion = "1.8.0"
 
 # Force UTF-8 console output so winget's progress glyphs and other tool output
 # are not rendered as mojibake in legacy code-page consoles.
@@ -162,19 +162,6 @@ function New-ManagedVenv($PythonInfo) {
   }
 
   $venvPython = Join-Path $VenvPath "Scripts\python.exe"
-  if ((Test-Path -LiteralPath $venvPython) -and (Test-IsUnsupportedWindowsArm64Python $venvPython @())) {
-    Invoke-Step "Removing native ARM64 managed venv: $VenvPath" {
-      Remove-Item -LiteralPath $VenvPath -Recurse -Force
-    }
-    Invoke-Step "Creating managed X-Tester venv: $VenvPath" {
-      $venvArgs = @()
-      if ($PythonInfo.Arguments) { $venvArgs += $PythonInfo.Arguments }
-      $venvArgs += @("-m", "venv", $VenvPath)
-      Invoke-External $PythonInfo.FilePath $venvArgs
-    }
-    $venvPython = Join-Path $VenvPath "Scripts\python.exe"
-  }
-
   if (-not (Test-Path -LiteralPath $venvPython)) {
     # Microsoft Store / UWP Python redirects writes under %LOCALAPPDATA% into
     # %LOCALAPPDATA%\Packages\PythonSoftwareFoundation.Python.*\LocalCache\Local\<rest>.
@@ -369,22 +356,34 @@ function Expand-Clients {
 
 function Test-PythonExecutable([string]$FilePath, [string[]]$Arguments) {
   if (-not $FilePath) { return $null }
+  $label = if ($Arguments -and $Arguments.Count -gt 0) { "$FilePath $($Arguments -join ' ')" } else { "$FilePath" }
   try {
     $output = & $FilePath @Arguments --version 2>&1
   }
   catch {
+    Warn "Skipping ${label}: launcher threw $($_.Exception.Message)"
     return $null
   }
-  if ($LASTEXITCODE -ne 0) { return $null }
+  if ($LASTEXITCODE -ne 0) {
+    Warn "Skipping ${label}: '--version' exited with code $LASTEXITCODE"
+    return $null
+  }
   $text = ($output | Out-String).Trim()
   if ([string]::IsNullOrWhiteSpace($text)) { return $null }
-  if ($text -notmatch "Python\s+(\d+)\.(\d+)\.(\d+)") { return $null }
+  if ($text -notmatch "Python\s+(\d+)\.(\d+)\.(\d+)") {
+    Warn "Skipping ${label}: unrecognised version output '$text'"
+    return $null
+  }
   $major = [int]$Matches[1]
   $minor = [int]$Matches[2]
-  if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 11)) { return $null }
+  if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 11)) {
+    Warn "Skipping ${label}: $text is older than Python 3.11"
+    return $null
+  }
 
   if (Test-IsUnsupportedWindowsArm64Python $FilePath $Arguments) {
-    return $null
+    Warn "${label}: native ARM64 Python detected. Modern wheels for cryptography/keyring/artifacts-keyring exist on win_arm64; if pip later falls back to a source build, re-run with x64 Python 3.12."
+    # Fall through and accept the candidate.
   }
 
   # Reject Microsoft Store Python distributions. They virtualize writes under
@@ -395,6 +394,7 @@ function Test-PythonExecutable([string]$FilePath, [string[]]$Arguments) {
     if ($LASTEXITCODE -eq 0) {
       $sysExeText = ($sysExe | Out-String).Trim()
       if ($sysExeText -match "\\WindowsApps\\" -or $sysExeText -match "\\Packages\\PythonSoftwareFoundation\.Python\.") {
+        Warn "Skipping ${label}: Microsoft Store Python at '$sysExeText' redirects venv writes"
         return $null
       }
     }
@@ -405,6 +405,41 @@ function Test-PythonExecutable([string]$FilePath, [string[]]$Arguments) {
     Arguments = $Arguments
     Version   = $text
   }
+}
+
+function Get-RegistryPythonInstalls {
+  # PEP 514: Python distributions register themselves under
+  #   HKCU/HKLM\Software\Python\<Company>\<Tag>\InstallPath
+  # The (default) value of InstallPath is the install directory.
+  $results = @()
+  $roots = @(
+    "HKCU:\Software\Python",
+    "HKLM:\Software\Python",
+    "HKLM:\Software\WOW6432Node\Python"
+  )
+  foreach ($root in $roots) {
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    $companies = Get-ChildItem -LiteralPath $root -ErrorAction SilentlyContinue
+    foreach ($company in $companies) {
+      # Skip ContinuumAnalytics (Anaconda) etc; only PythonCore is the canonical CPython.
+      if ($company.PSChildName -ne "PythonCore") { continue }
+      $tags = Get-ChildItem -LiteralPath $company.PSPath -ErrorAction SilentlyContinue
+      foreach ($tag in $tags) {
+        $installPathKey = Join-Path $tag.PSPath "InstallPath"
+        if (-not (Test-Path -LiteralPath $installPathKey)) { continue }
+        try {
+          $props = Get-ItemProperty -LiteralPath $installPathKey -ErrorAction Stop
+          $dir = $props."(default)"
+          if (-not $dir) { $dir = $props."ExecutablePath" | Split-Path -Parent -ErrorAction SilentlyContinue }
+          if ($dir -and (Test-Path -LiteralPath $dir)) {
+            $exe = Join-Path $dir "python.exe"
+            if (Test-Path -LiteralPath $exe) { $results += $exe }
+          }
+        } catch { }
+      }
+    }
+  }
+  return ($results | Select-Object -Unique)
 }
 
 function Find-PythonCandidate {
@@ -434,6 +469,12 @@ function Find-PythonCandidate {
     }
   }
 
+  # PEP 514 registry-based discovery is the most reliable source on Windows;
+  # it works even when winget installed Python but did not refresh session PATH.
+  foreach ($exe in (Get-RegistryPythonInstalls)) {
+    $candidates += ,@($exe, @())
+  }
+
   # Common install locations for python.org / winget Python.Python.3.x packages.
   $installRoots = @(
     (Join-Path $env:LOCALAPPDATA "Programs\Python"),
@@ -445,7 +486,7 @@ function Find-PythonCandidate {
     if (-not $root) { continue }
     if (-not (Test-Path -LiteralPath $root)) { continue }
     $found = Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue |
-      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])$" } |
+      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])(x64|-x64)?$" } |
       Sort-Object Name -Descending
     foreach ($dir in $found) {
       $exe = Join-Path $dir.FullName "python.exe"
@@ -476,7 +517,7 @@ function Find-PythonCandidate {
 
   if ($candidates.Count -eq 0) {
     Warn "No Python candidates were discovered."
-    Info "Scanned: PATH (python, python3), py.exe launcher, %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links."
+    Info "Scanned: PATH (python, python3), py.exe launcher, HKCU/HKLM\Software\Python\PythonCore registry, %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links."
   }
   foreach ($pair in $candidates) {
     $result = Test-PythonExecutable $pair[0] $pair[1]
@@ -486,12 +527,16 @@ function Find-PythonCandidate {
 }
 
 function Install-PythonViaWinget {
+  param(
+    [switch]$ForceX64SideBySide
+  )
   $winget = Get-Command "winget" -ErrorAction SilentlyContinue
   if (-not $winget) {
     Warn "winget is not available; cannot auto-install Python."
     return $false
   }
-  Invoke-Step "Installing Python 3.12 via winget (Python.Python.3.12)" {
+  $stepLabel = if ($ForceX64SideBySide) { "Installing x64 Python 3.12 alongside existing ARM64 (Python.Python.3.12 --architecture x64 --force)" } else { "Installing Python 3.12 via winget (Python.Python.3.12)" }
+  Invoke-Step $stepLabel {
     # Use --scope user so we do not require an elevation prompt; winget returns
     # non-zero for "already installed" too, so we tolerate any non-fatal exit.
     # --disable-interactivity suppresses winget's animated progress bar so the
@@ -500,6 +545,10 @@ function Install-PythonViaWinget {
     $wingetArgs = @("install", "-e", "--id", "Python.Python.3.12", "--scope", "user")
     if (Test-IsWindowsArm64Host) {
       $wingetArgs += @("--architecture", "x64")
+    }
+    if ($ForceX64SideBySide) {
+      $sideBySideRoot = Join-Path $env:LOCALAPPDATA "Programs\Python\Python312x64"
+      $wingetArgs += @("--force", "--location", $sideBySideRoot)
     }
     $wingetArgs += @(
       "--accept-source-agreements", "--accept-package-agreements", "--silent",
@@ -528,7 +577,7 @@ function Install-PythonViaWinget {
   $localProgramsPython = Join-Path $env:LOCALAPPDATA "Programs\Python"
   if (Test-Path -LiteralPath $localProgramsPython) {
     Get-ChildItem -LiteralPath $localProgramsPython -Directory -ErrorAction SilentlyContinue |
-      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])$" } |
+      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])(x64|-x64)?$" } |
       ForEach-Object {
         $extra += $_.FullName
         $extra += (Join-Path $_.FullName "Scripts")
@@ -548,23 +597,26 @@ function Resolve-Python {
   if ($installed) {
     $found = Find-PythonCandidate
     if ($found) { return $found }
+    # On ARM64 hosts a previously-installed native ARM64 Python.Python.3.12
+    # makes winget skip the install with NO_APPLICABLE_UPGRADE_FOUND, so try
+    # forcing a side-by-side x64 install before giving up.
+    if (Test-IsWindowsArm64Host) {
+      Warn "Existing Python.Python.3.12 appears to be ARM64; forcing a side-by-side x64 install."
+      $forced = Install-PythonViaWinget -ForceX64SideBySide
+      if ($forced) {
+        $found = Find-PythonCandidate
+        if ($found) { return $found }
+      }
+    }
     Warn "Python was installed but is not yet visible to this session."
     Info "Open a new PowerShell window and re-run this installer."
   }
 
   Fail "No working Python 3.11+ interpreter was found."
-  Info "Tried: python, python3, py -3.12, py -3.11, py -3.13, py -3.14, py -3 plus %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links."
+  Info "Tried: python, python3, py -3.12, py -3.11, py -3.13, py -3.14, py -3, HKCU/HKLM\Software\Python\PythonCore registry, %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links."
   Info "The Microsoft Store stub at WindowsApps\python.exe is intentionally ignored."
-  if (Test-IsWindowsArm64Host) {
-    Info "Native ARM64 Python is intentionally ignored because required auth-helper wheels can fall back to cryptography/OpenSSL source builds."
-    Info "Use x64 Python 3.12 on Windows ARM64 for this installer."
-  }
   Info "Install Python manually with one of:"
-  if (Test-IsWindowsArm64Host) {
-    Info "  winget install -e --id Python.Python.3.12 --architecture x64"
-  } else {
-    Info "  winget install -e --id Python.Python.3.12"
-  }
+  Info "  winget install -e --id Python.Python.3.12"
   Info "  choco install python --version=3.12"
   Info "  https://www.python.org/downloads/"
   Info "Then open a new terminal and re-run this installer."
