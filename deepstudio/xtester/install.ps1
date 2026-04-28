@@ -24,7 +24,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.4.0"
+$Script:InstallerVersion = "1.5.0"
 
 # Force UTF-8 console output so winget's progress glyphs and other tool output
 # are not rendered as mojibake in legacy code-page consoles.
@@ -434,11 +434,18 @@ function Find-PythonCandidate {
     }
   }
 
-  # Common per-user install locations winget uses for Python.Python.3.x.
-  $localPython = Join-Path $env:LOCALAPPDATA "Programs\Python"
-  if (Test-Path -LiteralPath $localPython) {
-    $found = Get-ChildItem -LiteralPath $localPython -Directory -ErrorAction SilentlyContinue |
-      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])" } |
+  # Common install locations for python.org / winget Python.Python.3.x packages.
+  $installRoots = @(
+    (Join-Path $env:LOCALAPPDATA "Programs\Python"),
+    (Join-Path $env:ProgramFiles "Python"),
+    $env:ProgramFiles,
+    ${env:ProgramFiles(x86)}
+  )
+  foreach ($root in $installRoots) {
+    if (-not $root) { continue }
+    if (-not (Test-Path -LiteralPath $root)) { continue }
+    $found = Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])$" } |
       Sort-Object Name -Descending
     foreach ($dir in $found) {
       $exe = Join-Path $dir.FullName "python.exe"
@@ -446,8 +453,30 @@ function Find-PythonCandidate {
     }
   }
 
+  # winget user-scope installs often land under %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*.
+  $wingetPackages = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages"
+  if (Test-Path -LiteralPath $wingetPackages) {
+    $pythonPkgs = Get-ChildItem -LiteralPath $wingetPackages -Directory -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -like "Python.Python.3.*" } |
+      Sort-Object Name -Descending
+    foreach ($pkg in $pythonPkgs) {
+      $exes = Get-ChildItem -LiteralPath $pkg.FullName -Recurse -Filter python.exe -ErrorAction SilentlyContinue -Depth 4
+      foreach ($exe in $exes) { $candidates += ,@($exe.FullName, @()) }
+    }
+  }
+
+  # winget Links shim directory exposes python.exe / python3.exe shortcuts on PATH on newer winget builds.
+  $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
+  if (Test-Path -LiteralPath $wingetLinks) {
+    foreach ($name in @("python.exe", "python3.exe", "python3.12.exe", "python3.11.exe")) {
+      $exe = Join-Path $wingetLinks $name
+      if (Test-Path -LiteralPath $exe) { $candidates += ,@($exe, @()) }
+    }
+  }
+
   if ($candidates.Count -eq 0) {
-    Warn "No Python candidates were discovered (no python/python3 on PATH, no py.exe launcher, no %LOCALAPPDATA%\Programs\Python\Python3* install)."
+    Warn "No Python candidates were discovered."
+    Info "Scanned: PATH (python, python3), py.exe launcher, %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links."
   }
   foreach ($pair in $candidates) {
     $result = Test-PythonExecutable $pair[0] $pair[1]
@@ -493,7 +522,19 @@ function Install-PythonViaWinget {
   # winget does not refresh the current session's PATH; pull the new locations in manually.
   $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
   $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-  $env:Path = (@($machinePath, $userPath) | Where-Object { $_ }) -join ";"
+  $extra = @()
+  $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
+  if (Test-Path -LiteralPath $wingetLinks) { $extra += $wingetLinks }
+  $localProgramsPython = Join-Path $env:LOCALAPPDATA "Programs\Python"
+  if (Test-Path -LiteralPath $localProgramsPython) {
+    Get-ChildItem -LiteralPath $localProgramsPython -Directory -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])$" } |
+      ForEach-Object {
+        $extra += $_.FullName
+        $extra += (Join-Path $_.FullName "Scripts")
+      }
+  }
+  $env:Path = (@($machinePath, $userPath) + $extra | Where-Object { $_ }) -join ";"
   return $true
 }
 
@@ -512,7 +553,7 @@ function Resolve-Python {
   }
 
   Fail "No working Python 3.11+ interpreter was found."
-  Info "Tried: python, python3, py -3.12, py -3.11, py -3.13, py -3 plus %LOCALAPPDATA%\Programs\Python\Python3*."
+  Info "Tried: python, python3, py -3.12, py -3.11, py -3.13, py -3.14, py -3 plus %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links."
   Info "The Microsoft Store stub at WindowsApps\python.exe is intentionally ignored."
   if (Test-IsWindowsArm64Host) {
     Info "Native ARM64 Python is intentionally ignored because required auth-helper wheels can fall back to cryptography/OpenSSL source builds."
