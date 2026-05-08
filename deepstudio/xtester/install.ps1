@@ -24,7 +24,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.8.0"
+$Script:InstallerVersion = "1.9.0"
 
 # Force UTF-8 console output so winget's progress glyphs and other tool output
 # are not rendered as mojibake in legacy code-page consoles.
@@ -60,6 +60,40 @@ function Invoke-WithCleanPythonPath([scriptblock]$Script) {
   finally {
     if ($null -ne $previousPythonPath) {
       $env:PYTHONPATH = $previousPythonPath
+    }
+  }
+}
+
+function Stop-XTesterMcpProcesses {
+  Invoke-Step "Stopping running X-Tester MCP processes" {
+    try {
+      $processes = @(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object {
+        $_.Name -ieq "xtester-mcp.exe" -or ($_.CommandLine -and $_.CommandLine -match '(^|[\\/\s"''])(xtester-mcp)(\.exe)?([\s"'']|$)')
+      })
+    }
+    catch {
+      Warn "Could not inspect running processes: $($_.Exception.Message)"
+      return
+    }
+
+    if ($processes.Count -eq 0) {
+      Info "No running xtester-mcp processes found."
+      return
+    }
+
+    foreach ($entry in $processes) {
+      $label = "$($entry.Name) pid=$($entry.ProcessId)"
+      Info "Stopping $label"
+      try {
+        $process = Get-Process -Id $entry.ProcessId -ErrorAction Stop
+        if ($process.CloseMainWindow()) {
+          if ($process.WaitForExit(2000)) { continue }
+        }
+        Stop-Process -Id $entry.ProcessId -Force -ErrorAction Stop
+      }
+      catch {
+        Warn "Could not stop ${label}: $($_.Exception.Message)"
+      }
     }
   }
 }
@@ -638,6 +672,39 @@ $pythonInfo = Resolve-Python
 $pythonInvocation = @($pythonInfo.FilePath) + $pythonInfo.Arguments
 Success "Using Python: $($pythonInfo.Version) ($($pythonInvocation -join ' '))"
 
+# Pre-install optional runtime tools that XTester needs for specific flows:
+#   adb (Google.PlatformTools) — required for Android device automation
+#   ffmpeg (Gyan.FFmpeg)       — required for Windows screen recording
+# The skills detect missing tools at runtime, but pre-installing avoids
+# first-run friction for new users.
+Invoke-Step "Ensuring adb (Android platform-tools) is available" {
+  if (Get-Command "adb" -ErrorAction SilentlyContinue) {
+    Info "adb already on PATH."
+  } else {
+    $winget = Get-Command "winget" -ErrorAction SilentlyContinue
+    if ($winget) {
+      Info "Installing Google.PlatformTools via winget..."
+      & $winget.Source install --id Google.PlatformTools -e --accept-source-agreements --accept-package-agreements --silent --disable-interactivity 2>&1 | ForEach-Object { Write-Host "    $_" }
+    } else {
+      Warn "winget not available; install Android platform-tools manually and ensure adb is on PATH."
+    }
+  }
+}
+Invoke-Step "Ensuring ffmpeg is available" {
+  if (Get-Command "ffmpeg" -ErrorAction SilentlyContinue) {
+    Info "ffmpeg already on PATH."
+  } else {
+    $winget = Get-Command "winget" -ErrorAction SilentlyContinue
+    if ($winget) {
+      Info "Installing Gyan.FFmpeg via winget..."
+      & $winget.Source install --id Gyan.FFmpeg --accept-package-agreements --accept-source-agreements --silent --disable-interactivity 2>&1 | ForEach-Object { Write-Host "    $_" }
+    } else {
+      Warn "winget not available; install ffmpeg manually and ensure it is on PATH."
+    }
+  }
+}
+
+Stop-XTesterMcpProcesses
 $venvPython = New-ManagedVenv $pythonInfo
 Install-XTesterIntoVenv $venvPython
 $xtesterMcp = Resolve-XTesterMcpFromVenv
