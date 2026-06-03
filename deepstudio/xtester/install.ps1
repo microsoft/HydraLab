@@ -24,10 +24,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.9.2"
+$Script:InstallerVersion = "1.9.4"
 
-# Force UTF-8 console output so winget's progress glyphs and other tool output
-# are not rendered as mojibake in legacy code-page consoles.
 try {
   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
   $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -182,25 +180,16 @@ function Write-JsonObject([string]$Path, $Value) {
 }
 
 function Resolve-LocalPackagePath {
-  if ($LocalPath) { return (Resolve-Path -LiteralPath $LocalPath).Path }
-  $candidate = Join-Path $PSScriptRoot "..\DeepTest\XTester"
-  return (Resolve-Path -LiteralPath $candidate).Path
+  if (-not $LocalPath) {
+    throw "-Source local requires -LocalPath pointing at the XTester package directory (e.g. -LocalPath C:\path\to\DeepTest\XTester)."
+  }
+  if (-not (Test-Path -LiteralPath $LocalPath)) {
+    throw "Local package path does not exist: $LocalPath"
+  }
+  return (Resolve-Path -LiteralPath $LocalPath).Path
 }
 
-# Python detection / installation helpers.
-#
-# This script is distributed as a single file via a one-line URL installer, so
-# the helpers must be inlined and self-contained. The same logic also lives in
-# scripts/common/Resolve-Python.ps1 (used by vm/setup.ps1 and Pester tests);
-# keep the two copies in sync. If the sibling file is present alongside this
-# script (i.e. running from a repo checkout), prefer dot-sourcing it so local
-# edits are picked up without round-tripping through this file. Otherwise the
-# inline definitions below are used.
-$Script:ResolvePythonSiblingPath = Join-Path $PSScriptRoot "common\Resolve-Python.ps1"
-if (Test-Path -LiteralPath $Script:ResolvePythonSiblingPath) {
-  . $Script:ResolvePythonSiblingPath
-} else {
-  # ---- BEGIN inlined scripts/common/Resolve-Python.ps1 ----
+# Python detection / installation helpers (inlined and self-contained).
   function Write-PyInfo([string]$Message) { Write-Host "  [python] $Message" -ForegroundColor Cyan }
   function Write-PyWarn([string]$Message) { Write-Host "  [python] WARN $Message" -ForegroundColor Yellow }
   function Write-PyFail([string]$Message) { Write-Host "  [python] ERR  $Message" -ForegroundColor Red }
@@ -530,8 +519,6 @@ if (Test-Path -LiteralPath $Script:ResolvePythonSiblingPath) {
     Write-PyInfo "Then open a new terminal and re-run this installer."
     throw "No working Python 3.11+ interpreter was found."
   }
-  # ---- END inlined scripts/common/Resolve-Python.ps1 ----
-}
 
 function New-ManagedVenv($PythonInfo) {
   if ($Force -and (Test-Path -LiteralPath $VenvPath)) {
@@ -731,8 +718,7 @@ function Register-ClaudeCode([string]$CommandPath) {
 }
 
 function Register-VSCode([string]$CommandPath) {
-  $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
-  $configPath = Join-Path $repoRoot ".vscode\mcp.json"
+  $configPath = Join-Path (Get-Location).Path ".vscode\mcp.json"
   $config = Read-JsonObject $configPath ([ordered]@{ servers = [ordered]@{} })
   if (-not $config.Contains("servers")) { $config["servers"] = [ordered]@{} }
   $config["servers"][$ServerName] = [ordered]@{
@@ -770,11 +756,6 @@ function Expand-Clients {
   }
   return $Client | Select-Object -Unique
 }
-
-# Test-PythonExecutable, Get-RegistryPythonInstalls, Find-PythonCandidate,
-# Install-PythonViaWinget, Resolve-Python now live in scripts/common/Resolve-Python.ps1
-# (dot-sourced above, alongside the ARM64 helpers). Pester tests in
-# scripts/tests/install-xtester-mcp.tests.ps1 also dot-source the shared file.
 
 # Entry point
 Write-Host ""
