@@ -24,7 +24,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.9.0"
+$Script:InstallerVersion = "1.9.2"
 
 # Force UTF-8 console output so winget's progress glyphs and other tool output
 # are not rendered as mojibake in legacy code-page consoles.
@@ -51,16 +51,60 @@ function Invoke-External([string]$FilePath, [string[]]$Arguments) {
   }
 }
 
+# winget renders its download spinner with `\r` redraws. When PowerShell wraps
+# stdout (any `2>&1 | ...` pipeline counts as a non-TTY consumer) every frame
+# is flushed with a newline, producing a vertical column of `-`,`\\`,`|`,`/`
+# (and sometimes block glyphs) in the console. Suppress those frames so the
+# operator only sees real status lines.
+function Test-IsWingetSpinnerLine([string]$Line) {
+  if ($null -eq $Line) { return $true }
+  $trimmed = $Line.Trim()
+  if ([string]::IsNullOrEmpty($trimmed)) { return $false }
+  # Pure spinner / progress glyphs (single char per line is the worst case).
+  if ($trimmed -match '^[\-\\|/\u2580-\u259F\u2588-\u259B\u2591\u2592\u2593\u2588]+$') { return $true }
+  # Spinner glyphs followed by a percentage like ` -  42 %`.
+  if ($trimmed -match '^[\-\\|/\u2580-\u259F\u2588-\u259B\u2591\u2592\u2593\u2588\s]+\d+\s*%\s*$') { return $true }
+  # Spinner glyphs followed by a `12.3 MB / 45.6 MB` style download counter.
+  if ($trimmed -match '^[\-\\|/\u2580-\u259F\u2588-\u259B\u2591\u2592\u2593\u2588\s]+\d[\d.,]*\s*(B|KB|MB|GB)\s*/\s*\d') { return $true }
+  return $false
+}
+
+function Invoke-WingetQuiet([string]$WingetPath, [string[]]$Arguments) {
+  & $WingetPath @Arguments 2>&1 | ForEach-Object {
+    $line = [string]$_
+    if ([string]::IsNullOrWhiteSpace($line)) { return }
+    if (Test-IsWingetSpinnerLine $line) { return }
+    Write-Host "    $line"
+  }
+}
+
 function Invoke-WithCleanPythonPath([scriptblock]$Script) {
   $previousPythonPath = $env:PYTHONPATH
+  # pip's text spinner relies on \r to overwrite a single line, but when stdout
+  # is wrapped by PowerShell (especially in non-TTY hosts like the VS Code
+  # PowerShell terminal) each frame is flushed with a newline, producing a
+  # vertical column of '-' '\\' '|' '/' glyphs. Force pip into its no-spinner
+  # output mode for the duration of the install.
+  $previousPipProgressBar = $env:PIP_PROGRESS_BAR
+  $previousPipNoInput = $env:PIP_NO_INPUT
+  $previousPipVersionCheck = $env:PIP_DISABLE_PIP_VERSION_CHECK
   try {
     Remove-Item Env:\PYTHONPATH -ErrorAction SilentlyContinue
+    $env:PIP_PROGRESS_BAR = "off"
+    $env:PIP_NO_INPUT = "1"
+    $env:PIP_DISABLE_PIP_VERSION_CHECK = "1"
     & $Script
   }
   finally {
     if ($null -ne $previousPythonPath) {
       $env:PYTHONPATH = $previousPythonPath
     }
+    if ($null -eq $previousPipProgressBar) { Remove-Item Env:\PIP_PROGRESS_BAR -ErrorAction SilentlyContinue }
+    else { $env:PIP_PROGRESS_BAR = $previousPipProgressBar }
+    if ($null -eq $previousPipNoInput) { Remove-Item Env:\PIP_NO_INPUT -ErrorAction SilentlyContinue }
+    else { $env:PIP_NO_INPUT = $previousPipNoInput }
+    if ($null -eq $previousPipVersionCheck) { Remove-Item Env:\PIP_DISABLE_PIP_VERSION_CHECK -ErrorAction SilentlyContinue }
+    else { $env:PIP_DISABLE_PIP_VERSION_CHECK = $previousPipVersionCheck }
   }
 }
 
@@ -143,40 +187,350 @@ function Resolve-LocalPackagePath {
   return (Resolve-Path -LiteralPath $candidate).Path
 }
 
-function Get-HostArchitecture {
-  try {
-    return [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
-  }
-  catch {
-    return $env:PROCESSOR_ARCHITECTURE
-  }
-}
+# Python detection / installation helpers.
+#
+# This script is distributed as a single file via a one-line URL installer, so
+# the helpers must be inlined and self-contained. The same logic also lives in
+# scripts/common/Resolve-Python.ps1 (used by vm/setup.ps1 and Pester tests);
+# keep the two copies in sync. If the sibling file is present alongside this
+# script (i.e. running from a repo checkout), prefer dot-sourcing it so local
+# edits are picked up without round-tripping through this file. Otherwise the
+# inline definitions below are used.
+$Script:ResolvePythonSiblingPath = Join-Path $PSScriptRoot "common\Resolve-Python.ps1"
+if (Test-Path -LiteralPath $Script:ResolvePythonSiblingPath) {
+  . $Script:ResolvePythonSiblingPath
+} else {
+  # ---- BEGIN inlined scripts/common/Resolve-Python.ps1 ----
+  function Write-PyInfo([string]$Message) { Write-Host "  [python] $Message" -ForegroundColor Cyan }
+  function Write-PyWarn([string]$Message) { Write-Host "  [python] WARN $Message" -ForegroundColor Yellow }
+  function Write-PyFail([string]$Message) { Write-Host "  [python] ERR  $Message" -ForegroundColor Red }
+  function Write-PyOk  ([string]$Message) { Write-Host "  [python] OK   $Message" -ForegroundColor Green }
 
-function Test-IsWindowsArm64Host {
-  $isWindowsHost = $false
-  try { $isWindowsHost = $IsWindows } catch { }
-  if (-not $isWindowsHost -and $env:OS -eq "Windows_NT") { $isWindowsHost = $true }
-  if (-not $isWindowsHost) { return $false }
-
-  $arch = Get-HostArchitecture
-  return $arch -match "^(Arm64|AArch64)$"
-}
-
-function Get-PythonMachine([string]$FilePath, [string[]]$Arguments) {
-  try {
-    $output = & $FilePath @Arguments -c "import platform; print(platform.machine())" 2>&1
-    if ($LASTEXITCODE -ne 0) { return $null }
-    return ($output | Out-String).Trim()
+  function Get-HostArchitecture {
+    try { return [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString() }
+    catch { return $env:PROCESSOR_ARCHITECTURE }
   }
-  catch {
+
+  function Test-IsWindowsArm64Host {
+    $isWindowsHost = $false
+    try { $isWindowsHost = $IsWindows } catch { }
+    if (-not $isWindowsHost -and $env:OS -eq "Windows_NT") { $isWindowsHost = $true }
+    if (-not $isWindowsHost) { return $false }
+    return (Get-HostArchitecture) -match "^(Arm64|AArch64)$"
+  }
+
+  function Get-PythonMachine([string]$FilePath, [string[]]$Arguments) {
+    try {
+      $output = & $FilePath @Arguments -c "import platform; print(platform.machine())" 2>&1
+      if ($LASTEXITCODE -ne 0) { return $null }
+      return ($output | Out-String).Trim()
+    } catch { return $null }
+  }
+
+  function Test-IsUnsupportedWindowsArm64Python([string]$FilePath, [string[]]$Arguments) {
+    if (-not (Test-IsWindowsArm64Host)) { return $false }
+    $machine = Get-PythonMachine $FilePath $Arguments
+    return $machine -match "^(ARM64|AARCH64)$"
+  }
+
+  function Test-PythonExecutable([string]$FilePath, [string[]]$Arguments) {
+    if (-not $FilePath) { return $null }
+    $label = if ($Arguments -and $Arguments.Count -gt 0) { "$FilePath $($Arguments -join ' ')" } else { "$FilePath" }
+    try { $output = & $FilePath @Arguments --version 2>&1 }
+    catch { Write-PyWarn "Skipping ${label}: launcher threw $($_.Exception.Message)"; return $null }
+    if ($LASTEXITCODE -ne 0) { Write-PyWarn "Skipping ${label}: '--version' exited with code $LASTEXITCODE"; return $null }
+    $text = ($output | Out-String).Trim()
+    if ([string]::IsNullOrWhiteSpace($text)) { return $null }
+    if ($text -notmatch "Python\s+(\d+)\.(\d+)\.(\d+)") { Write-PyWarn "Skipping ${label}: unrecognised version output '$text'"; return $null }
+    $major = [int]$Matches[1]; $minor = [int]$Matches[2]
+    if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 11)) { Write-PyWarn "Skipping ${label}: $text is older than Python 3.11"; return $null }
+    if (Test-IsUnsupportedWindowsArm64Python $FilePath $Arguments) {
+      Write-PyWarn "${label}: native ARM64 Python detected. Modern wheels for cryptography/keyring/artifacts-keyring exist on win_arm64; if pip later falls back to a source build, re-run with x64 Python 3.12."
+    }
+    try {
+      $sysExe = & $FilePath @Arguments -c "import sys; print(sys.executable)" 2>&1
+      if ($LASTEXITCODE -eq 0) {
+        $sysExeText = ($sysExe | Out-String).Trim()
+        if ($sysExeText -match "\\WindowsApps\\" -or $sysExeText -match "\\Packages\\PythonSoftwareFoundation\.Python\.") {
+          Write-PyWarn "Skipping ${label}: Microsoft Store Python at '$sysExeText' redirects venv writes"
+          return $null
+        }
+      }
+    } catch { }
+    return [pscustomobject]@{ FilePath = $FilePath; Arguments = $Arguments; Version = $text }
+  }
+
+  function Get-RegistryPythonInstalls {
+    $results = @()
+    $roots = @("HKCU:\Software\Python", "HKLM:\Software\Python", "HKLM:\Software\WOW6432Node\Python")
+    foreach ($root in $roots) {
+      if (-not (Test-Path -LiteralPath $root)) { continue }
+      $companies = Get-ChildItem -LiteralPath $root -ErrorAction SilentlyContinue
+      foreach ($company in $companies) {
+        if ($company.PSChildName -ne "PythonCore") { continue }
+        $tags = Get-ChildItem -LiteralPath $company.PSPath -ErrorAction SilentlyContinue
+        foreach ($tag in $tags) {
+          $installPathKey = Join-Path $tag.PSPath "InstallPath"
+          if (-not (Test-Path -LiteralPath $installPathKey)) { continue }
+          try {
+            $props = Get-ItemProperty -LiteralPath $installPathKey -ErrorAction Stop
+            $dir = $props."(default)"
+            if (-not $dir) { $dir = $props."ExecutablePath" | Split-Path -Parent -ErrorAction SilentlyContinue }
+            if ($dir -and (Test-Path -LiteralPath $dir)) {
+              $exe = Join-Path $dir "python.exe"
+              if (Test-Path -LiteralPath $exe) { $results += $exe }
+            }
+          } catch { }
+        }
+      }
+    }
+    return ($results | Select-Object -Unique)
+  }
+
+  function Find-PythonCandidate {
+    $candidates = @()
+    $isRealPython = {
+      param($cmd)
+      if (-not $cmd) { return $false }
+      if ($cmd.Source -and $cmd.Source -match "WindowsApps\\python(3)?\.exe$") { return $false }
+      return $true
+    }
+    foreach ($name in @("python", "python3")) {
+      $cmd = Get-Command $name -ErrorAction SilentlyContinue
+      if ($cmd -and -not (& $isRealPython $cmd)) {
+        Write-PyWarn "Skipping ${name}: '$($cmd.Source)' is the Microsoft Store WindowsApps stub"
+      } elseif (& $isRealPython $cmd) {
+        $candidates += ,@($cmd.Source, @())
+      }
+    }
+    $py = Get-Command "py" -ErrorAction SilentlyContinue
+    if ($py) { foreach ($flag in @("-3.12", "-3.11", "-3.13", "-3.14", "-3")) { $candidates += ,@($py.Source, @($flag)) } }
+    foreach ($exe in (Get-RegistryPythonInstalls)) { $candidates += ,@($exe, @()) }
+    $installRoots = @(
+      (Join-Path $env:LOCALAPPDATA "Programs\Python"),
+      (Join-Path $env:ProgramFiles "Python"),
+      $env:ProgramFiles,
+      ${env:ProgramFiles(x86)}
+    )
+    foreach ($root in $installRoots) {
+      if (-not $root -or -not (Test-Path -LiteralPath $root)) { continue }
+      $found = Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])(x64|-x64)?$" } |
+        Sort-Object Name -Descending
+      foreach ($dir in $found) {
+        $exe = Join-Path $dir.FullName "python.exe"
+        if (Test-Path -LiteralPath $exe) { $candidates += ,@($exe, @()) }
+      }
+    }
+    $wingetPackages = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages"
+    if (Test-Path -LiteralPath $wingetPackages) {
+      $pythonPkgs = Get-ChildItem -LiteralPath $wingetPackages -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "Python.Python.3.*" } | Sort-Object Name -Descending
+      foreach ($pkg in $pythonPkgs) {
+        $exes = Get-ChildItem -LiteralPath $pkg.FullName -Recurse -Filter python.exe -ErrorAction SilentlyContinue -Depth 4
+        foreach ($exe in $exes) { $candidates += ,@($exe.FullName, @()) }
+      }
+    }
+    $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
+    if (Test-Path -LiteralPath $wingetLinks) {
+      foreach ($name in @("python.exe", "python3.exe", "python3.12.exe", "python3.11.exe")) {
+        $exe = Join-Path $wingetLinks $name
+        if (Test-Path -LiteralPath $exe) { $candidates += ,@($exe, @()) }
+      }
+    }
+    # Scoop user-scope installs (no admin, common workaround on machines where
+    # winget is blocked by org policy).
+    $scoopApps = Join-Path $env:USERPROFILE "scoop\apps"
+    if (Test-Path -LiteralPath $scoopApps) {
+      $scoopPythonDirs = Get-ChildItem -LiteralPath $scoopApps -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -match "^python(3(1[1-9]|[2-9][0-9])?)?$" } | Sort-Object Name -Descending
+      foreach ($dir in $scoopPythonDirs) {
+        $exe = Join-Path $dir.FullName "current\python.exe"
+        if (Test-Path -LiteralPath $exe) { $candidates += ,@($exe, @()) }
+      }
+    }
+    foreach ($exe in @("C:\tools\python", "C:\tools\python3")) {
+      $exePath = Join-Path $exe "python.exe"
+      if (Test-Path -LiteralPath $exePath) { $candidates += ,@($exePath, @()) }
+    }
+    $chocoVersioned = Get-ChildItem -LiteralPath "C:\" -Directory -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])$" } | Sort-Object Name -Descending
+    foreach ($dir in $chocoVersioned) {
+      $exe = Join-Path $dir.FullName "python.exe"
+      if (Test-Path -LiteralPath $exe) { $candidates += ,@($exe, @()) }
+    }
+    if ($candidates.Count -eq 0) {
+      Write-PyWarn "No Python candidates were discovered."
+      Write-PyInfo "Scanned: PATH (python, python3), py.exe launcher, HKCU/HKLM\Software\Python\PythonCore registry, %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links, %USERPROFILE%\scoop\apps\python*, C:\tools\python*, C:\Python3*."
+    }
+    foreach ($pair in $candidates) {
+      $result = Test-PythonExecutable $pair[0] $pair[1]
+      if ($result) { return $result }
+    }
     return $null
   }
-}
 
-function Test-IsUnsupportedWindowsArm64Python([string]$FilePath, [string[]]$Arguments) {
-  if (-not (Test-IsWindowsArm64Host)) { return $false }
-  $machine = Get-PythonMachine $FilePath $Arguments
-  return $machine -match "^(ARM64|AARCH64)$"
+  function Install-PythonViaWinget {
+    param([switch]$ForceX64SideBySide)
+    $winget = Get-Command "winget" -ErrorAction SilentlyContinue
+    if (-not $winget) { Write-PyWarn "winget is not available; cannot auto-install Python."; return $false }
+    $stepLabel = if ($ForceX64SideBySide) { "Installing x64 Python 3.12 alongside existing ARM64 (Python.Python.3.12 --architecture x64 --force)" } else { "Installing Python 3.12 via winget (Python.Python.3.12)" }
+    Write-PyInfo $stepLabel
+    $wingetArgs = @("install", "-e", "--id", "Python.Python.3.12", "--scope", "user")
+    if (Test-IsWindowsArm64Host) { $wingetArgs += @("--architecture", "x64") }
+    if ($ForceX64SideBySide) {
+      $sideBySideRoot = Join-Path $env:LOCALAPPDATA "Programs\Python\Python312x64"
+      $wingetArgs += @("--force", "--location", $sideBySideRoot)
+    }
+    $wingetArgs += @("--accept-source-agreements", "--accept-package-agreements", "--silent", "--disable-interactivity")
+    $script:WingetBlockedByPolicy = $false
+    & $winget.Source @wingetArgs 2>&1 | ForEach-Object {
+      $line = [string]$_
+      if ([string]::IsNullOrWhiteSpace($line)) { return }
+      if ($line -match '^[\s\u2580-\u259F\u2588-\u259B█▒▓░\-\\|/]+\s*\d+\s*%\s*$') { return }
+      if ($line -match '^[\s\u2580-\u259F\u2588-\u259B█▒▓░\-\\|/]+\s*\d[\d.,]*\s*(KB|MB|GB)\s*/\s*\d') { return }
+      if ($line -match '^[\s\-\\|/]+$') { return }
+      if ($line -match 'Organization policies are preventing installation' -or $line -match 'exit code:\s*1625') {
+        $script:WingetBlockedByPolicy = $true
+      }
+      Write-Host "    $line"
+    }
+    if ($LASTEXITCODE -ne 0) {
+      Write-PyWarn "winget exited with code $LASTEXITCODE (this can mean 'already installed' or 'no upgrade needed' and is often safe to ignore)."
+    }
+    # Clean up partial Python install roots winget left behind on policy / 1603 abort.
+    $localProgramsPythonRoot = Join-Path $env:LOCALAPPDATA "Programs\Python"
+    if (Test-Path -LiteralPath $localProgramsPythonRoot) {
+      Get-ChildItem -LiteralPath $localProgramsPythonRoot -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])(x64|-x64)?$" } |
+        ForEach-Object {
+          $rootPython = Join-Path $_.FullName "python.exe"
+          if (-not (Test-Path -LiteralPath $rootPython)) {
+            Write-PyWarn "Cleaning up partial Python install (no python.exe at root): $($_.FullName)"
+            try { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction Stop }
+            catch { Write-PyWarn "Could not remove $($_.FullName): $($_.Exception.Message)" }
+          }
+        }
+    }
+    $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    $extra = @()
+    $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
+    if (Test-Path -LiteralPath $wingetLinks) { $extra += $wingetLinks }
+    $localProgramsPython = Join-Path $env:LOCALAPPDATA "Programs\Python"
+    if (Test-Path -LiteralPath $localProgramsPython) {
+      Get-ChildItem -LiteralPath $localProgramsPython -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])(x64|-x64)?$" } |
+        ForEach-Object { $extra += $_.FullName; $extra += (Join-Path $_.FullName "Scripts") }
+    }
+    $scoopShims = Join-Path $env:USERPROFILE "scoop\shims"
+    if (Test-Path -LiteralPath $scoopShims) { $extra += $scoopShims }
+    $env:Path = (@($machinePath, $userPath) + $extra | Where-Object { $_ }) -join ";"
+    return $true
+  }
+
+  function Install-Scoop {
+    $scoopShim = Join-Path $env:USERPROFILE "scoop\shims\scoop.ps1"
+    if (Test-Path -LiteralPath $scoopShim) { return $true }
+    Write-PyInfo "scoop is not installed. Bootstrapping scoop (user-scope, no admin required)..."
+    try {
+      $current = Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue
+      if ($current -eq "Restricted" -or $current -eq "AllSigned" -or $current -eq "Undefined") {
+        Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force -ErrorAction Stop
+      }
+      $installer = "$env:TEMP\install-scoop.ps1"
+      Invoke-WebRequest -UseBasicParsing -Uri "https://get.scoop.sh" -OutFile $installer -ErrorAction Stop
+      & powershell -NoProfile -ExecutionPolicy Bypass -File $installer -RunAsAdmin:$false 2>&1 | ForEach-Object {
+        $line = [string]$_
+        if ([string]::IsNullOrWhiteSpace($line)) { return }
+        Write-Host "    $line"
+      }
+      Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue
+    } catch {
+      Write-PyWarn "Failed to bootstrap scoop: $($_.Exception.Message)"
+      return $false
+    }
+    $scoopShims = Join-Path $env:USERPROFILE "scoop\shims"
+    if (Test-Path -LiteralPath $scoopShims) {
+      $env:Path = ($env:Path.TrimEnd(';') + ";" + $scoopShims)
+    }
+    return (Test-Path -LiteralPath $scoopShim)
+  }
+
+  function Install-PythonViaScoop {
+    $scoop = Get-Command "scoop" -ErrorAction SilentlyContinue
+    if (-not $scoop) {
+      if (-not (Install-Scoop)) {
+        Write-PyInfo "scoop is not available and could not be bootstrapped automatically. Install scoop from https://scoop.sh and re-run, or install Python manually."
+        return $false
+      }
+      $scoop = Get-Command "scoop" -ErrorAction SilentlyContinue
+      if (-not $scoop) {
+        $scoopPs1 = Join-Path $env:USERPROFILE "scoop\shims\scoop.ps1"
+        if (Test-Path -LiteralPath $scoopPs1) {
+          $scoop = [pscustomobject]@{ Source = $scoopPs1 }
+        } else { return $false }
+      }
+    }
+    Write-PyInfo "Falling back to scoop: scoop install python (user-scope, no admin required)"
+    & $scoop.Source install python 2>&1 | ForEach-Object {
+      $line = [string]$_
+      if ([string]::IsNullOrWhiteSpace($line)) { return }
+      Write-Host "    $line"
+    }
+    if ($LASTEXITCODE -ne 0) { Write-PyWarn "scoop install python exited with code $LASTEXITCODE." }
+    $scoopShims = Join-Path $env:USERPROFILE "scoop\shims"
+    if (Test-Path -LiteralPath $scoopShims) {
+      $env:Path = ($env:Path.TrimEnd(';') + ";" + $scoopShims)
+    }
+    return $true
+  }
+
+  function Resolve-Python {
+    $found = Find-PythonCandidate
+    if ($found) { return $found }
+    Write-PyWarn "No working Python 3.11+ interpreter was found on PATH."
+    Write-PyInfo "Attempting automatic install via winget..."
+    $installed = Install-PythonViaWinget
+    if ($script:WingetBlockedByPolicy) {
+      Write-PyWarn "winget reported the install was blocked by organization policy (1625)."
+      if (Install-PythonViaScoop) {
+        $found = Find-PythonCandidate
+        if ($found) { return $found }
+      }
+    }
+    if ($installed) {
+      $found = Find-PythonCandidate
+      if ($found) { return $found }
+      if (Test-IsWindowsArm64Host) {
+        Write-PyWarn "Existing Python.Python.3.12 appears to be ARM64; forcing a side-by-side x64 install."
+        $forced = Install-PythonViaWinget -ForceX64SideBySide
+        if ($forced) {
+          $found = Find-PythonCandidate
+          if ($found) { return $found }
+        }
+      }
+      Write-PyWarn "Python was installed but is not yet visible to this session."
+      Write-PyInfo "Open a new PowerShell window and re-run this installer."
+    }
+    if (-not $script:WingetBlockedByPolicy) {
+      if (Install-PythonViaScoop) {
+        $found = Find-PythonCandidate
+        if ($found) { return $found }
+      }
+    }
+    Write-PyFail "No working Python 3.11+ interpreter was found."
+    Write-PyInfo "Tried: python, python3, py -3.12, py -3.11, py -3.13, py -3.14, py -3, HKCU/HKLM\Software\Python\PythonCore registry, %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links, %USERPROFILE%\scoop\apps\python*, C:\tools\python*, C:\Python3*."
+    Write-PyInfo "The Microsoft Store stub at WindowsApps\python.exe is intentionally ignored."
+    Write-PyInfo "Install Python manually with one of:"
+    Write-PyInfo "  scoop install python   (user-scope, works when winget is blocked by org policy)"
+    Write-PyInfo "  winget install -e --id Python.Python.3.12"
+    Write-PyInfo "  choco install python --version=3.12"
+    Write-PyInfo "  https://www.python.org/downloads/"
+    Write-PyInfo "Then open a new terminal and re-run this installer."
+    throw "No working Python 3.11+ interpreter was found."
+  }
+  # ---- END inlined scripts/common/Resolve-Python.ps1 ----
 }
 
 function New-ManagedVenv($PythonInfo) {
@@ -233,14 +587,14 @@ function New-ManagedVenv($PythonInfo) {
 function Install-XTesterIntoVenv([string]$VenvPython) {
   Invoke-WithCleanPythonPath {
     Invoke-Step "Upgrading pip and installing private-feed auth helpers" {
-      Invoke-External $VenvPython @("-m", "pip", "install", "-U", "pip")
-      Invoke-External $VenvPython @("-m", "pip", "install", "-U", "--prefer-binary", "keyring", "artifacts-keyring")
+      Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "-U", "pip")
+      Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "-U", "--prefer-binary", "keyring", "artifacts-keyring")
     }
 
     if ($Source -eq "local") {
       $path = Resolve-LocalPackagePath
       Invoke-Step "Installing X-Tester from local source: $path" {
-        Invoke-External $VenvPython @("-m", "pip", "install", "-U", "-e", $path)
+        Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "-U", "-e", $path)
       }
       return
     }
@@ -254,7 +608,7 @@ function Install-XTesterIntoVenv([string]$VenvPython) {
 
     Invoke-Step "Installing $installLabel" {
       Invoke-External $VenvPython @(
-        "-m", "pip", "install", "-U", "--prefer-binary",
+        "-m", "pip", "install", "--progress-bar", "off", "-U", "--prefer-binary",
         "--index-url", $FeedUrl,
         "--extra-index-url", $ExtraIndexUrl,
         $packageSpec
@@ -271,13 +625,42 @@ function Resolve-XTesterMcpFromVenv {
   return (Resolve-Path -LiteralPath $exe).Path
 }
 
+function Ensure-XTesterCliPath([string]$VenvPython) {
+  $venvScripts = Split-Path -Parent $VenvPython
+  if (-not (Test-Path -LiteralPath $venvScripts)) {
+    throw "Managed venv Scripts directory is missing: $venvScripts"
+  }
+
+  $ensureExe = Join-Path $venvScripts "xtester-ensure-path.exe"
+  Invoke-Step "Ensuring xtester CLI path is on user PATH" {
+    if (Test-Path -LiteralPath $ensureExe) {
+      Invoke-External $ensureExe @()
+    } else {
+      Invoke-External $VenvPython @("-m", "xtester.install_path")
+    }
+
+    # Apply the same change to this installer process so immediate follow-up
+    # commands in the same terminal can resolve xtester without reopening.
+    $parts = @($env:Path -split ';' | Where-Object { $_ -and $_.Trim() })
+    $normalizedExisting = $parts | ForEach-Object {
+      $_.Trim().TrimEnd('\\').ToLowerInvariant()
+    }
+    $normalizedTarget = $venvScripts.Trim().TrimEnd('\\').ToLowerInvariant()
+    if (-not ($normalizedExisting -contains $normalizedTarget)) {
+      $env:Path = "$venvScripts;$env:Path"
+    }
+  }
+}
+
 function Ensure-CopilotCli {
   $cmd = Get-Command "copilot" -ErrorAction SilentlyContinue
   if ($cmd) { return $cmd.Source }
   if ($SkipClientInstall) { throw "copilot CLI was not found and -SkipClientInstall was supplied." }
   Require-Command "npm" "Install Node.js LTS, then re-run this installer."
   Invoke-Step "Installing GitHub Copilot CLI" {
-    Invoke-External "npm" @("install", "-g", "@github/copilot")
+    # --no-progress avoids npm's animated spinner being flushed line-by-line
+    # in non-TTY PowerShell hosts (same root cause as the pip spinner column).
+    Invoke-External "npm" @("install", "-g", "--no-progress", "--no-fund", "--no-audit", "@github/copilot")
   }
   $cmd = Get-Command "copilot" -ErrorAction SilentlyContinue
   if ($cmd) { return $cmd.Source }
@@ -388,274 +771,10 @@ function Expand-Clients {
   return $Client | Select-Object -Unique
 }
 
-function Test-PythonExecutable([string]$FilePath, [string[]]$Arguments) {
-  if (-not $FilePath) { return $null }
-  $label = if ($Arguments -and $Arguments.Count -gt 0) { "$FilePath $($Arguments -join ' ')" } else { "$FilePath" }
-  try {
-    $output = & $FilePath @Arguments --version 2>&1
-  }
-  catch {
-    Warn "Skipping ${label}: launcher threw $($_.Exception.Message)"
-    return $null
-  }
-  if ($LASTEXITCODE -ne 0) {
-    Warn "Skipping ${label}: '--version' exited with code $LASTEXITCODE"
-    return $null
-  }
-  $text = ($output | Out-String).Trim()
-  if ([string]::IsNullOrWhiteSpace($text)) { return $null }
-  if ($text -notmatch "Python\s+(\d+)\.(\d+)\.(\d+)") {
-    Warn "Skipping ${label}: unrecognised version output '$text'"
-    return $null
-  }
-  $major = [int]$Matches[1]
-  $minor = [int]$Matches[2]
-  if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 11)) {
-    Warn "Skipping ${label}: $text is older than Python 3.11"
-    return $null
-  }
-
-  if (Test-IsUnsupportedWindowsArm64Python $FilePath $Arguments) {
-    Warn "${label}: native ARM64 Python detected. Modern wheels for cryptography/keyring/artifacts-keyring exist on win_arm64; if pip later falls back to a source build, re-run with x64 Python 3.12."
-    # Fall through and accept the candidate.
-  }
-
-  # Reject Microsoft Store Python distributions. They virtualize writes under
-  # %LOCALAPPDATA% into %LOCALAPPDATA%\Packages\PythonSoftwareFoundation.Python.*\LocalCache\Local\,
-  # which breaks `python -m venv` against our managed venv path.
-  try {
-    $sysExe = & $FilePath @Arguments -c "import sys; print(sys.executable)" 2>&1
-    if ($LASTEXITCODE -eq 0) {
-      $sysExeText = ($sysExe | Out-String).Trim()
-      if ($sysExeText -match "\\WindowsApps\\" -or $sysExeText -match "\\Packages\\PythonSoftwareFoundation\.Python\.") {
-        Warn "Skipping ${label}: Microsoft Store Python at '$sysExeText' redirects venv writes"
-        return $null
-      }
-    }
-  } catch { }
-
-  return [pscustomobject]@{
-    FilePath  = $FilePath
-    Arguments = $Arguments
-    Version   = $text
-  }
-}
-
-function Get-RegistryPythonInstalls {
-  # PEP 514: Python distributions register themselves under
-  #   HKCU/HKLM\Software\Python\<Company>\<Tag>\InstallPath
-  # The (default) value of InstallPath is the install directory.
-  $results = @()
-  $roots = @(
-    "HKCU:\Software\Python",
-    "HKLM:\Software\Python",
-    "HKLM:\Software\WOW6432Node\Python"
-  )
-  foreach ($root in $roots) {
-    if (-not (Test-Path -LiteralPath $root)) { continue }
-    $companies = Get-ChildItem -LiteralPath $root -ErrorAction SilentlyContinue
-    foreach ($company in $companies) {
-      # Skip ContinuumAnalytics (Anaconda) etc; only PythonCore is the canonical CPython.
-      if ($company.PSChildName -ne "PythonCore") { continue }
-      $tags = Get-ChildItem -LiteralPath $company.PSPath -ErrorAction SilentlyContinue
-      foreach ($tag in $tags) {
-        $installPathKey = Join-Path $tag.PSPath "InstallPath"
-        if (-not (Test-Path -LiteralPath $installPathKey)) { continue }
-        try {
-          $props = Get-ItemProperty -LiteralPath $installPathKey -ErrorAction Stop
-          $dir = $props."(default)"
-          if (-not $dir) { $dir = $props."ExecutablePath" | Split-Path -Parent -ErrorAction SilentlyContinue }
-          if ($dir -and (Test-Path -LiteralPath $dir)) {
-            $exe = Join-Path $dir "python.exe"
-            if (Test-Path -LiteralPath $exe) { $results += $exe }
-          }
-        } catch { }
-      }
-    }
-  }
-  return ($results | Select-Object -Unique)
-}
-
-function Find-PythonCandidate {
-  $candidates = @()
-  # Skip the Microsoft Store WindowsApps stub which prints a help message and exits 9009.
-  $isRealPython = {
-    param($cmd)
-    if (-not $cmd) { return $false }
-    if ($cmd.Source -and $cmd.Source -match "WindowsApps\\python(3)?\.exe$") { return $false }
-    return $true
-  }
-
-  foreach ($name in @("python", "python3")) {
-    $cmd = Get-Command $name -ErrorAction SilentlyContinue
-    if ($cmd -and -not (& $isRealPython $cmd)) {
-      Warn "Skipping ${name}: '$($cmd.Source)' is the Microsoft Store WindowsApps stub"
-    }
-    elseif (& $isRealPython $cmd) {
-      $candidates += ,@($cmd.Source, @())
-    }
-  }
-
-  $py = Get-Command "py" -ErrorAction SilentlyContinue
-  if ($py) {
-    foreach ($flag in @("-3.12", "-3.11", "-3.13", "-3.14", "-3")) {
-      $candidates += ,@($py.Source, @($flag))
-    }
-  }
-
-  # PEP 514 registry-based discovery is the most reliable source on Windows;
-  # it works even when winget installed Python but did not refresh session PATH.
-  foreach ($exe in (Get-RegistryPythonInstalls)) {
-    $candidates += ,@($exe, @())
-  }
-
-  # Common install locations for python.org / winget Python.Python.3.x packages.
-  $installRoots = @(
-    (Join-Path $env:LOCALAPPDATA "Programs\Python"),
-    (Join-Path $env:ProgramFiles "Python"),
-    $env:ProgramFiles,
-    ${env:ProgramFiles(x86)}
-  )
-  foreach ($root in $installRoots) {
-    if (-not $root) { continue }
-    if (-not (Test-Path -LiteralPath $root)) { continue }
-    $found = Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue |
-      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])(x64|-x64)?$" } |
-      Sort-Object Name -Descending
-    foreach ($dir in $found) {
-      $exe = Join-Path $dir.FullName "python.exe"
-      if (Test-Path -LiteralPath $exe) { $candidates += ,@($exe, @()) }
-    }
-  }
-
-  # winget user-scope installs often land under %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*.
-  $wingetPackages = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages"
-  if (Test-Path -LiteralPath $wingetPackages) {
-    $pythonPkgs = Get-ChildItem -LiteralPath $wingetPackages -Directory -ErrorAction SilentlyContinue |
-      Where-Object { $_.Name -like "Python.Python.3.*" } |
-      Sort-Object Name -Descending
-    foreach ($pkg in $pythonPkgs) {
-      $exes = Get-ChildItem -LiteralPath $pkg.FullName -Recurse -Filter python.exe -ErrorAction SilentlyContinue -Depth 4
-      foreach ($exe in $exes) { $candidates += ,@($exe.FullName, @()) }
-    }
-  }
-
-  # winget Links shim directory exposes python.exe / python3.exe shortcuts on PATH on newer winget builds.
-  $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
-  if (Test-Path -LiteralPath $wingetLinks) {
-    foreach ($name in @("python.exe", "python3.exe", "python3.12.exe", "python3.11.exe")) {
-      $exe = Join-Path $wingetLinks $name
-      if (Test-Path -LiteralPath $exe) { $candidates += ,@($exe, @()) }
-    }
-  }
-
-  if ($candidates.Count -eq 0) {
-    Warn "No Python candidates were discovered."
-    Info "Scanned: PATH (python, python3), py.exe launcher, HKCU/HKLM\Software\Python\PythonCore registry, %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links."
-  }
-  foreach ($pair in $candidates) {
-    $result = Test-PythonExecutable $pair[0] $pair[1]
-    if ($result) { return $result }
-  }
-  return $null
-}
-
-function Install-PythonViaWinget {
-  param(
-    [switch]$ForceX64SideBySide
-  )
-  $winget = Get-Command "winget" -ErrorAction SilentlyContinue
-  if (-not $winget) {
-    Warn "winget is not available; cannot auto-install Python."
-    return $false
-  }
-  $stepLabel = if ($ForceX64SideBySide) { "Installing x64 Python 3.12 alongside existing ARM64 (Python.Python.3.12 --architecture x64 --force)" } else { "Installing Python 3.12 via winget (Python.Python.3.12)" }
-  Invoke-Step $stepLabel {
-    # Use --scope user so we do not require an elevation prompt; winget returns
-    # non-zero for "already installed" too, so we tolerate any non-fatal exit.
-    # --disable-interactivity suppresses winget's animated progress bar so the
-    # console is not flooded with redraw lines (which can also render as
-    # mojibake on legacy code pages).
-    $wingetArgs = @("install", "-e", "--id", "Python.Python.3.12", "--scope", "user")
-    if (Test-IsWindowsArm64Host) {
-      $wingetArgs += @("--architecture", "x64")
-    }
-    if ($ForceX64SideBySide) {
-      $sideBySideRoot = Join-Path $env:LOCALAPPDATA "Programs\Python\Python312x64"
-      $wingetArgs += @("--force", "--location", $sideBySideRoot)
-    }
-    $wingetArgs += @(
-      "--accept-source-agreements", "--accept-package-agreements", "--silent",
-      "--disable-interactivity"
-    )
-    & $winget.Source @wingetArgs 2>&1 | ForEach-Object {
-        $line = [string]$_
-        # Drop empty/whitespace lines and progress redraw lines (block glyphs,
-        # carriage-return progress percentages, and MB/KB transfer counters).
-        if ([string]::IsNullOrWhiteSpace($line)) { return }
-        if ($line -match '^[\s\u2580-\u259F\u2588-\u259B█▒▓░\-\\|/]+\s*\d+\s*%\s*$') { return }
-        if ($line -match '^[\s\u2580-\u259F\u2588-\u259B█▒▓░\-\\|/]+\s*\d[\d.,]*\s*(KB|MB|GB)\s*/\s*\d') { return }
-        if ($line -match '^[\s\-\\|/]+$') { return }
-        Write-Host "    $line"
-    }
-    if ($LASTEXITCODE -ne 0) {
-      Warn "winget exited with code $LASTEXITCODE (this can mean 'already installed' or 'no upgrade needed' and is often safe to ignore)."
-    }
-  }
-  # winget does not refresh the current session's PATH; pull the new locations in manually.
-  $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-  $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-  $extra = @()
-  $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
-  if (Test-Path -LiteralPath $wingetLinks) { $extra += $wingetLinks }
-  $localProgramsPython = Join-Path $env:LOCALAPPDATA "Programs\Python"
-  if (Test-Path -LiteralPath $localProgramsPython) {
-    Get-ChildItem -LiteralPath $localProgramsPython -Directory -ErrorAction SilentlyContinue |
-      Where-Object { $_.Name -match "^Python3(1[1-9]|[2-9][0-9])(x64|-x64)?$" } |
-      ForEach-Object {
-        $extra += $_.FullName
-        $extra += (Join-Path $_.FullName "Scripts")
-      }
-  }
-  $env:Path = (@($machinePath, $userPath) + $extra | Where-Object { $_ }) -join ";"
-  return $true
-}
-
-function Resolve-Python {
-  $found = Find-PythonCandidate
-  if ($found) { return $found }
-
-  Warn "No working Python 3.11+ interpreter was found on PATH."
-  Info "Attempting automatic install via winget..."
-  $installed = Install-PythonViaWinget
-  if ($installed) {
-    $found = Find-PythonCandidate
-    if ($found) { return $found }
-    # On ARM64 hosts a previously-installed native ARM64 Python.Python.3.12
-    # makes winget skip the install with NO_APPLICABLE_UPGRADE_FOUND, so try
-    # forcing a side-by-side x64 install before giving up.
-    if (Test-IsWindowsArm64Host) {
-      Warn "Existing Python.Python.3.12 appears to be ARM64; forcing a side-by-side x64 install."
-      $forced = Install-PythonViaWinget -ForceX64SideBySide
-      if ($forced) {
-        $found = Find-PythonCandidate
-        if ($found) { return $found }
-      }
-    }
-    Warn "Python was installed but is not yet visible to this session."
-    Info "Open a new PowerShell window and re-run this installer."
-  }
-
-  Fail "No working Python 3.11+ interpreter was found."
-  Info "Tried: python, python3, py -3.12, py -3.11, py -3.13, py -3.14, py -3, HKCU/HKLM\Software\Python\PythonCore registry, %LOCALAPPDATA%\Programs\Python, %ProgramFiles%\Python, %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%\Microsoft\WinGet\Packages\Python.Python.3.*, %LOCALAPPDATA%\Microsoft\WinGet\Links."
-  Info "The Microsoft Store stub at WindowsApps\python.exe is intentionally ignored."
-  Info "Install Python manually with one of:"
-  Info "  winget install -e --id Python.Python.3.12"
-  Info "  choco install python --version=3.12"
-  Info "  https://www.python.org/downloads/"
-  Info "Then open a new terminal and re-run this installer."
-  throw "No working Python 3.11+ interpreter was found."
-}
+# Test-PythonExecutable, Get-RegistryPythonInstalls, Find-PythonCandidate,
+# Install-PythonViaWinget, Resolve-Python now live in scripts/common/Resolve-Python.ps1
+# (dot-sourced above, alongside the ARM64 helpers). Pester tests in
+# scripts/tests/install-xtester-mcp.tests.ps1 also dot-source the shared file.
 
 # Entry point
 Write-Host ""
@@ -684,7 +803,7 @@ Invoke-Step "Ensuring adb (Android platform-tools) is available" {
     $winget = Get-Command "winget" -ErrorAction SilentlyContinue
     if ($winget) {
       Info "Installing Google.PlatformTools via winget..."
-      & $winget.Source install --id Google.PlatformTools -e --accept-source-agreements --accept-package-agreements --silent --disable-interactivity 2>&1 | ForEach-Object { Write-Host "    $_" }
+      Invoke-WingetQuiet $winget.Source @("install", "--id", "Google.PlatformTools", "-e", "--accept-source-agreements", "--accept-package-agreements", "--silent", "--disable-interactivity")
     } else {
       Warn "winget not available; install Android platform-tools manually and ensure adb is on PATH."
     }
@@ -697,7 +816,7 @@ Invoke-Step "Ensuring ffmpeg is available" {
     $winget = Get-Command "winget" -ErrorAction SilentlyContinue
     if ($winget) {
       Info "Installing Gyan.FFmpeg via winget..."
-      & $winget.Source install --id Gyan.FFmpeg --accept-package-agreements --accept-source-agreements --silent --disable-interactivity 2>&1 | ForEach-Object { Write-Host "    $_" }
+      Invoke-WingetQuiet $winget.Source @("install", "--id", "Gyan.FFmpeg", "--accept-package-agreements", "--accept-source-agreements", "--silent", "--disable-interactivity")
     } else {
       Warn "winget not available; install ffmpeg manually and ensure it is on PATH."
     }
@@ -707,6 +826,7 @@ Invoke-Step "Ensuring ffmpeg is available" {
 Stop-XTesterMcpProcesses
 $venvPython = New-ManagedVenv $pythonInfo
 Install-XTesterIntoVenv $venvPython
+Ensure-XTesterCliPath $venvPython
 $xtesterMcp = Resolve-XTesterMcpFromVenv
 Success "Using xtester-mcp: $xtesterMcp"
 
