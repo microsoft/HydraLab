@@ -43,7 +43,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.9.5"
+$Script:InstallerVersion = "1.9.6"
 
 try {
   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -105,11 +105,19 @@ function Invoke-WithCleanPythonPath([scriptblock]$Script) {
   $previousPipProgressBar = $env:PIP_PROGRESS_BAR
   $previousPipNoInput = $env:PIP_NO_INPUT
   $previousPipVersionCheck = $env:PIP_DISABLE_PIP_VERSION_CHECK
+  $previousPipKeyringProvider = $env:PIP_KEYRING_PROVIDER
   try {
     Remove-Item Env:\PYTHONPATH -ErrorAction SilentlyContinue
     $env:PIP_PROGRESS_BAR = "off"
     $env:PIP_NO_INPUT = "1"
     $env:PIP_DISABLE_PIP_VERSION_CHECK = "1"
+    # PIP_NO_INPUT=1 makes pip skip its interactive keyring path, which the
+    # Azure Artifacts credential provider (artifacts-keyring) depends on, so
+    # private-feed requests would fail to authenticate. Forcing the "import"
+    # keyring provider makes pip load keyring in-process (no prompt, MSAL
+    # silent in practice), restoring feed auth for both version discovery and
+    # the actual install while staying fully non-interactive.
+    $env:PIP_KEYRING_PROVIDER = "import"
     & $Script
   }
   finally {
@@ -122,6 +130,8 @@ function Invoke-WithCleanPythonPath([scriptblock]$Script) {
     else { $env:PIP_NO_INPUT = $previousPipNoInput }
     if ($null -eq $previousPipVersionCheck) { Remove-Item Env:\PIP_DISABLE_PIP_VERSION_CHECK -ErrorAction SilentlyContinue }
     else { $env:PIP_DISABLE_PIP_VERSION_CHECK = $previousPipVersionCheck }
+    if ($null -eq $previousPipKeyringProvider) { Remove-Item Env:\PIP_KEYRING_PROVIDER -ErrorAction SilentlyContinue }
+    else { $env:PIP_KEYRING_PROVIDER = $previousPipKeyringProvider }
   }
 }
 
@@ -590,6 +600,31 @@ function New-ManagedVenv($PythonInfo) {
   return $venvPython
 }
 
+function Get-LatestXTesterVersionFromFeed([string]$VenvPython) {
+  # Ask the feed directly for the newest published version instead of trusting
+  # pip's `-U` against a possibly stale cached/locally-known index. We then pin
+  # the install to that exact version so the result is deterministic.
+  #
+  # `pip index versions` prints the latest as the first token, e.g.
+  #   xtester (0.0.23)
+  #   Available versions: 0.0.23, 0.0.22, ...
+  # Feed auth works here because the surrounding Invoke-WithCleanPythonPath sets
+  # PIP_KEYRING_PROVIDER=import (see that function for why).
+  $raw = & $VenvPython @(
+    "-m", "pip", "index", "versions", "xtester",
+    "--no-cache-dir",
+    "--index-url", $FeedUrl,
+    "--extra-index-url", $ExtraIndexUrl
+  ) 2>&1
+  if ($LASTEXITCODE -ne 0) { return $null }
+  $text = ($raw | Out-String)
+  $match = [regex]::Match($text, 'xtester\s*\(([^)]+)\)')
+  if ($match.Success) { return $match.Groups[1].Value.Trim() }
+  $match = [regex]::Match($text, 'LATEST:\s*([^\s]+)')
+  if ($match.Success) { return $match.Groups[1].Value.Trim() }
+  return $null
+}
+
 function Install-XTesterIntoVenv([string]$VenvPython) {
   Invoke-WithCleanPythonPath {
     Invoke-Step "Upgrading pip and installing private-feed auth helpers" {
@@ -605,10 +640,26 @@ function Install-XTesterIntoVenv([string]$VenvPython) {
       return
     }
 
-    $packageSpec = "xtester"
-    $installLabel = "latest X-Tester from private feed"
-    if (-not [string]::IsNullOrWhiteSpace($Version)) {
-      $packageSpec = "xtester==$Version"
+    # Resolve the concrete version to install. Explicit -Version always wins;
+    # otherwise discover the latest from the feed and pin to it. Pinning to a
+    # discovered version avoids the failure mode where pip reports an older
+    # release as "already satisfied" because its known index is stale.
+    $targetVersion = $Version
+    if ([string]::IsNullOrWhiteSpace($targetVersion)) {
+      Info "Resolving latest X-Tester version from private feed"
+      $targetVersion = Get-LatestXTesterVersionFromFeed $VenvPython
+      if ([string]::IsNullOrWhiteSpace($targetVersion)) {
+        Warn "Could not resolve latest version from feed; falling back to plain 'latest' install."
+      } else {
+        Success "Latest X-Tester on feed: $targetVersion"
+      }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($targetVersion)) {
+      $packageSpec = "xtester"
+      $installLabel = "latest X-Tester from private feed"
+    } else {
+      $packageSpec = "xtester==$targetVersion"
       $installLabel = "X-Tester $packageSpec from private feed"
     }
 
