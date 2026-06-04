@@ -1,3 +1,22 @@
+# =============================================================================
+# X-Tester MCP installer
+#
+# Delivery model:
+#   This script is designed to be run directly from a URL via `irm <url> | iex`
+#   (or `iwr <url> | iex`). It therefore MUST stay fully self-contained: do NOT
+#   add dot-sourcing of sibling files, module imports from the repo, relative
+#   `$PSScriptRoot` references, or any other dependency that does not exist when
+#   the script is piped into PowerShell from the network. Everything the
+#   installer needs (Python detection, venv setup, client registration, etc.)
+#   has to be inlined in this single file.
+#
+# Privacy & compliance:
+#   Because this runs on end-user machines, be mindful of privacy compliance.
+#   Do NOT collect, log, transmit, or persist any personal data, telemetry,
+#   credentials, tokens, or machine identifiers. Keep output limited to local
+#   install progress, and only contact the explicitly configured package feeds.
+# =============================================================================
+
 param(
   [ValidateSet("private-feed", "local")]
   [string]$Source = "private-feed",
@@ -24,7 +43,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.9.4"
+$Script:InstallerVersion = "1.9.5"
 
 try {
   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -594,8 +613,13 @@ function Install-XTesterIntoVenv([string]$VenvPython) {
     }
 
     Invoke-Step "Installing $installLabel" {
+      # --no-cache-dir forces pip to re-fetch the simple index instead of
+      # reusing a stale cached index page. Without it, a freshly published
+      # version on the private feed can be ignored (pip's -U only upgrades
+      # within the versions it already knows about), leaving the venv pinned
+      # to an older release even though a newer one is available.
       Invoke-External $VenvPython @(
-        "-m", "pip", "install", "--progress-bar", "off", "-U", "--prefer-binary",
+        "-m", "pip", "install", "--progress-bar", "off", "-U", "--prefer-binary", "--no-cache-dir",
         "--index-url", $FeedUrl,
         "--extra-index-url", $ExtraIndexUrl,
         $packageSpec
@@ -835,6 +859,24 @@ if (-not $SkipClientInstall `
     Register-ClaudeCode $xtesterMcp
   } else {
     Info "Skipping Claude Code registration. Re-run with -Client claude-code to add it later."
+  }
+}
+
+# Opportunistic: if the user installed for copilot only and VS Code is on PATH,
+# offer to register the MCP server in the workspace .vscode/mcp.json too.
+# Skipped non-interactively (no host UI) and when the user already asked for
+# vscode or -SkipClientInstall.
+if (-not $SkipClientInstall `
+    -and ($selectedClients -contains 'copilot') `
+    -and (-not ($selectedClients -contains 'vscode')) `
+    -and ($Host.UI.RawUI -ne $null) `
+    -and (Get-Command 'code' -ErrorAction SilentlyContinue)) {
+  Write-Host ""
+  $answer = Read-Host "VS Code detected. Also register X-Tester MCP with VS Code (writes .vscode/mcp.json)? [Y/n]"
+  if ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
+    Register-VSCode $xtesterMcp
+  } else {
+    Info "Skipping VS Code registration. Re-run with -Client vscode to add it later."
   }
 }
 
