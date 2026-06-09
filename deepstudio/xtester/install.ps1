@@ -43,7 +43,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.9.6"
+$Script:InstallerVersion = "1.9.7"
 
 try {
   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -610,12 +610,23 @@ function Get-LatestXTesterVersionFromFeed([string]$VenvPython) {
   #   Available versions: 0.0.23, 0.0.22, ...
   # Feed auth works here because the surrounding Invoke-WithCleanPythonPath sets
   # PIP_KEYRING_PROVIDER=import (see that function for why).
-  $raw = & $VenvPython @(
-    "-m", "pip", "index", "versions", "xtester",
-    "--no-cache-dir",
-    "--index-url", $FeedUrl,
-    "--extra-index-url", $ExtraIndexUrl
-  ) 2>&1
+  #
+  # The Azure Artifacts credential provider writes benign informational lines
+  # (e.g. "[Information] [CredentialProvider]... Acquired bearer token using
+  # 'MSAL Silent'") to *stderr*. Under the script-wide $ErrorActionPreference =
+  # "Stop", Windows PowerShell 5.1 turns native-command stderr captured via
+  # `2>&1` into a terminating NativeCommandError, aborting the installer even
+  # though the call succeeded. Relax the preference locally so those stderr
+  # lines are captured as plain text and we can rely on $LASTEXITCODE instead.
+  $raw = & {
+    $ErrorActionPreference = "Continue"
+    & $VenvPython @(
+      "-m", "pip", "index", "versions", "xtester",
+      "--no-cache-dir",
+      "--index-url", $FeedUrl,
+      "--extra-index-url", $ExtraIndexUrl
+    ) 2>&1
+  }
   if ($LASTEXITCODE -ne 0) { return $null }
   $text = ($raw | Out-String)
   $match = [regex]::Match($text, 'xtester\s*\(([^)]+)\)')
@@ -792,8 +803,24 @@ function Register-ClaudeCode([string]$CommandPath) {
   }
 }
 
+function Get-VSCodeUserMcpConfigPath {
+  # VS Code reads user-global (profile-wide) MCP servers from mcp.json in the
+  # User config folder, not from a workspace .vscode/mcp.json. Registering there
+  # makes X-Tester available in every workspace instead of only the directory
+  # the installer happened to run in.
+  if ($IsWindows -or $env:OS -eq "Windows_NT") {
+    $base = if ($env:APPDATA) { $env:APPDATA } else { Join-Path $env:USERPROFILE "AppData\Roaming" }
+    return Join-Path $base "Code\User\mcp.json"
+  }
+  if ($IsMacOS) {
+    return Join-Path $HOME "Library/Application Support/Code/User/mcp.json"
+  }
+  $base = if ($env:XDG_CONFIG_HOME) { $env:XDG_CONFIG_HOME } else { Join-Path $HOME ".config" }
+  return Join-Path $base "Code/User/mcp.json"
+}
+
 function Register-VSCode([string]$CommandPath) {
-  $configPath = Join-Path (Get-Location).Path ".vscode\mcp.json"
+  $configPath = Get-VSCodeUserMcpConfigPath
   $config = Read-JsonObject $configPath ([ordered]@{ servers = [ordered]@{} })
   if (-not $config.Contains("servers")) { $config["servers"] = [ordered]@{} }
   $config["servers"][$ServerName] = [ordered]@{
@@ -801,7 +828,7 @@ function Register-VSCode([string]$CommandPath) {
     env = [ordered]@{}
   }
   Write-JsonObject $configPath $config
-  Success "Wrote VS Code MCP config: $configPath"
+  Success "Wrote VS Code user MCP config: $configPath"
 }
 
 function Test-XTesterMcpSpawn([string]$CommandPath) {
@@ -914,16 +941,16 @@ if (-not $SkipClientInstall `
 }
 
 # Opportunistic: if the user installed for copilot only and VS Code is on PATH,
-# offer to register the MCP server in the workspace .vscode/mcp.json too.
-# Skipped non-interactively (no host UI) and when the user already asked for
-# vscode or -SkipClientInstall.
+# offer to register the MCP server in the VS Code user profile (mcp.json) too,
+# so it is available across all workspaces. Skipped non-interactively (no host
+# UI) and when the user already asked for vscode or -SkipClientInstall.
 if (-not $SkipClientInstall `
     -and ($selectedClients -contains 'copilot') `
     -and (-not ($selectedClients -contains 'vscode')) `
     -and ($Host.UI.RawUI -ne $null) `
     -and (Get-Command 'code' -ErrorAction SilentlyContinue)) {
   Write-Host ""
-  $answer = Read-Host "VS Code detected. Also register X-Tester MCP with VS Code (writes .vscode/mcp.json)? [Y/n]"
+  $answer = Read-Host "VS Code detected. Also register X-Tester MCP with VS Code (user profile)? [Y/n]"
   if ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
     Register-VSCode $xtesterMcp
   } else {
