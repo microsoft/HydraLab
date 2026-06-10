@@ -43,7 +43,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.9.7"
+$Script:InstallerVersion = "1.9.8"
 
 try {
   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -195,11 +195,65 @@ function ConvertTo-Hashtable($Value) {
   return $Value
 }
 
+function Remove-JsonComments([string]$Text) {
+  # VS Code writes mcp.json as JSONC: it permits `//` / `/* */` comments and
+  # trailing commas, neither of which Windows PowerShell 5.1's ConvertFrom-Json
+  # accepts. Strip them defensively while respecting string literals so an
+  # otherwise-valid VS Code file still parses. PowerShell 7+ tolerates comments
+  # natively, so this is a no-op-equivalent safety net there.
+  $sb = [System.Text.StringBuilder]::new()
+  $inString = $false
+  $escaped = $false
+  $i = 0
+  $len = $Text.Length
+  while ($i -lt $len) {
+    $ch = $Text[$i]
+    $next = if ($i + 1 -lt $len) { $Text[$i + 1] } else { [char]0 }
+    if ($inString) {
+      [void]$sb.Append($ch)
+      if ($escaped) { $escaped = $false }
+      elseif ($ch -eq '\') { $escaped = $true }
+      elseif ($ch -eq '"') { $inString = $false }
+      $i++
+      continue
+    }
+    if ($ch -eq '"') { $inString = $true; [void]$sb.Append($ch); $i++; continue }
+    if ($ch -eq '/' -and $next -eq '/') {
+      while ($i -lt $len -and $Text[$i] -ne "`n") { $i++ }
+      continue
+    }
+    if ($ch -eq '/' -and $next -eq '*') {
+      $i += 2
+      while ($i + 1 -lt $len -and -not ($Text[$i] -eq '*' -and $Text[$i + 1] -eq '/')) { $i++ }
+      $i += 2
+      continue
+    }
+    [void]$sb.Append($ch)
+    $i++
+  }
+  # Remove trailing commas before a closing } or ] (JSONC allows them).
+  return ([regex]::Replace($sb.ToString(), ',(\s*[}\]])', '$1'))
+}
+
 function Read-JsonObject([string]$Path, [hashtable]$DefaultValue) {
   if (-not (Test-Path -LiteralPath $Path)) { return $DefaultValue }
   $raw = Get-Content -Raw -LiteralPath $Path
   if ([string]::IsNullOrWhiteSpace($raw)) { return $DefaultValue }
-  return ConvertTo-Hashtable ($raw | ConvertFrom-Json)
+  try {
+    return ConvertTo-Hashtable ($raw | ConvertFrom-Json)
+  }
+  catch {
+    # Retry once after stripping JSONC comments / trailing commas, which is the
+    # common reason a hand- or VS Code-authored config fails strict parsing.
+    try {
+      return ConvertTo-Hashtable ((Remove-JsonComments $raw) | ConvertFrom-Json)
+    }
+    catch {
+      throw "The existing config file is not valid JSON and could not be parsed: $Path`n" +
+            "  Parser error: $($_.Exception.Message)`n" +
+            "  Fix or delete that file (e.g. reset it to '{}') and re-run the installer."
+    }
+  }
 }
 
 function Write-JsonObject([string]$Path, $Value) {
@@ -819,16 +873,48 @@ function Get-VSCodeUserMcpConfigPath {
   return Join-Path $base "Code/User/mcp.json"
 }
 
-function Register-VSCode([string]$CommandPath) {
-  $configPath = Get-VSCodeUserMcpConfigPath
-  $config = Read-JsonObject $configPath ([ordered]@{ servers = [ordered]@{} })
-  if (-not $config.Contains("servers")) { $config["servers"] = [ordered]@{} }
-  $config["servers"][$ServerName] = [ordered]@{
+function New-XTesterMcpServerEntry([string]$CommandPath) {
+  return [ordered]@{
+    type = "stdio"
     command = $CommandPath
+    args = @()
     env = [ordered]@{}
   }
-  Write-JsonObject $configPath $config
-  Success "Wrote VS Code user MCP config: $configPath"
+}
+
+function Register-VSCode([string]$CommandPath) {
+  $configPath = Get-VSCodeUserMcpConfigPath
+  try {
+    $config = Read-JsonObject $configPath ([ordered]@{ servers = [ordered]@{} })
+    if (-not $config.Contains("servers")) { $config["servers"] = [ordered]@{} }
+    $config["servers"][$ServerName] = New-XTesterMcpServerEntry $CommandPath
+    Write-JsonObject $configPath $config
+    Success "Wrote VS Code user MCP config: $configPath"
+  }
+  catch {
+    # The existing mcp.json is corrupt/unreadable (the original reported failure
+    # mode was a truncated file). VS Code cannot load any server from a broken
+    # file, so just skipping leaves the user with no X-Tester registration.
+    # Recover by backing up the unreadable file and rewriting a minimal valid
+    # config so registration actually succeeds. A failure of even that recovery
+    # must not abort the whole installer (Python venv + other clients are done).
+    Warn "Existing VS Code MCP config could not be parsed: $($_.Exception.Message)"
+    try {
+      if (Test-Path -LiteralPath $configPath) {
+        $backupPath = "$configPath.bak"
+        Copy-Item -LiteralPath $configPath -Destination $backupPath -Force -ErrorAction Stop
+        Info "Backed up unreadable VS Code MCP config to: $backupPath"
+      }
+      $config = [ordered]@{ servers = [ordered]@{} }
+      $config["servers"][$ServerName] = New-XTesterMcpServerEntry $CommandPath
+      Write-JsonObject $configPath $config
+      Success "Rewrote VS Code user MCP config: $configPath"
+    }
+    catch {
+      Warn "Skipped VS Code registration: $($_.Exception.Message)"
+      Info "Re-run with -Client vscode after fixing $configPath to add it later."
+    }
+  }
 }
 
 function Test-XTesterMcpSpawn([string]$CommandPath) {
