@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class IOSUtils {
-    public static final String WDA_BUNDLE_ID = "com.microsoft.wdar.xctrunner";
+    public static final String WDA_BUNDLE_ID = "com.microsoft.WebDriverAgentRunner.xctrunner";
     private static final Map<String, Integer> wdaPortMap = new ConcurrentHashMap<>();
     private static final Map<String, Integer> mjpegServerPortMap = new ConcurrentHashMap<>();
     private static final Set<Integer> PORT_BLACK_LIST = new HashSet<>() {{
@@ -30,24 +30,20 @@ public class IOSUtils {
     }};
 
     public static void collectCrashInfo(String folder, DeviceInfo deviceInfo, Logger logger) {
-        ShellUtils.execLocalCommand("tidevice -u " + deviceInfo.getSerialNum() + " crashreport " + folder, logger);
+        ShellUtils.execLocalCommand("pymobiledevice3 crash pull " + folder + " --udid " + deviceInfo.getSerialNum(), logger);
     }
 
     @Nullable
     public static Process startIOSLog(String keyWord, String logFilePath, DeviceInfo deviceInfo, Logger logger) {
         Process logProcess = null;
         File logFile = new File(logFilePath);
-        if (ShellUtils.isConnectedToWindowsOS) {
-            logProcess = ShellUtils.execLocalCommandWithRedirect("tidevice -u " + deviceInfo.getSerialNum() + " syslog | findstr /i \"" + keyWord + "\"", logFile, false, logger);
-        } else {
-            logProcess = ShellUtils.execLocalCommandWithRedirect("tidevice -u " + deviceInfo.getSerialNum() + " syslog | grep -i \"" + keyWord + "\"", logFile, false, logger);
-        }
+        logProcess = ShellUtils.execLocalCommandWithRedirect("pymobiledevice3 syslog live -m " + keyWord + " --udid " + deviceInfo.getSerialNum(), logFile, false, logger);
         return logProcess;
     }
 
     public static void startIOSDeviceWatcher(Logger logger, IOSDeviceDriver deviceDriver) {
         Process process = null;
-        String command = "tidevice watch";
+        String command = "pymobiledevice3 remote tunneld";
         ShellUtils.killProcessByCommandStr(command, logger);
         try {
             process = Runtime.getRuntime().exec(command);
@@ -63,29 +59,29 @@ public class IOSUtils {
 
     @Nullable
     public static String getIOSDeviceListJsonStr(Logger logger) {
-        return ShellUtils.execLocalCommandWithResult("tidevice list --json", logger);
+        return ShellUtils.execLocalCommandWithResult("t3 list --json", logger);
     }
 
     @Nullable
     public static String getAppList(String udid, Logger logger) {
-        return ShellUtils.execLocalCommandWithResult("tidevice -u " + udid + " applist", logger);
+        return ShellUtils.execLocalCommandWithResult("t3 -u " + udid + " app list", logger);
     }
 
     public static void installApp(String udid, String packagePath, Logger logger) {
-        ShellUtils.execLocalCommand(String.format("tidevice -u %s install \"%s\"", udid, packagePath.replace(" ", "\\ ")), logger);
+        ShellUtils.execLocalCommand(String.format("t3 -u %s install \"%s\"", udid, packagePath.replace(" ", "\\ ")), logger);
     }
 
     @Nullable
     public static String uninstallApp(String udid, String packageName, Logger logger) {
-        return ShellUtils.execLocalCommandWithResult("tidevice -u " + udid + " uninstall " + packageName, logger);
+        return ShellUtils.execLocalCommandWithResult("t3 -u " + udid + "app uninstall " + packageName, logger);
     }
 
     public static void launchApp(String udid, String packageName, Logger logger) {
-        ShellUtils.execLocalCommand("tidevice -u " + udid + " launch " + packageName, logger);
+        ShellUtils.execLocalCommand("t3 -u " + udid + "app launch " + packageName, logger);
     }
 
     public static void stopApp(String udid, String packageName, Logger logger) {
-        ShellUtils.execLocalCommand("tidevice -u " + udid + " kill " + packageName, logger);
+        ShellUtils.execLocalCommand("t3 -u " + udid + "app kill " + packageName, logger);
     }
 
     public static void proxyWDA(DeviceInfo deviceInfo, Logger logger) {
@@ -95,11 +91,11 @@ public class IOSUtils {
             return;
         }
         // String command = "tidevice -u " + udid + " wdaproxy -B " + WDA_BUNDLE_ID + " --port " + getWdaPortByUdid(udid, logger);
-        String portRelayCommand = "tidevice -u " + udid + " relay " + wdaPort + " 8100";
-        String startWDACommand = "tidevice -u " + udid + "  xctest --bundle_id " + WDA_BUNDLE_ID;
+        String portRelayCommand = "t3 -u " + udid + " relay " + wdaPort + " 8100";
+        String startWDACommand = "pymobiledevice3 developer dvt launch " + WDA_BUNDLE_ID + " --udid " + udid;
 
-        deviceInfo.addCurrentProcess(ShellUtils.execLocalCommand(portRelayCommand, false, logger));
         deviceInfo.addCurrentProcess(ShellUtils.execLocalCommand(startWDACommand, false, logger));
+        deviceInfo.addCurrentProcess(ShellUtils.execLocalCommand(portRelayCommand, false, logger));
         if (!isWdaRunningByPort(wdaPort, logger)) {
             logger.error("Agent may not proxy WDA correctly. Port {} is not accessible", wdaPort);
         }
@@ -110,8 +106,8 @@ public class IOSUtils {
         int wdaPort = getWdaPortByUdid(udid, logger);
         // String command = "tidevice -u " + udid + " wdaproxy -B " + WDA_BUNDLE_ID + " --port " + getWdaPortByUdid(udid, logger);
         // We can still try to kill the process even the proxy is not running.
-        String portRelayCommand = "tidevice -u " + udid + " relay " + wdaPort + " 8100";
-        String startWDACommand = "tidevice -u " + udid + "  xctest --bundle_id " + WDA_BUNDLE_ID;
+        String portRelayCommand = "t3 -u " + udid + " relay " + wdaPort + " 8100";
+        String startWDACommand = "t3 -u " + udid + "  xctest --bundle_id " + WDA_BUNDLE_ID;
 
         ShellUtils.killProcessByCommandStr(portRelayCommand, logger);
         ShellUtils.killProcessByCommandStr(startWDACommand, logger);
@@ -119,11 +115,11 @@ public class IOSUtils {
 
     @Nullable
     public static String getIOSDeviceDetailInfo(String udid, Logger logger) {
-        return ShellUtils.execLocalCommandWithResult("tidevice -u " + udid + " info --json", logger);
+        return ShellUtils.execLocalCommandWithResult("t3 -u " + udid + " info", logger);
     }
 
     public static void takeScreenshot(String udid, String screenshotFilePath, Logger logger) {
-        ShellUtils.execLocalCommand("tidevice -u " + udid + " screenshot \"" + screenshotFilePath + "\"", logger);
+        ShellUtils.execLocalCommand("pymobiledevice3 developer dvt screenshot \"" + screenshotFilePath + "\"" + " --udid " + udid, logger);
     }
 
     public static boolean isWdaRunningByPort(int port, Logger logger) {
@@ -153,7 +149,8 @@ public class IOSUtils {
             // Randomly assign a port
             int mjpegServerPor = generateRandomPort(classLogger);
             classLogger.info("Generate a new mjpeg port = " + mjpegServerPor);
-            Process process = ShellUtils.execLocalCommand("tidevice -u " + serialNum + " relay " + mjpegServerPor + " 9100", false, classLogger);
+            Process process = ShellUtils.execLocalCommand("t3 -u " + serialNum + " relay " + mjpegServerPor + " 9100", false, classLogger);
+            ThreadUtils.safeSleep(2000);
             deviceInfo.addCurrentProcess(process);
             mjpegServerPortMap.put(serialNum, mjpegServerPor);
         }
@@ -164,7 +161,7 @@ public class IOSUtils {
     public static void releaseMjpegServerPortByUdid(String serialNum, Logger classLogger) {
         if (mjpegServerPortMap.containsKey(serialNum)) {
             int mjpegServerPor = mjpegServerPortMap.get(serialNum);
-            ShellUtils.killProcessByCommandStr("tidevice -u " + serialNum + " relay " + mjpegServerPor + " 9100", classLogger);
+            ShellUtils.killProcessByCommandStr("t3 -u " + serialNum + " relay " + mjpegServerPor + " 9100", classLogger);
             mjpegServerPortMap.remove(serialNum, mjpegServerPor);
         }
     }
