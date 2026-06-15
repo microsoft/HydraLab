@@ -43,7 +43,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.10.0"
+$Script:InstallerVersion = "1.10.1"
 $Script:AgencyXTesterPluginPrompted = $false
 
 try {
@@ -1048,6 +1048,7 @@ if (-not $SkipClientInstall `
     -and (-not ($selectedClients -contains 'claude-code')) `
     -and ($null -ne $Host.UI.RawUI) `
     -and (Get-Command 'claude' -ErrorAction SilentlyContinue)) {
+  Offer-AgencyXTesterPluginUpdate
   Write-Host ""
   $answer = Read-Host "Claude Code CLI detected. Also register X-Tester MCP with Claude Code? [Y/n]"
   if ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
