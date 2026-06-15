@@ -43,7 +43,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.9.8"
+$Script:InstallerVersion = "1.10.0"
+$Script:AgencyXTesterPluginPrompted = $false
 
 try {
   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -838,6 +839,34 @@ function Register-ClaudeDesktop([string]$CommandPath) {
   Warn "Restart Claude Desktop to load the X-Tester MCP server."
 }
 
+function Offer-AgencyXTesterPluginUpdate {
+  if ($Script:AgencyXTesterPluginPrompted) { return }
+  $Script:AgencyXTesterPluginPrompted = $true
+
+  $agency = Get-Command "agency" -ErrorAction SilentlyContinue
+  if (-not $agency) { return }
+  $agencyPath = $agency.Source
+  if ($null -eq $Host.UI.RawUI) {
+    Info "Agency CLI detected; skipping cxe-xtester plugin prompt in non-interactive host."
+    return
+  }
+
+  Write-Host ""
+  $answer = Read-Host "Agency CLI detected. Install/update xtester Agency plugin cxe-xtester from playground? [Y/n]"
+  if (-not ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$')) {
+    Info "Skipping Agency cxe-xtester plugin update."
+    return
+  }
+
+  Invoke-Step "Updating Agency cxe-xtester plugin" {
+    & $agencyPath plugin uninstall cxe-xtester
+    if ($LASTEXITCODE -ne 0) {
+      Warn "agency plugin uninstall cxe-xtester exited with code $LASTEXITCODE; continuing with install."
+    }
+    Invoke-External $agencyPath @("plugin", "install", "mp:cxe-xtester@playground")
+  }
+}
+
 function Register-ClaudeCode([string]$CommandPath) {
   $claude = Get-Command "claude" -ErrorAction SilentlyContinue
   if (-not $claude) {
@@ -845,6 +874,8 @@ function Register-ClaudeCode([string]$CommandPath) {
     Warn "Use Claude Desktop registration or install Claude Code, then re-run with -Client claude-code."
     return
   }
+
+  Offer-AgencyXTesterPluginUpdate
 
   try {
     Invoke-Step "Registering X-Tester MCP with Claude Code" {
@@ -1015,7 +1046,7 @@ $selectedClients = Expand-Clients
 if (-not $SkipClientInstall `
     -and ($selectedClients -contains 'copilot') `
     -and (-not ($selectedClients -contains 'claude-code')) `
-    -and ($Host.UI.RawUI -ne $null) `
+    -and ($null -ne $Host.UI.RawUI) `
     -and (Get-Command 'claude' -ErrorAction SilentlyContinue)) {
   Write-Host ""
   $answer = Read-Host "Claude Code CLI detected. Also register X-Tester MCP with Claude Code? [Y/n]"
@@ -1033,7 +1064,7 @@ if (-not $SkipClientInstall `
 if (-not $SkipClientInstall `
     -and ($selectedClients -contains 'copilot') `
     -and (-not ($selectedClients -contains 'vscode')) `
-    -and ($Host.UI.RawUI -ne $null) `
+    -and ($null -ne $Host.UI.RawUI) `
     -and (Get-Command 'code' -ErrorAction SilentlyContinue)) {
   Write-Host ""
   $answer = Read-Host "VS Code detected. Also register X-Tester MCP with VS Code (user profile)? [Y/n]"
