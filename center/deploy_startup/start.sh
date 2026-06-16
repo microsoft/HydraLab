@@ -17,4 +17,4 @@ if ${CLAMAV_ENABLED}; then
 fi
 
 cd /
-java -jar /app.jar --spring.profiles.active=${CENTER_APP_PROFILE}
+jaz -jar /app.jar --spring.profiles.active=${CENTER_APP_PROFILE}
