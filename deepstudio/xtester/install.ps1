@@ -43,7 +43,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.10.1"
+$Script:InstallerVersion = "1.11.1"
 $Script:AgencyXTesterPluginPrompted = $false
 
 try {
@@ -306,6 +306,21 @@ function Resolve-LocalPackagePath {
     return $machine -match "^(ARM64|AARCH64)$"
   }
 
+  function Test-IsMsys2OrMinGWPython([string[]]$PathCandidates) {
+    # MSYS2 / MinGW Python (ucrt64 / mingw64 / clang64, etc.) is a Windows .exe
+    # but builds virtualenvs with a POSIX layout (bin/python, NO
+    # Scripts\python.exe), which breaks every downstream step that expects the
+    # native Windows venv layout (the venv ends up "missing python.exe"). Detect
+    # it by its unmistakable install-root markers and skip it, the same way the
+    # Microsoft Store stub is skipped.
+    foreach ($p in $PathCandidates) {
+      if ($p -and $p -match '(?i)[\\/](msys2?|msys32|msys64|mingw32|mingw64|ucrt64|ucrt32|clang64|clang32|clangarm64|cygwin|cygwin64)[\\/]') {
+        return $true
+      }
+    }
+    return $false
+  }
+
   function Test-PythonExecutable([string]$FilePath, [string[]]$Arguments) {
     if (-not $FilePath) { return $null }
     $label = if ($Arguments -and $Arguments.Count -gt 0) { "$FilePath $($Arguments -join ' ')" } else { "$FilePath" }
@@ -320,12 +335,20 @@ function Resolve-LocalPackagePath {
     if (Test-IsUnsupportedWindowsArm64Python $FilePath $Arguments) {
       Write-PyWarn "${label}: native ARM64 Python detected. Modern wheels for cryptography/keyring/artifacts-keyring exist on win_arm64; if pip later falls back to a source build, re-run with x64 Python 3.12."
     }
+    if (Test-IsMsys2OrMinGWPython @($FilePath)) {
+      Write-PyWarn "Skipping ${label}: MSYS2/MinGW Python builds POSIX-layout venvs (bin/python, no Scripts\python.exe) that the installer cannot use. Install a python.org or 'winget install -e --id Python.Python.3.12' interpreter instead."
+      return $null
+    }
     try {
       $sysExe = & $FilePath @Arguments -c "import sys; print(sys.executable)" 2>&1
       if ($LASTEXITCODE -eq 0) {
         $sysExeText = ($sysExe | Out-String).Trim()
         if ($sysExeText -match "\\WindowsApps\\" -or $sysExeText -match "\\Packages\\PythonSoftwareFoundation\.Python\.") {
           Write-PyWarn "Skipping ${label}: Microsoft Store Python at '$sysExeText' redirects venv writes"
+          return $null
+        }
+        if (Test-IsMsys2OrMinGWPython @($sysExeText)) {
+          Write-PyWarn "Skipping ${label}: MSYS2/MinGW Python at '$sysExeText' builds POSIX-layout venvs the installer cannot use. Use a python.org or winget Python instead."
           return $null
         }
       }
@@ -604,10 +627,57 @@ function Resolve-LocalPackagePath {
     throw "No working Python 3.11+ interpreter was found."
   }
 
+function Resolve-ManagedVenvPython {
+  # Returns the venv's python.exe, transparently following a Microsoft Store /
+  # UWP write-redirect when the direct path is absent. Returns $null when the
+  # venv has no usable interpreter. On a redirect hit, repoints $Script:VenvPath
+  # at the redirected location so later steps (pip install, xtester-mcp.exe
+  # resolution) use the real on-disk venv.
+  $direct = Join-Path $VenvPath "Scripts\python.exe"
+  if (Test-Path -LiteralPath $direct) { return $direct }
+
+  # Microsoft Store / UWP Python redirects writes under %LOCALAPPDATA% into
+  # %LOCALAPPDATA%\Packages\PythonSoftwareFoundation.Python.*\LocalCache\Local\<rest>.
+  $localAppData = $env:LOCALAPPDATA
+  if ($localAppData -and $VenvPath.StartsWith($localAppData, [System.StringComparison]::OrdinalIgnoreCase)) {
+    $relative = $VenvPath.Substring($localAppData.Length).TrimStart('\','/')
+    $packagesRoot = Join-Path $localAppData "Packages"
+    if (Test-Path -LiteralPath $packagesRoot) {
+      $candidates = Get-ChildItem -LiteralPath $packagesRoot -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "PythonSoftwareFoundation.Python.*" }
+      foreach ($pkg in $candidates) {
+        $candidateVenv = Join-Path $pkg.FullName (Join-Path "LocalCache\Local" $relative)
+        $candidatePython = Join-Path $candidateVenv "Scripts\python.exe"
+        if (Test-Path -LiteralPath $candidatePython) {
+          Warn "Microsoft Store Python redirected the venv into $($pkg.Name)."
+          Warn "Using redirected venv: $candidateVenv"
+          Info "To avoid this, install Python from https://www.python.org/downloads/ or via 'winget install -e --id Python.Python.3.12'."
+          $Script:VenvPath = $candidateVenv
+          return $candidatePython
+        }
+      }
+    }
+  }
+  return $null
+}
+
 function New-ManagedVenv($PythonInfo) {
   if ($Force -and (Test-Path -LiteralPath $VenvPath)) {
     Invoke-Step "Removing existing managed venv: $VenvPath" {
       Remove-Item -LiteralPath $VenvPath -Recurse -Force
+    }
+  }
+
+  # A venv directory left behind by a previously aborted run can exist without a
+  # usable interpreter (e.g. `python -m venv` failed midway, or a later step
+  # threw after the directory was partially created). Because creation is skipped
+  # when the directory already exists, that stale shell would otherwise make
+  # every future run fail with "Managed venv is missing python.exe". Detect an
+  # incomplete venv up front and rebuild it instead of failing.
+  if ((Test-Path -LiteralPath $VenvPath) -and -not (Resolve-ManagedVenvPython)) {
+    Warn "Existing managed venv at $VenvPath is incomplete (no usable python.exe); recreating it."
+    Invoke-Step "Removing incomplete managed venv: $VenvPath" {
+      Remove-Item -LiteralPath $VenvPath -Recurse -Force -ErrorAction SilentlyContinue
     }
   }
 
@@ -620,37 +690,11 @@ function New-ManagedVenv($PythonInfo) {
     }
   }
 
-  $venvPython = Join-Path $VenvPath "Scripts\python.exe"
-  if (-not (Test-Path -LiteralPath $venvPython)) {
-    # Microsoft Store / UWP Python redirects writes under %LOCALAPPDATA% into
-    # %LOCALAPPDATA%\Packages\PythonSoftwareFoundation.Python.*\LocalCache\Local\<rest>.
-    # Try to locate the redirected venv and use that path instead.
-    $redirected = $null
-    $localAppData = $env:LOCALAPPDATA
-    if ($localAppData -and $VenvPath.StartsWith($localAppData, [System.StringComparison]::OrdinalIgnoreCase)) {
-      $relative = $VenvPath.Substring($localAppData.Length).TrimStart('\','/')
-      $packagesRoot = Join-Path $localAppData "Packages"
-      if (Test-Path -LiteralPath $packagesRoot) {
-        $candidates = Get-ChildItem -LiteralPath $packagesRoot -Directory -ErrorAction SilentlyContinue |
-          Where-Object { $_.Name -like "PythonSoftwareFoundation.Python.*" }
-        foreach ($pkg in $candidates) {
-          $candidateVenv = Join-Path $pkg.FullName (Join-Path "LocalCache\Local" $relative)
-          $candidatePython = Join-Path $candidateVenv "Scripts\python.exe"
-          if (Test-Path -LiteralPath $candidatePython) {
-            $redirected = @{ Venv = $candidateVenv; Python = $candidatePython; Package = $pkg.Name }
-            break
-          }
-        }
-      }
-    }
-    if ($redirected) {
-      Warn "Microsoft Store Python redirected the venv into $($redirected.Package)."
-      Warn "Using redirected venv: $($redirected.Venv)"
-      Info "To avoid this, install Python from https://www.python.org/downloads/ or via 'winget install -e --id Python.Python.3.12'."
-      $Script:VenvPath = $redirected.Venv
-      return $redirected.Python
-    }
-    throw "Managed venv is missing python.exe: $venvPython"
+  $venvPython = Resolve-ManagedVenvPython
+  if (-not $venvPython) {
+    throw "Managed venv is missing python.exe after creation: $(Join-Path $VenvPath 'Scripts\python.exe').`n" +
+          "  The base interpreter ($($PythonInfo.Version)) may have failed to provision the venv.`n" +
+          "  Re-run with -Force, or install python.org Python 3.12 (not the Microsoft Store build) and retry."
   }
   return $venvPython
 }
@@ -1047,6 +1091,7 @@ if (-not $SkipClientInstall `
     -and ($selectedClients -contains 'copilot') `
     -and (-not ($selectedClients -contains 'claude-code')) `
     -and ($null -ne $Host.UI.RawUI) `
+    -and (-not [Console]::IsInputRedirected) `
     -and (Get-Command 'claude' -ErrorAction SilentlyContinue)) {
   Offer-AgencyXTesterPluginUpdate
   Write-Host ""
@@ -1066,6 +1111,7 @@ if (-not $SkipClientInstall `
     -and ($selectedClients -contains 'copilot') `
     -and (-not ($selectedClients -contains 'vscode')) `
     -and ($null -ne $Host.UI.RawUI) `
+    -and (-not [Console]::IsInputRedirected) `
     -and (Get-Command 'code' -ErrorAction SilentlyContinue)) {
   Write-Host ""
   $answer = Read-Host "VS Code detected. Also register X-Tester MCP with VS Code (user profile)? [Y/n]"
@@ -1078,6 +1124,44 @@ if (-not $SkipClientInstall `
 
 Invoke-Step "Checking xtester-mcp can spawn" {
   Test-XTesterMcpSpawn $xtesterMcp
+}
+
+# ---------------------------------------------------------------------------
+# Bundled Copilot CLI skills -> ~/.copilot/skills/
+# Only runs when copilot is among the selected clients (other hosts use their
+# own skill mechanisms). The helper overwrites the four xtester-* slots.
+# ---------------------------------------------------------------------------
+if ($Client -contains "copilot" -or $Client -contains "all") {
+  $cliSkillsBin = Join-Path $VenvPath "Scripts\xtester-install-skills.exe"
+  if (Test-Path -LiteralPath $cliSkillsBin) {
+    $proceed = $false
+    if ($null -eq $Host.UI.RawUI) {
+      Info "Non-interactive host; skipping bundled xtester-* skill install (re-run interactively to install)."
+    }
+    else {
+      Write-Host ""
+      $answer = Read-Host "Install bundled xtester-* Copilot CLI skills into ~/.copilot/skills/? [Y/n]"
+      if ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
+        $proceed = $true
+      }
+      else {
+        Info "Skipping CLI skill install."
+      }
+    }
+    if ($proceed) {
+      Invoke-Step "Installing bundled xtester-* Copilot CLI skills into ~/.copilot/skills/" {
+        try {
+          Invoke-External $cliSkillsBin @()
+        }
+        catch {
+          Warn "xtester-install-skills failed: $($_.Exception.Message)"
+        }
+      }
+    }
+  }
+  else {
+    Warn "xtester-install-skills not found at $cliSkillsBin; skipping CLI skill install."
+  }
 }
 
 Write-Host ""
