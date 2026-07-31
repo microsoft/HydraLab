@@ -1,5 +1,6 @@
 param(
-  [switch]$VerboseInstall
+  [switch]$VerboseInstall,
+  [switch]$Test
 )
 
 $ErrorActionPreference = "Stop"
@@ -7,7 +8,20 @@ $ErrorActionPreference = "Stop"
 # ---------------------------
 # Settings / Feature flags
 # ---------------------------
-$PackageName = if ($env:DEEPSTUDIO_PKG) { $env:DEEPSTUDIO_PKG } else { "deepstudio-server" }
+# `-Test` (or env DEEPSTUDIO_TEST=1) switches the installer to the
+# DeepStudioVNext test feed and the `deepstudio-test` package name.
+$UseTestFeed = $Test -or ($env:DEEPSTUDIO_TEST -eq "1")
+
+$DefaultProdPackage = "deepstudio-server"
+$DefaultTestPackage = "deepstudio-test"
+
+$PackageName = if ($env:DEEPSTUDIO_PKG) {
+  $env:DEEPSTUDIO_PKG
+} elseif ($UseTestFeed) {
+  $DefaultTestPackage
+} else {
+  $DefaultProdPackage
+}
 
 # Support both: param -VerboseInstall and env DEEPSTUDIO_VERBOSE=1
 $VerboseInstall = $VerboseInstall -or ($env:DEEPSTUDIO_VERBOSE -eq "1")
@@ -27,11 +41,15 @@ $LogPath = if ($env:DEEPSTUDIO_LOG_PATH) { $env:DEEPSTUDIO_LOG_PATH } else {
 }
 
 # Installer version
-$InstallerVersion = "2.8"
+$InstallerVersion = "2.10"
 
-# Default registry for DeepStudio (stored as base64)
-$DefaultRegistryB64 = "aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL19wYWNrYWdpbmcvRGVlcFN0dWRpby9ucG0vcmVnaXN0cnkv"
-$DefaultRegistry = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DefaultRegistryB64))
+# Default registries for DeepStudio (stored as base64)
+#   - Prod feed : DeepStudio       (release builds, `deepstudio-server`)
+#   - Test feed : DeepStudioVNext   (preview builds, `deepstudio-test`)
+$DefaultRegistryB64     = "aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL19wYWNrYWdpbmcvRGVlcFN0dWRpby9ucG0vcmVnaXN0cnkv"
+$DefaultTestRegistryB64 = "aHR0cHM6Ly9taWNyb3NvZnQucGtncy52aXN1YWxzdHVkaW8uY29tL09TL19wYWNrYWdpbmcvRGVlcFN0dWRpb1ZOZXh0L25wbS9yZWdpc3RyeS8="
+$DefaultRegistry     = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DefaultRegistryB64))
+$DefaultTestRegistry = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($DefaultTestRegistryB64))
 
 # Will be set later after registry is resolved
 $script:ResolvedRegistry = $null
@@ -133,12 +151,19 @@ function Detect-Nvm {
 function Show-NvmWarning {
   if (-not $script:IsNvm4w) { return }
   $ver = if ($script:NvmNodeVersion) { $script:NvmNodeVersion } else { "(unknown)" }
+  # Pad the $PackageName line dynamically so the right border stays aligned
+  # regardless of how long the package name is.
+  $pkgLineText = "$PackageName will NOT be available until"
+  $inner = 53  # display columns inside the box (matches other lines below)
+  $pkgPad = $inner - 2 - $pkgLineText.Length
+  if ($pkgPad -lt 1) { $pkgPad = 1 }
+  $pkgLine = "  │  $pkgLineText" + (" " * $pkgPad) + "│"
   Write-Host ""
   Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
   Write-Host "  │  📌 nvm-windows detected                            │" -ForegroundColor Yellow
   Write-Host "  │  Global npm packages are scoped to each Node        │" -ForegroundColor Yellow
   Write-Host "  │  version. If you switch versions with 'nvm use',    │" -ForegroundColor Yellow
-  Write-Host "  │  $PackageName will NOT be available until   │" -ForegroundColor Yellow
+  Write-Host $pkgLine -ForegroundColor Yellow
   Write-Host "  │  you re-run this installer for the new version.     │" -ForegroundColor Yellow
   Write-Host "  │                                                     │" -ForegroundColor Yellow
   Write-Host "  │  Current Node version: v$($ver.PadRight(29))│" -ForegroundColor Yellow
@@ -214,14 +239,20 @@ function Upgrade-NodeViaWinget {
 }
 
 function Require-Node {
-  $MinNodeVersion = 22
+  # The bundled @github/copilot CLI imports the built-in `node:sqlite` module.
+  # Rather than forcing a version number, we probe the actual runtime: any Node
+  # where `node:sqlite` loads is fine (Node 24+, and Node 23.4+ where it is
+  # unflagged). We only prompt an upgrade when the module genuinely cannot load
+  # (Node 20, or 22.5–23.3 where it is gated behind `--experimental-sqlite`).
+  # Node 24 LTS is what we install/recommend when an upgrade is actually needed.
+  $RecommendedNodeVersion = 24
   $nodeAvailable = [bool](Get-Command node -ErrorAction SilentlyContinue)
 
   if (-not $nodeAvailable) {
     Write-Host ""
     Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
     Write-Host "  │  ⚙️  Node.js is not installed                       │" -ForegroundColor Yellow
-    Write-Host "  │  Node.js >= $MinNodeVersion is required to continue.             │" -ForegroundColor Yellow
+    Write-Host "  │  Node.js >= $RecommendedNodeVersion is required to continue.             │" -ForegroundColor Yellow
     Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "  📥 " -NoNewline -ForegroundColor Cyan
@@ -241,10 +272,14 @@ function Require-Node {
     try {
       $versionStr = & node --version 2>$null
       $versionStr = $versionStr -replace '^v', ''
-      $major = [int]($versionStr.Split('.')[0])
       Dim "Node.js version: v$versionStr"
 
-      if ($major -lt $MinNodeVersion) {
+      # Ground-truth capability probe: can this runtime load node:sqlite?
+      # Exit code 0 => available (Node 23.4+ / 24+); non-zero => unavailable.
+      & node -e "require('node:sqlite')" 2>$null
+      $sqliteOk = ($LASTEXITCODE -eq 0)
+
+      if (-not $sqliteOk) {
         Write-Host ""
         Write-Host "  ┌─────────────────────────────────────────────────────┐" -ForegroundColor Yellow
         Write-Host "  │  ⬆️  Node.js upgrade required                       │" -ForegroundColor Yellow
@@ -252,7 +287,7 @@ function Require-Node {
         $pad = 39 - "Current: v$versionStr".Length
         if ($pad -lt 0) { $pad = 0 }
         Write-Host (" " * $pad + "│") -ForegroundColor Yellow
-        Write-Host "  │  Required: >= v$MinNodeVersion.0.0                              │" -ForegroundColor Yellow
+        Write-Host "  │  node:sqlite unavailable — need Node >= v$RecommendedNodeVersion         │" -ForegroundColor Yellow
         Write-Host "  └─────────────────────────────────────────────────────┘" -ForegroundColor Yellow
         Write-Host ""
         Write-Host "  ⬆️  " -NoNewline -ForegroundColor Cyan
@@ -260,7 +295,7 @@ function Require-Node {
         if ([string]::IsNullOrWhiteSpace($upgradeChoice) -or $upgradeChoice -match '^[Yy]') {
           Upgrade-NodeViaWinget
         } else {
-          Fail "Node.js >= v$MinNodeVersion is required. Please upgrade and try again."
+          Fail "node:sqlite is unavailable on Node v$versionStr. Please upgrade to Node >= v$RecommendedNodeVersion and try again."
           Info "👉 https://nodejs.org/en/download"
           Write-Host ""
           exit 1
@@ -349,6 +384,108 @@ function Get-NpmMajorVersion {
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($ver)) { return 0 }
     return [int]($ver.Trim().Split('.')[0])
   } catch { return 0 }
+}
+
+function Get-NpmPrefixPath {
+  try {
+    $p = (& npm config get prefix 2>$null)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($p)) { return $null }
+    return $p.Trim()
+  } catch { return $null }
+}
+
+function Get-DeepStudioLockingProcesses([string]$prefix) {
+  <#
+    A running DeepStudio server (and its bundled @github/copilot child processes)
+    keeps file handles open inside <prefix>\node_modules\<package>. npm then fails
+    to rmdir the old package (EPERM) and aborts while linking bin shims (EEXIST).
+    Find every process whose image or command line lives inside that directory.
+  #>
+  if ([string]::IsNullOrWhiteSpace($prefix)) { return @() }
+  $installRoot = (Join-Path $prefix ("node_modules\" + $PackageName)).ToLowerInvariant()
+  try {
+    $procs = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+      if ($_.ProcessId -eq $PID) { return $false }
+      $exe = if ($_.ExecutablePath) { $_.ExecutablePath.ToLowerInvariant() } else { "" }
+      $cmd = if ($_.CommandLine) { $_.CommandLine.ToLowerInvariant() } else { "" }
+      ($exe.StartsWith($installRoot)) -or ($cmd.Contains($installRoot))
+    }
+    return @($procs)
+  } catch { return @() }
+}
+
+function Stop-DeepStudioProcesses([string]$prefix, [switch]$Force) {
+  <# Returns $true when nothing is left holding the install directory. #>
+  if ($DryRun) { return $true }
+  $procs = Get-DeepStudioLockingProcesses $prefix
+  if ($procs.Count -eq 0) { return $true }
+
+  Write-Host ""
+  Warn "$PackageName is currently running and is locking its install folder:"
+  foreach ($p in $procs) {
+    Dim ("  PID {0}  {1}" -f $p.ProcessId, $p.Name)
+  }
+  Dim "  npm cannot replace files that are still in use."
+
+  $stop = $true
+  if (-not $Force) {
+    Write-Host "  🛑 " -NoNewline -ForegroundColor Cyan
+    $choice = Read-Host "Stop these processes and continue? [Y/n]"
+    $stop = [string]::IsNullOrWhiteSpace($choice) -or $choice -match '^[Yy]'
+  }
+  if (-not $stop) {
+    Warn "Continuing without stopping them — the install will most likely fail."
+    return $false
+  }
+
+  foreach ($p in $procs) {
+    Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
+  }
+  Start-Sleep -Milliseconds 800
+
+  $remaining = Get-DeepStudioLockingProcesses $prefix
+  if ($remaining.Count -gt 0) {
+    $remainingIds = ($remaining | ForEach-Object { $_.ProcessId }) -join ', '
+    Warn "Some processes could not be stopped (PIDs: $remainingIds)."
+    return $false
+  }
+  Success "Stopped running $PackageName processes."
+  return $true
+}
+
+function Get-DeepStudioBinShims([string]$prefix) {
+  if ([string]::IsNullOrWhiteSpace($prefix)) { return @() }
+  $baseNames = @($PackageName, "deepstudio")
+  $paths = foreach ($base in ($baseNames | Select-Object -Unique)) {
+    foreach ($ext in @("", ".cmd", ".ps1")) {
+      Join-Path $prefix ($base + $ext)
+    }
+  }
+  return @($paths | Where-Object { Test-Path $_ -PathType Leaf })
+}
+
+function Remove-StaleDeepStudioArtifacts([string]$prefix, [switch]$IncludePackageDir) {
+  <#
+    npm refuses to overwrite an existing bin shim (EEXIST on <prefix>\deepstudio.ps1)
+    when a previous install was interrupted. Removing the shims (and optionally the
+    half-removed package directory) lets npm relink cleanly.
+  #>
+  if ($DryRun -or [string]::IsNullOrWhiteSpace($prefix)) { return }
+
+  foreach ($shim in (Get-DeepStudioBinShims $prefix)) {
+    Remove-Item $shim -Force -ErrorAction SilentlyContinue
+    if (Test-Path $shim) { Warn "Could not remove stale shim: $shim" }
+    else { Dim "  Removed stale shim: $shim" }
+  }
+
+  if ($IncludePackageDir) {
+    $pkgDir = Join-Path $prefix ("node_modules\" + $PackageName)
+    if (Test-Path $pkgDir) {
+      Remove-Item $pkgDir -Recurse -Force -ErrorAction SilentlyContinue
+      if (Test-Path $pkgDir) { Warn "Could not fully remove previous install: $pkgDir" }
+      else { Dim "  Removed leftover package folder: $pkgDir" }
+    }
+  }
 }
 
 function Show-ProxyDiagnostics {
@@ -542,6 +679,9 @@ function Run-NpmViaCmd([string]$cmdLine) {
     if ($line) { Add-ToLogBuffer "[ERR] $line" }
   }
 
+  # Keep the last run's output so callers can classify failures (EEXIST/EPERM/...)
+  $script:LastNpmOutput = (@($stdoutLines) + @($stderrLines)) -join "`n"
+
   # Write to log file if enabled
   if ($EnableLog) {
     $content = @(
@@ -600,6 +740,110 @@ function Install-AzureCli {
   catch {
     Warn "Failed to install Azure CLI: $($_.Exception.Message)"
     return $false
+  }
+}
+
+# ---------------------------
+# GitHub CLI installation
+# ---------------------------
+function Install-GitHubCli {
+  if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Warn "winget not found — cannot auto-install GitHub CLI."
+    Info "Please install GitHub CLI manually:"
+    Info "👉 https://cli.github.com/"
+    return $false
+  }
+
+  Info "📥 Installing GitHub CLI via winget..."
+  Write-Host ""
+  try {
+    & winget install --id GitHub.cli --accept-source-agreements --accept-package-agreements
+    # -1978335189 = "no applicable update / already installed" (treated as success)
+    if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne -1978335189) {
+      Warn "winget install returned exit code $LASTEXITCODE."
+      return $false
+    }
+    $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+    if (Get-Command gh -ErrorAction SilentlyContinue) {
+      Success "GitHub CLI installed successfully."
+      return $true
+    } else {
+      Warn "GitHub CLI installed but 'gh' not found in PATH. You may need to restart your terminal."
+      return $false
+    }
+  }
+  catch {
+    Warn "Failed to install GitHub CLI: $($_.Exception.Message)"
+    return $false
+  }
+}
+
+function Ensure-GitHubCli {
+  <#
+    DeepStudio uses the GitHub CLI (gh) for GitHub PR review features.
+    Offer to install it (winget id GitHub.cli) when missing, then make sure the
+    user is authenticated via `gh auth login` so GitHub PRs load on first use.
+  #>
+  Write-Host ""
+  Write-Host "  ┌─────────────────────────────────────────────────┐" -ForegroundColor Cyan
+  Write-Host "  │  🐙 GitHub CLI (gh)                             │" -ForegroundColor Cyan
+  Write-Host "  │  Used by DeepStudio for GitHub PR review.       │" -ForegroundColor Cyan
+  Write-Host "  └─────────────────────────────────────────────────┘" -ForegroundColor Cyan
+
+  $ghAvailable = [bool](Get-Command gh -ErrorAction SilentlyContinue)
+
+  if ($ghAvailable) {
+    $ghVer = ""
+    try { $ghVer = ((& gh --version 2>$null) | Select-Object -First 1) } catch {}
+    Success ("GitHub CLI already installed. " + $ghVer).Trim()
+  } else {
+    Write-Host "  📥 " -NoNewline -ForegroundColor Cyan
+    $ghInstallChoice = Read-Host "Install GitHub CLI now via winget? [Y/n]"
+    if ([string]::IsNullOrWhiteSpace($ghInstallChoice) -or $ghInstallChoice -match '^[Yy]') {
+      if ($DryRun) {
+        Dim "DRYRUN: would install GitHub CLI via winget (GitHub.cli)"
+        return
+      }
+      $ghAvailable = Install-GitHubCli
+    } else {
+      Dim "Skipping GitHub CLI installation."
+      Dim "  Install later with: winget install --id GitHub.cli"
+      return
+    }
+  }
+
+  if (-not $ghAvailable -or $DryRun) { return }
+
+  # Check existing auth, then offer `gh auth login` if not signed in.
+  $authed = $false
+  $prevEAP = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & gh auth status 2>$null | Out-Null
+    $authed = ($LASTEXITCODE -eq 0)
+  } catch {}
+  finally { $ErrorActionPreference = $prevEAP }
+
+  if ($authed) {
+    Success "GitHub CLI is already authenticated."
+    return
+  }
+
+  Write-Host ""
+  Write-Host "  🔐 " -NoNewline -ForegroundColor Cyan
+  $ghAuthChoice = Read-Host "Sign in to GitHub now with 'gh auth login'? [Y/n]"
+  if ([string]::IsNullOrWhiteSpace($ghAuthChoice) -or $ghAuthChoice -match '^[Yy]') {
+    Write-Host ""
+    Info "Launching 'gh auth login' (follow the prompts)..."
+    Write-Host ""
+    & gh auth login
+    if ($LASTEXITCODE -eq 0) {
+      Success "GitHub CLI authenticated."
+    } else {
+      Warn "gh auth login did not complete. You can run it later with: gh auth login"
+    }
+  } else {
+    Dim "You can authenticate later by running: gh auth login"
   }
 }
 
@@ -865,32 +1109,50 @@ Dim "npm: v$(& npm --version 2>$null) (major $($script:NpmMajorVersion))"
 
 Show-Banner
 
-Write-Host "  ┌─────────────────────────────────────────┐" -ForegroundColor DarkCyan
-Write-Host "  │  📦 Package:  " -NoNewline -ForegroundColor DarkCyan
-Write-Host "$PackageName@latest" -NoNewline -ForegroundColor White
-Write-Host "        │" -ForegroundColor DarkCyan
-Write-Host "  │  🔧 Verbose:  " -NoNewline -ForegroundColor DarkCyan
-Write-Host $(if ($VerboseInstall) { "ON " } else { "OFF" }) -NoNewline -ForegroundColor $(if ($VerboseInstall) { "Green" } else { "DarkGray" })
-Write-Host "                       │" -ForegroundColor DarkCyan
-Write-Host "  │  🧪 DryRun:   " -NoNewline -ForegroundColor DarkCyan
-Write-Host $(if ($DryRun) { "ON " } else { "OFF" }) -NoNewline -ForegroundColor $(if ($DryRun) { "Yellow" } else { "DarkGray" })
-Write-Host "                       │" -ForegroundColor DarkCyan
-Write-Host "  │  📝 LogFile:  " -NoNewline -ForegroundColor DarkCyan
-Write-Host $(if ($EnableLog) { "ON " } else { "OFF" }) -NoNewline -ForegroundColor $(if ($EnableLog) { "Green" } else { "DarkGray" })
-Write-Host "                       │" -ForegroundColor DarkCyan
-Write-Host "  └─────────────────────────────────────────┘" -ForegroundColor DarkCyan
+# Sizing for the run-config box. Each label like "  📦 Package:  " takes
+# 15 display columns (2 left pad + 2 for the emoji + 1 space + 8 for the
+# longest name including its colon + 2 trailing spaces; padded to match for
+# shorter names). The widest value is "$PackageName@latest". Compute the
+# inner width so the right border always lines up regardless of name length.
+$pkgValue = "$PackageName@latest"
+$labelCols = 15
+$valueCols = [Math]::Max(20, $pkgValue.Length + 4)  # min 20 for short names
+$innerCols = $labelCols + $valueCols
+$borderLine = "─" * $innerCols
+
+function Write-ConfigRow {
+  param([string]$Label, [string]$Value, [string]$ValueColor)
+  $valPad = $valueCols - $Value.Length
+  if ($valPad -lt 1) { $valPad = 1 }
+  Write-Host "  │$Label" -NoNewline -ForegroundColor DarkCyan
+  Write-Host $Value -NoNewline -ForegroundColor $ValueColor
+  Write-Host ((" " * $valPad) + "│") -ForegroundColor DarkCyan
+}
+
+Write-Host "  ┌$borderLine┐" -ForegroundColor DarkCyan
+Write-ConfigRow "  📦 Package:  " $pkgValue "White"
+Write-ConfigRow "  🔧 Verbose:  " $(if ($VerboseInstall) { "ON" } else { "OFF" }) $(if ($VerboseInstall) { "Green" } else { "DarkGray" })
+Write-ConfigRow "  🧪 DryRun:   " $(if ($DryRun) { "ON" } else { "OFF" }) $(if ($DryRun) { "Yellow" } else { "DarkGray" })
+Write-ConfigRow "  📝 LogFile:  " $(if ($EnableLog) { "ON" } else { "OFF" }) $(if ($EnableLog) { "Green" } else { "DarkGray" })
+Write-Host "  └$borderLine┘" -ForegroundColor DarkCyan
 Write-Host ""
 
 Show-ProxyDiagnostics
 $configConflicts = Show-NpmConfigConflicts
 
-# Get registry (always use default; org override only via DEEPSTUDIO_REGISTRY env var)
+# Get registry (always use default; org override only via DEEPSTUDIO_REGISTRY env var).
+# `-Test` switches the default to the DeepStudioVNext preview feed.
 $registryInput = $RegistryFromEnv
 if ([string]::IsNullOrWhiteSpace($registryInput)) {
-  $registryInput = $DefaultRegistry
+  $registryInput = if ($UseTestFeed) { $DefaultTestRegistry } else { $DefaultRegistry }
 }
 $registry = Ensure-Registry $registryInput
 $script:ResolvedRegistry = $registry
+
+if ($UseTestFeed) {
+  Write-Host "  ✨ " -NoNewline -ForegroundColor Yellow
+  Write-Host "Test feed mode: installing $PackageName from the DeepStudioVNext preview feed." -ForegroundColor Yellow
+}
 
 Dim "Registry: $(Mask-Url $registry)"
 Write-Host ""
@@ -970,9 +1232,24 @@ try {
   }
 
   # Show the prefix npm will use so mismatches are visible in the log
-  $npmPrefix = (& npm config get prefix 2>$null)
+  $npmPrefix = Get-NpmPrefixPath
   if (-not [string]::IsNullOrWhiteSpace($npmPrefix)) {
-    Dim "npm global prefix: $($npmPrefix.Trim())"
+    Dim "npm global prefix: $npmPrefix"
+  }
+
+  # Pre-flight: a running DeepStudio locks its own files (npm reports EPERM on
+  # rmdir) and bin shims left behind by that failed cleanup make the next install
+  # abort with EEXIST on <prefix>\deepstudio.ps1. Stop the processes first, and
+  # clear the shims only when the previous install is actually broken.
+  $hadRunningProcesses = (Get-DeepStudioLockingProcesses $npmPrefix).Count -gt 0
+  Stop-DeepStudioProcesses $npmPrefix | Out-Null
+  if (-not [string]::IsNullOrWhiteSpace($npmPrefix)) {
+    $pkgManifest = Join-Path $npmPrefix ("node_modules\" + $PackageName + "\package.json")
+    $orphanShims = (-not (Test-Path $pkgManifest)) -and ((Get-DeepStudioBinShims $npmPrefix).Count -gt 0)
+    if ($hadRunningProcesses -or $orphanShims) {
+      Info "🧹 Clearing leftovers from the previous install..."
+      Remove-StaleDeepStudioArtifacts -prefix $npmPrefix
+    }
   }
 
   $installCmd = 'npm install -g "{0}@latest" --loglevel {1} --userconfig "{2}"{3}' -f $PackageName, $logLevel, $tmpNpmrc, $globalCfgFlag
@@ -984,7 +1261,26 @@ try {
   Info "📦 Installing $PackageName@latest ..."
   Write-Host ""
 
-  Run-NpmViaCmd $installCmd
+  $installAttempt = 0
+  while ($true) {
+    $installAttempt++
+    try {
+      Run-NpmViaCmd $installCmd
+      break
+    }
+    catch {
+      $npmOutput = $script:LastNpmOutput
+      $isLockedFileFailure = ($npmOutput -match 'EEXIST') -or ($npmOutput -match 'EPERM')
+      if ($installAttempt -ge 2 -or -not $isLockedFileFailure -or $DryRun) { throw }
+
+      Write-Host ""
+      Warn "npm hit locked or leftover files from a previous $PackageName install."
+      Info "🧹 Cleaning up and retrying once..."
+      Stop-DeepStudioProcesses $npmPrefix -Force | Out-Null
+      Remove-StaleDeepStudioArtifacts -prefix $npmPrefix -IncludePackageDir
+      Write-Host ""
+    }
+  }
 
   if (-not $DryRun) {
     # Use the same config flags for verify so it checks the same prefix where we installed
@@ -1020,9 +1316,13 @@ try {
   }
 
   Write-Host ""
-  Write-Host "  ┌─────────────────────────────────────────────────┐" -ForegroundColor Green
-  Write-Host "  │  🎉 $PackageName@latest installed successfully! │" -ForegroundColor Green
-  Write-Host "  └─────────────────────────────────────────────────┘" -ForegroundColor Green
+  # PowerShell counts the 🎉 surrogate pair as 2 in .Length, which already
+  # matches its 2-column display width, so no extra offset is needed.
+  $successMsg = "🎉 $PackageName@latest installed successfully!"
+  $border = "─" * ($successMsg.Length + 4)
+  Write-Host "  ┌$border┐" -ForegroundColor Green
+  Write-Host "  │  $successMsg  │" -ForegroundColor Green
+  Write-Host "  └$border┘" -ForegroundColor Green
 
   # Post-install tip: DeepStudio prefers Entra tokens via Azure CLI for ADO auth.
   # Remind users whose `az` session is missing/stale so first PR review doesn't fail.
@@ -1034,6 +1334,9 @@ try {
   Write-Host "  │    az login                                     │" -ForegroundColor White
   Write-Host "  │  No ADO PAT is needed when az is signed in.     │" -ForegroundColor Cyan
   Write-Host "  └─────────────────────────────────────────────────┘" -ForegroundColor Cyan
+
+  # GitHub CLI install + auth flow (GitHub PR review uses `gh`).
+  Ensure-GitHubCli
 
   if ($script:IsNvm4w) {
     Write-Host ""
@@ -1125,6 +1428,14 @@ catch {
   Dim "  • NPM_CONFIG_REGISTRY env var overrode the --registry flag"
   Dim "  • The ADO feed is missing the npmjs.org upstream source"
   Dim "  • Try running from a clean directory (e.g. cd $env:TEMP)"
+
+  Write-Host ""
+  Warn "Common causes for EEXIST/EPERM:"
+  Dim "  • DeepStudio (or a bundled copilot process) is still running and locking files"
+  Dim "    (close DeepStudio, then re-run the installer)"
+  Dim "  • A previous interrupted install left bin shims behind, e.g."
+  Dim "    <npm-prefix>\deepstudio.ps1 / deepstudio.cmd / $PackageName.ps1"
+  Dim "  • Manual fix: npm uninstall -g $PackageName  then delete those leftover files"
 
   if ($VerboseInstall) {
     Write-Host ""
