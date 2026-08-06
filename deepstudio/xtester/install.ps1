@@ -43,7 +43,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.11.1"
+$Script:InstallerVersion = "1.12.1"
 $Script:AgencyXTesterPluginPrompted = $false
 
 try {
@@ -55,6 +55,20 @@ function Info([string]$Message) { Write-Host "  $Message" -ForegroundColor Cyan 
 function Success([string]$Message) { Write-Host "  OK  $Message" -ForegroundColor Green }
 function Warn([string]$Message) { Write-Host "  WARN $Message" -ForegroundColor Yellow }
 function Fail([string]$Message) { Write-Host "  ERR $Message" -ForegroundColor Red }
+
+function Read-OptionalPrompt([string]$Prompt, [string]$SkipMessage) {
+  if ($null -eq $Host.UI.RawUI -or [Console]::IsInputRedirected) {
+    Info $SkipMessage
+    return $null
+  }
+  try {
+    return Read-Host $Prompt
+  }
+  catch {
+    Info $SkipMessage
+    return $null
+  }
+}
 
 function Invoke-Step([string]$Description, [scriptblock]$Script) {
   Info $Description
@@ -744,8 +758,30 @@ function Install-XTesterIntoVenv([string]$VenvPython) {
 
     if ($Source -eq "local") {
       $path = Resolve-LocalPackagePath
-      Invoke-Step "Installing X-Tester from local source: $path" {
-        Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "-U", "-e", $path)
+      # Build a wheel first, then pip install the wheel. Editable installs
+      # (`pip install -e`) skip setup.py's build_py cmdclass, which means the
+      # bundled_skills/ tree (daily-test-report and friends) never gets staged
+      # into site-packages, and xtester-install-skills SKIPs the tree-skill
+      # with "not staged; dev source?". Building the wheel first matches what
+      # the private-feed path installs and keeps -Source local honest.
+      $distDir = Join-Path $path "dist"
+      $buildDir = Join-Path $path "build"
+      Invoke-Step "Building X-Tester wheel from local source: $path" {
+        if (Test-Path -LiteralPath $distDir)  { Remove-Item -Recurse -Force $distDir }
+        if (Test-Path -LiteralPath $buildDir) { Remove-Item -Recurse -Force $buildDir }
+        Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "-U", "build")
+        Push-Location $path
+        try {
+          Invoke-External $VenvPython @("-m", "build", "--wheel", "--outdir", $distDir)
+        } finally {
+          Pop-Location
+        }
+      }
+      $wheel = Get-ChildItem -LiteralPath $distDir -Filter "xtester-*.whl" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+      if (-not $wheel) { throw "No xtester wheel produced under $distDir" }
+      Invoke-Step "Installing X-Tester wheel: $($wheel.Name)" {
+        Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "--force-reinstall", "--no-deps", $wheel.FullName)
+        Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "-U", $wheel.FullName)
       }
       return
     }
@@ -779,12 +815,47 @@ function Install-XTesterIntoVenv([string]$VenvPython) {
       # version on the private feed can be ignored (pip's -U only upgrades
       # within the versions it already knows about), leaving the venv pinned
       # to an older release even though a newer one is available.
-      Invoke-External $VenvPython @(
+      $primaryExtraIndexUrl = $ExtraIndexUrl
+      $fallbackExtraIndexUrl = "https://packagefeedproxy.microsoft.io/pypi/simple/"
+      $pipArgs = @(
         "-m", "pip", "install", "--progress-bar", "off", "-U", "--prefer-binary", "--no-cache-dir",
         "--index-url", $FeedUrl,
-        "--extra-index-url", $ExtraIndexUrl,
+        "--extra-index-url", $primaryExtraIndexUrl,
         $packageSpec
       )
+
+      try {
+        Invoke-External $VenvPython $pipArgs
+      }
+      catch {
+        $errorText = "$($_.Exception.Message)"
+        $normalize = {
+          param([string]$url)
+          if ([string]::IsNullOrWhiteSpace($url)) { return "" }
+          return $url.Trim().TrimEnd('/').ToLowerInvariant()
+        }
+        $isNetworkFetchFailure = (
+          $errorText -match '(?i)ssl|tls|handshake|certificate|connection|timed out|read timed out|proxy|files\.pythonhosted\.org|pypi\.org'
+        )
+        $shouldRetryWithProxy = (
+          $Source -eq "private-feed" -and
+          (& $normalize $primaryExtraIndexUrl) -ne (& $normalize $fallbackExtraIndexUrl) -and
+          $isNetworkFetchFailure
+        )
+
+        if (-not $shouldRetryWithProxy) {
+          throw
+        }
+
+        Warn "Install failed via extra index '$primaryExtraIndexUrl'. Retrying once with Microsoft packagefeedproxy mirror."
+        Invoke-External $VenvPython @(
+          "-m", "pip", "install", "--progress-bar", "off", "-U", "--prefer-binary", "--no-cache-dir",
+          "--index-url", $FeedUrl,
+          "--extra-index-url", $fallbackExtraIndexUrl,
+          $packageSpec
+        )
+        Success "Install succeeded with fallback extra index: $fallbackExtraIndexUrl"
+      }
     }
   }
 }
@@ -795,6 +866,18 @@ function Resolve-XTesterMcpFromVenv {
     throw "xtester-mcp.exe was not installed in the managed venv: $exe"
   }
   return (Resolve-Path -LiteralPath $exe).Path
+}
+
+function Resolve-XTesterMcpDoctorFromVenv {
+  $exe = Join-Path $VenvPath "Scripts\xtester-mcp-doctor.exe"
+  if (-not (Test-Path -LiteralPath $exe)) {
+    throw "xtester-mcp-doctor.exe was not installed in the managed venv: $exe"
+  }
+  return (Resolve-Path -LiteralPath $exe).Path
+}
+
+function Test-XTesterMcpProtocol([string]$DoctorPath, [string]$CommandPath) {
+  Invoke-External $DoctorPath @("--command", $CommandPath, "--timeout-seconds", "10")
 }
 
 function Ensure-XTesterCliPath([string]$VenvPython) {
@@ -890,13 +973,11 @@ function Offer-AgencyXTesterPluginUpdate {
   $agency = Get-Command "agency" -ErrorAction SilentlyContinue
   if (-not $agency) { return }
   $agencyPath = $agency.Source
-  if ($null -eq $Host.UI.RawUI) {
-    Info "Agency CLI detected; skipping cxe-xtester plugin prompt in non-interactive host."
-    return
-  }
-
   Write-Host ""
-  $answer = Read-Host "Agency CLI detected. Install/update xtester Agency plugin cxe-xtester from playground? [Y/n]"
+  $answer = Read-OptionalPrompt `
+    "Agency CLI detected. Install/update xtester Agency plugin cxe-xtester from playground? [Y/n]" `
+    "Agency CLI detected; skipping cxe-xtester plugin prompt in non-interactive host."
+  if ($null -eq $answer) { return }
   if (-not ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$')) {
     Info "Skipping Agency cxe-xtester plugin update."
     return
@@ -992,32 +1073,23 @@ function Register-VSCode([string]$CommandPath) {
   }
 }
 
-function Test-XTesterMcpSpawn([string]$CommandPath) {
-  $stdinPath = [System.IO.Path]::GetTempFileName()
-  $stdoutPath = [System.IO.Path]::GetTempFileName()
-  $stderrPath = [System.IO.Path]::GetTempFileName()
-  try {
-    $process = Start-Process -FilePath $CommandPath -NoNewWindow -PassThru -RedirectStandardInput $stdinPath -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
-    Start-Sleep -Milliseconds 800
-    if ($process.HasExited -and $process.ExitCode -ne 0) {
-      $stderrText = Get-Content -Raw -LiteralPath $stderrPath -ErrorAction SilentlyContinue
-      throw "xtester-mcp exited early with code $($process.ExitCode). $stderrText"
-    }
-    if (-not $process.HasExited) {
-      $process.Kill()
-      $process.WaitForExit()
-    }
-  }
-  finally {
-    Remove-Item $stdinPath, $stdoutPath, $stderrPath -Force -ErrorAction SilentlyContinue
-  }
-}
-
 function Expand-Clients {
   if ($Client -contains "all") {
     return @("copilot", "claude-desktop", "claude-code", "vscode")
   }
   return $Client | Select-Object -Unique
+}
+
+function Register-XTesterClients([string]$DoctorPath, [string]$CommandPath, [string[]]$Targets) {
+  Test-XTesterMcpProtocol $DoctorPath $CommandPath
+  foreach ($target in $Targets) {
+    switch ($target) {
+      "copilot" { Register-Copilot $CommandPath }
+      "claude-desktop" { Register-ClaudeDesktop $CommandPath }
+      "claude-code" { Register-ClaudeCode $CommandPath }
+      "vscode" { Register-VSCode $CommandPath }
+    }
+  }
 }
 
 # Entry point
@@ -1072,15 +1144,11 @@ $venvPython = New-ManagedVenv $pythonInfo
 Install-XTesterIntoVenv $venvPython
 Ensure-XTesterCliPath $venvPython
 $xtesterMcp = Resolve-XTesterMcpFromVenv
+$xtesterMcpDoctor = Resolve-XTesterMcpDoctorFromVenv
 Success "Using xtester-mcp: $xtesterMcp"
 
-foreach ($target in (Expand-Clients)) {
-  switch ($target) {
-    "copilot" { Register-Copilot $xtesterMcp }
-    "claude-desktop" { Register-ClaudeDesktop $xtesterMcp }
-    "claude-code" { Register-ClaudeCode $xtesterMcp }
-    "vscode" { Register-VSCode $xtesterMcp }
-  }
+Invoke-Step "Checking protocol and registering X-Tester MCP clients" {
+  Register-XTesterClients $xtesterMcpDoctor $xtesterMcp (Expand-Clients)
 }
 
 # Opportunistic: if the user installed for copilot only and the Claude Code CLI
@@ -1095,8 +1163,13 @@ if (-not $SkipClientInstall `
     -and (Get-Command 'claude' -ErrorAction SilentlyContinue)) {
   Offer-AgencyXTesterPluginUpdate
   Write-Host ""
-  $answer = Read-Host "Claude Code CLI detected. Also register X-Tester MCP with Claude Code? [Y/n]"
-  if ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
+  $answer = Read-OptionalPrompt `
+    "Claude Code CLI detected. Also register X-Tester MCP with Claude Code? [Y/n]" `
+    "Claude Code CLI detected; skipping Claude Code registration prompt in non-interactive host."
+  if ($null -eq $answer) {
+    Info "Skipping Claude Code registration. Re-run with -Client claude-code to add it later."
+  }
+  elseif ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
     Register-ClaudeCode $xtesterMcp
   } else {
     Info "Skipping Claude Code registration. Re-run with -Client claude-code to add it later."
@@ -1114,16 +1187,17 @@ if (-not $SkipClientInstall `
     -and (-not [Console]::IsInputRedirected) `
     -and (Get-Command 'code' -ErrorAction SilentlyContinue)) {
   Write-Host ""
-  $answer = Read-Host "VS Code detected. Also register X-Tester MCP with VS Code (user profile)? [Y/n]"
-  if ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
+  $answer = Read-OptionalPrompt `
+    "VS Code detected. Also register X-Tester MCP with VS Code (user profile)? [Y/n]" `
+    "VS Code detected; skipping VS Code registration prompt in non-interactive host."
+  if ($null -eq $answer) {
+    Info "Skipping VS Code registration. Re-run with -Client vscode to add it later."
+  }
+  elseif ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
     Register-VSCode $xtesterMcp
   } else {
     Info "Skipping VS Code registration. Re-run with -Client vscode to add it later."
   }
-}
-
-Invoke-Step "Checking xtester-mcp can spawn" {
-  Test-XTesterMcpSpawn $xtesterMcp
 }
 
 # ---------------------------------------------------------------------------
@@ -1135,12 +1209,11 @@ if ($Client -contains "copilot" -or $Client -contains "all") {
   $cliSkillsBin = Join-Path $VenvPath "Scripts\xtester-install-skills.exe"
   if (Test-Path -LiteralPath $cliSkillsBin) {
     $proceed = $false
-    if ($null -eq $Host.UI.RawUI) {
-      Info "Non-interactive host; skipping bundled xtester-* skill install (re-run interactively to install)."
-    }
-    else {
-      Write-Host ""
-      $answer = Read-Host "Install bundled xtester-* Copilot CLI skills into ~/.copilot/skills/? [Y/n]"
+    Write-Host ""
+    $answer = Read-OptionalPrompt `
+      "Install bundled xtester-* Copilot CLI skills into ~/.copilot/skills/? [Y/n]" `
+      "Non-interactive host; skipping bundled xtester-* skill install (re-run interactively to install)."
+    if ($null -ne $answer) {
       if ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
         $proceed = $true
       }
