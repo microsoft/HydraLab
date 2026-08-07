@@ -33,7 +33,7 @@ public class PkgUtilTest extends BaseTest {
 
     @Test
     public void analysisIpaFile() {
-        File recordFile = new File("src/test/resources/uitestsample.ipa");
+        File recordFile = new File("C:\\users\\zhoule\\Downloads\\LTW MSA.ipa");
         JSONObject res = PkgUtil.analysisFile(recordFile, EntityType.APP_FILE_SET);
 
         logger.info(res.toString(SerializerFeature.PrettyFormat));
