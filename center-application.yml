@@ -1,0 +1,31 @@
+spring:
+  security:
+    oauth2:
+      enabled: false
+      client:
+        provider:
+          azure-ad:
+            authorization-uri: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+            token-uri: https://login.microsoftonline.com/common/oauth2/v2.0/token
+            jwk-set-uri: https://login.microsoftonline.com/common/discovery/v2.0/keys
+        registration:
+          azure-client:
+            provider: azure-ad
+            client-id: dummy-client-id
+            client-secret: dummy-secret
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:9886/login/oauth2/code/azure-client
+            scope: "User.Read"
+  datasource:
+    url: jdbc:sqlite:./hydra_lab_center_db.sqlite
+    driver-class-name: org.sqlite.JDBC
+    username: sqlite
+    password: 98765432
+
+app:
+  default-user: default@hydralab.com
+  storage:
+    type: LOCAL
+  location: ${user.dir}
+  agent-auth-mode: SECRET
+  api-auth-mode: SECRET
