@@ -12,6 +12,7 @@ import com.microsoft.hydralab.common.entity.common.TestTask;
 import com.microsoft.hydralab.common.management.AgentManagementService;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
+import com.microsoft.hydralab.common.util.IOSUtils;
 import com.microsoft.hydralab.common.util.ShellUtils;
 import com.microsoft.hydralab.common.util.ThreadUtils;
 import com.microsoft.hydralab.performance.PerformanceTestManagementService;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class XCTestRunner extends TestRunner {
     private static final int MAJOR_APPIUM_VERSION = 1;
@@ -48,11 +50,16 @@ public class XCTestRunner extends TestRunner {
     @Override
     protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
         initializeTest(testRunDevice, testTask, testRun);
-        unzipXctestFolder(testTask.getAppFile(), testRun, testRun.getLogger());
-        List<String> result = runXctest(testRunDevice, testRun.getLogger(), testTask, testRun);
-        analysisXctestResult(result, testRun);
-        FileUtil.deleteFile(new File(testRun.getResultFolder().getAbsolutePath(), Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME));
-        finishTest(testRunDevice, testTask, testRun);
+        try {
+            unzipXctestFolder(testTask.getAppFile(), testRun, testRun.getLogger());
+            List<String> result = runXctest(testRunDevice, testRun.getLogger(), testTask, testRun);
+            analysisXctestResult(result, testRun);
+            FileUtil.deleteFile(new File(testRun.getResultFolder().getAbsolutePath(), Const.XCTestConfig.XCTEST_ZIP_FOLDER_NAME));
+        } finally {
+            // finishTest must always run to gracefully stop ffmpeg, kill WDA,
+            // release port forwarding, and stop log collection.
+            finishTest(testRunDevice, testTask, testRun);
+        }
     }
 
     private void initializeTest(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) {
@@ -138,7 +145,29 @@ public class XCTestRunner extends TestRunner {
             XCTestCommandReceiver out = new XCTestCommandReceiver(proc.getInputStream(), logger);
             err.start();
             out.start();
-            proc.waitFor();
+            // On iOS 17+, WDA and test both run via xcodebuild on the same device
+            // (Apple changed testmanagerd.lockdown.secure, making xcodebuild the only
+            // way to launch WDA). This can cause xcodebuild to hang at cleanup.
+            // Poll for test completion in output rather than waiting for process exit,
+            // since xcodebuild may hang indefinitely at cleanup.
+            long deadline = System.currentTimeMillis() + testTask.getTimeOutSecond() * 1000L;
+            while (System.currentTimeMillis() < deadline) {
+                // Check both stdout and stderr — xcodebuild may emit completion
+                // markers (e.g. "** TEST SUCCEEDED **") on either stream
+                if (!proc.isAlive() || out.isTestComplete() || err.isTestComplete()) {
+                    break;
+                }
+                Thread.sleep(1000);
+            }
+            // Give a short grace period for xcodebuild to finish cleanly
+            if (proc.isAlive()) {
+                boolean exited = proc.waitFor(30, TimeUnit.SECONDS);
+                if (!exited) {
+                    logger.warn("xcodebuild hanging at cleanup, force killing");
+                    proc.destroyForcibly();
+                    proc.waitFor(5, TimeUnit.SECONDS);
+                }
+            }
             result = out.getResult();
             if (!testTask.isDisableGifEncoder()) {
                 testRunDeviceOrchestrator.addGifFrameAsyncDelay(testRunDevice, agentManagementService.getScreenshotDir(), 0, logger);
@@ -180,13 +209,26 @@ public class XCTestRunner extends TestRunner {
 
     private void analysisXctestResult(List<String> resultList, TestRun testRun) {
         int totalCases = 0;
-        for (String resultLine : resultList
-        ) {
+        for (String resultLine : resultList) {
             if (resultLine.toLowerCase().startsWith("test case") && !resultLine.contains("started")) {
                 AndroidTestUnit ongoingXctest = new AndroidTestUnit();
                 String testInfo = resultLine.split("'")[1];
-                ongoingXctest.setTestName(testInfo.split("\\.")[1].replaceAll("[^a-zA-Z0-9_]", ""));
-                ongoingXctest.setTestedClass(testInfo.split("\\.")[0].replaceAll("[^a-zA-Z0-9_]", ""));
+                String testedClass;
+                String testName;
+                if (testInfo.contains(".")) {
+                    // Swift format: "ClassName.testMethodName"
+                    String[] parts = testInfo.split("\\.");
+                    testedClass = parts[0].replaceAll("[^a-zA-Z0-9_]", "");
+                    testName = parts.length > 1 ? parts[1].replaceAll("[^a-zA-Z0-9_]", "") : testedClass;
+                } else {
+                    // Objective-C format: "-[ClassName testMethodName]"
+                    String cleaned = testInfo.replaceAll("[\\[\\]\\-]", "").trim();
+                    String[] parts = cleaned.split("\\s+", 2);
+                    testedClass = parts[0];
+                    testName = parts.length > 1 ? parts[1] : testedClass;
+                }
+                ongoingXctest.setTestName(testName);
+                ongoingXctest.setTestedClass(testedClass);
                 ongoingXctest.setDeviceTestResultId(testRun.getId());
                 ongoingXctest.setTestTaskId(testRun.getTestTaskId());
                 if (resultLine.contains("passed")) {
@@ -221,6 +263,9 @@ public class XCTestRunner extends TestRunner {
             String videoFilePath = testRunDeviceOrchestrator.stopScreenRecorder(testRunDevice, testRun.getResultFolder(), testRun.getLogger());
             testRun.setVideoPath(agentManagementService.getTestBaseRelPathInUrl(videoFilePath));
         }
+        // Kill WDA proxy to release device resources. On iOS 17+, WDA runs via
+        // xcodebuild which holds device resources after test completion.
+        IOSUtils.killProxyWDA(testRunDevice.getDeviceInfo(), testRun.getLogger());
         testRunDeviceOrchestrator.stopLogCollector(testRunDevice);
     }
 }

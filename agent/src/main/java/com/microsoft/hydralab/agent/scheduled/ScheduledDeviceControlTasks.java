@@ -31,6 +31,18 @@ public class ScheduledDeviceControlTasks {
     @Resource
     AgentWebSocketClient agentWebSocketClient;
 
+    // Poll for iOS device connect/disconnect every 60 seconds.
+    // pymobiledevice3 does not support a continuous 'watch' command,
+    // so periodic polling replaces the old tidevice-based IOSDeviceWatcher.
+    @Scheduled(fixedDelay = 60000, initialDelay = 30000)
+    public void scheduledUpdateDeviceList() {
+        try {
+            deviceControlService.updateDeviceList();
+        } catch (Exception e) {
+            logger.error("Failed to poll device list", e);
+        }
+    }
+
     //check connection /5s
     @Scheduled(cron = "*/5 * * * * *")
     public void scheduledCheckWebSocketConnection() {
