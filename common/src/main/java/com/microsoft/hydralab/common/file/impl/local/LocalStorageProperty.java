@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 /**
  * @author Li Shen
  * @date 3/6/2023
@@ -20,6 +22,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class LocalStorageProperty extends StorageProperties {
     private String endpoint;
-    private String token;
+    private String token = generateToken();
     private int fileExpiryDay;
+
+    public void setToken(String token) {
+        this.token = token == null || token.trim().isEmpty() ? generateToken() : token;
+    }
+
+    private static String generateToken() {
+        return "token=" + UUID.randomUUID();
+    }
 }

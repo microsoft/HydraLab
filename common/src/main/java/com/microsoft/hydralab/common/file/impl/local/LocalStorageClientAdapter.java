@@ -13,10 +13,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 public class LocalStorageClientAdapter extends StorageServiceClient {
-    private boolean isInitiated = false;
+    private static final long TOKEN_EXPIRY_MINUTES = 120;
     private LocalStorageClient localStorageClient;
     Logger classLogger = LoggerFactory.getLogger(StorageServiceClient.class);
 
@@ -32,9 +35,6 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
 
     @Override
     public void updateAccessToken(AccessToken accessToken) {
-        if (isInitiated) {
-            return;
-        }
         if (!(accessToken instanceof LocalStorageToken)) {
             return;
         }
@@ -42,25 +42,30 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
         LocalStorageToken localStorageToken = (LocalStorageToken) accessToken;
         localStorageClient = new LocalStorageClient(localStorageToken);
         fileExpiryDay = localStorageToken.getFileExpiryDay();
-        isInitiated = true;
-        classLogger.info("Init Agent local storage client successfully!");
+        classLogger.info("Updated Agent local storage client access token successfully!");
     }
 
     @Override
     public AccessToken generateAccessToken(String permissionType) {
         LocalStoragePermission permission = LocalStoragePermission.valueOf(permissionType);
 
-        // todo: generate token with specific permissions (WRITE/READ) and expiry time
         LocalStorageToken localStorageToken = new LocalStorageToken();
         localStorageToken.setEndpoint(localStorageClient.getEndpoint());
         localStorageToken.setToken("token=" + UUID.randomUUID());
         localStorageToken.setFileExpiryDay(fileExpiryDay);
+        localStorageToken.setPermission(permission.name());
+        long expiresAt = permission == LocalStoragePermission.WRITE
+                ? Long.MAX_VALUE
+                : Instant.now().plus(TOKEN_EXPIRY_MINUTES, ChronoUnit.MINUTES).getEpochSecond();
+        localStorageToken.setExpiresAtEpochSecond(expiresAt);
         return localStorageToken;
     }
 
     @Override
     public AccessToken generateAccessTokenForFile(String permissionType, String fileUri) {
-        return generateAccessToken(permissionType);
+        LocalStorageToken localStorageToken = (LocalStorageToken) generateAccessToken(permissionType);
+        localStorageToken.setFileUri(Paths.get(fileUri).normalize().toString().replace(File.separatorChar, '/'));
+        return localStorageToken;
     }
 
     @Override
@@ -69,8 +74,7 @@ public class LocalStorageClientAdapter extends StorageServiceClient {
         LocalStorageToken localStorageToken = (LocalStorageToken) accessToken;
         Assert.notNull(localStorageToken, "The localStorageToken can't be null!");
 
-        // todo: check if the token is expired
-        return true;
+        return localStorageToken.getExpiresAtEpochSecond() <= Instant.now().getEpochSecond();
     }
 
     @Override

@@ -30,12 +30,7 @@ public final class LocalStorageIOUtil {
     }
 
     public static void copyUploadedStreamToFile(InputStream inputStream, String fileUri) {
-        Path publicFolder = Paths.get(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT).normalize().toAbsolutePath();
-        Path filePath = publicFolder.resolve(fileUri).normalize().toAbsolutePath();
-        if (!filePath.startsWith(publicFolder + File.separator)) {
-            throw new HydraLabRuntimeException("Invalid file uri");
-        }
-        File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
+        File file = resolveFilePath(fileUri).toFile();
         File parentDirFile = new File(file.getParent());
         if (!parentDirFile.exists() && !parentDirFile.mkdirs()) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "mkdirs failed!");
@@ -46,6 +41,18 @@ public final class LocalStorageIOUtil {
         } catch (IOException e) {
             throw new HydraLabRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "upload file failed!");
         }
+    }
+
+    public static Path resolveFilePath(String fileUri) {
+        if (fileUri == null) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path");
+        }
+        Path storageRoot = Paths.get(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT).toAbsolutePath().normalize();
+        Path filePath = storageRoot.resolve(fileUri).toAbsolutePath().normalize();
+        if (filePath.equals(storageRoot) || !filePath.startsWith(storageRoot)) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path");
+        }
+        return filePath;
     }
 
     public static int copyDownloadedStreamToResponse(File file, OutputStream os) {
