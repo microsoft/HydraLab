@@ -57,12 +57,11 @@ public class StorageController {
                              @RequestParam("file") MultipartFile uploadedFile,
                              @RequestParam("fileUri") String fileUri) {
         String storageToken = request.getHeader("Authorization");
-        if (storageToken != null) {
-            storageToken = storageToken.replaceAll("Bearer ", "");
-        } else {
+        storageToken = extractBearerToken(storageToken);
+        if (storageToken == null) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Invalid visit with no auth code");
         }
-        if (!storageTokenManageService.validateAccessToken(storageToken)) {
+        if (!storageTokenManageService.validateAccessToken(storageToken, Const.FilePermission.WRITE, fileUri)) {
             return Result.error(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
         }
         if (!LogUtils.isLegalStr(fileUri, Const.RegexString.STORAGE_FILE_REL_PATH, false)) {
@@ -90,25 +89,22 @@ public class StorageController {
                                  HttpServletResponse response,
                                  @RequestParam("fileUri") String fileUri) {
         String storageToken = request.getHeader("Authorization");
-        if (storageToken != null) {
-            storageToken = storageToken.replaceAll("Bearer ", "");
-        } else {
+        storageToken = extractBearerToken(storageToken);
+        if (storageToken == null) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Invalid visit with no auth code");
         }
-        if (!storageTokenManageService.validateAccessToken(storageToken)) {
+        boolean canRead = storageTokenManageService.validateAccessToken(
+                storageToken, Const.FilePermission.READ, fileUri);
+        boolean canWrite = storageTokenManageService.validateAccessToken(
+                storageToken, Const.FilePermission.WRITE, fileUri);
+        if (!canRead && !canWrite) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
         }
         if (!LogUtils.isLegalStr(fileUri, Const.RegexString.STORAGE_FILE_REL_PATH, false)) {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path, file name should not include ';'!");
         }
 
-        Path publicFolder = Paths.get(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT).normalize().toAbsolutePath();
-        Path filePath = publicFolder.resolve(fileUri).normalize().toAbsolutePath();
-        if (!filePath.startsWith(publicFolder + File.separator)) {
-            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path");
-        }
-
-        File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
+        File file = LocalStorageIOUtil.resolveFilePath(fileUri).toFile();
         if (!file.exists()) {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), String.format("File %s not exist!", fileUri));
         }
@@ -136,9 +132,6 @@ public class StorageController {
         if (token == null) {
             throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Invalid visit with no auth code");
         }
-        if (!storageTokenManageService.validateTokenVal(token)) {
-            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
-        }
         final String appendPath = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
         final String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
         String fileUri = new AntPathMatcher().extractPathWithinPattern(bestMatchingPattern, appendPath);
@@ -146,7 +139,10 @@ public class StorageController {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid file path, file name should not include ';'!");
         }
 
-        File file = new File(Const.LocalStorageURL.CENTER_LOCAL_STORAGE_ROOT + fileUri);
+        File file = LocalStorageIOUtil.resolveFilePath(fileUri).toFile();
+        if (!storageTokenManageService.validateTokenVal(token, fileUri)) {
+            throw new HydraLabRuntimeException(HttpStatus.UNAUTHORIZED.value(), "Unauthorized, error access token for storage actions.");
+        }
         if (!file.exists()) {
             throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), String.format("File %s not exist!", fileUri));
         }
@@ -166,6 +162,15 @@ public class StorageController {
         logger.info(String.format("Output file: %s , size: %d!", fileUri, resLen));
     }
 
+    static String extractBearerToken(String authorizationHeader) {
+        String prefix = "Bearer ";
+        if (authorizationHeader == null || !authorizationHeader.startsWith(prefix)) {
+            return null;
+        }
+        String token = authorizationHeader.substring(prefix.length());
+        return token.trim().isEmpty() ? null : token;
+    }
+
     @GetMapping("/api/storage/getFileDownloadToken")
     public Result generateReadToken(@CurrentSecurityContext SysUser requestor,
                                     @QueryParam("fileUri") String fileUri) {
@@ -174,7 +179,9 @@ public class StorageController {
         }
 
         if (fileUri.startsWith("/devices/screenshots/")) {
-            return Result.ok(storageTokenManageService.generateReadTokenForFile(requestor.getMailAddress(), "images" + fileUri).getToken());
+            String screenshotStoragePath = getScreenshotStoragePath(fileUri);
+            return Result.ok(storageTokenManageService.generateReadTokenForFile(
+                    requestor.getMailAddress(), screenshotStoragePath).getToken());
         }
         String blobPath = fileUri;
         if (blobPath.startsWith("/")) {
@@ -192,5 +199,18 @@ public class StorageController {
         String token = storageTokenManageService.generateReadTokenForFile(requestor.getMailAddress(), fullBlobPath).getToken();
 
         return Result.ok(token);
+    }
+
+    static String getScreenshotStoragePath(String fileUri) {
+        String screenshotPrefix = "/devices/screenshots/";
+        if (fileUri == null || !fileUri.startsWith(screenshotPrefix)) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid screenshot path");
+        }
+        Path screenshotRoot = Paths.get("images/devices/screenshots").normalize();
+        Path screenshotPath = Paths.get("images").resolve(fileUri.substring(1)).normalize();
+        if (screenshotPath.equals(screenshotRoot) || !screenshotPath.startsWith(screenshotRoot)) {
+            throw new HydraLabRuntimeException(HttpStatus.BAD_REQUEST.value(), "Invalid screenshot path");
+        }
+        return screenshotPath.toString().replace(File.separatorChar, '/');
     }
 }
