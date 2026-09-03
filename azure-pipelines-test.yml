@@ -1,297 +1,45 @@
-# Docker
-# Build and push an image to Azure Container Registry
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-pr:
-  drafts: false
 trigger:
-- none
+- main
 
-resources:
-- repo: self
+jobs:
+- job: call_api
+  pool:
+    name: YP_Performance_Test
+    demands:
+      - Agent.Name -equals MININT-T69DC43
+  steps:
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'hydraTest'
+      scriptType: 'ps'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        echo "Getting token via federated identity..."
+        $ACCESS_TOKEN=az account get-access-token --query accessToken --scope api://228c4d51-5002-4fcf-8752-552b478fff77/.default -o tsv
+        $ACCESS_TOKEN2=az account get-access-token --query accessToken --scope https://graph.microsoft.com/.default -o tsv
 
-variables:
-  # Container registry service connection established during pipeline creation
-  # Agent VM image name
-- name: vmImageName
-  value: 'windows-latest'
-- name: fullBuild
-  value: $[ne(variables['Build.Reason'], 'PullRequest')]
-- name: securityScan
-  value: $[or(eq(variables['Build.Reason'], 'Manual'), eq(variables['Build.Reason'], 'Schedule'))]
 
-stages:
-- stage: Build
-  displayName: Build and push stage
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '18.x'
-    - task: Npm@1
-      inputs:
-        command: 'install'
-        workingDir: 'react'
-    - task: Npm@1
-      inputs:
-        command: 'custom'
-        workingDir: 'react'
-        customCommand: 'run pub'
-    - task: CodeInspector@2
-      displayName: "[Security Review] code inspector"
-      inputs:
-        ProductId: '606a5e0d-64b0-4237-9dca-eac200438452'
-      condition: eq(variables.securityScan, 'true')
-    - task: CodeQL3000Init@0
-      displayName: "[Security Review] CodeQL Init"
-      condition: eq(variables.securityScan, 'true')
-    - task: CredScan@3
-      displayName: "[Security Review] CredScan"
-      condition: eq(variables.securityScan, 'true')
-    - task: PowerShell@2
-      displayName: Generate Env File
-      inputs:
-        targetType: 'inline'
-        script: |
-          if(Test-Path variable:BLOB_CONNECTION_STRING){
-            New-Item -Path common/src/test/resources -Name ".env" -ItemType "file" -Value "BLOB_CONNECTION_STRING = $(BLOB_CONNECTION_STRING)"
-          }else{
-            Write-Host "No BLOB_CONNECTION_STRING found"
-          }
-        workingDirectory: '$(Build.Repository.LocalPath)'
-      condition: eq(variables.fullBuild, 'false')
-    - task: PowerShell@2
-      displayName: Set center/agent version
-      inputs:
-        targetType: 'inline'
-        script: |
-          $PSDefaultParameterValues['*:Encoding'] = 'utf8'
-          $hydraVersionCode = $(Build.BuildId)
-          $hydraVersion = "$(Build.SourceBranchName).$(Build.BuildId)"
-          $branchName =  "$(Build.SourceBranch)"
-          
-          (Get-Content agent/src/main/resources/version.properties) -Replace '1000000', "$hydraVersionCode"| Set-Content agent/src/main/resources/version.properties
-          (Get-Content center/src/main/resources/version.properties) -Replace '1000000', "$hydraVersionCode"| Set-Content center/src/main/resources/version.properties
-          
-          if($branchName -like '*Release*'){
-            (Get-Content agent/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content agent/src/main/resources/version.properties
-            (Get-Content center/src/main/resources/version.properties) -Replace '0.0.0', $hydraVersion| Set-Content center/src/main/resources/version.properties
-          }
-          echo "##vso[task.setvariable variable=hydraVersionCode;]$hydraVersionCode"
-          echo "##vso[task.setvariable variable=hydraVersion;]$hydraVersion"
-        workingDirectory: '$(Build.Repository.LocalPath)'
-    - task: Gradle@3
-      displayName: Run JUnit Test
-      inputs:
-        gradleWrapperFile: 'gradlew'
-        tasks: 'test jacocoRootReport --stacktrace'
-        publishJUnitResults: true
-        testResultsFiles: '**/TEST-*.xml'
-        #codeCoverageToolOption: 'JaCoCo'
-        #codeCoverageClassFilesDirectories: 'build/classes/java/main'
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false
-      condition: eq(variables.fullBuild, 'false')
-    - task: PowerShell@2
-      displayName: Delete Env File
-      inputs:
-        targetType: 'inline'
-        script: |
-          if(Test-Path common/src/test/resources/.env){
-            Remove-Item -Path common/src/test/resources/.env -Force
-          }else{
-            Write-Host "No .env file found"
-          }
-        workingDirectory: '$(Build.Repository.LocalPath)'
-      condition: eq(variables.fullBuild, 'false')
-    - task: PublishCodeCoverageResults@1
-      displayName: Publich Code Coverage
-      inputs:
-        codeCoverageTool: 'JaCoCo'
-        summaryFileLocation: 'build/reports/jacoco/jacocoRootReport/*.xml'
-        reportDirectory: 'build/reports/jacoco/jacocoRootReport/html'
-      condition: eq(variables.fullBuild, 'false')
-    - task: Gradle@2
-      displayName: Package Android client APK
-      inputs:
-        workingDirectory: 'android_client'
-        gradleWrapperFile: 'android_client/gradlew'
-        tasks: 'assembleRelease --stacktrace'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        options: '-PclientVersionCode=$(hydraVersionCode) -PclientVersionNumber=$(hydraVersion)'
-    - task: Gradle@2
-      displayName: Package Android client APK
-      inputs:
-        workingDirectory: 'android_client'
-        gradleWrapperFile: 'android_client/gradlew'
-        tasks: 'assembleAndroidTest --stacktrace'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        options: '-PclientVersionCode=$(hydraVersionCode) -PclientVersionNumber=$(hydraVersion)'
-    - task: PowerShell@2
-      displayName: Copy APK to folder for deployment
-      inputs:
-        targetType: 'inline'
-        script: |
-          cp android_client/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk common/src/main/resources/record_androidTest.apk -force
-    - task: PowerShell@2
-      displayName: Copy APK to folder for deployment
-      inputs:
-        targetType: 'inline'
-        script: |
-          cp android_client/app/build/outputs/apk/release/app-release.apk common/src/main/resources/record_release.apk -force
-    - task: Gradle@2
-      displayName: Build center
-      inputs:
-        gradleWrapperFile: 'gradlew'
-        tasks: 'center:bootJar --stacktrace'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false
-    - task: Gradle@2
-      displayName: Build agent
-      inputs:
-        gradleWrapperFile: 'gradlew'
-        tasks: 'agent:bootJar --stacktrace'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false
-    - task: CopyFiles@2
-      displayName: Copy deploy center files
-      inputs:
-        SourceFolder: 'center/'
-        Contents: 'Dockerfile'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
-      condition: eq(variables.fullBuild, 'true')
-    - task: CopyFiles@2
-      displayName: Copy deploy center files 2
-      inputs:
-        SourceFolder: 'center/deploy_startup/'
-        Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
-      condition: eq(variables.fullBuild, 'true')
-    - task: CopyFiles@2
-      displayName: Copy deploy center files 3
-      inputs:
-        SourceFolder: 'center/uber_image/'
-        Contents: 'hydra_lab_center_docker_db.sqlite'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
-      condition: eq(variables.fullBuild, 'true')
-    - task: CopyFiles@2
-      displayName: Copy deploy center files 4
-      inputs:
-        SourceFolder: 'common/src/main/resources/'
-        Contents: |
-          record_release.apk
-          record_androidTest.apk
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy/deploy_startup'
-      condition: eq(variables.fullBuild, 'true')
-    - task: CopyFiles@2
-      displayName: Copy center jar
-      inputs:
-        SourceFolder: 'center/build/libs/'
-        Contents: '*.jar'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/center_deploy'
-      condition: eq(variables.fullBuild, 'true')
-    - task: Gradle@2
-      displayName: Package Mac installer
-      inputs:
-        gradleWrapperFile: 'gradlew'
-        tasks: 'packageMacInstaller --stacktrace'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false
-      condition: eq(variables.fullBuild, 'true')
-    - task: Gradle@2
-      displayName: Package Windows installer
-      inputs:
-        gradleWrapperFile: 'gradlew'
-        tasks: 'packageWindowsInstaller --stacktrace'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.11'
-        sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false
-      condition: eq(variables.fullBuild, 'true')
-    - task: PowerShell@2
-      displayName: Copy APK & Mapping file to artifact
-      inputs:
-        targetType: 'inline'
-        script: |
-          mkdir -p $(Build.ArtifactStagingDirectory)/android_client
-          cp android_client/app/build/outputs/apk/release/app-release.apk $(Build.ArtifactStagingDirectory)/android_client/app-release-$(hydraVersion).apk
-          if(Test-Path android_client/app/build/outputs/mapping/release/mapping.txt){
-            cp android_client/app/build/outputs/mapping/release/mapping.txt $(Build.ArtifactStagingDirectory)/android_client/
-          }
-      condition: eq(variables.fullBuild, 'true')
-    - task: CopyFiles@2
-      displayName: Copy agent jar
-      inputs:
-        SourceFolder: 'agent/build/libs/'
-        Contents: '*.jar'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
-      condition: eq(variables.fullBuild, 'true')
-    - task: CopyFiles@2
-      displayName: Copy agent installer
-      inputs:
-        SourceFolder: 'build/installer/'
-        Contents: '*.zip'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/agent_deploy'
-      condition: eq(variables.fullBuild, 'true')
-    - task: CopyFiles@2
-      displayName: Copy deploy uber files 1
-      inputs:
-        SourceFolder: 'common/src/main/resources/'
-        Contents: |
-          record_release.apk
-          record_androidTest.apk
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/uber_image'
-      condition: eq(variables.fullBuild, 'true')
-    - task: CopyFiles@2
-      displayName: Copy deploy uber files 2
-      inputs:
-        SourceFolder: 'center/uber_image/'
-        Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/uber_image'
-      condition: eq(variables.fullBuild, 'true')
-    - task: PowerShell@2
-      displayName: Add Release Tag
-      inputs:
-        targetType: 'inline'
-        script: |
-          Write-Host "##vso[build.addbuildtag]Release"
-        workingDirectory: '$(Build.Repository.LocalPath)'
-      condition: and(eq(variables.fullBuild, 'true'), contains(variables['Build.SourceBranch'], 'Release/'))
-    - task: PublishBuildArtifacts@1
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'HydraLabRelease'
-        publishLocation: 'Container'
-      condition: eq(variables.fullBuild, 'true')
-    - task: CodeQL3000Finalize@0
-      displayName: "[Security Review] CodeQL Finalize"
-      condition: eq(variables.securityScan, 'true')
-    - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
-    # https://strikecommunity.azurewebsites.net/articles/8216/how-to-enable-build-break-on-credscan-detections.html
-      displayName: "[Security Review] Create CredScan Security Analysis Report"
-      inputs:
-        GdnExportHtmlFile: true
-        GdnExportAllTools: false
-        GdnExportGdnToolBinSkim: true
-        GdnExportGdnToolCredScan: true
-        GdnExportGdnToolSemmle: true
-      condition: eq(variables.securityScan, 'true')
+        echo "Calling protected API..."
+        
+        echo "Length of string: ${#ACCESS_TOKEN}"
+        New-Item -Path sdk -Name ".env" -ItemType "file" -Value "DB_TOKEN=$ACCESS_TOKEN`DB_TOKEN2=$ACCESS_TOKEN2`DB_TOKEN3=$(System.AccessToken)"
+       
+        Start-Sleep -Seconds 50
+
+        
+        # $headers = @{
+        #     "Content-Type"  = "application/json"
+        #     "Authorization" = "Bearer $ACCESS_TOKEN"
+        # }
+
+        # $response = Invoke-RestMethod -Uri "https://hydralabtest.azurewebsites.net/api/device/list" `
+        #                               -Method Get `
+        #                               -Headers $headers
+
+        # $response | ConvertTo-Json -Depth 10
+
+    env:
+      AZURE_CLIENT_ID: '04856ca1-e39d-49d9-a72a-006e28ddbd0e'
+      AZURE_TENANT_ID: '72f988bf-86f1-41af-91ab-2d7cd011db47'
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
