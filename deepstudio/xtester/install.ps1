@@ -44,7 +44,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.13.2"
+$Script:InstallerVersion = "1.13.3"
 
 if ($Help) {
   @"
@@ -1212,30 +1212,6 @@ Invoke-Step "Checking protocol and registering X-Tester MCP clients" {
   Register-XTesterClients $venvPython $xtesterMcp $selectedClients
 }
 $registeredClients = @($selectedClients)
-
-# Opportunistic: if the user installed for copilot only and the Claude Code CLI
-# is on PATH, offer to register there too. Skipped non-interactively (no host
-# UI) and when the user already asked for claude-code or -SkipClientInstall.
-if (-not $SkipClientInstall `
-    -and ($selectedClients -contains 'copilot') `
-    -and (-not ($selectedClients -contains 'claude-code')) `
-    -and ($null -ne $Host.UI.RawUI) `
-    -and (-not [Console]::IsInputRedirected) `
-    -and (Get-Command 'claude' -ErrorAction SilentlyContinue)) {
-  Write-Host ""
-  $answer = Read-OptionalPrompt `
-    "Claude Code CLI detected. Also register X-Tester MCP with Claude Code? [Y/n]" `
-    "Claude Code CLI detected; skipping Claude Code registration prompt in non-interactive host."
-  if ($null -eq $answer) {
-    Info "Skipping Claude Code registration. Re-run with -Client claude-code to add it later."
-  }
-  elseif ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$') {
-    Register-ClaudeCode $xtesterMcp
-    $registeredClients += "claude-code"
-  } else {
-    Info "Skipping Claude Code registration. Re-run with -Client claude-code to add it later."
-  }
-}
 
 # Opportunistic: if the user installed for copilot only and VS Code is on PATH,
 # offer to register the MCP server in the VS Code user profile (mcp.json) too,
