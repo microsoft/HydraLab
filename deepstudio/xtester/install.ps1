@@ -1,4 +1,4 @@
-# X-Tester MCP installer
+﻿# X-Tester MCP installer
 #
 # Delivery model:
 #   This script is designed to be run directly from a URL via `irm <url> | iex`
@@ -44,8 +44,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Script:InstallerVersion = "1.13.1"
-$Script:AgencyXTesterPluginPrompted = $false
+$Script:InstallerVersion = "1.13.2"
 
 if ($Help) {
   @"
@@ -873,7 +872,7 @@ function Install-XTesterIntoVenv([string]$VenvPython) {
       if (-not $wheel) { throw "No xtester wheel produced under $distDir" }
       Invoke-Step "Installing X-Tester wheel: $($wheel.Name)" {
         Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "--force-reinstall", "--no-deps", $wheel.FullName)
-        Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "-U", $wheel.FullName)
+        Invoke-External $VenvPython @("-m", "pip", "install", "--progress-bar", "off", "-U", "$($wheel.FullName)[remote]")
       }
       Ensure-XTesterLaunchers $VenvPython $wheel.FullName
       return
@@ -895,10 +894,10 @@ function Install-XTesterIntoVenv([string]$VenvPython) {
     }
 
     if ([string]::IsNullOrWhiteSpace($targetVersion)) {
-      $packageSpec = "xtester"
+      $packageSpec = "xtester[remote]"
       $installLabel = "latest X-Tester from private feed"
     } else {
-      $packageSpec = "xtester==$targetVersion"
+      $packageSpec = "xtester[remote]==$targetVersion"
       $installLabel = "X-Tester $packageSpec from private feed"
     }
 
@@ -963,6 +962,16 @@ function Resolve-XTesterMcpFromVenv {
 }
 
 function Test-XTesterMcpProtocol([string]$VenvPython, [string]$CommandPath) {
+  # Older package Doctors only check MCP; validate Remote without logging in or starting a host.
+  $remoteProbe = @'
+import importlib
+import sys
+for name in ('msal', 'msal_extensions', 'websockets', 'adbutils', 'uiautomator2'):
+    importlib.import_module(name)
+if sys.platform == 'win32':
+    importlib.import_module('pymsalruntime')
+'@
+  Invoke-External $VenvPython @("-I", "-c", $remoteProbe)
   # Ignore checkout modules and PYTHONPATH when loading the installed Doctor.
   Invoke-External $VenvPython @("-I", "-m", "xtester.mcp.doctor", "--command", $CommandPath, "--timeout-seconds", "10")
 }
@@ -1053,39 +1062,11 @@ function Register-ClaudeDesktop([string]$CommandPath) {
   Warn "Restart Claude Desktop to load the X-Tester MCP server."
 }
 
-function Offer-AgencyXTesterPluginUpdate {
-  if ($Script:AgencyXTesterPluginPrompted) { return }
-  $Script:AgencyXTesterPluginPrompted = $true
-
-  $agency = Get-Command "agency" -ErrorAction SilentlyContinue
-  if (-not $agency) { return }
-  $agencyPath = $agency.Source
-  Write-Host ""
-  $answer = Read-OptionalPrompt `
-    "Agency CLI detected. Install/update xtester Agency plugin cxe-xtester from playground? [Y/n]" `
-    "Agency CLI detected; skipping cxe-xtester plugin prompt in non-interactive host."
-  if ($null -eq $answer) { return }
-  if (-not ([string]::IsNullOrWhiteSpace($answer) -or $answer -match '^(y|yes)$')) {
-    Info "Skipping Agency cxe-xtester plugin update."
-    return
-  }
-
-  Invoke-Step "Updating Agency cxe-xtester plugin" {
-    & $agencyPath plugin uninstall cxe-xtester
-    if ($LASTEXITCODE -ne 0) {
-      Warn "agency plugin uninstall cxe-xtester exited with code $LASTEXITCODE; continuing with install."
-    }
-    Invoke-External $agencyPath @("plugin", "install", "mp:cxe-xtester@playground")
-  }
-}
-
 function Register-ClaudeCode([string]$CommandPath) {
   $claude = Get-Command "claude" -ErrorAction SilentlyContinue
   if (-not $claude) {
     throw "claude CLI was not found; install Claude Code or select another client."
   }
-
-  Offer-AgencyXTesterPluginUpdate
 
   Invoke-Step "Registering X-Tester MCP with Claude Code" {
     Invoke-External $claude.Source @("mcp", "add", $ServerName, $CommandPath)
@@ -1241,7 +1222,6 @@ if (-not $SkipClientInstall `
     -and ($null -ne $Host.UI.RawUI) `
     -and (-not [Console]::IsInputRedirected) `
     -and (Get-Command 'claude' -ErrorAction SilentlyContinue)) {
-  Offer-AgencyXTesterPluginUpdate
   Write-Host ""
   $answer = Read-OptionalPrompt `
     "Claude Code CLI detected. Also register X-Tester MCP with Claude Code? [Y/n]" `
