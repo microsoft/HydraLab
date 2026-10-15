@@ -1,4 +1,4 @@
-﻿# X-Tester MCP installer
+# X-Tester MCP installer
 #
 # Delivery model:
 #   This script is designed to be run directly from a URL via `irm <url> | iex`
@@ -529,8 +529,8 @@ function Resolve-LocalPackagePath {
     & $winget.Source @wingetArgs 2>&1 | ForEach-Object {
       $line = [string]$_
       if ([string]::IsNullOrWhiteSpace($line)) { return }
-      if ($line -match '^[\s\u2580-\u259F\u2588-\u259B█▒▓░\-\\|/]+\s*\d+\s*%\s*$') { return }
-      if ($line -match '^[\s\u2580-\u259F\u2588-\u259B█▒▓░\-\\|/]+\s*\d[\d.,]*\s*(KB|MB|GB)\s*/\s*\d') { return }
+      if ($line -match '^[\s\u2580-\u259F\u2588-\u259B\-\\|/]+\s*\d+\s*%\s*$') { return }
+      if ($line -match '^[\s\u2580-\u259F\u2588-\u259B\-\\|/]+\s*\d[\d.,]*\s*(KB|MB|GB)\s*/\s*\d') { return }
       if ($line -match '^[\s\-\\|/]+$') { return }
       if ($line -match 'Organization policies are preventing installation' -or $line -match 'exit code:\s*1625') {
         $script:WingetBlockedByPolicy = $true
@@ -1169,8 +1169,8 @@ $pythonInvocation = @($pythonInfo.FilePath) + $pythonInfo.Arguments
 Success "Using Python: $($pythonInfo.Version) ($($pythonInvocation -join ' '))"
 
 # Pre-install optional runtime tools that XTester needs for specific flows:
-#   adb (Google.PlatformTools) — required for Android device automation
-#   ffmpeg (Gyan.FFmpeg)       — required for Windows screen recording
+#   adb (Google.PlatformTools) - required for Android device automation
+#   ffmpeg (Gyan.FFmpeg)       - required for Windows screen recording
 # The skills detect missing tools at runtime, but pre-installing avoids
 # first-run friction for new users.
 Invoke-Step "Ensuring adb (Android platform-tools) is available" {
