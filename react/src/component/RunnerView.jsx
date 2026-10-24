@@ -985,7 +985,6 @@ export default class RunnerView extends BaseView {
             } else {
                 currentRunTestType = "APPIUM"
             }
-            
 
             this.setState({
                 currentAppId: currentId,

@@ -31,6 +31,7 @@ import java.util.Map;
  */
 
 public class MaestroRunner extends TestRunner {
+    private static final String TEST_RUN_NAME = "Maestro test";
     private static final String TEST_CASE_FOLDER = "caseFolder";
 
     private static final int MAJOR_MAESTRO_VERSION = 1;
@@ -48,6 +49,7 @@ public class MaestroRunner extends TestRunner {
 
     @Override
     protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
+        testRun.setTotalCount(testTask.getDeviceTestCount());
         Logger logger = testRun.getLogger();
 
         /* run the test */
@@ -68,6 +70,7 @@ public class MaestroRunner extends TestRunner {
             MaestroResultReceiver resultReceiver = new MaestroResultReceiver(process.getInputStream(), maestroListener, logger);
             resultReceiver.start();
             process.waitFor();
+            resultReceiver.join();
             /* set paths */
             testRun.setTestXmlReportPath(
                     agentManagementService.getTestBaseRelPathInUrl(xmlFile));

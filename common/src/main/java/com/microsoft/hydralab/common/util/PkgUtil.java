@@ -261,7 +261,7 @@ public class PkgUtil {
                 res.put(ParserKey.APP_NAME, "Python Runner");
                 res.put(ParserKey.PKG_NAME, "Python Runner");
             } else if (yamlFiles.isEmpty()) {
-                classLogger.warn("Analysis .zip file failed. It's not a valid XCTEST package, Maestro case or Python package.");
+                throw new HydraLabRuntimeException("Analysis .zip file failed. It's not a valid XCTEST package, Maestro case or Python package.");
             }
             FileUtil.deleteFile(unzippedFolder);
         } catch (Exception e) {

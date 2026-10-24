@@ -30,6 +30,16 @@ public class MaestroResultReceiver extends CommandOutputReceiver {
     }
 
     @Override
+    public void run() {
+        listener.testRunStarted();
+        try {
+            super.run();
+        } finally {
+            listener.testRunEnded();
+        }
+    }
+
+    @Override
     protected boolean handleEachLine(String line) {
         if (line.startsWith("[Passed]")) {
             //for example: [Passed] test_flow1 (28s)
@@ -61,13 +71,6 @@ public class MaestroResultReceiver extends CommandOutputReceiver {
         return super.handleEachLine(line);
     }
 
-    /**
-     * analysis case info
-     *
-     * @param line
-     * @return
-     * @example
-     */
     private Map<String, String> analysisCaseInfo(String line) {
         Map<String, String> infoMap = new HashMap<>();
         String[] msg = line.split(" ");
