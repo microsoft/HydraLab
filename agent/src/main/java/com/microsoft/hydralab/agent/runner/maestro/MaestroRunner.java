@@ -36,7 +36,6 @@ public class MaestroRunner extends TestRunner {
 
     private static final int MAJOR_MAESTRO_VERSION = 1;
     private static final int MINOR_MAESTRO_VERSION = -1;
-    private Logger logger;
 
     public MaestroRunner(AgentManagementService agentManagementService, TestTaskRunCallback testTaskRunCallback, TestRunDeviceOrchestrator testRunDeviceOrchestrator,
                          PerformanceTestManagementService performanceTestManagementService) {
@@ -51,9 +50,9 @@ public class MaestroRunner extends TestRunner {
     @Override
     protected void run(TestRunDevice testRunDevice, TestTask testTask, TestRun testRun) throws Exception {
         testRun.setTotalCount(testTask.getDeviceTestCount());
-        logger = testRun.getLogger();
+        Logger logger = testRun.getLogger();
 
-        /** run the test */
+        /* run the test */
         logger.info("Start Maestro test");
         checkTestTaskCancel(testTask);
         testRun.setTestStartTimeMillis(System.currentTimeMillis());
@@ -69,9 +68,10 @@ public class MaestroRunner extends TestRunner {
         try {
             Process process = Runtime.getRuntime().exec(command);
             MaestroResultReceiver resultReceiver = new MaestroResultReceiver(process.getInputStream(), maestroListener, logger);
-            resultReceiver.run();
+            resultReceiver.start();
             process.waitFor();
-            /** set paths */
+            resultReceiver.join();
+            /* set paths */
             testRun.setTestXmlReportPath(
                     agentManagementService.getTestBaseRelPathInUrl(xmlFile));
             File gifFile = maestroListener.getGifFile();
@@ -104,6 +104,7 @@ public class MaestroRunner extends TestRunner {
     }
 
     private String buildCommand(TestRunDevice testRunDevice, TestRun testRun, Map<String, String> instrumentationArgs, File xmlFile) {
+        // sample: maestro --device 123456 test -e var=aaa --format junit --output /tmp/result.xml /tmp/caseFolder/
         StringBuilder argString = new StringBuilder();
         if (instrumentationArgs != null && !instrumentationArgs.isEmpty()) {
             instrumentationArgs.forEach((k, v) -> argString.append(" -e ").append(k.replaceAll("\\s|\"", "")).append("=").append(v.replaceAll("\\s|\"", "")));
@@ -118,7 +119,7 @@ public class MaestroRunner extends TestRunner {
         File caseFolder = new File(testRun.getResultFolder(), TEST_CASE_FOLDER);
 
         String command = String.format(commFormat, testRunDevice.getDeviceInfo().getSerialNum(), xmlFile.getAbsolutePath(), caseFolder.getAbsolutePath());
-        logger.info("Maestro command: " + LogUtils.scrubSensitiveArgs(command));
+        testRun.getLogger().info("Maestro command: " + LogUtils.scrubSensitiveArgs(command));
 
         return command;
     }

@@ -36,9 +36,6 @@ public class ScheduledDeviceControlTasks {
         if (agentWebSocketClient.isConnectionActive()) {
             return;
         }
-        if (!agentWebSocketClient.shouldRetryConnection()) {
-            return;
-        }
         logger.info("Try reconnecting the WS server");
         agentWebSocketClient.reconnect();
     }
@@ -49,6 +46,8 @@ public class ScheduledDeviceControlTasks {
         clearFile(appOptions.getTestPackageLocation());
         logger.info("schedule clean test result");
         clearFile(appOptions.getTestCaseResultLocation());
+        logger.info("schedule clean error output");
+        clearFile(appOptions.getErrorStorageLocation());
     }
 
     public void clearFile(String folderPath) {

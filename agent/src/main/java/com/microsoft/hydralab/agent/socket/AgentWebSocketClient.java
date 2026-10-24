@@ -6,6 +6,7 @@ package com.microsoft.hydralab.agent.socket;
 import com.microsoft.hydralab.agent.service.AgentWebSocketClientService;
 import com.microsoft.hydralab.common.entity.common.Message;
 import com.microsoft.hydralab.common.util.Const;
+import com.microsoft.hydralab.common.util.FlowUtil;
 import com.microsoft.hydralab.common.util.SerializeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
@@ -20,7 +21,6 @@ public class AgentWebSocketClient extends WebSocketClient {
     private final AgentWebSocketClientService agentWebSocketClientService;
 
     private boolean connectionActive = false;
-    private boolean shouldRetryConnection = true;
     private int reconnectTime = 0;
 
     public AgentWebSocketClient(URI serverUri, AgentWebSocketClientService agentWebSocketClientService) {
@@ -29,7 +29,14 @@ public class AgentWebSocketClient extends WebSocketClient {
         agentWebSocketClientService.setSendMessageCallback(message -> {
             byte[] data = SerializeUtil.messageToByteArr(message);
             log.info("send, path: {}, message data len: {}", message.getPath(), data.length);
-            AgentWebSocketClient.this.send(data);
+            try {
+                FlowUtil.retryAndSleepWhenException(3, 10, () -> {
+                    AgentWebSocketClient.this.send(data);
+                    return true;
+                });
+            } catch (Exception e) {
+                log.error("send message to center error, message path is {}", message.getPath(), e);
+            }
         });
     }
 
@@ -58,11 +65,13 @@ public class AgentWebSocketClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        log.info("onClose {}, {}, {}", code, reason, remote);
+        log.error("onClose {}, {}, {}", code, reason, remote);
         reconnectTime++;
         connectionActive = false;
-        // The remote server has stopped, we need to try reconnecting at certain frequency.
-        shouldRetryConnection = code != CloseReason.CloseCodes.CANNOT_ACCEPT.getCode();
+        // if the connection is closed by server with 1008,1003, exit the agent
+        if (code == CloseReason.CloseCodes.CANNOT_ACCEPT.getCode() || code == CloseReason.CloseCodes.VIOLATED_POLICY.getCode()) {
+            System.exit(code);
+        }
     }
 
     @Override
@@ -74,10 +83,6 @@ public class AgentWebSocketClient extends WebSocketClient {
 
     public boolean isConnectionActive() {
         return connectionActive;
-    }
-
-    public boolean shouldRetryConnection() {
-        return shouldRetryConnection;
     }
 
     public int getReconnectTime() {

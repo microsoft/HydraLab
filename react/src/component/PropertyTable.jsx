@@ -71,7 +71,7 @@ export default class AdaptivePropertyTable extends React.Component {
                     <StyledTableRow key={key} >
                         <TableCell key={key} style={{ verticalAlign: 'top' }}><b>{key}</b></TableCell>
                         <TableCell colSpan={colSpan - 1} style={{ maxWidth: "640px" }}>
-                            {showedValueElement ? showedValueElement : value.toString()}
+                            { showedValueElement ? showedValueElement : value.toString() }
                         </TableCell>
                     </StyledTableRow>)
             } else {
@@ -105,14 +105,24 @@ export default class AdaptivePropertyTable extends React.Component {
             </TableHead>
         }
 
-        return <TableContainer component={Paper}>
-            <Table aria-label="simple table" size="small">
-                {titlePart}
-                <TableBody>
-                    {pList}
-                </TableBody>
-            </Table>
-        </TableContainer>
+        return <center>
+            <TableContainer component={Paper}>
+                <Table aria-label="simple table" size="small">
+                    {titlePart}
+                    <TableBody>
+                        {pList}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <table className="table table-borderless">
+                <tbody>
+                    <tr>
+                        <td align='center'>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </center>
     }
 
     componentDidMount() {

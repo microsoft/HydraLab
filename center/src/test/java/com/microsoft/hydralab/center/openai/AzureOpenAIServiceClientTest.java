@@ -1,30 +1,25 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 package com.microsoft.hydralab.center.openai;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.microsoft.hydralab.center.openai.data.ChatMessage;
+import com.microsoft.hydralab.center.openai.data.ChatRequest;
 import com.microsoft.hydralab.center.test.BaseTest;
-import okhttp3.Call;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
 public class AzureOpenAIServiceClientTest extends BaseTest {
     @Value("${app.openai.chat-completion.api-key:}")
     private String apiKey;
@@ -48,19 +43,7 @@ public class AzureOpenAIServiceClientTest extends BaseTest {
 
     @Test
     public void testChatCompletionWithMock() throws IOException {
-        OkHttpClient client = Mockito.mock(OkHttpClient.class);
-        Call mockCall = Mockito.mock(Call.class);
-
-        Response response = new Response.Builder()
-                .protocol(Protocol.HTTP_1_1).message("testResponse")
-                .request(new Request.Builder().url("https://mock.com").build())
-                .code(200)
-                .body(ResponseBody
-                        .create("testResponse", MediaType.parse("application/json"))
-                )
-                .build();
-        when(client.newCall(any(Request.class))).thenReturn(mockCall);
-        when(mockCall.execute()).thenReturn(response);
+        OkHttpClient client = mockOkHttpClient("testResponse");
 
         ChatRequest request = new ChatRequest();
         request.setMessages(Arrays.asList(
@@ -102,7 +85,7 @@ public class AzureOpenAIServiceClientTest extends BaseTest {
         String status = "";
         int maxRetry = 20;
         int counter = 0;
-        while (!status.equals("succeeded") && counter++ < maxRetry) {
+        while (!Objects.equals(status, "succeeded") && counter++ < maxRetry) {
             response = azureOpenAIServiceClient.getGeneratedImageStatus(id);
             jsonObject = JSON.parseObject(response);
             status = jsonObject.getString("status");

@@ -1,0 +1,58 @@
+@startuml exception_monitor
+interface ExceptionReporter {
+    + void reportException(Exception e, boolean fatal)
+    + void reportException(Exception e, Thread thread, boolean fatal)
+}
+
+class ExceptionReporterManager {
+    List<ExceptionReporter> reporters
+    + void registerExceptionReporter(ExceptionReporter reporter)
+    + void reportException(Exception e, boolean fatal)
+    + void reportException(Exception e, Thread thread, boolean fatal)
+}
+
+class AppCenterReporter implements ExceptionReporter {
+    AppCenterClient appCenterClient;
+
+    + void reportException(Exception e, boolean fatal)
+    + void reportException(Exception e, Thread thread, boolean fatal)
+}
+
+
+class FileReporter implements ExceptionReporter {
+    + void reportException(Exception e, boolean fatal)
+    + void reportException(Exception e, Thread thread, boolean fatal)
+    + void writeToFile(String message, StackTraceElement[] stackTrace)
+}
+
+class AppCenterClient{
+    public HandledErrorLog createErrorLog(Thread thread, Exception testException, boolean fatal)
+}
+
+AppCenterClient <-- AppCenterReporter : call
+
+abstract class ch.qos.logback.core.AppenderBase<E> {
+    + abstract void append(E var1);
+}
+
+class LogbackExceptionHandler extends ch.qos.logback.core.AppenderBase {
+    ExceptionReporterManager exceptionReporterManager;
+    + void append(ILoggingEvent event)
+}
+
+class ThreadExceptionHandler implements Thread.UncaughtExceptionHandler {
+    ExceptionReporterManager exceptionReporterManager;
+    + void uncaughtException(Thread t, Throwable e)
+}
+
+class ServiceExceptionHandler {
+    ExceptionReporterManager exceptionReporterManager;
+    + void handleException(Thread t, Throwable e)
+}
+
+LogbackExceptionHandler --> ExceptionReporterManager : call
+ThreadExceptionHandler --> ExceptionReporterManager : call
+ServiceExceptionHandler --> ExceptionReporterManager : call
+
+ExceptionReporterManager --> ExceptionReporter : notifyEach
+@enduml

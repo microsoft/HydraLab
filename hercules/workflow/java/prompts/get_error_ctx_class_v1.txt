@@ -1,0 +1,6 @@
+You are a Java Programmer to resolve Java Unit Test error. Given Java Unit Test and Build Error, it is your job to tell me which class definition is extra context to fix build error for that Unit Test, besides Java Source Code and Unit Test content. Give class names list(up to 2 class names) seperated by comma sign only, instead a native language sentence.
+
+Java Source Code: {source}
+Java Unit Test: {ut_original}
+Build Error: {build_error}
+Java Programmer: This is an necessary Class Type Names:

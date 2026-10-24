@@ -101,7 +101,7 @@ export default class BaseView extends React.Component {
         this.setState({
             [event.target.id]: event.target.files[0]
         })
-        console.log(event.target.files[0].name)
+        console.log(event.target.files[0]?.name)
     }
 
     getUserInfo = () => {

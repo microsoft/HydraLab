@@ -21,6 +21,7 @@ import com.microsoft.hydralab.common.util.Const;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,7 +62,7 @@ public class DeviceGroupController {
         if (team == null) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "Team doesn't exist.");
         }
-        if (groupName == null || "".equals(groupName)) {
+        if (StringUtils.isEmpty(groupName)) {
             return Result.error(HttpStatus.BAD_REQUEST.value(), "groupName is required");
         }
         if (deviceGroupService.isGroupNameIllegal(groupName)) {

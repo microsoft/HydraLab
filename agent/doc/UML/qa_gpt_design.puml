@@ -1,0 +1,19 @@
+@startuml
+start
+:创建session;
+:GPT判断意图，校验参数 by prompt1;
+if (参数检验通过) then (true)
+    :调用对应的方法;
+    if ("调用成功") then (true)
+        if ("查询测试结果") then (true)
+                    :GPT分析测试报告 by prompt2;
+                else (false)
+                    :根据模板构建返回信息;
+                endif
+    else (false)
+        :返回异常信息;
+    endif
+endif
+:返回message;
+stop
+@enduml

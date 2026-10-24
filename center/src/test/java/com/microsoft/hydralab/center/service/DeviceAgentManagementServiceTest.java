@@ -4,22 +4,18 @@ import com.microsoft.hydralab.center.repository.AgentUserRepository;
 import com.microsoft.hydralab.center.test.BaseTest;
 import com.microsoft.hydralab.common.entity.common.AgentUser;
 import com.microsoft.hydralab.common.entity.common.Message;
-import com.microsoft.hydralab.common.file.StorageServiceClientProxy;
 import com.microsoft.hydralab.common.file.impl.local.LocalStorageClientAdapter;
 import com.microsoft.hydralab.common.file.impl.local.LocalStorageProperty;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.SerializeUtil;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Resource;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Optional;
 
 import static org.mockito.BDDMockito.given;
 
@@ -32,6 +28,7 @@ public class DeviceAgentManagementServiceTest extends BaseTest {
     DeviceAgentManagementService deviceAgentManagementService;
 
     @Test
+    @SuppressWarnings("MethodName")
     public void testOnMessage_NoException() throws IOException {
         Session session = Mockito.mock(Session.class);
         RemoteEndpoint.Basic basicRemote = Mockito.mock(RemoteEndpoint.Basic.class);

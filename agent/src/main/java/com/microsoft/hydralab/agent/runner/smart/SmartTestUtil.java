@@ -5,13 +5,14 @@ package com.microsoft.hydralab.agent.runner.smart;
 
 import com.alibaba.fastjson.JSONObject;
 import com.microsoft.hydralab.common.entity.agent.SmartTestParam;
-import com.microsoft.hydralab.common.util.CommandOutputReceiver;
 import com.microsoft.hydralab.common.util.Const;
 import com.microsoft.hydralab.common.util.FileUtil;
+import com.microsoft.hydralab.common.util.PythonUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,71 +37,73 @@ public class SmartTestUtil {
         stringFolderPath = testBaseDir.getAbsolutePath() + "/" + Const.SmartTestConfig.STRING_FOLDER_NAME
                 + "/";
 
-        try {
-            InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(name);
+        File smartTestZip = new File(testBaseDir, name);
+        File smartTestFolder = new File(testBaseDir, folderName);
+        if (smartTestZip.exists()) {
+            FileUtil.deleteFileRecursively(smartTestZip);
+        }
+        if (smartTestFolder.exists()) {
+            FileUtil.deleteFileRecursively(smartTestFolder);
+        }
+
+        try (InputStream resourceAsStream = FileUtils.class.getClassLoader().getResourceAsStream(name);
+             OutputStream out = new FileOutputStream(smartTestZip)) {
             if (resourceAsStream == null) {
                 return;
             }
-            File smartTestZip = new File(testBaseDir, name);
-            File smartTestFolder = new File(testBaseDir, folderName);
-            if (smartTestZip.exists()) {
-                FileUtil.deleteFileRecursively(smartTestZip);
-            }
-            if (smartTestFolder.exists()) {
-                FileUtil.deleteFileRecursively(smartTestFolder);
-            }
-            OutputStream out = new FileOutputStream(smartTestZip);
             IOUtils.copy(Objects.requireNonNull(resourceAsStream), out);
-            out.close();
             FileUtil.unzipFile(smartTestZip.getAbsolutePath(), testBaseDir.getAbsolutePath());
             if (smartTestZip.exists()) {
                 FileUtil.deleteFileRecursively(smartTestZip);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.warn("SmartTestUtil init error", e);
         }
         initStringPool();
         filePath = folderPath + Const.SmartTestConfig.PY_FILE_NAME;
-        String requireFilePath = folderPath + Const.SmartTestConfig.REQUIRE_FILE_NAME;
-        String[] command = new String[]{"pip3", "install", "-r", requireFilePath};
-        try {
-            Process proc = Runtime.getRuntime().exec(command);
-            CommandOutputReceiver err = new CommandOutputReceiver(proc.getErrorStream(), log);
-            CommandOutputReceiver out = new CommandOutputReceiver(proc.getInputStream(), log);
-            err.start();
-            out.start();
-            proc.waitFor();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        File requireFile = new File(folderPath + Const.SmartTestConfig.REQUIRE_FILE_NAME);
+        PythonUtil.installRequirements(requireFile, log);
     }
 
     public String runPYFunction(SmartTestParam smartTestParam, Logger logger) throws Exception {
         File smartTestFolder = new File(smartTestParam.getOutputFolder(), Const.SmartTestConfig.RESULT_FOLDER_NAME);
-        smartTestFolder.mkdir();
-        String res = null;
-        String[] runArgs = new String[8];
+        Assert.isTrue(smartTestFolder.mkdir(), "create smartTestFolder failed");
+        String res;
+        String[] runArgs = new String[3];
         runArgs[0] = "python";
         runArgs[1] = filePath;
-        runArgs[2] = smartTestParam.apkPath;
-        runArgs[3] = smartTestParam.deviceInfo;
-        runArgs[4] = smartTestParam.modelInfo;
-        runArgs[5] = smartTestParam.testSteps;
-        runArgs[6] = smartTestParam.stringTextFolder;
-        runArgs[7] = smartTestFolder.getAbsolutePath();
+        runArgs[2] = writeConfigFile(smartTestParam).getAbsolutePath();
 
         for (String tempArg : runArgs) {
             logger.info(tempArg);
         }
+
         Process proc = Runtime.getRuntime().exec(runArgs);
-        SmartTestLog err = new SmartTestLog(proc.getErrorStream(), logger);
-        SmartTestLog out = new SmartTestLog(proc.getInputStream(), logger);
-        err.start();
-        out.start();
-        res = out.getContent();
-        proc.waitFor();
+
+        try (InputStream errorInput = proc.getErrorStream();
+             InputStream inputStream = proc.getInputStream()) {
+            SmartTestLog err = new SmartTestLog(errorInput, logger);
+            SmartTestLog out = new SmartTestLog(inputStream, logger);
+            err.start();
+            out.start();
+            proc.waitFor();
+            res = out.getContent();
+        } finally {
+            proc.destroy();
+        }
 
         return res;
+    }
+
+    // write config file
+    public File writeConfigFile(SmartTestParam smartTestParam) {
+        File configFile = new File(smartTestParam.getOutputFolder(), Const.SmartTestConfig.CONFIG_FILE_NAME);
+        try {
+            FileUtils.writeStringToFile(configFile, smartTestParam.toJSONString(), "UTF-8");
+        } catch (IOException e) {
+            log.warn("writeConfigFile error", e);
+        }
+        return configFile;
     }
 
     public JSONObject analysisRes(JSONObject data) {
@@ -141,19 +144,19 @@ public class SmartTestUtil {
         }
         String[] fileNames = Const.SmartTestConfig.STRING_FILE_NAMES.split(",");
         for (String fileName : fileNames) {
-            creatTxtFile(stringFolderPath, fileName);
+            createTxtFile(stringFolderPath, fileName);
         }
     }
 
-    public void creatTxtFile(String path, String name) {
+    public void createTxtFile(String path, String name) {
         String filenameTemp = path + name + ".txt";
         File filename = new File(filenameTemp);
         //generate string txt file if not exist
         if (!filename.exists()) {
             try {
-                filename.createNewFile();
+                Assert.isTrue(filename.createNewFile(), "createTxtFile error " + filename.getAbsolutePath());
             } catch (IOException e) {
-                e.printStackTrace();
+                log.warn("createTxtFile error " + filename.getAbsolutePath(), e);
             }
         }
     }

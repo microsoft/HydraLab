@@ -19,7 +19,7 @@ public class InspectionStrategy implements Serializable {
     @SuppressWarnings("visibilitymodifier")
     public PerformanceInspection inspection;
 
-    enum StrategyType {
+    public enum StrategyType {
         TEST_LIFECYCLE,
         TEST_SCHEDULE
     }

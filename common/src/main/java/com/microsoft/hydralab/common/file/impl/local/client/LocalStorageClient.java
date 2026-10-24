@@ -72,9 +72,8 @@ public class LocalStorageClient {
         body.add("fileUri", fileUri);
         HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<String> responseAsStr = restTemplateHttps.exchange(this.getUploadUrl(), HttpMethod.POST, entity, String.class);
-        JSONObject responseObject = JSONObject.parseObject(responseAsStr.getBody());
-        return this.endpoint + Const.LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD + "/" + responseObject.getString("content");
+        ResponseEntity<JSONObject> responseObject = restTemplateHttps.exchange(this.getUploadUrl(), HttpMethod.POST, entity, JSONObject.class);
+        return this.endpoint + Const.LocalStorageURL.CENTER_LOCAL_STORAGE_DOWNLOAD + "/" + responseObject.getBody().getString("content");
     }
 
     /**

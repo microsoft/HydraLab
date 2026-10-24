@@ -7,7 +7,11 @@ import com.microsoft.hydralab.common.entity.common.DeviceInfo;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class ShellUtils {
     public static final String POWER_SHELL_PATH = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
@@ -154,11 +158,14 @@ public class ShellUtils {
 
     public static String parseHydraLabVariable(String command, ITestRun testRun, DeviceInfo deviceInfo) {
         //  Available Hydra Lab Variables In Script:
+        //  $HydraLab_AttachmentFolderPath: The full path of the attachment folder
         //  $HydraLab_TestResultFolderPath: The full path of the test result folder
         //  $HydraLab_deviceUdid: The UDID of mobile device. (For Android, it will be equal to the serial number)
         String outPathOnAgent = testRun.getResultFolder().getAbsolutePath() + "/";
+        String attachmentPath = testRun.getResultFolder().getParent() + "/";
         String udid = deviceInfo.getSerialNum();
-        String newCommand = command.replace("$HydraLab_TestResultFolderPath", outPathOnAgent);
+        String newCommand = command.replace("$HydraLab_AttachmentFolderPath", attachmentPath);
+        command.replace("$HydraLab_TestResultFolderPath", outPathOnAgent);
         newCommand = newCommand.replace("$HydraLab_deviceUdid", udid);
         return newCommand;
     }
